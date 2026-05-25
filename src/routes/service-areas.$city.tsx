@@ -95,7 +95,7 @@ function CityPage() {
           <div>
             <h2 className="text-3xl font-extrabold tracking-tighter mb-6">Why {city.name} chooses us</h2>
             <ul className="space-y-4">
-              {city.highlights.map((h) => (
+              {city.highlights.map((h: string) => (
                 <li key={h} className="flex gap-4 text-base">
                   <span className="mt-2 size-2 rounded-full bg-accent shrink-0" />
                   <span>{h}</span>
@@ -106,7 +106,7 @@ function CityPage() {
           <div>
             <h2 className="text-3xl font-extrabold tracking-tighter mb-6">Hospitals & facilities served</h2>
             <ul className="grid grid-cols-1 gap-3">
-              {city.hubs.map((h) => (
+              {city.hubs.map((h: string) => (
                 <li
                   key={h}
                   className="bg-card border border-border p-4 rounded-sm font-mono text-sm font-bold text-primary"
