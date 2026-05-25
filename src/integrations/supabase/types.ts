@@ -14,7 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          message: string
+          name: string
+          phone: string | null
+          subject: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          message: string
+          name: string
+          phone?: string | null
+          subject?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          message?: string
+          name?: string
+          phone?: string | null
+          subject?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      provider_applications: {
+        Row: {
+          city: string
+          company_name: string
+          contact_name: string
+          created_at: string
+          email: string
+          fleet_size: number | null
+          id: string
+          notes: string | null
+          phone: string
+          service_types: string[]
+          status: string
+        }
+        Insert: {
+          city: string
+          company_name: string
+          contact_name: string
+          created_at?: string
+          email: string
+          fleet_size?: number | null
+          id?: string
+          notes?: string | null
+          phone: string
+          service_types?: string[]
+          status?: string
+        }
+        Update: {
+          city?: string
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          fleet_size?: number | null
+          id?: string
+          notes?: string | null
+          phone?: string
+          service_types?: string[]
+          status?: string
+        }
+        Relationships: []
+      }
+      ride_requests: {
+        Row: {
+          created_at: string
+          dropoff_address: string
+          dropoff_city: string
+          id: string
+          ip_address: string | null
+          mobility_notes: string | null
+          patient_email: string | null
+          patient_first_name: string
+          patient_last_name: string
+          patient_phone: string
+          pickup_address: string
+          pickup_city: string
+          pickup_date: string
+          pickup_time: string
+          round_trip: boolean
+          special_instructions: string | null
+          status: string
+          transport_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          dropoff_address: string
+          dropoff_city: string
+          id?: string
+          ip_address?: string | null
+          mobility_notes?: string | null
+          patient_email?: string | null
+          patient_first_name: string
+          patient_last_name: string
+          patient_phone: string
+          pickup_address: string
+          pickup_city: string
+          pickup_date: string
+          pickup_time: string
+          round_trip?: boolean
+          special_instructions?: string | null
+          status?: string
+          transport_type: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          dropoff_address?: string
+          dropoff_city?: string
+          id?: string
+          ip_address?: string | null
+          mobility_notes?: string | null
+          patient_email?: string | null
+          patient_first_name?: string
+          patient_last_name?: string
+          patient_phone?: string
+          pickup_address?: string
+          pickup_city?: string
+          pickup_date?: string
+          pickup_time?: string
+          round_trip?: boolean
+          special_instructions?: string | null
+          status?: string
+          transport_type?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
