@@ -10,8 +10,8 @@ export const Route = createFileRoute("/service-areas/$city")({
   head: ({ loaderData, params }) => {
     const c = loaderData?.city;
     const title = c
-      ? `NEMT in ${c.name} — Medical Transport | Florida NEMT Network`
-      : "Service Area — Florida NEMT Network";
+      ? `NEMT in ${c.name} — Medical Transport | FloridaNEMT`
+      : "Service Area — FloridaNEMT";
     const description = c
       ? `Non-emergency medical transportation in ${c.name}, ${c.region}. Ambulatory, wheelchair, and stretcher transport serving ${c.hubs.slice(0, 2).join(" and ")}.`
       : "Florida NEMT coverage detail.";
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/service-areas/$city")({
               children: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "MedicalBusiness",
-                name: `Florida NEMT Network — ${c.name}`,
+                name: `FloridaNEMT — ${c.name}`,
                 description,
                 areaServed: { "@type": "City", name: c.name, addressRegion: "FL", addressCountry: "US" },
                 telephone: "+1-800-555-0199",

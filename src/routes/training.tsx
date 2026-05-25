@@ -7,9 +7,9 @@ export const Route = createFileRoute("/training")({
       {
         name: "description",
         content:
-          "Florida NEMT Network's training academy. Certified online courses for non-emergency medical transport drivers: Florida NEMT Basics ($100) and HIPAA Training ($100).",
+          "FloridaNEMT training academy. Certified online courses for non-emergency medical transport drivers: Florida NEMT Basics ($100) and HIPAA Training ($100).",
       },
-      { property: "og:title", content: "NEMT Training Academy — Florida NEMT Network" },
+      { property: "og:title", content: "NEMT Training Academy — FloridaNEMT" },
       { property: "og:description", content: "$100 online certification courses for NEMT professionals." },
       { property: "og:url", content: "/training" },
     ],

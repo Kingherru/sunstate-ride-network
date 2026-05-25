@@ -65,16 +65,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#13335a" },
-      { title: "Florida NEMT Network — Statewide Medical Transportation" },
+      { title: "FloridaNEMT — Statewide Medical Transportation" },
       {
         name: "description",
         content:
           "Florida's statewide non-emergency medical transportation network. Ambulatory, wheelchair, and stretcher transport across Jacksonville, Orlando, Tampa, Miami, Tallahassee, and Fort Lauderdale.",
       },
-      { property: "og:title", content: "Florida NEMT Network" },
+      { property: "og:title", content: "FloridaNEMT" },
       { property: "og:description", content: "Statewide non-emergency medical transportation across Florida." },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Florida NEMT Network" },
+      { property: "og:site_name", content: "FloridaNEMT" },
       { name: "twitter:card", content: "summary" },
     ],
     links: [
@@ -92,11 +92,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "MedicalBusiness",
-          name: "Florida NEMT Network",
+          name: "FloridaNEMT",
           description: "Statewide non-emergency medical transportation network serving Florida.",
           areaServed: "Florida, US",
           telephone: "+1-800-555-0199",
-          email: "support@fl-nemt.net",
+          email: "info@floridanemt.com",
           address: { "@type": "PostalAddress", addressRegion: "FL", addressCountry: "US" },
         }),
       },

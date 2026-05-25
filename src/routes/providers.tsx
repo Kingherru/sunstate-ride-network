@@ -11,13 +11,13 @@ import {
 export const Route = createFileRoute("/providers")({
   head: () => ({
     meta: [
-      { title: "For Providers — Join Florida's NEMT Network" },
+      { title: "For Providers — Join FloridaNEMT" },
       {
         name: "description",
         content:
-          "Register your NEMT company with Florida NEMT Network. Access statewide trip volume, dispatch tools, and onboarding for drivers and vehicles.",
+          "Register your NEMT company with FloridaNEMT. Access statewide trip volume, dispatch tools, and onboarding for drivers and vehicles.",
       },
-      { property: "og:title", content: "Join the Florida NEMT Network" },
+      { property: "og:title", content: "Join FloridaNEMT" },
       { property: "og:description", content: "Provider registration for Florida NEMT companies." },
       { property: "og:url", content: "/providers" },
     ],
