@@ -78,6 +78,39 @@ export const submitContact = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const REGION_BY_CITY: Record<string, string> = {
+  jacksonville: "Northeast Florida",
+  orlando: "Central Florida",
+  tampa: "Gulf Coast",
+  miami: "South Florida",
+  tallahassee: "Florida Panhandle",
+  "fort-lauderdale": "Broward County",
+  "fort lauderdale": "Broward County",
+};
+
+function regionFor(city: string): string {
+  const k = city.trim().toLowerCase();
+  return REGION_BY_CITY[k] ?? REGION_BY_CITY[k.replace(/\s/g, "-")] ?? "Statewide Florida";
+}
+
+export const PROVIDER_DOC_KINDS = [
+  "drivers_license",
+  "insurance",
+  "w9",
+  "ein_letter",
+  "npi",
+  "business_license",
+  "vehicle_registration",
+  "other",
+] as const;
+
+const docSchema = z.object({
+  kind: z.enum(PROVIDER_DOC_KINDS),
+  path: z.string().min(1).max(500),
+  filename: z.string().min(1).max(255),
+  size: z.number().int().min(0).max(25_000_000),
+});
+
 export const providerApplicationSchema = z.object({
   companyName: z.string().trim().min(1).max(200),
   contactName: z.string().trim().min(1).max(120),
@@ -86,9 +119,16 @@ export const providerApplicationSchema = z.object({
   city: z.string().trim().min(1).max(100),
   serviceTypes: z.array(z.enum(["ambulatory", "wheelchair", "gurney"])).min(1),
   fleetSize: z.number().int().min(0).max(10000).optional(),
+  ein: z.string().trim().max(20).optional().or(z.literal("")),
+  npi: z.string().trim().max(20).optional().or(z.literal("")),
+  driverLicenseNumber: z.string().trim().max(50).optional().or(z.literal("")),
+  insuranceCarrier: z.string().trim().max(200).optional().or(z.literal("")),
+  insurancePolicyNumber: z.string().trim().max(100).optional().or(z.literal("")),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
+  documents: z.array(docSchema).max(20).default([]),
 });
 export type ProviderApplicationInput = z.infer<typeof providerApplicationSchema>;
+export type ProviderDoc = z.infer<typeof docSchema>;
 
 export const submitProviderApplication = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => providerApplicationSchema.parse(input))
@@ -99,9 +139,16 @@ export const submitProviderApplication = createServerFn({ method: "POST" })
       email: data.email,
       phone: data.phone,
       city: data.city,
+      region: regionFor(data.city),
       service_types: data.serviceTypes,
       fleet_size: data.fleetSize ?? null,
+      ein: data.ein || null,
+      npi: data.npi || null,
+      driver_license_number: data.driverLicenseNumber || null,
+      insurance_carrier: data.insuranceCarrier || null,
+      insurance_policy_number: data.insurancePolicyNumber || null,
       notes: data.notes || null,
+      documents: data.documents,
     });
     if (error) {
       console.error("submitProviderApplication error", error);

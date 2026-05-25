@@ -56,11 +56,18 @@ export type Database = {
           company_name: string
           contact_name: string
           created_at: string
+          documents: Json
+          driver_license_number: string | null
+          ein: string | null
           email: string
           fleet_size: number | null
           id: string
+          insurance_carrier: string | null
+          insurance_policy_number: string | null
           notes: string | null
+          npi: string | null
           phone: string
+          region: string | null
           service_types: string[]
           status: string
         }
@@ -69,11 +76,18 @@ export type Database = {
           company_name: string
           contact_name: string
           created_at?: string
+          documents?: Json
+          driver_license_number?: string | null
+          ein?: string | null
           email: string
           fleet_size?: number | null
           id?: string
+          insurance_carrier?: string | null
+          insurance_policy_number?: string | null
           notes?: string | null
+          npi?: string | null
           phone: string
+          region?: string | null
           service_types?: string[]
           status?: string
         }
@@ -82,11 +96,18 @@ export type Database = {
           company_name?: string
           contact_name?: string
           created_at?: string
+          documents?: Json
+          driver_license_number?: string | null
+          ein?: string | null
           email?: string
           fleet_size?: number | null
           id?: string
+          insurance_carrier?: string | null
+          insurance_policy_number?: string | null
           notes?: string | null
+          npi?: string | null
           phone?: string
+          region?: string | null
           service_types?: string[]
           status?: string
         }
