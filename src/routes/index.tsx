@@ -32,13 +32,13 @@ const services = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Florida NEMT Network — Statewide Medical Transportation" },
+      { title: "FloridaNEMT — Statewide Medical Transportation" },
       {
         name: "description",
         content:
           "Dignified, on-time non-emergency medical transportation across Florida. Ambulatory, wheelchair, and stretcher transport plus a provider network and training academy.",
       },
-      { property: "og:title", content: "Florida NEMT Network" },
+      { property: "og:title", content: "FloridaNEMT" },
       { property: "og:description", content: "Statewide non-emergency medical transportation across Florida." },
       { property: "og:url", content: "/" },
     ],

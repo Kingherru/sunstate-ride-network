@@ -3,13 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
-      { title: "Services — Ambulatory, Wheelchair & Stretcher | Florida NEMT" },
+      { title: "Services — Ambulatory, Wheelchair & Stretcher | FloridaNEMT" },
       {
         name: "description",
         content:
           "Three specialized levels of non-emergency medical transport across Florida: ambulatory, wheelchair, and gurney/stretcher service with certified crews.",
       },
-      { property: "og:title", content: "NEMT Services — Florida NEMT Network" },
+      { property: "og:title", content: "NEMT Services — FloridaNEMT" },
       { property: "og:description", content: "Ambulatory, wheelchair, and stretcher medical transport." },
       { property: "og:url", content: "/services" },
     ],
@@ -69,7 +69,7 @@ function ServicesPage() {
             Three levels of care, one statewide standard.
           </h1>
           <p className="text-lg text-muted max-w-2xl">
-            Every Florida NEMT Network ride is dispatched, vetted, and confirmed against our
+            Every FloridaNEMT ride is dispatched, vetted, and confirmed against our
             patient-safety checklist — regardless of which service level you book.
           </p>
         </div>

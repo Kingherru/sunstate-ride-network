@@ -8,13 +8,13 @@ import { CITY_LIST } from "@/lib/cities";
 export const Route = createFileRoute("/request-a-ride")({
   head: () => ({
     meta: [
-      { title: "Request a Ride — Florida NEMT Network" },
+      { title: "Request a Ride — FloridaNEMT" },
       {
         name: "description",
         content:
           "Book non-emergency medical transportation anywhere in Florida. Ambulatory, wheelchair, and gurney transport with on-time pickup.",
       },
-      { property: "og:title", content: "Request a Ride — Florida NEMT Network" },
+      { property: "og:title", content: "Request a Ride — FloridaNEMT" },
       { property: "og:description", content: "Book NEMT transport across Florida." },
       { property: "og:url", content: "/request-a-ride" },
     ],

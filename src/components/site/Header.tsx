@@ -18,7 +18,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 h-18 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="font-extrabold text-xl tracking-tighter text-primary uppercase">
-            FL-NEMT<span className="text-accent">.</span>NET
+            FloridaNEMT
           </Link>
           <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((l) => (
