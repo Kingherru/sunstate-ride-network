@@ -24,6 +24,20 @@ export type RideRequestInput = z.infer<typeof rideRequestSchema>;
 export const submitRideRequest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => rideRequestSchema.parse(input))
   .handler(async ({ data }) => {
+    // If the caller is signed in, tag the request with their user id so they can see it in /requests.
+    let requesterUserId: string | null = null;
+    try {
+      const { getRequestHeader } = await import("@tanstack/react-start/server");
+      const authHeader = getRequestHeader("authorization");
+      const token = authHeader?.replace(/^Bearer\s+/i, "");
+      if (token) {
+        const { data: userData } = await supabaseAdmin.auth.getUser(token);
+        requesterUserId = userData.user?.id ?? null;
+      }
+    } catch {
+      // anonymous submission is fine
+    }
+
     const { error, data: row } = await supabaseAdmin
       .from("ride_requests")
       .insert({
@@ -41,9 +55,11 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         round_trip: data.roundTrip,
         mobility_notes: data.mobilityNotes || null,
         special_instructions: data.specialInstructions || null,
+        requester_user_id: requesterUserId,
       })
       .select("id")
       .single();
+
 
     if (error) {
       console.error("submitRideRequest error", error);
