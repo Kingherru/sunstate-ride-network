@@ -104,6 +104,15 @@ function DashboardPage() {
 
         {profile && isActive && (
           <>
+            {!canSend && (
+              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
+                <p className="font-bold text-orange-900">Free membership — you can receive trips but not send them.</p>
+                <p className="text-orange-800 mt-1">
+                  Upgrade to a paid membership ($5/mo) to send trips, bulk upload, and use API integrations.{" "}
+                  <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
+                </p>
+              </div>
+            )}
             <nav className="flex flex-wrap gap-2 mb-6 border-b border-border">
               {[
                 ["received", `Received (${received.length})`],
@@ -113,6 +122,7 @@ function DashboardPage() {
                 ["contacts", "Contacts"],
                 ["fleet", "Drivers & Vehicles"],
                 ["pricing", "Pricing"],
+                ["integrations", "Integrations"],
                 ["account", "Account"],
               ].map(([key, label]) => (
                 <button
@@ -127,11 +137,12 @@ function DashboardPage() {
 
             {tab === "received" && <TripList trips={received} userId={userId!} role="recipient" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
-            {tab === "new" && <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
-            {tab === "upload" && <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
+            {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "fleet" && <FleetPanel />}
             {tab === "pricing" && <PricingPanel />}
+            {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "account" && <AccountPanel profile={profile} />}
           </>
         )}
