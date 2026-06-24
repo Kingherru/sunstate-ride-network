@@ -40,7 +40,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
         api_key_encrypted: data.api_key,
         webhook_secret: data.webhook_secret ?? null,
         enabled: data.enabled ?? false,
-        config: data.config ?? {},
+        config: (data.config ?? {}) as any,
       }, { onConflict: "provider_id,vendor" });
     if (error) throw error;
     return { ok: true };
