@@ -30,13 +30,41 @@ function regionFor(city: string): string {
 async function ensureActiveMember(supabase: any, userId: string) {
   const { data } = await supabase
     .from("member_profiles")
-    .select("membership_status, region")
+    .select("membership_status, membership_tier, region")
     .eq("user_id", userId)
     .maybeSingle();
   if (!data || data.membership_status !== "active") {
     throw new Error("Active membership required");
   }
   return data;
+}
+
+async function ensurePaidSender(supabase: any, userId: string) {
+  const m = await ensureActiveMember(supabase, userId);
+  if (m.membership_tier !== "paid") {
+    throw new Error("Sending trips requires a paid membership. Upgrade at /membership.");
+  }
+  return m;
+}
+
+async function requireHipaaAck(
+  supabase: any,
+  userId: string,
+  ackId: string | undefined,
+  context: string,
+): Promise<string> {
+  if (ackId) {
+    const { data } = await supabase
+      .from("hipaa_acknowledgments")
+      .select("id")
+      .eq("id", ackId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+  // Auto-create an ack if the caller confirmed via a checkbox (ackId omitted but flag elsewhere).
+  // For safety, require an explicit ack id from the form.
+  throw new Error("HIPAA acknowledgment is required. Please check the HIPAA box and try again.");
 }
 
 /** List approved providers in the same region as the caller (for dispatch). */
