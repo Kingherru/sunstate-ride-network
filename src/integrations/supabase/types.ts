@@ -95,6 +95,36 @@ export type Database = {
         }
         Relationships: []
       }
+      hipaa_acknowledgments: {
+        Row: {
+          acknowledged_at: string
+          context: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          context: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+          version?: string
+        }
+        Update: {
+          acknowledged_at?: string
+          context?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       member_profiles: {
         Row: {
           city: string | null
@@ -106,6 +136,7 @@ export type Database = {
           id: string
           last_name: string | null
           membership_status: string
+          membership_tier: Database["public"]["Enums"]["membership_tier"]
           phone: string | null
           preferred_zip_codes: string[]
           provider_application_id: string | null
@@ -125,6 +156,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           membership_status?: string
+          membership_tier?: Database["public"]["Enums"]["membership_tier"]
           phone?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
@@ -144,6 +176,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           membership_status?: string
+          membership_tier?: Database["public"]["Enums"]["membership_tier"]
           phone?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
@@ -322,6 +355,45 @@ export type Database = {
           },
         ]
       }
+      provider_integrations: {
+        Row: {
+          api_key_encrypted: string | null
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          last_sync_at: string | null
+          provider_id: string
+          updated_at: string
+          vendor: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          api_key_encrypted?: string | null
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_sync_at?: string | null
+          provider_id: string
+          updated_at?: string
+          vendor: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          api_key_encrypted?: string | null
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_sync_at?: string | null
+          provider_id?: string
+          updated_at?: string
+          vendor?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
       provider_pricing: {
         Row: {
           additional_passenger: number
@@ -385,11 +457,48 @@ export type Database = {
         }
         Relationships: []
       }
+      requester_saved_locations: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          id: string
+          label: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          zip: string | null
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          id?: string
+          label: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
       ride_requests: {
         Row: {
           created_at: string
           dropoff_address: string
           dropoff_city: string
+          hipaa_ack_id: string | null
           id: string
           ip_address: string | null
           mobility_notes: string | null
@@ -401,6 +510,9 @@ export type Database = {
           pickup_city: string
           pickup_date: string
           pickup_time: string
+          recurrence_rule: string | null
+          requester_email: string | null
+          requester_phone: string | null
           round_trip: boolean
           special_instructions: string | null
           status: string
@@ -411,6 +523,7 @@ export type Database = {
           created_at?: string
           dropoff_address: string
           dropoff_city: string
+          hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
           mobility_notes?: string | null
@@ -422,6 +535,9 @@ export type Database = {
           pickup_city: string
           pickup_date: string
           pickup_time: string
+          recurrence_rule?: string | null
+          requester_email?: string | null
+          requester_phone?: string | null
           round_trip?: boolean
           special_instructions?: string | null
           status?: string
@@ -432,6 +548,7 @@ export type Database = {
           created_at?: string
           dropoff_address?: string
           dropoff_city?: string
+          hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
           mobility_notes?: string | null
@@ -443,13 +560,24 @@ export type Database = {
           pickup_city?: string
           pickup_date?: string
           pickup_time?: string
+          recurrence_rule?: string | null
+          requester_email?: string | null
+          requester_phone?: string | null
           round_trip?: boolean
           special_instructions?: string | null
           status?: string
           transport_type?: string
           user_agent?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ride_requests_hipaa_ack_id_fkey"
+            columns: ["hipaa_ack_id"]
+            isOneToOne: false
+            referencedRelation: "hipaa_acknowledgments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_locations: {
         Row: {
@@ -576,6 +704,7 @@ export type Database = {
           estimated_dropoff_at: string | null
           estimated_miles: number | null
           estimated_pickup_at: string | null
+          hipaa_ack_id: string | null
           id: string
           mobility_notes: string | null
           no_show_reason: string | null
@@ -620,6 +749,7 @@ export type Database = {
           estimated_dropoff_at?: string | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
+          hipaa_ack_id?: string | null
           id?: string
           mobility_notes?: string | null
           no_show_reason?: string | null
@@ -664,6 +794,7 @@ export type Database = {
           estimated_dropoff_at?: string | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
+          hipaa_ack_id?: string | null
           id?: string
           mobility_notes?: string | null
           no_show_reason?: string | null
@@ -708,6 +839,13 @@ export type Database = {
             columns: ["dropoff_location_id"]
             isOneToOne: false
             referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_hipaa_ack_id_fkey"
+            columns: ["hipaa_ack_id"]
+            isOneToOne: false
+            referencedRelation: "hipaa_acknowledgments"
             referencedColumns: ["id"]
           },
           {
@@ -788,9 +926,155 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      member_directory: {
+        Row: {
+          city: string | null
+          company_name: string | null
+          display_name: string | null
+          membership_tier: Database["public"]["Enums"]["membership_tier"] | null
+          preferred_zip_codes: string[] | null
+          region: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          company_name?: string | null
+          display_name?: never
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          preferred_zip_codes?: string[] | null
+          region?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          company_name?: string | null
+          display_name?: never
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          preferred_zip_codes?: string[] | null
+          region?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      trips_admin_metadata: {
+        Row: {
+          assigned_to: string | null
+          cost_total: number | null
+          created_at: string | null
+          created_by: string | null
+          dropoff_city: string | null
+          dropoff_zip: string | null
+          hipaa_ack_id: string | null
+          id: string | null
+          payer: string | null
+          pickup_city: string | null
+          pickup_date: string | null
+          pickup_time: string | null
+          pickup_zip: string | null
+          region: string | null
+          round_trip: boolean | null
+          source: string | null
+          status: string | null
+          transport_type: string | null
+          trip_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          cost_total?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          dropoff_city?: string | null
+          dropoff_zip?: string | null
+          hipaa_ack_id?: string | null
+          id?: string | null
+          payer?: string | null
+          pickup_city?: string | null
+          pickup_date?: string | null
+          pickup_time?: string | null
+          pickup_zip?: string | null
+          region?: string | null
+          round_trip?: boolean | null
+          source?: string | null
+          status?: string | null
+          transport_type?: string | null
+          trip_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          cost_total?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          dropoff_city?: string | null
+          dropoff_zip?: string | null
+          hipaa_ack_id?: string | null
+          id?: string | null
+          payer?: string | null
+          pickup_city?: string | null
+          pickup_date?: string | null
+          pickup_time?: string | null
+          pickup_zip?: string | null
+          region?: string | null
+          round_trip?: boolean | null
+          source?: string | null
+          status?: string | null
+          transport_type?: string | null
+          trip_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_hipaa_ack_id_fkey"
+            columns: ["hipaa_ack_id"]
+            isOneToOne: false
+            referencedRelation: "hipaa_acknowledgments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      admin_grant_free_membership: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      get_trips_admin_metadata: {
+        Args: never
+        Returns: {
+          assigned_to: string | null
+          cost_total: number | null
+          created_at: string | null
+          created_by: string | null
+          dropoff_city: string | null
+          dropoff_zip: string | null
+          hipaa_ack_id: string | null
+          id: string | null
+          payer: string | null
+          pickup_city: string | null
+          pickup_date: string | null
+          pickup_time: string | null
+          pickup_zip: string | null
+          region: string | null
+          round_trip: boolean | null
+          source: string | null
+          status: string | null
+          transport_type: string | null
+          trip_number: string | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "trips_admin_metadata"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -800,7 +1084,8 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "staff"
+      app_role: "admin" | "staff" | "requester"
+      membership_tier: "none" | "free" | "paid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -928,7 +1213,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "staff"],
+      app_role: ["admin", "staff", "requester"],
+      membership_tier: ["none", "free", "paid"],
     },
   },
 } as const
