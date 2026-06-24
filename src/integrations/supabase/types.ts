@@ -50,6 +50,51 @@ export type Database = {
         }
         Relationships: []
       }
+      drivers: {
+        Row: {
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          license_expiry: string | null
+          license_number: string | null
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          license_expiry?: string | null
+          license_number?: string | null
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       member_profiles: {
         Row: {
           city: string | null
@@ -277,6 +322,69 @@ export type Database = {
           },
         ]
       }
+      provider_pricing: {
+        Row: {
+          additional_passenger: number
+          after_hours_addon: number
+          after_hours_end: string
+          after_hours_start: string
+          base_pickup: number
+          cancellation: number
+          created_at: string
+          currency: string
+          holiday_surcharge: number
+          holidays: string[]
+          minimum_fare: number
+          no_show: number
+          owner_id: string
+          per_mile: number
+          stretcher_addon: number
+          updated_at: string
+          wait_per_min: number
+          wheelchair_addon: number
+        }
+        Insert: {
+          additional_passenger?: number
+          after_hours_addon?: number
+          after_hours_end?: string
+          after_hours_start?: string
+          base_pickup?: number
+          cancellation?: number
+          created_at?: string
+          currency?: string
+          holiday_surcharge?: number
+          holidays?: string[]
+          minimum_fare?: number
+          no_show?: number
+          owner_id: string
+          per_mile?: number
+          stretcher_addon?: number
+          updated_at?: string
+          wait_per_min?: number
+          wheelchair_addon?: number
+        }
+        Update: {
+          additional_passenger?: number
+          after_hours_addon?: number
+          after_hours_end?: string
+          after_hours_start?: string
+          base_pickup?: number
+          cancellation?: number
+          created_at?: string
+          currency?: string
+          holiday_surcharge?: number
+          holidays?: string[]
+          minimum_fare?: number
+          no_show?: number
+          owner_id?: string
+          per_mile?: number
+          stretcher_addon?: number
+          updated_at?: string
+          wait_per_min?: number
+          wheelchair_addon?: number
+        }
+        Relationships: []
+      }
       ride_requests: {
         Row: {
           created_at: string
@@ -449,16 +557,28 @@ export type Database = {
       }
       trips: {
         Row: {
+          actual_dropoff_at: string | null
+          actual_miles: number | null
+          actual_pickup_at: string | null
+          additional_passengers: number
           assigned_to: string | null
+          cancel_reason: string | null
           contact_id: string | null
+          cost_breakdown: Json | null
+          cost_total: number | null
           created_at: string
           created_by: string
+          driver_id: string | null
           dropoff_address: string
           dropoff_city: string
           dropoff_location_id: string | null
           dropoff_zip: string | null
+          estimated_dropoff_at: string | null
+          estimated_miles: number | null
+          estimated_pickup_at: string | null
           id: string
           mobility_notes: string | null
+          no_show_reason: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone: string | null
@@ -477,18 +597,32 @@ export type Database = {
           transport_type: string | null
           trip_number: string | null
           updated_at: string
+          vehicle_id: string | null
+          wait_minutes: number | null
         }
         Insert: {
+          actual_dropoff_at?: string | null
+          actual_miles?: number | null
+          actual_pickup_at?: string | null
+          additional_passengers?: number
           assigned_to?: string | null
+          cancel_reason?: string | null
           contact_id?: string | null
+          cost_breakdown?: Json | null
+          cost_total?: number | null
           created_at?: string
           created_by: string
+          driver_id?: string | null
           dropoff_address: string
           dropoff_city: string
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          estimated_dropoff_at?: string | null
+          estimated_miles?: number | null
+          estimated_pickup_at?: string | null
           id?: string
           mobility_notes?: string | null
+          no_show_reason?: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone?: string | null
@@ -507,18 +641,32 @@ export type Database = {
           transport_type?: string | null
           trip_number?: string | null
           updated_at?: string
+          vehicle_id?: string | null
+          wait_minutes?: number | null
         }
         Update: {
+          actual_dropoff_at?: string | null
+          actual_miles?: number | null
+          actual_pickup_at?: string | null
+          additional_passengers?: number
           assigned_to?: string | null
+          cancel_reason?: string | null
           contact_id?: string | null
+          cost_breakdown?: Json | null
+          cost_total?: number | null
           created_at?: string
           created_by?: string
+          driver_id?: string | null
           dropoff_address?: string
           dropoff_city?: string
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          estimated_dropoff_at?: string | null
+          estimated_miles?: number | null
+          estimated_pickup_at?: string | null
           id?: string
           mobility_notes?: string | null
+          no_show_reason?: string | null
           patient_first_name?: string
           patient_last_name?: string
           patient_phone?: string | null
@@ -537,6 +685,8 @@ export type Database = {
           transport_type?: string | null
           trip_number?: string | null
           updated_at?: string
+          vehicle_id?: string | null
+          wait_minutes?: number | null
         }
         Relationships: [
           {
@@ -544,6 +694,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
           {
@@ -558,6 +715,13 @@ export type Database = {
             columns: ["pickup_location_id"]
             isOneToOne: false
             referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
             referencedColumns: ["id"]
           },
         ]
@@ -580,6 +744,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          plate: string | null
+          status: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          plate?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          plate?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
         }
         Relationships: []
       }
