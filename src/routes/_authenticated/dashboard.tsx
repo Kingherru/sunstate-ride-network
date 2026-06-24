@@ -69,8 +69,9 @@ function DashboardPage() {
     },
   });
 
-  const profile = profileQ.data;
+  const profile = profileQ.data as (Profile & { membership_tier?: string }) | null;
   const isActive = profile?.membership_status === "active";
+  const canSend = isActive && profile?.membership_tier === "paid";
   const trips = tripsQ.data ?? [];
   const sent = trips.filter((t) => t.created_by === userId);
   const received = trips.filter((t) => t.assigned_to === userId);
