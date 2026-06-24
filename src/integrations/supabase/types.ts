@@ -50,6 +50,74 @@ export type Database = {
         }
         Relationships: []
       }
+      member_profiles: {
+        Row: {
+          city: string | null
+          company_name: string | null
+          created_at: string
+          current_period_end: string | null
+          dispatch_email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          membership_status: string
+          phone: string | null
+          preferred_zip_codes: string[]
+          provider_application_id: string | null
+          region: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          dispatch_email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          membership_status?: string
+          phone?: string | null
+          preferred_zip_codes?: string[]
+          provider_application_id?: string | null
+          region?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          dispatch_email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          membership_status?: string
+          phone?: string | null
+          preferred_zip_codes?: string[]
+          provider_application_id?: string | null
+          region?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_profiles_provider_application_id_fkey"
+            columns: ["provider_application_id"]
+            isOneToOne: false
+            referencedRelation: "provider_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_applications: {
         Row: {
           city: string
@@ -203,6 +271,90 @@ export type Database = {
           status?: string
           transport_type?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          dropoff_address: string
+          dropoff_city: string
+          dropoff_zip: string | null
+          id: string
+          mobility_notes: string | null
+          patient_first_name: string
+          patient_last_name: string
+          patient_phone: string | null
+          payer: string | null
+          pickup_address: string
+          pickup_city: string
+          pickup_date: string
+          pickup_time: string
+          pickup_zip: string | null
+          region: string | null
+          round_trip: boolean
+          source: string
+          special_instructions: string | null
+          status: string
+          transport_type: string | null
+          trip_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          dropoff_address: string
+          dropoff_city: string
+          dropoff_zip?: string | null
+          id?: string
+          mobility_notes?: string | null
+          patient_first_name: string
+          patient_last_name: string
+          patient_phone?: string | null
+          payer?: string | null
+          pickup_address: string
+          pickup_city: string
+          pickup_date: string
+          pickup_time: string
+          pickup_zip?: string | null
+          region?: string | null
+          round_trip?: boolean
+          source?: string
+          special_instructions?: string | null
+          status?: string
+          transport_type?: string | null
+          trip_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          dropoff_address?: string
+          dropoff_city?: string
+          dropoff_zip?: string | null
+          id?: string
+          mobility_notes?: string | null
+          patient_first_name?: string
+          patient_last_name?: string
+          patient_phone?: string | null
+          payer?: string | null
+          pickup_address?: string
+          pickup_city?: string
+          pickup_date?: string
+          pickup_time?: string
+          pickup_zip?: string | null
+          region?: string | null
+          round_trip?: boolean
+          source?: string
+          special_instructions?: string | null
+          status?: string
+          transport_type?: string | null
+          trip_number?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
