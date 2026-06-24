@@ -54,62 +54,89 @@ export type Database = {
         Row: {
           city: string
           company_name: string
-          contact_name: string
+          contact_name: string | null
+          county: string | null
           created_at: string
+          dispatch_email: string | null
           documents: Json
           driver_license_number: string | null
           ein: string | null
           email: string
+          first_name: string | null
           fleet_size: number | null
           id: string
           insurance_carrier: string | null
           insurance_policy_number: string | null
+          last_name: string | null
           notes: string | null
           npi: string | null
           phone: string
+          preferred_zip_codes: string[]
           region: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           service_types: string[]
           status: string
+          zip_code: string | null
         }
         Insert: {
           city: string
           company_name: string
-          contact_name: string
+          contact_name?: string | null
+          county?: string | null
           created_at?: string
+          dispatch_email?: string | null
           documents?: Json
           driver_license_number?: string | null
           ein?: string | null
           email: string
+          first_name?: string | null
           fleet_size?: number | null
           id?: string
           insurance_carrier?: string | null
           insurance_policy_number?: string | null
+          last_name?: string | null
           notes?: string | null
           npi?: string | null
           phone: string
+          preferred_zip_codes?: string[]
           region?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           service_types?: string[]
           status?: string
+          zip_code?: string | null
         }
         Update: {
           city?: string
           company_name?: string
-          contact_name?: string
+          contact_name?: string | null
+          county?: string | null
           created_at?: string
+          dispatch_email?: string | null
           documents?: Json
           driver_license_number?: string | null
           ein?: string | null
           email?: string
+          first_name?: string | null
           fleet_size?: number | null
           id?: string
           insurance_carrier?: string | null
           insurance_policy_number?: string | null
+          last_name?: string | null
           notes?: string | null
           npi?: string | null
           phone?: string
+          preferred_zip_codes?: string[]
           region?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           service_types?: string[]
           status?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
@@ -179,15 +206,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -314,6 +368,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff"],
+    },
   },
 } as const
