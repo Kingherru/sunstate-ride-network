@@ -83,42 +83,66 @@ export const listRegionalProviders = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+const tripBaseSchema = z.object({
+  patient_first_name: z.string().trim().min(1).max(80),
+  patient_last_name: z.string().trim().min(1).max(80),
+  patient_phone: z.string().trim().max(32).optional().nullable(),
+  pickup_address: z.string().trim().min(1).max(255),
+  pickup_city: z.string().trim().min(1).max(80),
+  pickup_zip: z.string().trim().max(10).optional().nullable(),
+  pickup_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD"),
+  pickup_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "HH:MM"),
+  dropoff_address: z.string().trim().min(1).max(255),
+  dropoff_city: z.string().trim().min(1).max(80),
+  dropoff_zip: z.string().trim().max(10).optional().nullable(),
+  transport_type: z.enum(["ambulatory", "wheelchair", "stretcher", "gurney"]).optional(),
+  round_trip: z.boolean().optional(),
+  mobility_notes: z.string().trim().max(500).optional().nullable(),
+  special_instructions: z.string().trim().max(1000).optional().nullable(),
+  payer: z.string().trim().max(120).optional().nullable(),
+  trip_number: z.string().trim().max(64).optional().nullable(),
+});
+
+const createTripSchema = tripBaseSchema.extend({
+  source: z.enum(["manual", "csv"]).optional(),
+  assigned_to: z.string().uuid().optional(),
+  hipaa_ack_id: z.string().uuid(),
+});
+
+/** Create a HIPAA acknowledgment for the current user. */
+export const recordHipaaAck = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { context: "send_trip" | "bulk_upload" | "api_push" | "public_request" }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row, error } = await supabase
+      .from("hipaa_acknowledgments")
+      .insert({ user_id: userId, context: data.context, version: "v1" })
+      .select("id")
+      .single();
+    if (error) throw error;
+    return { id: row.id as string };
+  });
+
 /** Create a trip (manual or CSV row). */
 export const createTrip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: {
-    patient_first_name: string;
-    patient_last_name: string;
-    patient_phone?: string;
-    pickup_address: string;
-    pickup_city: string;
-    pickup_zip?: string;
-    pickup_date: string;
-    pickup_time: string;
-    dropoff_address: string;
-    dropoff_city: string;
-    dropoff_zip?: string;
-    transport_type?: string;
-    round_trip?: boolean;
-    mobility_notes?: string;
-    special_instructions?: string;
-    payer?: string;
-    trip_number?: string;
-    source?: "manual" | "csv";
-    assigned_to?: string;
-  }) => input)
+  .inputValidator((input: unknown) => createTripSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await ensureActiveMember(supabase, userId);
+    await ensurePaidSender(supabase, userId);
+    const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "send_trip");
     const region = regionFor(data.pickup_city);
+    const { hipaa_ack_id: _ignore, ...rest } = data;
     const { data: row, error } = await supabase
       .from("trips")
       .insert({
-        ...data,
+        ...rest,
         created_by: userId,
         region,
         status: data.assigned_to ? "assigned" : "open",
         source: data.source ?? "manual",
+        hipaa_ack_id: ackId,
       })
       .select()
       .single();
@@ -126,13 +150,19 @@ export const createTrip = createServerFn({ method: "POST" })
     return row;
   });
 
+const bulkTripsSchema = z.object({
+  hipaa_ack_id: z.string().uuid(),
+  trips: z.array(tripBaseSchema).min(1).max(500),
+});
+
 /** Bulk create from a CSV upload. */
 export const createTripsBulk = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { trips: any[] }) => input)
+  .inputValidator((input: unknown) => bulkTripsSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await ensureActiveMember(supabase, userId);
+    await ensurePaidSender(supabase, userId);
+    const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "bulk_upload");
     const rows = data.trips.map((t) => ({
       patient_first_name: t.patient_first_name,
       patient_last_name: t.patient_last_name,
@@ -155,6 +185,7 @@ export const createTripsBulk = createServerFn({ method: "POST" })
       region: regionFor(t.pickup_city || ""),
       status: "open",
       source: "csv",
+      hipaa_ack_id: ackId,
     }));
     const { data: inserted, error } = await supabase.from("trips").insert(rows).select("id");
     if (error) throw error;
