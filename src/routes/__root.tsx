@@ -96,7 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           description: "Statewide non-emergency medical transportation network serving Florida.",
           areaServed: "Florida, US",
           telephone: "+1-800-555-0199",
-          email: "info@floridanemt.com",
+          email: "myfloridanemt@gmail.com",
           address: { "@type": "PostalAddress", addressRegion: "FL", addressCountry: "US" },
         }),
       },

@@ -41,7 +41,7 @@ export function Footer() {
             <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-6">Contact</h4>
             <ul className="space-y-4 text-sm text-muted">
               <li className="font-mono font-bold text-primary">(800) 555-0199</li>
-              <li><a href="mailto:info@floridanemt.com" className="hover:text-primary">info@floridanemt.com</a></li>
+              <li><a href="mailto:myfloridanemt@gmail.com" className="hover:text-primary">myfloridanemt@gmail.com</a></li>
               <li>Main Hub: Orlando, FL</li>
               <li><Link to="/providers" className="hover:text-primary transition-colors">Join the Network</Link></li>
               <li><Link to="/training" className="hover:text-primary transition-colors">Training Academy</Link></li>

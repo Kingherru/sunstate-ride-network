@@ -4,7 +4,10 @@ export type CitySlug =
   | "tampa"
   | "miami"
   | "tallahassee"
-  | "fort-lauderdale";
+  | "fort-lauderdale"
+  | "gainesville"
+  | "daytona-beach"
+  | "southwest-florida";
 
 export interface CityInfo {
   slug: CitySlug;
@@ -100,6 +103,48 @@ export const CITIES: Record<CitySlug, CityInfo> = {
       "Coral Springs to Hollywood coverage",
     ],
     hubs: ["Broward Health Medical Center", "Memorial Regional Hospital", "Holy Cross Health"],
+  },
+  gainesville: {
+    slug: "gainesville",
+    name: "Gainesville",
+    code: "GNV-07",
+    region: "North Central Florida",
+    blurb:
+      "North Central Florida NEMT centered on UF Health Shands and the VA Medical Center, serving Alachua, Marion, and surrounding counties with long-distance specialty transfers.",
+    highlights: [
+      "UF Health Shands transfers",
+      "Malcom Randall VA Medical Center",
+      "Ocala & Lake City long-distance runs",
+    ],
+    hubs: ["UF Health Shands", "North Florida Regional Medical Center", "Malcom Randall VA Medical Center"],
+  },
+  "daytona-beach": {
+    slug: "daytona-beach",
+    name: "Daytona Beach",
+    code: "DAB-08",
+    region: "Central Florida",
+    blurb:
+      "Volusia and Flagler County NEMT — AdventHealth Daytona Beach, Halifax Health, and the I-95 corridor from Ormond Beach to New Smyrna and Palm Coast.",
+    highlights: [
+      "Halifax Health Medical Center transfers",
+      "AdventHealth Daytona Beach discharge runs",
+      "Palm Coast & New Smyrna coverage",
+    ],
+    hubs: ["Halifax Health Medical Center", "AdventHealth Daytona Beach", "AdventHealth Palm Coast"],
+  },
+  "southwest-florida": {
+    slug: "southwest-florida",
+    name: "Southwest Florida",
+    code: "SWFL-09",
+    region: "Southwest Florida",
+    blurb:
+      "Lee, Collier, and Charlotte County NEMT covering Fort Myers, Cape Coral, Naples, and Bonita Springs — Lee Health, NCH Healthcare, and Physicians Regional networks.",
+    highlights: [
+      "Lee Health & NCH Healthcare transfers",
+      "Naples to Fort Myers corridor",
+      "Snowbird season surge capacity",
+    ],
+    hubs: ["Lee Memorial Hospital", "NCH Baker Hospital Downtown", "Physicians Regional Healthcare", "HealthPark Medical Center"],
   },
 };
 

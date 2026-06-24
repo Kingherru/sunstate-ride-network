@@ -78,8 +78,8 @@ function ContactPage() {
               <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted mb-2">
                 Email
               </p>
-              <a href="mailto:info@floridanemt.com" className="text-lg font-bold text-primary">
-                info@floridanemt.com
+              <a href="mailto:myfloridanemt@gmail.com" className="text-lg font-bold text-primary">
+                myfloridanemt@gmail.com
               </a>
             </div>
             <div>
