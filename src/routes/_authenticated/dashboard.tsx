@@ -309,7 +309,11 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
       </label>
-      <button disabled={m.isPending} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+      <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
+        <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
+        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
+      </label>
+      <button disabled={m.isPending || !hipaaOk} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
         {m.isPending ? "Creating…" : "Create trip"}
       </button>
     </form>
