@@ -409,6 +409,16 @@ export type Database = {
           minimum_fare: number
           no_show: number
           owner_id: string
+          pay_additional_passenger: number | null
+          pay_after_hours_addon: number | null
+          pay_base_pickup: number | null
+          pay_cancellation: number | null
+          pay_holiday_surcharge: number | null
+          pay_no_show: number | null
+          pay_per_mile: number | null
+          pay_stretcher_addon: number | null
+          pay_wait_per_min: number | null
+          pay_wheelchair_addon: number | null
           per_mile: number
           stretcher_addon: number
           updated_at: string
@@ -429,6 +439,16 @@ export type Database = {
           minimum_fare?: number
           no_show?: number
           owner_id: string
+          pay_additional_passenger?: number | null
+          pay_after_hours_addon?: number | null
+          pay_base_pickup?: number | null
+          pay_cancellation?: number | null
+          pay_holiday_surcharge?: number | null
+          pay_no_show?: number | null
+          pay_per_mile?: number | null
+          pay_stretcher_addon?: number | null
+          pay_wait_per_min?: number | null
+          pay_wheelchair_addon?: number | null
           per_mile?: number
           stretcher_addon?: number
           updated_at?: string
@@ -449,6 +469,16 @@ export type Database = {
           minimum_fare?: number
           no_show?: number
           owner_id?: string
+          pay_additional_passenger?: number | null
+          pay_after_hours_addon?: number | null
+          pay_base_pickup?: number | null
+          pay_cancellation?: number | null
+          pay_holiday_surcharge?: number | null
+          pay_no_show?: number | null
+          pay_per_mile?: number | null
+          pay_stretcher_addon?: number | null
+          pay_wait_per_min?: number | null
+          pay_wheelchair_addon?: number | null
           per_mile?: number
           stretcher_addon?: number
           updated_at?: string
