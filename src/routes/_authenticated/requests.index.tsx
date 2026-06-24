@@ -182,6 +182,13 @@ function RequestsPage() {
                 )}
               </div>
               <div className="flex shrink-0 flex-col gap-2">
+                <Link
+                  to="/requests/$id"
+                  params={{ id: r.id }}
+                  className="rounded-md bg-[var(--brand-navy,#0b1d3a)] px-3 py-1.5 text-center text-sm font-medium text-white hover:opacity-90"
+                >
+                  View details
+                </Link>
                 {canCancel(r) && (
                   <button
                     onClick={() => {
@@ -194,6 +201,7 @@ function RequestsPage() {
                   </button>
                 )}
               </div>
+
             </div>
           </li>
         ))}
