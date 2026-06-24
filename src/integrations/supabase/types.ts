@@ -208,6 +208,75 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_contacts: {
+        Row: {
+          company_name: string | null
+          contact_type: string
+          created_at: string
+          default_dropoff_location_id: string | null
+          default_pickup_location_id: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          mobility_notes: string | null
+          notes: string | null
+          owner_id: string
+          payer: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          contact_type: string
+          created_at?: string
+          default_dropoff_location_id?: string | null
+          default_pickup_location_id?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          mobility_notes?: string | null
+          notes?: string | null
+          owner_id: string
+          payer?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          contact_type?: string
+          created_at?: string
+          default_dropoff_location_id?: string | null
+          default_pickup_location_id?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          mobility_notes?: string | null
+          notes?: string | null
+          owner_id?: string
+          payer?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_contacts_default_dropoff_fk"
+            columns: ["default_dropoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_contacts_default_pickup_fk"
+            columns: ["default_pickup_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_requests: {
         Row: {
           created_at: string
@@ -274,6 +343,62 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_locations: {
+        Row: {
+          address: string
+          city: string | null
+          contact_id: string | null
+          created_at: string
+          id: string
+          label: string
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          owner_id: string
+          state: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address: string
+          city?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          label: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          owner_id: string
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          owner_id?: string
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_locations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -325,10 +450,12 @@ export type Database = {
       trips: {
         Row: {
           assigned_to: string | null
+          contact_id: string | null
           created_at: string
           created_by: string
           dropoff_address: string
           dropoff_city: string
+          dropoff_location_id: string | null
           dropoff_zip: string | null
           id: string
           mobility_notes: string | null
@@ -339,6 +466,7 @@ export type Database = {
           pickup_address: string
           pickup_city: string
           pickup_date: string
+          pickup_location_id: string | null
           pickup_time: string
           pickup_zip: string | null
           region: string | null
@@ -352,10 +480,12 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          contact_id?: string | null
           created_at?: string
           created_by: string
           dropoff_address: string
           dropoff_city: string
+          dropoff_location_id?: string | null
           dropoff_zip?: string | null
           id?: string
           mobility_notes?: string | null
@@ -366,6 +496,7 @@ export type Database = {
           pickup_address: string
           pickup_city: string
           pickup_date: string
+          pickup_location_id?: string | null
           pickup_time: string
           pickup_zip?: string | null
           region?: string | null
@@ -379,10 +510,12 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          contact_id?: string | null
           created_at?: string
           created_by?: string
           dropoff_address?: string
           dropoff_city?: string
+          dropoff_location_id?: string | null
           dropoff_zip?: string | null
           id?: string
           mobility_notes?: string | null
@@ -393,6 +526,7 @@ export type Database = {
           pickup_address?: string
           pickup_city?: string
           pickup_date?: string
+          pickup_location_id?: string | null
           pickup_time?: string
           pickup_zip?: string | null
           region?: string | null
@@ -404,7 +538,29 @@ export type Database = {
           trip_number?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trips_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_dropoff_location_id_fkey"
+            columns: ["dropoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_pickup_location_id_fkey"
+            columns: ["pickup_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
