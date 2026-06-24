@@ -1,83 +1,65 @@
-# FloridaNEMT Expansion Plan
+# Phase 4 + Security + Membership Tiers + HIPAA
 
-This is a large scope. To keep it shippable and reviewable, I'll deliver it in 5 phases. You can approve all of it, or tell me to start with a specific phase.
+This batch is split into 4 tracks. I'll ship them in this order.
 
-## Phase 1 — Provider CRM (Contacts & Trip History)
-Let providers save the people/places they work with so repeat trips are 2 clicks.
+## Track A — Critical Security Fixes (do first)
 
-**New tables**
-- `provider_contacts` — type (patient | caregiver | facility | broker | organization), name, phone, email, notes, default pickup/dropoff, mobility needs, payer
-- `saved_locations` — label, address, city, zip, lat/lng, notes (linked to a contact or standalone)
-- Link `trips.contact_id` and `trips.payer_contact_id` (nullable) to reuse contact data
+**1. Lock down `member_profiles`**
+- Drop the "Active members can see peers in their region" policy that exposes Stripe IDs, phone, dispatch_email. Replace with a sanitized **view** `public.member_directory` exposing only: `user_id`, `display_name`, `region`, `service_zip_codes`, `accepts_dispatch`. Peers query the view, not the table.
+- Drop the broad self-UPDATE policy. Replace with a trigger `prevent_billing_self_edit` that raises if a non-service-role session tries to change `membership_status`, `stripe_customer_id`, `stripe_subscription_id`, `current_period_end`, `membership_tier`. Users may still update name/phone/preferences.
+- Same trigger blocks INSERT with anything other than `membership_status='inactive'` and `membership_tier='none'`.
 
-**UI in `/dashboard`**
-- Contacts tab: list / search / add / edit, with "New trip for this contact" shortcut that prefills the trip form
-- Trip-create form: contact picker (autofills patient + locations) + "save as contact" toggle
-- Contact detail drawer: full trip history for that contact
+**2. Storage `provider-docs`**
+- Set bucket file size limit 25MB and allowed MIME types to PDF/JPEG/PNG.
+- Add UPDATE/DELETE policies: only admins.
 
-## Phase 2 — Dispatch & Fleet
-Real ops view, not just a trip list.
+**3. Bulk trip upload validation**
+- Replace `any[]` validator in `createTripsBulk` with a Zod schema (length caps, date/time regex, transport_type enum, cap of 500 rows).
 
-**New tables**
-- `drivers` — provider_id, first/last, phone, license #, license_expiry, status (active/inactive)
-- `vehicles` — provider_id, name, plate, type (sedan/wav/stretcher), capacity, status
-- Add to `trips`: `driver_id`, `vehicle_id`, `estimated_pickup_at`, `estimated_dropoff_at`, `actual_pickup_at`, `actual_dropoff_at`, `actual_miles`, `cancel_reason`, `no_show_reason`
+**4. SECURITY DEFINER exec grants**
+- `REVOKE EXECUTE ... FROM authenticated` on internal helpers; keep `has_role` callable.
 
-**UI**
-- Dispatch board: columns Pending / Assigned / In Progress / Completed / Canceled (drag to reassign)
-- Driver & vehicle management pages
-- Per-trip status timeline + assign driver/vehicle modal
-- Reports page: trips per day/week, revenue, completion rate, top contacts, CSV export
+## Track B — Membership Tiers + Payment Gating
 
-## Phase 3 — Provider Pricing Engine
-Each provider sets their own price book; trips auto-cost.
+- Add `membership_tier` enum: `none | free | paid`.
+- After provider application approval → admin action sets `tier='free'`, `status='active'`. Free tier can: view directory, manage contacts, fleet, pricing, **receive** trips. Cannot: **send/dispatch** trips, bulk upload, use API push.
+- Paid tier ($5/mo via existing Stripe flow) unlocks send/dispatch/bulk/API.
+- New `can_send_trips(user_id)` SQL function → `tier='paid' AND status='active'`. Used in `trips` INSERT policy WITH CHECK and in dashboard UI gating.
+- `/membership` page shows current tier + upgrade CTA.
 
-**New table `provider_pricing`** (one row per provider, all numeric, default 0):
-base_pickup, per_mile, wait_per_min, no_show, cancellation, wheelchair_addon, stretcher_addon, after_hours_addon, holiday_surcharge, additional_passenger, after_hours_start (time), after_hours_end (time), holidays (date[])
+## Track C — HIPAA Acknowledgment + PHI Minimization
 
-**Logic**
-- `calculateTripCost(trip, pricing)` server fn → returns line items + total
-- Stored on trip: `cost_breakdown` jsonb, `cost_total` numeric
-- Recalculates on status change to completed/no_show/canceled
-- Settings → Pricing page with live preview
+- New `hipaa_acknowledgments` table: `user_id, acknowledged_at, version`. Required before first send AND on every bulk upload / API push (per-batch checkbox stored as `hipaa_ack_id` on each trip).
+- Add `hipaa_acknowledged BOOLEAN` to trip create/upload forms — server fn rejects if false.
+- **PHI minimization**: encrypt patient PII columns (`patient_first_name`, `patient_last_name`, `patient_phone`, `patient_dob`, `medical_notes`) at the application layer using a per-provider symmetric key stored in `provider_phi_keys` (key wrapped by a server-only master key). Admin/peer queries return redacted values (`***`). Only the originating provider and the assigned receiving provider can decrypt.
+- Add admin-side RLS: admin role can read trip metadata (status, region, times) but **NOT** PHI columns. Enforced by splitting `trips` into `trips` (metadata) and `trip_phi` (encrypted) with stricter RLS on `trip_phi` scoped to sender_id / recipient_id only.
 
-## Phase 4 — Public Booking & Recurring Trips
-Make `/book` the front door for patients, caregivers, facilities.
+## Track D — Phase 4 Framework (scaffolding only)
 
-**New tables**
-- `ride_requests` (already exists) — extend with `recurrence_rule` (RRULE-like text), `recurrence_end`, `requester_email`, `requester_phone`, `requester_type` (patient/caregiver/facility), saved_pickup_id, saved_dropoff_id
-- `requester_accounts` — light account for patients/facilities (uses existing Supabase auth, separate role `requester`)
-- `requester_saved_locations` — frequent addresses tied to a requester
+**Public booking**
+- `/book` public form → inserts into `ride_requests` (existing).
+- Extend `ride_requests` with `recurrence_rule TEXT` (RRULE string), `requester_email`, `requester_phone`, `hipaa_ack_id`.
+- Daily server fn `expandRecurringRequests` stub (cron-ready, not wired yet).
 
-**Flow**
-- Public `/book` — single-step form, no login needed for one-off, optional account creation
-- Requester portal `/requests` — see status (pending/matched/scheduled/completed), recurring rides, save addresses
-- Provider dashboard inbox: incoming requests in their region → Accept (creates trip) / Decline / Forward
+**Requester accounts**
+- New role `requester` in `app_role` enum.
+- `requester_saved_locations` table.
+- `/requests` portal scaffold (list own requests, cancel).
 
-## Phase 5 — External API Integrations (hiBambi, RouteGenie)
-Two-way trip sync.
+**External API integrations (stubs)**
+- New `provider_integrations` table: `provider_id, vendor (hibambi|routegenie), api_key_encrypted, webhook_secret, enabled, last_sync_at`.
+- `/api/public/integrations/hibambi/webhook` and `/api/public/integrations/routegenie/webhook` routes with HMAC verification stubs (return 501 until real specs available).
+- Outbound adapter interface `src/lib/integrations/adapter.ts` with `pushTrip`, `pullTrips` methods, `hibambi.ts` + `routegenie.ts` stub implementations.
+- Dashboard "Integrations" tab: connect/disconnect, paste API key (paid tier only).
 
-**Architecture**
-- New table `provider_integrations` — provider_id, vendor (hibambi/routegenie), api_key (encrypted), webhook_secret, enabled, last_sync_at
-- Outbound: when a trip is created/updated, push to enabled vendors via server fn
-- Inbound: `/api/public/integrations/hibambi/webhook` and `/api/public/integrations/routegenie/webhook` — HMAC-verify, map payload to `trips`, mark `source = 'hibambi' | 'routegenie'`
-- Settings → Integrations page: paste API key, test connection, toggle on/off, view sync log
-
-**Note:** I'll build with a generic adapter pattern. Real endpoint URLs/auth specifics for hiBambi & RouteGenie aren't public — first run will use documented patterns and you'll paste real API docs / a sandbox key when ready.
-
-## Provider Onboarding & Compliance (incremental, not its own phase)
-The existing provider application already covers docs. I'll add:
-- `provider_certifications` table — name, issued_at, expires_at, document_url, status
-- Expiry reminders in admin dashboard (red badge when <30 days)
-- Optional "training modules" later (video + quiz) — flagged as Phase 6 if you want it
+## Out of scope this batch
+- Real hiBambi/RouteGenie endpoint wiring (need vendor docs/sandbox creds — will ask after).
+- Email delivery of trip PDFs (still pending email domain setup).
+- Dependency CVE bumps (`@cloudflare/vite-plugin`, `@tanstack/react-start`) — Lovable-managed templates; flagged but not user-fixable here.
 
 ## Technical notes
-- All new tables get RLS scoped to `provider_id = auth.uid()`'s provider, plus admin override via `has_role(_, 'admin')`, plus required GRANTs.
-- All write paths go through `createServerFn` with `requireSupabaseAuth`.
-- Recurring rides expanded into individual `trips` rows by a daily server fn (manual trigger button now; pg_cron later).
-- Reports use TanStack Query + Supabase aggregates.
+- All new tables: RLS enabled, GRANT to authenticated + service_role, scoped to `auth.uid()`.
+- PHI encryption via `pgcrypto` `pgp_sym_encrypt/decrypt` with per-provider key; decrypt happens only in `requireSupabaseAuth` server fns after caller authorization check.
+- Migration order: security fixes → tier column → HIPAA tables → trip_phi split (data migration of existing PHI) → integrations table.
 
-## What I need from you
-1. **Approve the phase order** (or reorder).
-2. **Start where?** Recommend Phase 1 → 2 → 3 in that order; Phase 4 & 5 after the core ops loop works.
-3. **API keys for Phase 5** — do you have hiBambi / RouteGenie sandbox credentials or documentation links? If not, I'll stub it and you can wire real creds later.
+Confirm and I'll start with Track A migration.
