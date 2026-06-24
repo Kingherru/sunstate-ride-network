@@ -27,6 +27,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
@@ -120,6 +121,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRequestsIdRoute = AuthenticatedRequestsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedRequestsRoute,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -153,10 +159,11 @@ export interface FileRoutesByFullPath {
   '/training': typeof TrainingRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/requests': typeof AuthenticatedRequestsRoute
+  '/requests': typeof AuthenticatedRequestsRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -174,10 +181,11 @@ export interface FileRoutesByTo {
   '/training': typeof TrainingRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/requests': typeof AuthenticatedRequestsRoute
+  '/requests': typeof AuthenticatedRequestsRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas': typeof ServiceAreasIndexRoute
+  '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -198,10 +206,11 @@ export interface FileRoutesById {
   '/training': typeof TrainingRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/requests': typeof AuthenticatedRequestsRoute
+  '/_authenticated/requests': typeof AuthenticatedRequestsRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/service-areas/$city'
     | '/service-areas/'
+    | '/requests/$id'
     | '/api/public/payments/webhook'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/service-areas/$city'
     | '/service-areas'
+    | '/requests/$id'
     | '/api/public/payments/webhook'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/service-areas/$city'
     | '/service-areas/'
+    | '/_authenticated/requests/$id'
     | '/api/public/payments/webhook'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -422,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/requests/$id': {
+      id: '/_authenticated/requests/$id'
+      path: '/$id'
+      fullPath: '/requests/$id'
+      preLoaderRoute: typeof AuthenticatedRequestsIdRouteImport
+      parentRoute: typeof AuthenticatedRequestsRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -446,16 +465,29 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRequestsRouteChildren {
+  AuthenticatedRequestsIdRoute: typeof AuthenticatedRequestsIdRoute
+}
+
+const AuthenticatedRequestsRouteChildren: AuthenticatedRequestsRouteChildren = {
+  AuthenticatedRequestsIdRoute: AuthenticatedRequestsIdRoute,
+}
+
+const AuthenticatedRequestsRouteWithChildren =
+  AuthenticatedRequestsRoute._addFileChildren(
+    AuthenticatedRequestsRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
+  AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
+  AuthenticatedRequestsRoute: AuthenticatedRequestsRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
