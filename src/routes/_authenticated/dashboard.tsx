@@ -1,0 +1,528 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Papa from "papaparse";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { createPortalSession } from "@/utils/payments.functions";
+import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus } from "@/lib/trips.functions";
+import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
+import type { Database } from "@/integrations/supabase/types";
+
+export const Route = createFileRoute("/_authenticated/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "Member Dashboard — FloridaNEMT" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: DashboardPage,
+});
+
+type Trip = Database["public"]["Tables"]["trips"]["Row"];
+type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
+
+type Tab = "received" | "sent" | "new" | "upload" | "account";
+
+function DashboardPage() {
+  const qc = useQueryClient();
+  const [tab, setTab] = useState<Tab>("received");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+      setUserEmail(data.user?.email ?? null);
+    });
+  }, []);
+
+  const profileQ = useQuery({
+    queryKey: ["member-profile", userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<Profile | null> => {
+      const { data, error } = await supabase
+        .from("member_profiles")
+        .select("*")
+        .eq("user_id", userId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const tripsQ = useQuery({
+    queryKey: ["my-trips", userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<Trip[]> => {
+      const { data, error } = await supabase
+        .from("trips")
+        .select("*")
+        .order("pickup_date", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const profile = profileQ.data;
+  const isActive = profile?.membership_status === "active";
+  const trips = tripsQ.data ?? [];
+  const sent = trips.filter((t) => t.created_by === userId);
+  const received = trips.filter((t) => t.assigned_to === userId);
+
+  return (
+    <div className="min-h-screen bg-muted/30">
+      <header className="bg-card border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <Link to="/" className="font-extrabold text-xl tracking-tighter text-primary uppercase">FloridaNEMT</Link>
+            <span className="ml-3 text-xs uppercase tracking-widest text-muted-foreground">Member Dashboard</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="hidden sm:inline text-muted-foreground">{userEmail}</span>
+            <StatusBadge status={profile?.membership_status ?? "inactive"} />
+            <button
+              onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >Sign out</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {!profileQ.isLoading && !profile && userId && userEmail && (
+          <ProfileSetup userId={userId} userEmail={userEmail} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
+        )}
+
+        {profile && !isActive && <MembershipGate />}
+
+        {profile && isActive && (
+          <>
+            <nav className="flex flex-wrap gap-2 mb-6 border-b border-border">
+              {[
+                ["received", `Received (${received.length})`],
+                ["sent", `Sent (${sent.length})`],
+                ["new", "New trip"],
+                ["upload", "Upload CSV"],
+                ["account", "Account"],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setTab(key as Tab)}
+                  className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px transition-colors ${
+                    tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >{label}</button>
+              ))}
+            </nav>
+
+            {tab === "received" && <TripList trips={received} userId={userId!} role="recipient" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
+            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
+            {tab === "new" && <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
+            {tab === "upload" && <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
+            {tab === "account" && <AccountPanel profile={profile} />}
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const cls =
+    status === "active" ? "bg-accent/15 text-accent" :
+    status === "past_due" ? "bg-orange-100 text-orange-700" :
+    "bg-muted text-muted-foreground";
+  const label = status === "active" ? "Active member" : status === "past_due" ? "Past due" : "Not subscribed";
+  return <span className={`text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${cls}`}>{label}</span>;
+}
+
+/* -------- Profile Setup -------- */
+function ProfileSetup({ userId, userEmail, onSaved }: { userId: string; userEmail: string; onSaved: () => void }) {
+  const [form, setForm] = useState({
+    first_name: "", last_name: "", company_name: "", phone: "", dispatch_email: userEmail, city: "", preferred_zip_codes: "",
+  });
+  const [busy, setBusy] = useState(false);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const zips = form.preferred_zip_codes.split(/[,\s]+/).map((z) => z.trim()).filter(Boolean);
+      const { error } = await supabase.from("member_profiles").insert({
+        user_id: userId,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        company_name: form.company_name,
+        phone: form.phone,
+        dispatch_email: form.dispatch_email,
+        city: form.city,
+        preferred_zip_codes: zips,
+      });
+      if (error) throw error;
+      toast.success("Profile created");
+      onSaved();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="max-w-2xl bg-card border border-border rounded-sm p-8">
+      <h2 className="text-2xl font-extrabold tracking-tight mb-2">Set up your profile</h2>
+      <p className="text-sm text-muted-foreground mb-6">We need a few details to categorize you in the dispatch network.</p>
+      <form onSubmit={save} className="grid grid-cols-2 gap-4">
+        <Field label="First name" v={form.first_name} on={(v) => setForm({ ...form, first_name: v })} required />
+        <Field label="Last name" v={form.last_name} on={(v) => setForm({ ...form, last_name: v })} required />
+        <Field label="Company name" v={form.company_name} on={(v) => setForm({ ...form, company_name: v })} required className="col-span-2" />
+        <Field label="Phone" v={form.phone} on={(v) => setForm({ ...form, phone: v })} required />
+        <Field label="Dispatch email" v={form.dispatch_email} on={(v) => setForm({ ...form, dispatch_email: v })} required type="email" />
+        <Field label="City" v={form.city} on={(v) => setForm({ ...form, city: v })} required placeholder="e.g. Jacksonville" />
+        <Field label="Preferred ZIP codes" v={form.preferred_zip_codes} on={(v) => setForm({ ...form, preferred_zip_codes: v })} placeholder="32202, 32204, 32207" />
+        <button disabled={busy} className="col-span-2 mt-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+          {busy ? "Saving…" : "Save and continue"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function Field({ label, v, on, required, type = "text", placeholder, className = "" }: {
+  label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string;
+}) {
+  return (
+    <label className={`flex flex-col gap-1 text-sm ${className}`}>
+      <span className="font-bold text-foreground">{label}{required && " *"}</span>
+      <input
+        type={type} value={v} onChange={(e) => on(e.target.value)} required={required} placeholder={placeholder}
+        className="border border-border rounded-sm px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+      />
+    </label>
+  );
+}
+
+/* -------- Membership Gate -------- */
+function MembershipGate() {
+  return (
+    <div className="max-w-2xl mx-auto bg-card border border-border rounded-sm p-10 text-center">
+      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your $5/month membership</h2>
+      <p className="text-muted-foreground mb-6">
+        Membership unlocks trip dispatch, CSV upload, and regional provider directory.
+      </p>
+      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90">
+        Subscribe — $5/mo
+      </Link>
+    </div>
+  );
+}
+
+/* -------- New Trip Form -------- */
+function NewTripForm({ onCreated }: { onCreated: () => void }) {
+  const [form, setForm] = useState<any>({
+    patient_first_name: "", patient_last_name: "", patient_phone: "",
+    pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    dropoff_address: "", dropoff_city: "", dropoff_zip: "",
+    transport_type: "ambulatory", round_trip: false,
+    mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
+  });
+  const m = useMutation({
+    mutationFn: async () => createTrip({ data: form }),
+    onSuccess: () => { toast.success("Trip created"); onCreated(); },
+    onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
+  });
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="max-w-3xl bg-card border border-border rounded-sm p-6 grid grid-cols-2 gap-4">
+      <h2 className="col-span-2 text-xl font-extrabold tracking-tight">New trip</h2>
+      <Field label="Patient first name" v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
+      <Field label="Patient last name" v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
+      <Field label="Patient phone" v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field label="Trip number" v={form.trip_number} on={(v) => setForm({ ...form, trip_number: v })} />
+      <Field label="Pickup address" v={form.pickup_address} on={(v) => setForm({ ...form, pickup_address: v })} required className="col-span-2" />
+      <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
+      <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
+      <Field label="Pickup date" v={form.pickup_date} on={(v) => setForm({ ...form, pickup_date: v })} required type="date" />
+      <Field label="Pickup time" v={form.pickup_time} on={(v) => setForm({ ...form, pickup_time: v })} required type="time" />
+      <Field label="Dropoff address" v={form.dropoff_address} on={(v) => setForm({ ...form, dropoff_address: v })} required className="col-span-2" />
+      <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
+      <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-bold">Transport type</span>
+        <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
+                className="border border-border rounded-sm px-3 py-2 bg-background">
+          <option value="ambulatory">Ambulatory</option>
+          <option value="wheelchair">Wheelchair</option>
+          <option value="stretcher">Stretcher</option>
+        </select>
+      </label>
+      <label className="flex items-center gap-2 text-sm font-bold mt-6">
+        <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
+        Round trip
+      </label>
+      <Field label="Payer" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      <label className="flex flex-col gap-1 text-sm col-span-2">
+        <span className="font-bold">Mobility notes</span>
+        <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
+      </label>
+      <label className="flex flex-col gap-1 text-sm col-span-2">
+        <span className="font-bold">Special instructions</span>
+        <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
+      </label>
+      <button disabled={m.isPending} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+        {m.isPending ? "Creating…" : "Create trip"}
+      </button>
+    </form>
+  );
+}
+
+/* -------- CSV Upload -------- */
+const REQUIRED_COLS = [
+  "patient_first_name", "patient_last_name",
+  "pickup_address", "pickup_city", "pickup_date", "pickup_time",
+  "dropoff_address", "dropoff_city",
+];
+
+function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<any[] | null>(null);
+  const [missing, setMissing] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    Papa.parse<any>(file, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: normalizeCsvHeader,
+      complete: (res) => {
+        const rows = res.data;
+        if (!rows.length) { toast.error("CSV is empty"); return; }
+        const cols = Object.keys(rows[0]);
+        const miss = REQUIRED_COLS.filter((c) => !cols.includes(c));
+        setMissing(miss);
+        setPreview(rows.slice(0, 5));
+        (window as any).__csvRows = rows;
+      },
+    });
+  }
+
+  async function upload() {
+    const rows = (window as any).__csvRows as any[] | undefined;
+    if (!rows) return;
+    setBusy(true);
+    try {
+      const res = await createTripsBulk({ data: { trips: rows } });
+      toast.success(`Uploaded ${res.count} trips`);
+      setPreview(null);
+      if (fileRef.current) fileRef.current.value = "";
+      onUploaded();
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="max-w-3xl bg-card border border-border rounded-sm p-6">
+      <h2 className="text-xl font-extrabold tracking-tight mb-2">Upload trips from CSV</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Required columns: <span className="font-mono text-xs">{REQUIRED_COLS.join(", ")}</span>.
+        Common variants like <span className="font-mono text-xs">first_name, pu_address, date</span> are auto-mapped.
+      </p>
+      <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onPick} className="mb-4 text-sm" />
+      {missing.length > 0 && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 text-sm rounded-sm mb-3">
+          Missing columns: {missing.join(", ")}
+        </div>
+      )}
+      {preview && (
+        <>
+          <p className="text-xs text-muted-foreground mb-2">Preview (first 5 rows):</p>
+          <div className="overflow-auto border border-border rounded-sm mb-4">
+            <table className="text-xs w-full">
+              <thead className="bg-muted">
+                <tr>{Object.keys(preview[0]).map((k) => <th key={k} className="px-2 py-1 text-left">{k}</th>)}</tr>
+              </thead>
+              <tbody>
+                {preview.map((r, i) => (
+                  <tr key={i} className="border-t border-border">
+                    {Object.keys(preview[0]).map((k) => <td key={k} className="px-2 py-1">{String(r[k] ?? "")}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button
+            disabled={busy || missing.length > 0}
+            onClick={upload}
+            className="bg-primary text-primary-foreground font-bold px-6 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+          >
+            {busy ? "Uploading…" : `Upload ${(window as any).__csvRows?.length ?? 0} trips`}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* -------- Trip List + Send/Assign -------- */
+function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; onChanged: () => void }) {
+  const [assigning, setAssigning] = useState<Trip | null>(null);
+  if (!trips.length) {
+    return <div className="bg-card border border-border rounded-sm p-10 text-center text-muted-foreground">No trips yet.</div>;
+  }
+  return (
+    <>
+      <div className="bg-card border border-border rounded-sm overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-muted text-xs uppercase tracking-wide">
+            <tr>
+              <th className="px-3 py-2 text-left">Date</th>
+              <th className="px-3 py-2 text-left">Patient</th>
+              <th className="px-3 py-2 text-left">Pickup → Dropoff</th>
+              <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {trips.map((t) => (
+              <tr key={t.id} className="border-t border-border align-top">
+                <td className="px-3 py-2 whitespace-nowrap">{t.pickup_date}<br /><span className="text-xs text-muted-foreground">{t.pickup_time}</span></td>
+                <td className="px-3 py-2">{t.patient_first_name} {t.patient_last_name}</td>
+                <td className="px-3 py-2 text-xs">
+                  <div>{t.pickup_city}{t.pickup_zip ? `, ${t.pickup_zip}` : ""}</div>
+                  <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
+                </td>
+                <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
+                <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-primary hover:underline mr-3">PDF</button>
+                  {role === "sender" && t.status === "open" && (
+                    <button onClick={() => setAssigning(t)} className="text-xs font-bold text-accent hover:underline mr-3">Send</button>
+                  )}
+                  {role === "recipient" && t.status === "assigned" && (
+                    <>
+                      <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } }); toast.success("Accepted"); onChanged(); }}
+                              className="text-xs font-bold text-accent hover:underline mr-3">Accept</button>
+                      <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "declined" } }); toast.success("Declined"); onChanged(); }}
+                              className="text-xs font-bold text-red-600 hover:underline">Decline</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {assigning && (
+        <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
+      )}
+    </>
+  );
+}
+
+function TripStatusBadge({ s }: { s: string }) {
+  const map: Record<string, string> = {
+    open: "bg-muted text-foreground",
+    assigned: "bg-blue-100 text-blue-800",
+    accepted: "bg-accent/15 text-accent",
+    declined: "bg-red-100 text-red-700",
+    completed: "bg-emerald-100 text-emerald-700",
+    canceled: "bg-muted text-muted-foreground line-through",
+  };
+  return <span className={`text-xs font-bold uppercase px-2 py-1 rounded-sm ${map[s] ?? "bg-muted"}`}>{s}</span>;
+}
+
+function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () => void; onAssigned: () => void }) {
+  const providersQ = useQuery({
+    queryKey: ["regional-providers"],
+    queryFn: () => listRegionalProviders(),
+  });
+  const [busy, setBusy] = useState(false);
+
+  async function pick(providerEmail: string, providerName: string) {
+    // Find auth user for this provider email
+    setBusy(true);
+    try {
+      // We have provider applications but the recipient must be a member. Try matching by email.
+      const { data: prof } = await supabase
+        .from("member_profiles")
+        .select("user_id, dispatch_email, first_name, last_name")
+        .or(`dispatch_email.eq.${providerEmail}`)
+        .maybeSingle();
+      if (!prof) {
+        toast.error(`${providerName} hasn't signed up as a member yet — they need to join to receive trips in-app.`);
+        setBusy(false);
+        return;
+      }
+      await assignTrip({ data: { trip_id: trip.id, assigned_to: prof.user_id } });
+      toast.success(`Sent to ${providerName}`);
+      onAssigned();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to send");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-card rounded-sm max-w-2xl w-full max-h-[80vh] overflow-auto p-6" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-xl font-extrabold mb-1">Send trip to a regional provider</h3>
+        <p className="text-sm text-muted-foreground mb-4">Approved providers in your region. They'll see the trip in their dashboard and can accept or decline.</p>
+        {providersQ.isLoading && <p className="text-muted-foreground">Loading…</p>}
+        {providersQ.data?.length === 0 && <p className="text-muted-foreground">No approved providers in your region yet.</p>}
+        <ul className="divide-y divide-border">
+          {(providersQ.data ?? []).map((p: any) => (
+            <li key={p.id} className="py-3 flex items-center justify-between">
+              <div>
+                <div className="font-bold">{p.company_name}</div>
+                <div className="text-xs text-muted-foreground">{p.contact_name} · {p.city} · {p.dispatch_email || p.email}</div>
+              </div>
+              <button disabled={busy} onClick={() => pick(p.dispatch_email || p.email, p.company_name)}
+                      className="text-sm font-bold text-primary hover:underline disabled:opacity-50">
+                Send →
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button onClick={onClose} className="mt-4 text-sm text-muted-foreground hover:text-foreground">Close</button>
+      </div>
+    </div>
+  );
+}
+
+/* -------- Account -------- */
+function AccountPanel({ profile }: { profile: Profile }) {
+  const [busy, setBusy] = useState(false);
+  async function openPortal() {
+    setBusy(true);
+    try {
+      const res = await createPortalSession({
+        data: { environment: getStripeEnvironment(), returnUrl: `${window.location.origin}/dashboard` },
+      });
+      if ("error" in res) throw new Error(res.error);
+      window.open(res.url, "_blank");
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not open billing portal");
+    } finally { setBusy(false); }
+  }
+  return (
+    <div className="max-w-2xl bg-card border border-border rounded-sm p-6 space-y-3">
+      <h2 className="text-xl font-extrabold tracking-tight">Account</h2>
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
+        <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
+        <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
+        <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
+        <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
+        <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+      </div>
+      <div className="pt-4 border-t border-border">
+        <button onClick={openPortal} disabled={busy}
+                className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+          {busy ? "Opening…" : "Manage billing"}
+        </button>
+      </div>
+    </div>
+  );
+}
