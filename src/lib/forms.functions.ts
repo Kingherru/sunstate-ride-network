@@ -101,6 +101,14 @@ export const PROVIDER_DOC_KINDS = [
   "npi",
   "business_license",
   "vehicle_registration",
+  "vehicle_vin",
+  "non_compete",
+  "nda",
+  "hipaa",
+  "driver_photo",
+  "vehicle_photo_front",
+  "vehicle_photo_rear",
+  "vehicle_photo_left",
   "other",
 ] as const;
 
@@ -111,21 +119,34 @@ const docSchema = z.object({
   size: z.number().int().min(0).max(25_000_000),
 });
 
+const zipListSchema = z
+  .array(z.string().trim().regex(/^\d{5}$/, "ZIP must be 5 digits"))
+  .max(40)
+  .default([]);
+
 export const providerApplicationSchema = z.object({
-  companyName: z.string().trim().min(1).max(200),
-  contactName: z.string().trim().min(1).max(120),
+  // Basic info
+  firstName: z.string().trim().min(1).max(80),
+  lastName: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(200),
+  dispatchEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
   phone: z.string().trim().min(7).max(30),
+  // Company
+  companyName: z.string().trim().min(1).max(200),
   city: z.string().trim().min(1).max(100),
+  county: z.string().trim().max(100).optional().or(z.literal("")),
+  zipCode: z.string().trim().regex(/^\d{5}$/, "ZIP must be 5 digits"),
+  preferredZipCodes: zipListSchema,
   serviceTypes: z.array(z.enum(["ambulatory", "wheelchair", "gurney"])).min(1),
   fleetSize: z.number().int().min(0).max(10000).optional(),
+  // Credentials
   ein: z.string().trim().max(20).optional().or(z.literal("")),
   npi: z.string().trim().max(20).optional().or(z.literal("")),
   driverLicenseNumber: z.string().trim().max(50).optional().or(z.literal("")),
   insuranceCarrier: z.string().trim().max(200).optional().or(z.literal("")),
   insurancePolicyNumber: z.string().trim().max(100).optional().or(z.literal("")),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
-  documents: z.array(docSchema).max(20).default([]),
+  documents: z.array(docSchema).max(30).default([]),
 });
 export type ProviderApplicationInput = z.infer<typeof providerApplicationSchema>;
 export type ProviderDoc = z.infer<typeof docSchema>;
@@ -133,12 +154,19 @@ export type ProviderDoc = z.infer<typeof docSchema>;
 export const submitProviderApplication = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => providerApplicationSchema.parse(input))
   .handler(async ({ data }) => {
+    const contactName = `${data.firstName} ${data.lastName}`.trim();
     const { error } = await supabaseAdmin.from("provider_applications").insert({
       company_name: data.companyName,
-      contact_name: data.contactName,
+      contact_name: contactName,
+      first_name: data.firstName,
+      last_name: data.lastName,
       email: data.email,
+      dispatch_email: data.dispatchEmail || null,
       phone: data.phone,
       city: data.city,
+      county: data.county || null,
+      zip_code: data.zipCode,
+      preferred_zip_codes: data.preferredZipCodes,
       region: regionFor(data.city),
       service_types: data.serviceTypes,
       fleet_size: data.fleetSize ?? null,

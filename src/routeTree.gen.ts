@@ -16,10 +16,13 @@ import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
 const TrainingRoute = TrainingRouteImport.update({
   id: '/training',
@@ -56,9 +59,18 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -76,10 +88,16 @@ const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   path: '/$city',
   getParentRoute: () => ServiceAreasRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
@@ -87,25 +105,30 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas': typeof ServiceAreasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
@@ -113,6 +136,7 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
 }
@@ -121,6 +145,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/auth'
     | '/contact'
     | '/providers'
     | '/request-a-ride'
@@ -128,24 +153,29 @@ export interface FileRouteTypes {
     | '/services'
     | '/sitemap.xml'
     | '/training'
+    | '/admin'
     | '/service-areas/$city'
     | '/service-areas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/auth'
     | '/contact'
     | '/providers'
     | '/request-a-ride'
     | '/services'
     | '/sitemap.xml'
     | '/training'
+    | '/admin'
     | '/service-areas/$city'
     | '/service-areas'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
+    | '/auth'
     | '/contact'
     | '/providers'
     | '/request-a-ride'
@@ -153,13 +183,16 @@ export interface FileRouteTypes {
     | '/services'
     | '/sitemap.xml'
     | '/training'
+    | '/_authenticated/admin'
     | '/service-areas/$city'
     | '/service-areas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
@@ -220,11 +253,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -248,8 +295,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceAreasCityRouteImport
       parentRoute: typeof ServiceAreasRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface ServiceAreasRouteChildren {
   ServiceAreasCityRoute: typeof ServiceAreasCityRoute
@@ -267,7 +332,9 @@ const ServiceAreasRouteWithChildren = ServiceAreasRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
+  AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
