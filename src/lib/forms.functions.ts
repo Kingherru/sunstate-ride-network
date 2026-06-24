@@ -86,6 +86,16 @@ export const REGION_BY_CITY: Record<string, string> = {
   tallahassee: "Florida Panhandle",
   "fort-lauderdale": "Broward County",
   "fort lauderdale": "Broward County",
+  gainesville: "North Central Florida",
+  "daytona-beach": "Central Florida",
+  "daytona beach": "Central Florida",
+  daytona: "Central Florida",
+  "southwest-florida": "Southwest Florida",
+  "southwest florida": "Southwest Florida",
+  "fort myers": "Southwest Florida",
+  "fort-myers": "Southwest Florida",
+  naples: "Southwest Florida",
+  "cape coral": "Southwest Florida",
 };
 
 function regionFor(city: string): string {
