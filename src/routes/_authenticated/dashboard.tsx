@@ -401,8 +401,12 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
               </tbody>
             </table>
           </div>
+          <label className="flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3 mb-3">
+            <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" />
+            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details.</span>
+          </label>
           <button
-            disabled={busy || missing.length > 0}
+            disabled={busy || missing.length > 0 || !hipaaOk}
             onClick={upload}
             className="bg-primary text-primary-foreground font-bold px-6 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
           >
