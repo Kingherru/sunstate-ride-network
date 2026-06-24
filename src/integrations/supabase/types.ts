@@ -50,6 +50,51 @@ export type Database = {
         }
         Relationships: []
       }
+      drivers: {
+        Row: {
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          license_expiry: string | null
+          license_number: string | null
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          license_expiry?: string | null
+          license_number?: string | null
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       member_profiles: {
         Row: {
           city: string | null
@@ -208,6 +253,138 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_contacts: {
+        Row: {
+          company_name: string | null
+          contact_type: string
+          created_at: string
+          default_dropoff_location_id: string | null
+          default_pickup_location_id: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          mobility_notes: string | null
+          notes: string | null
+          owner_id: string
+          payer: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          contact_type: string
+          created_at?: string
+          default_dropoff_location_id?: string | null
+          default_pickup_location_id?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          mobility_notes?: string | null
+          notes?: string | null
+          owner_id: string
+          payer?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          contact_type?: string
+          created_at?: string
+          default_dropoff_location_id?: string | null
+          default_pickup_location_id?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          mobility_notes?: string | null
+          notes?: string | null
+          owner_id?: string
+          payer?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_contacts_default_dropoff_fk"
+            columns: ["default_dropoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_contacts_default_pickup_fk"
+            columns: ["default_pickup_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_pricing: {
+        Row: {
+          additional_passenger: number
+          after_hours_addon: number
+          after_hours_end: string
+          after_hours_start: string
+          base_pickup: number
+          cancellation: number
+          created_at: string
+          currency: string
+          holiday_surcharge: number
+          holidays: string[]
+          minimum_fare: number
+          no_show: number
+          owner_id: string
+          per_mile: number
+          stretcher_addon: number
+          updated_at: string
+          wait_per_min: number
+          wheelchair_addon: number
+        }
+        Insert: {
+          additional_passenger?: number
+          after_hours_addon?: number
+          after_hours_end?: string
+          after_hours_start?: string
+          base_pickup?: number
+          cancellation?: number
+          created_at?: string
+          currency?: string
+          holiday_surcharge?: number
+          holidays?: string[]
+          minimum_fare?: number
+          no_show?: number
+          owner_id: string
+          per_mile?: number
+          stretcher_addon?: number
+          updated_at?: string
+          wait_per_min?: number
+          wheelchair_addon?: number
+        }
+        Update: {
+          additional_passenger?: number
+          after_hours_addon?: number
+          after_hours_end?: string
+          after_hours_start?: string
+          base_pickup?: number
+          cancellation?: number
+          created_at?: string
+          currency?: string
+          holiday_surcharge?: number
+          holidays?: string[]
+          minimum_fare?: number
+          no_show?: number
+          owner_id?: string
+          per_mile?: number
+          stretcher_addon?: number
+          updated_at?: string
+          wait_per_min?: number
+          wheelchair_addon?: number
+        }
+        Relationships: []
+      }
       ride_requests: {
         Row: {
           created_at: string
@@ -274,6 +451,62 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_locations: {
+        Row: {
+          address: string
+          city: string | null
+          contact_id: string | null
+          created_at: string
+          id: string
+          label: string
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          owner_id: string
+          state: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address: string
+          city?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          label: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          owner_id: string
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          owner_id?: string
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_locations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -324,14 +557,28 @@ export type Database = {
       }
       trips: {
         Row: {
+          actual_dropoff_at: string | null
+          actual_miles: number | null
+          actual_pickup_at: string | null
+          additional_passengers: number
           assigned_to: string | null
+          cancel_reason: string | null
+          contact_id: string | null
+          cost_breakdown: Json | null
+          cost_total: number | null
           created_at: string
           created_by: string
+          driver_id: string | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_location_id: string | null
           dropoff_zip: string | null
+          estimated_dropoff_at: string | null
+          estimated_miles: number | null
+          estimated_pickup_at: string | null
           id: string
           mobility_notes: string | null
+          no_show_reason: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone: string | null
@@ -339,6 +586,7 @@ export type Database = {
           pickup_address: string
           pickup_city: string
           pickup_date: string
+          pickup_location_id: string | null
           pickup_time: string
           pickup_zip: string | null
           region: string | null
@@ -349,16 +597,32 @@ export type Database = {
           transport_type: string | null
           trip_number: string | null
           updated_at: string
+          vehicle_id: string | null
+          wait_minutes: number | null
         }
         Insert: {
+          actual_dropoff_at?: string | null
+          actual_miles?: number | null
+          actual_pickup_at?: string | null
+          additional_passengers?: number
           assigned_to?: string | null
+          cancel_reason?: string | null
+          contact_id?: string | null
+          cost_breakdown?: Json | null
+          cost_total?: number | null
           created_at?: string
           created_by: string
+          driver_id?: string | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          estimated_dropoff_at?: string | null
+          estimated_miles?: number | null
+          estimated_pickup_at?: string | null
           id?: string
           mobility_notes?: string | null
+          no_show_reason?: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone?: string | null
@@ -366,6 +630,7 @@ export type Database = {
           pickup_address: string
           pickup_city: string
           pickup_date: string
+          pickup_location_id?: string | null
           pickup_time: string
           pickup_zip?: string | null
           region?: string | null
@@ -376,16 +641,32 @@ export type Database = {
           transport_type?: string | null
           trip_number?: string | null
           updated_at?: string
+          vehicle_id?: string | null
+          wait_minutes?: number | null
         }
         Update: {
+          actual_dropoff_at?: string | null
+          actual_miles?: number | null
+          actual_pickup_at?: string | null
+          additional_passengers?: number
           assigned_to?: string | null
+          cancel_reason?: string | null
+          contact_id?: string | null
+          cost_breakdown?: Json | null
+          cost_total?: number | null
           created_at?: string
           created_by?: string
+          driver_id?: string | null
           dropoff_address?: string
           dropoff_city?: string
+          dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          estimated_dropoff_at?: string | null
+          estimated_miles?: number | null
+          estimated_pickup_at?: string | null
           id?: string
           mobility_notes?: string | null
+          no_show_reason?: string | null
           patient_first_name?: string
           patient_last_name?: string
           patient_phone?: string | null
@@ -393,6 +674,7 @@ export type Database = {
           pickup_address?: string
           pickup_city?: string
           pickup_date?: string
+          pickup_location_id?: string | null
           pickup_time?: string
           pickup_zip?: string | null
           region?: string | null
@@ -403,8 +685,46 @@ export type Database = {
           transport_type?: string | null
           trip_number?: string | null
           updated_at?: string
+          vehicle_id?: string | null
+          wait_minutes?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trips_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_dropoff_location_id_fkey"
+            columns: ["dropoff_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_pickup_location_id_fkey"
+            columns: ["pickup_location_id"]
+            isOneToOne: false
+            referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -424,6 +744,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          plate: string | null
+          status: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          plate?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          plate?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
         }
         Relationships: []
       }
