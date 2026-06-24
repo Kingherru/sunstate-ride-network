@@ -239,6 +239,18 @@ function MembershipGate() {
   );
 }
 
+function PaidOnly() {
+  return (
+    <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
+      <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
+      <p className="text-muted-foreground mb-4">This feature is available on the $5/mo paid plan.</p>
+      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90">
+        Upgrade — $5/mo
+      </Link>
+    </div>
+  );
+}
+
 /* -------- New Trip Form -------- */
 function NewTripForm({ onCreated }: { onCreated: () => void }) {
   const [form, setForm] = useState<any>({
@@ -248,9 +260,14 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     transport_type: "ambulatory", round_trip: false,
     mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
   });
+  const [hipaaOk, setHipaaOk] = useState(false);
   const m = useMutation({
-    mutationFn: async () => createTrip({ data: form }),
-    onSuccess: () => { toast.success("Trip created"); onCreated(); },
+    mutationFn: async () => {
+      if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
+      const ack = await recordHipaaAck({ data: { context: "send_trip" } });
+      return createTrip({ data: { ...form, hipaa_ack_id: ack.id } });
+    },
+    onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
   });
   return (
