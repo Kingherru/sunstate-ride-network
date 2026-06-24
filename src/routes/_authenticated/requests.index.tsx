@@ -106,12 +106,16 @@ function RequestsPage() {
             .
           </p>
         </div>
-        <Link
-          to="/request-a-ride"
-          className="inline-flex items-center rounded-md bg-[var(--brand-orange,#f47b20)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          + New request
-        </Link>
+        <div className="flex items-center gap-2">
+          <NotificationsBell />
+          <Link
+            to="/request-a-ride"
+            className="inline-flex items-center rounded-md bg-[var(--brand-orange,#f47b20)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            + New request
+          </Link>
+        </div>
+
       </header>
 
       <div className="mb-4 flex flex-wrap gap-2">
