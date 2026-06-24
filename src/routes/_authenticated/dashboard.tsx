@@ -6,12 +6,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { createPortalSession } from "@/utils/payments.functions";
-import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus } from "@/lib/trips.functions";
+import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, recordHipaaAck } from "@/lib/trips.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
+import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
