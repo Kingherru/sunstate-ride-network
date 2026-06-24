@@ -525,6 +525,8 @@ export type Database = {
       }
       ride_requests: {
         Row: {
+          cancel_reason: string | null
+          canceled_at: string | null
           created_at: string
           dropoff_address: string
           dropoff_city: string
@@ -543,6 +545,7 @@ export type Database = {
           recurrence_rule: string | null
           requester_email: string | null
           requester_phone: string | null
+          requester_user_id: string | null
           round_trip: boolean
           special_instructions: string | null
           status: string
@@ -550,6 +553,8 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          cancel_reason?: string | null
+          canceled_at?: string | null
           created_at?: string
           dropoff_address: string
           dropoff_city: string
@@ -568,6 +573,7 @@ export type Database = {
           recurrence_rule?: string | null
           requester_email?: string | null
           requester_phone?: string | null
+          requester_user_id?: string | null
           round_trip?: boolean
           special_instructions?: string | null
           status?: string
@@ -575,6 +581,8 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          cancel_reason?: string | null
+          canceled_at?: string | null
           created_at?: string
           dropoff_address?: string
           dropoff_city?: string
@@ -593,6 +601,7 @@ export type Database = {
           recurrence_rule?: string | null
           requester_email?: string | null
           requester_phone?: string | null
+          requester_user_id?: string | null
           round_trip?: boolean
           special_instructions?: string | null
           status?: string
