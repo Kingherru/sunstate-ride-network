@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listMyRequests, cancelMyRequest } from "@/lib/requests.functions";
 
-export const Route = createFileRoute("/_authenticated/requests")({
+export const Route = createFileRoute("/_authenticated/requests/")({
   head: () => ({
     meta: [
       { title: "My Ride Requests — FloridaNEMT" },
