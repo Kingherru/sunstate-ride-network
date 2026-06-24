@@ -9,6 +9,9 @@ import { createPortalSession } from "@/utils/payments.functions";
 import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus } from "@/lib/trips.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
+import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
+import { FleetPanel } from "@/components/dashboard/FleetPanel";
+import { PricingPanel } from "@/components/dashboard/PricingPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -23,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
-type Tab = "received" | "sent" | "new" | "upload" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "account";
 
 function DashboardPage() {
   const qc = useQueryClient();
@@ -105,6 +108,9 @@ function DashboardPage() {
                 ["sent", `Sent (${sent.length})`],
                 ["new", "New trip"],
                 ["upload", "Upload CSV"],
+                ["contacts", "Contacts"],
+                ["fleet", "Drivers & Vehicles"],
+                ["pricing", "Pricing"],
                 ["account", "Account"],
               ].map(([key, label]) => (
                 <button
@@ -121,6 +127,9 @@ function DashboardPage() {
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
             {tab === "upload" && <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
+            {tab === "contacts" && <ContactsPanel />}
+            {tab === "fleet" && <FleetPanel />}
+            {tab === "pricing" && <PricingPanel />}
             {tab === "account" && <AccountPanel profile={profile} />}
           </>
         )}
