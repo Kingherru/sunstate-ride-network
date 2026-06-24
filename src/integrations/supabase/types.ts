@@ -196,6 +196,91 @@ export type Database = {
           },
         ]
       }
+      notification_email_queue: {
+        Row: {
+          body: string
+          created_at: string
+          error: string | null
+          id: string
+          recipient_email: string
+          ride_request_id: string | null
+          sent_at: string | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          recipient_email: string
+          ride_request_id?: string | null
+          sent_at?: string | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          recipient_email?: string
+          ride_request_id?: string | null
+          sent_at?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_email_queue_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          ride_request_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          ride_request_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          ride_request_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_applications: {
         Row: {
           city: string
@@ -525,6 +610,7 @@ export type Database = {
       }
       ride_requests: {
         Row: {
+          assigned_provider_id: string | null
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
@@ -533,15 +619,21 @@ export type Database = {
           hipaa_ack_id: string | null
           id: string
           ip_address: string | null
+          last_updated_at: string
           mobility_notes: string | null
           patient_email: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone: string
+          payment_amount_cents: number | null
+          payment_status: string
           pickup_address: string
           pickup_city: string
           pickup_date: string
           pickup_time: string
+          provider_notes: string | null
+          recurrence_end_date: string | null
+          recurrence_exceptions: string[]
           recurrence_rule: string | null
           requester_email: string | null
           requester_phone: string | null
@@ -553,6 +645,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
@@ -561,15 +654,21 @@ export type Database = {
           hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
+          last_updated_at?: string
           mobility_notes?: string | null
           patient_email?: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone: string
+          payment_amount_cents?: number | null
+          payment_status?: string
           pickup_address: string
           pickup_city: string
           pickup_date: string
           pickup_time: string
+          provider_notes?: string | null
+          recurrence_end_date?: string | null
+          recurrence_exceptions?: string[]
           recurrence_rule?: string | null
           requester_email?: string | null
           requester_phone?: string | null
@@ -581,6 +680,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
@@ -589,15 +689,21 @@ export type Database = {
           hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
+          last_updated_at?: string
           mobility_notes?: string | null
           patient_email?: string | null
           patient_first_name?: string
           patient_last_name?: string
           patient_phone?: string
+          payment_amount_cents?: number | null
+          payment_status?: string
           pickup_address?: string
           pickup_city?: string
           pickup_date?: string
           pickup_time?: string
+          provider_notes?: string | null
+          recurrence_end_date?: string | null
+          recurrence_exceptions?: string[]
           recurrence_rule?: string | null
           requester_email?: string | null
           requester_phone?: string | null
