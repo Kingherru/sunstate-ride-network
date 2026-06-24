@@ -332,6 +332,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
   const [preview, setPreview] = useState<any[] | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [hipaaOk, setHipaaOk] = useState(false);
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -355,11 +356,14 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
   async function upload() {
     const rows = (window as any).__csvRows as any[] | undefined;
     if (!rows) return;
+    if (!hipaaOk) { toast.error("Please confirm HIPAA acknowledgment"); return; }
     setBusy(true);
     try {
-      const res = await createTripsBulk({ data: { trips: rows } });
+      const ack = await recordHipaaAck({ data: { context: "bulk_upload" } });
+      const res = await createTripsBulk({ data: { trips: rows, hipaa_ack_id: ack.id } });
       toast.success(`Uploaded ${res.count} trips`);
       setPreview(null);
+      setHipaaOk(false);
       if (fileRef.current) fileRef.current.value = "";
       onUploaded();
     } catch (e: any) {
