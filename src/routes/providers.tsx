@@ -6,8 +6,8 @@ import {
   submitProviderApplication,
   providerApplicationSchema,
   type ProviderApplicationInput,
-  type ProviderDoc,
 } from "@/lib/forms.functions";
+import { DOC_FIELDS, type DocKind } from "@/lib/provider-docs";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/providers")({
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/providers")({
       {
         name: "description",
         content:
-          "Apply to join the FloridaNEMT provider network. Upload your driver license, insurance, W-9, EIN letter, and NPI — get categorized by your service city and onboarded statewide.",
+          "Apply to join the FloridaNEMT provider network. Upload your driver license, insurance, W-9, EIN letter, NPI, agreements, and vehicle photos. Get categorized by your service area and onboarded statewide.",
       },
       { property: "og:title", content: "Join the FloridaNEMT Provider Network" },
       { property: "og:description", content: "Register your NEMT company, upload credentials, and start receiving trips." },
@@ -31,24 +31,17 @@ export const Route = createFileRoute("/providers")({
 const inputCls =
   "w-full bg-card border border-input rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all";
 
-type DocKind = ProviderDoc["kind"];
-
-const DOC_FIELDS: { kind: DocKind; label: string; required: boolean; hint?: string }[] = [
-  { kind: "drivers_license", label: "Driver's License", required: true, hint: "Front of card (PDF or image)" },
-  { kind: "insurance", label: "Auto / Liability Insurance", required: true, hint: "Declarations page" },
-  { kind: "w9", label: "W-9", required: true },
-  { kind: "ein_letter", label: "EIN Letter (IRS CP-575)", required: true },
-  { kind: "npi", label: "NPI Confirmation", required: false, hint: "If applicable" },
-  { kind: "business_license", label: "Business / Occupational License", required: false },
-  { kind: "vehicle_registration", label: "Vehicle Registration", required: false },
-];
-
 const empty: ProviderApplicationInput = {
-  companyName: "",
-  contactName: "",
+  firstName: "",
+  lastName: "",
   email: "",
+  dispatchEmail: "",
   phone: "",
+  companyName: "",
   city: "",
+  county: "",
+  zipCode: "",
+  preferredZipCodes: [],
   serviceTypes: ["ambulatory"],
   fleetSize: undefined,
   ein: "",
@@ -62,10 +55,12 @@ const empty: ProviderApplicationInput = {
 
 const MAX_BYTES = 15 * 1024 * 1024;
 const ALLOWED = /\.(pdf|jpe?g|png|webp|heic)$/i;
+const CATEGORIES = ["Identity & Tax", "Insurance & Vehicle", "Agreements", "Photos"] as const;
 
 function ProvidersPage() {
   const submit = useServerFn(submitProviderApplication);
   const [form, setForm] = useState<ProviderApplicationInput>(empty);
+  const [zipInput, setZipInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState<DocKind | null>(null);
   const [done, setDone] = useState(false);
@@ -77,6 +72,23 @@ function ProvidersPage() {
         ? f.serviceTypes.filter((x) => x !== t)
         : [...f.serviceTypes, t],
     }));
+
+  function addZips(raw: string) {
+    const zips = raw
+      .split(/[\s,]+/)
+      .map((z) => z.trim())
+      .filter((z) => /^\d{5}$/.test(z));
+    if (zips.length === 0) return;
+    setForm((f) => ({
+      ...f,
+      preferredZipCodes: Array.from(new Set([...f.preferredZipCodes, ...zips])).slice(0, 40),
+    }));
+    setZipInput("");
+  }
+
+  function removeZip(zip: string) {
+    setForm((f) => ({ ...f, preferredZipCodes: f.preferredZipCodes.filter((z) => z !== zip) }));
+  }
 
   async function handleFile(kind: DocKind, file: File) {
     if (!ALLOWED.test(file.name)) {
@@ -124,11 +136,11 @@ function ProvidersPage() {
       toast.error(parsed.error.issues[0]?.message ?? "Please complete the form.");
       return;
     }
-    const missingRequired = DOC_FIELDS.filter((d) => d.required).find(
+    const missing = DOC_FIELDS.filter((d) => d.required).find(
       (d) => !form.documents.some((doc) => doc.kind === d.kind),
     );
-    if (missingRequired) {
-      toast.error(`Please upload your ${missingRequired.label}.`);
+    if (missing) {
+      toast.error(`Please upload your ${missing.label}.`);
       return;
     }
     setSubmitting(true);
@@ -148,7 +160,7 @@ function ProvidersPage() {
 
   return (
     <section className="py-20 lg:py-28 px-6">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.2fr] gap-16 items-start">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
         <div className="lg:sticky lg:top-28">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
             For NEMT Providers
@@ -157,15 +169,15 @@ function ProvidersPage() {
             Join Florida's NEMT network.
           </h1>
           <p className="text-lg text-muted max-w-xl mb-10">
-            Upload your credentials once. We categorize your company by service city, verify
-            documents, and start routing trips to your fleet.
+            Upload your credentials once. We categorize your company by city, county, and ZIP,
+            verify documents, and start routing trips to your fleet.
           </p>
           <ul className="space-y-4 mb-10">
             {[
-              "Auto-categorized by your local service area",
-              "Secure document vault (license, insurance, W-9, EIN, NPI)",
-              "Statewide trip volume from one intake",
-              "Driver & vehicle credential management",
+              "Auto-categorized by your city, county, and preferred ZIPs",
+              "Secure document vault — license, insurance, W-9, EIN, NPI",
+              "Required agreements: non-compete, NDA, HIPAA",
+              "Statewide trip volume from one application",
             ].map((b) => (
               <li key={b} className="flex gap-4 text-base">
                 <span className="mt-2 size-2 rounded-full bg-accent shrink-0" />
@@ -196,7 +208,7 @@ function ProvidersPage() {
               </p>
             </div>
           ) : (
-            <form onSubmit={onSubmit} className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-8">
               <div>
                 <h2 className="text-2xl font-extrabold tracking-tighter">Provider application</h2>
                 <p className="text-sm text-muted mt-1">
@@ -206,7 +218,48 @@ function ProvidersPage() {
 
               <fieldset className="space-y-4">
                 <legend className="text-xs font-bold uppercase tracking-widest text-muted mb-2">
-                  Company
+                  Basic information
+                </legend>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    className={inputCls}
+                    placeholder="First name"
+                    value={form.firstName}
+                    onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  />
+                  <input
+                    className={inputCls}
+                    placeholder="Last name"
+                    value={form.lastName}
+                    onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  />
+                </div>
+                <input
+                  className={inputCls}
+                  type="tel"
+                  placeholder="Phone number"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+                <input
+                  className={inputCls}
+                  type="email"
+                  placeholder="Email (login / primary contact)"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+                <input
+                  className={inputCls}
+                  type="email"
+                  placeholder="Dispatch email (where ride requests go)"
+                  value={form.dispatchEmail ?? ""}
+                  onChange={(e) => setForm({ ...form, dispatchEmail: e.target.value })}
+                />
+              </fieldset>
+
+              <fieldset className="space-y-4">
+                <legend className="text-xs font-bold uppercase tracking-widest text-muted mb-2">
+                  Company & service area
                 </legend>
                 <input
                   className={inputCls}
@@ -214,34 +267,28 @@ function ProvidersPage() {
                   value={form.companyName}
                   onChange={(e) => setForm({ ...form, companyName: e.target.value })}
                 />
-                <input
-                  className={inputCls}
-                  placeholder="Contact name"
-                  value={form.contactName}
-                  onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    className={inputCls}
-                    type="email"
-                    placeholder="Email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  />
-                  <input
-                    className={inputCls}
-                    type="tel"
-                    placeholder="Phone"
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  />
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     className={inputCls}
                     placeholder="Primary city (e.g. Orlando)"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  />
+                  <input
+                    className={inputCls}
+                    placeholder="County (e.g. Orange)"
+                    value={form.county ?? ""}
+                    onChange={(e) => setForm({ ...form, county: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    className={inputCls}
+                    placeholder="ZIP code (5 digits)"
+                    inputMode="numeric"
+                    maxLength={5}
+                    value={form.zipCode}
+                    onChange={(e) => setForm({ ...form, zipCode: e.target.value.replace(/\D/g, "") })}
                   />
                   <input
                     className={inputCls}
@@ -256,6 +303,69 @@ function ProvidersPage() {
                       })
                     }
                   />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted mb-2 block">
+                    Preferred ZIP codes you'll serve
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      className={inputCls}
+                      placeholder="e.g. 32801, 32803, 32806"
+                      value={zipInput}
+                      onChange={(e) => setZipInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault();
+                          addZips(zipInput);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addZips(zipInput)}
+                      className="px-4 py-3 border border-primary text-primary text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-primary hover:text-primary-foreground transition"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {form.preferredZipCodes.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {form.preferredZipCodes.map((z) => (
+                        <button
+                          type="button"
+                          key={z}
+                          onClick={() => removeZip(z)}
+                          className="text-xs font-mono px-2 py-1 bg-primary/10 text-primary rounded-sm hover:bg-primary/20"
+                        >
+                          {z} ✕
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
+                  Service types
+                </legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["ambulatory", "wheelchair", "gurney"] as const).map((t) => (
+                    <button
+                      type="button"
+                      key={t}
+                      onClick={() => toggleType(t)}
+                      className={`p-3 border rounded-sm text-xs font-bold uppercase tracking-wide transition-all ${
+                        form.serviceTypes.includes(t)
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input hover:border-primary/40"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
                 </div>
               </fieldset>
 
@@ -299,83 +409,68 @@ function ProvidersPage() {
                 </div>
               </fieldset>
 
-              <fieldset>
-                <legend className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
-                  Service types
-                </legend>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["ambulatory", "wheelchair", "gurney"] as const).map((t) => (
-                    <button
-                      type="button"
-                      key={t}
-                      onClick={() => toggleType(t)}
-                      className={`p-3 border rounded-sm text-xs font-bold uppercase tracking-wide transition-all ${
-                        form.serviceTypes.includes(t)
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-input hover:border-primary/40"
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset className="space-y-3">
+              <fieldset className="space-y-5">
                 <legend className="text-xs font-bold uppercase tracking-widest text-muted mb-1">
                   Documents
                 </legend>
                 <p className="text-xs text-muted -mt-1">
-                  PDF, JPG, PNG, WEBP, or HEIC · 15 MB max each
+                  PDF, JPG, PNG, WEBP, or HEIC · 15 MB max each. * = required.
                 </p>
-                <div className="space-y-2">
-                  {DOC_FIELDS.map((d) => {
-                    const uploaded = form.documents.find((x) => x.kind === d.kind);
-                    return (
-                      <div
-                        key={d.kind}
-                        className="flex items-center justify-between gap-3 border border-border rounded-sm p-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate">
-                            {d.label}{" "}
-                            {d.required && <span className="text-accent">*</span>}
-                          </p>
-                          <p className="text-xs text-muted truncate">
-                            {uploaded ? uploaded.filename : d.hint ?? "Not uploaded"}
-                          </p>
-                        </div>
-                        {uploaded ? (
-                          <button
-                            type="button"
-                            onClick={() => removeDoc(d.kind)}
-                            className="text-xs font-bold uppercase tracking-widest text-accent hover:underline shrink-0"
+                {CATEGORIES.map((cat) => (
+                  <div key={cat}>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2">
+                      {cat}
+                    </p>
+                    <div className="space-y-2">
+                      {DOC_FIELDS.filter((d) => d.category === cat).map((d) => {
+                        const uploaded = form.documents.find((x) => x.kind === d.kind);
+                        return (
+                          <div
+                            key={d.kind}
+                            className="flex items-center justify-between gap-3 border border-border rounded-sm p-3"
                           >
-                            Remove
-                          </button>
-                        ) : (
-                          <label
-                            className={`text-xs font-bold uppercase tracking-widest px-3 py-2 border border-primary text-primary rounded-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all shrink-0 ${
-                              uploading === d.kind ? "opacity-60 pointer-events-none" : ""
-                            }`}
-                          >
-                            {uploading === d.kind ? "Uploading…" : "Upload"}
-                            <input
-                              type="file"
-                              className="hidden"
-                              accept=".pdf,.jpg,.jpeg,.png,.webp,.heic"
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                if (f) void handleFile(d.kind, f);
-                                e.target.value = "";
-                              }}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold truncate">
+                                {d.label}{" "}
+                                {d.required && <span className="text-accent">*</span>}
+                              </p>
+                              <p className="text-xs text-muted truncate">
+                                {uploaded ? uploaded.filename : d.hint ?? "Not uploaded"}
+                              </p>
+                            </div>
+                            {uploaded ? (
+                              <button
+                                type="button"
+                                onClick={() => removeDoc(d.kind)}
+                                className="text-xs font-bold uppercase tracking-widest text-accent hover:underline shrink-0"
+                              >
+                                Remove
+                              </button>
+                            ) : (
+                              <label
+                                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 border border-primary text-primary rounded-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all shrink-0 ${
+                                  uploading === d.kind ? "opacity-60 pointer-events-none" : ""
+                                }`}
+                              >
+                                {uploading === d.kind ? "Uploading…" : "Upload"}
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  accept=".pdf,.jpg,.jpeg,.png,.webp,.heic"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) void handleFile(d.kind, f);
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </fieldset>
 
               <textarea
