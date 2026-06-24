@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listMyRequests, cancelMyRequest } from "@/lib/requests.functions";
+import { NotificationsBell } from "@/components/NotificationsBell";
 
-export const Route = createFileRoute("/_authenticated/requests")({
+export const Route = createFileRoute("/_authenticated/requests/")({
   head: () => ({
     meta: [
       { title: "My Ride Requests — FloridaNEMT" },
@@ -106,12 +107,16 @@ function RequestsPage() {
             .
           </p>
         </div>
-        <Link
-          to="/request-a-ride"
-          className="inline-flex items-center rounded-md bg-[var(--brand-orange,#f47b20)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          + New request
-        </Link>
+        <div className="flex items-center gap-2">
+          <NotificationsBell />
+          <Link
+            to="/request-a-ride"
+            className="inline-flex items-center rounded-md bg-[var(--brand-orange,#f47b20)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            + New request
+          </Link>
+        </div>
+
       </header>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -182,6 +187,13 @@ function RequestsPage() {
                 )}
               </div>
               <div className="flex shrink-0 flex-col gap-2">
+                <Link
+                  to="/requests/$id"
+                  params={{ id: r.id }}
+                  className="rounded-md bg-[var(--brand-navy,#0b1d3a)] px-3 py-1.5 text-center text-sm font-medium text-white hover:opacity-90"
+                >
+                  View details
+                </Link>
                 {canCancel(r) && (
                   <button
                     onClick={() => {
@@ -194,6 +206,7 @@ function RequestsPage() {
                   </button>
                 )}
               </div>
+
             </div>
           </li>
         ))}
