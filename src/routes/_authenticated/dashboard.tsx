@@ -6,12 +6,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { createPortalSession } from "@/utils/payments.functions";
-import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus } from "@/lib/trips.functions";
+import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, recordHipaaAck } from "@/lib/trips.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
+import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
-type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "integrations" | "account";
 
 function DashboardPage() {
   const qc = useQueryClient();
@@ -68,8 +69,9 @@ function DashboardPage() {
     },
   });
 
-  const profile = profileQ.data;
+  const profile = profileQ.data as (Profile & { membership_tier?: string }) | null;
   const isActive = profile?.membership_status === "active";
+  const canSend = isActive && profile?.membership_tier === "paid";
   const trips = tripsQ.data ?? [];
   const sent = trips.filter((t) => t.created_by === userId);
   const received = trips.filter((t) => t.assigned_to === userId);
@@ -102,6 +104,15 @@ function DashboardPage() {
 
         {profile && isActive && (
           <>
+            {!canSend && (
+              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
+                <p className="font-bold text-orange-900">Free membership — you can receive trips but not send them.</p>
+                <p className="text-orange-800 mt-1">
+                  Upgrade to a paid membership ($5/mo) to send trips, bulk upload, and use API integrations.{" "}
+                  <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
+                </p>
+              </div>
+            )}
             <nav className="flex flex-wrap gap-2 mb-6 border-b border-border">
               {[
                 ["received", `Received (${received.length})`],
@@ -111,6 +122,7 @@ function DashboardPage() {
                 ["contacts", "Contacts"],
                 ["fleet", "Drivers & Vehicles"],
                 ["pricing", "Pricing"],
+                ["integrations", "Integrations"],
                 ["account", "Account"],
               ].map(([key, label]) => (
                 <button
@@ -125,11 +137,12 @@ function DashboardPage() {
 
             {tab === "received" && <TripList trips={received} userId={userId!} role="recipient" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
-            {tab === "new" && <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
-            {tab === "upload" && <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} />}
+            {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "fleet" && <FleetPanel />}
             {tab === "pricing" && <PricingPanel />}
+            {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "account" && <AccountPanel profile={profile} />}
           </>
         )}
@@ -226,6 +239,18 @@ function MembershipGate() {
   );
 }
 
+function PaidOnly() {
+  return (
+    <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
+      <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
+      <p className="text-muted-foreground mb-4">This feature is available on the $5/mo paid plan.</p>
+      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90">
+        Upgrade — $5/mo
+      </Link>
+    </div>
+  );
+}
+
 /* -------- New Trip Form -------- */
 function NewTripForm({ onCreated }: { onCreated: () => void }) {
   const [form, setForm] = useState<any>({
@@ -235,9 +260,14 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     transport_type: "ambulatory", round_trip: false,
     mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
   });
+  const [hipaaOk, setHipaaOk] = useState(false);
   const m = useMutation({
-    mutationFn: async () => createTrip({ data: form }),
-    onSuccess: () => { toast.success("Trip created"); onCreated(); },
+    mutationFn: async () => {
+      if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
+      const ack = await recordHipaaAck({ data: { context: "send_trip" } });
+      return createTrip({ data: { ...form, hipaa_ack_id: ack.id } });
+    },
+    onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
   });
   return (
@@ -279,7 +309,11 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
       </label>
-      <button disabled={m.isPending} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+      <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
+        <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
+        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
+      </label>
+      <button disabled={m.isPending || !hipaaOk} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
         {m.isPending ? "Creating…" : "Create trip"}
       </button>
     </form>
@@ -298,6 +332,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
   const [preview, setPreview] = useState<any[] | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [hipaaOk, setHipaaOk] = useState(false);
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -321,11 +356,14 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
   async function upload() {
     const rows = (window as any).__csvRows as any[] | undefined;
     if (!rows) return;
+    if (!hipaaOk) { toast.error("Please confirm HIPAA acknowledgment"); return; }
     setBusy(true);
     try {
-      const res = await createTripsBulk({ data: { trips: rows } });
+      const ack = await recordHipaaAck({ data: { context: "bulk_upload" } });
+      const res = await createTripsBulk({ data: { trips: rows, hipaa_ack_id: ack.id } });
       toast.success(`Uploaded ${res.count} trips`);
       setPreview(null);
+      setHipaaOk(false);
       if (fileRef.current) fileRef.current.value = "";
       onUploaded();
     } catch (e: any) {
@@ -363,8 +401,12 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
               </tbody>
             </table>
           </div>
+          <label className="flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3 mb-3">
+            <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" />
+            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details.</span>
+          </label>
           <button
-            disabled={busy || missing.length > 0}
+            disabled={busy || missing.length > 0 || !hipaaOk}
             onClick={upload}
             className="bg-primary text-primary-foreground font-bold px-6 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
           >

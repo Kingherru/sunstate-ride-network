@@ -27,6 +27,8 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
+import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
 
 const TrainingRoute = TrainingRouteImport.update({
   id: '/training',
@@ -118,6 +120,18 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIntegrationsRoutegenieWebhookRoute =
+  ApiPublicIntegrationsRoutegenieWebhookRouteImport.update({
+    id: '/api/public/integrations/routegenie/webhook',
+    path: '/api/public/integrations/routegenie/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIntegrationsHibambiWebhookRoute =
+  ApiPublicIntegrationsHibambiWebhookRouteImport.update({
+    id: '/api/public/integrations/hibambi/webhook',
+    path: '/api/public/integrations/hibambi/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +151,8 @@ export interface FileRoutesByFullPath {
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
+  '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -155,6 +171,8 @@ export interface FileRoutesByTo {
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas': typeof ServiceAreasIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
+  '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -176,6 +194,8 @@ export interface FileRoutesById {
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
+  '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -197,6 +217,8 @@ export interface FileRouteTypes {
     | '/service-areas/$city'
     | '/service-areas/'
     | '/api/public/payments/webhook'
+    | '/api/public/integrations/hibambi/webhook'
+    | '/api/public/integrations/routegenie/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -215,6 +237,8 @@ export interface FileRouteTypes {
     | '/service-areas/$city'
     | '/service-areas'
     | '/api/public/payments/webhook'
+    | '/api/public/integrations/hibambi/webhook'
+    | '/api/public/integrations/routegenie/webhook'
   id:
     | '__root__'
     | '/'
@@ -235,6 +259,8 @@ export interface FileRouteTypes {
     | '/service-areas/$city'
     | '/service-areas/'
     | '/api/public/payments/webhook'
+    | '/api/public/integrations/hibambi/webhook'
+    | '/api/public/integrations/routegenie/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -252,6 +278,8 @@ export interface RootRouteChildren {
   TrainingRoute: typeof TrainingRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
+  ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -382,6 +410,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/integrations/routegenie/webhook': {
+      id: '/api/public/integrations/routegenie/webhook'
+      path: '/api/public/integrations/routegenie/webhook'
+      fullPath: '/api/public/integrations/routegenie/webhook'
+      preLoaderRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/integrations/hibambi/webhook': {
+      id: '/api/public/integrations/hibambi/webhook'
+      path: '/api/public/integrations/hibambi/webhook'
+      fullPath: '/api/public/integrations/hibambi/webhook'
+      preLoaderRoute: typeof ApiPublicIntegrationsHibambiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -427,6 +469,10 @@ const rootRouteChildren: RootRouteChildren = {
   TrainingRoute: TrainingRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicIntegrationsHibambiWebhookRoute:
+    ApiPublicIntegrationsHibambiWebhookRoute,
+  ApiPublicIntegrationsRoutegenieWebhookRoute:
+    ApiPublicIntegrationsRoutegenieWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
