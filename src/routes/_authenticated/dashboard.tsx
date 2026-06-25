@@ -170,7 +170,6 @@ function DashboardPage() {
             {tab === "contacts" && <ContactsPanel />}
             {tab === "fleet" && <FleetPanel />}
             {tab === "pricing" && <PricingPanel />}
-            {tab === "pricing" && <PricingPanel />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "account" && <AccountPanel profile={profile} />}
