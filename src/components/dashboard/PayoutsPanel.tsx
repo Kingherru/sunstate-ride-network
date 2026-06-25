@@ -61,7 +61,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
-      <ConnectCard account={acctQ.data ?? null} loading={acctQ.isLoading} />
+      <ConnectCard account={acctQ.data ?? null} loading={acctQ.isLoading} userId={userId} />
 
       <div className="grid sm:grid-cols-3 gap-3">
         <Stat label="Held funds" value={formatUsd(held)} hint="Pending completion" />
