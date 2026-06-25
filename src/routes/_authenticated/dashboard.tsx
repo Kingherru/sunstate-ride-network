@@ -149,6 +149,7 @@ function DashboardPage() {
                 ["contacts", "Contacts"],
                 ["fleet", "Drivers & Vehicles"],
                 ["pricing", "Pricing"],
+                ["payouts", "Payouts"],
                 ["integrations", "Integrations"],
                 ["account", "Account"],
               ].map(([key, label]) => (
