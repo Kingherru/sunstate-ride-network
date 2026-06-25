@@ -1227,6 +1227,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "staff" | "requester"
