@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
@@ -18,21 +18,70 @@ import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Member Dashboard — FloridaNEMT" },
+      { title: "Dashboard — FloridaNEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: DashboardPage,
+  component: DashboardRouter,
 });
 
 type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
+export type PortalKind = "patient" | "provider" | "facility";
 type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "payouts" | "integrations" | "account";
 
-function DashboardPage() {
+const PORTAL_TABS: Record<PortalKind, Tab[]> = {
+  patient:  ["sent", "new", "account"],
+  provider: ["received", "sent", "new", "upload", "contacts", "fleet", "pricing", "payouts", "integrations", "account"],
+  facility: ["sent", "new", "upload", "contacts", "account"],
+};
+
+const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
+  patient:  { label: "Patient Dashboard",  heroText: "Request rides and track your appointments." },
+  provider: { label: "Provider Dashboard", heroText: "Dispatch trips, manage drivers, and get paid." },
+  facility: { label: "Facility Dashboard", heroText: "Book transportation for many patients in one place." },
+};
+
+function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: number }): string {
+  if (t === "received") return `Received (${counts.received})`;
+  if (t === "sent") return portal === "patient" ? `My Rides (${counts.sent})` : `Sent (${counts.sent})`;
+  if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
+  if (t === "upload") return "Upload CSV";
+  if (t === "contacts") return portal === "facility" ? "Patients" : "Contacts";
+  if (t === "fleet") return "Drivers & Vehicles";
+  if (t === "pricing") return "Pricing";
+  if (t === "payouts") return "Payouts";
+  if (t === "integrations") return "Integrations";
+  return "Account";
+}
+
+/** /dashboard redirects to /{portal}/dashboard based on the user's signup portal. */
+function DashboardRouter() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => {
+      const portal = (data.user?.user_metadata?.portal as PortalKind | undefined) ?? "provider";
+      navigate({ to: `/${portal}/dashboard`, replace: true });
+    });
+  }, [navigate]);
+  return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading dashboard…</div>;
+}
+
+export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind } = {}) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<Tab>("received");
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const portal: PortalKind =
+    portalOverride ??
+    (pathname.startsWith("/patient") ? "patient"
+      : pathname.startsWith("/facility") ? "facility"
+      : "provider");
+  const allowedTabs = PORTAL_TABS[portal];
+  const meta = PORTAL_META[portal];
+
+  const [tab, setTab] = useState<Tab>(allowedTabs[0]);
+  useEffect(() => { if (!allowedTabs.includes(tab)) setTab(allowedTabs[0]); }, [allowedTabs, tab]);
+
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
@@ -87,7 +136,8 @@ function DashboardPage() {
 
   const profile = profileQ.data as (Profile & { membership_tier?: string }) | null;
   const isActive = profile?.membership_status === "active";
-  const canSend = isActive && profile?.membership_tier === "paid";
+  // Patients & facilities can always send (book); providers still require paid membership.
+  const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
   const trips = tripsQ.data ?? [];
   const sent = trips.filter((t) => t.created_by === userId);
   const received = trips.filter((t) => t.assigned_to === userId);
@@ -98,11 +148,11 @@ function DashboardPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <Link to="/" className="font-extrabold text-xl tracking-tighter text-primary uppercase">FloridaNEMT</Link>
-            <span className="ml-3 text-xs uppercase tracking-widest text-muted-foreground">Member Dashboard</span>
+            <span className="ml-3 text-xs uppercase tracking-widest text-muted-foreground">{meta.label}</span>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <span className="hidden sm:inline text-muted-foreground">{userEmail}</span>
-            <StatusBadge status={profile?.membership_status ?? "inactive"} />
+            {portal === "provider" && <StatusBadge status={profile?.membership_status ?? "inactive"} />}
             <button
               onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
               className="text-sm text-muted-foreground hover:text-foreground"
@@ -115,7 +165,7 @@ function DashboardPage() {
         {isAdmin && (
           <div className="mb-4 flex items-center justify-between gap-3 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2 text-sm">
             <span className="font-bold text-primary">
-              Admin preview · You're viewing the provider dashboard as your admin account.
+              Admin preview · You're viewing the {portal} dashboard as your admin account.
             </span>
             <Link to="/admin" className="font-bold text-primary hover:underline">
               ← Back to admin
@@ -127,11 +177,12 @@ function DashboardPage() {
           <ProfileSetup userId={userId} userEmail={userEmail} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}
 
-        {profile && !isActive && <MembershipGate />}
+        {profile && !isActive && portal === "provider" && <MembershipGate />}
 
-        {profile && isActive && (
+        {profile && (isActive || portal !== "provider") && (
           <>
-            {!canSend && (
+            <p className="text-sm text-muted-foreground mb-4">{meta.heroText}</p>
+            {portal === "provider" && !canSend && (
               <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
                 <p className="font-bold text-orange-900">Free membership — you can receive trips but not send them.</p>
                 <p className="text-orange-800 mt-1">
@@ -141,25 +192,14 @@ function DashboardPage() {
               </div>
             )}
             <nav className="flex flex-wrap gap-2 mb-6 border-b border-border">
-              {[
-                ["received", `Received (${received.length})`],
-                ["sent", `Sent (${sent.length})`],
-                ["new", "New trip"],
-                ["upload", "Upload CSV"],
-                ["contacts", "Contacts"],
-                ["fleet", "Drivers & Vehicles"],
-                ["pricing", "Pricing"],
-                ["payouts", "Payouts"],
-                ["integrations", "Integrations"],
-                ["account", "Account"],
-              ].map(([key, label]) => (
+              {allowedTabs.map((key) => (
                 <button
                   key={key}
-                  onClick={() => setTab(key as Tab)}
+                  onClick={() => setTab(key)}
                   className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px transition-colors ${
                     tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
-                >{label}</button>
+                >{tabLabel(key, portal, { received: received.length, sent: sent.length })}</button>
               ))}
             </nav>
 
