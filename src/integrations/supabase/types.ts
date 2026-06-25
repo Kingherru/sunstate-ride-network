@@ -515,6 +515,66 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_payout_transfers: {
+        Row: {
+          created_at: string
+          failure_reason: string | null
+          fee_cents: number
+          gross_cents: number
+          id: string
+          net_cents: number
+          provider_user_id: string
+          status: string
+          stripe_account_id: string
+          stripe_transfer_id: string | null
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failure_reason?: string | null
+          fee_cents: number
+          gross_cents: number
+          id?: string
+          net_cents: number
+          provider_user_id: string
+          status?: string
+          stripe_account_id: string
+          stripe_transfer_id?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failure_reason?: string | null
+          fee_cents?: number
+          gross_cents?: number
+          id?: string
+          net_cents?: number
+          provider_user_id?: string
+          status?: string
+          stripe_account_id?: string
+          stripe_transfer_id?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_pricing: {
         Row: {
           additional_passenger: number
