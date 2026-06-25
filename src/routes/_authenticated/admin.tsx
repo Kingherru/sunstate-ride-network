@@ -386,6 +386,49 @@ function AdminPage() {
   );
 }
 
+function PortalTestCard({
+  label,
+  description,
+  dashboardTo,
+  loginTo,
+  tone,
+}: {
+  label: string;
+  description: string;
+  dashboardTo: string;
+  loginTo: string;
+  tone: "primary" | "accent" | "success";
+}) {
+  const accent =
+    tone === "primary" ? "text-primary" : tone === "accent" ? "text-accent" : "text-emerald-600";
+  return (
+    <div className="border border-border rounded-xl p-4 bg-background/40 flex flex-col gap-3">
+      <div>
+        <div className={`text-xs font-mono font-bold uppercase tracking-widest ${accent}`}>
+          {label} portal
+        </div>
+        <p className="text-xs text-muted mt-1">{description}</p>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-auto">
+        <Link
+          to={dashboardTo as any}
+          className="text-xs font-bold px-3 py-1.5 border border-primary/40 text-primary rounded-sm hover:bg-primary hover:text-primary-foreground transition"
+        >
+          Open dashboard →
+        </Link>
+        <a
+          href={loginTo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-bold px-3 py-1.5 border border-border rounded-sm hover:border-primary/40"
+        >
+          Login page ↗
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function Stat({ label, value, tone }: { label: string; value: number; tone?: "accent" | "success" | "danger" }) {
   const color =
     tone === "accent" ? "text-accent" :
