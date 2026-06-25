@@ -479,6 +479,42 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_payout_accounts: {
+        Row: {
+          charges_enabled: boolean
+          created_at: string
+          details_submitted: boolean
+          payouts_enabled: boolean
+          requirements_due: Json | null
+          status: Database["public"]["Enums"]["payout_account_status"]
+          stripe_account_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          created_at?: string
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          requirements_due?: Json | null
+          status?: Database["public"]["Enums"]["payout_account_status"]
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          created_at?: string
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          requirements_due?: Json | null
+          status?: Database["public"]["Enums"]["payout_account_status"]
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       provider_pricing: {
         Row: {
           additional_passenger: number
@@ -940,12 +976,17 @@ export type Database = {
           patient_last_name: string
           patient_phone: string | null
           payer: string | null
+          payout_released_at: string | null
+          payout_status: Database["public"]["Enums"]["trip_payout_status"]
+          payout_transfer_id: string | null
           pickup_address: string
           pickup_city: string
           pickup_date: string
           pickup_location_id: string | null
           pickup_time: string
           pickup_zip: string | null
+          platform_fee_cents: number | null
+          provider_payout_cents: number | null
           region: string | null
           round_trip: boolean
           service_level: Database["public"]["Enums"]["service_level"] | null
@@ -991,12 +1032,17 @@ export type Database = {
           patient_last_name: string
           patient_phone?: string | null
           payer?: string | null
+          payout_released_at?: string | null
+          payout_status?: Database["public"]["Enums"]["trip_payout_status"]
+          payout_transfer_id?: string | null
           pickup_address: string
           pickup_city: string
           pickup_date: string
           pickup_location_id?: string | null
           pickup_time: string
           pickup_zip?: string | null
+          platform_fee_cents?: number | null
+          provider_payout_cents?: number | null
           region?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
@@ -1042,12 +1088,17 @@ export type Database = {
           patient_last_name?: string
           patient_phone?: string | null
           payer?: string | null
+          payout_released_at?: string | null
+          payout_status?: Database["public"]["Enums"]["trip_payout_status"]
+          payout_transfer_id?: string | null
           pickup_address?: string
           pickup_city?: string
           pickup_date?: string
           pickup_location_id?: string | null
           pickup_time?: string
           pickup_zip?: string | null
+          platform_fee_cents?: number | null
+          provider_payout_cents?: number | null
           region?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
@@ -1341,11 +1392,17 @@ export type Database = {
     Enums: {
       app_role: "admin" | "staff" | "requester"
       membership_tier: "none" | "free" | "paid"
+      payout_account_status:
+        | "not_connected"
+        | "pending"
+        | "active"
+        | "restricted"
       service_level:
         | "door_to_door"
         | "bed_to_bed"
         | "curb_to_curb"
         | "driveway_pickup"
+      trip_payout_status: "pending" | "held" | "released" | "canceled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1475,12 +1532,19 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "staff", "requester"],
       membership_tier: ["none", "free", "paid"],
+      payout_account_status: [
+        "not_connected",
+        "pending",
+        "active",
+        "restricted",
+      ],
       service_level: [
         "door_to_door",
         "bed_to_bed",
         "curb_to_curb",
         "driveway_pickup",
       ],
+      trip_payout_status: ["pending", "held", "released", "canceled"],
     },
   },
 } as const
