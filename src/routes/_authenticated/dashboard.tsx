@@ -42,6 +42,21 @@ function DashboardPage() {
     });
   }, []);
 
+  const adminQ = useQuery({
+    queryKey: ["is-admin", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId!)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+  });
+  const isAdmin = !!adminQ.data;
+
   const profileQ = useQuery({
     queryKey: ["member-profile", userId],
     enabled: !!userId,
@@ -96,6 +111,17 @@ function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {isAdmin && (
+          <div className="mb-4 flex items-center justify-between gap-3 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2 text-sm">
+            <span className="font-bold text-primary">
+              Admin preview · You're viewing the provider dashboard as your admin account.
+            </span>
+            <Link to="/admin" className="font-bold text-primary hover:underline">
+              ← Back to admin
+            </Link>
+          </div>
+        )}
+
         {!profileQ.isLoading && !profile && userId && userEmail && (
           <ProfileSetup userId={userId} userEmail={userEmail} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}

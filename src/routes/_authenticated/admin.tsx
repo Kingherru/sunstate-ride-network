@@ -171,6 +171,13 @@ function AdminPage() {
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-muted">{meQ.data.email}</span>
+          <Link
+            to="/dashboard"
+            className="font-bold text-primary hover:underline px-3 py-1.5 border border-primary/40 rounded-sm"
+            title="Preview the provider dashboard experience"
+          >
+            View as provider →
+          </Link>
           <button onClick={signOut} className="font-bold text-accent hover:underline">
             Sign out
           </button>
