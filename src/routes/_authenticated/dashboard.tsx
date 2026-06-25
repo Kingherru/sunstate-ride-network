@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
-type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "payouts" | "integrations" | "account";
 
 function DashboardPage() {
   const qc = useQueryClient();
