@@ -174,7 +174,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         )}
 
         {!profileQ.isLoading && !profile && userId && userEmail && (
-          <ProfileSetup userId={userId} userEmail={userEmail} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
+          <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}
 
         {profile && !isActive && portal === "provider" && <MembershipGate />}
