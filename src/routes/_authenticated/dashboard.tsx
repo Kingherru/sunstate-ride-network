@@ -13,6 +13,7 @@ import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
+import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
