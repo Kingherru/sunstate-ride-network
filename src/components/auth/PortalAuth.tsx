@@ -51,7 +51,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: dest });
+      if (data.user) navigate({ to: dest } as any);
     });
   }, [navigate, dest]);
 
@@ -75,7 +75,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         await router.invalidate();
-        navigate({ to: dest });
+        navigate({ to: dest } as any);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
