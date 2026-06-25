@@ -31,6 +31,9 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
 import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
+import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
+import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
+import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
@@ -145,6 +148,24 @@ const AuthenticatedRequestsIdRoute = AuthenticatedRequestsIdRouteImport.update({
   path: '/requests/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProviderDashboardRoute =
+  AuthenticatedProviderDashboardRouteImport.update({
+    id: '/provider/dashboard',
+    path: '/provider/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPatientDashboardRoute =
+  AuthenticatedPatientDashboardRouteImport.update({
+    id: '/patient/dashboard',
+    path: '/patient/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFacilityDashboardRoute =
+  AuthenticatedFacilityDashboardRouteImport.update({
+    id: '/facility/dashboard',
+    path: '/facility/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -184,6 +205,9 @@ export interface FileRoutesByFullPath {
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -209,6 +233,9 @@ export interface FileRoutesByTo {
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas': typeof ServiceAreasIndexRoute
+  '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -237,6 +264,9 @@ export interface FileRoutesById {
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -265,6 +295,9 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/service-areas/$city'
     | '/service-areas/'
+    | '/facility/dashboard'
+    | '/patient/dashboard'
+    | '/provider/dashboard'
     | '/requests/$id'
     | '/requests/'
     | '/api/public/payments/webhook'
@@ -290,6 +323,9 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/service-areas/$city'
     | '/service-areas'
+    | '/facility/dashboard'
+    | '/patient/dashboard'
+    | '/provider/dashboard'
     | '/requests/$id'
     | '/requests'
     | '/api/public/payments/webhook'
@@ -317,6 +353,9 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/service-areas/$city'
     | '/service-areas/'
+    | '/_authenticated/facility/dashboard'
+    | '/_authenticated/patient/dashboard'
+    | '/_authenticated/provider/dashboard'
     | '/_authenticated/requests/$id'
     | '/_authenticated/requests/'
     | '/api/public/payments/webhook'
@@ -502,6 +541,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/provider/dashboard': {
+      id: '/_authenticated/provider/dashboard'
+      path: '/provider/dashboard'
+      fullPath: '/provider/dashboard'
+      preLoaderRoute: typeof AuthenticatedProviderDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/patient/dashboard': {
+      id: '/_authenticated/patient/dashboard'
+      path: '/patient/dashboard'
+      fullPath: '/patient/dashboard'
+      preLoaderRoute: typeof AuthenticatedPatientDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/facility/dashboard': {
+      id: '/_authenticated/facility/dashboard'
+      path: '/facility/dashboard'
+      fullPath: '/facility/dashboard'
+      preLoaderRoute: typeof AuthenticatedFacilityDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -529,6 +589,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFacilityDashboardRoute: typeof AuthenticatedFacilityDashboardRoute
+  AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
+  AuthenticatedProviderDashboardRoute: typeof AuthenticatedProviderDashboardRoute
   AuthenticatedRequestsIdRoute: typeof AuthenticatedRequestsIdRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
 }
@@ -536,6 +599,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFacilityDashboardRoute: AuthenticatedFacilityDashboardRoute,
+  AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
+  AuthenticatedProviderDashboardRoute: AuthenticatedProviderDashboardRoute,
   AuthenticatedRequestsIdRoute: AuthenticatedRequestsIdRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
 }

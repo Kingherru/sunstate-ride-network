@@ -47,11 +47,13 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [busy, setBusy] = useState(false);
   const copy = COPY[kind];
 
+  const dest = `/${kind}/dashboard` as const;
+
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
+      if (data.user) navigate({ to: dest } as any);
     });
-  }, [navigate]);
+  }, [navigate, dest]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,7 +64,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}${dest}`,
             data: { portal: kind },
           },
         });
@@ -73,7 +75,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         await router.invalidate();
-        navigate({ to: "/dashboard" });
+        navigate({ to: dest } as any);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
