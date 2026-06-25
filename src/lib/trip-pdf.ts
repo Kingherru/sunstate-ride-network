@@ -70,7 +70,13 @@ export function downloadTripPdf(trip: TripPdfInput) {
 
   section("Patient");
   row("Name", `${trip.patient_first_name} ${trip.patient_last_name}`);
+  row("Date of birth", trip.patient_date_of_birth || "—");
   row("Phone", trip.patient_phone || "—");
+  row("Medicaid #", trip.medicaid_number || "—");
+  row("Medicaid plan", trip.medicaid_plan || "—");
+  row("Authorization #", trip.authorization_number || "—");
+  row("Diagnosis code", trip.diagnosis_code || "—");
+  row("Emergency contact", [trip.emergency_contact_name, trip.emergency_contact_phone].filter(Boolean).join(" · ") || "—");
   y += 8;
 
   section("Pickup");
@@ -84,15 +90,43 @@ export function downloadTripPdf(trip: TripPdfInput) {
 
   section("Transport");
   row("Type", trip.transport_type || "ambulatory");
+  row("Service level", (trip.service_level || "curb_to_curb").replace(/_/g, " "));
   row("Round trip", trip.round_trip ? "Yes" : "No");
   row("Mobility notes", trip.mobility_notes || "—");
   row("Special", trip.special_instructions || "—");
   row("Payer", trip.payer || "—");
+  y += 12;
 
-  y = 740;
+  section("Trip log (driver completes on completion)");
+  row("Odometer start", trip.odometer_start != null ? String(trip.odometer_start) : "________________");
+  row("Odometer end", trip.odometer_end != null ? String(trip.odometer_end) : "________________");
+  row("Total mileage", trip.mileage != null ? String(trip.mileage) : "________________");
+  y += 12;
+
+  // Signature lines
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(60);
+  doc.text("SIGNATURES", left, y);
+  y += 18;
+  doc.setTextColor(0);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+
+  const sigLine = (label: string) => {
+    doc.line(left, y, left + 250, y);
+    doc.text(label, left, y + 12);
+    doc.line(left + 290, y, left + 460, y);
+    doc.text("Date", left + 290, y + 12);
+    y += 38;
+  };
+  sigLine("Patient / authorized representative");
+  sigLine("Driver");
+
+  y = 760;
   doc.setFontSize(9);
   doc.setTextColor(120);
-  doc.text("Dispatched via FloridaNEMT — myfloridanemt@gmail.com", left, y);
+  doc.text("Dispatched via FloridaNEMT — CMS-style trip log. Retain for billing records.", left, y);
 
   doc.save(`trip-${trip.trip_number || trip.id.slice(0, 8)}.pdf`);
 }
