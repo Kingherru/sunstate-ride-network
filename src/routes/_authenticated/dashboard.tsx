@@ -284,6 +284,9 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
     dropoff_address: "", dropoff_city: "", dropoff_zip: "",
     transport_type: "ambulatory", round_trip: false,
+    service_level: "curb_to_curb",
+    needs_wheelchair: false, has_passenger: false, needs_assistance_to_vehicle: false,
+    needs_surgery_signin: false, needs_surgery_signout: false,
     mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
   });
   const [hipaaOk, setHipaaOk] = useState(false);
