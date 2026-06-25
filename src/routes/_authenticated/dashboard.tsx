@@ -62,7 +62,7 @@ function DashboardRouter() {
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
       const portal = (data.user?.user_metadata?.portal as PortalKind | undefined) ?? "provider";
-      navigate({ to: `/${portal}/dashboard`, replace: true });
+      navigate({ to: `/${portal}/dashboard`, replace: true } as any);
     });
   }, [navigate]);
   return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Loading dashboard…</div>;
