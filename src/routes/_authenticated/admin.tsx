@@ -173,7 +173,6 @@ function AdminPage() {
           <span className="text-muted">{meQ.data.email}</span>
           <Link
             to="/dashboard"
-            search={{ as: "provider" }}
             className="font-bold text-primary hover:underline px-3 py-1.5 border border-primary/40 rounded-sm"
             title="Preview the provider dashboard experience"
           >
