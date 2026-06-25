@@ -172,18 +172,64 @@ function AdminPage() {
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-muted">{meQ.data.email}</span>
-          <Link
-            to="/dashboard"
-            className="font-bold text-primary hover:underline px-3 py-1.5 border border-primary/40 rounded-sm"
-            title="Preview the provider dashboard experience"
-          >
-            View as provider →
-          </Link>
           <button onClick={signOut} className="font-bold text-accent hover:underline">
             Sign out
           </button>
         </div>
       </header>
+
+      {/* Internal-only positioning note + portal test launcher */}
+      <div className="mb-6 bg-card border border-border rounded-2xl p-5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="max-w-2xl">
+            <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">
+              Internal · admin only
+            </p>
+            <h2 className="text-lg font-extrabold tracking-tight">Portal QA &amp; test access</h2>
+            <p className="text-sm text-muted mt-1">
+              Jump into any portal exactly as that user type would see it. Use the dashboard links
+              if you're already signed in as that role, or open a login page in a new tab to test
+              the sign-up / sign-in flow end to end.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+          <PortalTestCard
+            label="Patient"
+            tone="primary"
+            description="Riders requesting Medicaid transportation."
+            dashboardTo="/patient/dashboard"
+            loginTo="/patient/login"
+          />
+          <PortalTestCard
+            label="Provider"
+            tone="accent"
+            description="NEMT companies receiving trip leads."
+            dashboardTo="/provider/dashboard"
+            loginTo="/provider/login"
+          />
+          <PortalTestCard
+            label="Facility"
+            tone="success"
+            description="Clinics & coordinators referring patients."
+            dashboardTo="/facility/dashboard"
+            loginTo="/facility/login"
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <Link to="/dashboard" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">
+            Generic /dashboard router
+          </Link>
+          <Link to="/" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">
+            Public home
+          </Link>
+          <Link to="/auth" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">
+            Legacy /auth
+          </Link>
+        </div>
+      </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
