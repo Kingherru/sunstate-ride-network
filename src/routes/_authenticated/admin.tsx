@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
+import { AdminThemePanel } from "@/components/AdminThemePanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -191,6 +192,16 @@ function AdminPage() {
         <Stat label="Approved" value={counts.approved} tone="success" />
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
+
+      <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
+        <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
+          <span>🎨 Visual settings — colors, layout, header & footer</span>
+          <span className="text-accent transition-transform group-open:rotate-45">+</span>
+        </summary>
+        <div className="mt-6">
+          <AdminThemePanel />
+        </div>
+      </details>
 
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">

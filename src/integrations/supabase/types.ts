@@ -281,6 +281,66 @@ export type Database = {
           },
         ]
       }
+      platform_theme: {
+        Row: {
+          accent_color: string
+          background_color: string
+          border_color: string
+          card_color: string
+          card_style: string
+          created_at: string
+          custom_css: string | null
+          footer_style: string
+          foreground_color: string
+          header_style: string
+          id: string
+          is_active: boolean
+          layout_style: string
+          muted_color: string
+          primary_color: string
+          radius_scale: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          background_color?: string
+          border_color?: string
+          card_color?: string
+          card_style?: string
+          created_at?: string
+          custom_css?: string | null
+          footer_style?: string
+          foreground_color?: string
+          header_style?: string
+          id?: string
+          is_active?: boolean
+          layout_style?: string
+          muted_color?: string
+          primary_color?: string
+          radius_scale?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          background_color?: string
+          border_color?: string
+          card_color?: string
+          card_style?: string
+          created_at?: string
+          custom_css?: string | null
+          footer_style?: string
+          foreground_color?: string
+          header_style?: string
+          id?: string
+          is_active?: boolean
+          layout_style?: string
+          muted_color?: string
+          primary_color?: string
+          radius_scale?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_applications: {
         Row: {
           city: string

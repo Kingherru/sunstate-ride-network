@@ -1,24 +1,30 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
 
 const navLinks = [
   { to: "/services", label: "Services" },
   { to: "/service-areas", label: "Service Areas" },
-  { to: "/providers", label: "Providers" },
-  { to: "/membership", label: "Membership" },
+  { to: "/providers", label: "For Providers" },
   { to: "/training", label: "Training" },
   { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
+] as const;
+
+const portals = [
+  { to: "/patient/login", label: "Patient Portal", desc: "Patients, families, caregivers", icon: User },
+  { to: "/provider/login", label: "Provider Portal", desc: "NEMT providers & dispatchers", icon: Truck },
+  { to: "/facility/login", label: "Facility Portal", desc: "Hospitals, SNFs, case managers", icon: Building2 },
 ] as const;
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
+
   return (
-    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 h-18 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="font-extrabold text-xl tracking-tighter text-primary uppercase">
+    <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-8 min-w-0">
+          <Link to="/" className="font-extrabold text-lg sm:text-xl tracking-tighter text-primary uppercase shrink-0">
             FloridaNEMT
           </Link>
           <div className="hidden lg:flex items-center gap-6">
@@ -26,7 +32,7 @@ export function Header() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="text-sm font-medium hover:text-accent transition-colors"
+                className="text-sm font-medium text-foreground hover:text-accent transition-colors"
                 activeProps={{ className: "text-sm font-medium text-accent" }}
               >
                 {l.label}
@@ -34,22 +40,40 @@ export function Header() {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          <a
-            href="tel:8005550199"
-            className="hidden sm:inline-block font-mono text-sm font-bold tracking-tight text-primary bg-primary/5 px-3 py-1.5 rounded-sm ring-1 ring-primary/10"
-          >
-            (800) 555-0199
-          </a>
-          <Link
-            to="/auth"
-            className="hidden md:inline-block text-sm font-bold text-primary border border-primary/30 px-4 py-2 rounded-sm hover:bg-primary/5 transition-all"
-          >
-            Provider Sign In
-          </Link>
+
+        <div className="flex items-center gap-2">
+          <div className="relative hidden md:block">
+            <button
+              type="button"
+              onClick={() => setSignInOpen((v) => !v)}
+              onBlur={() => setTimeout(() => setSignInOpen(false), 150)}
+              className="flex items-center gap-1 text-sm font-bold text-primary border border-primary/30 px-4 py-2 rounded-md hover:bg-primary/5 transition-all"
+            >
+              Sign In <ChevronDown className="size-4" />
+            </button>
+            {signInOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">
+                {portals.map((p) => (
+                  <Link
+                    key={p.to}
+                    to={p.to}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setSignInOpen(false)}
+                    className="flex items-start gap-3 p-3 hover:bg-secondary transition-colors"
+                  >
+                    <p.icon className="size-5 text-accent mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-foreground">{p.label}</div>
+                      <div className="text-xs text-muted">{p.desc}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
           <Link
             to="/request-a-ride"
-            className="hidden sm:inline-block text-sm font-bold text-primary-foreground bg-primary px-5 py-2 rounded-sm hover:bg-primary/90 transition-all"
+            className="hidden sm:inline-block text-sm font-bold text-primary-foreground bg-primary px-4 sm:px-5 py-2 rounded-md hover:bg-primary/90 transition-all"
           >
             Request a Ride
           </Link>
@@ -63,9 +87,10 @@ export function Header() {
           </button>
         </div>
       </div>
+
       {open && (
         <div className="lg:hidden border-t border-border bg-background">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-2">
             {navLinks.map((l) => (
               <Link
                 key={l.to}
@@ -76,17 +101,29 @@ export function Header() {
                 {l.label}
               </Link>
             ))}
-            <Link
-              to="/auth"
-              onClick={() => setOpen(false)}
-              className="text-sm font-bold text-primary border border-primary/30 px-5 py-3 rounded-sm text-center"
-            >
-              Provider Sign In
-            </Link>
+            <div className="pt-3 mt-2 border-t border-border">
+              <p className="text-xs font-mono font-bold uppercase tracking-widest text-muted mb-2">
+                Sign in to your portal
+              </p>
+              {portals.map((p) => (
+                <Link
+                  key={p.to}
+                  to={p.to}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 py-3"
+                >
+                  <p.icon className="size-5 text-accent" />
+                  <div>
+                    <div className="text-sm font-bold">{p.label}</div>
+                    <div className="text-xs text-muted">{p.desc}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
             <Link
               to="/request-a-ride"
               onClick={() => setOpen(false)}
-              className="text-sm font-bold text-primary-foreground bg-primary px-5 py-3 rounded-sm text-center"
+              className="mt-3 text-sm font-bold text-primary-foreground bg-primary px-5 py-3 rounded-md text-center"
             >
               Request a Ride
             </Link>
