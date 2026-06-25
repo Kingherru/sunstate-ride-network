@@ -42,6 +42,21 @@ function DashboardPage() {
     });
   }, []);
 
+  const adminQ = useQuery({
+    queryKey: ["is-admin", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId!)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+  });
+  const isAdmin = !!adminQ.data;
+
   const profileQ = useQuery({
     queryKey: ["member-profile", userId],
     enabled: !!userId,
