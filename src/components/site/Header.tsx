@@ -77,6 +77,13 @@ export function Header() {
               </Link>
             ))}
             <Link
+              to="/auth"
+              onClick={() => setOpen(false)}
+              className="text-sm font-bold text-primary border border-primary/30 px-5 py-3 rounded-sm text-center"
+            >
+              Provider Sign In
+            </Link>
+            <Link
               to="/request-a-ride"
               onClick={() => setOpen(false)}
               className="text-sm font-bold text-primary-foreground bg-primary px-5 py-3 rounded-sm text-center"
