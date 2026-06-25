@@ -6,6 +6,13 @@ export interface TripPdfInput {
   patient_first_name: string;
   patient_last_name: string;
   patient_phone?: string | null;
+  patient_date_of_birth?: string | null;
+  medicaid_number?: string | null;
+  medicaid_plan?: string | null;
+  authorization_number?: string | null;
+  diagnosis_code?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
   pickup_address: string;
   pickup_city: string;
   pickup_zip?: string | null;
@@ -15,10 +22,14 @@ export interface TripPdfInput {
   dropoff_city: string;
   dropoff_zip?: string | null;
   transport_type?: string | null;
+  service_level?: string | null;
   round_trip?: boolean | null;
   mobility_notes?: string | null;
   special_instructions?: string | null;
   payer?: string | null;
+  odometer_start?: number | null;
+  odometer_end?: number | null;
+  mileage?: number | string | null;
 }
 
 export function downloadTripPdf(trip: TripPdfInput) {
