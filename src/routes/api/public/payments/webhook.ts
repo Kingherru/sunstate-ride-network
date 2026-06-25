@@ -69,6 +69,33 @@ async function handleSubscriptionDeleted(sub: any, env: StripeEnv) {
     .eq("environment", env);
 }
 
+async function handleAccountUpdated(acct: any) {
+  if (!acct?.id) return;
+  const status: "pending" | "active" | "restricted" =
+    acct.charges_enabled && acct.payouts_enabled
+      ? "active"
+      : (acct.requirements?.disabled_reason ? "restricted" : "pending");
+  await getSupabase()
+    .from("provider_payout_accounts")
+    .update({
+      status,
+      payouts_enabled: !!acct.payouts_enabled,
+      charges_enabled: !!acct.charges_enabled,
+      details_submitted: !!acct.details_submitted,
+      requirements_due: acct.requirements ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("stripe_account_id", acct.id);
+}
+
+async function handleTransferUpdated(tr: any) {
+  if (!tr?.id) return;
+  await getSupabase()
+    .from("provider_payout_transfers")
+    .update({ status: tr.reversed ? "failed" : "paid", updated_at: new Date().toISOString() })
+    .eq("stripe_transfer_id", tr.id);
+}
+
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
     handlers: {
