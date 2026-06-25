@@ -225,5 +225,15 @@ export const updateTripStatus = createServerFn({ method: "POST" })
       .update({ status: data.status })
       .eq("id", data.trip_id);
     if (error) throw error;
+
+    // Auto-release payout when marking completed. Best-effort: errors don't block status update.
+    if (data.status === "completed") {
+      try {
+        const { releaseTripPayout } = await import("@/lib/payouts.functions");
+        await releaseTripPayout({ data: { trip_id: data.trip_id } });
+      } catch (e) {
+        console.error("Auto release payout failed:", e);
+      }
+    }
     return { ok: true };
   });

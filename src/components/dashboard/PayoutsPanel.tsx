@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { PLATFORM_FEE_PCT, formatUsd, platformFeeCents, providerPayoutCents } from "@/lib/payouts";
+import { createConnectOnboardingLink, refreshPayoutAccount } from "@/lib/payouts.functions";
 
 type Trip = {
   id: string;
@@ -58,7 +61,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
-      <ConnectCard account={acctQ.data ?? null} loading={acctQ.isLoading} />
+      <ConnectCard account={acctQ.data ?? null} loading={acctQ.isLoading} userId={userId} />
 
       <div className="grid sm:grid-cols-3 gap-3">
         <Stat label="Held funds" value={formatUsd(held)} hint="Pending completion" />
@@ -111,8 +114,14 @@ function computePayout(t: Trip): number {
   return providerPayoutCents(gross);
 }
 
-function ConnectCard({ account, loading }: { account: PayoutAccount | null; loading: boolean }) {
+function ConnectCard({ account, loading, userId }: { account: PayoutAccount | null; loading: boolean; userId: string }) {
   const status = account?.status ?? "not_connected";
+  const qc = useQueryClient();
+  const startOnboarding = useServerFn(createConnectOnboardingLink);
+  const refresh = useServerFn(refreshPayoutAccount);
+  const [busy, setBusy] = useState<null | "connect" | "refresh">(null);
+  const [error, setError] = useState<string | null>(null);
+
   const map: Record<string, { label: string; tone: string; desc: string }> = {
     not_connected: {
       label: "Not connected",
@@ -137,44 +146,94 @@ function ConnectCard({ account, loading }: { account: PayoutAccount | null; load
   };
   const m = map[status];
 
+  async function onConnect() {
+    setBusy("connect"); setError(null);
+    const res = await startOnboarding();
+    setBusy(null);
+    if (res.ok && res.url) {
+      window.location.href = res.url;
+    } else {
+      setError(res.ok ? "No onboarding URL returned" : res.error);
+    }
+  }
+
+  async function onRefresh() {
+    setBusy("refresh"); setError(null);
+    const res = await refresh();
+    setBusy(null);
+    if (!res.ok) setError(res.error);
+    qc.invalidateQueries({ queryKey: ["payout-account", userId] });
+  }
+
   return (
     <section className="bg-card border border-border rounded-sm p-5 flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0 flex-1">
         <p className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1">Connected account</p>
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-sm border ${m.tone}`}>{m.label}</span>
           {account?.stripe_account_id && (
             <span className="text-[10px] font-mono text-muted-foreground">{account.stripe_account_id}</span>
           )}
         </div>
         <p className="text-sm text-muted-foreground max-w-xl">{m.desc}</p>
+        {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
       </div>
-      <button
-        disabled={loading}
-        className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90 disabled:opacity-50"
-        onClick={() => alert("Bank connection onboarding launches here once your admin enables provider payouts.")}
-      >
-        {status === "not_connected" ? "Connect bank account" : "Manage account"}
-      </button>
+      <div className="flex gap-2">
+        {account?.stripe_account_id && status !== "active" && (
+          <button
+            disabled={busy !== null}
+            onClick={onRefresh}
+            className="bg-card border border-border font-bold px-4 py-2.5 rounded-sm hover:bg-muted/40 disabled:opacity-50"
+          >
+            {busy === "refresh" ? "Refreshing…" : "Refresh status"}
+          </button>
+        )}
+        <button
+          disabled={loading || busy !== null}
+          onClick={onConnect}
+          className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+        >
+          {busy === "connect" ? "Opening Stripe…" : status === "not_connected" ? "Connect bank account" : "Manage account"}
+        </button>
+      </div>
     </section>
   );
 }
 
 function BillingExplainer() {
+  const example = 12500; // $125.00 gross
+  const fee = Math.round(example * PLATFORM_FEE_PCT);
+  const net = example - fee;
   return (
     <section className="bg-primary/5 border border-primary/20 rounded-sm p-5">
       <h3 className="text-lg font-extrabold tracking-tight mb-2">How billing works</h3>
       <ol className="text-sm text-foreground/90 space-y-2 list-decimal pl-5">
-        <li><strong>Patient pays at booking.</strong> The fare is charged to the patient and held by FloridaNEMT.</li>
-        <li><strong>You complete the trip.</strong> Mark the trip <em>Completed</em> in your dashboard so it queues for release.</li>
-        <li><strong>We deduct a {(PLATFORM_FEE_PCT * 100).toFixed(0)}% platform fee.</strong> This covers payment processing, dispatch, and HIPAA-compliant infrastructure.</li>
-        <li><strong>Funds release to your bank.</strong> The remainder transfers to your connected account within 1–2 business days.</li>
-        <li><strong>Provider-to-provider payouts.</strong> If you dispatch a trip to another provider, your "pay" rate from <em>Pricing</em> is transferred to them on completion, minus the same {(PLATFORM_FEE_PCT * 100).toFixed(0)}% fee.</li>
+        <li><strong>Patient pays at booking.</strong> The fare is charged to the patient and held by FloridaNEMT in escrow.</li>
+        <li><strong>You complete the trip.</strong> Mark the trip <em>Completed</em> in your dashboard — this queues the payout automatically.</li>
+        <li><strong>We deduct a {(PLATFORM_FEE_PCT * 100).toFixed(0)}% platform fee.</strong> Covers payment processing, dispatch, and HIPAA-compliant infrastructure.</li>
+        <li><strong>Funds release to your bank.</strong> The remainder transfers to your connected account within <strong>1–2 business days</strong>.</li>
+        <li><strong>Provider-to-provider payouts.</strong> If you dispatch a trip to another provider, their "pay" rate from <em>Pricing</em> is transferred to them on completion, minus the same {(PLATFORM_FEE_PCT * 100).toFixed(0)}% fee.</li>
       </ol>
+
+      <div className="mt-4 grid sm:grid-cols-4 gap-3 bg-card border border-border rounded-sm p-4">
+        <ExampleRow label="Gross fare" value={formatUsd(example)} />
+        <ExampleRow label={`Platform fee (${(PLATFORM_FEE_PCT * 100).toFixed(0)}%)`} value={`−${formatUsd(fee)}`} muted />
+        <ExampleRow label="Your payout" value={formatUsd(net)} accent />
+        <ExampleRow label="In your bank" value="1–2 business days" small />
+      </div>
       <p className="text-xs text-muted-foreground mt-3">
-        Example: a $100 fare → ${(100 * PLATFORM_FEE_PCT).toFixed(2)} fee, ${(100 * (1 - PLATFORM_FEE_PCT)).toFixed(2)} to you.
+        Typical timeline: trip completed today → released to Stripe instantly → deposited to your bank in 1–2 business days (Mon–Fri, excluding US bank holidays). First payout after onboarding can take 5–7 days.
       </p>
     </section>
+  );
+}
+
+function ExampleRow({ label, value, muted, accent, small }: { label: string; value: string; muted?: boolean; accent?: boolean; small?: boolean }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className={`tabular-nums font-extrabold ${small ? "text-sm" : "text-xl"} ${accent ? "text-emerald-600" : muted ? "text-muted-foreground" : "text-foreground"}`}>{value}</div>
+    </div>
   );
 }
 
