@@ -107,6 +107,13 @@ const tripBaseSchema = z.object({
   special_instructions: z.string().trim().max(1000).optional().nullable(),
   payer: z.string().trim().max(120).optional().nullable(),
   trip_number: z.string().trim().max(64).optional().nullable(),
+  patient_date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable().or(z.literal("")),
+  medicaid_number: z.string().trim().max(64).optional().nullable(),
+  medicaid_plan: z.string().trim().max(120).optional().nullable(),
+  authorization_number: z.string().trim().max(64).optional().nullable(),
+  diagnosis_code: z.string().trim().max(32).optional().nullable(),
+  emergency_contact_name: z.string().trim().max(120).optional().nullable(),
+  emergency_contact_phone: z.string().trim().max(32).optional().nullable(),
 });
 
 const createTripSchema = tripBaseSchema.extend({

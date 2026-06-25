@@ -131,12 +131,18 @@ export type Database = {
           company_name: string | null
           created_at: string
           current_period_end: string | null
+          date_of_birth: string | null
           dispatch_email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           first_name: string | null
           id: string
           last_name: string | null
+          medicaid_number: string | null
+          medicaid_plan: string | null
           membership_status: string
           membership_tier: Database["public"]["Enums"]["membership_tier"]
+          npi: string | null
           phone: string | null
           preferred_zip_codes: string[]
           provider_application_id: string | null
@@ -151,12 +157,18 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           current_period_end?: string | null
+          date_of_birth?: string | null
           dispatch_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
           membership_status?: string
           membership_tier?: Database["public"]["Enums"]["membership_tier"]
+          npi?: string | null
           phone?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
@@ -171,12 +183,18 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           current_period_end?: string | null
+          date_of_birth?: string | null
           dispatch_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
           membership_status?: string
           membership_tier?: Database["public"]["Enums"]["membership_tier"]
+          npi?: string | null
           phone?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
@@ -1069,29 +1087,39 @@ export type Database = {
           actual_pickup_at: string | null
           additional_passengers: number
           assigned_to: string | null
+          authorization_number: string | null
           cancel_reason: string | null
           contact_id: string | null
           cost_breakdown: Json | null
           cost_total: number | null
           created_at: string
           created_by: string
+          diagnosis_code: string | null
           driver_id: string | null
           dropoff_address: string
           dropoff_city: string
           dropoff_location_id: string | null
           dropoff_zip: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           estimated_dropoff_at: string | null
           estimated_miles: number | null
           estimated_pickup_at: string | null
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
+          medicaid_number: string | null
+          medicaid_plan: string | null
+          mileage: number | null
           mobility_notes: string | null
           needs_assistance_to_vehicle: boolean
           needs_surgery_signin: boolean
           needs_surgery_signout: boolean
           needs_wheelchair: boolean
           no_show_reason: string | null
+          odometer_end: number | null
+          odometer_start: number | null
+          patient_date_of_birth: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone: string | null
@@ -1110,6 +1138,9 @@ export type Database = {
           region: string | null
           round_trip: boolean
           service_level: Database["public"]["Enums"]["service_level"] | null
+          signature_name: string | null
+          signature_relation: string | null
+          signature_signed_at: string | null
           source: string
           special_instructions: string | null
           status: string
@@ -1125,29 +1156,39 @@ export type Database = {
           actual_pickup_at?: string | null
           additional_passengers?: number
           assigned_to?: string | null
+          authorization_number?: string | null
           cancel_reason?: string | null
           contact_id?: string | null
           cost_breakdown?: Json | null
           cost_total?: number | null
           created_at?: string
           created_by: string
+          diagnosis_code?: string | null
           driver_id?: string | null
           dropoff_address: string
           dropoff_city: string
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           estimated_dropoff_at?: string | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
+          mileage?: number | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
           no_show_reason?: string | null
+          odometer_end?: number | null
+          odometer_start?: number | null
+          patient_date_of_birth?: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone?: string | null
@@ -1166,6 +1207,9 @@ export type Database = {
           region?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
+          signature_name?: string | null
+          signature_relation?: string | null
+          signature_signed_at?: string | null
           source?: string
           special_instructions?: string | null
           status?: string
@@ -1181,29 +1225,39 @@ export type Database = {
           actual_pickup_at?: string | null
           additional_passengers?: number
           assigned_to?: string | null
+          authorization_number?: string | null
           cancel_reason?: string | null
           contact_id?: string | null
           cost_breakdown?: Json | null
           cost_total?: number | null
           created_at?: string
           created_by?: string
+          diagnosis_code?: string | null
           driver_id?: string | null
           dropoff_address?: string
           dropoff_city?: string
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           estimated_dropoff_at?: string | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
+          mileage?: number | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
           no_show_reason?: string | null
+          odometer_end?: number | null
+          odometer_start?: number | null
+          patient_date_of_birth?: string | null
           patient_first_name?: string
           patient_last_name?: string
           patient_phone?: string | null
@@ -1222,6 +1276,9 @@ export type Database = {
           region?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
+          signature_name?: string | null
+          signature_relation?: string | null
+          signature_signed_at?: string | null
           source?: string
           special_instructions?: string | null
           status?: string

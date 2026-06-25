@@ -174,7 +174,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         )}
 
         {!profileQ.isLoading && !profile && userId && userEmail && (
-          <ProfileSetup userId={userId} userEmail={userEmail} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
+          <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}
 
         {profile && !isActive && portal === "provider" && <MembershipGate />}
@@ -230,9 +230,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 /* -------- Profile Setup -------- */
-function ProfileSetup({ userId, userEmail, onSaved }: { userId: string; userEmail: string; onSaved: () => void }) {
+function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; userEmail: string; portal: PortalKind; onSaved: () => void }) {
+  const isPatient = portal === "patient";
   const [form, setForm] = useState({
     first_name: "", last_name: "", company_name: "", phone: "", dispatch_email: userEmail, city: "", preferred_zip_codes: "",
+    date_of_birth: "", medicaid_number: "", medicaid_plan: "", npi: "",
+    emergency_contact_name: "", emergency_contact_phone: "",
   });
   const [busy, setBusy] = useState(false);
 
@@ -241,16 +244,23 @@ function ProfileSetup({ userId, userEmail, onSaved }: { userId: string; userEmai
     setBusy(true);
     try {
       const zips = form.preferred_zip_codes.split(/[,\s]+/).map((z) => z.trim()).filter(Boolean);
-      const { error } = await supabase.from("member_profiles").insert({
+      const payload: any = {
         user_id: userId,
         first_name: form.first_name,
         last_name: form.last_name,
-        company_name: form.company_name,
+        company_name: isPatient ? `${form.first_name} ${form.last_name}`.trim() : form.company_name,
         phone: form.phone,
         dispatch_email: form.dispatch_email,
         city: form.city,
         preferred_zip_codes: zips,
-      });
+        medicaid_number: form.medicaid_number || null,
+        medicaid_plan: form.medicaid_plan || null,
+        npi: form.npi || null,
+        emergency_contact_name: form.emergency_contact_name || null,
+        emergency_contact_phone: form.emergency_contact_phone || null,
+      };
+      if (form.date_of_birth) payload.date_of_birth = form.date_of_birth;
+      const { error } = await supabase.from("member_profiles").insert(payload);
       if (error) throw error;
       toast.success("Profile created");
       onSaved();
@@ -262,15 +272,37 @@ function ProfileSetup({ userId, userEmail, onSaved }: { userId: string; userEmai
   return (
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8">
       <h2 className="text-2xl font-extrabold tracking-tight mb-2">Set up your profile</h2>
-      <p className="text-sm text-muted-foreground mb-6">We need a few details to categorize you in the dispatch network.</p>
+      <p className="text-sm text-muted-foreground mb-6">
+        {isPatient
+          ? "We'll keep your Medicaid info on file so you don't have to retype it every ride."
+          : portal === "facility"
+          ? "Tell us about your facility so the right providers can serve your patients."
+          : "We need a few details to categorize you in the dispatch network."}
+      </p>
       <form onSubmit={save} className="grid grid-cols-2 gap-4">
         <Field label="First name" v={form.first_name} on={(v) => setForm({ ...form, first_name: v })} required />
         <Field label="Last name" v={form.last_name} on={(v) => setForm({ ...form, last_name: v })} required />
-        <Field label="Company name" v={form.company_name} on={(v) => setForm({ ...form, company_name: v })} required className="col-span-2" />
+        {!isPatient && (
+          <Field label={portal === "facility" ? "Facility name" : "Company name"} v={form.company_name} on={(v) => setForm({ ...form, company_name: v })} required className="col-span-2" />
+        )}
         <Field label="Phone" v={form.phone} on={(v) => setForm({ ...form, phone: v })} required />
-        <Field label="Dispatch email" v={form.dispatch_email} on={(v) => setForm({ ...form, dispatch_email: v })} required type="email" />
+        <Field label={isPatient ? "Contact email" : "Dispatch email"} v={form.dispatch_email} on={(v) => setForm({ ...form, dispatch_email: v })} required type="email" />
         <Field label="City" v={form.city} on={(v) => setForm({ ...form, city: v })} required placeholder="e.g. Jacksonville" />
-        <Field label="Preferred ZIP codes" v={form.preferred_zip_codes} on={(v) => setForm({ ...form, preferred_zip_codes: v })} placeholder="32202, 32204, 32207" />
+        {!isPatient && (
+          <Field label="Preferred ZIP codes" v={form.preferred_zip_codes} on={(v) => setForm({ ...form, preferred_zip_codes: v })} placeholder="32202, 32204, 32207" />
+        )}
+        {isPatient && (
+          <>
+            <Field label="Date of birth" v={form.date_of_birth} on={(v) => setForm({ ...form, date_of_birth: v })} type="date" />
+            <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
+            <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply" className="col-span-2" />
+            <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
+            <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
+          </>
+        )}
+        {portal === "provider" && (
+          <Field label="NPI (optional)" v={form.npi} on={(v) => setForm({ ...form, npi: v })} placeholder="10-digit National Provider Identifier" className="col-span-2" />
+        )}
         <button disabled={busy} className="col-span-2 mt-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
           {busy ? "Saving…" : "Save and continue"}
         </button>
@@ -324,6 +356,9 @@ function PaidOnly() {
 function NewTripForm({ onCreated }: { onCreated: () => void }) {
   const [form, setForm] = useState<any>({
     patient_first_name: "", patient_last_name: "", patient_phone: "",
+    patient_date_of_birth: "", medicaid_number: "", medicaid_plan: "",
+    authorization_number: "", diagnosis_code: "",
+    emergency_contact_name: "", emergency_contact_phone: "",
     pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
     dropoff_address: "", dropoff_city: "", dropoff_zip: "",
     transport_type: "ambulatory", round_trip: false,
@@ -337,7 +372,10 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     mutationFn: async () => {
       if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
-      return createTrip({ data: { ...form, hipaa_ack_id: ack.id } });
+      const payload = { ...form };
+      // Don't send empty date string (zod regex would reject)
+      if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
+      return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
     },
     onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
@@ -348,7 +386,17 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <Field label="Patient first name" v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
       <Field label="Patient last name" v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
       <Field label="Patient phone" v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       <Field label="Trip number" v={form.trip_number} on={(v) => setForm({ ...form, trip_number: v })} />
+      <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
+        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Medicaid / CMS billing</legend>
+        <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
+        <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply, MMA" />
+        <Field label="Authorization #" v={form.authorization_number} on={(v) => setForm({ ...form, authorization_number: v })} />
+        <Field label="Diagnosis code" v={form.diagnosis_code} on={(v) => setForm({ ...form, diagnosis_code: v })} placeholder="ICD-10 (optional)" />
+        <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
+        <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
+      </fieldset>
       <Field label="Pickup address" v={form.pickup_address} on={(v) => setForm({ ...form, pickup_address: v })} required className="col-span-2" />
       <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
       <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
