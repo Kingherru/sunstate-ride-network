@@ -117,6 +117,14 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "customer.subscription.deleted":
               await handleSubscriptionDeleted(event.data.object, env);
               break;
+            case "account.updated":
+              await handleAccountUpdated(event.data.object);
+              break;
+            case "transfer.created":
+            case "transfer.updated":
+            case "transfer.reversed":
+              await handleTransferUpdated(event.data.object);
+              break;
             default:
               console.log("Unhandled event:", event.type);
           }
