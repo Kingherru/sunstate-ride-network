@@ -28,58 +28,60 @@
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --radius-sm: 2px;
-  --radius-md: 6px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
 
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
+/* White-base default theme. Admin-customizable via <ThemeProvider />. */
 :root {
-  /* Reliability grid — trust-forward Florida NEMT */
-  --background: hsl(210 30% 98%);
-  --foreground: hsl(220 40% 12%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(220 40% 12%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(220 40% 12%);
-  --primary: hsl(215 70% 25%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(210 30% 96%);
-  --secondary-foreground: hsl(215 70% 25%);
-  --muted: hsl(220 15% 45%);
-  --muted-foreground: hsl(220 15% 45%);
-  --accent: hsl(28 90% 45%);
-  --accent-foreground: hsl(0 0% 100%);
-  --destructive: hsl(0 75% 45%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(220 40% 12% / 0.08);
-  --input: hsl(220 40% 12% / 0.12);
-  --ring: hsl(215 70% 25%);
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #13335a;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #13335a;
+  --muted: #64748b;
+  --muted-foreground: #64748b;
+  --accent: #e07a1f;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #cbd5e1;
+  --ring: #13335a;
+  --surface-subtle: #f8fafc;
 }
 
 .dark {
-  --background: hsl(220 40% 8%);
-  --foreground: hsl(210 30% 96%);
-  --card: hsl(220 40% 12%);
-  --card-foreground: hsl(210 30% 96%);
-  --popover: hsl(220 40% 12%);
-  --popover-foreground: hsl(210 30% 96%);
-  --primary: hsl(28 90% 55%);
-  --primary-foreground: hsl(220 40% 8%);
-  --secondary: hsl(220 30% 16%);
-  --secondary-foreground: hsl(210 30% 96%);
-  --muted: hsl(220 15% 60%);
-  --muted-foreground: hsl(220 15% 60%);
-  --accent: hsl(28 90% 55%);
-  --accent-foreground: hsl(220 40% 8%);
-  --destructive: hsl(0 75% 55%);
-  --destructive-foreground: hsl(210 30% 96%);
-  --border: hsl(210 30% 96% / 0.1);
-  --input: hsl(210 30% 96% / 0.14);
-  --ring: hsl(28 90% 55%);
+  --background: #0b1220;
+  --foreground: #f1f5f9;
+  --card: #111a2e;
+  --card-foreground: #f1f5f9;
+  --popover: #111a2e;
+  --popover-foreground: #f1f5f9;
+  --primary: #e07a1f;
+  --primary-foreground: #0b1220;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --muted: #94a3b8;
+  --muted-foreground: #94a3b8;
+  --accent: #e07a1f;
+  --accent-foreground: #0b1220;
+  --destructive: #ef4444;
+  --destructive-foreground: #f1f5f9;
+  --border: rgba(241, 245, 249, 0.12);
+  --input: rgba(241, 245, 249, 0.18);
+  --ring: #e07a1f;
+  --surface-subtle: #0f1a30;
 }
 
 @keyframes slideUp {
@@ -100,5 +102,11 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  /* Mobile tap targets */
+  button, [role="button"], a.btn { min-height: 44px; }
+  @media (max-width: 640px) {
+    h1 { font-size: clamp(1.75rem, 7vw, 2.5rem); line-height: 1.1; }
+    h2 { font-size: clamp(1.5rem, 5.5vw, 2rem); line-height: 1.15; }
   }
 }
