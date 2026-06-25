@@ -193,6 +193,16 @@ function AdminPage() {
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
 
+      <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
+        <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
+          <span>🎨 Visual settings — colors, layout, header & footer</span>
+          <span className="text-accent transition-transform group-open:rotate-45">+</span>
+        </summary>
+        <div className="mt-6">
+          <AdminThemePanel />
+        </div>
+      </details>
+
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
