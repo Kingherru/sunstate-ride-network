@@ -572,6 +572,66 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_ratings: {
+        Row: {
+          cleanliness: number | null
+          comment: string | null
+          completed_pickup: number | null
+          created_at: string
+          id: string
+          on_time_arrival: number | null
+          on_time_pickup: number | null
+          overall: number
+          professionalism: number | null
+          provider_id: string
+          rater_id: string
+          trip_id: string
+        }
+        Insert: {
+          cleanliness?: number | null
+          comment?: string | null
+          completed_pickup?: number | null
+          created_at?: string
+          id?: string
+          on_time_arrival?: number | null
+          on_time_pickup?: number | null
+          overall: number
+          professionalism?: number | null
+          provider_id: string
+          rater_id: string
+          trip_id: string
+        }
+        Update: {
+          cleanliness?: number | null
+          comment?: string | null
+          completed_pickup?: number | null
+          created_at?: string
+          id?: string
+          on_time_arrival?: number | null
+          on_time_pickup?: number | null
+          overall?: number
+          professionalism?: number | null
+          provider_id?: string
+          rater_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_ratings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_ratings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requester_saved_locations: {
         Row: {
           address: string
@@ -616,11 +676,16 @@ export type Database = {
           created_at: string
           dropoff_address: string
           dropoff_city: string
+          has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
           ip_address: string | null
           last_updated_at: string
           mobility_notes: string | null
+          needs_assistance_to_vehicle: boolean
+          needs_surgery_signin: boolean
+          needs_surgery_signout: boolean
+          needs_wheelchair: boolean
           patient_email: string | null
           patient_first_name: string
           patient_last_name: string
@@ -639,6 +704,7 @@ export type Database = {
           requester_phone: string | null
           requester_user_id: string | null
           round_trip: boolean
+          service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
           status: string
           transport_type: string
@@ -651,11 +717,16 @@ export type Database = {
           created_at?: string
           dropoff_address: string
           dropoff_city: string
+          has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
           last_updated_at?: string
           mobility_notes?: string | null
+          needs_assistance_to_vehicle?: boolean
+          needs_surgery_signin?: boolean
+          needs_surgery_signout?: boolean
+          needs_wheelchair?: boolean
           patient_email?: string | null
           patient_first_name: string
           patient_last_name: string
@@ -674,6 +745,7 @@ export type Database = {
           requester_phone?: string | null
           requester_user_id?: string | null
           round_trip?: boolean
+          service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
           transport_type: string
@@ -686,11 +758,16 @@ export type Database = {
           created_at?: string
           dropoff_address?: string
           dropoff_city?: string
+          has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
           last_updated_at?: string
           mobility_notes?: string | null
+          needs_assistance_to_vehicle?: boolean
+          needs_surgery_signin?: boolean
+          needs_surgery_signout?: boolean
+          needs_wheelchair?: boolean
           patient_email?: string | null
           patient_first_name?: string
           patient_last_name?: string
@@ -709,6 +786,7 @@ export type Database = {
           requester_phone?: string | null
           requester_user_id?: string | null
           round_trip?: boolean
+          service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
           transport_type?: string
@@ -849,9 +927,14 @@ export type Database = {
           estimated_dropoff_at: string | null
           estimated_miles: number | null
           estimated_pickup_at: string | null
+          has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
           mobility_notes: string | null
+          needs_assistance_to_vehicle: boolean
+          needs_surgery_signin: boolean
+          needs_surgery_signout: boolean
+          needs_wheelchair: boolean
           no_show_reason: string | null
           patient_first_name: string
           patient_last_name: string
@@ -865,6 +948,7 @@ export type Database = {
           pickup_zip: string | null
           region: string | null
           round_trip: boolean
+          service_level: Database["public"]["Enums"]["service_level"] | null
           source: string
           special_instructions: string | null
           status: string
@@ -894,9 +978,14 @@ export type Database = {
           estimated_dropoff_at?: string | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
+          has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
           mobility_notes?: string | null
+          needs_assistance_to_vehicle?: boolean
+          needs_surgery_signin?: boolean
+          needs_surgery_signout?: boolean
+          needs_wheelchair?: boolean
           no_show_reason?: string | null
           patient_first_name: string
           patient_last_name: string
@@ -910,6 +999,7 @@ export type Database = {
           pickup_zip?: string | null
           region?: string | null
           round_trip?: boolean
+          service_level?: Database["public"]["Enums"]["service_level"] | null
           source?: string
           special_instructions?: string | null
           status?: string
@@ -939,9 +1029,14 @@ export type Database = {
           estimated_dropoff_at?: string | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
+          has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
           mobility_notes?: string | null
+          needs_assistance_to_vehicle?: boolean
+          needs_surgery_signin?: boolean
+          needs_surgery_signout?: boolean
+          needs_wheelchair?: boolean
           no_show_reason?: string | null
           patient_first_name?: string
           patient_last_name?: string
@@ -955,6 +1050,7 @@ export type Database = {
           pickup_zip?: string | null
           region?: string | null
           round_trip?: boolean
+          service_level?: Database["public"]["Enums"]["service_level"] | null
           source?: string
           special_instructions?: string | null
           status?: string
@@ -1105,6 +1201,19 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_rating_summary: {
+        Row: {
+          avg_cleanliness: number | null
+          avg_completed_pickup: number | null
+          avg_on_time_arrival: number | null
+          avg_on_time_pickup: number | null
+          avg_overall: number | null
+          avg_professionalism: number | null
+          provider_id: string | null
+          ratings_count: number | null
+        }
+        Relationships: []
+      }
       trips_admin_metadata: {
         Row: {
           assigned_to: string | null
@@ -1232,6 +1341,11 @@ export type Database = {
     Enums: {
       app_role: "admin" | "staff" | "requester"
       membership_tier: "none" | "free" | "paid"
+      service_level:
+        | "door_to_door"
+        | "bed_to_bed"
+        | "curb_to_curb"
+        | "driveway_pickup"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1361,6 +1475,12 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "staff", "requester"],
       membership_tier: ["none", "free", "paid"],
+      service_level: [
+        "door_to_door",
+        "bed_to_bed",
+        "curb_to_curb",
+        "driveway_pickup",
+      ],
     },
   },
 } as const

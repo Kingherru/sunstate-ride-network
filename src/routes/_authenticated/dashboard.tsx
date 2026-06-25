@@ -284,6 +284,9 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
     dropoff_address: "", dropoff_city: "", dropoff_zip: "",
     transport_type: "ambulatory", round_trip: false,
+    service_level: "curb_to_curb",
+    needs_wheelchair: false, has_passenger: false, needs_assistance_to_vehicle: false,
+    needs_surgery_signin: false, needs_surgery_signout: false,
     mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
   });
   const [hipaaOk, setHipaaOk] = useState(false);
@@ -320,10 +323,35 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
           <option value="stretcher">Stretcher</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm font-bold mt-6">
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-bold">Service level</span>
+        <select value={form.service_level} onChange={(e) => setForm({ ...form, service_level: e.target.value })}
+                className="border border-border rounded-sm px-3 py-2 bg-background">
+          <option value="curb_to_curb">Curb to curb</option>
+          <option value="door_to_door">Door to door</option>
+          <option value="bed_to_bed">Bed to bed</option>
+          <option value="driveway_pickup">Pickup in driveway</option>
+        </select>
+      </label>
+      <label className="flex items-center gap-2 text-sm font-bold mt-2">
         <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
         Round trip
       </label>
+      <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
+        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
+        {[
+          ["needs_wheelchair", "Needs wheelchair"],
+          ["has_passenger", "Has passenger / companion"],
+          ["needs_assistance_to_vehicle", "Help into vehicle"],
+          ["needs_surgery_signin", "Sign-in for surgery"],
+          ["needs_surgery_signout", "Sign-out from surgery"],
+        ].map(([k, label]) => (
+          <label key={k} className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={!!form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.checked })} />
+            {label}
+          </label>
+        ))}
+      </fieldset>
       <Field label="Payer" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
       <label className="flex flex-col gap-1 text-sm col-span-2">
         <span className="font-bold">Mobility notes</span>
