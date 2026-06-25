@@ -324,6 +324,9 @@ function PaidOnly() {
 function NewTripForm({ onCreated }: { onCreated: () => void }) {
   const [form, setForm] = useState<any>({
     patient_first_name: "", patient_last_name: "", patient_phone: "",
+    patient_date_of_birth: "", medicaid_number: "", medicaid_plan: "",
+    authorization_number: "", diagnosis_code: "",
+    emergency_contact_name: "", emergency_contact_phone: "",
     pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
     dropoff_address: "", dropoff_city: "", dropoff_zip: "",
     transport_type: "ambulatory", round_trip: false,
@@ -337,7 +340,10 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     mutationFn: async () => {
       if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
-      return createTrip({ data: { ...form, hipaa_ack_id: ack.id } });
+      const payload = { ...form };
+      // Don't send empty date string (zod regex would reject)
+      if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
+      return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
     },
     onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
@@ -348,7 +354,17 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <Field label="Patient first name" v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
       <Field label="Patient last name" v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
       <Field label="Patient phone" v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       <Field label="Trip number" v={form.trip_number} on={(v) => setForm({ ...form, trip_number: v })} />
+      <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
+        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Medicaid / CMS billing</legend>
+        <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
+        <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply, MMA" />
+        <Field label="Authorization #" v={form.authorization_number} on={(v) => setForm({ ...form, authorization_number: v })} />
+        <Field label="Diagnosis code" v={form.diagnosis_code} on={(v) => setForm({ ...form, diagnosis_code: v })} placeholder="ICD-10 (optional)" />
+        <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
+        <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
+      </fieldset>
       <Field label="Pickup address" v={form.pickup_address} on={(v) => setForm({ ...form, pickup_address: v })} required className="col-span-2" />
       <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
       <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
