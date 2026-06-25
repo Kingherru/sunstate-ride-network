@@ -13,6 +13,7 @@ import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
+import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
-type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "payouts" | "integrations" | "account";
 
 function DashboardPage() {
   const qc = useQueryClient();
@@ -148,6 +149,7 @@ function DashboardPage() {
                 ["contacts", "Contacts"],
                 ["fleet", "Drivers & Vehicles"],
                 ["pricing", "Pricing"],
+                ["payouts", "Payouts"],
                 ["integrations", "Integrations"],
                 ["account", "Account"],
               ].map(([key, label]) => (
@@ -168,6 +170,7 @@ function DashboardPage() {
             {tab === "contacts" && <ContactsPanel />}
             {tab === "fleet" && <FleetPanel />}
             {tab === "pricing" && <PricingPanel />}
+            {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "account" && <AccountPanel profile={profile} />}
           </>

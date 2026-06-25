@@ -34,13 +34,19 @@ export function Header() {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-3 md:gap-6">
+        <div className="flex items-center gap-2 md:gap-4">
           <a
             href="tel:8005550199"
             className="hidden sm:inline-block font-mono text-sm font-bold tracking-tight text-primary bg-primary/5 px-3 py-1.5 rounded-sm ring-1 ring-primary/10"
           >
             (800) 555-0199
           </a>
+          <Link
+            to="/auth"
+            className="hidden md:inline-block text-sm font-bold text-primary border border-primary/30 px-4 py-2 rounded-sm hover:bg-primary/5 transition-all"
+          >
+            Provider Sign In
+          </Link>
           <Link
             to="/request-a-ride"
             className="hidden sm:inline-block text-sm font-bold text-primary-foreground bg-primary px-5 py-2 rounded-sm hover:bg-primary/90 transition-all"
@@ -70,6 +76,13 @@ export function Header() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              to="/auth"
+              onClick={() => setOpen(false)}
+              className="text-sm font-bold text-primary border border-primary/30 px-5 py-3 rounded-sm text-center"
+            >
+              Provider Sign In
+            </Link>
             <Link
               to="/request-a-ride"
               onClick={() => setOpen(false)}
