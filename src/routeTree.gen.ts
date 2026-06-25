@@ -25,6 +25,7 @@ import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.in
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ProviderLoginRouteImport } from './routes/provider.login'
 import { Route as PatientLoginRouteImport } from './routes/patient.login'
+import { Route as FacilityLoginRouteImport } from './routes/facility.login'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -113,6 +114,11 @@ const PatientLoginRoute = PatientLoginRouteImport.update({
   path: '/patient/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacilityLoginRoute = FacilityLoginRouteImport.update({
+  id: '/facility/login',
+  path: '/facility/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   id: '/checkout/return',
   path: '/checkout/return',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/checkout/return'
+    | '/facility/login'
     | '/patient/login'
     | '/provider/login'
     | '/service-areas/$city'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/checkout/return'
+    | '/facility/login'
     | '/patient/login'
     | '/provider/login'
     | '/service-areas/$city'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/checkout/return'
+    | '/facility/login'
     | '/patient/login'
     | '/provider/login'
     | '/service-areas/$city'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrainingRoute: typeof TrainingRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
+  FacilityLoginRoute: typeof FacilityLoginRoute
   PatientLoginRoute: typeof PatientLoginRoute
   ProviderLoginRoute: typeof ProviderLoginRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -447,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatientLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/facility/login': {
+      id: '/facility/login'
+      path: '/facility/login'
+      fullPath: '/facility/login'
+      preLoaderRoute: typeof FacilityLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/return': {
       id: '/checkout/return'
       path: '/checkout/return'
@@ -551,6 +571,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrainingRoute: TrainingRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
+  FacilityLoginRoute: FacilityLoginRoute,
   PatientLoginRoute: PatientLoginRoute,
   ProviderLoginRoute: ProviderLoginRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
