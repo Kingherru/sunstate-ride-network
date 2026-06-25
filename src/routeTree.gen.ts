@@ -23,6 +23,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
+import { Route as ProviderLoginRouteImport } from './routes/provider.login'
 import { Route as PatientLoginRouteImport } from './routes/patient.login'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -102,6 +103,11 @@ const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   path: '/$city',
   getParentRoute: () => ServiceAreasRoute,
 } as any)
+const ProviderLoginRoute = ProviderLoginRouteImport.update({
+  id: '/provider/login',
+  path: '/provider/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientLoginRoute = PatientLoginRouteImport.update({
   id: '/patient/login',
   path: '/patient/login',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/patient/login': typeof PatientLoginRoute
+  '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/patient/login': typeof PatientLoginRoute
+  '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas': typeof ServiceAreasIndexRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/patient/login': typeof PatientLoginRoute
+  '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/patient/login'
+    | '/provider/login'
     | '/service-areas/$city'
     | '/service-areas/'
     | '/requests/$id'
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/patient/login'
+    | '/provider/login'
     | '/service-areas/$city'
     | '/service-areas'
     | '/requests/$id'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/checkout/return'
     | '/patient/login'
+    | '/provider/login'
     | '/service-areas/$city'
     | '/service-areas/'
     | '/_authenticated/requests/$id'
@@ -315,6 +327,7 @@ export interface RootRouteChildren {
   TrainingRoute: typeof TrainingRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   PatientLoginRoute: typeof PatientLoginRoute
+  ProviderLoginRoute: typeof ProviderLoginRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -419,6 +432,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/service-areas/$city'
       preLoaderRoute: typeof ServiceAreasCityRouteImport
       parentRoute: typeof ServiceAreasRoute
+    }
+    '/provider/login': {
+      id: '/provider/login'
+      path: '/provider/login'
+      fullPath: '/provider/login'
+      preLoaderRoute: typeof ProviderLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/patient/login': {
       id: '/patient/login'
@@ -532,6 +552,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrainingRoute: TrainingRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   PatientLoginRoute: PatientLoginRoute,
+  ProviderLoginRoute: ProviderLoginRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,
