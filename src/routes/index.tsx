@@ -1,6 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroVan from "@/assets/hero-van.jpg";
 import { SectionHeading } from "@/components/site/SectionHeading";
+import {
+  ShieldCheck,
+  BadgeCheck,
+  Award,
+  Headphones,
+  PersonStanding,
+  Accessibility,
+  BedDouble,
+  MapPin,
+  GraduationCap,
+  Truck,
+  ArrowRight,
+  CalendarClock,
+} from "lucide-react";
 
 const cities = [
   { code: "JAX-01", name: "Jacksonville", slug: "jacksonville" },
@@ -11,23 +25,34 @@ const cities = [
   { code: "FLL-06", name: "Fort Lauderdale", slug: "fort-lauderdale" },
 ] as const;
 
+const trustItems = [
+  { label: "HIPAA Compliant", Icon: ShieldCheck },
+  { label: "Fully Insured & Bonded", Icon: BadgeCheck },
+  { label: "Certified Professionals", Icon: Award },
+  { label: "24/7 Dispatch", Icon: Headphones },
+] as const;
+
 const services = [
   {
     title: "Ambulatory",
+    Icon: PersonStanding,
     description:
       "For independent patients needing reliable door-to-door transport for clinic visits, dialysis, and routine appointments.",
   },
   {
     title: "Wheelchair",
+    Icon: Accessibility,
     description:
       "ADA-compliant hydraulic lifts and four-point securement systems for a stable, comfortable ride.",
   },
   {
     title: "Gurney / Stretcher",
+    Icon: BedDouble,
     description:
       "Two-person crews specialized in non-emergency stretcher logistics for bed-to-bed transfers.",
   },
 ] as const;
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -102,12 +127,12 @@ function HomePage() {
       {/* Trust strip */}
       <div className="border-y border-border bg-card">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-wrap justify-center md:justify-between items-center gap-8">
-          {["HIPAA Compliant", "Fully Insured & Bonded", "Certified Professionals", "24/7 Dispatch"].map((t) => (
-            <div key={t} className="flex items-center gap-3">
-              <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <div className="size-4 bg-primary rounded-xs"></div>
+          {trustItems.map(({ label, Icon }) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                <Icon size={20} strokeWidth={2.25} />
               </div>
-              <span className="text-sm font-bold tracking-tight">{t}</span>
+              <span className="text-sm font-bold tracking-tight">{label}</span>
             </div>
           ))}
         </div>
@@ -127,7 +152,9 @@ function HomePage() {
                 key={s.title}
                 className="group p-8 rounded-xl bg-background border border-border hover:border-primary/20 transition-all"
               >
-                <div className="size-12 bg-primary rounded-lg mb-6 group-hover:bg-accent transition-colors" />
+                <div className="size-12 bg-primary text-primary-foreground rounded-lg mb-6 flex items-center justify-center group-hover:bg-accent transition-colors">
+                  <s.Icon size={24} strokeWidth={2} />
+                </div>
                 <h3 className="text-xl font-bold mb-3">{s.title}</h3>
                 <p className="text-sm text-muted leading-relaxed">{s.description}</p>
               </div>
@@ -136,9 +163,9 @@ function HomePage() {
           <div className="mt-12">
             <Link
               to="/services"
-              className="font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors text-sm uppercase tracking-wide"
+              className="inline-flex items-center gap-2 font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors text-sm uppercase tracking-wide"
             >
-              Compare all service levels →
+              Compare all service levels <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -166,7 +193,10 @@ function HomePage() {
                 params={{ city: c.slug }}
                 className="aspect-square bg-white/5 border border-white/10 p-8 flex flex-col justify-between hover:bg-white/10 transition-colors group cursor-pointer"
               >
-                <span className="font-mono text-xs text-white/40">{c.code}</span>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs text-white/40">{c.code}</span>
+                  <MapPin size={18} className="text-accent opacity-70 group-hover:opacity-100 transition-opacity" />
+                </div>
                 <h4 className="text-2xl font-bold tracking-tight">{c.name}</h4>
               </Link>
             ))}
@@ -189,9 +219,9 @@ function HomePage() {
               </p>
               <Link
                 to="/training"
-                className="font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors"
+                className="inline-flex items-center gap-2 font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors"
               >
-                View Curriculum →
+                View Curriculum <ArrowRight size={16} />
               </Link>
             </div>
             <div className="grid sm:grid-cols-2 gap-8">
@@ -203,13 +233,16 @@ function HomePage() {
                   <div className="absolute top-0 right-0 px-4 py-1.5 bg-accent text-accent-foreground font-mono text-[10px] font-bold">
                     $100.00
                   </div>
-                  <h3 className="text-lg font-bold mb-4 pr-12">{c.title}</h3>
+                  <div className="size-11 bg-primary/10 text-primary rounded-lg mb-5 flex items-center justify-center">
+                    <GraduationCap size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold mb-3 pr-12">{c.title}</h3>
                   <p className="text-sm text-muted mb-6">{c.desc}</p>
                   <Link
                     to="/training"
-                    className="block w-full text-center py-3 border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
+                    className="inline-flex items-center justify-center gap-2 w-full text-center py-3 border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
                   >
-                    Enroll Now
+                    <CalendarClock size={14} /> Enroll Now
                   </Link>
                 </div>
               ))}
@@ -233,9 +266,9 @@ function HomePage() {
             </div>
             <Link
               to="/providers"
-              className="relative z-10 px-10 py-5 bg-accent text-accent-foreground font-bold rounded-sm text-sm tracking-widest uppercase shadow-xl hover:scale-105 transition-transform"
+              className="relative z-10 inline-flex items-center gap-2 px-10 py-5 bg-accent text-accent-foreground font-bold rounded-sm text-sm tracking-widest uppercase shadow-xl hover:scale-105 transition-transform"
             >
-              Register Your Fleet
+              <Truck size={18} /> Register Your Fleet
             </Link>
             <div
               className="absolute inset-0 bg-white/[0.03] pointer-events-none"
