@@ -138,6 +138,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          long_distance_ok: boolean
           medicaid_number: string | null
           medicaid_plan: string | null
           membership_status: string
@@ -147,6 +148,7 @@ export type Database = {
           preferred_zip_codes: string[]
           provider_application_id: string | null
           region: string | null
+          service_radius_miles: number
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           updated_at: string
@@ -164,6 +166,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          long_distance_ok?: boolean
           medicaid_number?: string | null
           medicaid_plan?: string | null
           membership_status?: string
@@ -173,6 +176,7 @@ export type Database = {
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
           region?: string | null
+          service_radius_miles?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -190,6 +194,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          long_distance_ok?: boolean
           medicaid_number?: string | null
           medicaid_plan?: string | null
           membership_status?: string
@@ -199,6 +204,7 @@ export type Database = {
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
           region?: string | null
+          service_radius_miles?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -848,6 +854,7 @@ export type Database = {
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
+          dispatch_source: string
           dropoff_address: string
           dropoff_city: string
           has_passenger: boolean
@@ -889,6 +896,7 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          dispatch_source?: string
           dropoff_address: string
           dropoff_city: string
           has_passenger?: boolean
@@ -930,6 +938,7 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          dispatch_source?: string
           dropoff_address?: string
           dropoff_city?: string
           has_passenger?: boolean
