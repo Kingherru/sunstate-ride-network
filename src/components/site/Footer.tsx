@@ -31,7 +31,8 @@ const FAQS = [
 
 export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
   const isAuthed = portal !== "public";
-  // Patient + Facility portals see About/Contact links. Provider/Admin do not.
+  // Only providers see Membership + Training. Patient/Facility see Company links instead.
+  const showProviderLinks = portal === "provider";
   const showCompanyLinks = portal === "patient" || portal === "facility";
 
   if (isAuthed) {
@@ -51,19 +52,20 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
               </p>
             </div>
 
-            {/* Secondary menu: Membership + Training live here for logged-in users */}
-            <div>
-              <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
-                More
-              </h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/membership" className="text-slate-300 hover:text-white">Membership</Link></li>
-                <li><Link to="/training" className="text-slate-300 hover:text-white">Training</Link></li>
-                <li><Link to="/service-areas" className="text-slate-300 hover:text-white">Service Areas</Link></li>
-              </ul>
-            </div>
+            {showProviderLinks && (
+              <div>
+                <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
+                  More
+                </h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link to="/membership" className="text-slate-300 hover:text-white">Membership</Link></li>
+                  <li><Link to="/training" className="text-slate-300 hover:text-white">Training</Link></li>
+                  <li><Link to="/service-areas" className="text-slate-300 hover:text-white">Service Areas</Link></li>
+                </ul>
+              </div>
+            )}
 
-            {showCompanyLinks ? (
+            {showCompanyLinks && (
               <div>
                 <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
                   Company
@@ -74,16 +76,16 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
                   <li><a href="mailto:myfloridanemt@gmail.com" className="text-slate-300 hover:text-white">Support</a></li>
                 </ul>
               </div>
-            ) : (
-              <div>
-                <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
-                  Support
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  <li><a href="mailto:myfloridanemt@gmail.com" className="text-slate-300 hover:text-white">myfloridanemt@gmail.com</a></li>
-                </ul>
-              </div>
             )}
+
+            <div>
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
+                Support
+              </h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="mailto:myfloridanemt@gmail.com" className="text-slate-300 hover:text-white">myfloridanemt@gmail.com</a></li>
+              </ul>
+            </div>
           </div>
 
           <div className="pt-6 mt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-slate-500">
@@ -94,6 +96,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
       </footer>
     );
   }
+
 
   return (
     <footer className="bg-card pt-20 pb-10 border-t border-border">

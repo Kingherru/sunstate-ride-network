@@ -6,7 +6,9 @@ import {
   listVehicles, upsertVehicle, deleteVehicle,
 } from "@/lib/fleet.functions";
 
-export function FleetPanel() {
+export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
+  if (only === "drivers") return <DriversCard />;
+  if (only === "vehicles") return <VehiclesCard />;
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <DriversCard />
