@@ -76,7 +76,7 @@ function MembershipPage() {
             <>
               <Link
                 to="/auth"
-                className="block w-full text-center text-sm font-bold text-primary-foreground bg-primary px-6 py-3 rounded-sm hover:bg-primary/90 mb-3"
+                className="block w-full text-center text-sm font-bold text-white bg-accent px-6 py-3 rounded-sm hover:bg-accent/90 shadow-sm mb-3"
               >
                 Sign in to subscribe
               </Link>
