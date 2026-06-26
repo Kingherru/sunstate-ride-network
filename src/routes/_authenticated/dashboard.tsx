@@ -14,6 +14,7 @@ import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
+import { demoProfile, demoTrips } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
