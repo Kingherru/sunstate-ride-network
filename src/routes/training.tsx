@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useProviderOnlyGate } from "@/lib/portal-guard";
 
 export const Route = createFileRoute("/training")({
   head: () => ({
