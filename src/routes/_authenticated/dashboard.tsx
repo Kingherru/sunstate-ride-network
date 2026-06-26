@@ -14,6 +14,9 @@ import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
+import { RequestsPanel, ReservationsPanel } from "@/components/dashboard/RequestsPanel";
+import { RulesPanel } from "@/components/dashboard/RulesPanel";
+import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -30,11 +33,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "account"],
-  provider: ["new", "received", "sent", "vehicles", "drivers", "contacts", "pricing", "memberships", "payouts", "integrations", "account"],
+  provider: ["requests", "reservations", "new", "received", "sent", "network", "vehicles", "drivers", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
   facility: ["new", "sent", "upload", "contacts", "account"],
 };
 
@@ -49,7 +52,11 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "sent") return portal === "patient" ? `My Rides (${counts.sent})` : `Trip History (${counts.sent})`;
   if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
   if (t === "upload") return "Upload CSV";
-  if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Provider Network" : "Contacts";
+  if (t === "requests") return "Requests";
+  if (t === "reservations") return "Reservations";
+  if (t === "network") return "Provider Network";
+  if (t === "rules") return "Rules";
+  if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
   if (t === "vehicles") return "Vehicles";
   if (t === "drivers") return "Drivers";
   if (t === "pricing") return "Pricing";
@@ -209,6 +216,10 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "requests" && <RequestsPanel userId={userId!} />}
+            {tab === "reservations" && <ReservationsPanel userId={userId!} />}
+            {tab === "network" && <NetworkPanel userId={userId!} />}
+            {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "vehicles" && <FleetPanel only="vehicles" />}
             {tab === "drivers" && <FleetPanel only="drivers" />}
