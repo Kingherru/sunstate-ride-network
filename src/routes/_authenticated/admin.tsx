@@ -250,6 +250,10 @@ function AdminPage() {
         </div>
       </details>
 
+      <div className="mb-8">
+        <AdminUsersPanel />
+      </div>
+
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
