@@ -152,7 +152,9 @@ function HomePage() {
                 key={s.title}
                 className="group p-8 rounded-xl bg-background border border-border hover:border-primary/20 transition-all"
               >
-                <div className="size-12 bg-primary rounded-lg mb-6 group-hover:bg-accent transition-colors" />
+                <div className="size-12 bg-primary text-primary-foreground rounded-lg mb-6 flex items-center justify-center group-hover:bg-accent transition-colors">
+                  <s.Icon size={24} strokeWidth={2} />
+                </div>
                 <h3 className="text-xl font-bold mb-3">{s.title}</h3>
                 <p className="text-sm text-muted leading-relaxed">{s.description}</p>
               </div>
