@@ -715,3 +715,175 @@ function AccountPanel({ profile }: { profile: Profile }) {
     </div>
   );
 }
+
+// ───────────────────────── Sidebar ─────────────────────────
+
+function PortalSidebar(props: {
+  portal: PortalKind;
+  profile: Profile | null;
+  userEmail: string | null;
+  allowedTabs: Tab[];
+  currentTab: Tab;
+  onTab: (t: Tab) => void;
+  counts: { received: number; sent: number };
+  membershipStatus: string;
+  onSavedName: () => void;
+}) {
+  const { portal, profile, userEmail, allowedTabs, currentTab, onTab, counts, membershipStatus, onSavedName } = props;
+
+  const displayName =
+    portal === "patient"
+      ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || "Patient"
+      : profile?.company_name || (portal === "facility" ? "Facility" : "Provider");
+
+  const [editing, setEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState(displayName);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setNameDraft(displayName); }, [displayName]);
+
+  async function saveName() {
+    if (!profile || !nameDraft.trim()) return;
+    setSaving(true);
+    try {
+      const updates: any = portal === "patient"
+        ? (() => {
+            const [first, ...rest] = nameDraft.trim().split(/\s+/);
+            return { first_name: first ?? "", last_name: rest.join(" ") };
+          })()
+        : { company_name: nameDraft.trim() };
+      const { error } = await supabase.from("member_profiles").update(updates).eq("user_id", profile.user_id);
+      if (error) throw error;
+      toast.success("Name updated");
+      setEditing(false);
+      onSavedName();
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not save");
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <aside className="w-64 shrink-0 bg-card border-r border-border min-h-screen flex flex-col">
+      <div className="px-5 py-5 border-b border-border">
+        <Link to="/" className="font-extrabold text-lg tracking-tighter text-primary uppercase block mb-3">
+          FloridaNEMT
+        </Link>
+        {editing ? (
+          <div className="space-y-2">
+            <input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              className="w-full text-sm font-bold border border-border bg-background px-2 py-1.5 rounded-sm"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button onClick={saveName} disabled={saving}
+                      className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1 rounded-sm disabled:opacity-50">
+                {saving ? "Saving…" : "Save"}
+              </button>
+              <button onClick={() => { setEditing(false); setNameDraft(displayName); }}
+                      className="text-xs font-bold text-muted-foreground hover:text-foreground px-2 py-1">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="group text-left w-full"
+            title="Click to edit name"
+          >
+            <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
+              {portal} portal
+            </div>
+            <div className="text-base font-extrabold tracking-tight truncate group-hover:text-accent transition-colors">
+              {displayName}
+              <span className="ml-2 text-xs font-normal text-muted-foreground opacity-0 group-hover:opacity-100">edit</span>
+            </div>
+          </button>
+        )}
+        {portal === "provider" && (
+          <div className="mt-3">
+            <StatusBadge status={membershipStatus} />
+          </div>
+        )}
+      </div>
+
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {allowedTabs.map((key) => {
+          const active = currentTab === key;
+          return (
+            <button
+              key={key}
+              onClick={() => onTab(key)}
+              className={`w-full text-left px-3 py-2 text-sm font-bold rounded-sm transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-muted"
+              }`}
+            >
+              {tabLabel(key, portal, counts)}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="px-5 py-4 border-t border-border text-xs">
+        <div className="text-muted-foreground truncate mb-2" title={userEmail ?? ""}>{userEmail}</div>
+        <button
+          onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
+          className="font-bold text-muted-foreground hover:text-foreground"
+        >Sign out</button>
+      </div>
+    </aside>
+  );
+}
+
+// ───────────────────────── Memberships tab ─────────────────────────
+
+function MembershipsTab({ profile }: { profile: Profile }) {
+  const status = profile.membership_status ?? "inactive";
+  const tier = (profile as any).membership_tier ?? "none";
+  const isPaid = status === "active" && tier === "paid";
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div className="bg-card border border-border rounded-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-extrabold tracking-tight">Your membership</h2>
+          <StatusBadge status={status} />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div className="text-muted-foreground">Tier</div>
+            <div className="font-bold capitalize">{tier}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Status</div>
+            <div className="font-bold capitalize">{status}</div>
+          </div>
+        </div>
+        <div className="pt-5 mt-5 border-t border-border">
+          {isPaid ? (
+            <p className="text-sm text-muted-foreground">
+              You have full access. Manage billing from the Account tab.
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                Upgrade to a paid membership for $5/month to send trips, bulk upload, and use API integrations.
+              </p>
+              <Link
+                to="/membership"
+                className="text-sm font-bold text-white bg-accent px-4 py-2 rounded-sm hover:bg-accent/90 shadow-sm"
+              >
+                Upgrade — $5/month
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
