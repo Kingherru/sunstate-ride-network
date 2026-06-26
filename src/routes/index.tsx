@@ -193,7 +193,10 @@ function HomePage() {
                 params={{ city: c.slug }}
                 className="aspect-square bg-white/5 border border-white/10 p-8 flex flex-col justify-between hover:bg-white/10 transition-colors group cursor-pointer"
               >
-                <span className="font-mono text-xs text-white/40">{c.code}</span>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs text-white/40">{c.code}</span>
+                  <MapPin size={18} className="text-accent opacity-70 group-hover:opacity-100 transition-opacity" />
+                </div>
                 <h4 className="text-2xl font-bold tracking-tight">{c.name}</h4>
               </Link>
             ))}
