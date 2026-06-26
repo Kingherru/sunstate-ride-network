@@ -95,6 +95,8 @@
 
 @layer base {
   * { border-color: var(--color-border); }
+  /* Per design: all surfaces square — no rounded corners anywhere */
+  *, *::before, *::after { border-radius: 0 !important; }
   html { scroll-behavior: smooth; }
   body {
     background-color: var(--color-background);
