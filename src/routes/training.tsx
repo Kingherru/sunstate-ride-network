@@ -53,6 +53,7 @@ const courses = [
 ] as const;
 
 function TrainingPage() {
+  useProviderOnlyGate();
   return (
     <>
       <section className="py-20 lg:py-28 px-6 border-b border-border">
