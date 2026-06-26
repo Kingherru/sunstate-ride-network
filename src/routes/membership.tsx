@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { useProviderOnlyGate } from "@/lib/portal-guard";
 
 export const Route = createFileRoute("/membership")({
   head: () => ({
@@ -25,6 +26,7 @@ const BENEFITS = [
 ];
 
 function MembershipPage() {
+  useProviderOnlyGate();
   const navigate = useNavigate();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -74,7 +76,7 @@ function MembershipPage() {
             <>
               <Link
                 to="/auth"
-                className="block w-full text-center text-sm font-bold text-primary-foreground bg-primary px-6 py-3 rounded-sm hover:bg-primary/90 mb-3"
+                className="block w-full text-center text-sm font-bold text-white bg-accent px-6 py-3 rounded-sm hover:bg-accent/90 shadow-sm mb-3"
               >
                 Sign in to subscribe
               </Link>

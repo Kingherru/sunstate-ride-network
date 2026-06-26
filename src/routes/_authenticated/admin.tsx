@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
+import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -248,6 +249,10 @@ function AdminPage() {
           <AdminThemePanel />
         </div>
       </details>
+
+      <div className="mb-8">
+        <AdminUsersPanel />
+      </div>
 
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">

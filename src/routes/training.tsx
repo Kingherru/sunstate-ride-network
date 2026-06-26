@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useProviderOnlyGate } from "@/lib/portal-guard";
 
 export const Route = createFileRoute("/training")({
   head: () => ({
@@ -52,6 +53,7 @@ const courses = [
 ] as const;
 
 function TrainingPage() {
+  useProviderOnlyGate();
   return (
     <>
       <section className="py-20 lg:py-28 px-6 border-b border-border">
