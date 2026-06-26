@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { useProviderOnlyGate } from "@/lib/portal-guard";
 
 export const Route = createFileRoute("/membership")({
   head: () => ({
