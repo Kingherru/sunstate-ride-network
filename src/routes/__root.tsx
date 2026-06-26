@@ -137,15 +137,18 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const portal = getPortalContext(pathname);
+  const isAuthedArea = portal !== "public";
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <div className="min-h-screen flex flex-col bg-background text-foreground">
-          <Header />
+          {!isAuthedArea && <Header />}
           <main className="flex-1">
             <Outlet />
           </main>
-          <Footer />
+          <Footer portal={portal} />
         </div>
         <Toaster richColors position="top-center" />
       </ThemeProvider>
