@@ -29,12 +29,12 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "fleet" | "pricing" | "payouts" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "contacts" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["sent", "new", "account"],
-  provider: ["received", "sent", "new", "upload", "contacts", "fleet", "pricing", "payouts", "integrations", "account"],
-  facility: ["sent", "new", "upload", "contacts", "account"],
+  patient:  ["new", "sent", "account"],
+  provider: ["new", "received", "sent", "vehicles", "drivers", "contacts", "pricing", "memberships", "payouts", "integrations", "account"],
+  facility: ["new", "sent", "upload", "contacts", "account"],
 };
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
@@ -45,16 +45,19 @@ const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
 
 function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: number }): string {
   if (t === "received") return `Received (${counts.received})`;
-  if (t === "sent") return portal === "patient" ? `My Rides (${counts.sent})` : `Sent (${counts.sent})`;
+  if (t === "sent") return portal === "patient" ? `My Rides (${counts.sent})` : `Trip History (${counts.sent})`;
   if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
   if (t === "upload") return "Upload CSV";
-  if (t === "contacts") return portal === "facility" ? "Patients" : "Contacts";
-  if (t === "fleet") return "Drivers & Vehicles";
+  if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Provider Network" : "Contacts";
+  if (t === "vehicles") return "Vehicles";
+  if (t === "drivers") return "Drivers";
   if (t === "pricing") return "Pricing";
+  if (t === "memberships") return "Membership";
   if (t === "payouts") return "Payouts";
   if (t === "integrations") return "Integrations";
   return "Account";
 }
+
 
 /** /dashboard redirects to /{portal}/dashboard based on the user's signup portal. */
 function DashboardRouter() {
