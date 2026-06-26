@@ -26,6 +26,7 @@ const BENEFITS = [
 ];
 
 function MembershipPage() {
+  useProviderOnlyGate();
   const navigate = useNavigate();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
