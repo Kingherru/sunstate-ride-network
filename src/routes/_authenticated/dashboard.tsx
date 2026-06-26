@@ -146,25 +146,20 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const received = trips.filter((t) => t.assigned_to === userId);
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <Link to="/" className="font-extrabold text-xl tracking-tighter text-primary uppercase">FloridaNEMT</Link>
-            <span className="ml-3 text-xs uppercase tracking-widest text-muted-foreground">{meta.label}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden sm:inline text-muted-foreground">{userEmail}</span>
-            {portal === "provider" && <StatusBadge status={profile?.membership_status ?? "inactive"} />}
-            <button
-              onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >Sign out</button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-muted/30 flex">
+      <PortalSidebar
+        portal={portal}
+        profile={profile}
+        userEmail={userEmail}
+        allowedTabs={allowedTabs}
+        currentTab={tab}
+        onTab={setTab}
+        counts={{ received: received.length, sent: sent.length }}
+        membershipStatus={profile?.membership_status ?? "inactive"}
+        onSavedName={() => qc.invalidateQueries({ queryKey: ["member-profile"] })}
+      />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="flex-1 min-w-0 px-6 py-8">
         {isAdmin && (
           <div className="mb-4 flex items-center justify-between gap-3 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2 text-sm">
             <span className="font-bold text-primary">
@@ -184,7 +179,10 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
         {profile && (isActive || portal !== "provider") && (
           <>
-            <p className="text-sm text-muted-foreground mb-4">{meta.heroText}</p>
+            <div className="mb-6">
+              <h1 className="text-2xl font-extrabold tracking-tight">{meta.label}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{meta.heroText}</p>
+            </div>
             {portal === "provider" && !canSend && (
               <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
                 <p className="font-bold text-orange-900">Free membership — you can receive trips but not send them.</p>
@@ -194,30 +192,22 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 </p>
               </div>
             )}
-            <nav className="flex flex-wrap gap-2 mb-6 border-b border-border">
-              {allowedTabs.map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setTab(key)}
-                  className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px transition-colors ${
-                    tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                >{tabLabel(key, portal, { received: received.length, sent: sent.length })}</button>
-              ))}
-            </nav>
 
             {tab === "received" && <TripList trips={received} userId={userId!} role="recipient" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "contacts" && <ContactsPanel />}
-            {tab === "fleet" && <FleetPanel />}
+            {tab === "vehicles" && <FleetPanel only="vehicles" />}
+            {tab === "drivers" && <FleetPanel only="drivers" />}
             {tab === "pricing" && <PricingPanel />}
+            {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "account" && <AccountPanel profile={profile} />}
           </>
         )}
+
       </main>
     </div>
   );
