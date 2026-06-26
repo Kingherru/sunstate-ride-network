@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
+import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
