@@ -266,9 +266,9 @@ function HomePage() {
             </div>
             <Link
               to="/providers"
-              className="relative z-10 px-10 py-5 bg-accent text-accent-foreground font-bold rounded-sm text-sm tracking-widest uppercase shadow-xl hover:scale-105 transition-transform"
+              className="relative z-10 inline-flex items-center gap-2 px-10 py-5 bg-accent text-accent-foreground font-bold rounded-sm text-sm tracking-widest uppercase shadow-xl hover:scale-105 transition-transform"
             >
-              Register Your Fleet
+              <Truck size={18} /> Register Your Fleet
             </Link>
             <div
               className="absolute inset-0 bg-white/[0.03] pointer-events-none"
