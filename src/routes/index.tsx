@@ -163,9 +163,9 @@ function HomePage() {
           <div className="mt-12">
             <Link
               to="/services"
-              className="font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors text-sm uppercase tracking-wide"
+              className="inline-flex items-center gap-2 font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors text-sm uppercase tracking-wide"
             >
-              Compare all service levels →
+              Compare all service levels <ArrowRight size={16} />
             </Link>
           </div>
         </div>
