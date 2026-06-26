@@ -54,17 +54,19 @@ export const listNonPatientUsers = createServerFn({ method: "GET" })
     (profiles ?? []).forEach((p: any) => profileByUser.set(p.user_id, p));
 
     const result: AdminUser[] = users
-      .map((u) => {
+      .map((u): AdminUser => {
         const p = profileByUser.get(u.id);
-        const portal =
-          ((u.user_metadata?.portal as string) ?? p?.portal ?? "unknown") as AdminUser["portal"];
+        const rawPortal = (u.user_metadata?.portal as string) ?? p?.portal ?? "unknown";
+        const portal: AdminUser["portal"] =
+          rawPortal === "provider" || rawPortal === "facility" || rawPortal === "patient"
+            ? rawPortal
+            : "unknown";
         return {
           id: u.id,
           email: u.email ?? null,
           created_at: u.created_at,
           last_sign_in_at: u.last_sign_in_at ?? null,
-          portal: (portal === "provider" || portal === "facility" || portal === "patient")
-            ? portal : "unknown",
+          portal,
           company_name: p?.company_name ?? null,
           city: p?.city ?? null,
           region: p?.region ?? null,
