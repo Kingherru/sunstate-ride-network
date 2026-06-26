@@ -87,10 +87,11 @@ function MembershipPage() {
           ) : !checkoutOpen ? (
             <button
               onClick={() => setCheckoutOpen(true)}
-              className="w-full text-sm font-bold text-primary-foreground bg-primary px-6 py-3 rounded-sm hover:bg-primary/90"
+              className="w-full text-sm font-bold text-white bg-accent px-6 py-3 rounded-sm hover:bg-accent/90 shadow-sm"
             >
               Subscribe for $5/month
             </button>
+
           ) : (
             <StripeEmbeddedCheckout
               priceId="nemt_membership_monthly"
