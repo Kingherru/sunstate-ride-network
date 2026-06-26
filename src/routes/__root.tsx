@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -13,6 +14,17 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+
+type PortalContext = "public" | "patient" | "provider" | "facility" | "admin";
+
+function getPortalContext(path: string): PortalContext {
+  if (path.startsWith("/patient")) return "patient";
+  if (path.startsWith("/provider") && path !== "/providers") return "provider";
+  if (path.startsWith("/facility")) return "facility";
+  if (path.startsWith("/admin")) return "admin";
+  if (path.startsWith("/dashboard") || path.startsWith("/requests")) return "patient";
+  return "public";
+}
 
 function NotFoundComponent() {
   return (
