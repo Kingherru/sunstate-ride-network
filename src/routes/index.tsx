@@ -219,9 +219,9 @@ function HomePage() {
               </p>
               <Link
                 to="/training"
-                className="font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors"
+                className="inline-flex items-center gap-2 font-bold text-primary underline underline-offset-8 hover:text-accent transition-colors"
               >
-                View Curriculum →
+                View Curriculum <ArrowRight size={16} />
               </Link>
             </div>
             <div className="grid sm:grid-cols-2 gap-8">
@@ -233,13 +233,16 @@ function HomePage() {
                   <div className="absolute top-0 right-0 px-4 py-1.5 bg-accent text-accent-foreground font-mono text-[10px] font-bold">
                     $100.00
                   </div>
-                  <h3 className="text-lg font-bold mb-4 pr-12">{c.title}</h3>
+                  <div className="size-11 bg-primary/10 text-primary rounded-lg mb-5 flex items-center justify-center">
+                    <GraduationCap size={22} />
+                  </div>
+                  <h3 className="text-lg font-bold mb-3 pr-12">{c.title}</h3>
                   <p className="text-sm text-muted mb-6">{c.desc}</p>
                   <Link
                     to="/training"
-                    className="block w-full text-center py-3 border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
+                    className="inline-flex items-center justify-center gap-2 w-full text-center py-3 border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
                   >
-                    Enroll Now
+                    <CalendarClock size={14} /> Enroll Now
                   </Link>
                 </div>
               ))}
