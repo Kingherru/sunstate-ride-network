@@ -1,6 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroVan from "@/assets/hero-van.jpg";
 import { SectionHeading } from "@/components/site/SectionHeading";
+import {
+  ShieldCheck,
+  BadgeCheck,
+  Award,
+  Headphones,
+  PersonStanding,
+  Accessibility,
+  BedDouble,
+  MapPin,
+  GraduationCap,
+  Truck,
+  ArrowRight,
+  CalendarClock,
+} from "lucide-react";
 
 const cities = [
   { code: "JAX-01", name: "Jacksonville", slug: "jacksonville" },
@@ -11,23 +25,34 @@ const cities = [
   { code: "FLL-06", name: "Fort Lauderdale", slug: "fort-lauderdale" },
 ] as const;
 
+const trustItems = [
+  { label: "HIPAA Compliant", Icon: ShieldCheck },
+  { label: "Fully Insured & Bonded", Icon: BadgeCheck },
+  { label: "Certified Professionals", Icon: Award },
+  { label: "24/7 Dispatch", Icon: Headphones },
+] as const;
+
 const services = [
   {
     title: "Ambulatory",
+    Icon: PersonStanding,
     description:
       "For independent patients needing reliable door-to-door transport for clinic visits, dialysis, and routine appointments.",
   },
   {
     title: "Wheelchair",
+    Icon: Accessibility,
     description:
       "ADA-compliant hydraulic lifts and four-point securement systems for a stable, comfortable ride.",
   },
   {
     title: "Gurney / Stretcher",
+    Icon: BedDouble,
     description:
       "Two-person crews specialized in non-emergency stretcher logistics for bed-to-bed transfers.",
   },
 ] as const;
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
