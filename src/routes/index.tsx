@@ -127,12 +127,12 @@ function HomePage() {
       {/* Trust strip */}
       <div className="border-y border-border bg-card">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-wrap justify-center md:justify-between items-center gap-8">
-          {["HIPAA Compliant", "Fully Insured & Bonded", "Certified Professionals", "24/7 Dispatch"].map((t) => (
-            <div key={t} className="flex items-center gap-3">
-              <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <div className="size-4 bg-primary rounded-xs"></div>
+          {trustItems.map(({ label, Icon }) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                <Icon size={20} strokeWidth={2.25} />
               </div>
-              <span className="text-sm font-bold tracking-tight">{t}</span>
+              <span className="text-sm font-bold tracking-tight">{label}</span>
             </div>
           ))}
         </div>
