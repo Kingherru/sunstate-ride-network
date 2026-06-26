@@ -169,7 +169,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         {isAdmin && (
           <div className="mb-4 flex items-center justify-between gap-3 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2 text-sm">
             <span className="font-bold text-primary">
-              Admin preview · You're viewing the {portal} dashboard as your admin account.
+              Admin preview · You're viewing the {portal} dashboard{isDemo ? " with demo data" : ""}.
             </span>
             <Link to="/admin" className="font-bold text-primary hover:underline">
               ← Back to admin
@@ -177,11 +177,17 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
           </div>
         )}
 
+        {isDemo && (
+          <div className="mb-4 bg-amber-50 border border-amber-300 px-4 py-2 text-xs text-amber-900">
+            <strong>Demo data shown.</strong> Trips, profile, and counts marked “(DEMO)” are placeholders so you can see the layout — nothing is saved. Real data appears once a user completes onboarding.
+          </div>
+        )}
+
         {!profileQ.isLoading && !profile && userId && userEmail && (
           <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}
 
-        {profile && !isActive && portal === "provider" && <MembershipGate />}
+        {profile && !isActive && portal === "provider" && !isDemo && <MembershipGate />}
 
         {profile && (isActive || portal !== "provider") && (
           <>
