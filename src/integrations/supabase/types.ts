@@ -95,6 +95,30 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_saved_providers: {
+        Row: {
+          created_at: string
+          facility_user_id: string
+          id: string
+          notes: string | null
+          provider_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          facility_user_id: string
+          id?: string
+          notes?: string | null
+          provider_user_id: string
+        }
+        Update: {
+          created_at?: string
+          facility_user_id?: string
+          id?: string
+          notes?: string | null
+          provider_user_id?: string
+        }
+        Relationships: []
+      }
       hipaa_acknowledgments: {
         Row: {
           acknowledged_at: string
