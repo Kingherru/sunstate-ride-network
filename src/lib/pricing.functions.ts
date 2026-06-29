@@ -15,12 +15,14 @@ export const saveMyPricing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: Partial<PricingRates>) => input)
   .handler(async ({ data, context }) => {
-    const row = { ...DEFAULT_RATES, ...data, owner_id: context.userId };
+    const row = { ...DEFAULT_RATES, ...data, owner_id: context.userId } as Record<string, unknown>;
+    // Defensive: drop any unknown keys (e.g. legacy) to keep upsert clean
     const { data: out, error } = await context.supabase
-      .from("provider_pricing").upsert(row, { onConflict: "owner_id" }).select().single();
+      .from("provider_pricing").upsert(row as any, { onConflict: "owner_id" }).select().single();
     if (error) throw error;
     return out;
   });
+
 
 /** Recalculate a trip's cost using the caller's pricing book. */
 export const recalcTripCost = createServerFn({ method: "POST" })
