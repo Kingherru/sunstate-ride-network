@@ -36,6 +36,9 @@ export type ProviderLookupRow = {
   region: string | null;
   service_radius_miles: number | null;
   distance_miles: number;
+  est_drive_miles: number;
+  est_fare_low_cents: number;
+  est_fare_high_cents: number;
   is_saved: boolean;
 };
 
