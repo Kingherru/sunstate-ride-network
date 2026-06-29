@@ -68,8 +68,16 @@ export function calculateTripCost(trip: TripCostInput, rates: PricingRates): Cos
   }
   const wait = Number(trip.wait_minutes ?? 0);
   if (wait > 0 && rates.wait_per_min > 0) {
-    lines.push({ label: `Wait time (${wait} min × $${rates.wait_per_min.toFixed(2)})`, amount: +(wait * rates.wait_per_min).toFixed(2) });
+    const unit: WaitUnit = rates.wait_unit ?? "minute";
+    const unitMinutes = unit === "hour" ? 60 : unit === "half_hour" ? 30 : 1;
+    const units = unit === "minute" ? wait : Math.ceil(wait / unitMinutes);
+    const unitLabel = unit === "hour" ? "hr" : unit === "half_hour" ? "½hr" : "min";
+    lines.push({
+      label: `Wait time (${units} ${unitLabel} × $${rates.wait_per_min.toFixed(2)})`,
+      amount: +(units * rates.wait_per_min).toFixed(2),
+    });
   }
+
   if (trip.transport_type === "wheelchair" && rates.wheelchair_addon > 0) {
     lines.push({ label: "Wheelchair add-on", amount: rates.wheelchair_addon });
   }
