@@ -840,7 +840,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
         }}
       >
         {/* Accent glow */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[oklch(0.60_0.16_38_/_0.35)] blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.45)] blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-[oklch(0.78_0.12_195_/_0.25)] blur-3xl" />
 
         {/* Header */}
@@ -884,7 +884,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
             <Field label="Emergency contact" value={t.emergency_contact} />
           </Section>
 
-          <Section title="Route" accent="bg-[oklch(0.60_0.16_38)]">
+          <Section title="Route" accent="bg-[oklch(0.872_0.078_65.2)]">
             <div className="col-span-2">
               <Field
                 label="Pickup"
@@ -917,7 +917,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
                   {flags.map((f) => (
                     <span
                       key={f}
-                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.60_0.16_38_/_0.18)] text-[oklch(0.85_0.13_38)] border border-[oklch(0.60_0.16_38_/_0.35)]"
+                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.22)] text-[oklch(0.45_0.09_50)] border border-[oklch(0.872_0.078_65.2_/_0.45)]"
                     >
                       {f}
                     </span>
@@ -958,7 +958,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
           </button>
           <button
             onClick={() => downloadTripPdf(trip as TripPdfInput)}
-            className="text-sm font-bold text-white px-5 py-2 rounded-xl bg-[oklch(0.60_0.16_38)] hover:brightness-110 transition shadow-[0_8px_24px_-8px_oklch(0.60_0.16_38_/_0.6)]"
+            className="text-sm font-bold text-white px-5 py-2 rounded-xl bg-[oklch(0.872_0.078_65.2)] hover:brightness-110 transition shadow-[0_8px_24px_-8px_oklch(0.872_0.078_65.2_/_0.7)]"
           >
             Download PDF
           </button>
