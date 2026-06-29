@@ -615,8 +615,32 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
 }
 
 /* -------- Trip List + Send/Assign -------- */
-function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; onChanged: () => void }) {
+function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void }) {
   const [assigning, setAssigning] = useState<Trip | null>(null);
+  const qc = useQueryClient();
+  const showSavedBadge = portal === "facility" && role === "sender";
+  const savedQ = useQuery({
+    queryKey: ["facility-saved-ids", userId],
+    queryFn: async () => {
+      const mod = await import("@/lib/facility-providers.functions");
+      return mod.listSavedProviderIds();
+    },
+    enabled: showSavedBadge,
+  });
+  const savedSet = new Set<string>(savedQ.data ?? []);
+
+  async function saveProviderFromTrip(provider_user_id: string) {
+    try {
+      const mod = await import("@/lib/facility-providers.functions");
+      await mod.saveProvider({ data: { provider_user_id } });
+      toast.success("Provider saved");
+      qc.invalidateQueries({ queryKey: ["facility-saved-ids"] });
+      qc.invalidateQueries({ queryKey: ["facility-saved-providers"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    }
+  }
+
   if (!trips.length) {
     return <div className="bg-card border border-border rounded-sm p-10 text-center text-muted-foreground">No trips yet.</div>;
   }
@@ -630,11 +654,14 @@ function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: s
               <th className="px-3 py-2 text-left">Patient</th>
               <th className="px-3 py-2 text-left">Pickup → Dropoff</th>
               <th className="px-3 py-2 text-left">Status</th>
+              {showSavedBadge && <th className="px-3 py-2 text-left">Provider</th>}
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {trips.map((t) => (
+            {trips.map((t) => {
+              const isSaved = !!t.assigned_to && savedSet.has(t.assigned_to);
+              return (
               <tr key={t.id} className="border-t border-border align-top">
                 <td className="px-3 py-2 whitespace-nowrap">{t.pickup_date}<br /><span className="text-xs text-muted-foreground">{t.pickup_time}</span></td>
                 <td className="px-3 py-2">{t.patient_first_name} {t.patient_last_name}</td>
@@ -643,6 +670,23 @@ function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: s
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
                 <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
+                {showSavedBadge && (
+                  <td className="px-3 py-2">
+                    {!t.assigned_to ? (
+                      <span className="text-xs text-muted-foreground">Unassigned</span>
+                    ) : isSaved ? (
+                      <span className="bg-accent/15 text-accent text-[10px] font-bold uppercase px-2 py-1 rounded-sm">Saved provider</span>
+                    ) : (
+                      <button
+                        onClick={() => saveProviderFromTrip(t.assigned_to!)}
+                        className="text-[10px] font-bold uppercase bg-orange-100 text-orange-700 hover:bg-orange-200 px-2 py-1 rounded-sm"
+                        title="New provider — click to save"
+                      >
+                        New provider · Save
+                      </button>
+                    )}
+                  </td>
+                )}
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-primary hover:underline mr-3">PDF</button>
                   {role === "sender" && t.status === "open" && (
@@ -658,7 +702,7 @@ function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: s
                   )}
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>
