@@ -124,6 +124,7 @@ function RequestRidePage() {
           patientPhone: row.patient_phone ?? "",
           patientEmail: row.patient_email ?? "",
           pickupAddress: row.pickup_address ?? "",
+          pickupAddressDetails: (row as any).pickup_address_details ?? "",
           pickupCity: row.pickup_city ?? "",
           pickupDate: "",
           pickupTime: row.pickup_time ?? "",
