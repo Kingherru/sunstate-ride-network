@@ -379,7 +379,7 @@ function RequestRidePage() {
 
             {form.tripType === "round_trip" && (
               <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
-                <Field label="Return pickup time" error={errors.returnPickupTime}>
+                <Field label="Return pickup time" required error={errors.returnPickupTime}>
                   <input
                     type="time"
                     className={inputCls}
@@ -412,7 +412,7 @@ function RequestRidePage() {
                     onClick={() =>
                       upd("additionalStops", [
                         ...form.additionalStops,
-                        { address: "", city: "", note: "" },
+                        { address: "", city: "", pickupTime: "", note: "" },
                       ])
                     }
                     disabled={form.additionalStops.length >= 10}
@@ -425,7 +425,7 @@ function RequestRidePage() {
                   <p className="text-xs text-muted">No stops yet. Add at least one stop between pickup and drop-off.</p>
                 )}
                 {form.additionalStops.map((stop, i) => (
-                  <div key={i} className="grid md:grid-cols-[1fr_180px_auto] gap-3 items-start">
+                  <div key={i} className="grid md:grid-cols-[1fr_160px_140px_auto] gap-3 items-start">
                     <input
                       className={inputCls}
                       placeholder={`Stop ${i + 1} address`}
@@ -447,6 +447,17 @@ function RequestRidePage() {
                         upd("additionalStops", next);
                       }}
                     />
+                    <input
+                      type="time"
+                      className={inputCls}
+                      aria-label={`Stop ${i + 1} pickup time`}
+                      value={stop.pickupTime ?? ""}
+                      onChange={(e) => {
+                        const next = [...form.additionalStops];
+                        next[i] = { ...next[i], pickupTime: e.target.value };
+                        upd("additionalStops", next);
+                      }}
+                    />
                     <button
                       type="button"
                       onClick={() =>
@@ -459,9 +470,13 @@ function RequestRidePage() {
                     >
                       Remove
                     </button>
-                    {errors[`additionalStops.${i}.address`] && (
-                      <span className="md:col-span-3 text-xs text-destructive">
-                        {errors[`additionalStops.${i}.address`]}
+                    {(errors[`additionalStops.${i}.address`] ||
+                      errors[`additionalStops.${i}.city`] ||
+                      errors[`additionalStops.${i}.pickupTime`]) && (
+                      <span className="md:col-span-4 text-xs text-destructive">
+                        {errors[`additionalStops.${i}.address`] ||
+                          errors[`additionalStops.${i}.city`] ||
+                          errors[`additionalStops.${i}.pickupTime`]}
                       </span>
                     )}
                   </div>
