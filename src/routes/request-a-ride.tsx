@@ -314,15 +314,106 @@ function RequestRidePage() {
                 </button>
               ))}
             </div>
-            <label className="flex items-center gap-3 cursor-pointer text-sm">
-              <input
-                type="checkbox"
-                checked={form.roundTrip}
-                onChange={(e) => upd("roundTrip", e.target.checked)}
-                className="size-4"
-              />
-              <span>Round trip (return ride needed)</span>
-            </label>
+            <div>
+              <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
+                Trip type <span className="text-accent">*</span>
+              </span>
+              <div className="grid md:grid-cols-3 gap-3">
+                {(["one_way", "round_trip", "multi_trip"] as const).map((t) => (
+                  <button
+                    type="button"
+                    key={t}
+                    onClick={() => {
+                      upd("tripType", t);
+                      upd("roundTrip", t === "round_trip");
+                      if (t !== "multi_trip" && form.additionalStops.length > 0) {
+                        upd("additionalStops", []);
+                      }
+                    }}
+                    className={`p-4 border rounded-sm text-sm font-bold uppercase tracking-wide transition-all ${
+                      form.tripType === t
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input hover:border-primary/40"
+                    }`}
+                  >
+                    {TRIP_TYPE_LABELS[t]}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                {form.tripType === "one_way" && "Single pickup to a single drop-off."}
+                {form.tripType === "round_trip" && "We'll dispatch a return ride after the appointment."}
+                {form.tripType === "multi_trip" && "Add one or more stops between the pickup and final drop-off."}
+              </p>
+            </div>
+
+            {form.tripType === "multi_trip" && (
+              <div className="space-y-4 border border-dashed border-border rounded-sm p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted">
+                    Additional stops
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      upd("additionalStops", [
+                        ...form.additionalStops,
+                        { address: "", city: "", note: "" },
+                      ])
+                    }
+                    disabled={form.additionalStops.length >= 10}
+                    className="text-xs font-bold uppercase tracking-wide text-primary hover:underline disabled:opacity-50"
+                  >
+                    + Add stop
+                  </button>
+                </div>
+                {form.additionalStops.length === 0 && (
+                  <p className="text-xs text-muted">No stops yet. Add at least one stop between pickup and drop-off.</p>
+                )}
+                {form.additionalStops.map((stop, i) => (
+                  <div key={i} className="grid md:grid-cols-[1fr_180px_auto] gap-3 items-start">
+                    <input
+                      className={inputCls}
+                      placeholder={`Stop ${i + 1} address`}
+                      value={stop.address}
+                      onChange={(e) => {
+                        const next = [...form.additionalStops];
+                        next[i] = { ...next[i], address: e.target.value };
+                        upd("additionalStops", next);
+                      }}
+                    />
+                    <input
+                      className={inputCls}
+                      placeholder="City"
+                      list="fl-cities"
+                      value={stop.city}
+                      onChange={(e) => {
+                        const next = [...form.additionalStops];
+                        next[i] = { ...next[i], city: e.target.value };
+                        upd("additionalStops", next);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        upd(
+                          "additionalStops",
+                          form.additionalStops.filter((_, idx) => idx !== i),
+                        )
+                      }
+                      className="px-3 py-3 border border-input rounded-sm text-xs font-bold uppercase tracking-wide hover:bg-destructive/10 hover:border-destructive/40 hover:text-destructive"
+                    >
+                      Remove
+                    </button>
+                    {errors[`additionalStops.${i}.address`] && (
+                      <span className="md:col-span-3 text-xs text-destructive">
+                        {errors[`additionalStops.${i}.address`]}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             <Field label="Mobility notes" error={errors.mobilityNotes}>
               <textarea
                 className={`${inputCls} min-h-[80px]`}
