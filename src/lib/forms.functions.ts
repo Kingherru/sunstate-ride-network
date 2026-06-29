@@ -61,6 +61,8 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         mobility_notes: data.mobilityNotes || null,
         special_instructions: data.specialInstructions || null,
         requester_user_id: requesterUserId,
+        recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
+        recurrence_end_date: data.recurrenceEndDate || null,
       })
       .select("id")
       .single();
