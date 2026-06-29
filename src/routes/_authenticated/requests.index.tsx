@@ -29,7 +29,9 @@ type Row = {
   dropoff_address: string;
   dropoff_city: string;
   transport_type: string;
+  trip_type: string | null;
   round_trip: boolean;
+  additional_stops: Array<{ address: string; city: string; note?: string }> | null;
   recurrence_rule: string | null;
   patient_first_name: string;
   patient_last_name: string;
@@ -37,6 +39,12 @@ type Row = {
   mobility_notes: string | null;
   special_instructions: string | null;
 };
+
+function tripTypeLabel(t: string | null, roundTrip: boolean): string {
+  if (t === "multi_trip") return "Multi-stop";
+  if (t === "round_trip" || (!t && roundTrip)) return "Round trip";
+  return "One-way";
+}
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
