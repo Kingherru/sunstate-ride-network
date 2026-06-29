@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { geocodeAddress } from "@/lib/maps.functions";
 import { toast } from "sonner";
 
 export function NetworkPanel({ userId }: { userId: string }) {
