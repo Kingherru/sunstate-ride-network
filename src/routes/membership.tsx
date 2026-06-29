@@ -8,8 +8,8 @@ import { useProviderOnlyGate } from "@/lib/portal-guard";
 export const Route = createFileRoute("/membership")({
   head: () => ({
     meta: [
-      { title: "FloridaNEMT Membership — $5/month dispatch network" },
-      { name: "description", content: "Join the FloridaNEMT dispatch network. $5/month — send and receive trips with approved NEMT providers in your region." },
+      { title: "Florida NEMT Membership — $5/month dispatch network" },
+      { name: "description", content: "Join the Florida NEMT dispatch network. $5/month — send and receive trips with approved NEMT providers in your region." },
       { rel: "canonical", href: "https://floridanemt.com/membership" } as any,
     ],
   }),

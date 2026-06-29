@@ -26,7 +26,7 @@ type Row = {
 function sourceBadge(src: string | null, hasRequester: boolean) {
   const v = (src ?? (hasRequester ? "provider" : "auto")).toLowerCase();
   if (v === "auto")
-    return <span className="bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">FloridaNEMT auto-route</span>;
+    return <span className="bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Florida NEMT auto-route</span>;
   if (v === "provider")
     return <span className="bg-accent/15 text-accent text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">From provider</span>;
   if (v === "facility")
@@ -77,7 +77,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Incoming Requests</h2>
         <p className="text-sm text-muted-foreground">
-          Trip requests routed to you by FloridaNEMT (auto by ZIP) or sent directly by another provider/facility. Approve to move to Reservations.
+          Trip requests routed to you by Florida NEMT (auto by ZIP) or sent directly by another provider/facility. Approve to move to Reservations.
         </p>
       </div>
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}

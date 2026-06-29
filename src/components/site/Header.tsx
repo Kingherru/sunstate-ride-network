@@ -25,7 +25,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
         <div className="flex items-center gap-8 min-w-0">
           <Link to="/" className="font-extrabold text-lg sm:text-xl tracking-tighter text-primary uppercase shrink-0">
-            FloridaNEMT
+            Florida NEMT
           </Link>
           <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((l) => (

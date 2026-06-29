@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/checkout/return")({
   head: () => ({
     meta: [
-      { title: "Checkout complete — FloridaNEMT" },
+      { title: "Checkout complete — Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -22,7 +22,7 @@ function CheckoutReturn() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h1 className="text-4xl font-extrabold tracking-tighter mb-3">You're a FloridaNEMT Member</h1>
+      <h1 className="text-4xl font-extrabold tracking-tighter mb-3">You're a Florida NEMT Member</h1>
       <p className="text-muted-foreground mb-2">Your $5/mo membership is active.</p>
       {session_id && <p className="text-xs font-mono text-muted-foreground mb-8 break-all">Receipt: {session_id}</p>}
       <Link

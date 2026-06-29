@@ -12,7 +12,7 @@ const RULES: { title: string; body: string }[] = [
 const STRIKES = [
   "1st turn-back / late / no-show in a 30-day window: warning",
   "2nd violation: 7-day suspension from auto-routing",
-  "3rd violation: permanent removal from the FloridaNEMT platform",
+  "3rd violation: permanent removal from the Florida NEMT platform",
 ];
 
 export function RulesPanel() {

@@ -8,7 +8,7 @@ export const Route = createFileRoute("/service-areas/")({
       {
         name: "description",
         content:
-          "FloridaNEMT coverage across Jacksonville, Orlando, Tampa, Miami, Tallahassee, and Fort Lauderdale — plus the corridors in between.",
+          "Florida NEMT coverage across Jacksonville, Orlando, Tampa, Miami, Tallahassee, and Fort Lauderdale — plus the corridors in between.",
       },
       { property: "og:title", content: "Florida NEMT Service Areas" },
       { property: "og:description", content: "Statewide non-emergency medical transport coverage." },
@@ -31,7 +31,7 @@ function ServiceAreasIndex() {
             One network. Every major Florida hub.
           </h1>
           <p className="text-lg text-muted max-w-2xl">
-            FloridaNEMT operates 24/7 dispatch across the state's primary medical corridors.
+            Florida NEMT operates 24/7 dispatch across the state's primary medical corridors.
             Pick your region to see local detail.
           </p>
         </div>

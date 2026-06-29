@@ -9,13 +9,13 @@ import { CITY_LIST } from "@/lib/cities";
 export const Route = createFileRoute("/request-a-ride")({
   head: () => ({
     meta: [
-      { title: "Request a Ride — FloridaNEMT" },
+      { title: "Request a Ride — Florida NEMT" },
       {
         name: "description",
         content:
           "Book non-emergency medical transportation anywhere in Florida. Ambulatory, wheelchair, and gurney transport with on-time pickup.",
       },
-      { property: "og:title", content: "Request a Ride — FloridaNEMT" },
+      { property: "og:title", content: "Request a Ride — Florida NEMT" },
       { property: "og:description", content: "Book NEMT transport across Florida." },
       { property: "og:url", content: "/request-a-ride" },
     ],
@@ -127,7 +127,7 @@ function RequestRidePage() {
           {(done.miles != null || done.cents != null) && (
             <div className="bg-card border border-border rounded-sm p-5 mb-8 inline-flex flex-col items-center gap-1">
               {done.miles != null && <div className="text-sm"><span className="font-bold">Distance:</span> {done.miles.toFixed(1)} miles</div>}
-              {done.cents != null && <div className="text-sm"><span className="font-bold">Estimated fare:</span> ${(done.cents / 100).toFixed(2)} <span className="text-muted text-xs">(FloridaNEMT avg rates)</span></div>}
+              {done.cents != null && <div className="text-sm"><span className="font-bold">Estimated fare:</span> ${(done.cents / 100).toFixed(2)} <span className="text-muted text-xs">(Florida NEMT avg rates)</span></div>}
             </div>
           )}
           <p className="text-muted text-lg mb-10">

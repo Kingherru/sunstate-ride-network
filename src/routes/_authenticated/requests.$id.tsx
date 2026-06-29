@@ -12,7 +12,7 @@ import {
 export const Route = createFileRoute("/_authenticated/requests/$id")({
   head: () => ({
     meta: [
-      { title: "Ride Request Details — FloridaNEMT" },
+      { title: "Ride Request Details — Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),

@@ -23,7 +23,7 @@ import { demoProfile, demoTrips } from "@/lib/demo-data";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — FloridaNEMT" },
+      { title: "Dashboard — Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -227,11 +227,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 <div className="space-y-8">
                   <section>
                     <div className="mb-3">
-                      <h2 className="text-xl font-extrabold tracking-tight">FloridaNEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h2>
-                      <p className="text-sm text-muted-foreground">Auto-routed referrals from FloridaNEMT based on your service area.</p>
+                      <h2 className="text-xl font-extrabold tracking-tight">Florida NEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h2>
+                      <p className="text-sm text-muted-foreground">Auto-routed referrals from Florida NEMT based on your service area.</p>
                     </div>
                     {flNemt.length === 0
-                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No FloridaNEMT referrals right now.</div>
+                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No Florida NEMT referrals right now.</div>
                       : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} />}
                   </section>
                   <section>
@@ -507,7 +507,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       </label>
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
         <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
-        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
+        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
       </label>
       <button disabled={m.isPending || !hipaaOk} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
         {m.isPending ? "Creating…" : "Create trip"}
@@ -599,7 +599,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
           </div>
           <label className="flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3 mb-3">
             <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" />
-            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details.</span>
+            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. Florida NEMT does not access PHI included in trip details.</span>
           </label>
           <button
             disabled={busy || missing.length > 0 || !hipaaOk}
@@ -868,7 +868,7 @@ function PortalSidebar(props: {
     <aside className="w-64 shrink-0 bg-card border-r border-border min-h-screen flex flex-col">
       <div className="px-5 py-5 border-b border-border">
         <Link to="/" className="font-extrabold text-lg tracking-tighter text-primary uppercase block mb-3">
-          FloridaNEMT
+          Florida NEMT
         </Link>
         {editing ? (
           <div className="space-y-2">
