@@ -11,6 +11,7 @@ export type TripTypeOption = (typeof TRIP_TYPE_OPTIONS)[number];
 export const additionalStopSchema = z.object({
   address: z.string().trim().min(3).max(300),
   city: z.string().trim().min(1).max(100),
+  pickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   note: z.string().trim().max(300).optional().or(z.literal("")),
 });
 export type AdditionalStop = z.infer<typeof additionalStopSchema>;
@@ -38,7 +39,34 @@ export const rideRequestSchema = z.object({
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
   recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
   recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+}).superRefine((data, ctx) => {
+  if (data.tripType === "round_trip" && !data.returnPickupTime) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["returnPickupTime"],
+      message: "Return pickup time is required for round trips.",
+    });
+  }
+  if (data.tripType === "multi_trip") {
+    if (!data.additionalStops || data.additionalStops.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["additionalStops"],
+        message: "Add at least one stop for a multi-stop trip.",
+      });
+    }
+    data.additionalStops?.forEach((stop, i) => {
+      if (!stop.pickupTime) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["additionalStops", i, "pickupTime"],
+          message: "Pickup time is required for each stop.",
+        });
+      }
+    });
+  }
 });
+
 
 
 export type RideRequestInput = z.infer<typeof rideRequestSchema>;
