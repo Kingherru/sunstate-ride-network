@@ -192,7 +192,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
 
   return (
-    <div className="min-h-screen bg-[oklch(0.97_0.01_220)] flex">
+    <div className="portal-scope min-h-screen flex">
       <PortalSidebar
         portal={portal}
         profile={profile}
