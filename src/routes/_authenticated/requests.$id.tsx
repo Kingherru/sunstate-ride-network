@@ -201,6 +201,12 @@ function RequestDetailPage() {
 
             <Row label="Pickup">
               {r.pickup_address}
+              {(r as any).pickup_address_details && (
+                <>
+                  <br />
+                  <span className="text-zinc-700 italic">{(r as any).pickup_address_details}</span>
+                </>
+              )}
               <br />
               <span className="text-zinc-600">{r.pickup_city}</span>
             </Row>
