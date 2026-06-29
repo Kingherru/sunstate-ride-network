@@ -18,7 +18,20 @@ import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
+import { SavedCards } from "@/components/payments/SavedCards";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
+
+function PaymentsTab() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight">Payments</h2>
+        <p className="text-sm text-muted-foreground">Securely save a card so you can pay for confirmed trips in one click.</p>
+      </div>
+      <SavedCards />
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -34,12 +47,12 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "account"],
+  patient:  ["new", "sent", "payments", "account"],
   provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "payments", "account"],
 };
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
@@ -66,6 +79,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "memberships") return "Membership";
   if (t === "payouts") return "Payouts";
   if (t === "integrations") return "Integrations";
+  if (t === "payments") return "Payments";
   return "Account";
 }
 
@@ -257,6 +271,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
+            {tab === "payments" && <PaymentsTab />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
           </>
         )}
