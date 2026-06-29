@@ -96,7 +96,13 @@ function RequestRidePage() {
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
-        setDone(res.id);
+        // Geocode + compute miles & estimated cost in the background; if it fails we still confirm the booking.
+        let miles: number | null | undefined; let cents: number | null | undefined;
+        try {
+          const enriched = await enrich({ data: { id: res.id } });
+          if (enriched.ok) { miles = enriched.miles; cents = enriched.estimated_cost_cents; }
+        } catch { /* ignore — non-fatal */ }
+        setDone({ id: res.id, miles, cents });
         toast.success("Ride request received. A dispatcher will call you shortly.");
         router.invalidate();
       } else {
