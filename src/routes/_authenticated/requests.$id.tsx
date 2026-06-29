@@ -300,12 +300,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-function RescheduleForm({
-  initial,
-  onSubmit,
-  onCancel,
-  submitting,
-}: {
 type RescheduleInput = {
   pickupDate: string;
   pickupTime: string;
