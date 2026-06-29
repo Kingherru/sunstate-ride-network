@@ -408,7 +408,7 @@
   .portal-textarea:focus {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px oklch(0.78 0.12 195 / 30%);
+    box-shadow: 0 0 0 3px oklch(0.872 0.078 65.2 / 35%);
   }
   .portal-field-error {
     display: block;
@@ -462,9 +462,9 @@
   .portal-tab:hover { background: oklch(1 0 0 / 6%); color: var(--foreground); }
   .portal-tab[aria-current="true"],
   .portal-tab-active {
-    background: oklch(0.78 0.12 195 / 16%);
-    color: oklch(0.85 0.10 195);
-    box-shadow: inset 3px 0 0 0 oklch(0.78 0.12 195);
+    background: oklch(0.872 0.078 65.2 / 18%);
+    color: oklch(0.92 0.07 65);
+    box-shadow: inset 3px 0 0 0 oklch(0.872 0.078 65.2);
   }
 
   .portal-badge {
