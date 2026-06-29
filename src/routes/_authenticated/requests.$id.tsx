@@ -92,18 +92,12 @@ function RequestDetailPage() {
   });
 
   const rescheduleM = useMutation({
-    mutationFn: async (input: {
-      pickupDate: string;
-      pickupTime: string;
-      pickupAddress: string;
-      pickupCity: string;
-      specialInstructions: string;
-    }) => {
+    mutationFn: async (input: RescheduleInput) => {
       const r = await reschedule({ data: { id, ...input } });
       if (!r.ok) throw new Error(r.error);
     },
     onSuccess: () => {
-      toast.success("Ride rescheduled.");
+      toast.success("Trip updated.");
       setMode("view");
       void qc.invalidateQueries({ queryKey: ["ride-request", id] });
       void qc.invalidateQueries({ queryKey: ["my-ride-requests"] });
