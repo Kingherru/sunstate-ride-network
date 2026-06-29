@@ -99,7 +99,7 @@ function HomePage() {
           <div className="lg:col-span-5 relative">
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-elegant">
               <img src={heroVan} alt="Florida NEMT van outside a clinic" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.22_0.05_255_/_0.7)] via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-[oklch(0.22_0.05_255_/_0.35)]" />
               <div className="absolute bottom-4 left-4 right-4 glass rounded-2xl px-4 py-3 flex items-center justify-between">
                 <div>
                   <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-accent-orange">In Service</div>
