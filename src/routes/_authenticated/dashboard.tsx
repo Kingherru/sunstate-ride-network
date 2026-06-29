@@ -479,9 +479,11 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     patient_date_of_birth: "", medicaid_number: "", medicaid_plan: "",
     authorization_number: "", diagnosis_code: "",
     emergency_contact_name: "", emergency_contact_phone: "",
-    pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    pickup_address: "", pickup_address_details: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    appointment_time: "",
     dropoff_address: "", dropoff_city: "", dropoff_zip: "",
     transport_type: "ambulatory", round_trip: false,
+    return_pickup_time: "", return_dropoff_time: "",
     service_level: "curb_to_curb",
     needs_wheelchair: false, has_passenger: false, needs_assistance_to_vehicle: false,
     needs_surgery_signin: false, needs_surgery_signout: false,
@@ -491,15 +493,22 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
   const m = useMutation({
     mutationFn: async () => {
       if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
+      if (form.round_trip && !form.return_pickup_time) {
+        throw new Error("Return pickup time is required for round trips.");
+      }
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
       const payload = { ...form };
       // Don't send empty date string (zod regex would reject)
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
+      if (!payload.return_pickup_time) delete payload.return_pickup_time;
+      if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
+      if (!payload.appointment_time) delete payload.appointment_time;
       return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
     },
     onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
   });
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="max-w-3xl bg-card border border-border rounded-sm p-6 grid grid-cols-2 gap-4">
       <h2 className="col-span-2 text-xl font-extrabold tracking-tight">New trip</h2>
