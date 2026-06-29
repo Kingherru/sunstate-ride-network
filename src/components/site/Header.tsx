@@ -96,7 +96,7 @@ export function Header() {
                 key={l.to}
                 to={l.to}
                 onClick={() => setOpen(false)}
-                className="text-sm font-medium py-2 hover:text-accent transition-colors"
+                className="text-xs font-semibold uppercase tracking-[0.14em] py-2 hover:text-accent transition-colors"
               >
                 {l.label}
               </Link>
