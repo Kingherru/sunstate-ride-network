@@ -412,7 +412,7 @@ function RequestRidePage() {
                     onClick={() =>
                       upd("additionalStops", [
                         ...form.additionalStops,
-                        { address: "", city: "", note: "" },
+                        { address: "", city: "", pickupTime: "", note: "" },
                       ])
                     }
                     disabled={form.additionalStops.length >= 10}
