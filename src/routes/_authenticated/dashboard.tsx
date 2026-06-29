@@ -527,15 +527,17 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
         <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
       </fieldset>
       <Field label="Pickup address" v={form.pickup_address} on={(v) => setForm({ ...form, pickup_address: v })} required className="col-span-2" />
+      <Field label="Building / Doctor's office / Suite" v={form.pickup_address_details} on={(v) => setForm({ ...form, pickup_address_details: v })} className="col-span-2" placeholder="e.g. Dr. Smith — Suite 210" />
       <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
       <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
       <Field label="Pickup date" v={form.pickup_date} on={(v) => setForm({ ...form, pickup_date: v })} required type="date" />
       <Field label="Pickup time" v={form.pickup_time} on={(v) => setForm({ ...form, pickup_time: v })} required type="time" />
+      <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
       <Field label="Dropoff address" v={form.dropoff_address} on={(v) => setForm({ ...form, dropoff_address: v })} required className="col-span-2" />
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       <label className="flex flex-col gap-1 text-sm">
-        <span className="portal-label">Transport type</span>
+        <span className="portal-label">Transportation type</span>
         <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
                 className="portal-select">
           <option value="ambulatory">Ambulatory</option>
@@ -553,10 +555,16 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
           <option value="driveway_pickup">Pickup in driveway</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm font-bold mt-2">
+      <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
         <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
-        Round trip
+        Round trip (return pickup time required)
       </label>
+      {form.round_trip && (
+        <>
+          <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
+          <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+        </>
+      )}
       <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
         <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
         {[
