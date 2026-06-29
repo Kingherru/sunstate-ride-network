@@ -154,33 +154,30 @@
 }
 
 @layer utilities {
-  /* ---------- Glass surfaces ---------- */
+  /* ---------- Solid surfaces (glass removed for business look) ---------- */
   .glass {
-    background: oklch(1 0 0 / 60%);
-    backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid oklch(1 0 0 / 60%);
-    box-shadow: var(--shadow-glass);
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
   }
   .glass-soft {
-    background: oklch(1 0 0 / 40%);
-    backdrop-filter: blur(16px) saturate(140%);
-    border: 1px solid oklch(0.32 0.07 256 / 8%);
+    background: var(--card);
+    border: 1px solid var(--border);
   }
   .glass-dark {
-    background: oklch(0.22 0.05 255 / 55%);
-    backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid oklch(1 0 0 / 12%);
+    background: oklch(0.28 0.06 255);
+    border: 1px solid oklch(1 0 0 / 10%);
     color: oklch(0.99 0 0);
   }
   .glass-tint-peach {
-    background: oklch(0.80 0.12 65 / 14%);
-    backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid oklch(0.80 0.12 65 / 25%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent-orange);
   }
   .glass-tint-sage {
-    background: oklch(0.74 0.08 170 / 14%);
-    backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid oklch(0.74 0.08 170 / 25%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--sage);
   }
   .surface-card {
     background: var(--card);
@@ -189,11 +186,12 @@
     box-shadow: var(--shadow-card);
   }
   .surface-panel {
-    background: oklch(0.99 0 0);
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) + 4px);
-    box-shadow: var(--shadow-elegant);
+    box-shadow: var(--shadow-card);
   }
+
 
 
   /* Brand */
@@ -270,15 +268,15 @@
   .btn-glass {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
     padding: 0.8rem 1.35rem;
-    background: oklch(1 0 0 / 12%);
-    backdrop-filter: blur(14px);
+    background: oklch(1 0 0 / 8%);
     color: oklch(0.99 0 0);
     border: 1px solid oklch(1 0 0 / 25%);
     border-radius: var(--radius);
     font-weight: 600; font-size: 0.9rem;
     transition: background 200ms, border-color 200ms;
   }
-  .btn-glass:hover { background: oklch(1 0 0 / 18%); border-color: oklch(1 0 0 / 40%); }
+  .btn-glass:hover { background: oklch(1 0 0 / 14%); border-color: oklch(1 0 0 / 45%); }
+
 
   .btn-ghost {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
