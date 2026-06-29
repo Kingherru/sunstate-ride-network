@@ -249,6 +249,17 @@ function RequestDetailPage() {
             pickupAddress: r.pickup_address,
             pickupCity: r.pickup_city,
             specialInstructions: r.special_instructions ?? "",
+            patientFirstName: r.patient_first_name ?? "",
+            patientLastName: r.patient_last_name ?? "",
+            patientPhone: r.patient_phone ?? "",
+            patientEmail: r.patient_email ?? "",
+            mobilityNotes: r.mobility_notes ?? "",
+            tripType:
+              (r.trip_type as "one_way" | "round_trip" | "multi_trip" | null) ??
+              (r.round_trip ? "round_trip" : "one_way"),
+            additionalStops: Array.isArray(r.additional_stops)
+              ? (r.additional_stops as Array<{ address: string; city: string; note?: string }>)
+              : [],
           }}
           submitting={rescheduleM.isPending}
           onCancel={() => setMode("view")}
