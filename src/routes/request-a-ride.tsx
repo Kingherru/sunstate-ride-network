@@ -42,17 +42,21 @@ const empty: RideRequestInput = {
   pickupCity: "",
   pickupDate: "",
   pickupTime: "",
+  appointmentTime: "",
   dropoffAddress: "",
   dropoffCity: "",
   transportType: "ambulatory",
   tripType: "one_way",
   roundTrip: false,
+  returnPickupTime: "",
+  returnDropoffTime: "",
   additionalStops: [],
   mobilityNotes: "",
   specialInstructions: "",
   recurrence: "none",
   recurrenceEndDate: "",
 };
+
 
 const TRIP_TYPE_LABELS: Record<RideRequestInput["tripType"], string> = {
   one_way: "One-way",
