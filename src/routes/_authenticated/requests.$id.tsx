@@ -306,18 +306,41 @@ function RescheduleForm({
   onCancel,
   submitting,
 }: {
-  initial: {
-    pickupDate: string;
-    pickupTime: string;
-    pickupAddress: string;
-    pickupCity: string;
-    specialInstructions: string;
-  };
-  onSubmit: (v: typeof initial) => void;
+type RescheduleInput = {
+  pickupDate: string;
+  pickupTime: string;
+  pickupAddress: string;
+  pickupCity: string;
+  specialInstructions: string;
+  patientFirstName: string;
+  patientLastName: string;
+  patientPhone: string;
+  patientEmail: string;
+  mobilityNotes: string;
+  tripType: "one_way" | "round_trip" | "multi_trip";
+  additionalStops: Array<{ address: string; city: string; note?: string }>;
+};
+
+function RescheduleForm({
+  initial,
+  onSubmit,
+  onCancel,
+  submitting,
+}: {
+  initial: RescheduleInput;
+  onSubmit: (v: RescheduleInput) => void;
   onCancel: () => void;
   submitting: boolean;
 }) {
-  const [v, setV] = useState(initial);
+  const [v, setV] = useState<RescheduleInput>(initial);
+  const set = <K extends keyof RescheduleInput>(k: K, val: RescheduleInput[K]) =>
+    setV((s) => ({ ...s, [k]: val }));
+  const tripTypes: { id: RescheduleInput["tripType"]; label: string }[] = [
+    { id: "one_way", label: "One-way" },
+    { id: "round_trip", label: "Round trip" },
+    { id: "multi_trip", label: "Multi-stop" },
+  ];
+
   return (
     <form
       className="mt-6 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
@@ -326,57 +349,138 @@ function RescheduleForm({
         onSubmit(v);
       }}
     >
-      <h2 className="text-lg font-semibold text-zinc-900">Reschedule pickup</h2>
+      <h2 className="text-lg font-semibold text-zinc-900">Edit trip</h2>
       <p className="mt-1 text-sm text-zinc-600">
-        Updating these details will notify the provider and re-confirm your ride.
+        Update pickup, passenger details, and trip type. Changes notify the provider.
       </p>
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Pickup date">
-          <input
-            type="date"
-            required
-            value={v.pickupDate}
-            onChange={(e) => setV({ ...v, pickupDate: e.target.value })}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          />
+
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Passenger</h3>
+      <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="First name">
+          <input type="text" required value={v.patientFirstName}
+            onChange={(e) => set("patientFirstName", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
         </Field>
-        <Field label="Pickup time">
-          <input
-            type="time"
-            required
-            value={v.pickupTime}
-            onChange={(e) => setV({ ...v, pickupTime: e.target.value })}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          />
+        <Field label="Last name">
+          <input type="text" required value={v.patientLastName}
+            onChange={(e) => set("patientLastName", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
         </Field>
-        <Field label="Pickup address" wide>
-          <input
-            type="text"
-            required
-            value={v.pickupAddress}
-            onChange={(e) => setV({ ...v, pickupAddress: e.target.value })}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          />
+        <Field label="Phone">
+          <input type="tel" required value={v.patientPhone}
+            onChange={(e) => set("patientPhone", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
         </Field>
-        <Field label="Pickup city">
-          <input
-            type="text"
-            required
-            value={v.pickupCity}
-            onChange={(e) => setV({ ...v, pickupCity: e.target.value })}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          />
+        <Field label="Email">
+          <input type="email" value={v.patientEmail}
+            onChange={(e) => set("patientEmail", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
         </Field>
-        <Field label="Special instructions" wide>
-          <textarea
-            rows={3}
-            maxLength={1000}
-            value={v.specialInstructions}
-            onChange={(e) => setV({ ...v, specialInstructions: e.target.value })}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          />
+        <Field label="Mobility notes" wide>
+          <textarea rows={2} maxLength={1000} value={v.mobilityNotes}
+            onChange={(e) => set("mobilityNotes", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
         </Field>
       </div>
+
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Trip type</h3>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {tripTypes.map((t) => (
+          <button
+            type="button"
+            key={t.id}
+            onClick={() => {
+              set("tripType", t.id);
+              if (t.id !== "multi_trip") set("additionalStops", []);
+            }}
+            className={`rounded-md border px-3 py-2 text-sm font-medium ${
+              v.tripType === t.id
+                ? "border-[var(--brand-navy,#0b1d3a)] bg-[var(--brand-navy,#0b1d3a)] text-white"
+                : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Pickup</h3>
+      <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="Pickup date">
+          <input type="date" required value={v.pickupDate}
+            onChange={(e) => set("pickupDate", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+        </Field>
+        <Field label="Pickup time">
+          <input type="time" required value={v.pickupTime}
+            onChange={(e) => set("pickupTime", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+        </Field>
+        <Field label="Pickup address" wide>
+          <input type="text" required value={v.pickupAddress}
+            onChange={(e) => set("pickupAddress", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+        </Field>
+        <Field label="Pickup city">
+          <input type="text" required value={v.pickupCity}
+            onChange={(e) => set("pickupCity", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+        </Field>
+        <Field label="Special instructions" wide>
+          <textarea rows={3} maxLength={1000} value={v.specialInstructions}
+            onChange={(e) => set("specialInstructions", e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+        </Field>
+      </div>
+
+      {v.tripType === "multi_trip" && (
+        <>
+          <div className="mt-5 flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Additional stops
+            </h3>
+            <button
+              type="button"
+              onClick={() =>
+                set("additionalStops", [...v.additionalStops, { address: "", city: "", note: "" }])
+              }
+              disabled={v.additionalStops.length >= 10}
+              className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-orange,#f47b20)] hover:underline disabled:opacity-50"
+            >
+              + Add stop
+            </button>
+          </div>
+          {v.additionalStops.length === 0 && (
+            <p className="mt-2 text-xs text-zinc-500">No stops yet.</p>
+          )}
+          <div className="mt-2 space-y-2">
+            {v.additionalStops.map((s, i) => (
+              <div key={i} className="grid grid-cols-[1fr_160px_auto] gap-2">
+                <input type="text" placeholder={`Stop ${i + 1} address`} value={s.address}
+                  onChange={(e) => {
+                    const next = [...v.additionalStops];
+                    next[i] = { ...next[i], address: e.target.value };
+                    set("additionalStops", next);
+                  }}
+                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+                <input type="text" placeholder="City" value={s.city}
+                  onChange={(e) => {
+                    const next = [...v.additionalStops];
+                    next[i] = { ...next[i], city: e.target.value };
+                    set("additionalStops", next);
+                  }}
+                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+                <button type="button"
+                  onClick={() => set("additionalStops", v.additionalStops.filter((_, idx) => idx !== i))}
+                  className="rounded-md border border-zinc-300 px-2 py-2 text-xs text-zinc-700 hover:bg-zinc-50">
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="mt-5 flex justify-end gap-2">
         <button
           type="button"
