@@ -890,7 +890,7 @@ function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: ()
                   className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background" />
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="text-sm text-muted-foreground px-3 py-2">Cancel</button>
-          <button disabled={busy} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
+          <button disabled={busy} className="portal-btn-primary px-5 py-2">
             {busy ? "Saving…" : "Save rating"}
           </button>
         </div>
@@ -997,7 +997,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         </div>
         <div className="pt-4 border-t border-border">
           <button onClick={openPortal} disabled={busy}
-                  className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+                  className="portal-btn-primary px-5 py-2">
             {busy ? "Opening…" : "Manage billing"}
           </button>
         </div>
