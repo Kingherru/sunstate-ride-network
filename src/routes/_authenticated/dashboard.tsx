@@ -212,7 +212,37 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               </div>
             )}
 
-            {tab === "received" && <TripList trips={received} userId={userId!} role="recipient" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
+            {tab === "received" && (() => {
+              const isFlNemt = (s: string | null | undefined) => {
+                const v = (s ?? "").toLowerCase();
+                return v === "auto" || v === "floridanemt" || v === "florida_nemt" || v === "florida-nemt" || v === "";
+              };
+              const flNemt = received.filter((t) => isFlNemt((t as any).source));
+              const subProv = received.filter((t) => !isFlNemt((t as any).source));
+              const onChanged = () => qc.invalidateQueries({ queryKey: ["my-trips"] });
+              return (
+                <div className="space-y-8">
+                  <section>
+                    <div className="mb-3">
+                      <h2 className="text-xl font-extrabold tracking-tight">FloridaNEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h2>
+                      <p className="text-sm text-muted-foreground">Auto-routed referrals from FloridaNEMT based on your service area.</p>
+                    </div>
+                    {flNemt.length === 0
+                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No FloridaNEMT referrals right now.</div>
+                      : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} />}
+                  </section>
+                  <section>
+                    <div className="mb-3">
+                      <h2 className="text-xl font-extrabold tracking-tight">Subscribed Provider Submissions <span className="text-muted-foreground font-normal">({subProv.length})</span></h2>
+                      <p className="text-sm text-muted-foreground">Trips sent directly to you by providers and facilities in your network.</p>
+                    </div>
+                    {subProv.length === 0
+                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No partner submissions yet.</div>
+                      : <TripList trips={subProv} userId={userId!} role="recipient" onChanged={onChanged} />}
+                  </section>
+                </div>
+              );
+            })()}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
