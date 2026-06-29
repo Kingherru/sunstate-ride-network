@@ -7,6 +7,7 @@ type Row = {
   id: string;
   status: string;
   pickup_address: string;
+  pickup_address_details?: string | null;
   pickup_city: string | null;
   dropoff_address: string;
   dropoff_city: string | null;
@@ -47,7 +48,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -117,7 +118,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
 
-                  <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}</div>
+                  <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}{r.pickup_address_details ? ` — ${r.pickup_address_details}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
                   {(r.distance_miles != null || r.estimated_cost_cents != null) && (
                     <div className="mt-1 text-xs">
@@ -146,7 +147,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .eq("assigned_provider_id", userId)
         .order("pickup_date", { ascending: true });
       if (error) throw error;
@@ -186,7 +187,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                 )}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                <div>{r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
+                <div>{r.pickup_address}{r.pickup_address_details ? ` (${r.pickup_address_details})` : ""}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
               </div>
 
             </div>

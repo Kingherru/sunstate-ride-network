@@ -39,6 +39,7 @@ const empty: RideRequestInput = {
   patientPhone: "",
   patientEmail: "",
   pickupAddress: "",
+  pickupAddressDetails: "",
   pickupCity: "",
   pickupDate: "",
   pickupTime: "",
@@ -123,6 +124,7 @@ function RequestRidePage() {
           patientPhone: row.patient_phone ?? "",
           patientEmail: row.patient_email ?? "",
           pickupAddress: row.pickup_address ?? "",
+          pickupAddressDetails: (row as any).pickup_address_details ?? "",
           pickupCity: row.pickup_city ?? "",
           pickupDate: "",
           pickupTime: row.pickup_time ?? "",
@@ -274,6 +276,15 @@ function RequestRidePage() {
             </legend>
             <Field label="Pickup address" required error={errors.pickupAddress}>
               <input className={inputCls} value={form.pickupAddress} onChange={(e) => upd("pickupAddress", e.target.value)} placeholder="Street, suite/unit" />
+            </Field>
+            <Field label="Building / Doctor's office / Suite (optional)" error={errors.pickupAddressDetails}>
+              <input
+                className={inputCls}
+                value={form.pickupAddressDetails ?? ""}
+                onChange={(e) => upd("pickupAddressDetails", e.target.value)}
+                placeholder="e.g. Dr. Patel's office, Baptist MOB Suite 304, side entrance"
+              />
+              <p className="mt-1 text-xs text-muted">Building name, doctor or facility name, suite, gate code, or pickup notes.</p>
             </Field>
             <div className="grid md:grid-cols-3 gap-6">
               <Field label="City" required error={errors.pickupCity}>

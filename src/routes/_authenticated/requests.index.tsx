@@ -186,6 +186,7 @@ function RequestsPage() {
 
                 <p className="text-sm text-zinc-700">
                   <span className="font-medium">From:</span> {r.pickup_address}, {r.pickup_city}
+                  {(r as any).pickup_address_details ? ` — ${(r as any).pickup_address_details}` : ""}
                 </p>
                 {r.additional_stops && r.additional_stops.length > 0 && (
                   <p className="text-sm text-zinc-700">
