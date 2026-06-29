@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listIntegrations, upsertIntegration, deleteIntegration } from "@/lib/integrations.functions";
 
-type Vendor = "hibambi" | "routegenie";
+type Vendor = "hibambi" | "routegenie" | "dueride";
 
 const VENDORS: { id: Vendor; label: string; blurb: string }[] = [
+  { id: "dueride", label: "DueRide", blurb: "Sync trips and dispatch updates with DueRide — recommended for Florida providers." },
   { id: "hibambi", label: "hiBambi", blurb: "Push outbound trips and ingest inbound trips from hiBambi." },
   { id: "routegenie", label: "RouteGenie", blurb: "Push outbound trips and ingest inbound trips from RouteGenie." },
 ];
