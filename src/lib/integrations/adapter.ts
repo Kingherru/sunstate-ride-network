@@ -6,7 +6,7 @@
  * Implementations live next to this file (e.g. ./hibambi.ts, ./routegenie.ts)
  * and are wired into `getAdapter(vendor)` below.
  */
-export type Vendor = "hibambi" | "routegenie";
+export type Vendor = "hibambi" | "routegenie" | "dueride";
 
 export interface ExternalTrip {
   external_id: string;
