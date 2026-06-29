@@ -70,10 +70,11 @@ const inputCls =
 function RequestRidePage() {
   const router = useRouter();
   const submit = useServerFn(submitRideRequest);
+  const enrich = useServerFn(enrichRideRequest);
   const [form, setForm] = useState<RideRequestInput>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<string | null>(null);
+  const [done, setDone] = useState<{ id: string; miles?: number | null; cents?: number | null } | null>(null);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
