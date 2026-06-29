@@ -174,7 +174,7 @@ export const rescheduleMyRequest = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("ride_requests")
-      .update(update)
+      .update(update as never)
       .eq("id", data.id)
       .eq("requester_user_id", userId);
     if (error) {
