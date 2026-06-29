@@ -5,18 +5,18 @@ import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { payForConfirmedTrip } from "@/lib/saved-payments.functions";
 
 interface Props {
-  tripId: string;
+  rideRequestId: string;
   amountCents: number;
   paymentStatus?: string | null;
   onPaid?: () => void;
 }
 
 /**
- * One-click pay button for a confirmed trip.
- * - If user has a default saved card, charges that card off-session.
- * - If 3DS or no default card, opens a Stripe Elements modal to confirm.
+ * One-click pay button for a confirmed ride request.
+ * - Charges the user's default saved card via Stripe.
+ * - If 3DS authentication is required, opens a Stripe Elements modal to finish.
  */
-export function PayTripButton({ tripId, amountCents, paymentStatus, onPaid }: Props) {
+export function PayTripButton({ rideRequestId, amountCents, paymentStatus, onPaid }: Props) {
   const [busy, setBusy] = useState(false);
   const [actionSecret, setActionSecret] = useState<string | null>(null);
 
@@ -28,23 +28,18 @@ export function PayTripButton({ tripId, amountCents, paymentStatus, onPaid }: Pr
     setBusy(true);
     try {
       const r = await payForConfirmedTrip({
-        data: { trip_id: tripId, amount_cents: amountCents, environment: getStripeEnvironment() },
+        data: { ride_request_id: rideRequestId, environment: getStripeEnvironment() },
       });
-      if ("error" in r) { toast.error(r.error); return; }
-      if (r.status === "succeeded") {
-        toast.success("Payment successful");
-        onPaid?.();
+      if ("error" in r) {
+        if (r.requires_action?.client_secret) {
+          setActionSecret(r.requires_action.client_secret);
+          return;
+        }
+        toast.error(r.error);
         return;
       }
-      if (r.status === "requires_action" && r.clientSecret) {
-        setActionSecret(r.clientSecret);
-        return;
-      }
-      if (r.status === "requires_payment_method" && r.clientSecret) {
-        setActionSecret(r.clientSecret);
-        return;
-      }
-      toast.message(`Payment status: ${r.status}`);
+      toast.success("Payment successful");
+      onPaid?.();
     } catch (e: any) {
       toast.error(e.message ?? "Payment failed");
     } finally {
