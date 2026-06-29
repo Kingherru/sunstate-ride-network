@@ -215,7 +215,15 @@ function RequestRidePage() {
           urgent requests, please call directly.
         </p>
 
+        {copiedFromId && (
+          <div className="mb-6 rounded-sm border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+            <strong className="font-bold">Copied from a previous trip.</strong> Review the details and
+            pick a new pickup date before submitting.
+          </div>
+        )}
+
         <form onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
+
           {/* Patient */}
           <fieldset className="space-y-6">
             <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
