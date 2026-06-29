@@ -47,10 +47,12 @@ export interface IntegrationAdapter {
 
 import { hibambiAdapter } from "./hibambi";
 import { routegenieAdapter } from "./routegenie";
+import { duerideAdapter } from "./dueride";
 
 export function getAdapter(vendor: Vendor): IntegrationAdapter {
   switch (vendor) {
     case "hibambi": return hibambiAdapter;
     case "routegenie": return routegenieAdapter;
+    case "dueride": return duerideAdapter;
   }
 }
