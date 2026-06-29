@@ -126,6 +126,7 @@ function RequestRidePage() {
           pickupCity: row.pickup_city ?? "",
           pickupDate: "",
           pickupTime: row.pickup_time ?? "",
+          appointmentTime: (row as any).appointment_time ?? "",
           dropoffAddress: row.dropoff_address ?? "",
           dropoffCity: row.dropoff_city ?? "",
           transportType:
@@ -134,6 +135,8 @@ function RequestRidePage() {
             (row.trip_type as RideRequestInput["tripType"]) ??
             (row.round_trip ? "round_trip" : "one_way"),
           roundTrip: !!row.round_trip,
+          returnPickupTime: (row as any).return_pickup_time ?? "",
+          returnDropoffTime: (row as any).return_dropoff_time ?? "",
           additionalStops: Array.isArray(row.additional_stops)
             ? (row.additional_stops as RideRequestInput["additionalStops"])
             : [],
@@ -141,6 +144,7 @@ function RequestRidePage() {
           specialInstructions: row.special_instructions ?? "",
           recurrence: rec,
           recurrenceEndDate: "",
+
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set a new pickup date to continue.");
