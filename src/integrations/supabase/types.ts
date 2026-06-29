@@ -346,11 +346,19 @@ export type Database = {
           custom_css: string | null
           footer_style: string
           foreground_color: string
+          form_accent_color: string | null
+          form_primary_color: string | null
           header_style: string
           id: string
           is_active: boolean
           layout_style: string
           muted_color: string
+          portal_accent_color: string | null
+          portal_background_color: string | null
+          portal_border_color: string | null
+          portal_card_color: string | null
+          portal_foreground_color: string | null
+          portal_primary_color: string | null
           primary_color: string
           radius_scale: string
           updated_at: string
@@ -365,11 +373,19 @@ export type Database = {
           custom_css?: string | null
           footer_style?: string
           foreground_color?: string
+          form_accent_color?: string | null
+          form_primary_color?: string | null
           header_style?: string
           id?: string
           is_active?: boolean
           layout_style?: string
           muted_color?: string
+          portal_accent_color?: string | null
+          portal_background_color?: string | null
+          portal_border_color?: string | null
+          portal_card_color?: string | null
+          portal_foreground_color?: string | null
+          portal_primary_color?: string | null
           primary_color?: string
           radius_scale?: string
           updated_at?: string
@@ -384,11 +400,19 @@ export type Database = {
           custom_css?: string | null
           footer_style?: string
           foreground_color?: string
+          form_accent_color?: string | null
+          form_primary_color?: string | null
           header_style?: string
           id?: string
           is_active?: boolean
           layout_style?: string
           muted_color?: string
+          portal_accent_color?: string | null
+          portal_background_color?: string | null
+          portal_border_color?: string | null
+          portal_card_color?: string | null
+          portal_foreground_color?: string | null
+          portal_primary_color?: string | null
           primary_color?: string
           radius_scale?: string
           updated_at?: string
