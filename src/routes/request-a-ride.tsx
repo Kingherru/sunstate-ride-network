@@ -126,7 +126,13 @@ function RequestRidePage() {
           dropoffCity: row.dropoff_city ?? "",
           transportType:
             (row.transport_type as RideRequestInput["transportType"]) ?? "ambulatory",
+          tripType:
+            (row.trip_type as RideRequestInput["tripType"]) ??
+            (row.round_trip ? "round_trip" : "one_way"),
           roundTrip: !!row.round_trip,
+          additionalStops: Array.isArray(row.additional_stops)
+            ? (row.additional_stops as RideRequestInput["additionalStops"])
+            : [],
           mobilityNotes: row.mobility_notes ?? "",
           specialInstructions: row.special_instructions ?? "",
           recurrence: rec,
