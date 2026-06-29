@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const vendorSchema = z.enum(["hibambi", "routegenie", "dueride"]);
+const vendorSchema = z.enum(["hibambi", "routegenie", "duetride"]);
 
 export const listIntegrations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
