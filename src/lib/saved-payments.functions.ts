@@ -56,6 +56,8 @@ export const recordSavedPaymentMethod = createServerFn({ method: "POST" })
     environment: z.enum(["sandbox", "live"]),
     payment_method_id: z.string().min(3).max(200),
     make_default: z.boolean().optional(),
+    patient_id: z.string().uuid().optional().nullable(),
+    label: z.string().trim().max(120).optional().nullable(),
   }).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
     try {
@@ -69,6 +71,13 @@ export const recordSavedPaymentMethod = createServerFn({ method: "POST" })
       if (!cust?.stripe_customer_id || pm.customer !== cust.stripe_customer_id) {
         return { error: "Payment method does not belong to this user" };
       }
+      // If patient_id provided, validate it belongs to this user
+      if (data.patient_id) {
+        const { data: pat } = await supabaseAdmin
+          .from("saved_patients").select("id")
+          .eq("id", data.patient_id).eq("owner_id", context.userId).maybeSingle();
+        if (!pat) return { error: "Patient not found for this account" };
+      }
       const card = pm.card;
       const insert = await supabaseAdmin.from("saved_payment_methods").insert({
         user_id: context.userId,
@@ -79,6 +88,8 @@ export const recordSavedPaymentMethod = createServerFn({ method: "POST" })
         exp_month: card?.exp_month ?? null,
         exp_year: card?.exp_year ?? null,
         is_default: !!data.make_default,
+        patient_id: data.patient_id ?? null,
+        label: data.label ?? null,
       });
       if (insert.error) return { error: insert.error.message };
       if (data.make_default) {
@@ -98,13 +109,14 @@ export const listSavedPaymentMethods = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("saved_payment_methods")
-      .select("id, stripe_payment_method_id, brand, last4, exp_month, exp_year, is_default, environment, created_at")
+      .select("id, stripe_payment_method_id, brand, last4, exp_month, exp_year, is_default, environment, created_at, patient_id, label")
       .eq("user_id", context.userId)
       .order("is_default", { ascending: false })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+
 
 export const deleteSavedPaymentMethod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
