@@ -101,9 +101,22 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   {r.service_level && <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.service_level.replace(/_/g, " ")}</span>}
                 </div>
                 <div className="font-extrabold">
-                  {r.patient_first_name} {r.patient_last_name} · {r.pickup_date} {r.pickup_time}
+                  {r.patient_first_name} {r.patient_last_name} · {r.pickup_date}
+                </div>
+                <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                  <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
+                  <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
+                  {(r.round_trip || r.trip_type === "round_trip" || r.return_pickup_time) && (
+                    <>
+                      <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return pickup:</span> {r.return_pickup_time || "—"}</span>
+                      {r.return_dropoff_time && (
+                        <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return drop-off:</span> {r.return_dropoff_time}</span>
+                      )}
+                    </>
+                  )}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
+
                   <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
                   {(r.distance_miles != null || r.estimated_cost_cents != null) && (
