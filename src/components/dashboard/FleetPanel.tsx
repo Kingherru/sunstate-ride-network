@@ -46,8 +46,11 @@ function DriversCard() {
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
               </div>
-              <div className="text-xs">
-                <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline mr-3">Edit</button>
+              <div className="text-xs flex items-center gap-3">
+                {d.email && (
+                  <button onClick={() => setScheduling(d)} className="font-bold text-primary hover:underline">Email week</button>
+                )}
+                <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline">Edit</button>
                 <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
@@ -56,6 +59,7 @@ function DriversCard() {
       )}
       {editing && <DriverDialog d={editing} onClose={() => setEditing(null)}
                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
+      {scheduling && <WeekScheduleDialog d={scheduling} onClose={() => setScheduling(null)} />}
     </section>
   );
 }
