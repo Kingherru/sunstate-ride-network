@@ -612,8 +612,11 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
 /* -------- Trip List + Send/Assign -------- */
 function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void }) {
   const [assigning, setAssigning] = useState<Trip | null>(null);
+  const [viewing, setViewing] = useState<Trip | null>(null);
+  const [rating, setRating] = useState<Trip | null>(null);
   const qc = useQueryClient();
   const showSavedBadge = portal === "facility" && role === "sender";
+  const canRate = portal === "facility" && role === "sender";
   const savedQ = useQuery({
     queryKey: ["facility-saved-ids", userId],
     queryFn: async () => {
@@ -657,16 +660,20 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
             {trips.map((t) => {
               const isSaved = !!t.assigned_to && savedSet.has(t.assigned_to);
               return (
-              <tr key={t.id} className="border-t border-border align-top">
+              <tr key={t.id} className="border-t border-border align-top hover:bg-muted/40 cursor-pointer" onClick={() => setViewing(t)}>
                 <td className="px-3 py-2 whitespace-nowrap">{t.pickup_date}<br /><span className="text-xs text-muted-foreground">{t.pickup_time}</span></td>
-                <td className="px-3 py-2">{t.patient_first_name} {t.patient_last_name}</td>
+                <td className="px-3 py-2">
+                  <button onClick={(e) => { e.stopPropagation(); setViewing(t); }} className="font-bold text-primary hover:underline text-left">
+                    {t.patient_first_name} {t.patient_last_name}
+                  </button>
+                </td>
                 <td className="px-3 py-2 text-xs">
                   <div>{t.pickup_city}{t.pickup_zip ? `, ${t.pickup_zip}` : ""}</div>
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
                 <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
                 {showSavedBadge && (
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     {!t.assigned_to ? (
                       <span className="text-xs text-muted-foreground">Unassigned</span>
                     ) : isSaved ? (
@@ -682,17 +689,21 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                     )}
                   </td>
                 )}
-                <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-primary hover:underline mr-3">PDF</button>
+                <td className="px-3 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => setViewing(t)} className="text-xs font-bold text-primary hover:underline mr-3">View</button>
+                  <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-muted-foreground hover:underline mr-3">PDF</button>
                   {role === "sender" && t.status === "open" && (
                     <button onClick={() => setAssigning(t)} className="text-xs font-bold text-accent hover:underline mr-3">Send</button>
+                  )}
+                  {canRate && t.assigned_to && (t.status === "completed" || t.status === "accepted") && (
+                    <button onClick={() => setRating(t)} className="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-sm hover:bg-amber-600 mr-2">★ Rate</button>
                   )}
                   {role === "recipient" && t.status === "assigned" && (
                     <>
                       <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } }); toast.success("Accepted"); onChanged(); }}
-                              className="text-xs font-bold text-accent hover:underline mr-3">Accept</button>
+                              className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
                       <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "declined" } }); toast.success("Declined"); onChanged(); }}
-                              className="text-xs font-bold text-red-600 hover:underline">Decline</button>
+                              className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
                     </>
                   )}
                 </td>
@@ -704,7 +715,113 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
       {assigning && (
         <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
       )}
+      {viewing && <TripDetailModal trip={viewing} onClose={() => setViewing(null)} />}
+      {rating && <RateProviderModal trip={rating} onClose={() => setRating(null)} onSaved={() => { setRating(null); onChanged(); }} />}
     </>
+  );
+}
+
+function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
+  const t: any = trip;
+  const row = (k: string, v: any) => v == null || v === "" ? null : (
+    <div key={k} className="grid grid-cols-3 gap-2 py-1.5 border-b border-border/60 text-sm">
+      <div className="text-muted-foreground">{k}</div>
+      <div className="col-span-2 font-medium break-words">{String(v)}</div>
+    </div>
+  );
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card rounded-sm max-w-2xl w-full max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-extrabold">{t.patient_first_name} {t.patient_last_name}</h3>
+            <p className="text-xs text-muted-foreground">{t.pickup_date} · {t.pickup_time} · <TripStatusBadge s={t.status} /></p>
+          </div>
+          <button onClick={onClose} className="text-sm font-bold text-muted-foreground hover:text-foreground">Close</button>
+        </div>
+        <div className="px-6 py-4">
+          {row("Phone", t.patient_phone)}
+          {row("Pickup", `${t.pickup_address ?? ""}, ${t.pickup_city ?? ""} ${t.pickup_zip ?? ""}`.trim())}
+          {row("Dropoff", `${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim())}
+          {row("Transport", t.transport_type)}
+          {row("Service level", t.service_level)}
+          {row("Round trip", t.round_trip ? "Yes" : null)}
+          {row("Wheelchair", t.needs_wheelchair ? "Yes" : null)}
+          {row("Passenger/companion", t.has_passenger ? "Yes" : null)}
+          {row("Help to vehicle", t.needs_assistance_to_vehicle ? "Yes" : null)}
+          {row("Surgery sign-in", t.needs_surgery_signin ? "Yes" : null)}
+          {row("Surgery sign-out", t.needs_surgery_signout ? "Yes" : null)}
+          {row("Payer", t.payer)}
+          {row("Trip #", t.trip_number)}
+          {row("Distance (mi)", t.estimated_miles ?? t.actual_miles)}
+          {row("Special instructions", t.special_instructions)}
+          {row("Mobility notes", t.mobility_notes)}
+        </div>
+        <div className="px-6 py-3 border-t border-border flex justify-end gap-2">
+          <button onClick={() => downloadTripPdf(trip as TripPdfInput)} className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted">Download PDF</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: () => void; onSaved: () => void }) {
+  const [stars, setStars] = useState(5);
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const providerId = (trip as any).assigned_to as string | null;
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!providerId) return;
+    setBusy(true);
+    try {
+      // Upsert by (rater_user_id, trip_id) — editable later
+      const { data: existing } = await supabase
+        .from("provider_ratings")
+        .select("id")
+        .eq("trip_id", trip.id)
+        .maybeSingle();
+      const payload: any = {
+        provider_id: providerId,
+        trip_id: trip.id,
+        stars,
+        feedback: comment || null,
+      };
+      const q = existing
+        ? supabase.from("provider_ratings").update(payload).eq("id", existing.id)
+        : supabase.from("provider_ratings").insert(payload);
+      const { error } = await q;
+      if (error) throw error;
+      toast.success("Thanks for the feedback");
+      onSaved();
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not save rating");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="bg-card rounded-sm max-w-md w-full p-6 space-y-4">
+        <h3 className="text-lg font-extrabold">Rate this provider</h3>
+        <p className="text-xs text-muted-foreground">You can edit this rating any time from trip history.</p>
+        <div className="flex gap-1 text-2xl">
+          {[1,2,3,4,5].map((n) => (
+            <button type="button" key={n} onClick={() => setStars(n)}
+                    className={n <= stars ? "text-amber-500" : "text-muted-foreground/40"}>★</button>
+          ))}
+        </div>
+        <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4}
+                  placeholder="Feedback (on-time, courteous, vehicle clean…)"
+                  className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background" />
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="text-sm text-muted-foreground px-3 py-2">Cancel</button>
+          <button disabled={busy} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
+            {busy ? "Saving…" : "Save rating"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
