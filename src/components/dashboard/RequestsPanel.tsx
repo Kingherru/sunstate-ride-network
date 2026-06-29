@@ -19,6 +19,8 @@ type Row = {
   requester_user_id: string | null;
   service_level: string | null;
   needs_wheelchair: boolean | null;
+  distance_miles: number | null;
+  estimated_cost_cents: number | null;
 };
 
 function sourceBadge(src: string | null, hasRequester: boolean) {
