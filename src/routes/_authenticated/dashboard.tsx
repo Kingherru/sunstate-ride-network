@@ -192,7 +192,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
 
   return (
-    <div className="min-h-screen bg-[oklch(0.97_0.01_220)] flex">
+    <div className="portal-scope min-h-screen flex">
       <PortalSidebar
         portal={portal}
         profile={profile}
@@ -422,7 +422,7 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         {portal === "provider" && (
           <Field label="NPI (optional)" v={form.npi} on={(v) => setForm({ ...form, npi: v })} placeholder="10-digit National Provider Identifier" className="col-span-2" />
         )}
-        <button disabled={busy} className="col-span-2 mt-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+        <button disabled={busy} className="portal-btn-primary col-span-2 mt-2 py-3">
           {busy ? "Saving…" : "Save and continue"}
         </button>
       </form>
@@ -434,15 +434,16 @@ function Field({ label, v, on, required, type = "text", placeholder, className =
   label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string;
 }) {
   return (
-    <label className={`flex flex-col gap-1 text-sm ${className}`}>
-      <span className="font-bold text-foreground">{label}{required && " *"}</span>
+    <label className={`block ${className}`}>
+      <span className="portal-label">{label}{required && " *"}</span>
       <input
         type={type} value={v} onChange={(e) => on(e.target.value)} required={required} placeholder={placeholder}
-        className="border border-border rounded-sm px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        className="portal-input"
       />
     </label>
   );
 }
+
 
 /* -------- Membership Gate -------- */
 function MembershipGate() {
@@ -452,7 +453,7 @@ function MembershipGate() {
       <p className="text-muted-foreground mb-6">
         Membership unlocks trip dispatch, CSV upload, and regional provider directory.
       </p>
-      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90">
+      <Link to="/membership" className="portal-btn-primary px-6 py-3">
         Subscribe — $5/year
       </Link>
     </div>
@@ -464,7 +465,7 @@ function PaidOnly() {
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
       <p className="text-muted-foreground mb-4">This feature is available on the $5/year paid plan.</p>
-      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90">
+      <Link to="/membership" className="portal-btn-primary px-5 py-2.5">
         Upgrade — $5/year
       </Link>
     </div>
@@ -525,18 +526,18 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-bold">Transport type</span>
+        <span className="portal-label">Transport type</span>
         <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
-                className="border border-border rounded-sm px-3 py-2 bg-background">
+                className="portal-select">
           <option value="ambulatory">Ambulatory</option>
           <option value="wheelchair">Wheelchair</option>
           <option value="stretcher">Stretcher</option>
         </select>
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-bold">Service level</span>
+        <span className="portal-label">Service level</span>
         <select value={form.service_level} onChange={(e) => setForm({ ...form, service_level: e.target.value })}
-                className="border border-border rounded-sm px-3 py-2 bg-background">
+                className="portal-select">
           <option value="curb_to_curb">Curb to curb</option>
           <option value="door_to_door">Door to door</option>
           <option value="bed_to_bed">Bed to bed</option>
@@ -564,20 +565,20 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       </fieldset>
       <Field label="Payer" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
       <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="font-bold">Mobility notes</span>
+        <span className="portal-label">Mobility notes</span>
         <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
+                  className="portal-select" rows={2} />
       </label>
       <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="font-bold">Special instructions</span>
+        <span className="portal-label">Special instructions</span>
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
+                  className="portal-select" rows={2} />
       </label>
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
         <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
         <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
       </label>
-      <button disabled={m.isPending || !hipaaOk} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+      <button disabled={m.isPending || !hipaaOk} className="portal-btn-primary col-span-2 py-3">
         {m.isPending ? "Creating…" : "Create trip"}
       </button>
     </form>
@@ -672,7 +673,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
           <button
             disabled={busy || missing.length > 0 || !hipaaOk}
             onClick={upload}
-            className="bg-primary text-primary-foreground font-bold px-6 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+            className="portal-btn-primary px-6 py-2"
           >
             {busy ? "Uploading…" : `Upload ${(window as any).__csvRows?.length ?? 0} trips`}
           </button>
@@ -889,7 +890,7 @@ function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: ()
                   className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background" />
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="text-sm text-muted-foreground px-3 py-2">Cancel</button>
-          <button disabled={busy} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
+          <button disabled={busy} className="portal-btn-primary px-5 py-2">
             {busy ? "Saving…" : "Save rating"}
           </button>
         </div>
@@ -996,7 +997,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         </div>
         <div className="pt-4 border-t border-border">
           <button onClick={openPortal} disabled={busy}
-                  className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+                  className="portal-btn-primary px-5 py-2">
             {busy ? "Opening…" : "Manage billing"}
           </button>
         </div>
