@@ -22,7 +22,6 @@ function DriversCard() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const [editing, setEditing] = useState<any>(null);
-  const [editing, setEditing] = useState<any>(null);
   const [scheduling, setScheduling] = useState<any>(null);
   const del = useMutation({
     mutationFn: (id: string) => deleteDriver({ data: { id } }),
