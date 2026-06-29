@@ -121,9 +121,15 @@ function RequestRidePage() {
       <section className="py-32 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
-            Confirmation #{done.slice(0, 8).toUpperCase()}
+            Confirmation #{done.id.slice(0, 8).toUpperCase()}
           </p>
           <h1 className="text-5xl font-extrabold tracking-tighter mb-6">Ride request received.</h1>
+          {(done.miles != null || done.cents != null) && (
+            <div className="bg-card border border-border rounded-sm p-5 mb-8 inline-flex flex-col items-center gap-1">
+              {done.miles != null && <div className="text-sm"><span className="font-bold">Distance:</span> {done.miles.toFixed(1)} miles</div>}
+              {done.cents != null && <div className="text-sm"><span className="font-bold">Estimated fare:</span> ${(done.cents / 100).toFixed(2)} <span className="text-muted text-xs">(FloridaNEMT avg rates)</span></div>}
+            </div>
+          )}
           <p className="text-muted text-lg mb-10">
             A dispatcher will confirm pickup details by phone within 2 hours. For urgent same-day
             requests, call <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
