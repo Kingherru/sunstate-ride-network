@@ -24,17 +24,21 @@ export const rideRequestSchema = z.object({
   pickupCity: z.string().trim().min(1).max(100),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/),
+  appointmentTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   dropoffAddress: z.string().trim().min(3).max(300),
   dropoffCity: z.string().trim().min(1).max(100),
   transportType: z.enum(["ambulatory", "wheelchair", "gurney"]),
   tripType: z.enum(TRIP_TYPE_OPTIONS).default("one_way"),
   roundTrip: z.boolean().default(false),
+  returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   additionalStops: z.array(additionalStopSchema).max(10).default([]),
   mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
   recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
   recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
+
 
 export type RideRequestInput = z.infer<typeof rideRequestSchema>;
 
