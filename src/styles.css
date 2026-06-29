@@ -5,10 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =================================================================
- * Florida NEMT — Modern Glass · v3
- * Palette: Navy #1d3557 · White · Peach #f5ab67 · Sage #5fb49c
+ * Florida NEMT — Modern · Original Palette
+ * Palette: Navy #0c2340 · White · Signal Orange #b94a24
  * Type:    Space Grotesk (display) · DM Sans (body)
  * ================================================================= */
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
