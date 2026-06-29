@@ -213,17 +213,17 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
           </div>
           <div className="flex items-center gap-4 text-xs">
             <span className="font-mono uppercase tracking-wider text-muted-foreground">Live</span>
-            <span className="size-2 rounded-full bg-[oklch(0.74_0.13_165)] animate-pulse" />
+            <span className="size-2 rounded-full bg-[oklch(0.872_0.078_65.2)] animate-pulse" />
           </div>
         </div>
 
         <div className="px-8 py-7 space-y-7">
         {isAdmin && (
-          <div className="flex items-center justify-between gap-3 bg-[oklch(0.15_0.05_240)] text-white px-4 py-2.5 text-sm border-l-4 border-[oklch(0.74_0.12_195)]">
+          <div className="flex items-center justify-between gap-3 bg-[oklch(0.18_0.05_257)] text-white px-4 py-2.5 text-sm border-l-4 border-[oklch(0.872_0.078_65.2)]">
             <span className="font-bold uppercase tracking-wider text-xs">
               Admin preview · {portal} dashboard{isDemo ? " · demo data" : ""}
             </span>
-            <Link to="/admin" className="font-bold text-[oklch(0.85_0.10_195)] hover:underline text-xs uppercase tracking-wider">
+            <Link to="/admin" className="font-bold text-[oklch(0.92_0.07_65)] hover:underline text-xs uppercase tracking-wider">
               ← Back to admin
             </Link>
           </div>
@@ -244,7 +244,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {/* Hero header */}
             <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end pb-2 border-b border-border">
               <div>
-                <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.45_0.08_220)] mb-2">Florida NEMT · {portal}</div>
+                <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.04_220)] mb-2">Florida NEMT · {portal}</div>
                 <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight text-brand">{meta.label}</h1>
                 <p className="text-sm text-muted-foreground mt-2 max-w-xl">{meta.heroText}</p>
               </div>
@@ -331,8 +331,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
 function StatCell({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
-    <div className={`px-5 py-4 ${accent ? "bg-[oklch(0.20_0.06_240)] text-white" : "bg-card"}`}>
-      <div className={`text-[10px] font-mono uppercase tracking-[0.18em] ${accent ? "text-[oklch(0.85_0.10_195)]" : "text-muted-foreground"}`}>{label}</div>
+    <div className={`px-5 py-4 ${accent ? "bg-[oklch(0.20_0.05_257)] text-white" : "bg-card"}`}>
+      <div className={`text-[10px] font-mono uppercase tracking-[0.18em] ${accent ? "text-[oklch(0.92_0.07_65)]" : "text-muted-foreground"}`}>{label}</div>
       <div className={`font-display text-3xl font-bold tracking-tight mt-1 ${accent ? "text-white" : "text-brand"}`}>{value}</div>
     </div>
   );
@@ -841,7 +841,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
       >
         {/* Accent glow */}
         <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.45)] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-[oklch(0.78_0.12_195_/_0.25)] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.25)] blur-3xl" />
 
         {/* Header */}
         <header className="relative px-7 pt-6 pb-5 border-b border-white/10 flex items-start justify-between gap-4">
@@ -873,7 +873,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
 
         {/* Body */}
         <div className="relative px-7 py-6 space-y-5 overflow-auto max-h-[calc(88vh-9rem)]">
-          <Section title="Patient" accent="bg-[oklch(0.78_0.12_195)]">
+          <Section title="Patient" accent="bg-[oklch(0.872_0.078_65.2)]">
             <Field label="Name" value={`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim()} />
             <Field label="Phone" value={t.patient_phone} />
             <Field label="Date of birth" value={t.patient_dob} />
@@ -905,7 +905,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
             <Field label="Estimated fare" value={t.estimated_fare ? `$${t.estimated_fare}` : null} />
           </Section>
 
-          <Section title="Service" accent="bg-[oklch(0.74_0.13_165)]">
+          <Section title="Service" accent="bg-[oklch(0.872_0.078_65.2)]">
             <Field label="Transport" value={t.transport_type} />
             <Field label="Service level" value={t.service_level} />
             <Field label="Trip type" value={t.trip_type} />
@@ -1188,10 +1188,10 @@ function PortalSidebar(props: {
   }
 
   return (
-    <aside className="w-64 shrink-0 bg-[oklch(0.20_0.06_240)] text-white min-h-screen flex flex-col">
+    <aside className="w-64 shrink-0 bg-[oklch(0.20_0.05_257)] text-white min-h-screen flex flex-col">
       <div className="px-5 py-6 border-b border-white/10">
         <Link to="/" className="flex items-center gap-2 mb-5">
-          <span className="size-7 bg-[oklch(0.74_0.12_195)] grid place-items-center font-display font-bold text-[oklch(0.15_0.05_240)] text-sm">F</span>
+          <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
           <span className="font-display font-bold text-base tracking-tight uppercase">Florida NEMT</span>
         </Link>
         {editing ? (
@@ -1204,7 +1204,7 @@ function PortalSidebar(props: {
             />
             <div className="flex gap-2">
               <button onClick={saveName} disabled={saving}
-                      className="text-xs font-bold uppercase tracking-wider bg-[oklch(0.74_0.12_195)] text-[oklch(0.15_0.05_240)] px-3 py-1.5 disabled:opacity-50">
+                      className="text-xs font-bold uppercase tracking-wider bg-[oklch(0.872_0.078_65.2)] text-[oklch(0.18_0.05_257)] px-3 py-1.5 disabled:opacity-50">
                 {saving ? "Saving…" : "Save"}
               </button>
               <button onClick={() => { setEditing(false); setNameDraft(displayName); }}
@@ -1222,7 +1222,7 @@ function PortalSidebar(props: {
             <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.10_195)] mb-1">
               {portal} portal
             </div>
-            <div className="font-display text-lg font-bold tracking-tight truncate group-hover:text-[oklch(0.85_0.10_195)] transition-colors">
+            <div className="font-display text-lg font-bold tracking-tight truncate group-hover:text-[oklch(0.92_0.07_65)] transition-colors">
               {displayName}
             </div>
             <div className="text-[10px] uppercase tracking-wider text-white/40 opacity-0 group-hover:opacity-100 mt-0.5">Click to edit</div>
@@ -1248,7 +1248,7 @@ function PortalSidebar(props: {
                   : "text-white/70 hover:bg-white/5 hover:text-white"
               }`}
             >
-              {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.74_0.12_195)]" />}
+              {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.872_0.078_65.2)]" />}
               {tabLabel(key, portal, counts)}
             </button>
           );
