@@ -14,7 +14,7 @@ import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
-import { RequestsPanel, ReservationsPanel } from "@/components/dashboard/RequestsPanel";
+import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
