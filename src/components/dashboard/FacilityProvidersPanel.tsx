@@ -174,7 +174,7 @@ function SavedTab() {
         return (
           <div key={s.id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
             <div className="min-w-0">
-              <div className="font-extrabold">{p.company_name ?? `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Provider"}</div>
+              <div className="font-extrabold">{p.company_name ?? (`${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Provider")}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                 {p.city && <span className="inline-flex items-center gap-1"><MapPin className="size-3" /> {p.city}{p.region ? ` · ${p.region}` : ""}</span>}
                 {p.phone && <span>{p.phone}</span>}
