@@ -56,9 +56,10 @@ export const updateSavedPatient = createServerFn({ method: "POST" })
     const { id, ...rest } = data;
     const { data: out, error } = await context.supabase
       .from("saved_patients")
-      .update(clean(rest))
+      .update(clean(rest) as any)
       .eq("id", id).eq("owner_id", context.userId)
       .select().single();
+
     if (error) throw new Error(error.message);
     return out;
   });
