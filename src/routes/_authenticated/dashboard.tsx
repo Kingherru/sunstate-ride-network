@@ -375,12 +375,12 @@ function Field({ label, v, on, required, type = "text", placeholder, className =
 function MembershipGate() {
   return (
     <div className="max-w-2xl mx-auto bg-card border border-border rounded-sm p-10 text-center">
-      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your $5/month membership</h2>
+      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your $5/year membership</h2>
       <p className="text-muted-foreground mb-6">
         Membership unlocks trip dispatch, CSV upload, and regional provider directory.
       </p>
       <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90">
-        Subscribe — $5/mo
+        Subscribe — $5/year
       </Link>
     </div>
   );
@@ -390,9 +390,9 @@ function PaidOnly() {
   return (
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
-      <p className="text-muted-foreground mb-4">This feature is available on the $5/mo paid plan.</p>
+      <p className="text-muted-foreground mb-4">This feature is available on the $5/year paid plan.</p>
       <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90">
-        Upgrade — $5/mo
+        Upgrade — $5/year
       </Link>
     </div>
   );
