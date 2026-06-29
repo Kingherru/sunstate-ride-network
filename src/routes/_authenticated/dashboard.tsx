@@ -422,7 +422,7 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         {portal === "provider" && (
           <Field label="NPI (optional)" v={form.npi} on={(v) => setForm({ ...form, npi: v })} placeholder="10-digit National Provider Identifier" className="col-span-2" />
         )}
-        <button disabled={busy} className="col-span-2 mt-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+        <button disabled={busy} className="portal-btn-primary col-span-2 mt-2 py-3">
           {busy ? "Saving…" : "Save and continue"}
         </button>
       </form>
@@ -453,7 +453,7 @@ function MembershipGate() {
       <p className="text-muted-foreground mb-6">
         Membership unlocks trip dispatch, CSV upload, and regional provider directory.
       </p>
-      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90">
+      <Link to="/membership" className="portal-btn-primary px-6 py-3">
         Subscribe — $5/year
       </Link>
     </div>
@@ -465,7 +465,7 @@ function PaidOnly() {
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
       <p className="text-muted-foreground mb-4">This feature is available on the $5/year paid plan.</p>
-      <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90">
+      <Link to="/membership" className="portal-btn-primary px-5 py-2.5">
         Upgrade — $5/year
       </Link>
     </div>
@@ -528,7 +528,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Transport type</span>
         <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
-                className="border border-border rounded-sm px-3 py-2 bg-background">
+                className="portal-select">
           <option value="ambulatory">Ambulatory</option>
           <option value="wheelchair">Wheelchair</option>
           <option value="stretcher">Stretcher</option>
@@ -537,7 +537,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Service level</span>
         <select value={form.service_level} onChange={(e) => setForm({ ...form, service_level: e.target.value })}
-                className="border border-border rounded-sm px-3 py-2 bg-background">
+                className="portal-select">
           <option value="curb_to_curb">Curb to curb</option>
           <option value="door_to_door">Door to door</option>
           <option value="bed_to_bed">Bed to bed</option>
@@ -567,18 +567,18 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <label className="flex flex-col gap-1 text-sm col-span-2">
         <span className="font-bold">Mobility notes</span>
         <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
+                  className="portal-select" rows={2} />
       </label>
       <label className="flex flex-col gap-1 text-sm col-span-2">
         <span className="font-bold">Special instructions</span>
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background" rows={2} />
+                  className="portal-select" rows={2} />
       </label>
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
         <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
         <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
       </label>
-      <button disabled={m.isPending || !hipaaOk} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+      <button disabled={m.isPending || !hipaaOk} className="portal-btn-primary col-span-2 py-3">
         {m.isPending ? "Creating…" : "Create trip"}
       </button>
     </form>
@@ -673,7 +673,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
           <button
             disabled={busy || missing.length > 0 || !hipaaOk}
             onClick={upload}
-            className="bg-primary text-primary-foreground font-bold px-6 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+            className="portal-btn-primary px-6 py-2"
           >
             {busy ? "Uploading…" : `Upload ${(window as any).__csvRows?.length ?? 0} trips`}
           </button>
