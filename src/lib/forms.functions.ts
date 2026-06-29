@@ -5,6 +5,16 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
 export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
 
+export const TRIP_TYPE_OPTIONS = ["one_way", "round_trip", "multi_trip"] as const;
+export type TripTypeOption = (typeof TRIP_TYPE_OPTIONS)[number];
+
+export const additionalStopSchema = z.object({
+  address: z.string().trim().min(3).max(300),
+  city: z.string().trim().min(1).max(100),
+  note: z.string().trim().max(300).optional().or(z.literal("")),
+});
+export type AdditionalStop = z.infer<typeof additionalStopSchema>;
+
 export const rideRequestSchema = z.object({
   patientFirstName: z.string().trim().min(1).max(80),
   patientLastName: z.string().trim().min(1).max(80),
@@ -17,7 +27,9 @@ export const rideRequestSchema = z.object({
   dropoffAddress: z.string().trim().min(3).max(300),
   dropoffCity: z.string().trim().min(1).max(100),
   transportType: z.enum(["ambulatory", "wheelchair", "gurney"]),
+  tripType: z.enum(TRIP_TYPE_OPTIONS).default("one_way"),
   roundTrip: z.boolean().default(false),
+  additionalStops: z.array(additionalStopSchema).max(10).default([]),
   mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
   recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
