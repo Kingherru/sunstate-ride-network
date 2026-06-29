@@ -975,13 +975,13 @@ function MembershipsTab({ profile }: { profile: Profile }) {
           ) : (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm text-muted-foreground">
-                Upgrade to a paid membership for $5/month to send trips, bulk upload, and use API integrations.
+                Upgrade to a paid membership for $5/year to send trips, bulk upload, and use API integrations.
               </p>
               <Link
                 to="/membership"
                 className="text-sm font-bold text-white bg-accent px-4 py-2 rounded-sm hover:bg-accent/90 shadow-sm"
               >
-                Upgrade — $5/month
+                Upgrade — $5/year
               </Link>
             </div>
           )}
