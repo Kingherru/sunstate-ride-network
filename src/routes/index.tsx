@@ -124,15 +124,6 @@ function HomePage() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 surface-card p-4 hidden md:flex items-center gap-3">
-                <div className="size-10 rounded-full bg-accent/20 text-accent-orange flex items-center justify-center">
-                  <ShieldCheck size={20} />
-                </div>
-                <div>
-                  <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">HIPAA</div>
-                  <div className="text-sm font-bold text-foreground">Verified network</div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
