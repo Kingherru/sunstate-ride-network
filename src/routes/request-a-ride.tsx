@@ -282,11 +282,24 @@ function RequestRidePage() {
               <Field label="Date" required error={errors.pickupDate}>
                 <input type="date" className={inputCls} value={form.pickupDate} onChange={(e) => upd("pickupDate", e.target.value)} />
               </Field>
-              <Field label="Time" required error={errors.pickupTime}>
+              <Field label="Pickup time" required error={errors.pickupTime}>
                 <input type="time" className={inputCls} value={form.pickupTime} onChange={(e) => upd("pickupTime", e.target.value)} />
               </Field>
             </div>
+            <Field
+              label="Appointment time (drop-off arrival)"
+              error={errors.appointmentTime}
+              hint="When the patient needs to be at the destination."
+            >
+              <input
+                type="time"
+                className={inputCls}
+                value={form.appointmentTime ?? ""}
+                onChange={(e) => upd("appointmentTime", e.target.value)}
+              />
+            </Field>
           </fieldset>
+
 
           {/* Dropoff */}
           <fieldset className="space-y-6">
