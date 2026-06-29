@@ -4,9 +4,10 @@ import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
 
 const navLinks = [
   { to: "/services", label: "Services" },
+  { to: "/how-it-works", label: "How It Works" },
   { to: "/service-areas", label: "Service Areas" },
-  { to: "/providers", label: "For Providers" },
-  { to: "/training", label: "Training" },
+  { to: "/join-our-network", label: "For Providers" },
+  { to: "/resources", label: "Resources" },
   { to: "/about", label: "About" },
 ] as const;
 

@@ -13,9 +13,12 @@ import { Route as TrainingRouteImport } from './routes/training'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as MembershipRouteImport } from './routes/membership'
+import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -60,6 +63,11 @@ const ServiceAreasRoute = ServiceAreasRouteImport.update({
   path: '/service-areas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RequestARideRoute = RequestARideRouteImport.update({
   id: '/request-a-ride',
   path: '/request-a-ride',
@@ -73,6 +81,16 @@ const ProvidersRoute = ProvidersRouteImport.update({
 const MembershipRoute = MembershipRouteImport.update({
   id: '/membership',
   path: '/membership',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinOurNetworkRoute = JoinOurNetworkRouteImport.update({
+  id: '/join-our-network',
+  path: '/join-our-network',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -203,9 +221,12 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/join-our-network': typeof JoinOurNetworkRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
+  '/resources': typeof ResourcesRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -234,9 +255,12 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/join-our-network': typeof JoinOurNetworkRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
@@ -266,9 +290,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/join-our-network': typeof JoinOurNetworkRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
+  '/resources': typeof ResourcesRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -299,9 +326,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/changelog'
     | '/contact'
+    | '/how-it-works'
+    | '/join-our-network'
     | '/membership'
     | '/providers'
     | '/request-a-ride'
+    | '/resources'
     | '/service-areas'
     | '/services'
     | '/sitemap.xml'
@@ -330,9 +360,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/changelog'
     | '/contact'
+    | '/how-it-works'
+    | '/join-our-network'
     | '/membership'
     | '/providers'
     | '/request-a-ride'
+    | '/resources'
     | '/services'
     | '/sitemap.xml'
     | '/training'
@@ -361,9 +394,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/changelog'
     | '/contact'
+    | '/how-it-works'
+    | '/join-our-network'
     | '/membership'
     | '/providers'
     | '/request-a-ride'
+    | '/resources'
     | '/service-areas'
     | '/services'
     | '/sitemap.xml'
@@ -394,9 +430,12 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ChangelogRoute: typeof ChangelogRoute
   ContactRoute: typeof ContactRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  JoinOurNetworkRoute: typeof JoinOurNetworkRoute
   MembershipRoute: typeof MembershipRoute
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
+  ResourcesRoute: typeof ResourcesRoute
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -441,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceAreasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/request-a-ride': {
       id: '/request-a-ride'
       path: '/request-a-ride'
@@ -460,6 +506,20 @@ declare module '@tanstack/react-router' {
       path: '/membership'
       fullPath: '/membership'
       preLoaderRoute: typeof MembershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join-our-network': {
+      id: '/join-our-network'
+      path: '/join-our-network'
+      fullPath: '/join-our-network'
+      preLoaderRoute: typeof JoinOurNetworkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -670,9 +730,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ChangelogRoute: ChangelogRoute,
   ContactRoute: ContactRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  JoinOurNetworkRoute: JoinOurNetworkRoute,
   MembershipRoute: MembershipRoute,
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
+  ResourcesRoute: ResourcesRoute,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
