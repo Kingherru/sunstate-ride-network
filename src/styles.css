@@ -294,33 +294,33 @@
  * badges) without touching individual files.
  * ================================================================= */
 .portal-scope {
-  /* Navy surfaces */
-  --background: oklch(0.18 0.04 250);
+  /* Navy surfaces (#1D3557 family) */
+  --background: oklch(0.20 0.05 257);
   --foreground: oklch(0.97 0.01 220);
 
-  --card: oklch(0.22 0.05 250);
+  --card: oklch(0.25 0.06 257);
   --card-foreground: oklch(0.97 0.01 220);
-  --popover: oklch(0.22 0.05 250);
+  --popover: oklch(0.25 0.06 257);
   --popover-foreground: oklch(0.97 0.01 220);
 
-  /* Teal as primary inside portal */
-  --primary: oklch(0.78 0.12 195);
-  --primary-foreground: oklch(0.15 0.05 250);
+  /* Peach as primary inside portal (#F9CB9F) */
+  --primary: oklch(0.872 0.078 65.2);
+  --primary-foreground: oklch(0.20 0.05 257);
 
-  --secondary: oklch(0.26 0.05 250);
+  --secondary: oklch(0.28 0.06 257);
   --secondary-foreground: oklch(0.97 0.01 220);
-  --muted: oklch(0.26 0.04 250);
-  --muted-foreground: oklch(0.74 0.02 220);
+  --muted: oklch(0.28 0.05 257);
+  --muted-foreground: oklch(0.78 0.02 220);
 
-  --accent: oklch(0.78 0.12 195);
-  --accent-foreground: oklch(0.15 0.05 250);
+  --accent: oklch(0.872 0.078 65.2);
+  --accent-foreground: oklch(0.20 0.05 257);
 
   --destructive: oklch(0.66 0.20 27);
   --destructive-foreground: oklch(0.99 0 0);
 
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.78 0.12 195);
+  --ring: oklch(0.872 0.078 65.2);
 
   --brand: oklch(0.97 0.01 220);
 
@@ -341,7 +341,7 @@
 .portal-scope input,
 .portal-scope select,
 .portal-scope textarea {
-  background-color: oklch(0.16 0.04 250);
+  background-color: oklch(0.18 0.05 257);
   color: var(--foreground);
   border-color: var(--border);
 }
@@ -352,16 +352,22 @@
 .portal-scope textarea:focus-visible {
   outline: none;
   border-color: var(--ring);
-  box-shadow: 0 0 0 3px oklch(0.78 0.12 195 / 30%);
+  box-shadow: 0 0 0 3px oklch(0.872 0.078 65.2 / 35%);
 }
 .portal-scope input[type="checkbox"],
-.portal-scope input[type="radio"] { accent-color: oklch(0.78 0.12 195); }
+.portal-scope input[type="radio"] { accent-color: oklch(0.872 0.078 65.2); }
 .portal-scope input[aria-invalid="true"],
 .portal-scope select[aria-invalid="true"],
 .portal-scope textarea[aria-invalid="true"] {
   border-color: var(--destructive);
   box-shadow: 0 0 0 3px oklch(0.66 0.20 27 / 25%);
 }
+
+/* Hide empty panels/sections inside portals (no blank white blocks) */
+.portal-scope :where(section, div).portal-panel:empty,
+.portal-scope :where(section, div).surface-card:empty,
+.portal-scope :where(section, div).bg-card:empty { display: none !important; }
+
 
 /* ---------- Unified portal component system ---------- */
 @layer utilities {
