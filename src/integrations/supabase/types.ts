@@ -1395,6 +1395,7 @@ export type Database = {
           actual_miles: number | null
           actual_pickup_at: string | null
           additional_passengers: number
+          appointment_time: string | null
           assigned_to: string | null
           authorization_number: string | null
           cancel_reason: string | null
@@ -1438,6 +1439,7 @@ export type Database = {
           payout_status: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id: string | null
           pickup_address: string
+          pickup_address_details: string | null
           pickup_city: string
           pickup_date: string
           pickup_location_id: string | null
@@ -1446,6 +1448,8 @@ export type Database = {
           platform_fee_cents: number | null
           provider_payout_cents: number | null
           region: string | null
+          return_dropoff_time: string | null
+          return_pickup_time: string | null
           round_trip: boolean
           service_level: Database["public"]["Enums"]["service_level"] | null
           signature_name: string | null
@@ -1465,6 +1469,7 @@ export type Database = {
           actual_miles?: number | null
           actual_pickup_at?: string | null
           additional_passengers?: number
+          appointment_time?: string | null
           assigned_to?: string | null
           authorization_number?: string | null
           cancel_reason?: string | null
@@ -1508,6 +1513,7 @@ export type Database = {
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id?: string | null
           pickup_address: string
+          pickup_address_details?: string | null
           pickup_city: string
           pickup_date: string
           pickup_location_id?: string | null
@@ -1516,6 +1522,8 @@ export type Database = {
           platform_fee_cents?: number | null
           provider_payout_cents?: number | null
           region?: string | null
+          return_dropoff_time?: string | null
+          return_pickup_time?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
           signature_name?: string | null
@@ -1535,6 +1543,7 @@ export type Database = {
           actual_miles?: number | null
           actual_pickup_at?: string | null
           additional_passengers?: number
+          appointment_time?: string | null
           assigned_to?: string | null
           authorization_number?: string | null
           cancel_reason?: string | null
@@ -1578,6 +1587,7 @@ export type Database = {
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id?: string | null
           pickup_address?: string
+          pickup_address_details?: string | null
           pickup_city?: string
           pickup_date?: string
           pickup_location_id?: string | null
@@ -1586,6 +1596,8 @@ export type Database = {
           platform_fee_cents?: number | null
           provider_payout_cents?: number | null
           region?: string | null
+          return_dropoff_time?: string | null
+          return_pickup_time?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
           signature_name?: string | null
