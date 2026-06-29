@@ -434,15 +434,16 @@ function Field({ label, v, on, required, type = "text", placeholder, className =
   label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string;
 }) {
   return (
-    <label className={`flex flex-col gap-1 text-sm ${className}`}>
-      <span className="font-bold text-foreground">{label}{required && " *"}</span>
+    <label className={`block ${className}`}>
+      <span className="portal-label">{label}{required && " *"}</span>
       <input
         type={type} value={v} onChange={(e) => on(e.target.value)} required={required} placeholder={placeholder}
-        className="border border-border rounded-sm px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        className="portal-input"
       />
     </label>
   );
 }
+
 
 /* -------- Membership Gate -------- */
 function MembershipGate() {
