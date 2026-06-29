@@ -63,33 +63,31 @@ function HomePage() {
   return (
     <div className="bg-background">
       {/* ============ HERO ============ */}
-      <section className="relative bg-gradient-hero overflow-hidden">
-        <div className="blob blob-peach size-[420px] -top-32 -right-24" />
-        <div className="blob blob-sage size-[380px] top-40 -left-32" style={{ animationDelay: "-7s" }} />
+      <section className="relative bg-secondary overflow-hidden border-b border-border">
         <div className="absolute inset-0 reliability-grid opacity-30 pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 lg:py-20 grid lg:grid-cols-12 gap-10 items-center relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-12 gap-12 items-center relative">
           <div className="lg:col-span-7">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-[11px] font-semibold uppercase tracking-[0.16em] mb-5 text-brand">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 surface-card text-[11px] font-semibold uppercase tracking-[0.16em] mb-6 text-brand">
               <span className="size-1.5 rounded-full bg-accent-orange animate-pulse" />
               Statewide · 24/7 Dispatch
             </div>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.75rem] font-bold tracking-tight leading-[1.02] mb-5 text-brand">
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold tracking-tight leading-[0.98] mb-7 text-brand">
               Florida's medical transportation,
-              <span className="text-gradient-accent"> on time.</span>
+              <span className="text-accent-orange"> on time.</span>
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-[55ch] leading-relaxed mb-7">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-[58ch] leading-relaxed mb-9">
               One statewide network connecting patients, facilities, and vetted NEMT providers — ambulatory, wheelchair, and stretcher transport across all 67 counties.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/request-a-ride" className="btn-accent">
-                Request a Ride <ArrowRight size={16} />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link to="/request-a-ride" className="btn-accent text-lg px-8 py-5">
+                Request a Ride <ArrowRight size={20} />
               </Link>
-              <Link to="/providers" className="btn-ghost">
-                <Truck size={16} /> Join Our Network
+              <Link to="/providers" className="btn-ghost text-lg px-8 py-5">
+                <Truck size={20} /> Join Our Network
               </Link>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-7 gap-y-2.5 text-sm text-muted-foreground">
+            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-2"><ShieldCheck size={16} className="text-accent-orange" /> HIPAA-grade</div>
               <div className="flex items-center gap-2"><BadgeCheck size={16} className="text-accent-orange" /> Vetted providers</div>
               <div className="flex items-center gap-2"><Headphones size={16} className="text-accent-orange" /> Live dispatch</div>
@@ -97,17 +95,17 @@ function HomePage() {
           </div>
 
           <div className="lg:col-span-5 relative">
-            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-elegant">
+            <div className="relative aspect-[4/5] lg:aspect-[3/4] overflow-hidden border border-border shadow-elegant">
               <img src={heroVan} alt="Florida NEMT van outside a clinic" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-[oklch(0.22_0.05_255_/_0.35)]" />
-              <div className="absolute bottom-4 left-4 right-4 glass rounded-2xl px-4 py-3 flex items-center justify-between">
+              <div className="absolute bottom-0 left-0 right-0 bg-brand text-white px-5 py-4 flex items-center justify-between">
                 <div>
                   <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-accent-orange">In Service</div>
-                  <div className="font-display text-base font-bold text-brand">Florida Fleet</div>
+                  <div className="font-display text-lg font-bold">Florida Fleet</div>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] font-mono text-brand">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
+                <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
                 </div>
+
               </div>
             </div>
           </div>
