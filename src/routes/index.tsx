@@ -36,9 +36,9 @@ const services = [
 ] as const;
 
 const portals = [
-  { Icon: HeartPulse, label: "Patient", desc: "Book rides and manage appointments.", to: "/patient/login" as const },
-  { Icon: Building2, label: "Facility", desc: "Dispatch from your clinic in seconds.", to: "/facility/login" as const },
-  { Icon: Truck, label: "Provider", desc: "Receive referrals and grow your fleet.", to: "/provider/login" as const },
+  { Icon: HeartPulse, label: "Patient", desc: "Book rides and manage appointments.", to: "/patient/login" as const, tint: "glass-tint-peach" },
+  { Icon: Building2, label: "Facility", desc: "Dispatch from your clinic in seconds.", to: "/facility/login" as const, tint: "glass-tint-sage" },
+  { Icon: Truck, label: "Provider", desc: "Receive referrals and grow your fleet.", to: "/provider/login" as const, tint: "glass" },
 ];
 
 export const Route = createFileRoute("/")({
@@ -63,49 +63,50 @@ function HomePage() {
   return (
     <div className="bg-background">
       {/* ============ HERO ============ */}
-      <section className="relative bg-brand text-primary-foreground overflow-hidden">
-        <div className="absolute inset-0 reliability-grid opacity-20 pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-12 gap-12 items-center relative">
+      <section className="relative bg-gradient-hero overflow-hidden">
+        <div className="blob blob-peach size-[420px] -top-32 -right-24" />
+        <div className="blob blob-sage size-[380px] top-40 -left-32" style={{ animationDelay: "-7s" }} />
+        <div className="absolute inset-0 reliability-grid opacity-30 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 lg:py-20 grid lg:grid-cols-12 gap-10 items-center relative">
           <div className="lg:col-span-7">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-[11px] font-semibold uppercase tracking-[0.16em] mb-6">
-              <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-[11px] font-semibold uppercase tracking-[0.16em] mb-5 text-brand">
+              <span className="size-1.5 rounded-full bg-accent-orange animate-pulse" />
               Statewide · 24/7 Dispatch
             </div>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.02] mb-6">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.75rem] font-bold tracking-tight leading-[1.02] mb-5 text-brand">
               Florida's medical transportation,
-              <span className="text-accent"> on time.</span>
+              <span className="text-gradient-accent"> on time.</span>
             </h1>
-            <p className="text-lg text-white/80 max-w-[55ch] leading-relaxed mb-8">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-[55ch] leading-relaxed mb-7">
               One statewide network connecting patients, facilities, and vetted NEMT providers — ambulatory, wheelchair, and stretcher transport across all 67 counties.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link to="/request-a-ride" className="btn-accent">
                 Request a Ride <ArrowRight size={16} />
               </Link>
-              <Link
-                to="/providers"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[var(--radius)] bg-white/5 border border-white/25 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
-              >
+              <Link to="/providers" className="btn-ghost">
                 <Truck size={16} /> Join Our Network
               </Link>
             </div>
-            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/70">
-              <div className="flex items-center gap-2"><ShieldCheck size={16} className="text-accent" /> HIPAA-grade</div>
-              <div className="flex items-center gap-2"><BadgeCheck size={16} className="text-accent" /> Vetted providers</div>
-              <div className="flex items-center gap-2"><Headphones size={16} className="text-accent" /> Live dispatch</div>
+            <div className="mt-8 flex flex-wrap gap-x-7 gap-y-2.5 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2"><ShieldCheck size={16} className="text-accent-orange" /> HIPAA-grade</div>
+              <div className="flex items-center gap-2"><BadgeCheck size={16} className="text-accent-orange" /> Vetted providers</div>
+              <div className="flex items-center gap-2"><Headphones size={16} className="text-accent-orange" /> Live dispatch</div>
             </div>
           </div>
+
           <div className="lg:col-span-5 relative">
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/15 shadow-2xl">
+            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-elegant">
               <img src={heroVan} alt="Florida NEMT van outside a clinic" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand/70 via-transparent to-transparent" />
-              <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-white">
+              <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.22_0.05_255_/_0.7)] via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 glass rounded-2xl px-4 py-3 flex items-center justify-between">
                 <div>
-                  <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-accent">In Service</div>
-                  <div className="font-display text-xl font-bold">Florida Fleet</div>
+                  <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-accent-orange">In Service</div>
+                  <div className="font-display text-base font-bold text-brand">Florida Fleet</div>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-mono bg-black/30 backdrop-blur px-2.5 py-1.5 rounded-full">
-                  <span className="size-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-brand">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
                 </div>
               </div>
             </div>
@@ -114,38 +115,40 @@ function HomePage() {
       </section>
 
       {/* ============ STATS STRIP ============ */}
-      <section className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 lg:grid-cols-4 divide-x divide-border">
-          {[
-            { value: "67", label: "Counties served" },
-            { value: "24/7", label: "Live dispatch" },
-            { value: "100%", label: "Vetted providers" },
-            { value: "3", label: "Transport tiers" },
-          ].map((s) => (
-            <div key={s.label} className="py-8 px-4 text-center">
-              <div className="font-display text-3xl sm:text-4xl font-extrabold text-brand leading-none">{s.value}</div>
-              <div className="mt-2 text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">{s.label}</div>
-            </div>
-          ))}
+      <section className="relative -mt-8 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="glass rounded-2xl grid grid-cols-2 lg:grid-cols-4 divide-x divide-border/60">
+            {[
+              { value: "67", label: "Counties served" },
+              { value: "24/7", label: "Live dispatch" },
+              { value: "100%", label: "Vetted providers" },
+              { value: "3", label: "Transport tiers" },
+            ].map((s) => (
+              <div key={s.label} className="py-6 px-4 text-center">
+                <div className="font-display text-3xl sm:text-4xl font-bold text-brand leading-none">{s.value}</div>
+                <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ============ SERVICES ============ */}
-      <section className="py-20 lg:py-24">
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-2xl mb-12">
+          <div className="max-w-2xl mb-10">
             <span className="eyebrow">Services</span>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-brand mt-2 mb-3">Transportation for every level of care.</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand mt-2 mb-2">Transportation for every level of care.</h2>
             <p className="text-muted-foreground">From routine dialysis runs to bed-to-bed transfers, our network handles every clinical need with dignity.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-3 gap-4">
             {services.map((s) => (
-              <div key={s.title} className="group bg-card border border-border rounded-2xl p-7 hover:border-accent hover:-translate-y-0.5 transition-all">
-                <div className="size-12 rounded-xl bg-brand/8 text-brand flex items-center justify-center mb-5 group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
-                  <s.Icon size={24} strokeWidth={2} />
+              <div key={s.title} className="group glass-soft rounded-2xl p-6 hover:-translate-y-1 hover:shadow-card transition-all">
+                <div className="size-11 rounded-xl bg-gradient-accent text-brand flex items-center justify-center mb-4">
+                  <s.Icon size={22} strokeWidth={2} />
                 </div>
-                <h3 className="font-display text-xl font-bold text-brand mb-2">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">{s.desc}</p>
+                <h3 className="font-display text-lg font-bold text-brand mb-1.5">{s.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.desc}</p>
                 <Link to="/services" className="inline-flex items-center gap-1 text-xs font-semibold text-accent-orange uppercase tracking-wider">
                   Learn more <ArrowRight size={12} />
                 </Link>
@@ -156,12 +159,13 @@ function HomePage() {
       </section>
 
       {/* ============ HOW IT WORKS ============ */}
-      <section className="py-20 lg:py-24 bg-secondary/40 border-y border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-12">
+      <section className="py-16 lg:py-20 relative overflow-hidden">
+        <div className="blob blob-sage size-[320px] top-10 right-0 opacity-40" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-10 relative">
           <div className="lg:col-span-4">
             <span className="eyebrow">How it works</span>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-brand mt-2 mb-4">Three steps to the curb.</h2>
-            <p className="text-muted-foreground mb-6">Submit once. We handle the rest — matching, dispatch, and billing.</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand mt-2 mb-3">Three steps to the curb.</h2>
+            <p className="text-muted-foreground mb-5">Submit once. We handle the rest — matching, dispatch, and billing.</p>
             <Link to="/how-it-works" className="inline-flex items-center gap-1 text-sm font-semibold text-accent-orange uppercase tracking-wider">
               Full walkthrough <ArrowRight size={14} />
             </Link>
@@ -172,9 +176,9 @@ function HomePage() {
               { n: "02", title: "Match", desc: "We route to the closest vetted provider in your county." },
               { n: "03", title: "Ride", desc: "Driver arrives, ride is logged, and billing handled." },
             ].map((step) => (
-              <div key={step.n} className="bg-card border border-border rounded-2xl p-6 flex flex-col">
-                <div className="font-mono text-xs text-accent-orange font-bold tracking-[0.22em] mb-4">{step.n}</div>
-                <div className="font-display text-lg font-bold text-brand mb-2">{step.title}</div>
+              <div key={step.n} className="glass rounded-2xl p-5 flex flex-col">
+                <div className="font-mono text-xs text-accent-orange font-bold tracking-[0.22em] mb-3">{step.n}</div>
+                <div className="font-display text-base font-bold text-brand mb-1.5">{step.title}</div>
                 <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
               </div>
             ))}
@@ -183,25 +187,25 @@ function HomePage() {
       </section>
 
       {/* ============ PORTALS ============ */}
-      <section className="py-20 lg:py-24">
+      <section className="py-16 lg:py-20 bg-gradient-hero">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="eyebrow">Portals</span>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-brand mt-2 mb-3">Built for everyone in the trip.</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand mt-2 mb-2">Built for everyone in the trip.</h2>
             <p className="text-muted-foreground">Patients, facilities, and providers each get their own workspace.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-3 gap-4">
             {portals.map((p) => (
               <Link
                 key={p.label}
                 to={p.to}
-                className="group bg-card border border-border rounded-2xl p-7 hover:border-brand hover:shadow-lg transition-all"
+                className={`group ${p.tint} rounded-2xl p-6 hover:-translate-y-1 hover:shadow-elegant transition-all`}
               >
-                <div className="size-12 rounded-xl bg-brand text-primary-foreground flex items-center justify-center mb-5">
-                  <p.Icon size={22} />
+                <div className="size-11 rounded-xl bg-brand text-primary-foreground flex items-center justify-center mb-4">
+                  <p.Icon size={20} />
                 </div>
-                <div className="font-display text-xl font-bold text-brand mb-1">{p.label} Portal</div>
-                <p className="text-sm text-muted-foreground mb-5">{p.desc}</p>
+                <div className="font-display text-lg font-bold text-brand mb-1">{p.label} Portal</div>
+                <p className="text-sm text-muted-foreground mb-4">{p.desc}</p>
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-orange uppercase tracking-wider">
                   Sign in <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                 </span>
@@ -212,16 +216,18 @@ function HomePage() {
       </section>
 
       {/* ============ COVERAGE ============ */}
-      <section className="py-20 lg:py-24 bg-brand text-primary-foreground relative overflow-hidden">
+      <section className="py-16 lg:py-20 bg-brand text-primary-foreground relative overflow-hidden">
+        <div className="blob blob-peach size-[400px] -top-32 right-10 opacity-50" />
+        <div className="blob blob-sage size-[360px] bottom-0 -left-32 opacity-40" />
         <div className="absolute inset-0 reliability-grid opacity-15 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-5">
             <div className="max-w-xl">
-              <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase text-accent mb-2 block">Regional Reach</span>
-              <h2 className="font-display text-3xl sm:text-4xl font-extrabold mb-3">Major hubs, every coast.</h2>
+              <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase text-accent-orange mb-2 block">Regional Reach</span>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold mb-2 text-white">Major hubs, every coast.</h2>
               <p className="text-white/70">Coordinators on the ground in every metro — and routes that connect them.</p>
             </div>
-            <Link to="/service-areas" className="inline-flex items-center gap-2 px-5 py-3 rounded-[var(--radius)] bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/15 transition-colors self-start md:self-auto">
+            <Link to="/service-areas" className="btn-glass self-start md:self-auto">
               All service areas <ArrowRight size={14} />
             </Link>
           </div>
@@ -231,13 +237,13 @@ function HomePage() {
                 key={c.slug}
                 to="/service-areas/$city"
                 params={{ city: c.slug }}
-                className="group rounded-xl border border-white/15 p-4 hover:border-accent hover:bg-white/5 transition-colors"
+                className="group glass-dark rounded-xl p-4 hover:border-accent-orange transition-colors"
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <span className="font-mono text-[10px] text-white/50 tracking-widest">{c.code}</span>
-                  <MapPin size={14} className="text-accent" />
+                  <MapPin size={14} className="text-accent-orange" />
                 </div>
-                <div className="font-display text-base font-bold">{c.name}</div>
+                <div className="font-display text-base font-bold text-white">{c.name}</div>
               </Link>
             ))}
           </div>
@@ -245,23 +251,23 @@ function HomePage() {
       </section>
 
       {/* ============ PROVIDER CTA ============ */}
-      <section className="py-20 lg:py-24">
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center bg-card border border-border rounded-2xl p-8 lg:p-14">
+          <div className="grid lg:grid-cols-2 gap-10 items-center glass rounded-3xl p-7 lg:p-12">
             <div>
               <span className="eyebrow">For Providers</span>
-              <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-brand mt-2 mb-4">Grow your NEMT business with us.</h2>
-              <p className="text-muted-foreground mb-6">
+              <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand mt-2 mb-3">Grow your NEMT business with us.</h2>
+              <p className="text-muted-foreground mb-5">
                 Join Florida's most active NEMT referral network. Verified leads, regional routing, integrated billing, and Stripe payouts — only a 4% platform fee on completed trips.
               </p>
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-2.5 mb-7">
                 {[
                   "Referrals matched to your service zip codes",
                   "Insurance, NPI, and W-9 onboarding in one step",
                   "Stripe Connect — automated, secured payouts",
                   "Optional NEMT certification training",
                 ].map((b) => (
-                  <li key={b} className="flex gap-3 text-sm">
+                  <li key={b} className="flex gap-2.5 text-sm">
                     <CheckCircle2 size={18} className="text-accent-orange shrink-0 mt-0.5" />
                     <span>{b}</span>
                   </li>
@@ -271,22 +277,22 @@ function HomePage() {
                 <Link to="/providers" className="btn-accent">
                   Apply to Join <ArrowRight size={16} />
                 </Link>
-                <Link to="/training" className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[var(--radius)] border border-border text-brand font-semibold text-sm hover:bg-secondary transition-colors">
+                <Link to="/training" className="btn-ghost">
                   <GraduationCap size={16} /> NEMT Training
                 </Link>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {[
                 { Icon: ShieldCheck, label: "HIPAA Ready", desc: "BAA on file." },
                 { Icon: BadgeCheck, label: "Verified", desc: "Docs reviewed." },
                 { Icon: Clock, label: "Fast Pay", desc: "Stripe payouts." },
                 { Icon: Phone, label: "Support", desc: "Live coordinators." },
               ].map((b) => (
-                <div key={b.label} className="bg-secondary/40 border border-border rounded-xl p-5">
+                <div key={b.label} className="glass-soft rounded-xl p-5">
                   <b.Icon size={22} className="text-accent-orange mb-3" />
                   <div className="font-display text-sm font-bold text-brand">{b.label}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{b.desc}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{b.desc}</div>
                 </div>
               ))}
             </div>
@@ -295,11 +301,11 @@ function HomePage() {
       </section>
 
       {/* ============ FINAL CTA ============ */}
-      <section className="py-16 bg-accent text-accent-foreground">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <section className="py-14 bg-gradient-accent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
           <div>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold mb-2">Need a ride today?</h2>
-            <p className="text-sm opacity-80">Submit a request in under 90 seconds — we'll match a local provider.</p>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold mb-1 text-brand">Need a ride today?</h2>
+            <p className="text-sm text-brand/75">Submit a request in under 90 seconds — we'll match a local provider.</p>
           </div>
           <Link
             to="/request-a-ride"
