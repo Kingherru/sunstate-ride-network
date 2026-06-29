@@ -24,17 +24,23 @@ import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 
-function PaymentsTab() {
+function PaymentsTab({ portal }: { portal: PortalKind }) {
+  const isFacility = portal === "facility";
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">Payments</h2>
-        <p className="text-sm text-muted-foreground">Securely save a card so you can pay for confirmed trips in one click.</p>
+        <p className="text-sm text-muted-foreground">
+          {isFacility
+            ? "Add a card and assign it to a specific patient — facilities can hold cards on file for many patients."
+            : "Securely save a card so you can pay for confirmed trips in one click."}
+        </p>
       </div>
-      <SavedCards />
+      <SavedCards assignToPatient={isFacility} />
     </div>
   );
 }
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
