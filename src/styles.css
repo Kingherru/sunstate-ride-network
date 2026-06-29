@@ -5,10 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =================================================================
- * Florida NEMT — Modern Glass · v3
- * Palette: Navy #1d3557 · White · Peach #f5ab67 · Sage #5fb49c
+ * Florida NEMT — Modern · Original Palette
+ * Palette: Navy #0c2340 · White · Signal Orange #b94a24
  * Type:    Space Grotesk (display) · DM Sans (body)
  * ================================================================= */
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -56,52 +57,52 @@
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* LOCKED LIGHT THEME — Navy #1d3557 · Peach #f5ab67 · Sage #5fb49c */
+/* LOCKED LIGHT THEME — Navy #0c2340 · Signal Orange #b94a24 */
 :root {
   --radius: 0.875rem;
 
   --background: oklch(0.995 0 0);
-  --foreground: oklch(0.22 0.05 255);
+  --foreground: oklch(0.20 0.04 255);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.05 255);
+  --card-foreground: oklch(0.20 0.04 255);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.05 255);
+  --popover-foreground: oklch(0.20 0.04 255);
 
-  /* Deep navy primary (~#1d3557) */
-  --primary: oklch(0.32 0.07 256);
+  /* Deep navy primary (~#0c2340) */
+  --primary: oklch(0.26 0.07 258);
   --primary-foreground: oklch(0.99 0 0);
 
-  /* Sage secondary (~#5fb49c) */
-  --secondary: oklch(0.93 0.03 170);
-  --secondary-foreground: oklch(0.22 0.05 255);
+  --secondary: oklch(0.95 0.012 250);
+  --secondary-foreground: oklch(0.20 0.04 255);
   --muted: oklch(0.965 0.006 250);
-  --muted-foreground: oklch(0.48 0.03 255);
+  --muted-foreground: oklch(0.46 0.03 255);
 
-  /* Peach accent (~#f5ab67) */
-  --accent: oklch(0.80 0.12 65);
-  --accent-foreground: oklch(0.22 0.05 255);
-  --accent-orange: oklch(0.78 0.13 60);
-  --sage: oklch(0.74 0.08 170);
+  /* Signal Orange accent (~#b94a24) */
+  --accent: oklch(0.60 0.16 38);
+  --accent-foreground: oklch(0.99 0 0);
+  --accent-orange: oklch(0.60 0.16 38);
+  --sage: oklch(0.60 0.16 38);
 
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.32 0.07 256 / 12%);
-  --input: oklch(0.32 0.07 256 / 16%);
-  --ring: oklch(0.32 0.07 256);
+  --border: oklch(0.26 0.07 258 / 12%);
+  --input: oklch(0.26 0.07 258 / 16%);
+  --ring: oklch(0.26 0.07 258);
 
-  --brand: oklch(0.32 0.07 256);
-  --brand-soft: oklch(0.50 0.08 240);
+  --brand: oklch(0.26 0.07 258);
+  --brand-soft: oklch(0.42 0.08 250);
 
-  --shadow-card: 0 1px 2px oklch(0.22 0.05 255 / 6%), 0 12px 28px -16px oklch(0.22 0.05 255 / 18%);
-  --shadow-elegant: 0 30px 80px -32px oklch(0.22 0.05 255 / 28%);
-  --shadow-glass: 0 8px 32px -8px oklch(0.22 0.05 255 / 18%), inset 0 1px 0 0 oklch(1 0 0 / 60%);
-  --glow-accent: 0 10px 40px -10px oklch(0.78 0.13 60 / 45%);
+  --shadow-card: 0 1px 2px oklch(0.20 0.04 255 / 6%), 0 12px 28px -16px oklch(0.20 0.04 255 / 18%);
+  --shadow-elegant: 0 30px 80px -32px oklch(0.20 0.04 255 / 28%);
+  --shadow-glass: 0 8px 32px -8px oklch(0.20 0.04 255 / 18%), inset 0 1px 0 0 oklch(1 0 0 / 60%);
+  --glow-accent: 0 10px 40px -10px oklch(0.60 0.16 38 / 45%);
 
-  --gradient-brand: oklch(0.32 0.07 256);
-  --gradient-accent: oklch(0.80 0.12 65);
+  --gradient-brand: oklch(0.26 0.07 258);
+  --gradient-accent: oklch(0.60 0.16 38);
   --gradient-hero: oklch(0.985 0.005 250);
+
 
 
   --sidebar: oklch(0.24 0.06 255);
