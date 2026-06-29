@@ -114,7 +114,7 @@ function LookupTab() {
           {results.map((r) => (
             <div key={r.user_id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <div className="font-extrabold">{r.company_name ?? `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || "Provider"}</div>
+                <div className="font-extrabold">{r.company_name ?? (`${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || "Provider")}</div>
                 <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                   <span className="inline-flex items-center gap-1"><MapPin className="size-3" /> {r.city ?? "—"}{r.region ? ` · ${r.region}` : ""}</span>
                   <span><span className="font-bold text-foreground">{r.distance_miles} mi</span> from pickup</span>
