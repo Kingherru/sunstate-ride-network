@@ -32,8 +32,8 @@ export function Header() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="text-sm font-medium text-foreground hover:text-accent transition-colors"
-                activeProps={{ className: "text-sm font-medium text-accent" }}
+                className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground hover:text-accent transition-colors"
+                activeProps={{ className: "text-xs font-semibold uppercase tracking-[0.14em] text-accent" }}
               >
                 {l.label}
               </Link>
