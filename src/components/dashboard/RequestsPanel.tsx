@@ -12,6 +12,11 @@ type Row = {
   dropoff_city: string | null;
   pickup_date: string;
   pickup_time: string;
+  appointment_time: string | null;
+  return_pickup_time: string | null;
+  return_dropoff_time: string | null;
+  round_trip: boolean | null;
+  trip_type: string | null;
   transport_type: string | null;
   patient_first_name: string;
   patient_last_name: string;
@@ -21,6 +26,7 @@ type Row = {
   needs_wheelchair: boolean | null;
   distance_miles: number | null;
   estimated_cost_cents: number | null;
+
 };
 
 function sourceBadge(src: string | null, hasRequester: boolean) {
