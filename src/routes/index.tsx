@@ -1,10 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroVan from "@/assets/hero-van.jpg";
-import { SectionHeading } from "@/components/site/SectionHeading";
 import {
   ShieldCheck,
   BadgeCheck,
-  Award,
   Headphones,
   PersonStanding,
   Accessibility,
@@ -13,46 +11,25 @@ import {
   GraduationCap,
   Truck,
   ArrowRight,
+  Building2,
   CalendarClock,
+  HeartPulse,
 } from "lucide-react";
 
 const cities = [
-  { code: "JAX-01", name: "Jacksonville", slug: "jacksonville" },
-  { code: "ORL-02", name: "Orlando", slug: "orlando" },
-  { code: "TPA-03", name: "Tampa", slug: "tampa" },
-  { code: "MIA-04", name: "Miami", slug: "miami" },
-  { code: "TLH-05", name: "Tallahassee", slug: "tallahassee" },
-  { code: "FLL-06", name: "Fort Lauderdale", slug: "fort-lauderdale" },
-] as const;
-
-const trustItems = [
-  { label: "HIPAA Compliant", Icon: ShieldCheck },
-  { label: "Fully Insured & Bonded", Icon: BadgeCheck },
-  { label: "Certified Professionals", Icon: Award },
-  { label: "24/7 Dispatch", Icon: Headphones },
+  { code: "JAX", name: "Jacksonville", slug: "jacksonville" },
+  { code: "ORL", name: "Orlando", slug: "orlando" },
+  { code: "TPA", name: "Tampa", slug: "tampa" },
+  { code: "MIA", name: "Miami", slug: "miami" },
+  { code: "TLH", name: "Tallahassee", slug: "tallahassee" },
+  { code: "FLL", name: "Ft. Lauderdale", slug: "fort-lauderdale" },
 ] as const;
 
 const services = [
-  {
-    title: "Ambulatory",
-    Icon: PersonStanding,
-    description:
-      "For independent patients needing reliable door-to-door transport for clinic visits, dialysis, and routine appointments.",
-  },
-  {
-    title: "Wheelchair",
-    Icon: Accessibility,
-    description:
-      "ADA-compliant hydraulic lifts and four-point securement systems for a stable, comfortable ride.",
-  },
-  {
-    title: "Gurney / Stretcher",
-    Icon: BedDouble,
-    description:
-      "Two-person crews specialized in non-emergency stretcher logistics for bed-to-bed transfers.",
-  },
+  { title: "Ambulatory", Icon: PersonStanding, desc: "Door-to-door rides for independent patients." },
+  { title: "Wheelchair", Icon: Accessibility, desc: "ADA lifts, four-point securement, trained crews." },
+  { title: "Stretcher", Icon: BedDouble, desc: "Bed-to-bed non-emergency transfers." },
 ] as const;
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -61,7 +38,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Dignified, on-time non-emergency medical transportation across Florida. Ambulatory, wheelchair, and stretcher transport plus a provider network and training academy.",
+          "Dignified, on-time non-emergency medical transportation across Florida. Ambulatory, wheelchair, and stretcher transport with a statewide provider network.",
       },
       { property: "og:title", content: "Florida NEMT" },
       { property: "og:description", content: "Statewide non-emergency medical transportation across Florida." },
@@ -74,243 +51,241 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <>
-      {/* 1 · HERO — full-bleed navy band */}
-      <section className="relative bg-[oklch(0.22_0.04_255)] text-white overflow-hidden">
-        <div className="absolute inset-0 reliability-grid opacity-40 pointer-events-none" />
-        <div
-          className="absolute -top-32 -right-32 h-[36rem] w-[36rem] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, oklch(0.72 0.17 50 / 22%), transparent 60%)" }}
-        />
-        <div className="relative max-w-7xl mx-auto px-6 pt-24 pb-28 lg:pt-32 lg:pb-36 grid lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 animate-slide-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-[11px] font-bold uppercase tracking-[0.18em] mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
-              </span>
-              Statewide · 24/7 Dispatch
+    <div className="bg-background">
+      {/* BENTO GRID — single unified canvas */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-6 auto-rows-[minmax(180px,auto)] gap-4">
+          {/* HERO — spans 4 cols x 2 rows */}
+          <div className="md:col-span-4 md:row-span-2 relative overflow-hidden rounded-2xl bg-brand text-primary-foreground p-8 lg:p-12 flex flex-col justify-between min-h-[480px]">
+            <div className="absolute inset-0 reliability-grid opacity-30 pointer-events-none" />
+            <div
+              className="absolute -top-24 -right-24 h-96 w-96 rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 65%)", opacity: 0.35 }}
+            />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-[11px] font-semibold uppercase tracking-[0.16em] mb-6">
+                <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+                Statewide · 24/7 Dispatch
+              </div>
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[0.98] mb-5">
+                Florida's medical<br />transportation,
+                <span className="text-accent"> on time.</span>
+              </h1>
+              <p className="text-base sm:text-lg text-white/75 max-w-[48ch] leading-relaxed">
+                One statewide network connecting patients, facilities, and vetted NEMT providers — backed by HIPAA-grade dispatch.
+              </p>
             </div>
-            <h1 className="font-display text-5xl lg:text-7xl font-extrabold tracking-tight leading-[0.95] mb-8 text-white">
-              Florida's medical
-              <br />
-              transportation, <span className="text-accent-orange">on time.</span>
-            </h1>
-            <p className="text-lg lg:text-xl text-white/70 max-w-[55ch] leading-relaxed mb-10">
-              One statewide network connecting patients, facilities, and vetted NEMT providers —
-              with HIPAA-grade dispatch and a certified training academy behind every ride.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex flex-col sm:flex-row gap-3 mt-8">
               <Link to="/request-a-ride" className="btn-accent">
                 Request a Ride <ArrowRight size={16} />
               </Link>
               <Link
                 to="/providers"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-[var(--radius)] bg-white/5 border border-white/20 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-[var(--radius)] bg-white/5 border border-white/25 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
               >
-                <Truck size={16} /> Join the Provider Network
+                <Truck size={16} /> Join Network
               </Link>
             </div>
           </div>
-          <div className="lg:col-span-5 animate-slide-up [animation-delay:200ms]">
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-accent rounded-[28px] blur-2xl opacity-30" />
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 shadow-elegant">
-                <img
-                  src={heroVan}
-                  alt="Florida NEMT van outside a clinic"
-                  width={1280}
-                  height={1600}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+
+          {/* HERO IMAGE — 2x2 */}
+          <div className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-2xl min-h-[240px] md:min-h-[480px]">
+            <img src={heroVan} alt="Florida NEMT van outside a clinic" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.22_0.07_250)]/80 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+              <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-accent mb-1">In Service</div>
+              <div className="font-display text-xl font-bold">Florida Fleet</div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* 2 · TRUST TICKER */}
-      <section className="bg-accent/10 border-y border-border">
-        <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {trustItems.map(({ label, Icon }) => (
-            <div key={label} className="flex items-center gap-3">
-              <div className="size-9 rounded-md bg-accent/20 text-accent-orange flex items-center justify-center">
-                <Icon size={18} strokeWidth={2.25} />
-              </div>
-              <span className="text-sm font-semibold tracking-tight text-foreground">{label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3 · STATS BAND */}
-      <section className="bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-border overflow-hidden">
-          {[
-            { stat: "67", unit: "FL counties", note: "Statewide reach" },
-            { stat: "24/7", unit: "Dispatch", note: "Live coordinators" },
-            { stat: "100%", unit: "Vetted", note: "Insurance · NPI · W-9" },
-            { stat: "3", unit: "Transport tiers", note: "Ambulatory · Wheelchair · Stretcher" },
-          ].map((s) => (
-            <div key={s.stat} className="bg-background p-8">
-              <div className="font-display text-5xl font-extrabold text-brand tracking-tight leading-none">{s.stat}</div>
-              <div className="mt-3 text-xs font-mono uppercase tracking-[0.18em] text-accent-orange">{s.unit}</div>
-              <div className="mt-2 text-sm text-muted-foreground">{s.note}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-
-      {/* 4 · SERVICES — full-bleed light band */}
-      <section className="bg-secondary/60 section">
-        <div className="max-w-7xl mx-auto px-6">
-          <SectionHeading
-            eyebrow="01 — Our Capabilities"
-            title="Tailored Mobility Solutions"
-            description="Specialized fleet configurations to support patients at every stage of their healthcare journey."
-          />
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {services.map((s, i) => (
-              <div
-                key={s.title}
-                className="group surface-card p-8 hover:-translate-y-1 transition-transform"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="size-12 rounded-md bg-brand text-primary-foreground flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
-                    <s.Icon size={24} strokeWidth={2} />
-                  </div>
-                  <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
-                </div>
-                <h3 className="font-display text-2xl font-bold mb-3 text-brand">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <Link to="/services" className="btn-ghost">
-              Compare all service levels <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 5 · COVERAGE — full-bleed navy */}
-      <section className="bg-[oklch(0.22_0.04_255)] text-white section relative overflow-hidden">
-        <div className="absolute inset-0 reliability-grid opacity-30 pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14">
+          {/* STAT 1 */}
+          <div className="md:col-span-2 rounded-2xl bg-card border border-border p-6 flex flex-col justify-between">
+            <span className="eyebrow">Coverage</span>
             <div>
-              <p className="font-mono text-xs font-bold text-accent-orange uppercase tracking-[0.22em] mb-4">
-                02 — Regional Reach
-              </p>
-              <h2 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
-                Major hub coverage.
-              </h2>
+              <div className="font-display text-5xl font-extrabold text-brand leading-none">67</div>
+              <div className="mt-2 text-sm text-muted-foreground">Florida counties served, coast to coast.</div>
             </div>
-            <p className="text-white/60 max-w-[44ch] leading-relaxed">
-              Operating statewide with 24/7 dispatch across Florida's primary medical corridors.
-            </p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            {cities.map((c) => (
-              <Link
-                key={c.slug}
-                to="/service-areas/$city"
-                params={{ city: c.slug }}
-                className="group aspect-[4/3] bg-white/[0.04] border border-white/10 p-6 flex flex-col justify-between hover:bg-white/10 hover:border-accent transition-all rounded-lg"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] text-white/40 tracking-widest">{c.code}</span>
-                  <MapPin size={16} className="text-accent-orange opacity-70 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <div>
-                  <h4 className="font-display text-2xl font-bold tracking-tight text-white">{c.name}</h4>
-                  <div className="mt-2 text-xs text-white/50 group-hover:text-accent-orange transition-colors inline-flex items-center gap-1">
-                    View region <ArrowRight size={12} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* 6 · TRAINING — full-bleed gradient */}
-      <section className="section bg-gradient-hero">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-20 items-start">
-          <div>
-            <p className="font-mono text-xs font-bold text-accent-orange uppercase tracking-[0.22em] mb-4">
-              03 — Career Development
-            </p>
-            <h2 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 text-brand">
-              NEMT Training Academy.
-            </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8">
-              Professionalize your transport career with Florida-standard certification courses —
-              required for all network providers, open to the public.
-            </p>
-            <Link to="/training" className="btn-primary">
-              View Curriculum <ArrowRight size={16} />
-            </Link>
+          {/* STAT 2 */}
+          <div className="md:col-span-2 rounded-2xl bg-accent text-accent-foreground p-6 flex flex-col justify-between">
+            <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase opacity-70">Dispatch</span>
+            <div>
+              <div className="font-display text-5xl font-extrabold leading-none">24 / 7</div>
+              <div className="mt-2 text-sm opacity-80">Live coordinators every hour of the year.</div>
+            </div>
           </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {[
-              { title: "Florida NEMT Basics", desc: "State regulations, patient handling, and safety protocols." },
-              { title: "HIPAA & Compliance", desc: "Privacy training for non-emergency medical drivers and dispatchers." },
-            ].map((c) => (
-              <div key={c.title} className="surface-panel p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 px-3 py-1.5 bg-accent text-accent-foreground font-mono text-[11px] font-bold">
-                  $100
-                </div>
-                <div className="size-11 bg-brand/10 text-brand rounded-md mb-5 flex items-center justify-center">
-                  <GraduationCap size={22} />
-                </div>
-                <h3 className="font-display text-lg font-bold mb-3 pr-12 text-brand">{c.title}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{c.desc}</p>
-                <Link
-                  to="/training"
-                  className="inline-flex items-center justify-center gap-2 w-full text-center py-3 border border-brand text-brand font-bold text-xs uppercase tracking-widest hover:bg-brand hover:text-primary-foreground transition-all rounded-md"
-                >
-                  <CalendarClock size={14} /> Enroll Now
-                </Link>
+
+          {/* STAT 3 */}
+          <div className="md:col-span-2 rounded-2xl bg-secondary text-secondary-foreground p-6 flex flex-col justify-between">
+            <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase opacity-70">Vetted</span>
+            <div>
+              <div className="font-display text-5xl font-extrabold leading-none">100%</div>
+              <div className="mt-2 text-sm opacity-80">Insurance · NPI · W-9 verified providers.</div>
+            </div>
+          </div>
+
+          {/* SERVICES — 3 cards side by side, full width row */}
+          {services.map((s) => (
+            <div
+              key={s.title}
+              className="md:col-span-2 group rounded-2xl bg-card border border-border p-6 hover:border-accent transition-colors flex flex-col"
+            >
+              <div className="size-11 rounded-xl bg-brand/8 text-brand flex items-center justify-center mb-4 group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
+                <s.Icon size={22} strokeWidth={2} />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <h3 className="font-display text-xl font-bold text-brand mb-1">{s.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+              <Link to="/services" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-accent-orange uppercase tracking-wider">
+                Details <ArrowRight size={12} />
+              </Link>
+            </div>
+          ))}
 
-      {/* 7 · PROVIDER CTA — clean split */}
-      <section className="bg-background border-t border-border">
-        <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7">
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3 text-accent-orange">
-              04 — For Providers
-            </p>
-            <h2 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight text-brand">
-              Scale your NEMT fleet.
-            </h2>
-            <p className="mt-4 text-muted-foreground text-lg max-w-[55ch]">
-              Higher-volume medical contracts, dispatch tools, and a statewide referral network — all backed by HIPAA-grade infrastructure.
-            </p>
-            <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-sm text-foreground">
-              {["Vetted patient leads", "Statewide referrals", "Stripe payouts (4% fee)", "Driver & fleet tools"].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-accent-orange" />
-                  {f}
-                </li>
+          {/* THREE PORTALS — featured 3x2 */}
+          <div className="md:col-span-3 md:row-span-2 rounded-2xl bg-card border border-border p-8 flex flex-col">
+            <span className="eyebrow mb-4">Built for everyone</span>
+            <h2 className="font-display text-3xl font-extrabold text-brand mb-2">Three portals. One network.</h2>
+            <p className="text-sm text-muted-foreground mb-6">Patients, facilities, and providers each get tools built for their workflow.</p>
+            <div className="grid gap-3 flex-1">
+              {[
+                { Icon: HeartPulse, label: "Patient", desc: "Book rides, manage trips, save preferences.", to: "/patient/login" as const },
+                { Icon: Building2, label: "Facility", desc: "Dispatch from clinics, save patients & cards.", to: "/facility/login" as const },
+                { Icon: Truck, label: "Provider", desc: "Receive referrals, manage fleet & payouts.", to: "/provider/login" as const },
+              ].map((p) => (
+                <Link
+                  key={p.label}
+                  to={p.to}
+                  className="group flex items-center gap-4 p-4 rounded-xl border border-border hover:border-brand hover:bg-secondary/30 transition-colors"
+                >
+                  <div className="size-10 rounded-lg bg-brand text-primary-foreground flex items-center justify-center shrink-0">
+                    <p.Icon size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display text-base font-bold text-brand">{p.label}</div>
+                    <div className="text-xs text-muted-foreground truncate">{p.desc}</div>
+                  </div>
+                  <ArrowRight size={16} className="text-muted-foreground group-hover:text-brand transition-colors shrink-0" />
+                </Link>
               ))}
-            </ul>
+            </div>
           </div>
-          <div className="lg:col-span-5 flex lg:justify-end">
-            <Link to="/providers" className="btn-accent">
-              <Truck size={18} /> Register Your Fleet <ArrowRight size={16} />
+
+          {/* TRUST */}
+          <div className="md:col-span-3 rounded-2xl bg-brand text-primary-foreground p-6 flex flex-col justify-center">
+            <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase text-accent mb-4">Trust Signals</span>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { Icon: ShieldCheck, label: "HIPAA" },
+                { Icon: BadgeCheck, label: "Insured" },
+                { Icon: Headphones, label: "24/7" },
+              ].map((t) => (
+                <div key={t.label} className="flex flex-col items-start gap-2 p-3 rounded-lg bg-white/5 border border-white/10">
+                  <t.Icon size={20} className="text-accent" strokeWidth={2.25} />
+                  <span className="text-xs font-semibold tracking-tight">{t.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* TRAINING CTA */}
+          <div className="md:col-span-3 rounded-2xl bg-secondary text-secondary-foreground p-6 flex flex-col justify-between min-h-[200px]">
+            <div>
+              <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase opacity-70 mb-3 block">Academy</span>
+              <h3 className="font-display text-2xl font-extrabold mb-1">NEMT Training</h3>
+              <p className="text-sm opacity-80 max-w-[40ch]">State-standard certification — required for network providers, open to the public.</p>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider">
+                <GraduationCap size={16} /> $100 per course
+              </div>
+              <Link to="/training" className="inline-flex items-center gap-1 text-sm font-semibold">
+                Enroll <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
+          {/* COVERAGE — 6 city tiles in 2 rows */}
+          <div className="md:col-span-6 rounded-2xl bg-card border border-border p-6">
+            <div className="flex items-end justify-between mb-5">
+              <div>
+                <span className="eyebrow">Regional Reach</span>
+                <h3 className="font-display text-2xl font-extrabold text-brand mt-1">Major hub coverage</h3>
+              </div>
+              <Link to="/service-areas" className="text-xs font-semibold text-accent-orange uppercase tracking-wider inline-flex items-center gap-1">
+                All areas <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {cities.map((c) => (
+                <Link
+                  key={c.slug}
+                  to="/service-areas/$city"
+                  params={{ city: c.slug }}
+                  className="group rounded-xl border border-border p-4 hover:border-accent hover:bg-secondary/20 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-mono text-[10px] text-muted-foreground tracking-widest">{c.code}</span>
+                    <MapPin size={14} className="text-accent-orange" />
+                  </div>
+                  <div className="font-display text-sm font-bold text-brand">{c.name}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* PROVIDER CTA — full width band */}
+          <div className="md:col-span-6 rounded-2xl bg-accent text-accent-foreground p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="max-w-xl">
+              <span className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase opacity-70 mb-2 block">For Providers</span>
+              <h3 className="font-display text-3xl font-extrabold mb-2">Scale your NEMT fleet.</h3>
+              <p className="text-sm opacity-80">Higher-volume medical contracts, referral routing, and Stripe payouts — 4% platform fee.</p>
+            </div>
+            <Link
+              to="/providers"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-[var(--radius)] bg-brand text-primary-foreground font-bold text-sm uppercase tracking-wider hover:brightness-110 transition shrink-0"
+            >
+              <Truck size={16} /> Register Fleet <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* QUICK BOOK */}
+          <div className="md:col-span-3 rounded-2xl bg-brand text-primary-foreground p-6 flex flex-col justify-between">
+            <div>
+              <CalendarClock size={24} className="text-accent mb-3" />
+              <h3 className="font-display text-xl font-extrabold mb-1">Need a ride today?</h3>
+              <p className="text-sm text-white/70">Submit a request in under 90 seconds — we route it to the closest vetted provider.</p>
+            </div>
+            <Link to="/request-a-ride" className="mt-5 btn-accent">
+              Request a Ride <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* HOW IT WORKS */}
+          <div className="md:col-span-3 rounded-2xl bg-card border border-border p-6 flex flex-col justify-between">
+            <div>
+              <span className="eyebrow">How it works</span>
+              <ol className="mt-4 space-y-3">
+                {[
+                  "Tell us pickup, drop-off & time",
+                  "We match a vetted local provider",
+                  "Driver arrives, ride is logged & billed",
+                ].map((step, i) => (
+                  <li key={step} className="flex gap-3 text-sm">
+                    <span className="size-6 rounded-full bg-brand text-primary-foreground font-mono text-xs flex items-center justify-center shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="text-foreground">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <Link to="/how-it-works" className="mt-5 text-xs font-semibold text-accent-orange uppercase tracking-wider inline-flex items-center gap-1">
+              Full walkthrough <ArrowRight size={12} />
             </Link>
           </div>
         </div>
       </section>
-
-    </>
+    </div>
   );
 }
-
