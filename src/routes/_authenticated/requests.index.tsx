@@ -178,8 +178,12 @@ function RequestsPage() {
                   {r.patient_first_name} {r.patient_last_name}
                 </Link>
                 <p className="text-sm font-medium text-zinc-900">
-                  {r.pickup_date} at {r.pickup_time}
+                  {r.pickup_date} · Pickup {r.pickup_time || "—"}
+                  {(r as any).appointment_time ? ` · Appt ${(r as any).appointment_time}` : ""}
+                  {(r as any).return_pickup_time ? ` · Return pickup ${(r as any).return_pickup_time}` : ""}
+                  {(r as any).return_dropoff_time ? ` · Return drop-off ${(r as any).return_dropoff_time}` : ""}
                 </p>
+
                 <p className="text-sm text-zinc-700">
                   <span className="font-medium">From:</span> {r.pickup_address}, {r.pickup_city}
                 </p>

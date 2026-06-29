@@ -887,6 +887,7 @@ export type Database = {
       ride_requests: {
         Row: {
           additional_stops: Json
+          appointment_time: string | null
           assigned_provider_id: string | null
           cancel_reason: string | null
           canceled_at: string | null
@@ -928,6 +929,8 @@ export type Database = {
           requester_email: string | null
           requester_phone: string | null
           requester_user_id: string | null
+          return_dropoff_time: string | null
+          return_pickup_time: string | null
           round_trip: boolean
           service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
@@ -938,6 +941,7 @@ export type Database = {
         }
         Insert: {
           additional_stops?: Json
+          appointment_time?: string | null
           assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
@@ -979,6 +983,8 @@ export type Database = {
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          return_dropoff_time?: string | null
+          return_pickup_time?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
@@ -989,6 +995,7 @@ export type Database = {
         }
         Update: {
           additional_stops?: Json
+          appointment_time?: string | null
           assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
@@ -1030,6 +1037,8 @@ export type Database = {
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          return_dropoff_time?: string | null
+          return_pickup_time?: string | null
           round_trip?: boolean
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null

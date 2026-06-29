@@ -187,9 +187,18 @@ function RequestDetailPage() {
       {mode === "view" ? (
         <section className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card title="Route">
-            <Row label="When">
-              {r.pickup_date} at {r.pickup_time}
-            </Row>
+            <Row label="Date">{r.pickup_date}</Row>
+            <Row label="Pickup time">{r.pickup_time || "—"}</Row>
+            <Row label="Appointment time">{(r as any).appointment_time || "—"}</Row>
+            {((r as any).round_trip || (r as any).trip_type === "round_trip" || (r as any).return_pickup_time) && (
+              <>
+                <Row label="Return pickup time">{(r as any).return_pickup_time || "—"}</Row>
+                {(r as any).return_dropoff_time && (
+                  <Row label="Return drop-off time">{(r as any).return_dropoff_time}</Row>
+                )}
+              </>
+            )}
+
             <Row label="Pickup">
               {r.pickup_address}
               <br />

@@ -42,17 +42,21 @@ const empty: RideRequestInput = {
   pickupCity: "",
   pickupDate: "",
   pickupTime: "",
+  appointmentTime: "",
   dropoffAddress: "",
   dropoffCity: "",
   transportType: "ambulatory",
   tripType: "one_way",
   roundTrip: false,
+  returnPickupTime: "",
+  returnDropoffTime: "",
   additionalStops: [],
   mobilityNotes: "",
   specialInstructions: "",
   recurrence: "none",
   recurrenceEndDate: "",
 };
+
 
 const TRIP_TYPE_LABELS: Record<RideRequestInput["tripType"], string> = {
   one_way: "One-way",
@@ -122,6 +126,7 @@ function RequestRidePage() {
           pickupCity: row.pickup_city ?? "",
           pickupDate: "",
           pickupTime: row.pickup_time ?? "",
+          appointmentTime: (row as any).appointment_time ?? "",
           dropoffAddress: row.dropoff_address ?? "",
           dropoffCity: row.dropoff_city ?? "",
           transportType:
@@ -130,6 +135,8 @@ function RequestRidePage() {
             (row.trip_type as RideRequestInput["tripType"]) ??
             (row.round_trip ? "round_trip" : "one_way"),
           roundTrip: !!row.round_trip,
+          returnPickupTime: (row as any).return_pickup_time ?? "",
+          returnDropoffTime: (row as any).return_dropoff_time ?? "",
           additionalStops: Array.isArray(row.additional_stops)
             ? (row.additional_stops as RideRequestInput["additionalStops"])
             : [],
@@ -137,6 +144,7 @@ function RequestRidePage() {
           specialInstructions: row.special_instructions ?? "",
           recurrence: rec,
           recurrenceEndDate: "",
+
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set a new pickup date to continue.");
@@ -274,11 +282,22 @@ function RequestRidePage() {
               <Field label="Date" required error={errors.pickupDate}>
                 <input type="date" className={inputCls} value={form.pickupDate} onChange={(e) => upd("pickupDate", e.target.value)} />
               </Field>
-              <Field label="Time" required error={errors.pickupTime}>
+              <Field label="Pickup time" required error={errors.pickupTime}>
                 <input type="time" className={inputCls} value={form.pickupTime} onChange={(e) => upd("pickupTime", e.target.value)} />
               </Field>
             </div>
+            <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
+              <input
+                type="time"
+                className={inputCls}
+                value={form.appointmentTime ?? ""}
+                onChange={(e) => upd("appointmentTime", e.target.value)}
+              />
+              <p className="mt-1 text-xs text-muted">When the patient needs to be at the destination.</p>
+            </Field>
           </fieldset>
+
+
 
           {/* Dropoff */}
           <fieldset className="space-y-6">
@@ -346,6 +365,30 @@ function RequestRidePage() {
                 {form.tripType === "multi_trip" && "Add one or more stops between the pickup and final drop-off."}
               </p>
             </div>
+
+            {form.tripType === "round_trip" && (
+              <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
+                <Field label="Return pickup time" error={errors.returnPickupTime}>
+                  <input
+                    type="time"
+                    className={inputCls}
+                    value={form.returnPickupTime ?? ""}
+                    onChange={(e) => upd("returnPickupTime", e.target.value)}
+                  />
+                  <p className="mt-1 text-xs text-muted">When the patient is ready to be picked up after the appointment.</p>
+                </Field>
+                <Field label="Return drop-off time" error={errors.returnDropoffTime}>
+                  <input
+                    type="time"
+                    className={inputCls}
+                    value={form.returnDropoffTime ?? ""}
+                    onChange={(e) => upd("returnDropoffTime", e.target.value)}
+                  />
+                  <p className="mt-1 text-xs text-muted">Optional — expected arrival back home.</p>
+                </Field>
+              </div>
+            )}
+
 
             {form.tripType === "multi_trip" && (
               <div className="space-y-4 border border-dashed border-border rounded-sm p-4">

@@ -12,6 +12,11 @@ type Row = {
   dropoff_city: string | null;
   pickup_date: string;
   pickup_time: string;
+  appointment_time: string | null;
+  return_pickup_time: string | null;
+  return_dropoff_time: string | null;
+  round_trip: boolean | null;
+  trip_type: string | null;
   transport_type: string | null;
   patient_first_name: string;
   patient_last_name: string;
@@ -21,6 +26,7 @@ type Row = {
   needs_wheelchair: boolean | null;
   distance_miles: number | null;
   estimated_cost_cents: number | null;
+
 };
 
 function sourceBadge(src: string | null, hasRequester: boolean) {
@@ -41,7 +47,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
+        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -95,9 +101,22 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   {r.service_level && <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.service_level.replace(/_/g, " ")}</span>}
                 </div>
                 <div className="font-extrabold">
-                  {r.patient_first_name} {r.patient_last_name} · {r.pickup_date} {r.pickup_time}
+                  {r.patient_first_name} {r.patient_last_name} · {r.pickup_date}
+                </div>
+                <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                  <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
+                  <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
+                  {(r.round_trip || r.trip_type === "round_trip" || r.return_pickup_time) && (
+                    <>
+                      <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return pickup:</span> {r.return_pickup_time || "—"}</span>
+                      {r.return_dropoff_time && (
+                        <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return drop-off:</span> {r.return_dropoff_time}</span>
+                      )}
+                    </>
+                  )}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
+
                   <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
                   {(r.distance_miles != null || r.estimated_cost_cents != null) && (
@@ -127,7 +146,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
+        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .eq("assigned_provider_id", userId)
         .order("pickup_date", { ascending: true });
       if (error) throw error;
@@ -153,10 +172,23 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                 {sourceBadge(r.dispatch_source, !!r.requester_user_id)}
                 <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
               </div>
-              <div className="font-extrabold">{r.patient_first_name} {r.patient_last_name} · {r.pickup_date} {r.pickup_time}</div>
+              <div className="font-extrabold">{r.patient_first_name} {r.patient_last_name} · {r.pickup_date}</div>
+              <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
+                <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
+                {(r.round_trip || r.trip_type === "round_trip" || r.return_pickup_time) && (
+                  <>
+                    <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return pickup:</span> {r.return_pickup_time || "—"}</span>
+                    {r.return_dropoff_time && (
+                      <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return drop-off:</span> {r.return_dropoff_time}</span>
+                    )}
+                  </>
+                )}
+              </div>
               <div className="text-sm text-muted-foreground mt-1">
                 <div>{r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
               </div>
+
             </div>
             <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted shrink-0">Review</Link>
           </div>
