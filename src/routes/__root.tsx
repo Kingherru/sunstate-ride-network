@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { PreviewRefreshButton } from "@/components/site/PreviewRefreshButton";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -151,6 +152,7 @@ function RootComponent() {
           <Footer portal={portal} />
         </div>
         <Toaster richColors position="top-center" />
+        <PreviewRefreshButton />
       </ThemeProvider>
     </QueryClientProvider>
   );
