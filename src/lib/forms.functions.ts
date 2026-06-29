@@ -21,6 +21,7 @@ export const rideRequestSchema = z.object({
   patientPhone: z.string().trim().min(7).max(30),
   patientEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
   pickupAddress: z.string().trim().min(3).max(300),
+  pickupAddressDetails: z.string().trim().max(200).optional().or(z.literal("")),
   pickupCity: z.string().trim().min(1).max(100),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/),
