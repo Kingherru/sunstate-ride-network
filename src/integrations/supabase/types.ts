@@ -1092,6 +1092,69 @@ export type Database = {
           },
         ]
       }
+      saved_payment_methods: {
+        Row: {
+          brand: string | null
+          created_at: string
+          environment: string
+          exp_month: number | null
+          exp_year: number | null
+          id: string
+          is_default: boolean
+          last4: string | null
+          stripe_payment_method_id: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          environment?: string
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean
+          last4?: string | null
+          stripe_payment_method_id: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          environment?: string
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean
+          last4?: string | null
+          stripe_payment_method_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stripe_customers: {
+        Row: {
+          created_at: string
+          environment: string
+          stripe_customer_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          stripe_customer_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          stripe_customer_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -1140,6 +1203,73 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          environment: string
+          id: string
+          payer_user_id: string
+          platform_fee_cents: number
+          provider_user_id: string | null
+          ride_request_id: string | null
+          status: string
+          stripe_payment_intent_id: string
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          environment?: string
+          id?: string
+          payer_user_id: string
+          platform_fee_cents?: number
+          provider_user_id?: string | null
+          ride_request_id?: string | null
+          status?: string
+          stripe_payment_intent_id: string
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          environment?: string
+          id?: string
+          payer_user_id?: string
+          platform_fee_cents?: number
+          provider_user_id?: string | null
+          ride_request_id?: string | null
+          status?: string
+          stripe_payment_intent_id?: string
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_payments_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           actual_dropoff_at: string | null
@@ -1184,6 +1314,7 @@ export type Database = {
           patient_last_name: string
           patient_phone: string | null
           payer: string | null
+          payment_status: string
           payout_released_at: string | null
           payout_status: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id: string | null
@@ -1253,6 +1384,7 @@ export type Database = {
           patient_last_name: string
           patient_phone?: string | null
           payer?: string | null
+          payment_status?: string
           payout_released_at?: string | null
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id?: string | null
@@ -1322,6 +1454,7 @@ export type Database = {
           patient_last_name?: string
           patient_phone?: string | null
           payer?: string | null
+          payment_status?: string
           payout_released_at?: string | null
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id?: string | null

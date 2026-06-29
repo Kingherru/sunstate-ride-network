@@ -1,65 +1,81 @@
-# Phase 4 + Security + Membership Tiers + HIPAA
 
-This batch is split into 4 tracks. I'll ship them in this order.
+## Group 1 — Payments & saved cards (patient + facility)
 
-## Track A — Critical Security Fixes (do first)
+**DB (migration)**
+- `stripe_customers (user_id PK → auth.users, stripe_customer_id, environment)` — RLS: owner-only.
+- `saved_payment_methods (id, user_id, stripe_payment_method_id, brand, last4, exp_month, exp_year, is_default, environment, created_at)` — RLS: owner-only read/insert/update/delete. No anon, no admin grant.
+- `trip_payments (id, trip_id, ride_request_id, payer_user_id, stripe_payment_intent_id, amount_cents, platform_fee_cents, status, environment, created_at)` — RLS: payer can read own; provider on the trip can read own; admin read.
+- Add `payment_status` ('unpaid' | 'authorized' | 'paid' | 'refunded') to `ride_requests` + `trips`.
 
-**1. Lock down `member_profiles`**
-- Drop the "Active members can see peers in their region" policy that exposes Stripe IDs, phone, dispatch_email. Replace with a sanitized **view** `public.member_directory` exposing only: `user_id`, `display_name`, `region`, `service_zip_codes`, `accepts_dispatch`. Peers query the view, not the table.
-- Drop the broad self-UPDATE policy. Replace with a trigger `prevent_billing_self_edit` that raises if a non-service-role session tries to change `membership_status`, `stripe_customer_id`, `stripe_subscription_id`, `current_period_end`, `membership_tier`. Users may still update name/phone/preferences.
-- Same trigger blocks INSERT with anything other than `membership_status='inactive'` and `membership_tier='none'`.
+**Server fns (`src/lib/payments.functions.ts`)**
+- `ensureStripeCustomer()` — get-or-create per user.
+- `createSetupIntent()` — returns client_secret for saving a card.
+- `listSavedPaymentMethods()` — owner only.
+- `deletePaymentMethod({id})` — detaches from Stripe + deletes row.
+- `setDefaultPaymentMethod({id})`.
+- `payForConfirmedTrip({ride_request_id, payment_method_id?})` — creates PaymentIntent, charges, marks trip `paid`. Triggered when status flips to `confirmed`.
 
-**2. Storage `provider-docs`**
-- Set bucket file size limit 25MB and allowed MIME types to PDF/JPEG/PNG.
-- Add UPDATE/DELETE policies: only admins.
+All Stripe calls go through `createStripeClient(env)` from `@/lib/stripe.server` per shared utility.
 
-**3. Bulk trip upload validation**
-- Replace `any[]` validator in `createTripsBulk` with a Zod schema (length caps, date/time regex, transport_type enum, cap of 500 rows).
+**UI**
+- `src/components/payments/SavedCards.tsx` — list + add (Stripe Elements `<PaymentElement>` against SetupIntent) + delete + set default.
+- New "Payments" tab in patient + facility Account panels.
+- `PayTripButton` shown on confirmed trips in the Patient "My Rides" and Facility "Trip History" panels.
 
-**4. SECURITY DEFINER exec grants**
-- `REVOKE EXECUTE ... FROM authenticated` on internal helpers; keep `has_role` callable.
+---
 
-## Track B — Membership Tiers + Payment Gating
+## Group 2 — Staff + Dispatcher roles, staff login
 
-- Add `membership_tier` enum: `none | free | paid`.
-- After provider application approval → admin action sets `tier='free'`, `status='active'`. Free tier can: view directory, manage contacts, fleet, pricing, **receive** trips. Cannot: **send/dispatch** trips, bulk upload, use API push.
-- Paid tier ($5/mo via existing Stripe flow) unlocks send/dispatch/bulk/API.
-- New `can_send_trips(user_id)` SQL function → `tier='paid' AND status='active'`. Used in `trips` INSERT policy WITH CHECK and in dashboard UI gating.
-- `/membership` page shows current tier + upgrade CTA.
+**DB**
+- Extend `app_role` enum: add `'staff'` and `'dispatcher'` (keep `'admin'`, `'user'`).
+- Permissions enforced **server-side** via `has_role()` checks inside server fns + RLS policies. No client-side gating only.
+  - `staff`: read access to providers/facilities/trips, write access ONLY to: notes, contact messages, mark-read notifications, edit provider contacts. CANNOT: change roles, change pricing, change platform_theme, approve providers, delete anything, view payment methods.
+  - `dispatcher`: everything staff can do, plus: approve/deny provider applications, assign trips to providers, change trip status, send referrals, edit reservations. Still cannot: change roles, theme, billing/payouts settings.
+- New RLS policies on relevant tables keyed off `has_role(auth.uid(),'staff'|'dispatcher')`.
+- Audit trail: `staff_audit_log (id, actor_user_id, role_at_time, action, target_table, target_id, before jsonb, after jsonb, created_at)` — admin-read only. Every staff/dispatcher write server fn inserts a row.
 
-## Track C — HIPAA Acknowledgment + PHI Minimization
+**UI**
+- `/staff/login` route (PortalAuth variant) — link in footer ("Staff sign-in").
+- Reuse `/dashboard` layout; sidebar tabs gated by role.
+- Admin tab "Team" — invite staff/dispatcher by email, set/change role.
 
-- New `hipaa_acknowledgments` table: `user_id, acknowledged_at, version`. Required before first send AND on every bulk upload / API push (per-batch checkbox stored as `hipaa_ack_id` on each trip).
-- Add `hipaa_acknowledged BOOLEAN` to trip create/upload forms — server fn rejects if false.
-- **PHI minimization**: encrypt patient PII columns (`patient_first_name`, `patient_last_name`, `patient_phone`, `patient_dob`, `medical_notes`) at the application layer using a per-provider symmetric key stored in `provider_phi_keys` (key wrapped by a server-only master key). Admin/peer queries return redacted values (`***`). Only the originating provider and the assigned receiving provider can decrypt.
-- Add admin-side RLS: admin role can read trip metadata (status, region, times) but **NOT** PHI columns. Enforced by splitting `trips` into `trips` (metadata) and `trip_phi` (encrypted) with stricter RLS on `trip_phi` scoped to sender_id / recipient_id only.
+---
 
-## Track D — Phase 4 Framework (scaffolding only)
+## Group 3 — Changelog chip
 
-**Public booking**
-- `/book` public form → inserts into `ride_requests` (existing).
-- Extend `ride_requests` with `recurrence_rule TEXT` (RRULE string), `requester_email`, `requester_phone`, `hipaa_ack_id`.
-- Daily server fn `expandRecurringRequests` stub (cron-ready, not wired yet).
+- `changelog (id, version, title, body markdown, released_at)` table — public SELECT (read-only), admin write.
+- `APP_VERSION` constant + `LATEST_CHANGELOG_RELEASED_AT` derived from latest row.
+- New `<ChangelogChip />` next to "Sign out" in sidebar footer.
+  - Default: light blue dot + "Changelog".
+  - If `now - released_at < 7 days` AND user hasn't dismissed: light green dot + "New".
+  - Click → side sheet listing entries newest first.
+- `user_changelog_seen (user_id, last_seen_version)` so dismiss is per-user.
 
-**Requester accounts**
-- New role `requester` in `app_role` enum.
-- `requester_saved_locations` table.
-- `/requests` portal scaffold (list own requests, cancel).
+---
 
-**External API integrations (stubs)**
-- New `provider_integrations` table: `provider_id, vendor (hibambi|routegenie), api_key_encrypted, webhook_secret, enabled, last_sync_at`.
-- `/api/public/integrations/hibambi/webhook` and `/api/public/integrations/routegenie/webhook` routes with HMAC verification stubs (return 501 until real specs available).
-- Outbound adapter interface `src/lib/integrations/adapter.ts` with `pushTrip`, `pullTrips` methods, `hibambi.ts` + `routegenie.ts` stub implementations.
-- Dashboard "Integrations" tab: connect/disconnect, paste API key (paid tier only).
+## Group 4 — Trip UX batch
 
-## Out of scope this batch
-- Real hiBambi/RouteGenie endpoint wiring (need vendor docs/sandbox creds — will ask after).
-- Email delivery of trip PDFs (still pending email domain setup).
-- Dependency CVE bumps (`@cloudflare/vite-plugin`, `@tanstack/react-start`) — Lovable-managed templates; flagged but not user-fixable here.
+- **Trip type selector** on all reservation/new-trip forms: One-way / Round trip / Multi-leg (dynamic leg rows). Stored as `trip_kind` + `legs jsonb` on `ride_requests`.
+- **Recurring trips**: pattern picker (daily/weekly/Mon-Fri/custom days + end date). Expands into individual `ride_requests` rows tagged with `recurrence_group_id`. Cancel "next only" / "all future" already exists in the requests portal — wire to new groups.
+- **Copy trip** button on Patient / Facility / Provider trip rows → pre-fills New Trip form with everything except date/time.
+- **Saved patients** (Patient portal): `saved_patients (id, owner_user_id, full_name, dob, phone, medicaid_id, npi, default_pickup, default_dropoff, notes)` — owner-only RLS. Quick-select on the reservation form. Facilities already have `provider_contacts`; mirror UX.
+- **Clickable name → modal**: row click opens reservation detail modal with full info + Edit mode for fields the actor is allowed to change (RLS-enforced). Available across Patient/Provider/Facility.
+- **Accept / Decline restyle**: smaller, consistent throughout — Accept `bg-green-200 text-green-900 hover:bg-green-300`, Decline `bg-pink-200 text-pink-900 hover:bg-pink-300`, `px-3 py-1 text-sm font-bold rounded-sm`.
+- **Integration label**: change "duetride" display to "DueRide" everywhere (label only; vendor id stays).
+- **Provider business-info tab**: new "Business Info" tab in Provider account showing read-only view of original `provider_applications` row (company, EIN, NPI, W9 path, insurance, driver license, etc.) + uploaded docs links + an "Update" button that opens an editable form (writes to `provider_applications` with `status='resubmitted'` requiring admin re-approval for sensitive fields).
+- **Driver email + in-app notifications**:
+  - Add `auth_user_id` (nullable) FK to `drivers` so drivers can have logins. Provider can invite driver → magic-link signup → linked.
+  - On trip assigned: enqueue email (notification_email_queue) to driver + insert `notifications` row scoped to driver user.
+  - "Send week" button on Vehicles & Drivers / driver row: PDF + email of all trips assigned to that driver for next 7 days.
+  - Driver portal (minimal): sees only own assigned trips, can mark on-scene / completed.
 
-## Technical notes
-- All new tables: RLS enabled, GRANT to authenticated + service_role, scoped to `auth.uid()`.
-- PHI encryption via `pgcrypto` `pgp_sym_encrypt/decrypt` with per-provider key; decrypt happens only in `requireSupabaseAuth` server fns after caller authorization check.
-- Migration order: security fixes → tier column → HIPAA tables → trip_phi split (data migration of existing PHI) → integrations table.
+---
 
-Confirm and I'll start with Track A migration.
+## Order of execution (one chat turn per group so each is reviewable)
+
+1. **This turn:** Group 1 — Payments & saved cards (migration + Stripe wiring + SavedCards UI + PayTripButton).
+2. Next turn: Group 2 — Staff/Dispatcher + audit log + staff login.
+3. Next turn: Group 3 — Changelog chip.
+4. Next turn: Group 4 — Trip UX batch (largest; may split into 4a forms/recurring/copy and 4b saved patients/edit modal/driver notifications).
+
+Approve and I'll start with Group 1.
