@@ -778,7 +778,7 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
 }
 
 /* -------- Account -------- */
-function AccountPanel({ profile }: { profile: Profile }) {
+function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: PortalKind; userId: string }) {
   const [busy, setBusy] = useState(false);
   async function openPortal() {
     setBusy(true);
@@ -793,22 +793,29 @@ function AccountPanel({ profile }: { profile: Profile }) {
     } finally { setBusy(false); }
   }
   return (
-    <div className="max-w-2xl bg-card border border-border rounded-sm p-6 space-y-3">
-      <h2 className="text-xl font-extrabold tracking-tight">Account</h2>
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
-        <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
-        <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
-        <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
-        <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
-        <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+    <div className="max-w-3xl space-y-6">
+      <div className="bg-card border border-border rounded-sm p-6 space-y-3">
+        <h2 className="text-xl font-extrabold tracking-tight">Account</h2>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
+          <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
+          <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
+          <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
+          <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
+          <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+        </div>
+        <div className="pt-4 border-t border-border">
+          <button onClick={openPortal} disabled={busy}
+                  className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+            {busy ? "Opening…" : "Manage billing"}
+          </button>
+        </div>
       </div>
-      <div className="pt-4 border-t border-border">
-        <button onClick={openPortal} disabled={busy}
-                className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
-          {busy ? "Opening…" : "Manage billing"}
-        </button>
-      </div>
+      {portal === "provider" && (
+        <div className="bg-card border border-border rounded-sm p-6">
+          <NetworkPanel userId={userId} />
+        </div>
+      )}
     </div>
   );
 }
