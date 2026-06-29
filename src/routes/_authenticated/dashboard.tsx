@@ -526,7 +526,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-bold">Transport type</span>
+        <span className="portal-label">Transport type</span>
         <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
                 className="portal-select">
           <option value="ambulatory">Ambulatory</option>
@@ -535,7 +535,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
         </select>
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-bold">Service level</span>
+        <span className="portal-label">Service level</span>
         <select value={form.service_level} onChange={(e) => setForm({ ...form, service_level: e.target.value })}
                 className="portal-select">
           <option value="curb_to_curb">Curb to curb</option>
@@ -565,12 +565,12 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       </fieldset>
       <Field label="Payer" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
       <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="font-bold">Mobility notes</span>
+        <span className="portal-label">Mobility notes</span>
         <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
                   className="portal-select" rows={2} />
       </label>
       <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="font-bold">Special instructions</span>
+        <span className="portal-label">Special instructions</span>
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
                   className="portal-select" rows={2} />
       </label>
