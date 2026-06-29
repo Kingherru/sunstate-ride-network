@@ -880,6 +880,7 @@ export type Database = {
       }
       ride_requests: {
         Row: {
+          additional_stops: Json
           assigned_provider_id: string | null
           cancel_reason: string | null
           canceled_at: string | null
@@ -926,9 +927,11 @@ export type Database = {
           special_instructions: string | null
           status: string
           transport_type: string
+          trip_type: string
           user_agent: string | null
         }
         Insert: {
+          additional_stops?: Json
           assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
@@ -975,9 +978,11 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           transport_type: string
+          trip_type?: string
           user_agent?: string | null
         }
         Update: {
+          additional_stops?: Json
           assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
@@ -1024,6 +1029,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           transport_type?: string
+          trip_type?: string
           user_agent?: string | null
         }
         Relationships: [

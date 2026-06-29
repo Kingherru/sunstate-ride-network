@@ -29,7 +29,9 @@ type Row = {
   dropoff_address: string;
   dropoff_city: string;
   transport_type: string;
+  trip_type: string | null;
   round_trip: boolean;
+  additional_stops: Array<{ address: string; city: string; note?: string }> | null;
   recurrence_rule: string | null;
   patient_first_name: string;
   patient_last_name: string;
@@ -37,6 +39,12 @@ type Row = {
   mobility_notes: string | null;
   special_instructions: string | null;
 };
+
+function tripTypeLabel(t: string | null, roundTrip: boolean): string {
+  if (t === "multi_trip") return "Multi-stop";
+  if (t === "round_trip" || (!t && roundTrip)) return "Round trip";
+  return "One-way";
+}
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
@@ -157,25 +165,34 @@ function RequestsPage() {
                       Recurring
                     </span>
                   )}
-                  {r.round_trip && (
-                    <span className="inline-block rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-900">
-                      Round trip
-                    </span>
-                  )}
+                  <span className="inline-block rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-900">
+                    {tripTypeLabel(r.trip_type, r.round_trip)}
+                  </span>
                   <span className="text-xs text-zinc-500 capitalize">{r.transport_type}</span>
                 </div>
-                <p className="mt-2 text-sm font-semibold text-zinc-900">
+                <Link
+                  to="/requests/$id"
+                  params={{ id: r.id }}
+                  className="mt-2 block text-base font-semibold text-[var(--brand-navy,#0b1d3a)] hover:underline"
+                >
+                  {r.patient_first_name} {r.patient_last_name}
+                </Link>
+                <p className="text-sm font-medium text-zinc-900">
                   {r.pickup_date} at {r.pickup_time}
                 </p>
                 <p className="text-sm text-zinc-700">
                   <span className="font-medium">From:</span> {r.pickup_address}, {r.pickup_city}
                 </p>
+                {r.additional_stops && r.additional_stops.length > 0 && (
+                  <p className="text-sm text-zinc-700">
+                    <span className="font-medium">Stops:</span>{" "}
+                    {r.additional_stops.map((s) => `${s.address}, ${s.city}`).join(" → ")}
+                  </p>
+                )}
                 <p className="text-sm text-zinc-700">
                   <span className="font-medium">To:</span> {r.dropoff_address}, {r.dropoff_city}
                 </p>
-                <p className="mt-1 text-xs text-zinc-500">
-                  Patient: {r.patient_first_name} {r.patient_last_name} · {r.patient_phone}
-                </p>
+                <p className="mt-1 text-xs text-zinc-500">Phone: {r.patient_phone}</p>
                 {r.recurrence_rule && (
                   <p className="mt-1 text-xs text-purple-800">Recurrence: {r.recurrence_rule}</p>
                 )}
