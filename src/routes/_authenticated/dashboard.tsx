@@ -17,6 +17,7 @@ import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { RequestsPanel, ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
+import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -33,12 +34,12 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "account"],
   provider: ["requests", "reservations", "new", "received", "sent", "network", "vehicles", "drivers", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
-  facility: ["new", "sent", "upload", "contacts", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "account"],
 };
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
@@ -57,6 +58,8 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "network") return "Provider Network";
   if (t === "rules") return "Rules";
   if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
+  if (t === "providers") return "Find Providers";
+  if (t === "saved_providers") return "Saved Providers";
   if (t === "vehicles") return "Vehicles";
   if (t === "drivers") return "Drivers";
   if (t === "pricing") return "Pricing";
@@ -243,7 +246,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 </div>
               );
             })()}
-            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
+            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "requests" && <RequestsPanel userId={userId!} />}
@@ -251,6 +254,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "network" && <NetworkPanel userId={userId!} />}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
+            {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
+            {tab === "saved_providers" && <FacilityProvidersPanel initialMode="saved" />}
             {tab === "vehicles" && <FleetPanel only="vehicles" />}
             {tab === "drivers" && <FleetPanel only="drivers" />}
             {tab === "pricing" && <PricingPanel />}
@@ -610,8 +615,32 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
 }
 
 /* -------- Trip List + Send/Assign -------- */
-function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; onChanged: () => void }) {
+function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void }) {
   const [assigning, setAssigning] = useState<Trip | null>(null);
+  const qc = useQueryClient();
+  const showSavedBadge = portal === "facility" && role === "sender";
+  const savedQ = useQuery({
+    queryKey: ["facility-saved-ids", userId],
+    queryFn: async () => {
+      const mod = await import("@/lib/facility-providers.functions");
+      return mod.listSavedProviderIds();
+    },
+    enabled: showSavedBadge,
+  });
+  const savedSet = new Set<string>(savedQ.data ?? []);
+
+  async function saveProviderFromTrip(provider_user_id: string) {
+    try {
+      const mod = await import("@/lib/facility-providers.functions");
+      await mod.saveProvider({ data: { provider_user_id } });
+      toast.success("Provider saved");
+      qc.invalidateQueries({ queryKey: ["facility-saved-ids"] });
+      qc.invalidateQueries({ queryKey: ["facility-saved-providers"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    }
+  }
+
   if (!trips.length) {
     return <div className="bg-card border border-border rounded-sm p-10 text-center text-muted-foreground">No trips yet.</div>;
   }
@@ -625,11 +654,14 @@ function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: s
               <th className="px-3 py-2 text-left">Patient</th>
               <th className="px-3 py-2 text-left">Pickup → Dropoff</th>
               <th className="px-3 py-2 text-left">Status</th>
+              {showSavedBadge && <th className="px-3 py-2 text-left">Provider</th>}
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {trips.map((t) => (
+            {trips.map((t) => {
+              const isSaved = !!t.assigned_to && savedSet.has(t.assigned_to);
+              return (
               <tr key={t.id} className="border-t border-border align-top">
                 <td className="px-3 py-2 whitespace-nowrap">{t.pickup_date}<br /><span className="text-xs text-muted-foreground">{t.pickup_time}</span></td>
                 <td className="px-3 py-2">{t.patient_first_name} {t.patient_last_name}</td>
@@ -638,6 +670,23 @@ function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: s
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
                 <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
+                {showSavedBadge && (
+                  <td className="px-3 py-2">
+                    {!t.assigned_to ? (
+                      <span className="text-xs text-muted-foreground">Unassigned</span>
+                    ) : isSaved ? (
+                      <span className="bg-accent/15 text-accent text-[10px] font-bold uppercase px-2 py-1 rounded-sm">Saved provider</span>
+                    ) : (
+                      <button
+                        onClick={() => saveProviderFromTrip(t.assigned_to!)}
+                        className="text-[10px] font-bold uppercase bg-orange-100 text-orange-700 hover:bg-orange-200 px-2 py-1 rounded-sm"
+                        title="New provider — click to save"
+                      >
+                        New provider · Save
+                      </button>
+                    )}
+                  </td>
+                )}
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-primary hover:underline mr-3">PDF</button>
                   {role === "sender" && t.status === "open" && (
@@ -653,7 +702,7 @@ function TripList({ trips, userId, role, onChanged }: { trips: Trip[]; userId: s
                   )}
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>
