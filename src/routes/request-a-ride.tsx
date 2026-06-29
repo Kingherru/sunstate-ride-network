@@ -39,6 +39,7 @@ const empty: RideRequestInput = {
   patientPhone: "",
   patientEmail: "",
   pickupAddress: "",
+  pickupAddressDetails: "",
   pickupCity: "",
   pickupDate: "",
   pickupTime: "",
