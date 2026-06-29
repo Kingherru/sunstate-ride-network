@@ -916,6 +916,7 @@ export type Database = {
           payment_amount_cents: number | null
           payment_status: string
           pickup_address: string
+          pickup_address_details: string | null
           pickup_city: string
           pickup_date: string
           pickup_lat: number | null
@@ -970,6 +971,7 @@ export type Database = {
           payment_amount_cents?: number | null
           payment_status?: string
           pickup_address: string
+          pickup_address_details?: string | null
           pickup_city: string
           pickup_date: string
           pickup_lat?: number | null
@@ -1024,6 +1026,7 @@ export type Database = {
           payment_amount_cents?: number | null
           payment_status?: string
           pickup_address?: string
+          pickup_address_details?: string | null
           pickup_city?: string
           pickup_date?: string
           pickup_lat?: number | null
