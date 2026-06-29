@@ -107,8 +107,10 @@ function sum(lines: CostLine[]) {
 }
 
 export const DEFAULT_RATES: PricingRates = {
-  base_pickup: 0, per_mile: 0, wait_per_min: 0, no_show: 0, cancellation: 0,
+  base_pickup: 0, per_mile: 0, wait_per_min: 0, wait_unit: "hour",
+  no_show: 0, cancellation: 0,
   wheelchair_addon: 0, stretcher_addon: 0, after_hours_addon: 0, holiday_surcharge: 0,
   additional_passenger: 0, minimum_fare: 0,
   after_hours_start: "19:00", after_hours_end: "07:00", holidays: [],
 };
+
