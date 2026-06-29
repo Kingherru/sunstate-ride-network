@@ -197,9 +197,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
           <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}
 
-        {profile && !isActive && portal === "provider" && !isDemo && <MembershipGate />}
-
-        {profile && (isActive || portal !== "provider") && (
+        {profile && (
           <>
             <div className="mb-6">
               <h1 className="text-2xl font-extrabold tracking-tight">{meta.label}</h1>
@@ -207,9 +205,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             </div>
             {portal === "provider" && !canSend && (
               <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
-                <p className="font-bold text-orange-900">Free membership — you can receive trips but not send them.</p>
+                <p className="font-bold text-orange-900">Free plan — receive referrals, manage reservations, vehicles, drivers & trip history.</p>
                 <p className="text-orange-800 mt-1">
-                  Upgrade to a paid membership ($5/mo) to send trips, bulk upload, and use API integrations.{" "}
+                  Upgrade to a paid membership ($5/year) to send trips, bulk upload, and use API integrations.{" "}
                   <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
                 </p>
               </div>
@@ -249,20 +247,17 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "requests" && <RequestsPanel userId={userId!} />}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
-            {tab === "network" && <NetworkPanel userId={userId!} />}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
             {tab === "saved_providers" && <FacilityProvidersPanel initialMode="saved" />}
-            {tab === "vehicles" && <FleetPanel only="vehicles" />}
-            {tab === "drivers" && <FleetPanel only="drivers" />}
+            {tab === "vehicles" && <FleetPanel />}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
-            {tab === "account" && <AccountPanel profile={profile} />}
+            {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
           </>
         )}
 
