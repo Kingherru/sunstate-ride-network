@@ -54,7 +54,7 @@ const promises = [
 function HowItWorksPage() {
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-br from-secondary/40 to-background">
+      <section className="border-b border-border bg-secondary/40">
         <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.22em] mb-5">
             For Patients · Statewide Florida

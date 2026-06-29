@@ -39,7 +39,7 @@ function MembershipPage() {
 
   return (
     <div className="bg-background">
-      <section className="bg-gradient-to-b from-primary/5 to-background py-20 px-6">
+      <section className="bg-primary/5 py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4">Member Network</span>
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter mb-4">

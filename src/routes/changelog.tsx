@@ -36,19 +36,13 @@ function ChangelogPage() {
 
   return (
     <div className="relative w-full min-h-screen bg-[#020617] text-white selection:bg-[#f97316]/30 overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 60% at 50% 30%, rgba(249,115,22,0.06) 0%, transparent 60%)",
-        }}
-      />
+      <div aria-hidden className="pointer-events-none absolute inset-0" />
+
 
       {/* Nav */}
       <nav className="relative max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-[#f97316] to-[#fbbf24] flex items-center justify-center font-extrabold text-[#0b1d3a] tracking-tighter">
+          <div className="w-8 h-8 rounded-sm bg-[#f97316] flex items-center justify-center font-extrabold text-[#0b1d3a] tracking-tighter">
             F
           </div>
           <span className="font-extrabold text-xl tracking-tight">Florida NEMT</span>
@@ -105,7 +99,7 @@ function ChangelogPage() {
                   </span>
                 )}
               </div>
-              <ul className="rounded-sm border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent divide-y divide-white/5">
+              <ul className="rounded-sm border border-white/10 bg-white/[0.04] divide-y divide-white/5">
                 {entry.notes.map((note, i) => {
                   const tag = inferTag(note);
                   return (
@@ -134,14 +128,14 @@ function ChangelogPage() {
 
       {/* CTA */}
       <section className="relative max-w-5xl mx-auto px-6 py-12">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-sm border border-white/10 bg-gradient-to-r from-[#f97316]/10 to-[#fbbf24]/10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-sm border border-white/10 bg-[#f97316]/10">
           <div>
             <h3 className="text-lg font-extrabold mb-1">Back to your dashboard</h3>
             <p className="text-sm text-slate-400">Pick up where you left off.</p>
           </div>
           <Link
             to="/dashboard"
-            className="px-6 py-3 bg-gradient-to-r from-[#f97316] to-[#fbbf24] text-[#0b1d3a] font-extrabold rounded-sm flex items-center gap-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all transform hover:-translate-y-0.5 shrink-0"
+            className="px-6 py-3 bg-[#f97316] text-[#0b1d3a] font-extrabold rounded-sm flex items-center gap-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all transform hover:-translate-y-0.5 shrink-0"
           >
             <Sparkles className="w-4 h-4" strokeWidth={2.5} />
             Open Dashboard
