@@ -110,6 +110,12 @@ export const cancelMyRequest = createServerFn({ method: "POST" })
     return { ok: true as const, scope: "single" as const };
   });
 
+const additionalStopSchema = z.object({
+  address: z.string().trim().min(3).max(300),
+  city: z.string().trim().min(1).max(100),
+  note: z.string().trim().max(300).optional().or(z.literal("")),
+});
+
 const rescheduleSchema = z.object({
   id: z.string().uuid(),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -117,6 +123,15 @@ const rescheduleSchema = z.object({
   pickupAddress: z.string().trim().min(3).max(300),
   pickupCity: z.string().trim().min(1).max(100),
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
+  // Passenger details (editable from detail page)
+  patientFirstName: z.string().trim().min(1).max(80).optional(),
+  patientLastName: z.string().trim().min(1).max(80).optional(),
+  patientPhone: z.string().trim().min(7).max(30).optional(),
+  patientEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
+  mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
+  // Trip shape
+  tripType: z.enum(["one_way", "round_trip", "multi_trip"]).optional(),
+  additionalStops: z.array(additionalStopSchema).max(10).optional(),
 });
 
 export const rescheduleMyRequest = createServerFn({ method: "POST" })
@@ -138,15 +153,28 @@ export const rescheduleMyRequest = createServerFn({ method: "POST" })
       return { ok: false as const, error: `This request can no longer be rescheduled (${row.status}).` };
     }
 
+    const update: Record<string, unknown> = {
+      pickup_date: data.pickupDate,
+      pickup_time: data.pickupTime,
+      pickup_address: data.pickupAddress,
+      pickup_city: data.pickupCity,
+      special_instructions: data.specialInstructions || null,
+    };
+    if (data.patientFirstName !== undefined) update.patient_first_name = data.patientFirstName;
+    if (data.patientLastName !== undefined) update.patient_last_name = data.patientLastName;
+    if (data.patientPhone !== undefined) update.patient_phone = data.patientPhone;
+    if (data.patientEmail !== undefined) update.patient_email = data.patientEmail || null;
+    if (data.mobilityNotes !== undefined) update.mobility_notes = data.mobilityNotes || null;
+    if (data.tripType !== undefined) {
+      update.trip_type = data.tripType;
+      update.round_trip = data.tripType === "round_trip";
+      if (data.tripType !== "multi_trip") update.additional_stops = [];
+    }
+    if (data.additionalStops !== undefined) update.additional_stops = data.additionalStops;
+
     const { error } = await supabase
       .from("ride_requests")
-      .update({
-        pickup_date: data.pickupDate,
-        pickup_time: data.pickupTime,
-        pickup_address: data.pickupAddress,
-        pickup_city: data.pickupCity,
-        special_instructions: data.specialInstructions || null,
-      })
+      .update(update)
       .eq("id", data.id)
       .eq("requester_user_id", userId);
     if (error) {
