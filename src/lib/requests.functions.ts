@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const SELECT_COLS =
-  "id, status, created_at, last_updated_at, canceled_at, cancel_reason, pickup_address, pickup_city, pickup_date, pickup_time, dropoff_address, dropoff_city, transport_type, round_trip, recurrence_rule, recurrence_exceptions, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, mobility_notes, special_instructions, provider_notes, payment_status, payment_amount_cents, assigned_provider_id, requester_user_id";
+  "id, status, created_at, last_updated_at, canceled_at, cancel_reason, pickup_address, pickup_city, pickup_date, pickup_time, dropoff_address, dropoff_city, transport_type, trip_type, round_trip, additional_stops, recurrence_rule, recurrence_exceptions, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, mobility_notes, special_instructions, provider_notes, payment_status, payment_amount_cents, assigned_provider_id, requester_user_id";
 
 export const listMyRequests = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
