@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   listDrivers, upsertDriver, deleteDriver,
   listVehicles, upsertVehicle, deleteVehicle,
+  sendDriverWeeklySchedule,
 } from "@/lib/fleet.functions";
 
 export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
@@ -21,6 +22,7 @@ function DriversCard() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const [editing, setEditing] = useState<any>(null);
+  const [scheduling, setScheduling] = useState<any>(null);
   const del = useMutation({
     mutationFn: (id: string) => deleteDriver({ data: { id } }),
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); },
@@ -44,8 +46,11 @@ function DriversCard() {
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
               </div>
-              <div className="text-xs">
-                <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline mr-3">Edit</button>
+              <div className="text-xs flex items-center gap-3">
+                {d.email && (
+                  <button onClick={() => setScheduling(d)} className="font-bold text-primary hover:underline">Email week</button>
+                )}
+                <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline">Edit</button>
                 <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
@@ -54,6 +59,7 @@ function DriversCard() {
       )}
       {editing && <DriverDialog d={editing} onClose={() => setEditing(null)}
                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
+      {scheduling && <WeekScheduleDialog d={scheduling} onClose={() => setScheduling(null)} />}
     </section>
   );
 }
@@ -92,6 +98,40 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
             {m.isPending ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
+  const today = new Date();
+  const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const [weekStart, setWeekStart] = useState(monday.toISOString().slice(0, 10));
+  const m = useMutation({
+    mutationFn: () => sendDriverWeeklySchedule({ data: { driver_id: d.id, week_start: weekStart } }),
+    onSuccess: (r: any) => { toast.success(`Schedule queued — ${r.count} trip${r.count === 1 ? "" : "s"}`); onClose(); },
+    onError: (e: any) => toast.error(e.message ?? "Failed to send"),
+  });
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
+            className="bg-card rounded-sm max-w-sm w-full p-6 grid gap-3">
+        <h3 className="text-lg font-extrabold">Email week schedule</h3>
+        <p className="text-sm text-muted-foreground">
+          Send {d.first_name} {d.last_name} a 7-day trip schedule starting on the date below.
+        </p>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-bold">Week start</span>
+          <input type="date" value={weekStart} onChange={(e) => setWeekStart(e.target.value)} required
+                 className="border border-border rounded-sm px-3 py-2 bg-background" />
+        </label>
+        <div className="text-xs text-muted-foreground">To: {d.email}</div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
+          <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
+            {m.isPending ? "Sending…" : "Send"}
           </button>
         </div>
       </form>
