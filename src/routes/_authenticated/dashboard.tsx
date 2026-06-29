@@ -798,12 +798,13 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
 function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
   const t: any = trip;
 
-  const Field = ({ label, value }: { label: string; value: any }) => {
-    if (value == null || value === "" || value === false) return null;
+  const Field = ({ label, value, alwaysShow }: { label: string; value: any; alwaysShow?: boolean }) => {
+    const empty = value == null || value === "" || value === false;
+    if (empty && !alwaysShow) return null;
     return (
       <div className="space-y-1">
         <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">{label}</div>
-        <div className="text-sm font-medium text-white break-words">{String(value)}</div>
+        <div className="text-sm font-medium text-white break-words">{empty ? "—" : String(value)}</div>
       </div>
     );
   };
@@ -818,8 +819,9 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
     </section>
   );
 
+  const isRound = !!t.round_trip;
   const flags: string[] = [];
-  if (t.round_trip) flags.push("Round trip");
+  if (isRound) flags.push("Round trip");
   if (t.needs_wheelchair) flags.push("Wheelchair");
   if (t.has_passenger) flags.push("Companion");
   if (t.needs_assistance_to_vehicle) flags.push("Help to vehicle");
@@ -861,6 +863,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
               {t.pickup_date}
               {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
               {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
+              {isRound && t.return_pickup_time ? ` · Return ${t.return_pickup_time}` : ""}
             </p>
           </div>
           <button
@@ -876,15 +879,15 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
           <Section title="Patient" accent="bg-[oklch(0.872_0.078_65.2)]">
             <Field label="Name" value={`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim()} />
             <Field label="Phone" value={t.patient_phone} />
-            <Field label="Date of birth" value={t.patient_dob} />
+            <Field label="Date of birth" value={t.patient_date_of_birth ?? t.patient_dob} />
             <Field label="Weight" value={t.patient_weight} />
             <Field label="Medicaid #" value={t.medicaid_number} />
-            <Field label="NPI" value={t.npi} />
+            <Field label="Medicaid plan" value={t.medicaid_plan} />
             <Field label="Payer" value={t.payer} />
-            <Field label="Emergency contact" value={t.emergency_contact} />
+            <Field label="Emergency contact" value={[t.emergency_contact_name, t.emergency_contact_phone].filter(Boolean).join(" · ")} />
           </Section>
 
-          <Section title="Route" accent="bg-[oklch(0.872_0.078_65.2)]">
+          <Section title="Route & Schedule" accent="bg-[oklch(0.872_0.078_65.2)]">
             <div className="col-span-2">
               <Field
                 label="Pickup"
@@ -897,56 +900,58 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
                 value={`${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim()}
               />
             </div>
-            <Field label="Pickup time" value={t.pickup_time} />
-            <Field label="Appointment time" value={t.appointment_time} />
-            <Field label="Return pickup" value={t.return_pickup_time} />
-            <Field label="Return dropoff" value={t.return_dropoff_time} />
+            <Field label="Pickup date" value={t.pickup_date} alwaysShow />
+            <Field label="Pickup time" value={t.pickup_time} alwaysShow />
+            <Field label="Appointment time" value={t.appointment_time} alwaysShow />
+            {isRound && (
+              <>
+                <Field label="Return pickup time" value={t.return_pickup_time} alwaysShow />
+                <Field label="Return dropoff time" value={t.return_dropoff_time} alwaysShow />
+              </>
+            )}
             <Field label="Distance (mi)" value={t.estimated_miles ?? t.actual_miles} />
             <Field label="Estimated fare" value={t.estimated_fare ? `$${t.estimated_fare}` : null} />
           </Section>
 
-          <Section title="Service" accent="bg-[oklch(0.872_0.078_65.2)]">
-            <Field label="Transport" value={t.transport_type} />
-            <Field label="Service level" value={t.service_level} />
-            <Field label="Trip type" value={t.trip_type} />
+          <Section title="Service & Patient Needs" accent="bg-[oklch(0.872_0.078_65.2)]">
+            <Field label="Transportation type" value={t.transport_type} alwaysShow />
+            <Field label="Service level" value={t.service_level ? String(t.service_level).replace(/_/g, " ") : null} alwaysShow />
+            <Field label="Trip type" value={isRound ? "Round trip" : "One-way"} alwaysShow />
             <Field label="Source" value={t.source} />
-            {flags.length > 0 && (
-              <div className="col-span-2 space-y-2">
-                <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">Flags</div>
+            <div className="col-span-2 space-y-2">
+              <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">Patient needs</div>
+              {flags.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {flags.map((f) => (
                     <span
                       key={f}
-                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.22)] text-[oklch(0.45_0.09_50)] border border-[oklch(0.872_0.078_65.2_/_0.45)]"
+                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.22)] text-white border border-[oklch(0.872_0.078_65.2_/_0.55)]"
                     >
                       {f}
                     </span>
                   ))}
                 </div>
+              ) : (
+                <div className="text-sm text-white/70">No special needs indicated.</div>
+              )}
+            </div>
+          </Section>
+
+          <Section title="Notes & Instructions" accent="bg-white/40">
+            <div className="col-span-2">
+              <Field label="Special instructions" value={t.special_instructions} alwaysShow />
+            </div>
+            <div className="col-span-2">
+              <Field label="Mobility notes" value={t.mobility_notes} alwaysShow />
+            </div>
+            {t.provider_notes && (
+              <div className="col-span-2">
+                <Field label="Provider notes" value={t.provider_notes} />
               </div>
             )}
           </Section>
-
-          {(t.special_instructions || t.mobility_notes || t.provider_notes) && (
-            <Section title="Notes" accent="bg-white/40">
-              {t.special_instructions && (
-                <div className="col-span-2">
-                  <Field label="Special instructions" value={t.special_instructions} />
-                </div>
-              )}
-              {t.mobility_notes && (
-                <div className="col-span-2">
-                  <Field label="Mobility notes" value={t.mobility_notes} />
-                </div>
-              )}
-              {t.provider_notes && (
-                <div className="col-span-2">
-                  <Field label="Provider notes" value={t.provider_notes} />
-                </div>
-              )}
-            </Section>
-          )}
         </div>
+
 
         {/* Footer */}
         <footer className="relative px-7 py-4 border-t border-white/10 flex justify-end gap-2 bg-black/20">
