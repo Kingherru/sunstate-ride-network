@@ -5,9 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =================================================================
- * Florida NEMT — visual system ported from "Visual System" (BVF).
- * Dark NOIR surface, glassmorphism, dotted borders, soft glow.
- * Accent uses Ocean teal (no RGB — business site).
+ * Florida NEMT — LOCKED design system.
+ * Light professional surface · Navy primary · Signal orange accent.
+ * Do not switch this back to dark/NOIR. One source of truth.
  * ================================================================= */
 
 @theme inline {
@@ -16,8 +16,6 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -39,7 +37,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-brand: var(--brand);
-  --color-glass: var(--glass);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent-orange: var(--accent-orange);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -56,90 +55,63 @@
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* NOIR — dark surface, glassmorphism, ocean-teal accent. */
+/* LOCKED LIGHT THEME — Navy + Signal Orange */
 :root {
-  --radius: 0.875rem;
+  --radius: 0.625rem;
 
-  --background: oklch(0.08 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.13 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.11 0 0);
-  --popover-foreground: oklch(0.98 0 0);
+  --background: oklch(0.99 0.003 240);
+  --foreground: oklch(0.18 0.03 250);
 
-  --primary: oklch(0.78 0.10 210);          /* ocean teal */
-  --primary-foreground: oklch(0.08 0.02 230);
-  --secondary: oklch(0.2 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.66 0 0);
-  --accent: oklch(0.78 0.10 210);
-  --accent-foreground: oklch(0.08 0.02 230);
-
-  --destructive: oklch(0.62 0.22 27);
-  --destructive-foreground: oklch(0.98 0 0);
-
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.78 0.10 210);
-
-  --brand: oklch(0.78 0.10 210);
-  --brand-soft: oklch(0.85 0.06 200);
-
-  --glass: oklch(1 0 0 / 4%);
-  --glass-strong: oklch(1 0 0 / 8%);
-  --glass-border: oklch(1 0 0 / 10%);
-
-  --glow: 0 0 60px oklch(0.78 0.10 210 / 25%);
-  --shadow-elegant: 0 20px 60px -20px oklch(0 0 0 / 60%);
-  --shadow-card: 0 1px 0 oklch(1 0 0 / 4%), 0 10px 30px -16px oklch(0 0 0 / 70%);
-
-  --gradient-noir: linear-gradient(180deg, oklch(0.12 0 0), oklch(0.06 0 0));
-  --gradient-brand: linear-gradient(135deg, oklch(0.78 0.10 210), oklch(0.6 0.12 240));
-  --gradient-ocean: linear-gradient(135deg, oklch(0.75 0.13 200), oklch(0.55 0.14 250));
-
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.78 0.10 210);
-  --sidebar-primary-foreground: oklch(0.08 0.02 230);
-  --sidebar-accent: oklch(0.18 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.78 0.10 210);
-}
-
-/* .light flips to a high-contrast minimal surface for any opt-in light areas. */
-.light {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.12 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.12 0 0);
+  --card-foreground: oklch(0.18 0.03 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.12 0 0);
-  --primary: oklch(0.5 0.12 215);
+  --popover-foreground: oklch(0.18 0.03 250);
+
+  /* Navy primary */
+  --primary: oklch(0.32 0.09 255);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.12 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.5 0.12 215);
-  --accent-foreground: oklch(0.99 0 0);
-  --border: oklch(0 0 0 / 10%);
-  --input: oklch(0 0 0 / 12%);
-  --ring: oklch(0.5 0.12 215);
-  --brand: oklch(0.3 0.08 230);
-  --glass: oklch(0 0 0 / 4%);
-  --glass-strong: oklch(0 0 0 / 8%);
-  --glass-border: oklch(0 0 0 / 10%);
-  --sidebar: oklch(0.97 0 0);
-  --sidebar-foreground: oklch(0.12 0 0);
-  --sidebar-border: oklch(0 0 0 / 8%);
+
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.22 0.04 255);
+  --muted: oklch(0.96 0.005 240);
+  --muted-foreground: oklch(0.48 0.02 250);
+
+  /* Signal orange accent */
+  --accent: oklch(0.72 0.17 50);
+  --accent-foreground: oklch(0.15 0.02 250);
+  --accent-orange: oklch(0.72 0.17 50);
+
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.22 0.04 255 / 12%);
+  --input: oklch(0.22 0.04 255 / 16%);
+  --ring: oklch(0.32 0.09 255);
+
+  --brand: oklch(0.32 0.09 255);
+  --brand-soft: oklch(0.55 0.09 250);
+
+  --shadow-card: 0 1px 2px oklch(0.22 0.04 255 / 6%), 0 8px 24px -12px oklch(0.22 0.04 255 / 16%);
+  --shadow-elegant: 0 24px 60px -28px oklch(0.22 0.04 255 / 30%);
+  --glow-accent: 0 10px 40px -10px oklch(0.72 0.17 50 / 40%);
+
+  --gradient-brand: linear-gradient(135deg, oklch(0.32 0.09 255), oklch(0.45 0.10 240));
+  --gradient-accent: linear-gradient(135deg, oklch(0.72 0.17 50), oklch(0.66 0.18 35));
+  --gradient-hero: linear-gradient(160deg, oklch(0.97 0.01 250) 0%, oklch(0.93 0.03 245) 60%, oklch(0.88 0.05 240) 100%);
+
+  --sidebar: oklch(0.22 0.04 255);
+  --sidebar-foreground: oklch(0.96 0.01 240);
+  --sidebar-primary: oklch(0.72 0.17 50);
+  --sidebar-primary-foreground: oklch(0.15 0.02 250);
+  --sidebar-accent: oklch(0.28 0.05 255);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.72 0.17 50);
 }
 
-/* Keep .dark equivalent to root (NOIR is the default). */
-.dark {
-  color-scheme: dark;
-}
+/* .light alias kept for any legacy consumers */
+.light { color-scheme: light; }
+.dark { color-scheme: light; } /* intentionally locked light to prevent flips */
 
 /* ---------- Animations ---------- */
 @keyframes slideUp {
@@ -148,30 +120,22 @@
 }
 .animate-slide-up { animation: slideUp 0.8s var(--ease-out-expo) both; }
 
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 30px oklch(0.78 0.10 210 / 15%); }
-  50%      { box-shadow: 0 0 50px oklch(0.78 0.10 210 / 35%); }
-}
-
 @layer base {
-  * {
-    border-color: var(--color-border);
-    border-style: dotted;
-  }
-  html { scroll-behavior: smooth; color-scheme: dark; }
+  * { border-color: var(--color-border); }
+  html { scroll-behavior: smooth; color-scheme: light; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+    color: var(--brand);
   }
-  button, [role="button"], a.btn { min-height: 44px; }
+  button, [role="button"], a.btn { min-height: 40px; }
   @media (max-width: 640px) {
     h1 { font-size: clamp(1.75rem, 7vw, 2.5rem); line-height: 1.05; }
     h2 { font-size: clamp(1.5rem, 5.5vw, 2rem); line-height: 1.1; }
@@ -180,91 +144,89 @@
 }
 
 @layer utilities {
-  /* ---------- Glass surfaces ---------- */
-  .glass {
-    background-color: var(--glass);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    border: 1px dotted var(--border);
-  }
-  .glass-strong {
-    background-color: var(--glass-strong);
-    backdrop-filter: blur(32px) saturate(160%);
-    -webkit-backdrop-filter: blur(32px) saturate(160%);
-    border: 1px dotted var(--border);
-  }
-  .glass-panel {
-    background: linear-gradient(180deg, oklch(1 0 0 / 6%), oklch(1 0 0 / 2%));
-    backdrop-filter: blur(28px) saturate(160%);
-    border: 1px dotted var(--border);
+  /* Surfaces */
+  .surface-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     box-shadow: var(--shadow-card);
   }
+  .surface-panel {
+    background: linear-gradient(180deg, oklch(1 0 0), oklch(0.98 0.005 240));
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow: var(--shadow-elegant);
+  }
 
-  /* ---------- Brand accents ---------- */
+  /* Brand */
   .text-brand { color: var(--brand); }
+  .text-accent-orange { color: var(--accent-orange); }
+  .bg-brand { background-color: var(--brand); color: var(--primary-foreground); }
   .bg-gradient-brand { background-image: var(--gradient-brand); }
-  .bg-gradient-noir { background-image: var(--gradient-noir); }
-  .bg-gradient-ocean { background-image: var(--gradient-ocean); }
+  .bg-gradient-accent { background-image: var(--gradient-accent); }
+  .bg-gradient-hero { background-image: var(--gradient-hero); }
   .text-gradient-brand {
     background-image: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .shadow-elegant { box-shadow: var(--shadow-elegant); }
   .shadow-card { box-shadow: var(--shadow-card); }
-  .shadow-glow { box-shadow: var(--glow); }
-  .glow-pulse { animation: glow-pulse 3.6s ease-in-out infinite; }
+  .shadow-glow-accent { box-shadow: var(--glow-accent); }
 
-  /* Reliability-grid texture for hero/CTA bands */
+  /* Reliability grid texture for hero bands */
   .reliability-grid {
     background-image:
-      linear-gradient(oklch(1 0 0 / 4%) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(1 0 0 / 4%) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(oklch(0.22 0.04 255 / 6%) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.22 0.04 255 / 6%) 1px, transparent 1px);
+    background-size: 44px 44px;
   }
 
-  /* ---------- Section primitives ---------- */
-  .section { padding-block: clamp(4rem, 8vw, 7rem); }
+  /* Section primitives */
+  .section { padding-block: clamp(4rem, 8vw, 6.5rem); }
   .container-x { max-width: 80rem; margin-inline: auto; padding-inline: 1.25rem; }
   @media (min-width: 640px) { .container-x { padding-inline: 1.5rem; } }
 
   .eyebrow {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--brand-soft);
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--accent-orange);
   }
 
-  /* ---------- Buttons ---------- */
+  /* Buttons */
   .btn-primary {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 0.95rem 1.5rem;
-    background: var(--primary);
+    padding: 0.85rem 1.4rem;
+    background: var(--gradient-brand);
     color: var(--primary-foreground);
     border-radius: var(--radius);
-    font-weight: 700;
-    font-size: 0.875rem;
-    letter-spacing: 0.04em;
-    transition: transform 200ms var(--ease-out-expo), box-shadow 200ms, filter 200ms;
+    font-weight: 600; font-size: 0.9rem;
     box-shadow: var(--shadow-card);
+    transition: transform 200ms var(--ease-out-expo), box-shadow 200ms, filter 200ms;
   }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--glow); filter: brightness(1.05); }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: var(--shadow-elegant); }
+
+  .btn-accent {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.85rem 1.4rem;
+    background: var(--gradient-accent);
+    color: oklch(0.15 0.02 250);
+    border-radius: var(--radius);
+    font-weight: 700; font-size: 0.9rem;
+    box-shadow: var(--glow-accent);
+    transition: transform 200ms var(--ease-out-expo), filter 200ms;
+  }
+  .btn-accent:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
   .btn-ghost {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 0.95rem 1.5rem;
-    background: var(--glass);
-    color: var(--foreground);
-    border: 1px dotted var(--border);
+    padding: 0.85rem 1.4rem;
+    background: var(--card);
+    color: var(--brand);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    font-weight: 700;
-    font-size: 0.875rem;
-    letter-spacing: 0.04em;
-    backdrop-filter: blur(20px) saturate(140%);
+    font-weight: 600; font-size: 0.9rem;
     transition: background 200ms, border-color 200ms, color 200ms;
   }
-  .btn-ghost:hover { background: var(--glass-strong); border-color: var(--brand); color: var(--brand); }
+  .btn-ghost:hover { background: var(--secondary); border-color: var(--brand); }
 }
