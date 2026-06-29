@@ -57,6 +57,8 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "network") return "Provider Network";
   if (t === "rules") return "Rules";
   if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
+  if (t === "providers") return "Find Providers";
+  if (t === "saved_providers") return "Saved Providers";
   if (t === "vehicles") return "Vehicles";
   if (t === "drivers") return "Drivers";
   if (t === "pricing") return "Pricing";
