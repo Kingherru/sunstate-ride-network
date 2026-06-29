@@ -188,8 +188,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const sent = [...realTrips.filter((t) => t.created_by === userId), ...(isAdmin ? demo.sent : [])];
   const received = [...realTrips.filter((t) => t.assigned_to === userId), ...(isAdmin ? demo.received : [])];
 
+  const upcoming = sent.filter((t) => ["scheduled","assigned","in_progress"].includes((t.status ?? "").toLowerCase())).length;
+  const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
+
   return (
-    <div className="min-h-screen bg-muted/30 flex">
+    <div className="min-h-screen bg-[oklch(0.97_0.01_220)] flex">
       <PortalSidebar
         portal={portal}
         profile={profile}
@@ -202,21 +205,33 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         onSavedName={() => qc.invalidateQueries({ queryKey: ["member-profile"] })}
       />
 
-      <main className="flex-1 min-w-0 px-6 py-8">
+      <main className="flex-1 min-w-0 flex flex-col">
+        {/* Top bar */}
+        <div className="h-16 bg-card border-b border-border flex items-center justify-between px-8 sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-foreground">{portal} / {tabLabel(tab, portal, { received: received.length, sent: sent.length })}</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs">
+            <span className="font-mono uppercase tracking-wider text-muted-foreground">Live</span>
+            <span className="size-2 rounded-full bg-[oklch(0.74_0.13_165)] animate-pulse" />
+          </div>
+        </div>
+
+        <div className="px-8 py-7 space-y-7">
         {isAdmin && (
-          <div className="mb-4 flex items-center justify-between gap-3 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2 text-sm">
-            <span className="font-bold text-primary">
-              Admin preview · You're viewing the {portal} dashboard{isDemo ? " with demo data" : ""}.
+          <div className="flex items-center justify-between gap-3 bg-[oklch(0.15_0.05_240)] text-white px-4 py-2.5 text-sm border-l-4 border-[oklch(0.74_0.12_195)]">
+            <span className="font-bold uppercase tracking-wider text-xs">
+              Admin preview · {portal} dashboard{isDemo ? " · demo data" : ""}
             </span>
-            <Link to="/admin" className="font-bold text-primary hover:underline">
+            <Link to="/admin" className="font-bold text-[oklch(0.85_0.10_195)] hover:underline text-xs uppercase tracking-wider">
               ← Back to admin
             </Link>
           </div>
         )}
 
         {isDemo && (
-          <div className="mb-4 bg-amber-50 border border-amber-300 px-4 py-2 text-xs text-amber-900">
-            <strong>Demo data shown.</strong> Trips, profile, and counts marked “(DEMO)” are placeholders so you can see the layout — nothing is saved. Real data appears once a user completes onboarding.
+          <div className="bg-amber-50 border-l-4 border-amber-400 px-4 py-2.5 text-xs text-amber-900">
+            <strong>Demo data shown.</strong> Items marked “(DEMO)” are placeholders so you can see the layout — nothing is saved.
           </div>
         )}
 
@@ -226,20 +241,36 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
         {profile && (
           <>
-            <div className="mb-6">
-              <h1 className="text-2xl font-extrabold tracking-tight">{meta.label}</h1>
-              <p className="text-sm text-muted-foreground mt-1">{meta.heroText}</p>
+            {/* Hero header */}
+            <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end pb-2 border-b border-border">
+              <div>
+                <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.45_0.08_220)] mb-2">Florida NEMT · {portal}</div>
+                <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight text-brand">{meta.label}</h1>
+                <p className="text-sm text-muted-foreground mt-2 max-w-xl">{meta.heroText}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-px bg-border border border-border min-w-[420px]">
+                <StatCell label="Referrals" value={received.length} accent />
+                <StatCell label="Upcoming" value={upcoming} />
+                <StatCell label="Completed" value={completed} />
+              </div>
             </div>
+
             {portal === "provider" && !canSend && (
-              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
-                <p className="font-bold text-orange-900">Free plan — receive referrals, manage reservations, vehicles, drivers & trip history.</p>
-                <p className="text-orange-800 mt-1">
-                  Upgrade to a paid membership ($5/year) to send trips, bulk upload, and use API integrations.{" "}
+              <div className="bg-[oklch(0.96_0.05_55)] border-l-4 border-[oklch(0.70_0.18_45)] p-4 text-sm">
+                <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Free plan</p>
+                <p className="text-[oklch(0.30_0.08_45)]">
+                  Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($5/year) to send trips, bulk upload, and use API integrations.{" "}
                   <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
                 </p>
               </div>
             )}
 
+            {/* Active panel */}
+            <section className="bg-card border border-border shadow-card">
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <h2 className="font-display text-lg font-bold tracking-tight text-brand">{tabLabel(tab, portal, { received: received.length, sent: sent.length })}</h2>
+              </div>
+              <div className="p-6">
             {tab === "received" && (() => {
               const isFlNemt = (s: string | null | undefined) => {
                 const v = (s ?? "").toLowerCase();
@@ -252,20 +283,20 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 <div className="space-y-8">
                   <section>
                     <div className="mb-3">
-                      <h2 className="text-xl font-extrabold tracking-tight">Florida NEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h2>
+                      <h3 className="font-display text-base font-bold tracking-tight">Florida NEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h3>
                       <p className="text-sm text-muted-foreground">Auto-routed referrals from Florida NEMT based on your service area.</p>
                     </div>
                     {flNemt.length === 0
-                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No Florida NEMT referrals right now.</div>
+                      ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No Florida NEMT referrals right now.</div>
                       : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} />}
                   </section>
                   <section>
                     <div className="mb-3">
-                      <h2 className="text-xl font-extrabold tracking-tight">Subscribed Provider Submissions <span className="text-muted-foreground font-normal">({subProv.length})</span></h2>
+                      <h3 className="font-display text-base font-bold tracking-tight">Subscribed Provider Submissions <span className="text-muted-foreground font-normal">({subProv.length})</span></h3>
                       <p className="text-sm text-muted-foreground">Trips sent directly to you by providers and facilities in your network.</p>
                     </div>
                     {subProv.length === 0
-                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No partner submissions yet.</div>
+                      ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No partner submissions yet.</div>
                       : <TripList trips={subProv} userId={userId!} role="recipient" onChanged={onChanged} />}
                   </section>
                 </div>
@@ -288,14 +319,25 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "saved_patients" && <SavedPatientsPanel />}
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
-
+              </div>
+            </section>
           </>
         )}
-
+        </div>
       </main>
     </div>
   );
 }
+
+function StatCell({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+  return (
+    <div className={`px-5 py-4 ${accent ? "bg-[oklch(0.20_0.06_240)] text-white" : "bg-card"}`}>
+      <div className={`text-[10px] font-mono uppercase tracking-[0.18em] ${accent ? "text-[oklch(0.85_0.10_195)]" : "text-muted-foreground"}`}>{label}</div>
+      <div className={`font-display text-3xl font-bold tracking-tight mt-1 ${accent ? "text-white" : "text-brand"}`}>{value}</div>
+    </div>
+  );
+}
+
 
 function StatusBadge({ status }: { status: string }) {
   const cls =
