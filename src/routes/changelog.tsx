@@ -37,13 +37,8 @@ function ChangelogPage() {
   return (
     <div className="relative w-full min-h-screen bg-[#020617] text-white selection:bg-[#f97316]/30 overflow-hidden">
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 60% at 50% 30%, rgba(249,115,22,0.06) 0%, transparent 60%)",
-        }}
-      />
+      <div aria-hidden className="pointer-events-none absolute inset-0" />
+
 
       {/* Nav */}
       <nav className="relative max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
