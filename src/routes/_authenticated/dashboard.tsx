@@ -48,13 +48,14 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "payments", "account"],
+  patient:  ["new", "sent", "saved_patients", "payments", "account"],
+  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "memberships", "payouts", "integrations", "business_info", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
+
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
   patient:  { label: "Patient Dashboard",  heroText: "Request rides and track your appointments." },
