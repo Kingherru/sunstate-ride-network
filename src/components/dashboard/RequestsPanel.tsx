@@ -118,7 +118,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
 
-                  <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}</div>
+                  <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}{r.pickup_address_details ? ` — ${r.pickup_address_details}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
                   {(r.distance_miles != null || r.estimated_cost_cents != null) && (
                     <div className="mt-1 text-xs">
