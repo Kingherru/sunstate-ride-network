@@ -36,6 +36,9 @@ export type ProviderLookupRow = {
   region: string | null;
   service_radius_miles: number | null;
   distance_miles: number;
+  est_drive_miles: number;
+  est_fare_low_cents: number;
+  est_fare_high_cents: number;
   is_saved: boolean;
 };
 
@@ -74,6 +77,11 @@ export const findProvidersNearAddress = createServerFn({ method: "POST" })
       .filter((p: any) => approvedEmails.has((p.dispatch_email ?? "").toLowerCase()))
       .map((p: any) => {
         const d = miles(center, { lat: Number(p.center_lat), lng: Number(p.center_lng) });
+        // Approximate driving miles from straight-line distance (typical FL road factor ~1.25)
+        const driveMiles = +(d * 1.25).toFixed(1);
+        const amb = { loadMin: 50, loadMax: 50, mileMin: 1.5, mileMax: 3.5 };
+        const low = Math.round((amb.loadMin + amb.mileMin * driveMiles) * 100);
+        const high = Math.round((amb.loadMax + amb.mileMax * driveMiles) * 100);
         return {
           user_id: p.user_id,
           company_name: p.company_name,
@@ -83,6 +91,9 @@ export const findProvidersNearAddress = createServerFn({ method: "POST" })
           region: p.region,
           service_radius_miles: p.service_radius_miles,
           distance_miles: +d.toFixed(1),
+          est_drive_miles: driveMiles,
+          est_fare_low_cents: low,
+          est_fare_high_cents: high,
           is_saved: savedSet.has(p.user_id),
         };
       })

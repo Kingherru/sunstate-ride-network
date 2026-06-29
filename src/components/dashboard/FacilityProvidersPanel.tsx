@@ -118,6 +118,8 @@ function LookupTab() {
                 <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                   <span className="inline-flex items-center gap-1"><MapPin className="size-3" /> {r.city ?? "—"}{r.region ? ` · ${r.region}` : ""}</span>
                   <span><span className="font-bold text-foreground">{r.distance_miles} mi</span> from pickup</span>
+                  <span>~{r.est_drive_miles} mi drive</span>
+                  <span className="font-bold text-foreground">Est. ${(r.est_fare_low_cents/100).toFixed(0)}–${(r.est_fare_high_cents/100).toFixed(0)}</span>
                   {r.service_radius_miles != null && <span>Service radius: {r.service_radius_miles} mi</span>}
                 </div>
               </div>

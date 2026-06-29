@@ -36,13 +36,22 @@ async function routeMiles(o: { lat: number; lng: number }, d: { lat: number; lng
   return typeof meters === "number" ? +(meters / 1609.344).toFixed(2) : null;
 }
 
-// FloridaNEMT defaults (used when a provider hasn't set their own pricing)
-export const FL_DEFAULTS = { ambulatory: { load: 50, perMile: 3 }, wheelchair: { load: 60, perMile: 4 }, gurney: { load: 125, perMile: 4.5 } };
+// FloridaNEMT average pricing defaults (used when a provider hasn't set their own pricing).
+// Ranges reflect typical Florida Medicaid / private-pay rates; midpoint is used for estimates.
+export const FL_DEFAULTS = {
+  ambulatory: { load: 50,  loadMax: 50,  perMileMin: 1.50, perMileMax: 3.50 },
+  wheelchair: { load: 60,  loadMax: 60,  perMileMin: 2.00, perMileMax: 5.00 },
+  gurney:     { load: 100, loadMax: 200, perMileMin: 4.50, perMileMax: 4.50 },
+};
+// Wait time: $15 per 30 minutes = $0.50/min
+export const FL_WAIT_PER_MIN = 0.5;
 
 export function estimateCostCents(transportType: string | null | undefined, miles: number): number {
   const k = (transportType ?? "ambulatory") as keyof typeof FL_DEFAULTS;
   const r = FL_DEFAULTS[k] ?? FL_DEFAULTS.ambulatory;
-  return Math.round((r.load + r.perMile * miles) * 100);
+  const loadMid = (r.load + r.loadMax) / 2;
+  const mileMid = (r.perMileMin + r.perMileMax) / 2;
+  return Math.round((loadMid + mileMid * miles) * 100);
 }
 
 /** Geocode pickup & dropoff for a public ride request, compute miles + estimate, then write back. */
