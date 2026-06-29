@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   listDrivers, upsertDriver, deleteDriver,
   listVehicles, upsertVehicle, deleteVehicle,
+  sendDriverWeeklySchedule,
 } from "@/lib/fleet.functions";
 
 export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
