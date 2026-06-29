@@ -48,7 +48,7 @@ const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
 };
 
 function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: number }): string {
-  if (t === "received") return `Received (${counts.received})`;
+  if (t === "received") return `Referrals (${counts.received})`;
   if (t === "sent") return portal === "patient" ? `My Rides (${counts.sent})` : `Trip History (${counts.sent})`;
   if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
   if (t === "upload") return "Upload CSV";
