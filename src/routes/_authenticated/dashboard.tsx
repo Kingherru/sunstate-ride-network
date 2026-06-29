@@ -33,12 +33,12 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "account"],
   provider: ["requests", "reservations", "new", "received", "sent", "network", "vehicles", "drivers", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
-  facility: ["new", "sent", "upload", "contacts", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "account"],
 };
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
