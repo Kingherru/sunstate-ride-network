@@ -45,11 +45,19 @@ const empty: RideRequestInput = {
   dropoffAddress: "",
   dropoffCity: "",
   transportType: "ambulatory",
+  tripType: "one_way",
   roundTrip: false,
+  additionalStops: [],
   mobilityNotes: "",
   specialInstructions: "",
   recurrence: "none",
   recurrenceEndDate: "",
+};
+
+const TRIP_TYPE_LABELS: Record<RideRequestInput["tripType"], string> = {
+  one_way: "One-way",
+  round_trip: "Round trip",
+  multi_trip: "Multi-stop",
 };
 
 function Field({
