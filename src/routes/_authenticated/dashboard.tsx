@@ -479,9 +479,11 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     patient_date_of_birth: "", medicaid_number: "", medicaid_plan: "",
     authorization_number: "", diagnosis_code: "",
     emergency_contact_name: "", emergency_contact_phone: "",
-    pickup_address: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    pickup_address: "", pickup_address_details: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    appointment_time: "",
     dropoff_address: "", dropoff_city: "", dropoff_zip: "",
     transport_type: "ambulatory", round_trip: false,
+    return_pickup_time: "", return_dropoff_time: "",
     service_level: "curb_to_curb",
     needs_wheelchair: false, has_passenger: false, needs_assistance_to_vehicle: false,
     needs_surgery_signin: false, needs_surgery_signout: false,
@@ -491,15 +493,22 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
   const m = useMutation({
     mutationFn: async () => {
       if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
+      if (form.round_trip && !form.return_pickup_time) {
+        throw new Error("Return pickup time is required for round trips.");
+      }
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
       const payload = { ...form };
       // Don't send empty date string (zod regex would reject)
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
+      if (!payload.return_pickup_time) delete payload.return_pickup_time;
+      if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
+      if (!payload.appointment_time) delete payload.appointment_time;
       return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
     },
     onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
   });
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="max-w-3xl bg-card border border-border rounded-sm p-6 grid grid-cols-2 gap-4">
       <h2 className="col-span-2 text-xl font-extrabold tracking-tight">New trip</h2>
@@ -518,15 +527,17 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
         <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
       </fieldset>
       <Field label="Pickup address" v={form.pickup_address} on={(v) => setForm({ ...form, pickup_address: v })} required className="col-span-2" />
+      <Field label="Building / Doctor's office / Suite" v={form.pickup_address_details} on={(v) => setForm({ ...form, pickup_address_details: v })} className="col-span-2" placeholder="e.g. Dr. Smith — Suite 210" />
       <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
       <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
       <Field label="Pickup date" v={form.pickup_date} on={(v) => setForm({ ...form, pickup_date: v })} required type="date" />
       <Field label="Pickup time" v={form.pickup_time} on={(v) => setForm({ ...form, pickup_time: v })} required type="time" />
+      <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
       <Field label="Dropoff address" v={form.dropoff_address} on={(v) => setForm({ ...form, dropoff_address: v })} required className="col-span-2" />
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       <label className="flex flex-col gap-1 text-sm">
-        <span className="portal-label">Transport type</span>
+        <span className="portal-label">Transportation type</span>
         <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
                 className="portal-select">
           <option value="ambulatory">Ambulatory</option>
@@ -544,10 +555,16 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
           <option value="driveway_pickup">Pickup in driveway</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm font-bold mt-2">
+      <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
         <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
-        Round trip
+        Round trip (return pickup time required)
       </label>
+      {form.round_trip && (
+        <>
+          <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
+          <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+        </>
+      )}
       <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
         <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
         {[
@@ -798,12 +815,13 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
 function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
   const t: any = trip;
 
-  const Field = ({ label, value }: { label: string; value: any }) => {
-    if (value == null || value === "" || value === false) return null;
+  const Field = ({ label, value, alwaysShow }: { label: string; value: any; alwaysShow?: boolean }) => {
+    const empty = value == null || value === "" || value === false;
+    if (empty && !alwaysShow) return null;
     return (
       <div className="space-y-1">
         <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">{label}</div>
-        <div className="text-sm font-medium text-white break-words">{String(value)}</div>
+        <div className="text-sm font-medium text-white break-words">{empty ? "—" : String(value)}</div>
       </div>
     );
   };
@@ -818,8 +836,9 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
     </section>
   );
 
+  const isRound = !!t.round_trip;
   const flags: string[] = [];
-  if (t.round_trip) flags.push("Round trip");
+  if (isRound) flags.push("Round trip");
   if (t.needs_wheelchair) flags.push("Wheelchair");
   if (t.has_passenger) flags.push("Companion");
   if (t.needs_assistance_to_vehicle) flags.push("Help to vehicle");
@@ -861,6 +880,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
               {t.pickup_date}
               {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
               {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
+              {isRound && t.return_pickup_time ? ` · Return ${t.return_pickup_time}` : ""}
             </p>
           </div>
           <button
@@ -876,15 +896,15 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
           <Section title="Patient" accent="bg-[oklch(0.872_0.078_65.2)]">
             <Field label="Name" value={`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim()} />
             <Field label="Phone" value={t.patient_phone} />
-            <Field label="Date of birth" value={t.patient_dob} />
+            <Field label="Date of birth" value={t.patient_date_of_birth ?? t.patient_dob} />
             <Field label="Weight" value={t.patient_weight} />
             <Field label="Medicaid #" value={t.medicaid_number} />
-            <Field label="NPI" value={t.npi} />
+            <Field label="Medicaid plan" value={t.medicaid_plan} />
             <Field label="Payer" value={t.payer} />
-            <Field label="Emergency contact" value={t.emergency_contact} />
+            <Field label="Emergency contact" value={[t.emergency_contact_name, t.emergency_contact_phone].filter(Boolean).join(" · ")} />
           </Section>
 
-          <Section title="Route" accent="bg-[oklch(0.872_0.078_65.2)]">
+          <Section title="Route & Schedule" accent="bg-[oklch(0.872_0.078_65.2)]">
             <div className="col-span-2">
               <Field
                 label="Pickup"
@@ -897,56 +917,58 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
                 value={`${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim()}
               />
             </div>
-            <Field label="Pickup time" value={t.pickup_time} />
-            <Field label="Appointment time" value={t.appointment_time} />
-            <Field label="Return pickup" value={t.return_pickup_time} />
-            <Field label="Return dropoff" value={t.return_dropoff_time} />
+            <Field label="Pickup date" value={t.pickup_date} alwaysShow />
+            <Field label="Pickup time" value={t.pickup_time} alwaysShow />
+            <Field label="Appointment time" value={t.appointment_time} alwaysShow />
+            {isRound && (
+              <>
+                <Field label="Return pickup time" value={t.return_pickup_time} alwaysShow />
+                <Field label="Return dropoff time" value={t.return_dropoff_time} alwaysShow />
+              </>
+            )}
             <Field label="Distance (mi)" value={t.estimated_miles ?? t.actual_miles} />
             <Field label="Estimated fare" value={t.estimated_fare ? `$${t.estimated_fare}` : null} />
           </Section>
 
-          <Section title="Service" accent="bg-[oklch(0.872_0.078_65.2)]">
-            <Field label="Transport" value={t.transport_type} />
-            <Field label="Service level" value={t.service_level} />
-            <Field label="Trip type" value={t.trip_type} />
+          <Section title="Service & Patient Needs" accent="bg-[oklch(0.872_0.078_65.2)]">
+            <Field label="Transportation type" value={t.transport_type} alwaysShow />
+            <Field label="Service level" value={t.service_level ? String(t.service_level).replace(/_/g, " ") : null} alwaysShow />
+            <Field label="Trip type" value={isRound ? "Round trip" : "One-way"} alwaysShow />
             <Field label="Source" value={t.source} />
-            {flags.length > 0 && (
-              <div className="col-span-2 space-y-2">
-                <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">Flags</div>
+            <div className="col-span-2 space-y-2">
+              <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">Patient needs</div>
+              {flags.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {flags.map((f) => (
                     <span
                       key={f}
-                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.22)] text-[oklch(0.45_0.09_50)] border border-[oklch(0.872_0.078_65.2_/_0.45)]"
+                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.22)] text-white border border-[oklch(0.872_0.078_65.2_/_0.55)]"
                     >
                       {f}
                     </span>
                   ))}
                 </div>
+              ) : (
+                <div className="text-sm text-white/70">No special needs indicated.</div>
+              )}
+            </div>
+          </Section>
+
+          <Section title="Notes & Instructions" accent="bg-white/40">
+            <div className="col-span-2">
+              <Field label="Special instructions" value={t.special_instructions} alwaysShow />
+            </div>
+            <div className="col-span-2">
+              <Field label="Mobility notes" value={t.mobility_notes} alwaysShow />
+            </div>
+            {t.provider_notes && (
+              <div className="col-span-2">
+                <Field label="Provider notes" value={t.provider_notes} />
               </div>
             )}
           </Section>
-
-          {(t.special_instructions || t.mobility_notes || t.provider_notes) && (
-            <Section title="Notes" accent="bg-white/40">
-              {t.special_instructions && (
-                <div className="col-span-2">
-                  <Field label="Special instructions" value={t.special_instructions} />
-                </div>
-              )}
-              {t.mobility_notes && (
-                <div className="col-span-2">
-                  <Field label="Mobility notes" value={t.mobility_notes} />
-                </div>
-              )}
-              {t.provider_notes && (
-                <div className="col-span-2">
-                  <Field label="Provider notes" value={t.provider_notes} />
-                </div>
-              )}
-            </Section>
-          )}
         </div>
+
 
         {/* Footer */}
         <footer className="relative px-7 py-4 border-t border-white/10 flex justify-end gap-2 bg-black/20">
