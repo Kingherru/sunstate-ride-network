@@ -80,15 +80,62 @@ const inputCls =
 
 function RequestRidePage() {
   const router = useRouter();
+  const { copyFrom } = Route.useSearch();
   const submit = useServerFn(submitRideRequest);
   const enrich = useServerFn(enrichRideRequest);
+  const fetchOne = useServerFn(getMyRequest);
   const [form, setForm] = useState<RideRequestInput>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ id: string; miles?: number | null; cents?: number | null } | null>(null);
+  const [copiedFromId, setCopiedFromId] = useState<string | null>(null);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (!copyFrom) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetchOne({ data: { id: copyFrom } });
+        if (!r.ok || cancelled) return;
+        const row = r.row;
+        const allowed: RideRequestInput["recurrence"][] = [...RECURRENCE_OPTIONS];
+        const rec = allowed.includes(row.recurrence_rule as RideRequestInput["recurrence"])
+          ? (row.recurrence_rule as RideRequestInput["recurrence"])
+          : "none";
+        setForm({
+          patientFirstName: row.patient_first_name ?? "",
+          patientLastName: row.patient_last_name ?? "",
+          patientPhone: row.patient_phone ?? "",
+          patientEmail: row.patient_email ?? "",
+          pickupAddress: row.pickup_address ?? "",
+          pickupCity: row.pickup_city ?? "",
+          pickupDate: "",
+          pickupTime: row.pickup_time ?? "",
+          dropoffAddress: row.dropoff_address ?? "",
+          dropoffCity: row.dropoff_city ?? "",
+          transportType:
+            (row.transport_type as RideRequestInput["transportType"]) ?? "ambulatory",
+          roundTrip: !!row.round_trip,
+          mobilityNotes: row.mobility_notes ?? "",
+          specialInstructions: row.special_instructions ?? "",
+          recurrence: rec,
+          recurrenceEndDate: "",
+        });
+        setCopiedFromId(copyFrom);
+        toast.success("Trip copied. Set a new pickup date to continue.");
+      } catch {
+        toast.error("Could not load that trip to copy.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [copyFrom, fetchOne]);
+
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
