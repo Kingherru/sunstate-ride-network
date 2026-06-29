@@ -1,9 +1,12 @@
 // Pure pricing calculator — safe for browser and server.
 
+export type WaitUnit = "minute" | "half_hour" | "hour";
+
 export interface PricingRates {
   base_pickup: number;
   per_mile: number;
-  wait_per_min: number;
+  wait_per_min: number; // historical: rate per unit, see wait_unit
+  wait_unit: WaitUnit;  // unit the rate is billed in
   no_show: number;
   cancellation: number;
   wheelchair_addon: number;
@@ -16,6 +19,7 @@ export interface PricingRates {
   after_hours_end: string;
   holidays: string[]; // YYYY-MM-DD
 }
+
 
 export interface TripCostInput {
   status?: string | null;
