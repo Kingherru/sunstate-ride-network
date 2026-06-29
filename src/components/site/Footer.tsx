@@ -21,11 +21,11 @@ const FAQS = [
   },
   {
     q: "How is HIPAA protected on this platform?",
-    a: "FloridaNEMT requires a HIPAA acknowledgment on every trip sent or received. Patient details are visible only to the sender and the assigned provider.",
+    a: "Florida NEMT requires a HIPAA acknowledgment on every trip sent or received. Patient details are visible only to the sender and the assigned provider.",
   },
   {
     q: "How and when do providers get paid?",
-    a: "Patient payments are collected at booking and held by FloridaNEMT. After the trip completes, funds release to the provider's connected bank in 1–2 business days, minus a 4% platform fee.",
+    a: "Patient payments are collected at booking and held by Florida NEMT. After the trip completes, funds release to the provider's connected bank in 1–2 business days, minus a 4% platform fee.",
   },
 ];
 
@@ -45,7 +45,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
                 to="/"
                 className="font-extrabold text-xl tracking-tighter text-white uppercase block mb-3"
               >
-                FloridaNEMT
+                Florida NEMT
               </Link>
               <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
                 Florida's statewide Medicaid transportation network.
@@ -89,7 +89,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
           </div>
 
           <div className="pt-6 mt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} FloridaNEMT. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Florida NEMT. All rights reserved.</p>
             <p>Florida's statewide Medicaid transportation network.</p>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
               to="/"
               className="font-extrabold text-2xl tracking-tighter text-primary uppercase block mb-5"
             >
-              FloridaNEMT
+              Florida NEMT
             </Link>
             <p className="text-sm text-muted leading-relaxed max-w-sm">
               Florida's statewide non-emergency medical transportation network — connecting
@@ -170,7 +170,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
         </div>
 
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-muted">
-          <p>© {new Date().getFullYear()} FloridaNEMT. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Florida NEMT. All rights reserved.</p>
           <p>Florida's statewide Medicaid transportation network.</p>
         </div>
       </div>

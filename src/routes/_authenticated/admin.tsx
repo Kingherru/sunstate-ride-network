@@ -11,7 +11,7 @@ import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Provider Admin — FloridaNEMT" },
+      { title: "Provider Admin — Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),

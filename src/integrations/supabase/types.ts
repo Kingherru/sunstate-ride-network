@@ -1416,9 +1416,12 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          assigned_driver_id: string | null
           capacity: number
           created_at: string
           id: string
+          insurance_doc_path: string | null
+          insurance_expiry: string | null
           name: string
           notes: string | null
           owner_id: string
@@ -1428,9 +1431,12 @@ export type Database = {
           vehicle_type: string
         }
         Insert: {
+          assigned_driver_id?: string | null
           capacity?: number
           created_at?: string
           id?: string
+          insurance_doc_path?: string | null
+          insurance_expiry?: string | null
           name: string
           notes?: string | null
           owner_id: string
@@ -1440,9 +1446,12 @@ export type Database = {
           vehicle_type?: string
         }
         Update: {
+          assigned_driver_id?: string | null
           capacity?: number
           created_at?: string
           id?: string
+          insurance_doc_path?: string | null
+          insurance_expiry?: string | null
           name?: string
           notes?: string | null
           owner_id?: string
@@ -1451,7 +1460,15 @@ export type Database = {
           updated_at?: string
           vehicle_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_assigned_driver_id_fkey"
+            columns: ["assigned_driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

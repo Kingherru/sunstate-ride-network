@@ -39,7 +39,7 @@ export function downloadTripPdf(trip: TripPdfInput) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
-  doc.text("FloridaNEMT — Trip Sheet", left, y);
+  doc.text("Florida NEMT — Trip Sheet", left, y);
   y += 28;
 
   doc.setFont("helvetica", "normal");
@@ -126,7 +126,7 @@ export function downloadTripPdf(trip: TripPdfInput) {
   y = 760;
   doc.setFontSize(9);
   doc.setTextColor(120);
-  doc.text("Dispatched via FloridaNEMT — CMS-style trip log. Retain for billing records.", left, y);
+  doc.text("Dispatched via Florida NEMT — CMS-style trip log. Retain for billing records.", left, y);
 
   doc.save(`trip-${trip.trip_number || trip.id.slice(0, 8)}.pdf`);
 }

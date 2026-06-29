@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listIntegrations, upsertIntegration, deleteIntegration } from "@/lib/integrations.functions";
 
-type Vendor = "hibambi" | "routegenie";
+type Vendor = "hibambi" | "routegenie" | "dueride";
 
 const VENDORS: { id: Vendor; label: string; blurb: string }[] = [
+  { id: "dueride", label: "DueRide", blurb: "Sync trips and dispatch updates with DueRide — recommended for Florida providers." },
   { id: "hibambi", label: "hiBambi", blurb: "Push outbound trips and ingest inbound trips from hiBambi." },
   { id: "routegenie", label: "RouteGenie", blurb: "Push outbound trips and ingest inbound trips from RouteGenie." },
 ];
@@ -23,7 +24,7 @@ export function IntegrationsPanel() {
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">External integrations</h2>
         <p className="text-sm text-muted-foreground">
-          Connect your dispatch software so trips you send/receive on FloridaNEMT sync automatically.
+          Connect your dispatch software so trips you send/receive on Florida NEMT sync automatically.
           Inbound webhooks reject all payloads until a verified signature scheme is wired for the vendor.
         </p>
       </div>
@@ -73,7 +74,7 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
     <div className="bg-card border border-border rounded-sm p-5">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-extrabold">{label}</h3>
-        <span className={`text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${existing?.enabled ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"}`}>
+        <span className={`text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${existing?.enabled ? "bg-accent/15 text-accent" : existing ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}>
           {existing ? (existing.enabled ? "Connected" : "Saved") : "Not connected"}
         </span>
       </div>

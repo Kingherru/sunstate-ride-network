@@ -208,7 +208,7 @@ function BillingExplainer() {
     <section className="bg-primary/5 border border-primary/20 rounded-sm p-5">
       <h3 className="text-lg font-extrabold tracking-tight mb-2">How billing works</h3>
       <ol className="text-sm text-foreground/90 space-y-2 list-decimal pl-5">
-        <li><strong>Patient pays at booking.</strong> The fare is charged to the patient and held by FloridaNEMT in escrow.</li>
+        <li><strong>Patient pays at booking.</strong> The fare is charged to the patient and held by Florida NEMT in escrow.</li>
         <li><strong>You complete the trip.</strong> Mark the trip <em>Completed</em> in your dashboard — this queues the payout automatically.</li>
         <li><strong>We deduct a {(PLATFORM_FEE_PCT * 100).toFixed(0)}% platform fee.</strong> Covers payment processing, dispatch, and HIPAA-compliant infrastructure.</li>
         <li><strong>Funds release to your bank.</strong> The remainder transfers to your connected account within <strong>1–2 business days</strong>.</li>

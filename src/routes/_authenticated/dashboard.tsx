@@ -14,7 +14,7 @@ import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
-import { RequestsPanel, ReservationsPanel } from "@/components/dashboard/RequestsPanel";
+import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
@@ -23,7 +23,7 @@ import { demoProfile, demoTrips } from "@/lib/demo-data";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — FloridaNEMT" },
+      { title: "Dashboard — Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -38,7 +38,7 @@ type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" 
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "account"],
-  provider: ["requests", "reservations", "new", "received", "sent", "network", "vehicles", "drivers", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
+  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "account"],
 };
 
@@ -54,13 +54,13 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
   if (t === "upload") return "Upload CSV";
   if (t === "requests") return "Requests";
-  if (t === "reservations") return "Reservations";
+  if (t === "reservations") return "Reservations & Schedule";
   if (t === "network") return "Provider Network";
   if (t === "rules") return "Rules";
   if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
   if (t === "providers") return "Find Providers";
   if (t === "saved_providers") return "Saved Providers";
-  if (t === "vehicles") return "Vehicles";
+  if (t === "vehicles") return "Vehicles & Drivers";
   if (t === "drivers") return "Drivers";
   if (t === "pricing") return "Pricing";
   if (t === "memberships") return "Membership";
@@ -197,9 +197,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
           <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
         )}
 
-        {profile && !isActive && portal === "provider" && !isDemo && <MembershipGate />}
-
-        {profile && (isActive || portal !== "provider") && (
+        {profile && (
           <>
             <div className="mb-6">
               <h1 className="text-2xl font-extrabold tracking-tight">{meta.label}</h1>
@@ -207,9 +205,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             </div>
             {portal === "provider" && !canSend && (
               <div className="mb-6 bg-orange-50 border border-orange-200 rounded-sm p-4 text-sm">
-                <p className="font-bold text-orange-900">Free membership — you can receive trips but not send them.</p>
+                <p className="font-bold text-orange-900">Free plan — receive referrals, manage reservations, vehicles, drivers & trip history.</p>
                 <p className="text-orange-800 mt-1">
-                  Upgrade to a paid membership ($5/mo) to send trips, bulk upload, and use API integrations.{" "}
+                  Upgrade to a paid membership ($5/year) to send trips, bulk upload, and use API integrations.{" "}
                   <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
                 </p>
               </div>
@@ -227,11 +225,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 <div className="space-y-8">
                   <section>
                     <div className="mb-3">
-                      <h2 className="text-xl font-extrabold tracking-tight">FloridaNEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h2>
-                      <p className="text-sm text-muted-foreground">Auto-routed referrals from FloridaNEMT based on your service area.</p>
+                      <h2 className="text-xl font-extrabold tracking-tight">Florida NEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h2>
+                      <p className="text-sm text-muted-foreground">Auto-routed referrals from Florida NEMT based on your service area.</p>
                     </div>
                     {flNemt.length === 0
-                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No FloridaNEMT referrals right now.</div>
+                      ? <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">No Florida NEMT referrals right now.</div>
                       : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} />}
                   </section>
                   <section>
@@ -249,20 +247,17 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "requests" && <RequestsPanel userId={userId!} />}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
-            {tab === "network" && <NetworkPanel userId={userId!} />}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
             {tab === "saved_providers" && <FacilityProvidersPanel initialMode="saved" />}
-            {tab === "vehicles" && <FleetPanel only="vehicles" />}
-            {tab === "drivers" && <FleetPanel only="drivers" />}
+            {tab === "vehicles" && <FleetPanel />}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
-            {tab === "account" && <AccountPanel profile={profile} />}
+            {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
           </>
         )}
 
@@ -380,12 +375,12 @@ function Field({ label, v, on, required, type = "text", placeholder, className =
 function MembershipGate() {
   return (
     <div className="max-w-2xl mx-auto bg-card border border-border rounded-sm p-10 text-center">
-      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your $5/month membership</h2>
+      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your $5/year membership</h2>
       <p className="text-muted-foreground mb-6">
         Membership unlocks trip dispatch, CSV upload, and regional provider directory.
       </p>
       <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90">
-        Subscribe — $5/mo
+        Subscribe — $5/year
       </Link>
     </div>
   );
@@ -395,9 +390,9 @@ function PaidOnly() {
   return (
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
-      <p className="text-muted-foreground mb-4">This feature is available on the $5/mo paid plan.</p>
+      <p className="text-muted-foreground mb-4">This feature is available on the $5/year paid plan.</p>
       <Link to="/membership" className="inline-block bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-sm hover:bg-primary/90">
-        Upgrade — $5/mo
+        Upgrade — $5/year
       </Link>
     </div>
   );
@@ -507,7 +502,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       </label>
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
         <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
-        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
+        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
       </label>
       <button disabled={m.isPending || !hipaaOk} className="col-span-2 bg-primary text-primary-foreground font-bold py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
         {m.isPending ? "Creating…" : "Create trip"}
@@ -599,7 +594,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
           </div>
           <label className="flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3 mb-3">
             <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" />
-            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. FloridaNEMT does not access PHI included in trip details.</span>
+            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. Florida NEMT does not access PHI included in trip details.</span>
           </label>
           <button
             disabled={busy || missing.length > 0 || !hipaaOk}
@@ -617,8 +612,11 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
 /* -------- Trip List + Send/Assign -------- */
 function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void }) {
   const [assigning, setAssigning] = useState<Trip | null>(null);
+  const [viewing, setViewing] = useState<Trip | null>(null);
+  const [rating, setRating] = useState<Trip | null>(null);
   const qc = useQueryClient();
   const showSavedBadge = portal === "facility" && role === "sender";
+  const canRate = portal === "facility" && role === "sender";
   const savedQ = useQuery({
     queryKey: ["facility-saved-ids", userId],
     queryFn: async () => {
@@ -662,16 +660,20 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
             {trips.map((t) => {
               const isSaved = !!t.assigned_to && savedSet.has(t.assigned_to);
               return (
-              <tr key={t.id} className="border-t border-border align-top">
+              <tr key={t.id} className="border-t border-border align-top hover:bg-muted/40 cursor-pointer" onClick={() => setViewing(t)}>
                 <td className="px-3 py-2 whitespace-nowrap">{t.pickup_date}<br /><span className="text-xs text-muted-foreground">{t.pickup_time}</span></td>
-                <td className="px-3 py-2">{t.patient_first_name} {t.patient_last_name}</td>
+                <td className="px-3 py-2">
+                  <button onClick={(e) => { e.stopPropagation(); setViewing(t); }} className="font-bold text-primary hover:underline text-left">
+                    {t.patient_first_name} {t.patient_last_name}
+                  </button>
+                </td>
                 <td className="px-3 py-2 text-xs">
                   <div>{t.pickup_city}{t.pickup_zip ? `, ${t.pickup_zip}` : ""}</div>
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
                 <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
                 {showSavedBadge && (
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     {!t.assigned_to ? (
                       <span className="text-xs text-muted-foreground">Unassigned</span>
                     ) : isSaved ? (
@@ -687,17 +689,21 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                     )}
                   </td>
                 )}
-                <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-primary hover:underline mr-3">PDF</button>
+                <td className="px-3 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => setViewing(t)} className="text-xs font-bold text-primary hover:underline mr-3">View</button>
+                  <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-muted-foreground hover:underline mr-3">PDF</button>
                   {role === "sender" && t.status === "open" && (
                     <button onClick={() => setAssigning(t)} className="text-xs font-bold text-accent hover:underline mr-3">Send</button>
+                  )}
+                  {canRate && t.assigned_to && (t.status === "completed" || t.status === "accepted") && (
+                    <button onClick={() => setRating(t)} className="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-sm hover:bg-amber-600 mr-2">★ Rate</button>
                   )}
                   {role === "recipient" && t.status === "assigned" && (
                     <>
                       <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } }); toast.success("Accepted"); onChanged(); }}
-                              className="text-xs font-bold text-accent hover:underline mr-3">Accept</button>
+                              className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
                       <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "declined" } }); toast.success("Declined"); onChanged(); }}
-                              className="text-xs font-bold text-red-600 hover:underline">Decline</button>
+                              className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
                     </>
                   )}
                 </td>
@@ -709,7 +715,113 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
       {assigning && (
         <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
       )}
+      {viewing && <TripDetailModal trip={viewing} onClose={() => setViewing(null)} />}
+      {rating && <RateProviderModal trip={rating} onClose={() => setRating(null)} onSaved={() => { setRating(null); onChanged(); }} />}
     </>
+  );
+}
+
+function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
+  const t: any = trip;
+  const row = (k: string, v: any) => v == null || v === "" ? null : (
+    <div key={k} className="grid grid-cols-3 gap-2 py-1.5 border-b border-border/60 text-sm">
+      <div className="text-muted-foreground">{k}</div>
+      <div className="col-span-2 font-medium break-words">{String(v)}</div>
+    </div>
+  );
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card rounded-sm max-w-2xl w-full max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-extrabold">{t.patient_first_name} {t.patient_last_name}</h3>
+            <p className="text-xs text-muted-foreground">{t.pickup_date} · {t.pickup_time} · <TripStatusBadge s={t.status} /></p>
+          </div>
+          <button onClick={onClose} className="text-sm font-bold text-muted-foreground hover:text-foreground">Close</button>
+        </div>
+        <div className="px-6 py-4">
+          {row("Phone", t.patient_phone)}
+          {row("Pickup", `${t.pickup_address ?? ""}, ${t.pickup_city ?? ""} ${t.pickup_zip ?? ""}`.trim())}
+          {row("Dropoff", `${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim())}
+          {row("Transport", t.transport_type)}
+          {row("Service level", t.service_level)}
+          {row("Round trip", t.round_trip ? "Yes" : null)}
+          {row("Wheelchair", t.needs_wheelchair ? "Yes" : null)}
+          {row("Passenger/companion", t.has_passenger ? "Yes" : null)}
+          {row("Help to vehicle", t.needs_assistance_to_vehicle ? "Yes" : null)}
+          {row("Surgery sign-in", t.needs_surgery_signin ? "Yes" : null)}
+          {row("Surgery sign-out", t.needs_surgery_signout ? "Yes" : null)}
+          {row("Payer", t.payer)}
+          {row("Trip #", t.trip_number)}
+          {row("Distance (mi)", t.estimated_miles ?? t.actual_miles)}
+          {row("Special instructions", t.special_instructions)}
+          {row("Mobility notes", t.mobility_notes)}
+        </div>
+        <div className="px-6 py-3 border-t border-border flex justify-end gap-2">
+          <button onClick={() => downloadTripPdf(trip as TripPdfInput)} className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted">Download PDF</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: () => void; onSaved: () => void }) {
+  const [stars, setStars] = useState(5);
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const providerId = (trip as any).assigned_to as string | null;
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!providerId) return;
+    setBusy(true);
+    try {
+      // Upsert by (rater_user_id, trip_id) — editable later
+      const { data: existing } = await supabase
+        .from("provider_ratings")
+        .select("id")
+        .eq("trip_id", trip.id)
+        .maybeSingle();
+      const payload: any = {
+        provider_id: providerId,
+        trip_id: trip.id,
+        stars,
+        feedback: comment || null,
+      };
+      const q = existing
+        ? supabase.from("provider_ratings").update(payload).eq("id", existing.id)
+        : supabase.from("provider_ratings").insert(payload);
+      const { error } = await q;
+      if (error) throw error;
+      toast.success("Thanks for the feedback");
+      onSaved();
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not save rating");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="bg-card rounded-sm max-w-md w-full p-6 space-y-4">
+        <h3 className="text-lg font-extrabold">Rate this provider</h3>
+        <p className="text-xs text-muted-foreground">You can edit this rating any time from trip history.</p>
+        <div className="flex gap-1 text-2xl">
+          {[1,2,3,4,5].map((n) => (
+            <button type="button" key={n} onClick={() => setStars(n)}
+                    className={n <= stars ? "text-amber-500" : "text-muted-foreground/40"}>★</button>
+          ))}
+        </div>
+        <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4}
+                  placeholder="Feedback (on-time, courteous, vehicle clean…)"
+                  className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background" />
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="text-sm text-muted-foreground px-3 py-2">Cancel</button>
+          <button disabled={busy} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
+            {busy ? "Saving…" : "Save rating"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
@@ -783,7 +895,7 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
 }
 
 /* -------- Account -------- */
-function AccountPanel({ profile }: { profile: Profile }) {
+function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: PortalKind; userId: string }) {
   const [busy, setBusy] = useState(false);
   async function openPortal() {
     setBusy(true);
@@ -798,22 +910,29 @@ function AccountPanel({ profile }: { profile: Profile }) {
     } finally { setBusy(false); }
   }
   return (
-    <div className="max-w-2xl bg-card border border-border rounded-sm p-6 space-y-3">
-      <h2 className="text-xl font-extrabold tracking-tight">Account</h2>
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
-        <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
-        <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
-        <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
-        <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
-        <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+    <div className="max-w-3xl space-y-6">
+      <div className="bg-card border border-border rounded-sm p-6 space-y-3">
+        <h2 className="text-xl font-extrabold tracking-tight">Account</h2>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
+          <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
+          <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
+          <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
+          <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
+          <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+        </div>
+        <div className="pt-4 border-t border-border">
+          <button onClick={openPortal} disabled={busy}
+                  className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
+            {busy ? "Opening…" : "Manage billing"}
+          </button>
+        </div>
       </div>
-      <div className="pt-4 border-t border-border">
-        <button onClick={openPortal} disabled={busy}
-                className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
-          {busy ? "Opening…" : "Manage billing"}
-        </button>
-      </div>
+      {portal === "provider" && (
+        <div className="bg-card border border-border rounded-sm p-6">
+          <NetworkPanel userId={userId} />
+        </div>
+      )}
     </div>
   );
 }
@@ -868,7 +987,7 @@ function PortalSidebar(props: {
     <aside className="w-64 shrink-0 bg-card border-r border-border min-h-screen flex flex-col">
       <div className="px-5 py-5 border-b border-border">
         <Link to="/" className="font-extrabold text-lg tracking-tighter text-primary uppercase block mb-3">
-          FloridaNEMT
+          Florida NEMT
         </Link>
         {editing ? (
           <div className="space-y-2">
@@ -973,13 +1092,13 @@ function MembershipsTab({ profile }: { profile: Profile }) {
           ) : (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm text-muted-foreground">
-                Upgrade to a paid membership for $5/month to send trips, bulk upload, and use API integrations.
+                Upgrade to a paid membership for $5/year to send trips, bulk upload, and use API integrations.
               </p>
               <Link
                 to="/membership"
                 className="text-sm font-bold text-white bg-accent px-4 py-2 rounded-sm hover:bg-accent/90 shadow-sm"
               >
-                Upgrade — $5/month
+                Upgrade — $5/year
               </Link>
             </div>
           )}
