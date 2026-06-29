@@ -19,6 +19,8 @@ type Row = {
   requester_user_id: string | null;
   service_level: string | null;
   needs_wheelchair: boolean | null;
+  distance_miles: number | null;
+  estimated_cost_cents: number | null;
 };
 
 function sourceBadge(src: string | null, hasRequester: boolean) {
@@ -39,7 +41,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair")
+        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -98,6 +100,12 @@ export function RequestsPanel({ userId }: { userId: string }) {
                 <div className="text-sm text-muted-foreground mt-1">
                   <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
+                  {(r.distance_miles != null || r.estimated_cost_cents != null) && (
+                    <div className="mt-1 text-xs">
+                      {r.distance_miles != null && <span className="mr-3"><span className="font-bold text-foreground">Distance:</span> {Number(r.distance_miles).toFixed(1)} mi</span>}
+                      {r.estimated_cost_cents != null && <span><span className="font-bold text-foreground">Est. fare:</span> ${(r.estimated_cost_cents / 100).toFixed(2)}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -119,7 +127,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair")
+        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .eq("assigned_provider_id", userId)
         .order("pickup_date", { ascending: true });
       if (error) throw error;

@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { geocodeAddress } from "@/lib/maps.functions";
 import { toast } from "sonner";
 
 export function NetworkPanel({ userId }: { userId: string }) {
   const qc = useQueryClient();
+  const geocode = useServerFn(geocodeAddress);
   const q = useQuery({
     queryKey: ["network-settings", userId],
     queryFn: async () => {
@@ -36,15 +39,25 @@ export function NetworkPanel({ userId }: { userId: string }) {
     setBusy(true);
     try {
       const zipArr = zips.split(/[,\s]+/).map((z) => z.trim()).filter(Boolean);
+      // Geocode the first ZIP as the service-area center so radius enforcement works.
+      let center: { lat: number; lng: number } | null = null;
+      if (zipArr[0]) {
+        try {
+          const g = await geocode({ data: { address: `${zipArr[0]}, FL` } });
+          if (g.ok) center = { lat: g.lat, lng: g.lng };
+        } catch { /* geocode failure is non-fatal */ }
+      }
       const { error } = await supabase
         .from("member_profiles")
         .update({
           preferred_zip_codes: zipArr,
           service_radius_miles: radius,
           long_distance_ok: longDistance,
+          ...(center ? { center_lat: center.lat, center_lng: center.lng } : {}),
         } as any)
         .eq("user_id", userId);
       if (error) throw error;
+      if (!center && zipArr[0]) toast.warning("Saved, but couldn't geocode your ZIP — auto-routing may be limited until we map it.");
       toast.success("Network preferences saved");
       qc.invalidateQueries({ queryKey: ["network-settings"] });
     } catch (e: any) {

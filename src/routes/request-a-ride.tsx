@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { submitRideRequest, rideRequestSchema, type RideRequestInput } from "@/lib/forms.functions";
+import { enrichRideRequest } from "@/lib/maps.functions";
 import { CITY_LIST } from "@/lib/cities";
 
 export const Route = createFileRoute("/request-a-ride")({
@@ -69,10 +70,11 @@ const inputCls =
 function RequestRidePage() {
   const router = useRouter();
   const submit = useServerFn(submitRideRequest);
+  const enrich = useServerFn(enrichRideRequest);
   const [form, setForm] = useState<RideRequestInput>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<string | null>(null);
+  const [done, setDone] = useState<{ id: string; miles?: number | null; cents?: number | null } | null>(null);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -94,7 +96,13 @@ function RequestRidePage() {
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
-        setDone(res.id);
+        // Geocode + compute miles & estimated cost in the background; if it fails we still confirm the booking.
+        let miles: number | null | undefined; let cents: number | null | undefined;
+        try {
+          const enriched = await enrich({ data: { id: res.id } });
+          if (enriched.ok) { miles = enriched.miles; cents = enriched.estimated_cost_cents; }
+        } catch { /* ignore — non-fatal */ }
+        setDone({ id: res.id, miles, cents });
         toast.success("Ride request received. A dispatcher will call you shortly.");
         router.invalidate();
       } else {
@@ -113,9 +121,15 @@ function RequestRidePage() {
       <section className="py-32 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
-            Confirmation #{done.slice(0, 8).toUpperCase()}
+            Confirmation #{done.id.slice(0, 8).toUpperCase()}
           </p>
           <h1 className="text-5xl font-extrabold tracking-tighter mb-6">Ride request received.</h1>
+          {(done.miles != null || done.cents != null) && (
+            <div className="bg-card border border-border rounded-sm p-5 mb-8 inline-flex flex-col items-center gap-1">
+              {done.miles != null && <div className="text-sm"><span className="font-bold">Distance:</span> {done.miles.toFixed(1)} miles</div>}
+              {done.cents != null && <div className="text-sm"><span className="font-bold">Estimated fare:</span> ${(done.cents / 100).toFixed(2)} <span className="text-muted text-xs">(FloridaNEMT avg rates)</span></div>}
+            </div>
+          )}
           <p className="text-muted text-lg mb-10">
             A dispatcher will confirm pickup details by phone within 2 hours. For urgent same-day
             requests, call <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.

@@ -127,6 +127,8 @@ export type Database = {
       }
       member_profiles: {
         Row: {
+          center_lat: number | null
+          center_lng: number | null
           city: string | null
           company_name: string | null
           created_at: string
@@ -155,6 +157,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          center_lat?: number | null
+          center_lng?: number | null
           city?: string | null
           company_name?: string | null
           created_at?: string
@@ -183,6 +187,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          center_lat?: number | null
+          center_lng?: number | null
           city?: string | null
           company_name?: string | null
           created_at?: string
@@ -855,8 +861,12 @@ export type Database = {
           canceled_at: string | null
           created_at: string
           dispatch_source: string
+          distance_miles: number | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          estimated_cost_cents: number | null
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
@@ -876,7 +886,10 @@ export type Database = {
           pickup_address: string
           pickup_city: string
           pickup_date: string
+          pickup_lat: number | null
+          pickup_lng: number | null
           pickup_time: string
+          pickup_zip: string | null
           provider_notes: string | null
           recurrence_end_date: string | null
           recurrence_exceptions: string[]
@@ -897,8 +910,12 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           dispatch_source?: string
+          distance_miles?: number | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_cost_cents?: number | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -918,7 +935,10 @@ export type Database = {
           pickup_address: string
           pickup_city: string
           pickup_date: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           pickup_time: string
+          pickup_zip?: string | null
           provider_notes?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
@@ -939,8 +959,12 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           dispatch_source?: string
+          distance_miles?: number | null
           dropoff_address?: string
           dropoff_city?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_cost_cents?: number | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -960,7 +984,10 @@ export type Database = {
           pickup_address?: string
           pickup_city?: string
           pickup_date?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           pickup_time?: string
+          pickup_zip?: string | null
           provider_notes?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
@@ -1573,7 +1600,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      haversine_miles: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
+      provider_covers_pickup: {
+        Args: {
+          _pickup_lat: number
+          _pickup_lng: number
+          _provider_id: string
+          _trip_miles: number
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "staff" | "requester"
