@@ -713,11 +713,13 @@ export type Database = {
           pay_per_mile: number | null
           pay_stretcher_addon: number | null
           pay_wait_per_min: number | null
+          pay_wait_unit: string | null
           pay_wheelchair_addon: number | null
           per_mile: number
           stretcher_addon: number
           updated_at: string
           wait_per_min: number
+          wait_unit: string
           wheelchair_addon: number
         }
         Insert: {
@@ -743,11 +745,13 @@ export type Database = {
           pay_per_mile?: number | null
           pay_stretcher_addon?: number | null
           pay_wait_per_min?: number | null
+          pay_wait_unit?: string | null
           pay_wheelchair_addon?: number | null
           per_mile?: number
           stretcher_addon?: number
           updated_at?: string
           wait_per_min?: number
+          wait_unit?: string
           wheelchair_addon?: number
         }
         Update: {
@@ -773,11 +777,13 @@ export type Database = {
           pay_per_mile?: number | null
           pay_stretcher_addon?: number | null
           pay_wait_per_min?: number | null
+          pay_wait_unit?: string | null
           pay_wheelchair_addon?: number | null
           per_mile?: number
           stretcher_addon?: number
           updated_at?: string
           wait_per_min?: number
+          wait_unit?: string
           wheelchair_addon?: number
         }
         Relationships: []
@@ -1098,6 +1104,63 @@ export type Database = {
           },
         ]
       }
+      saved_patients: {
+        Row: {
+          created_at: string
+          default_dropoff_address: string | null
+          default_dropoff_city: string | null
+          default_pickup_address: string | null
+          default_pickup_city: string | null
+          dob: string | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          medicaid_id: string | null
+          mobility: string | null
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_dropoff_address?: string | null
+          default_dropoff_city?: string | null
+          default_pickup_address?: string | null
+          default_pickup_city?: string | null
+          dob?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          medicaid_id?: string | null
+          mobility?: string | null
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_dropoff_address?: string | null
+          default_dropoff_city?: string | null
+          default_pickup_address?: string | null
+          default_pickup_city?: string | null
+          dob?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          medicaid_id?: string | null
+          mobility?: string | null
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       saved_payment_methods: {
         Row: {
           brand: string | null
@@ -1107,7 +1170,9 @@ export type Database = {
           exp_year: number | null
           id: string
           is_default: boolean
+          label: string | null
           last4: string | null
+          patient_id: string | null
           stripe_payment_method_id: string
           user_id: string
         }
@@ -1119,7 +1184,9 @@ export type Database = {
           exp_year?: number | null
           id?: string
           is_default?: boolean
+          label?: string | null
           last4?: string | null
+          patient_id?: string | null
           stripe_payment_method_id: string
           user_id: string
         }
@@ -1131,11 +1198,21 @@ export type Database = {
           exp_year?: number | null
           id?: string
           is_default?: boolean
+          label?: string | null
           last4?: string | null
+          patient_id?: string | null
           stripe_payment_method_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saved_payment_methods_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "saved_patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stripe_customers: {
         Row: {

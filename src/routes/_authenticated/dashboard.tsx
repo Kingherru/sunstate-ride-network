@@ -12,6 +12,8 @@ import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
+import { SavedPatientsPanel } from "@/components/dashboard/SavedPatientsPanel";
+import { BusinessInfoPanel } from "@/components/dashboard/BusinessInfoPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
@@ -22,17 +24,23 @@ import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 
-function PaymentsTab() {
+function PaymentsTab({ portal }: { portal: PortalKind }) {
+  const isFacility = portal === "facility";
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">Payments</h2>
-        <p className="text-sm text-muted-foreground">Securely save a card so you can pay for confirmed trips in one click.</p>
+        <p className="text-sm text-muted-foreground">
+          {isFacility
+            ? "Add a card and assign it to a specific patient — facilities can hold cards on file for many patients."
+            : "Securely save a card so you can pay for confirmed trips in one click."}
+        </p>
       </div>
-      <SavedCards />
+      <SavedCards assignToPatient={isFacility} />
     </div>
   );
 }
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -48,13 +56,14 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "payments", "account"],
+  patient:  ["new", "sent", "saved_patients", "payments", "account"],
+  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "memberships", "payouts", "integrations", "business_info", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
+
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
   patient:  { label: "Patient Dashboard",  heroText: "Request rides and track your appointments." },
@@ -81,8 +90,11 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "payouts") return "Payouts";
   if (t === "integrations") return "Integrations";
   if (t === "payments") return "Payments";
+  if (t === "saved_patients") return "Saved Patients";
+  if (t === "business_info") return "Business Info";
   return "Account";
 }
+
 
 
 /** /dashboard redirects to /{portal}/dashboard based on the user's signup portal. */
@@ -272,8 +284,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
-            {tab === "payments" && <PaymentsTab />}
+            {tab === "payments" && <PaymentsTab portal={portal} />}
+            {tab === "saved_patients" && <SavedPatientsPanel />}
+            {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
+
           </>
         )}
 

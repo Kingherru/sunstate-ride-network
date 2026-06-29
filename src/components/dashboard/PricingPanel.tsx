@@ -7,7 +7,6 @@ import { calculateTripCost, DEFAULT_RATES, type PricingRates } from "@/lib/prici
 const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: string }> = [
   { key: "base_pickup", label: "Base pickup fee" },
   { key: "per_mile", label: "Per mile" },
-  { key: "wait_per_min", label: "Wait time / minute" },
   { key: "no_show", label: "No-show fee" },
   { key: "cancellation", label: "Cancellation fee" },
   { key: "wheelchair_addon", label: "Wheelchair add-on" },
@@ -17,6 +16,7 @@ const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: str
   { key: "additional_passenger", label: "Additional passenger" },
   { key: "minimum_fare", label: "Minimum fare" },
 ];
+
 
 export function PricingPanel() {
   const qc = useQueryClient();
@@ -58,6 +58,27 @@ export function PricingPanel() {
               </div>
             </label>
           ))}
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-bold">Wait time rate</span>
+            <div className="flex items-center border border-border rounded-sm bg-background overflow-hidden">
+              <span className="px-3 text-muted-foreground">$</span>
+              <input type="number" min="0" step="0.01" value={String(form.wait_per_min ?? 0)}
+                     onChange={(e) => setForm({ ...form, wait_per_min: Number(e.target.value) || 0 })}
+                     className="flex-1 px-2 py-2 bg-transparent focus:outline-none" />
+            </div>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-bold">Wait billed per</span>
+            <select
+              value={form.wait_unit ?? "hour"}
+              onChange={(e) => setForm({ ...form, wait_unit: e.target.value as PricingRates["wait_unit"] })}
+              className="border border-border rounded-sm px-3 py-2 bg-background"
+            >
+              <option value="hour">Hour</option>
+              <option value="half_hour">Half hour (30 min)</option>
+              <option value="minute">Minute</option>
+            </select>
+          </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">After-hours start</span>
             <input type="time" value={form.after_hours_start.slice(0, 5)}

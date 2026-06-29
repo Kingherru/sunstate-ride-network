@@ -1,9 +1,12 @@
 // Pure pricing calculator — safe for browser and server.
 
+export type WaitUnit = "minute" | "half_hour" | "hour";
+
 export interface PricingRates {
   base_pickup: number;
   per_mile: number;
-  wait_per_min: number;
+  wait_per_min: number; // historical: rate per unit, see wait_unit
+  wait_unit: WaitUnit;  // unit the rate is billed in
   no_show: number;
   cancellation: number;
   wheelchair_addon: number;
@@ -16,6 +19,7 @@ export interface PricingRates {
   after_hours_end: string;
   holidays: string[]; // YYYY-MM-DD
 }
+
 
 export interface TripCostInput {
   status?: string | null;
@@ -64,8 +68,16 @@ export function calculateTripCost(trip: TripCostInput, rates: PricingRates): Cos
   }
   const wait = Number(trip.wait_minutes ?? 0);
   if (wait > 0 && rates.wait_per_min > 0) {
-    lines.push({ label: `Wait time (${wait} min × $${rates.wait_per_min.toFixed(2)})`, amount: +(wait * rates.wait_per_min).toFixed(2) });
+    const unit: WaitUnit = rates.wait_unit ?? "minute";
+    const unitMinutes = unit === "hour" ? 60 : unit === "half_hour" ? 30 : 1;
+    const units = unit === "minute" ? wait : Math.ceil(wait / unitMinutes);
+    const unitLabel = unit === "hour" ? "hr" : unit === "half_hour" ? "½hr" : "min";
+    lines.push({
+      label: `Wait time (${units} ${unitLabel} × $${rates.wait_per_min.toFixed(2)})`,
+      amount: +(units * rates.wait_per_min).toFixed(2),
+    });
   }
+
   if (trip.transport_type === "wheelchair" && rates.wheelchair_addon > 0) {
     lines.push({ label: "Wheelchair add-on", amount: rates.wheelchair_addon });
   }
@@ -95,8 +107,10 @@ function sum(lines: CostLine[]) {
 }
 
 export const DEFAULT_RATES: PricingRates = {
-  base_pickup: 0, per_mile: 0, wait_per_min: 0, no_show: 0, cancellation: 0,
+  base_pickup: 0, per_mile: 0, wait_per_min: 0, wait_unit: "hour",
+  no_show: 0, cancellation: 0,
   wheelchair_addon: 0, stretcher_addon: 0, after_hours_addon: 0, holiday_surcharge: 0,
   additional_passenger: 0, minimum_fare: 0,
   after_hours_start: "19:00", after_hours_end: "07:00", holidays: [],
 };
+
