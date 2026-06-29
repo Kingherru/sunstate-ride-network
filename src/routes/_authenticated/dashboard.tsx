@@ -1057,26 +1057,27 @@ function PortalSidebar(props: {
   }
 
   return (
-    <aside className="w-64 shrink-0 bg-card border-r border-border min-h-screen flex flex-col">
-      <div className="px-5 py-5 border-b border-border">
-        <Link to="/" className="font-extrabold text-lg tracking-tighter text-primary uppercase block mb-3">
-          Florida NEMT
+    <aside className="w-64 shrink-0 bg-[oklch(0.20_0.06_240)] text-white min-h-screen flex flex-col">
+      <div className="px-5 py-6 border-b border-white/10">
+        <Link to="/" className="flex items-center gap-2 mb-5">
+          <span className="size-7 bg-[oklch(0.74_0.12_195)] grid place-items-center font-display font-bold text-[oklch(0.15_0.05_240)] text-sm">F</span>
+          <span className="font-display font-bold text-base tracking-tight uppercase">Florida NEMT</span>
         </Link>
         {editing ? (
           <div className="space-y-2">
             <input
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
-              className="w-full text-sm font-bold border border-border bg-background px-2 py-1.5 rounded-sm"
+              className="w-full text-sm font-bold border border-white/20 bg-white/10 text-white px-2 py-1.5"
               autoFocus
             />
             <div className="flex gap-2">
               <button onClick={saveName} disabled={saving}
-                      className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1 rounded-sm disabled:opacity-50">
+                      className="text-xs font-bold uppercase tracking-wider bg-[oklch(0.74_0.12_195)] text-[oklch(0.15_0.05_240)] px-3 py-1.5 disabled:opacity-50">
                 {saving ? "Saving…" : "Save"}
               </button>
               <button onClick={() => { setEditing(false); setNameDraft(displayName); }}
-                      className="text-xs font-bold text-muted-foreground hover:text-foreground px-2 py-1">
+                      className="text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white px-2 py-1.5">
                 Cancel
               </button>
             </div>
@@ -1087,13 +1088,13 @@ function PortalSidebar(props: {
             className="group text-left w-full"
             title="Click to edit name"
           >
-            <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
+            <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.10_195)] mb-1">
               {portal} portal
             </div>
-            <div className="text-base font-extrabold tracking-tight truncate group-hover:text-accent transition-colors">
+            <div className="font-display text-lg font-bold tracking-tight truncate group-hover:text-[oklch(0.85_0.10_195)] transition-colors">
               {displayName}
-              <span className="ml-2 text-xs font-normal text-muted-foreground opacity-0 group-hover:opacity-100">edit</span>
             </div>
+            <div className="text-[10px] uppercase tracking-wider text-white/40 opacity-0 group-hover:opacity-100 mt-0.5">Click to edit</div>
           </button>
         )}
         {portal === "provider" && (
@@ -1103,36 +1104,38 @@ function PortalSidebar(props: {
         )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {allowedTabs.map((key) => {
           const active = currentTab === key;
           return (
             <button
               key={key}
               onClick={() => onTab(key)}
-              className={`w-full text-left px-3 py-2 text-sm font-bold rounded-sm transition-colors ${
+              className={`relative w-full text-left pl-4 pr-3 py-2.5 text-sm font-semibold transition-colors ${
                 active
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted"
+                  ? "bg-white/10 text-white"
+                  : "text-white/70 hover:bg-white/5 hover:text-white"
               }`}
             >
+              {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.74_0.12_195)]" />}
               {tabLabel(key, portal, counts)}
             </button>
           );
         })}
       </nav>
 
-      <div className="px-5 py-4 border-t border-border text-xs space-y-2">
-        <div className="text-muted-foreground truncate" title={userEmail ?? ""}>{userEmail}</div>
+      <div className="px-5 py-4 border-t border-white/10 text-xs space-y-2">
+        <div className="text-white/50 truncate font-mono text-[11px]" title={userEmail ?? ""}>{userEmail}</div>
         <button
           onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
-          className="font-bold text-muted-foreground hover:text-foreground"
+          className="font-bold uppercase tracking-wider text-white/70 hover:text-white text-[11px]"
         >Sign out</button>
         <ChangelogChip />
       </div>
     </aside>
   );
 }
+
 
 // ───────────────────────── Memberships tab ─────────────────────────
 
