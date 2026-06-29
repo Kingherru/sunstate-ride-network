@@ -18,7 +18,20 @@ import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
+import { SavedCards } from "@/components/payments/SavedCards";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
+
+function PaymentsTab() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight">Payments</h2>
+        <p className="text-sm text-muted-foreground">Securely save a card so you can pay for confirmed trips in one click.</p>
+      </div>
+      <SavedCards />
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
