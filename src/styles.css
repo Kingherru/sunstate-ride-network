@@ -121,8 +121,6 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  /* Square design — no rounded corners anywhere. */
-  *, *::before, *::after { border-radius: 0 !important; }
   html { scroll-behavior: smooth; }
   body {
     background-color: var(--color-background);
