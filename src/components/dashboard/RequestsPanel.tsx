@@ -187,7 +187,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                 )}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                <div>{r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
+                <div>{r.pickup_address}{r.pickup_address_details ? ` (${r.pickup_address_details})` : ""}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
               </div>
 
             </div>
