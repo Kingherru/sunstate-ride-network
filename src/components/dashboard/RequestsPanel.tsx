@@ -7,6 +7,7 @@ type Row = {
   id: string;
   status: string;
   pickup_address: string;
+  pickup_address_details?: string | null;
   pickup_city: string | null;
   dropoff_address: string;
   dropoff_city: string | null;
