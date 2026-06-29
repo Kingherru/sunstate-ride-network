@@ -169,7 +169,7 @@ function RequestDetailPage() {
               onClick={() => setMode("reschedule")}
               className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
             >
-              Reschedule
+              Edit trip
             </button>
           )}
           {!isTerminal && (
