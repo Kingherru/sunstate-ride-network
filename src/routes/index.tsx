@@ -280,29 +280,36 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 7 · PROVIDER CTA — full-bleed accent */}
-      <section className="relative bg-gradient-accent overflow-hidden">
-        <div className="absolute inset-0 reliability-grid opacity-25 pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-24 flex flex-col md:flex-row items-center justify-between gap-10">
-          <div className="text-center md:text-left max-w-2xl">
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3 text-[oklch(0.22_0.04_255)]">
+      {/* 7 · PROVIDER CTA — clean split */}
+      <section className="bg-background border-t border-border">
+        <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-7">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3 text-accent-orange">
               04 — For Providers
             </p>
-            <h2 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight text-[oklch(0.18_0.03_250)]">
+            <h2 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight text-brand">
               Scale your NEMT fleet.
             </h2>
-            <p className="mt-4 text-[oklch(0.22_0.04_255)]/80 text-lg">
-              Higher-volume medical contracts, dispatch tools, and a statewide referral network.
+            <p className="mt-4 text-muted-foreground text-lg max-w-[55ch]">
+              Higher-volume medical contracts, dispatch tools, and a statewide referral network — all backed by HIPAA-grade infrastructure.
             </p>
+            <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-sm text-foreground">
+              {["Vetted patient leads", "Statewide referrals", "Stripe payouts (4% fee)", "Driver & fleet tools"].map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <span className="size-1.5 rounded-full bg-accent-orange" />
+                  {f}
+                </li>
+              ))}
+            </ul>
           </div>
-          <Link
-            to="/providers"
-            className="inline-flex items-center gap-2 px-8 py-5 bg-[oklch(0.22_0.04_255)] text-white font-bold rounded-md text-sm tracking-widest uppercase shadow-elegant hover:scale-[1.03] transition-transform"
-          >
-            <Truck size={18} /> Register Your Fleet <ArrowRight size={16} />
-          </Link>
+          <div className="lg:col-span-5 flex lg:justify-end">
+            <Link to="/providers" className="btn-accent">
+              <Truck size={18} /> Register Your Fleet <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
+
     </>
   );
 }
