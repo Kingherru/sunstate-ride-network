@@ -1,0 +1,2 @@
+ALTER TABLE public.provider_integrations DROP CONSTRAINT IF EXISTS provider_integrations_vendor_check;
+ALTER TABLE public.provider_integrations ADD CONSTRAINT provider_integrations_vendor_check CHECK (vendor IN ('hibambi','routegenie','duetride'));
