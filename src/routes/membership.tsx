@@ -66,10 +66,13 @@ function MembershipPage() {
         <div className="bg-card border border-border rounded-sm p-8 shadow-sm">
           <div className="flex items-baseline gap-2 mb-2">
             <span className="text-5xl font-extrabold tracking-tighter text-primary">$5</span>
-            <span className="text-muted-foreground">/ month</span>
+            <span className="text-muted-foreground">/ year</span>
           </div>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-muted-foreground mb-2">
             For approved NEMT providers. Cancel anytime.
+          </p>
+          <p className="text-xs text-muted-foreground mb-6">
+            Not a member yet? You can still use Florida NEMT for reservations, scheduling, trip history, vehicles, and drivers — free.
           </p>
 
           {!user ? (
