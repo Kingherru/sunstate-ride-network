@@ -124,7 +124,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
           </div>
         </section>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           <div className="col-span-2 lg:col-span-2">
             <Link
               to="/"
@@ -144,26 +144,14 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
               <li><Link to="/service-areas" className="hover:text-primary">Service Areas</Link></li>
               <li><Link to="/providers" className="hover:text-primary">For Providers</Link></li>
               <li><Link to="/training" className="hover:text-primary">Training</Link></li>
-              <li><Link to="/membership" className="hover:text-primary">Membership</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-5">Portals</h4>
-            <ul className="space-y-3 text-sm text-muted">
-              <li><Link to="/patient/login" className="hover:text-primary">Patient Sign In</Link></li>
-              <li><Link to="/provider/login" className="hover:text-primary">Provider Sign In</Link></li>
-              <li><Link to="/facility/login" className="hover:text-primary">Facility Sign In</Link></li>
-              <li><Link to="/request-a-ride" className="hover:text-primary">Request a Ride</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-5">Company</h4>
             <ul className="space-y-3 text-sm text-muted">
-              <li><Link to="/about" className="hover:text-primary">About</Link></li>
               <li><Link to="/contact" className="hover:text-primary">Contact</Link></li>
               <li><a href="mailto:myfloridanemt@gmail.com" className="hover:text-primary">Support</a></li>
               <li><Link to="/contact" className="hover:text-primary">Privacy Policy</Link></li>
-              <li><Link to="/contact" className="hover:text-primary">Terms of Service</Link></li>
               <li><Link to="/contact" className="hover:text-primary">HIPAA Notice</Link></li>
             </ul>
           </div>
@@ -171,7 +159,10 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
 
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-muted">
           <p>© {new Date().getFullYear()} Florida NEMT. All rights reserved.</p>
-          <p>Florida's statewide Medicaid transportation network.</p>
+          <div className="flex items-center gap-5">
+            <Link to="/staff/login" className="hover:text-primary">Staff Login</Link>
+            <Link to="/contact" className="hover:text-primary">Terms of Service</Link>
+          </div>
         </div>
       </div>
     </footer>

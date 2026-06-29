@@ -23,6 +23,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
+import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ProviderLoginRouteImport } from './routes/provider.login'
 import { Route as PatientLoginRouteImport } from './routes/patient.login'
@@ -107,6 +108,11 @@ const ServiceAreasIndexRoute = ServiceAreasIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ServiceAreasRoute,
+} as any)
+const StaffLoginRoute = StaffLoginRouteImport.update({
+  id: '/staff/login',
+  path: '/staff/login',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   id: '/$city',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/staff/login': typeof StaffLoginRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/staff/login': typeof StaffLoginRoute
   '/service-areas': typeof ServiceAreasIndexRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -272,6 +280,7 @@ export interface FileRoutesById {
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/staff/login': typeof StaffLoginRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/patient/login'
     | '/provider/login'
     | '/service-areas/$city'
+    | '/staff/login'
     | '/service-areas/'
     | '/facility/dashboard'
     | '/patient/dashboard'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/patient/login'
     | '/provider/login'
     | '/service-areas/$city'
+    | '/staff/login'
     | '/service-areas'
     | '/facility/dashboard'
     | '/patient/dashboard'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/patient/login'
     | '/provider/login'
     | '/service-areas/$city'
+    | '/staff/login'
     | '/service-areas/'
     | '/_authenticated/facility/dashboard'
     | '/_authenticated/patient/dashboard'
@@ -393,6 +405,7 @@ export interface RootRouteChildren {
   FacilityLoginRoute: typeof FacilityLoginRoute
   PatientLoginRoute: typeof PatientLoginRoute
   ProviderLoginRoute: typeof ProviderLoginRoute
+  StaffLoginRoute: typeof StaffLoginRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -497,6 +510,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/service-areas/'
       preLoaderRoute: typeof ServiceAreasIndexRouteImport
       parentRoute: typeof ServiceAreasRoute
+    }
+    '/staff/login': {
+      id: '/staff/login'
+      path: '/staff/login'
+      fullPath: '/staff/login'
+      preLoaderRoute: typeof StaffLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/service-areas/$city': {
       id: '/service-areas/$city'
@@ -661,6 +681,7 @@ const rootRouteChildren: RootRouteChildren = {
   FacilityLoginRoute: FacilityLoginRoute,
   PatientLoginRoute: PatientLoginRoute,
   ProviderLoginRoute: ProviderLoginRoute,
+  StaffLoginRoute: StaffLoginRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,
