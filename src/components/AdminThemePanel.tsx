@@ -11,12 +11,21 @@ const RADII: PlatformTheme["radius_scale"][] = ["small", "medium", "large"];
 
 const PRESETS: Array<{ name: string; primary: string; accent: string }> = [
   { name: "Navy + Orange", primary: "#13335a", accent: "#e07a1f" },
+  { name: "Navy + Peach", primary: "#1D3557", accent: "#F9CB9F" },
   { name: "Emerald + Gold", primary: "#064e3b", accent: "#c9a84c" },
   { name: "Slate + Coral", primary: "#1e293b", accent: "#ff6b6b" },
   { name: "Indigo + Cyan", primary: "#4338ca", accent: "#06b6d4" },
   { name: "Charcoal + Lime", primary: "#1f2937", accent: "#84cc16" },
   { name: "Royal + Magenta", primary: "#1e3a8a", accent: "#d946ef" },
 ];
+
+const PORTAL_PRESETS: Array<{ name: string; primary: string; accent: string; bg: string; card: string; fg: string; border: string }> = [
+  { name: "Navy + Peach", primary: "#1D3557", accent: "#F9CB9F", bg: "#0f1f33", card: "#16294099", fg: "#f5f7fa", border: "#ffffff1f" },
+  { name: "Charcoal + Lime", primary: "#1f2937", accent: "#84cc16", bg: "#0b1220", card: "#1f293799", fg: "#f8fafc", border: "#ffffff1a" },
+  { name: "Midnight + Cyan", primary: "#0a0a1a", accent: "#06b6d4", bg: "#0a0a1a", card: "#14143299", fg: "#e8ecf1", border: "#ffffff14" },
+  { name: "Emerald + Gold", primary: "#064e3b", accent: "#c9a84c", bg: "#06281f", card: "#0d7a5f55", fg: "#f5f0e0", border: "#ffffff1f" },
+];
+
 
 export function AdminThemePanel() {
   const [theme, setTheme] = useState<PlatformTheme>(DEFAULT_THEME);
