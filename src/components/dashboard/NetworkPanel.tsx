@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 export function NetworkPanel({ userId }: { userId: string }) {
   const qc = useQueryClient();
+  const geocode = useServerFn(geocodeAddress);
   const q = useQuery({
     queryKey: ["network-settings", userId],
     queryFn: async () => {
