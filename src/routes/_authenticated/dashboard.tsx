@@ -17,6 +17,7 @@ import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { RequestsPanel, ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
+import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
