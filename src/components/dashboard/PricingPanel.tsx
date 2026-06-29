@@ -7,7 +7,6 @@ import { calculateTripCost, DEFAULT_RATES, type PricingRates } from "@/lib/prici
 const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: string }> = [
   { key: "base_pickup", label: "Base pickup fee" },
   { key: "per_mile", label: "Per mile" },
-  { key: "wait_per_min", label: "Wait time / minute" },
   { key: "no_show", label: "No-show fee" },
   { key: "cancellation", label: "Cancellation fee" },
   { key: "wheelchair_addon", label: "Wheelchair add-on" },
@@ -17,6 +16,7 @@ const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: str
   { key: "additional_passenger", label: "Additional passenger" },
   { key: "minimum_fare", label: "Minimum fare" },
 ];
+
 
 export function PricingPanel() {
   const qc = useQueryClient();
