@@ -1,12 +1,21 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { submitRideRequest, rideRequestSchema, type RideRequestInput } from "@/lib/forms.functions";
+import { z } from "zod";
+import {
+  submitRideRequest,
+  rideRequestSchema,
+  type RideRequestInput,
+  RECURRENCE_OPTIONS,
+} from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
+import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
 
 export const Route = createFileRoute("/request-a-ride")({
+  validateSearch: (s: Record<string, unknown>) =>
+    z.object({ copyFrom: z.string().uuid().optional() }).parse(s),
   head: () => ({
     meta: [
       { title: "Request a Ride — Florida NEMT" },
@@ -39,6 +48,8 @@ const empty: RideRequestInput = {
   roundTrip: false,
   mobilityNotes: "",
   specialInstructions: "",
+  recurrence: "none",
+  recurrenceEndDate: "",
 };
 
 function Field({
@@ -69,15 +80,62 @@ const inputCls =
 
 function RequestRidePage() {
   const router = useRouter();
+  const { copyFrom } = Route.useSearch();
   const submit = useServerFn(submitRideRequest);
   const enrich = useServerFn(enrichRideRequest);
+  const fetchOne = useServerFn(getMyRequest);
   const [form, setForm] = useState<RideRequestInput>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ id: string; miles?: number | null; cents?: number | null } | null>(null);
+  const [copiedFromId, setCopiedFromId] = useState<string | null>(null);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (!copyFrom) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetchOne({ data: { id: copyFrom } });
+        if (!r.ok || cancelled) return;
+        const row = r.row;
+        const allowed: RideRequestInput["recurrence"][] = [...RECURRENCE_OPTIONS];
+        const rec = allowed.includes(row.recurrence_rule as RideRequestInput["recurrence"])
+          ? (row.recurrence_rule as RideRequestInput["recurrence"])
+          : "none";
+        setForm({
+          patientFirstName: row.patient_first_name ?? "",
+          patientLastName: row.patient_last_name ?? "",
+          patientPhone: row.patient_phone ?? "",
+          patientEmail: row.patient_email ?? "",
+          pickupAddress: row.pickup_address ?? "",
+          pickupCity: row.pickup_city ?? "",
+          pickupDate: "",
+          pickupTime: row.pickup_time ?? "",
+          dropoffAddress: row.dropoff_address ?? "",
+          dropoffCity: row.dropoff_city ?? "",
+          transportType:
+            (row.transport_type as RideRequestInput["transportType"]) ?? "ambulatory",
+          roundTrip: !!row.round_trip,
+          mobilityNotes: row.mobility_notes ?? "",
+          specialInstructions: row.special_instructions ?? "",
+          recurrence: rec,
+          recurrenceEndDate: "",
+        });
+        setCopiedFromId(copyFrom);
+        toast.success("Trip copied. Set a new pickup date to continue.");
+      } catch {
+        toast.error("Could not load that trip to copy.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [copyFrom, fetchOne]);
+
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -157,7 +215,15 @@ function RequestRidePage() {
           urgent requests, please call directly.
         </p>
 
+        {copiedFromId && (
+          <div className="mb-6 rounded-sm border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+            <strong className="font-bold">Copied from a previous trip.</strong> Review the details and
+            pick a new pickup date before submitting.
+          </div>
+        )}
+
         <form onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
+
           {/* Patient */}
           <fieldset className="space-y-6">
             <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
@@ -260,6 +326,48 @@ function RequestRidePage() {
               />
             </Field>
           </fieldset>
+
+          {/* Recurrence */}
+          <fieldset className="space-y-6">
+            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+              Recurring trip
+            </legend>
+            <p className="text-xs text-muted -mt-2">
+              Schedule the same trip on a repeating basis (e.g. weekly dialysis). Leave as "One-time"
+              for a single ride.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Field label="Repeat">
+                <select
+                  className={inputCls}
+                  value={form.recurrence}
+                  onChange={(e) =>
+                    upd("recurrence", e.target.value as RideRequestInput["recurrence"])
+                  }
+                >
+                  <option value="none">One-time (no repeat)</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekdays">Weekdays (Mon–Fri)</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </Field>
+              {form.recurrence !== "none" && (
+                <Field label="Repeat until" error={errors.recurrenceEndDate}>
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={form.recurrenceEndDate}
+                    min={form.pickupDate || undefined}
+                    onChange={(e) => upd("recurrenceEndDate", e.target.value)}
+                  />
+                </Field>
+              )}
+            </div>
+          </fieldset>
+
+
 
           <datalist id="fl-cities">
             {CITY_LIST.map((c) => (

@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
+export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
+
 export const rideRequestSchema = z.object({
   patientFirstName: z.string().trim().min(1).max(80),
   patientLastName: z.string().trim().min(1).max(80),
@@ -17,6 +20,8 @@ export const rideRequestSchema = z.object({
   roundTrip: z.boolean().default(false),
   mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
+  recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
+  recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
 
 export type RideRequestInput = z.infer<typeof rideRequestSchema>;
@@ -56,6 +61,8 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         mobility_notes: data.mobilityNotes || null,
         special_instructions: data.specialInstructions || null,
         requester_user_id: requesterUserId,
+        recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
+        recurrence_end_date: data.recurrenceEndDate || null,
       })
       .select("id")
       .single();

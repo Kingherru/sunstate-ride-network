@@ -163,6 +163,13 @@ function RequestDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link
+            to="/request-a-ride"
+            search={{ copyFrom: id }}
+            className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+          >
+            Copy trip
+          </Link>
           {canReschedule && mode === "view" && (
             <button
               onClick={() => setMode("reschedule")}
@@ -180,6 +187,7 @@ function RequestDetailPage() {
             </button>
           )}
         </div>
+
       </header>
 
       {mode === "view" ? (

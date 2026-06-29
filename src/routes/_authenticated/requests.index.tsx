@@ -194,6 +194,13 @@ function RequestsPage() {
                 >
                   View details
                 </Link>
+                <Link
+                  to="/request-a-ride"
+                  search={{ copyFrom: r.id }}
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-center text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+                >
+                  Copy trip
+                </Link>
                 {canCancel(r) && (
                   <button
                     onClick={() => {
@@ -206,6 +213,8 @@ function RequestsPage() {
                   </button>
                 )}
               </div>
+
+
 
             </div>
           </li>
