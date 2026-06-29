@@ -958,7 +958,7 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
           </button>
           <button
             onClick={() => downloadTripPdf(trip as TripPdfInput)}
-            className="text-sm font-bold text-white px-5 py-2 rounded-xl bg-[oklch(0.872_0.078_65.2)] hover:brightness-110 transition shadow-[0_8px_24px_-8px_oklch(0.872_0.078_65.2_/_0.7)]"
+            className="text-sm font-bold text-[oklch(0.328_0.068_257.3)] px-5 py-2 rounded-xl bg-[oklch(0.872_0.078_65.2)] hover:brightness-105 transition shadow-[0_8px_24px_-8px_oklch(0.872_0.078_65.2_/_0.7)]"
           >
             Download PDF
           </button>
