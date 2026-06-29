@@ -327,6 +327,48 @@ function RequestRidePage() {
             </Field>
           </fieldset>
 
+          {/* Recurrence */}
+          <fieldset className="space-y-6">
+            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+              Recurring trip
+            </legend>
+            <p className="text-xs text-muted -mt-2">
+              Schedule the same trip on a repeating basis (e.g. weekly dialysis). Leave as "One-time"
+              for a single ride.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Field label="Repeat">
+                <select
+                  className={inputCls}
+                  value={form.recurrence}
+                  onChange={(e) =>
+                    upd("recurrence", e.target.value as RideRequestInput["recurrence"])
+                  }
+                >
+                  <option value="none">One-time (no repeat)</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekdays">Weekdays (Mon–Fri)</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </Field>
+              {form.recurrence !== "none" && (
+                <Field label="Repeat until" error={errors.recurrenceEndDate}>
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={form.recurrenceEndDate}
+                    min={form.pickupDate || undefined}
+                    onChange={(e) => upd("recurrenceEndDate", e.target.value)}
+                  />
+                </Field>
+              )}
+            </div>
+          </fieldset>
+
+
+
           <datalist id="fl-cities">
             {CITY_LIST.map((c) => (
               <option key={c.slug} value={c.name} />
