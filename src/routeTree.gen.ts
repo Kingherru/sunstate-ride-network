@@ -17,6 +17,7 @@ import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -76,6 +77,11 @@ const MembershipRoute = MembershipRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/changelog'
     | '/contact'
     | '/membership'
     | '/providers'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/changelog'
     | '/contact'
     | '/membership'
     | '/providers'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/auth'
+    | '/changelog'
     | '/contact'
     | '/membership'
     | '/providers'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  ChangelogRoute: typeof ChangelogRoute
   ContactRoute: typeof ContactRoute
   MembershipRoute: typeof MembershipRoute
   ProvidersRoute: typeof ProvidersRoute
@@ -441,6 +454,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -628,6 +648,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  ChangelogRoute: ChangelogRoute,
   ContactRoute: ContactRoute,
   MembershipRoute: MembershipRoute,
   ProvidersRoute: ProvidersRoute,
