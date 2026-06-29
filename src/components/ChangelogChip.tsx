@@ -28,7 +28,7 @@ export const CHANGELOG: { version: string; date: string; notes: string[] }[] = [
     notes: [
       "Facility provider lookup with distance + fare comparison.",
       "Vehicles & Drivers merged with insurance uploads.",
-      "DueRide integration stub.",
+      "DuetRide integration stub.",
     ],
   },
   {

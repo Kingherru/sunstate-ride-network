@@ -6,7 +6,7 @@
  * Implementations live next to this file (e.g. ./hibambi.ts, ./routegenie.ts)
  * and are wired into `getAdapter(vendor)` below.
  */
-export type Vendor = "hibambi" | "routegenie" | "dueride";
+export type Vendor = "hibambi" | "routegenie" | "duetride";
 
 export interface ExternalTrip {
   external_id: string;
@@ -47,12 +47,12 @@ export interface IntegrationAdapter {
 
 import { hibambiAdapter } from "./hibambi";
 import { routegenieAdapter } from "./routegenie";
-import { duerideAdapter } from "./dueride";
+import { duetrideAdapter } from "./duetride";
 
 export function getAdapter(vendor: Vendor): IntegrationAdapter {
   switch (vendor) {
     case "hibambi": return hibambiAdapter;
     case "routegenie": return routegenieAdapter;
-    case "dueride": return duerideAdapter;
+    case "duetride": return duetrideAdapter;
   }
 }
