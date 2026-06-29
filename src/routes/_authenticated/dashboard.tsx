@@ -1064,12 +1064,13 @@ function PortalSidebar(props: {
         })}
       </nav>
 
-      <div className="px-5 py-4 border-t border-border text-xs">
-        <div className="text-muted-foreground truncate mb-2" title={userEmail ?? ""}>{userEmail}</div>
+      <div className="px-5 py-4 border-t border-border text-xs space-y-2">
+        <div className="text-muted-foreground truncate" title={userEmail ?? ""}>{userEmail}</div>
         <button
           onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
           className="font-bold text-muted-foreground hover:text-foreground"
         >Sign out</button>
+        <ChangelogChip />
       </div>
     </aside>
   );
