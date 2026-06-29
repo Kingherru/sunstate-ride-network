@@ -59,6 +59,27 @@ export function PricingPanel() {
             </label>
           ))}
           <label className="flex flex-col gap-1 text-sm">
+            <span className="font-bold">Wait time rate</span>
+            <div className="flex items-center border border-border rounded-sm bg-background overflow-hidden">
+              <span className="px-3 text-muted-foreground">$</span>
+              <input type="number" min="0" step="0.01" value={String(form.wait_per_min ?? 0)}
+                     onChange={(e) => setForm({ ...form, wait_per_min: Number(e.target.value) || 0 })}
+                     className="flex-1 px-2 py-2 bg-transparent focus:outline-none" />
+            </div>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-bold">Wait billed per</span>
+            <select
+              value={form.wait_unit ?? "hour"}
+              onChange={(e) => setForm({ ...form, wait_unit: e.target.value as PricingRates["wait_unit"] })}
+              className="border border-border rounded-sm px-3 py-2 bg-background"
+            >
+              <option value="hour">Hour</option>
+              <option value="half_hour">Half hour (30 min)</option>
+              <option value="minute">Minute</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">After-hours start</span>
             <input type="time" value={form.after_hours_start.slice(0, 5)}
                    onChange={(e) => setForm({ ...form, after_hours_start: e.target.value })}
