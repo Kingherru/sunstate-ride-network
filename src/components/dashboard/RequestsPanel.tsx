@@ -41,7 +41,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair")
+        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -121,7 +121,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair")
+        .select("id,status,pickup_address,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
         .eq("assigned_provider_id", userId)
         .order("pickup_date", { ascending: true });
       if (error) throw error;
