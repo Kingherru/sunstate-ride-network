@@ -42,8 +42,9 @@ export const createSavedPatient = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: out, error } = await context.supabase
       .from("saved_patients")
-      .insert({ ...clean(data), owner_id: context.userId })
+      .insert({ ...(clean(data) as any), owner_id: context.userId })
       .select().single();
+
     if (error) throw new Error(error.message);
     return out;
   });
