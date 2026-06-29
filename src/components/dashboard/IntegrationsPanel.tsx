@@ -74,7 +74,7 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
     <div className="bg-card border border-border rounded-sm p-5">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-extrabold">{label}</h3>
-        <span className={`text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${existing?.enabled ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"}`}>
+        <span className={`text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${existing?.enabled ? "bg-accent/15 text-accent" : existing ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}>
           {existing ? (existing.enabled ? "Connected" : "Saved") : "Not connected"}
         </span>
       </div>
