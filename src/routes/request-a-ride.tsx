@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { submitRideRequest, rideRequestSchema, type RideRequestInput } from "@/lib/forms.functions";
+import { enrichRideRequest } from "@/lib/maps.functions";
 import { CITY_LIST } from "@/lib/cities";
 
 export const Route = createFileRoute("/request-a-ride")({
