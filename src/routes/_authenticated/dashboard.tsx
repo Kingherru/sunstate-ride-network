@@ -38,7 +38,7 @@ type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" 
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "account"],
-  provider: ["requests", "reservations", "new", "received", "sent", "network", "vehicles", "drivers", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
+  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "pricing", "rules", "memberships", "payouts", "integrations", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "account"],
 };
 
@@ -54,13 +54,13 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
   if (t === "upload") return "Upload CSV";
   if (t === "requests") return "Requests";
-  if (t === "reservations") return "Reservations";
+  if (t === "reservations") return "Reservations & Schedule";
   if (t === "network") return "Provider Network";
   if (t === "rules") return "Rules";
   if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
   if (t === "providers") return "Find Providers";
   if (t === "saved_providers") return "Saved Providers";
-  if (t === "vehicles") return "Vehicles";
+  if (t === "vehicles") return "Vehicles & Drivers";
   if (t === "drivers") return "Drivers";
   if (t === "pricing") return "Pricing";
   if (t === "memberships") return "Membership";
