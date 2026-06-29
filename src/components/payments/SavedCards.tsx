@@ -10,10 +10,16 @@ import {
   deleteSavedPaymentMethod,
   setDefaultPaymentMethod,
 } from "@/lib/saved-payments.functions";
+import { listSavedPatients } from "@/lib/saved-patients.functions";
 
-export function SavedCards() {
+export function SavedCards({ assignToPatient = false }: { assignToPatient?: boolean } = {}) {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["saved-cards"], queryFn: () => listSavedPaymentMethods() });
+  const patientsQ = useQuery({
+    queryKey: ["saved-patients"],
+    queryFn: () => listSavedPatients(),
+    enabled: assignToPatient,
+  });
   const [adding, setAdding] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
@@ -38,13 +44,16 @@ export function SavedCards() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const patients = patientsQ.data ?? [];
+  const patientLookup = new Map(patients.map((p: any) => [p.id, `${p.first_name} ${p.last_name}`]));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-extrabold">Saved payment methods</h3>
           <p className="text-xs text-muted-foreground">
-            Card details are stored by Stripe — never on our servers. Only you can see or use them.
+            Card details are stored by Stripe — never on our servers. {assignToPatient ? "Assign each card to one patient." : "Only you can see or use them."}
           </p>
         </div>
         {!adding && (
@@ -66,6 +75,12 @@ export function SavedCards() {
               <span className="font-bold uppercase">{c.brand ?? "card"}</span> •••• {c.last4}
               <span className="text-muted-foreground"> — exp {String(c.exp_month).padStart(2, "0")}/{String(c.exp_year).slice(-2)}</span>
               {c.is_default && <span className="ml-2 bg-accent/15 text-accent text-xs font-bold uppercase px-2 py-0.5 rounded-sm">Default</span>}
+              {(c.label || c.patient_id) && (
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {c.patient_id ? `Assigned to ${patientLookup.get(c.patient_id) ?? "patient"}` : null}
+                  {c.label ? `${c.patient_id ? " • " : ""}${c.label}` : null}
+                </div>
+              )}
             </div>
             <div className="flex gap-3 text-sm font-bold">
               {!c.is_default && (
@@ -83,6 +98,8 @@ export function SavedCards() {
       {adding && clientSecret && (
         <Elements stripe={getStripe()} options={{ clientSecret, appearance: { theme: "stripe" } }}>
           <AddCardForm
+            assignToPatient={assignToPatient}
+            patients={patients}
             onDone={() => { setAdding(false); setClientSecret(null); qc.invalidateQueries({ queryKey: ["saved-cards"] }); }}
             onCancel={() => { setAdding(false); setClientSecret(null); }}
           />
@@ -92,15 +109,28 @@ export function SavedCards() {
   );
 }
 
-function AddCardForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+function AddCardForm({
+  onDone,
+  onCancel,
+  assignToPatient,
+  patients,
+}: {
+  onDone: () => void;
+  onCancel: () => void;
+  assignToPatient: boolean;
+  patients: any[];
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [busy, setBusy] = useState(false);
   const [makeDefault, setMakeDefault] = useState(true);
+  const [patientId, setPatientId] = useState<string>("");
+  const [label, setLabel] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!stripe || !elements) return;
+    if (assignToPatient && !patientId) { toast.error("Choose which patient this card belongs to"); return; }
     setBusy(true);
     try {
       const { error, setupIntent } = await stripe.confirmSetup({
@@ -114,7 +144,13 @@ function AddCardForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
       }
       const pmId = typeof setupIntent.payment_method === "string" ? setupIntent.payment_method : setupIntent.payment_method.id;
       const r = await recordSavedPaymentMethod({
-        data: { environment: getStripeEnvironment(), payment_method_id: pmId, make_default: makeDefault },
+        data: {
+          environment: getStripeEnvironment(),
+          payment_method_id: pmId,
+          make_default: makeDefault,
+          patient_id: patientId || null,
+          label: label || null,
+        } as any,
       });
       if ("error" in r) { toast.error(r.error); return; }
       toast.success("Card saved");
@@ -126,6 +162,31 @@ function AddCardForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
 
   return (
     <form onSubmit={onSubmit} className="border border-border rounded-sm p-4 bg-card space-y-3">
+      {assignToPatient && (
+        <div className="grid sm:grid-cols-2 gap-3 text-sm">
+          <label className="flex flex-col gap-1">
+            <span className="font-bold text-xs uppercase tracking-wide text-muted-foreground">Assign to patient *</span>
+            <select
+              required
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              className="border border-border rounded-sm px-3 py-2 bg-background"
+            >
+              <option value="">Select a saved patient…</option>
+              {patients.map((p: any) => (
+                <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>
+              ))}
+            </select>
+            {patients.length === 0 && (
+              <span className="text-xs text-muted-foreground">Add patients in the Saved Patients tab first.</span>
+            )}
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-bold text-xs uppercase tracking-wide text-muted-foreground">Label (optional)</span>
+            <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Family card" className="border border-border rounded-sm px-3 py-2 bg-background" />
+          </label>
+        </div>
+      )}
       <PaymentElement options={{ layout: "tabs" }} />
       <label className="flex items-center gap-2 text-sm font-bold">
         <input type="checkbox" checked={makeDefault} onChange={(e) => setMakeDefault(e.target.checked)} />
