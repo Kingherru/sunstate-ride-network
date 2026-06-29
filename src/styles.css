@@ -55,63 +55,61 @@
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* LOCKED LIGHT THEME — Navy #0D1B2D + White, Orange #F4A25C, Mint #A3CCBE */
+/* LOCKED LIGHT THEME — Navy + Signal Orange */
 :root {
   --radius: 0.625rem;
 
-  /* White background, deep navy ink */
-  --background: #ffffff;
-  --foreground: #0D1B2D;
+  /* Cream background, deep navy ink (Florida Sunshine palette) */
+  --background: oklch(0.965 0.018 75);
+  --foreground: oklch(0.22 0.07 250);
 
-  --card: #ffffff;
-  --card-foreground: #0D1B2D;
-  --popover: #ffffff;
-  --popover-foreground: #0D1B2D;
+  --card: oklch(0.99 0.008 75);
+  --card-foreground: oklch(0.22 0.07 250);
+  --popover: oklch(0.99 0.008 75);
+  --popover-foreground: oklch(0.22 0.07 250);
 
-  /* Deep navy primary #0D1B2D */
-  --primary: #0D1B2D;
-  --primary-foreground: #ffffff;
+  /* Deep navy primary (~#0d3b66) */
+  --primary: oklch(0.34 0.10 248);
+  --primary-foreground: oklch(0.97 0.015 75);
 
-  /* Mint secondary #A3CCBE */
-  --secondary: #A3CCBE;
-  --secondary-foreground: #0D1B2D;
-  --muted: #F4F6F8;
-  --muted-foreground: #5A6573;
+  /* Teal/mint secondary (~#5fc3c0) */
+  --secondary: oklch(0.82 0.08 195);
+  --secondary-foreground: oklch(0.22 0.07 250);
+  --muted: oklch(0.93 0.015 75);
+  --muted-foreground: oklch(0.42 0.04 248);
 
-  /* Orange accent #F4A25C — primary CTA color */
-  --accent: #F4A25C;
-  --accent-foreground: #0D1B2D;
-  --accent-orange: #F4A25C;
-  --accent-mint: #A3CCBE;
+  /* Peach/coral accent (~#f4a261) */
+  --accent: oklch(0.78 0.13 60);
+  --accent-foreground: oklch(0.22 0.07 250);
+  --accent-orange: oklch(0.78 0.13 60);
 
   --destructive: oklch(0.58 0.22 27);
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: oklch(0.99 0 0);
 
-  --border: color-mix(in oklab, #0D1B2D 12%, transparent);
-  --input: color-mix(in oklab, #0D1B2D 16%, transparent);
-  --ring: #0D1B2D;
+  --border: oklch(0.34 0.10 248 / 14%);
+  --input: oklch(0.34 0.10 248 / 18%);
+  --ring: oklch(0.34 0.10 248);
 
-  --brand: #0D1B2D;
-  --brand-soft: #1B2D45;
+  --brand: oklch(0.34 0.10 248);
+  --brand-soft: oklch(0.55 0.10 230);
 
-  --shadow-card: 0 1px 2px rgb(13 27 45 / 6%), 0 8px 24px -12px rgb(13 27 45 / 14%);
-  --shadow-elegant: 0 24px 60px -28px rgb(13 27 45 / 28%);
-  --glow-accent: 0 10px 40px -10px rgb(244 162 92 / 50%);
+  --shadow-card: 0 1px 2px oklch(0.22 0.07 250 / 8%), 0 8px 24px -12px oklch(0.22 0.07 250 / 18%);
+  --shadow-elegant: 0 24px 60px -28px oklch(0.22 0.07 250 / 32%);
+  --glow-accent: 0 10px 40px -10px oklch(0.78 0.13 60 / 45%);
 
-  --gradient-brand: linear-gradient(135deg, #0D1B2D, #1B2D45);
-  --gradient-accent: linear-gradient(135deg, #F4A25C, #F2B27A);
-  --gradient-hero: linear-gradient(160deg, #ffffff 0%, #F4F6F8 55%, #A3CCBE 100%);
+  --gradient-brand: linear-gradient(135deg, oklch(0.34 0.10 248), oklch(0.46 0.10 220));
+  --gradient-accent: linear-gradient(135deg, oklch(0.78 0.13 60), oklch(0.82 0.08 195));
+  --gradient-hero: linear-gradient(160deg, oklch(0.97 0.018 75) 0%, oklch(0.93 0.04 80) 55%, oklch(0.86 0.07 60) 100%);
 
-  --sidebar: #0D1B2D;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #F4A25C;
-  --sidebar-primary-foreground: #0D1B2D;
-  --sidebar-accent: #1B2D45;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgb(255 255 255 / 12%);
-  --sidebar-ring: #F4A25C;
+  --sidebar: oklch(0.24 0.08 250);
+  --sidebar-foreground: oklch(0.97 0.015 75);
+  --sidebar-primary: oklch(0.78 0.13 60);
+  --sidebar-primary-foreground: oklch(0.22 0.07 250);
+  --sidebar-accent: oklch(0.30 0.09 248);
+  --sidebar-accent-foreground: oklch(0.97 0.015 75);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.78 0.13 60);
 }
-
 
 /* .light alias kept for any legacy consumers */
 .light { color-scheme: light; }
@@ -233,23 +231,4 @@
     transition: background 200ms, border-color 200ms, color 200ms;
   }
   .btn-ghost:hover { background: var(--secondary); border-color: var(--brand); }
-
-  /* All CTA buttons inside the standard CTA row use the orange accent */
-  .flex.flex-col.sm\:flex-row.gap-3 > a,
-  .flex.flex-col.sm\:flex-row.gap-3 > button {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 0.85rem 1.4rem;
-    background: var(--accent);
-    color: var(--accent-foreground);
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    font-weight: 700; font-size: 0.9rem;
-    box-shadow: var(--glow-accent);
-    transition: transform 200ms var(--ease-out-expo), filter 200ms;
-  }
-  .flex.flex-col.sm\:flex-row.gap-3 > a:hover,
-  .flex.flex-col.sm\:flex-row.gap-3 > button:hover {
-    transform: translateY(-1px); filter: brightness(1.05);
-  }
 }
-
