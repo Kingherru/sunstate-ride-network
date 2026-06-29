@@ -68,6 +68,7 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         patient_phone: data.patientPhone,
         patient_email: data.patientEmail || null,
         pickup_address: data.pickupAddress,
+        pickup_address_details: data.pickupAddressDetails || null,
         pickup_city: data.pickupCity,
         pickup_date: data.pickupDate,
         pickup_time: data.pickupTime,
