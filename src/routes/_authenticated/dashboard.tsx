@@ -797,47 +797,177 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
 
 function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
   const t: any = trip;
-  const row = (k: string, v: any) => v == null || v === "" ? null : (
-    <div key={k} className="grid grid-cols-3 gap-2 py-1.5 border-b border-border/60 text-sm">
-      <div className="text-muted-foreground">{k}</div>
-      <div className="col-span-2 font-medium break-words">{String(v)}</div>
-    </div>
+
+  const Field = ({ label, value }: { label: string; value: any }) => {
+    if (value == null || value === "" || value === false) return null;
+    return (
+      <div className="space-y-1">
+        <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">{label}</div>
+        <div className="text-sm font-medium text-white break-words">{String(value)}</div>
+      </div>
+    );
+  };
+
+  const Section = ({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) => (
+    <section className="rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <span className={`inline-block h-2 w-2 rounded-full ${accent}`} />
+        <h4 className="text-[0.7rem] font-bold uppercase tracking-[0.18em] text-white/70">{title}</h4>
+      </div>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-4">{children}</div>
+    </section>
   );
+
+  const flags: string[] = [];
+  if (t.round_trip) flags.push("Round trip");
+  if (t.needs_wheelchair) flags.push("Wheelchair");
+  if (t.has_passenger) flags.push("Companion");
+  if (t.needs_assistance_to_vehicle) flags.push("Help to vehicle");
+  if (t.needs_surgery_signin) flags.push("Surgery sign-in");
+  if (t.needs_surgery_signout) flags.push("Surgery sign-out");
+
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-card rounded-sm max-w-2xl w-full max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-extrabold">{t.patient_first_name} {t.patient_last_name}</h3>
-            <p className="text-xs text-muted-foreground">{t.pickup_date} · {t.pickup_time} · <TripStatusBadge s={t.status} /></p>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[oklch(0.12_0.04_250_/_0.72)] backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-w-3xl w-full max-h-[88vh] overflow-hidden rounded-3xl border border-white/15 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)] animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background:
+            "linear-gradient(160deg, oklch(0.24 0.06 250) 0%, oklch(0.18 0.05 255) 60%, oklch(0.22 0.07 258) 100%)",
+        }}
+      >
+        {/* Accent glow */}
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[oklch(0.60_0.16_38_/_0.35)] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-[oklch(0.78_0.12_195_/_0.25)] blur-3xl" />
+
+        {/* Header */}
+        <header className="relative px-7 pt-6 pb-5 border-b border-white/10 flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <TripStatusBadge s={t.status} />
+              {t.trip_number && (
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/60">
+                  Trip #{t.trip_number}
+                </span>
+              )}
+            </div>
+            <h3 className="text-2xl font-extrabold tracking-tight text-white">
+              {t.patient_first_name} {t.patient_last_name}
+            </h3>
+            <p className="text-sm text-white/65">
+              {t.pickup_date}
+              {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
+              {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
+            </p>
           </div>
-          <button onClick={onClose} className="text-sm font-bold text-muted-foreground hover:text-foreground">Close</button>
+          <button
+            onClick={onClose}
+            className="text-white/70 hover:text-white text-sm font-bold rounded-full border border-white/15 px-3 py-1.5 hover:bg-white/10 transition"
+          >
+            Close
+          </button>
+        </header>
+
+        {/* Body */}
+        <div className="relative px-7 py-6 space-y-5 overflow-auto max-h-[calc(88vh-9rem)]">
+          <Section title="Patient" accent="bg-[oklch(0.78_0.12_195)]">
+            <Field label="Name" value={`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim()} />
+            <Field label="Phone" value={t.patient_phone} />
+            <Field label="Date of birth" value={t.patient_dob} />
+            <Field label="Weight" value={t.patient_weight} />
+            <Field label="Medicaid #" value={t.medicaid_number} />
+            <Field label="NPI" value={t.npi} />
+            <Field label="Payer" value={t.payer} />
+            <Field label="Emergency contact" value={t.emergency_contact} />
+          </Section>
+
+          <Section title="Route" accent="bg-[oklch(0.60_0.16_38)]">
+            <div className="col-span-2">
+              <Field
+                label="Pickup"
+                value={`${t.pickup_address ?? ""}${t.pickup_address_details ? `, ${t.pickup_address_details}` : ""}, ${t.pickup_city ?? ""} ${t.pickup_zip ?? ""}`.trim()}
+              />
+            </div>
+            <div className="col-span-2">
+              <Field
+                label="Dropoff"
+                value={`${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim()}
+              />
+            </div>
+            <Field label="Pickup time" value={t.pickup_time} />
+            <Field label="Appointment time" value={t.appointment_time} />
+            <Field label="Return pickup" value={t.return_pickup_time} />
+            <Field label="Return dropoff" value={t.return_dropoff_time} />
+            <Field label="Distance (mi)" value={t.estimated_miles ?? t.actual_miles} />
+            <Field label="Estimated fare" value={t.estimated_fare ? `$${t.estimated_fare}` : null} />
+          </Section>
+
+          <Section title="Service" accent="bg-[oklch(0.74_0.13_165)]">
+            <Field label="Transport" value={t.transport_type} />
+            <Field label="Service level" value={t.service_level} />
+            <Field label="Trip type" value={t.trip_type} />
+            <Field label="Source" value={t.source} />
+            {flags.length > 0 && (
+              <div className="col-span-2 space-y-2">
+                <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">Flags</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {flags.map((f) => (
+                    <span
+                      key={f}
+                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.60_0.16_38_/_0.18)] text-[oklch(0.85_0.13_38)] border border-[oklch(0.60_0.16_38_/_0.35)]"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Section>
+
+          {(t.special_instructions || t.mobility_notes || t.provider_notes) && (
+            <Section title="Notes" accent="bg-white/40">
+              {t.special_instructions && (
+                <div className="col-span-2">
+                  <Field label="Special instructions" value={t.special_instructions} />
+                </div>
+              )}
+              {t.mobility_notes && (
+                <div className="col-span-2">
+                  <Field label="Mobility notes" value={t.mobility_notes} />
+                </div>
+              )}
+              {t.provider_notes && (
+                <div className="col-span-2">
+                  <Field label="Provider notes" value={t.provider_notes} />
+                </div>
+              )}
+            </Section>
+          )}
         </div>
-        <div className="px-6 py-4">
-          {row("Phone", t.patient_phone)}
-          {row("Pickup", `${t.pickup_address ?? ""}, ${t.pickup_city ?? ""} ${t.pickup_zip ?? ""}`.trim())}
-          {row("Dropoff", `${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim())}
-          {row("Transport", t.transport_type)}
-          {row("Service level", t.service_level)}
-          {row("Round trip", t.round_trip ? "Yes" : null)}
-          {row("Wheelchair", t.needs_wheelchair ? "Yes" : null)}
-          {row("Passenger/companion", t.has_passenger ? "Yes" : null)}
-          {row("Help to vehicle", t.needs_assistance_to_vehicle ? "Yes" : null)}
-          {row("Surgery sign-in", t.needs_surgery_signin ? "Yes" : null)}
-          {row("Surgery sign-out", t.needs_surgery_signout ? "Yes" : null)}
-          {row("Payer", t.payer)}
-          {row("Trip #", t.trip_number)}
-          {row("Distance (mi)", t.estimated_miles ?? t.actual_miles)}
-          {row("Special instructions", t.special_instructions)}
-          {row("Mobility notes", t.mobility_notes)}
-        </div>
-        <div className="px-6 py-3 border-t border-border flex justify-end gap-2">
-          <button onClick={() => downloadTripPdf(trip as TripPdfInput)} className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted">Download PDF</button>
-        </div>
+
+        {/* Footer */}
+        <footer className="relative px-7 py-4 border-t border-white/10 flex justify-end gap-2 bg-black/20">
+          <button
+            onClick={onClose}
+            className="text-sm font-bold text-white/80 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5 transition"
+          >
+            Close
+          </button>
+          <button
+            onClick={() => downloadTripPdf(trip as TripPdfInput)}
+            className="text-sm font-bold text-white px-5 py-2 rounded-xl bg-[oklch(0.60_0.16_38)] hover:brightness-110 transition shadow-[0_8px_24px_-8px_oklch(0.60_0.16_38_/_0.6)]"
+          >
+            Download PDF
+          </button>
+        </footer>
       </div>
     </div>
   );
 }
+
 
 function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: () => void; onSaved: () => void }) {
   const [stars, setStars] = useState(5);
