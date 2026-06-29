@@ -279,7 +279,10 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab />}
+            {tab === "saved_patients" && <SavedPatientsPanel />}
+            {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
+
           </>
         )}
 
