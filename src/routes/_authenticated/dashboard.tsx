@@ -82,8 +82,11 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "payouts") return "Payouts";
   if (t === "integrations") return "Integrations";
   if (t === "payments") return "Payments";
+  if (t === "saved_patients") return "Saved Patients";
+  if (t === "business_info") return "Business Info";
   return "Account";
 }
+
 
 
 /** /dashboard redirects to /{portal}/dashboard based on the user's signup portal. */
