@@ -379,7 +379,7 @@ function RequestRidePage() {
 
             {form.tripType === "round_trip" && (
               <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
-                <Field label="Return pickup time" error={errors.returnPickupTime}>
+                <Field label="Return pickup time" required error={errors.returnPickupTime}>
                   <input
                     type="time"
                     className={inputCls}
