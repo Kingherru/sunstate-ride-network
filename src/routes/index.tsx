@@ -144,22 +144,23 @@ function HomePage() {
       </section>
 
       {/* 3 · STATS BAND */}
-      <section className="bg-background">
-        <div className="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-4 gap-8 text-center md:text-left">
+      <section className="bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-border overflow-hidden">
           {[
             { stat: "67", unit: "FL counties", note: "Statewide reach" },
             { stat: "24/7", unit: "Dispatch", note: "Live coordinators" },
             { stat: "100%", unit: "Vetted", note: "Insurance · NPI · W-9" },
-            { stat: "<15 min", unit: "Match time", note: "Routine requests" },
+            { stat: "3", unit: "Transport tiers", note: "Ambulatory · Wheelchair · Stretcher" },
           ].map((s) => (
-            <div key={s.stat} className="border-l-2 border-accent pl-5">
-              <div className="font-display text-5xl font-extrabold text-brand tracking-tight">{s.stat}</div>
-              <div className="mt-2 text-sm font-mono uppercase tracking-[0.18em] text-accent-orange">{s.unit}</div>
-              <div className="mt-1 text-sm text-muted-foreground">{s.note}</div>
+            <div key={s.stat} className="bg-background p-8">
+              <div className="font-display text-5xl font-extrabold text-brand tracking-tight leading-none">{s.stat}</div>
+              <div className="mt-3 text-xs font-mono uppercase tracking-[0.18em] text-accent-orange">{s.unit}</div>
+              <div className="mt-2 text-sm text-muted-foreground">{s.note}</div>
             </div>
           ))}
         </div>
       </section>
+
 
       {/* 4 · SERVICES — full-bleed light band */}
       <section className="bg-secondary/60 section">
