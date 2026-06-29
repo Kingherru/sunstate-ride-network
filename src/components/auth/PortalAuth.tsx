@@ -85,14 +85,14 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   }
 
   return (
-    <section className="min-h-[80vh] grid md:grid-cols-2 gap-0">
-      <div className="hidden md:flex flex-col justify-between bg-primary text-primary-foreground p-12">
+    <section className="portal-scope min-h-[80vh] grid md:grid-cols-2 gap-0">
+      <div className="hidden md:flex flex-col justify-between bg-card border-r border-border p-12">
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent mb-3">
             {copy.eyebrow}
           </p>
           <h1 className="text-4xl font-extrabold tracking-tighter mb-4">{copy.title}</h1>
-          <p className="text-base opacity-90 max-w-md">{copy.blurb}</p>
+          <p className="text-base text-muted-foreground max-w-md">{copy.blurb}</p>
         </div>
         <ul className="space-y-3 text-sm">
           {copy.bullets.map((b) => (
@@ -102,46 +102,52 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
           ))}
         </ul>
       </div>
-      <div className="grid place-items-center px-6 py-12">
-        <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8">
+      <div className="grid place-items-center px-6 py-12 bg-background">
+        <div className="w-full max-w-md portal-panel p-8">
           <p className="md:hidden font-mono text-xs font-bold text-accent uppercase tracking-widest mb-3">
             {copy.eyebrow}
           </p>
           <h2 className="text-2xl font-extrabold tracking-tighter mb-1">
             {mode === "signin" ? "Sign in" : "Create your account"}
           </h2>
-          <p className="text-sm text-muted mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             {mode === "signin" ? "Welcome back." : "It takes less than a minute."}
           </p>
-          <form onSubmit={onSubmit} className="space-y-3">
-            <input
-              type="email"
-              required
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-background border border-input rounded-md px-4 py-3 text-sm"
-            />
-            <input
-              type="password"
-              required
-              minLength={8}
-              placeholder="Password (min 8 chars)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-background border border-input rounded-md px-4 py-3 text-sm"
-            />
+          <form onSubmit={onSubmit} className="space-y-4">
+            <label className="block">
+              <span className="portal-label">Email</span>
+              <input
+                type="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="portal-input"
+              />
+            </label>
+            <label className="block">
+              <span className="portal-label">Password</span>
+              <input
+                type="password"
+                required
+                minLength={8}
+                placeholder="Min 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="portal-input"
+              />
+            </label>
             <button
               type="submit"
               disabled={busy}
-              className="w-full bg-primary text-primary-foreground font-bold text-sm py-3 rounded-md disabled:opacity-60"
+              className="portal-btn-primary w-full py-3"
             >
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
           </form>
           <button
             onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-            className="mt-4 text-sm text-muted hover:text-foreground"
+            className="mt-4 text-sm text-muted-foreground hover:text-foreground"
           >
             {mode === "signin"
               ? "Don't have an account? Sign up"
@@ -152,3 +158,4 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
     </section>
   );
 }
+
