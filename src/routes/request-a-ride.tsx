@@ -1,12 +1,21 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { submitRideRequest, rideRequestSchema, type RideRequestInput } from "@/lib/forms.functions";
+import { z } from "zod";
+import {
+  submitRideRequest,
+  rideRequestSchema,
+  type RideRequestInput,
+  RECURRENCE_OPTIONS,
+} from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
+import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
 
 export const Route = createFileRoute("/request-a-ride")({
+  validateSearch: (s: Record<string, unknown>) =>
+    z.object({ copyFrom: z.string().uuid().optional() }).parse(s),
   head: () => ({
     meta: [
       { title: "Request a Ride — Florida NEMT" },
@@ -39,6 +48,8 @@ const empty: RideRequestInput = {
   roundTrip: false,
   mobilityNotes: "",
   specialInstructions: "",
+  recurrence: "none",
+  recurrenceEndDate: "",
 };
 
 function Field({
