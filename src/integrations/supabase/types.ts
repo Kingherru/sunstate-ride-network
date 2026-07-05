@@ -1366,6 +1366,42 @@ export type Database = {
           },
         ]
       }
+      staff_audit_log: {
+        Row: {
+          action: string
+          actor_display_id: string | null
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          target_id: string | null
+          target_kind: string | null
+        }
+        Insert: {
+          action: string
+          actor_display_id?: string | null
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_kind?: string | null
+        }
+        Update: {
+          action?: string
+          actor_display_id?: string | null
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_kind?: string | null
+        }
+        Relationships: []
+      }
       stripe_customers: {
         Row: {
           created_at: string
@@ -2077,6 +2113,15 @@ export type Database = {
       }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
+      log_staff_action: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _target_id: string
+          _target_kind: string
+        }
+        Returns: string
+      }
       manages_zone: {
         Args: { _user_id: string; _zone_id: string }
         Returns: boolean
