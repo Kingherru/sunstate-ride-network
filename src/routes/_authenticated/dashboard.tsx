@@ -376,11 +376,34 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
     first_name: "", last_name: "", company_name: "", phone: "", dispatch_email: userEmail, city: "", preferred_zip_codes: "",
     date_of_birth: "", medicaid_number: "", medicaid_plan: "", npi: "",
     emergency_contact_name: "", emergency_contact_phone: "",
+    patient_type: "", patient_type_other: "",
+    patient_relationship: "", patient_relationship_other: "",
   });
   const [busy, setBusy] = useState(false);
 
+  // Prefill patient_type / patient_relationship from auth user metadata (captured at signup)
+  useEffect(() => {
+    if (!isPatient) return;
+    void supabase.auth.getUser().then(({ data }) => {
+      const meta = (data.user?.user_metadata ?? {}) as Record<string, any>;
+      setForm((f) => ({
+        ...f,
+        patient_type: meta.patient_type ?? f.patient_type,
+        patient_type_other: meta.patient_type_other ?? f.patient_type_other,
+        patient_relationship: meta.patient_relationship ?? f.patient_relationship,
+        patient_relationship_other: meta.patient_relationship_other ?? f.patient_relationship_other,
+      }));
+    });
+  }, [isPatient]);
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (isPatient) {
+      if (!form.patient_type) return toast.error("Please select who is managing the account");
+      if (form.patient_type === "Other" && !form.patient_type_other.trim()) return toast.error("Please describe the patient type");
+      if (!form.patient_relationship) return toast.error("Please select the relationship to the patient");
+      if (form.patient_relationship === "Other" && !form.patient_relationship_other.trim()) return toast.error("Please describe the relationship");
+    }
     setBusy(true);
     try {
       const zips = form.preferred_zip_codes.split(/[,\s]+/).map((z) => z.trim()).filter(Boolean);
@@ -399,6 +422,13 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         emergency_contact_name: form.emergency_contact_name || null,
         emergency_contact_phone: form.emergency_contact_phone || null,
       };
+      if (isPatient) {
+        payload.patient_type = form.patient_type;
+        payload.patient_type_other = form.patient_type === "Other" ? form.patient_type_other.trim() : null;
+        payload.patient_relationship = form.patient_relationship;
+        payload.patient_relationship_other =
+          form.patient_relationship === "Other" ? form.patient_relationship_other.trim() : null;
+      }
       if (form.date_of_birth) payload.date_of_birth = form.date_of_birth;
       const { error } = await supabase.from("member_profiles").insert(payload);
       if (error) throw error;
@@ -433,6 +463,26 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         )}
         {isPatient && (
           <>
+            <SelectField
+              label="Who is managing this account?"
+              v={form.patient_type}
+              on={(v) => setForm({ ...form, patient_type: v })}
+              options={PATIENT_TYPE_OPTIONS as readonly string[]}
+              required
+            />
+            {form.patient_type === "Other" && (
+              <Field label="Specify patient type" v={form.patient_type_other} on={(v) => setForm({ ...form, patient_type_other: v })} required />
+            )}
+            <SelectField
+              label="Relationship to patient"
+              v={form.patient_relationship}
+              on={(v) => setForm({ ...form, patient_relationship: v })}
+              options={PATIENT_RELATIONSHIP_OPTIONS as readonly string[]}
+              required
+            />
+            {form.patient_relationship === "Other" && (
+              <Field label="Specify relationship" v={form.patient_relationship_other} on={(v) => setForm({ ...form, patient_relationship_other: v })} required />
+            )}
             <Field label="Date of birth" v={form.date_of_birth} on={(v) => setForm({ ...form, date_of_birth: v })} type="date" />
             <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
             <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply" className="col-span-2" />
@@ -448,6 +498,20 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         </button>
       </form>
     </div>
+  );
+}
+
+function SelectField({ label, v, on, options, required, className = "" }: {
+  label: string; v: string; on: (v: string) => void; options: readonly string[]; required?: boolean; className?: string;
+}) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="portal-label">{label}{required && " *"}</span>
+      <select value={v} onChange={(e) => on(e.target.value)} required={required} className="portal-input">
+        <option value="">Select…</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
   );
 }
 
