@@ -7,10 +7,15 @@ import {
   listZoneZips,
   assignZipsToZone,
   removeZipFromZone,
-  findTripByDisplayId,
   listTripsByZone,
 } from "@/lib/dispatch.functions";
 import { listAllSchedules } from "@/lib/schedules.functions";
+import {
+  globalSearchById,
+  adminAssignTrip,
+  adminCancelTrip,
+  listProvidersForZone,
+} from "@/lib/system-ids.functions";
 
 export function AdminDispatchPanel() {
   const qc = useQueryClient();
@@ -18,9 +23,12 @@ export function AdminDispatchPanel() {
   const zipsFn = useServerFn(listZoneZips);
   const assignFn = useServerFn(assignZipsToZone);
   const removeFn = useServerFn(removeZipFromZone);
-  const findFn = useServerFn(findTripByDisplayId);
+  const searchFn = useServerFn(globalSearchById);
   const tripsFn = useServerFn(listTripsByZone);
   const schedFn = useServerFn(listAllSchedules);
+  const providersFn = useServerFn(listProvidersForZone);
+  const assignTripFn = useServerFn(adminAssignTrip);
+  const cancelTripFn = useServerFn(adminCancelTrip);
 
   const zonesQ = useQuery({ queryKey: ["disp", "zones"], queryFn: () => zonesFn() });
   const zipsQ = useQuery({ queryKey: ["disp", "zips"], queryFn: () => zipsFn() });
@@ -29,6 +37,7 @@ export function AdminDispatchPanel() {
   const [zipInput, setZipInput] = useState("");
   const [tripQuery, setTripQuery] = useState("");
   const [foundTrip, setFoundTrip] = useState<any>(null);
+  const [searchResult, setSearchResult] = useState<{ kind: string | null; record: any } | null>(null);
 
   const tripsQ = useQuery({
     queryKey: ["disp", "trips", activeZoneId],
@@ -68,10 +77,28 @@ export function AdminDispatchPanel() {
   async function handleFindTrip() {
     const q = tripQuery.trim();
     if (!q) return;
-    const t = await findFn({ data: { display_id: q } });
-    setFoundTrip(t);
-    if (!t) toast.error("No trip found");
+    const r = await searchFn({ data: { id: q } });
+    setSearchResult(r);
+    if (r.kind === "trip") setFoundTrip(r.record); else setFoundTrip(null);
+    if (!r.kind) toast.error("No record found for that ID");
   }
+
+  const mReassign = useMutation({
+    mutationFn: (v: { trip_id: string; assigned_to: string | null }) => assignTripFn({ data: v }),
+    onSuccess: () => {
+      toast.success("Trip assignment updated");
+      qc.invalidateQueries({ queryKey: ["disp", "trips"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+  const mCancelTrip = useMutation({
+    mutationFn: (trip_id: string) => cancelTripFn({ data: { trip_id } }),
+    onSuccess: () => {
+      toast.success("Trip canceled");
+      qc.invalidateQueries({ queryKey: ["disp", "trips"] });
+    },
+  });
 
   const zones = zonesQ.data ?? [];
   const zips = zipsQ.data ?? [];
@@ -83,12 +110,19 @@ export function AdminDispatchPanel() {
 
   return (
     <div className="space-y-8">
-      {/* Trip ID lookup */}
+      {/* Global ID lookup */}
       <section className="bg-card border border-border rounded-2xl p-5">
-        <h2 className="text-lg font-extrabold tracking-tight mb-3">Trip ID lookup</h2>
+        <h2 className="text-lg font-extrabold tracking-tight mb-3">Find by System ID</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Search any record: <span className="font-mono">TRP-</span> (trip),{" "}
+          <span className="font-mono">FLNP-</span> (provider),{" "}
+          <span className="font-mono">PAT-</span> (patient),{" "}
+          <span className="font-mono">FAC-</span> (facility),{" "}
+          <span className="font-mono">STF-</span> (staff).
+        </p>
         <div className="flex gap-2">
           <input
-            placeholder="FLN-000123"
+            placeholder="TRP-000123"
             value={tripQuery}
             onChange={(e) => setTripQuery(e.target.value)}
             className="flex-1 bg-background border border-border rounded-sm px-3 py-2 text-sm font-mono"
@@ -103,6 +137,18 @@ export function AdminDispatchPanel() {
             <div>{foundTrip.patient_first_name} {foundTrip.patient_last_name} · {foundTrip.pickup_date} {String(foundTrip.pickup_time).slice(0, 5)}</div>
             <div className="text-xs text-muted-foreground">{foundTrip.pickup_address}, {foundTrip.pickup_city} {foundTrip.pickup_zip ?? ""} → {foundTrip.dropoff_address}, {foundTrip.dropoff_city}</div>
             <div className="text-xs mt-1">Status: <strong>{foundTrip.status}</strong> · Zone: {zones.find((z: any) => z.id === foundTrip.dispatch_zone_id)?.name ?? "—"}</div>
+          </div>
+        )}
+        {searchResult?.kind && searchResult.kind !== "trip" && (
+          <div className="mt-3 text-sm bg-background/40 border border-border rounded-sm p-3">
+            <div className="font-mono font-bold">{searchResult.record?.display_id}</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{searchResult.kind}</div>
+            <div className="mt-1">
+              {searchResult.record?.company_name ?? (`${searchResult.record?.first_name ?? ""} ${searchResult.record?.last_name ?? ""}`.trim() || "—")}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {searchResult.record?.email ?? searchResult.record?.phone ?? ""}
+            </div>
           </div>
         )}
       </section>
@@ -159,22 +205,16 @@ export function AdminDispatchPanel() {
 
             <div className="mt-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                Recent trips in zone
+                Dispatcher — trips in zone
               </h3>
-              {tripsQ.isLoading ? (
-                <div className="text-sm text-muted-foreground">Loading…</div>
-              ) : (tripsQ.data ?? []).length === 0 ? (
-                <div className="text-sm text-muted-foreground">No trips routed to this zone yet.</div>
-              ) : (
-                <ul className="text-sm divide-y divide-border">
-                  {(tripsQ.data ?? []).slice(0, 20).map((t: any) => (
-                    <li key={t.id} className="py-2 flex justify-between">
-                      <span><span className="font-mono font-bold">{t.display_id}</span> · {t.patient_first_name} {t.patient_last_name}</span>
-                      <span className="text-xs text-muted-foreground">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {activeZoneId && <ZoneDispatcher
+                zoneId={activeZoneId}
+                trips={tripsQ.data ?? []}
+                loading={tripsQ.isLoading}
+                providersFn={providersFn}
+                onAssign={(trip_id, assigned_to) => mReassign.mutate({ trip_id, assigned_to })}
+                onCancel={(trip_id) => { if (confirm("Cancel this trip?")) mCancelTrip.mutate(trip_id); }}
+              />}
             </div>
           </div>
         )}
@@ -216,6 +256,74 @@ export function AdminDispatchPanel() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function ZoneDispatcher({
+  zoneId, trips, loading, providersFn, onAssign, onCancel,
+}: {
+  zoneId: string;
+  trips: any[];
+  loading: boolean;
+  providersFn: (arg: { data: { zone_id: string } }) => Promise<any>;
+  onAssign: (trip_id: string, assigned_to: string | null) => void;
+  onCancel: (trip_id: string) => void;
+}) {
+  const providersQ = useQuery({
+    queryKey: ["disp", "providers", zoneId],
+    queryFn: () => providersFn({ data: { zone_id: zoneId } }),
+  });
+  const providers: any[] = providersQ.data ?? [];
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (trips.length === 0) return <div className="text-sm text-muted-foreground">No trips routed to this zone yet.</div>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+          <tr>
+            <th className="py-2 pr-3">Trip ID</th>
+            <th className="py-2 pr-3">Patient</th>
+            <th className="py-2 pr-3">Pickup</th>
+            <th className="py-2 pr-3">Status</th>
+            <th className="py-2 pr-3">Assign to provider</th>
+            <th className="py-2 pr-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {trips.map((t) => (
+            <tr key={t.id} className="border-b border-border">
+              <td className="py-2 pr-3 font-mono font-bold">{t.display_id}</td>
+              <td className="py-2 pr-3">{t.patient_first_name} {t.patient_last_name}</td>
+              <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
+              <td className="py-2 pr-3 text-xs">{t.status}</td>
+              <td className="py-2 pr-3">
+                <select
+                  defaultValue={t.assigned_to ?? ""}
+                  onChange={(e) => onAssign(t.id, e.target.value || null)}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
+                >
+                  <option value="">— Unassigned —</option>
+                  {providers.map((p) => (
+                    <option key={p.user_id} value={p.user_id}>
+                      {p.company_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.display_id}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className="py-2 pr-3 text-right">
+                {t.status !== "canceled" && (
+                  <button onClick={() => onCancel(t.id)} className="text-xs font-bold text-red-600 hover:underline">
+                    Cancel
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

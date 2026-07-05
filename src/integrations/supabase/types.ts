@@ -215,6 +215,7 @@ export type Database = {
           current_period_end: string | null
           date_of_birth: string | null
           dispatch_email: string | null
+          display_id: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           first_name: string | null
@@ -245,6 +246,7 @@ export type Database = {
           current_period_end?: string | null
           date_of_birth?: string | null
           dispatch_email?: string | null
+          display_id?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           first_name?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           current_period_end?: string | null
           date_of_birth?: string | null
           dispatch_email?: string | null
+          display_id?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           first_name?: string | null
@@ -483,6 +486,7 @@ export type Database = {
           county: string | null
           created_at: string
           dispatch_email: string | null
+          display_id: string | null
           documents: Json
           driver_license_number: string | null
           ein: string | null
@@ -512,6 +516,7 @@ export type Database = {
           county?: string | null
           created_at?: string
           dispatch_email?: string | null
+          display_id?: string | null
           documents?: Json
           driver_license_number?: string | null
           ein?: string | null
@@ -541,6 +546,7 @@ export type Database = {
           county?: string | null
           created_at?: string
           dispatch_email?: string | null
+          display_id?: string | null
           documents?: Json
           driver_license_number?: string | null
           ein?: string | null
@@ -1990,6 +1996,7 @@ export type Database = {
         Returns: undefined
       }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      ensure_member_display_id: { Args: never; Returns: string }
       get_trips_admin_metadata: {
         Args: never
         Returns: {

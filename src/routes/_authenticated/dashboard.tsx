@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { createPortalSession } from "@/utils/payments.functions";
 import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, recordHipaaAck } from "@/lib/trips.functions";
+import { ensureMyDisplayId } from "@/lib/system-ids.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
@@ -164,6 +165,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     },
   });
 
+  const displayIdQ = useQuery({
+    queryKey: ["my-display-id", userId],
+    enabled: !!userId,
+    queryFn: () => ensureMyDisplayId(),
+  });
+
   const tripsQ = useQuery({
     queryKey: ["my-trips", userId],
     enabled: !!userId,
@@ -214,6 +221,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-foreground">{portal} / {tabLabel(tab, portal, { received: received.length, sent: sent.length })}</span>
           </div>
           <div className="flex items-center gap-4 text-xs">
+            {displayIdQ.data?.display_id && (
+              <span className="font-mono font-bold uppercase tracking-wider text-primary" title="Your permanent system ID">
+                ID · {displayIdQ.data.display_id}
+              </span>
+            )}
             <span className="font-mono uppercase tracking-wider text-muted-foreground">Live</span>
             <span className="size-2 rounded-full bg-[oklch(0.872_0.078_65.2)] animate-pulse" />
           </div>
