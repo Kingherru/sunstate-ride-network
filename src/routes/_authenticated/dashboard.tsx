@@ -1251,6 +1251,103 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
   );
 }
 
+function PatientRelationshipCard({ profile, userId }: { profile: Profile; userId: string }) {
+  const p = profile as any;
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    patient_type: p.patient_type ?? "",
+    patient_type_other: p.patient_type_other ?? "",
+    patient_relationship: p.patient_relationship ?? "",
+    patient_relationship_other: p.patient_relationship_other ?? "",
+  });
+
+  async function save() {
+    if (!form.patient_type) return toast.error("Select who is managing the account");
+    if (form.patient_type === "Other" && !form.patient_type_other.trim()) return toast.error("Specify the patient type");
+    if (!form.patient_relationship) return toast.error("Select the relationship to the patient");
+    if (form.patient_relationship === "Other" && !form.patient_relationship_other.trim()) return toast.error("Specify the relationship");
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("member_profiles").update({
+        patient_type: form.patient_type,
+        patient_type_other: form.patient_type === "Other" ? form.patient_type_other.trim() : null,
+        patient_relationship: form.patient_relationship,
+        patient_relationship_other:
+          form.patient_relationship === "Other" ? form.patient_relationship_other.trim() : null,
+      }).eq("user_id", userId);
+      if (error) throw error;
+      toast.success("Saved");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["member-profile"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-extrabold tracking-tight">Who is managing this account</h3>
+          <p className="text-xs text-muted-foreground">
+            Shared with dispatchers and providers so they know who to contact about the patient's trips.
+          </p>
+        </div>
+        {!editing && (
+          <button onClick={() => setEditing(true)} className="text-sm font-bold text-accent hover:underline">Edit</button>
+        )}
+      </div>
+
+      {!editing ? (
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-muted-foreground">Patient type</span>
+            <div className="font-bold">{formatPatientType(p.patient_type, p.patient_type_other)}</div>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Relationship</span>
+            <div className="font-bold">{formatPatientRelationship(p.patient_relationship, p.patient_relationship_other)}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <SelectField
+            label="Who is managing this account?"
+            v={form.patient_type}
+            on={(v) => setForm({ ...form, patient_type: v })}
+            options={PATIENT_TYPE_OPTIONS as readonly string[]}
+            required
+          />
+          {form.patient_type === "Other" && (
+            <Field label="Specify patient type" v={form.patient_type_other} on={(v) => setForm({ ...form, patient_type_other: v })} required />
+          )}
+          <SelectField
+            label="Relationship to patient"
+            v={form.patient_relationship}
+            on={(v) => setForm({ ...form, patient_relationship: v })}
+            options={PATIENT_RELATIONSHIP_OPTIONS as readonly string[]}
+            required
+          />
+          {form.patient_relationship === "Other" && (
+            <Field label="Specify relationship" v={form.patient_relationship_other} on={(v) => setForm({ ...form, patient_relationship_other: v })} required />
+          )}
+          <div className="col-span-2 flex gap-2">
+            <button onClick={save} disabled={busy} className="portal-btn-primary px-4 py-2">
+              {busy ? "Saving…" : "Save"}
+            </button>
+            <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // ───────────────────────── Sidebar ─────────────────────────
 
 function PortalSidebar(props: {
