@@ -50,6 +50,62 @@ export type Database = {
         }
         Relationships: []
       }
+      dispatch_zone_zips: {
+        Row: {
+          created_at: string
+          updated_at: string
+          zip: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          updated_at?: string
+          zip: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          updated_at?: string
+          zip?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_zone_zips_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatch_zones: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       drivers: {
         Row: {
           created_at: string
@@ -872,6 +928,60 @@ export type Database = {
           },
         ]
       }
+      provider_schedule_entries: {
+        Row: {
+          created_at: string
+          dropoff_address: string
+          dropoff_time: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          passenger_first_name: string
+          passenger_last_name: string
+          passenger_phone: string | null
+          pickup_address: string
+          pickup_date: string
+          pickup_time: string
+          round_trip: boolean
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          dropoff_address: string
+          dropoff_time?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          passenger_first_name: string
+          passenger_last_name: string
+          passenger_phone?: string | null
+          pickup_address: string
+          pickup_date: string
+          pickup_time: string
+          round_trip?: boolean
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          dropoff_address?: string
+          dropoff_time?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          passenger_first_name?: string
+          passenger_last_name?: string
+          passenger_phone?: string | null
+          pickup_address?: string
+          pickup_date?: string
+          pickup_time?: string
+          round_trip?: boolean
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       requester_saved_locations: {
         Row: {
           address: string
@@ -1405,6 +1515,8 @@ export type Database = {
           created_at: string
           created_by: string
           diagnosis_code: string | null
+          dispatch_zone_id: string | null
+          display_id: string | null
           driver_id: string | null
           dropoff_address: string
           dropoff_city: string
@@ -1479,6 +1591,8 @@ export type Database = {
           created_at?: string
           created_by: string
           diagnosis_code?: string | null
+          dispatch_zone_id?: string | null
+          display_id?: string | null
           driver_id?: string | null
           dropoff_address: string
           dropoff_city: string
@@ -1553,6 +1667,8 @@ export type Database = {
           created_at?: string
           created_by?: string
           diagnosis_code?: string | null
+          dispatch_zone_id?: string | null
+          display_id?: string | null
           driver_id?: string | null
           dropoff_address?: string
           dropoff_city?: string
@@ -1618,6 +1734,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_dispatch_zone_id_fkey"
+            columns: ["dispatch_zone_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_zones"
             referencedColumns: ["id"]
           },
           {
