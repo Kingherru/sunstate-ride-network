@@ -23,6 +23,7 @@ import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
 import { WeeklySchedulePanel } from "@/components/dashboard/WeeklySchedulePanel";
+import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
@@ -65,11 +66,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "weekly_schedule" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "weekly_schedule" | "medicaid" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "weekly_schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "memberships", "payouts", "integrations", "business_info", "account"],
+  provider: ["reservations", "received", "sent", "new", "weekly_schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
 
@@ -102,6 +103,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "saved_patients") return "Saved Patients";
   if (t === "business_info") return "Business Info";
   if (t === "weekly_schedule") return "Weekly Schedule";
+  if (t === "medicaid") return "Medicaid Submission";
   return "Account";
 }
 
@@ -340,6 +342,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "saved_patients" && <SavedPatientsPanel />}
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "weekly_schedule" && <WeeklySchedulePanel />}
+            {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
               </div>
             </section>
@@ -1246,13 +1249,6 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       {portal === "provider" && (
         <>
           <ProviderCredentialsPanel />
-          <div className="bg-card border border-border rounded-sm p-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-extrabold tracking-tight">Medicaid Submission Center</h3>
-              <p className="text-xs text-muted-foreground">Prepare packets, upload trip logs, save billing contacts, and track submissions.</p>
-            </div>
-            <Link to="/provider/medicaid" className="portal-btn-primary px-4 py-2 text-sm">Open</Link>
-          </div>
           <div className="bg-card border border-border rounded-sm p-6">
             <NetworkPanel userId={userId} />
           </div>
