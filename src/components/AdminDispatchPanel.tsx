@@ -259,3 +259,71 @@ export function AdminDispatchPanel() {
     </div>
   );
 }
+
+function ZoneDispatcher({
+  zoneId, trips, loading, providersFn, onAssign, onCancel,
+}: {
+  zoneId: string;
+  trips: any[];
+  loading: boolean;
+  providersFn: (arg: { data: { zone_id: string } }) => Promise<any>;
+  onAssign: (trip_id: string, assigned_to: string | null) => void;
+  onCancel: (trip_id: string) => void;
+}) {
+  const providersQ = useQuery({
+    queryKey: ["disp", "providers", zoneId],
+    queryFn: () => providersFn({ data: { zone_id: zoneId } }),
+  });
+  const providers: any[] = providersQ.data ?? [];
+
+  if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (trips.length === 0) return <div className="text-sm text-muted-foreground">No trips routed to this zone yet.</div>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+          <tr>
+            <th className="py-2 pr-3">Trip ID</th>
+            <th className="py-2 pr-3">Patient</th>
+            <th className="py-2 pr-3">Pickup</th>
+            <th className="py-2 pr-3">Status</th>
+            <th className="py-2 pr-3">Assign to provider</th>
+            <th className="py-2 pr-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {trips.map((t) => (
+            <tr key={t.id} className="border-b border-border">
+              <td className="py-2 pr-3 font-mono font-bold">{t.display_id}</td>
+              <td className="py-2 pr-3">{t.patient_first_name} {t.patient_last_name}</td>
+              <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
+              <td className="py-2 pr-3 text-xs">{t.status}</td>
+              <td className="py-2 pr-3">
+                <select
+                  defaultValue={t.assigned_to ?? ""}
+                  onChange={(e) => onAssign(t.id, e.target.value || null)}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
+                >
+                  <option value="">— Unassigned —</option>
+                  {providers.map((p) => (
+                    <option key={p.user_id} value={p.user_id}>
+                      {p.company_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.display_id}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className="py-2 pr-3 text-right">
+                {t.status !== "canceled" && (
+                  <button onClick={() => onCancel(t.id)} className="text-xs font-bold text-red-600 hover:underline">
+                    Cancel
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
