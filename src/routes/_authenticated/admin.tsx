@@ -140,7 +140,7 @@ function AdminPage() {
     return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
   }
 
-  if (!meQ.data?.isAdmin) {
+  if (!meQ.data?.isOps) {
     return (
       <section className="min-h-[70vh] grid place-items-center px-6 py-20">
         <div className="max-w-md text-center bg-card border border-border rounded-2xl p-8">
