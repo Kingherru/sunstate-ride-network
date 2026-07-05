@@ -38,15 +38,21 @@ function AdminPage() {
     queryFn: async () => {
       const { data: userRes } = await supabase.auth.getUser();
       const userId = userRes.user?.id;
-      if (!userId) return { userId: null, isAdmin: false, email: null };
+      if (!userId) return { userId: null, roles: [] as string[], isAdmin: false, isAppManager: false, isOps: false, email: null };
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId);
+      const roleList = (roles ?? []).map((r) => r.role as string);
+      const has = (r: string) => roleList.includes(r);
+      const isOps = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"].some(has);
       return {
         userId,
         email: userRes.user?.email ?? null,
-        isAdmin: (roles ?? []).some((r) => r.role === "admin"),
+        roles: roleList,
+        isAdmin: has("admin"),
+        isAppManager: has("app_manager"),
+        isOps,
       };
     },
   });
