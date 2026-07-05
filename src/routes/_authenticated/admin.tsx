@@ -486,11 +486,15 @@ function ReviewDrawer({
   onClose,
   onApprove,
   onDeny,
+  readOnly = false,
+  readOnlyReason,
 }: {
   app: Application;
   onClose: () => void;
   onApprove: (notes?: string) => void;
   onDeny: (notes: string) => void;
+  readOnly?: boolean;
+  readOnlyReason?: string;
 }) {
   const [notes, setNotes] = useState(app.review_notes ?? "");
   const docs = ((app.documents as unknown) as DocEntry[]) ?? [];
