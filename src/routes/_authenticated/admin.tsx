@@ -59,7 +59,7 @@ function AdminPage() {
 
   const appsQ = useQuery({
     queryKey: ["admin", "provider_applications"],
-    enabled: !!meQ.data?.isAdmin,
+    enabled: !!meQ.data?.isOps,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("provider_applications")
