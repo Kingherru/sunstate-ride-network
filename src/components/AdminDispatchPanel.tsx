@@ -144,7 +144,7 @@ export function AdminDispatchPanel() {
             <div className="font-mono font-bold">{searchResult.record?.display_id}</div>
             <div className="text-xs uppercase tracking-wider text-muted-foreground">{searchResult.kind}</div>
             <div className="mt-1">
-              {searchResult.record?.company_name ?? `${searchResult.record?.first_name ?? ""} ${searchResult.record?.last_name ?? ""}`.trim() || "—"}
+              {searchResult.record?.company_name ?? (`${searchResult.record?.first_name ?? ""} ${searchResult.record?.last_name ?? ""}`.trim() || "—")}
             </div>
             <div className="text-xs text-muted-foreground">
               {searchResult.record?.email ?? searchResult.record?.phone ?? ""}
