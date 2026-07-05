@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  PATIENT_TYPE_OPTIONS,
+  PATIENT_RELATIONSHIP_OPTIONS,
+} from "@/lib/patient-relationships";
 
 export type PortalKind = "patient" | "provider" | "facility";
 
