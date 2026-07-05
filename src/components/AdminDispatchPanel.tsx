@@ -110,12 +110,19 @@ export function AdminDispatchPanel() {
 
   return (
     <div className="space-y-8">
-      {/* Trip ID lookup */}
+      {/* Global ID lookup */}
       <section className="bg-card border border-border rounded-2xl p-5">
-        <h2 className="text-lg font-extrabold tracking-tight mb-3">Trip ID lookup</h2>
+        <h2 className="text-lg font-extrabold tracking-tight mb-3">Find by System ID</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Search any record: <span className="font-mono">TRP-</span> (trip),{" "}
+          <span className="font-mono">FLNP-</span> (provider),{" "}
+          <span className="font-mono">PAT-</span> (patient),{" "}
+          <span className="font-mono">FAC-</span> (facility),{" "}
+          <span className="font-mono">STF-</span> (staff).
+        </p>
         <div className="flex gap-2">
           <input
-            placeholder="FLN-000123"
+            placeholder="TRP-000123"
             value={tripQuery}
             onChange={(e) => setTripQuery(e.target.value)}
             className="flex-1 bg-background border border-border rounded-sm px-3 py-2 text-sm font-mono"
@@ -130,6 +137,18 @@ export function AdminDispatchPanel() {
             <div>{foundTrip.patient_first_name} {foundTrip.patient_last_name} · {foundTrip.pickup_date} {String(foundTrip.pickup_time).slice(0, 5)}</div>
             <div className="text-xs text-muted-foreground">{foundTrip.pickup_address}, {foundTrip.pickup_city} {foundTrip.pickup_zip ?? ""} → {foundTrip.dropoff_address}, {foundTrip.dropoff_city}</div>
             <div className="text-xs mt-1">Status: <strong>{foundTrip.status}</strong> · Zone: {zones.find((z: any) => z.id === foundTrip.dispatch_zone_id)?.name ?? "—"}</div>
+          </div>
+        )}
+        {searchResult?.kind && searchResult.kind !== "trip" && (
+          <div className="mt-3 text-sm bg-background/40 border border-border rounded-sm p-3">
+            <div className="font-mono font-bold">{searchResult.record?.display_id}</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{searchResult.kind}</div>
+            <div className="mt-1">
+              {searchResult.record?.company_name ?? `${searchResult.record?.first_name ?? ""} ${searchResult.record?.last_name ?? ""}`.trim() || "—"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {searchResult.record?.email ?? searchResult.record?.phone ?? ""}
+            </div>
           </div>
         )}
       </section>
