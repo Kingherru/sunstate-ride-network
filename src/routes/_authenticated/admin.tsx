@@ -261,6 +261,12 @@ function AdminPage() {
         </div>
       )}
 
+      {caps.canDispatch && (
+        <div className="mb-8">
+          <ExpiringCredentialsPanel />
+        </div>
+      )}
+
       {caps.canManageStaff && (
         <div className="mb-8">
           <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} />
