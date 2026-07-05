@@ -274,3 +274,142 @@ export const listMyCompletedTrips = createServerFn({ method: "GET" })
     if (error) throw error;
     return rows ?? [];
   });
+
+// ─────────────────────── Packet audit history ───────────────────────
+
+export const listPacketEvents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { packet_id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("medicaid_packet_events").select("*")
+      .eq("packet_id", data.packet_id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return rows ?? [];
+  });
+
+// ─────────────────────── Provider Medicaid Profile ───────────────────────
+
+export const getMyMedicaidProfile = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("member_profiles")
+      .select("medicaid_number, npi, medicaid_cert_expires_at, medicaid_cert_doc_path, medicaid_verified, medicaid_verified_at, allow_live_medicaid_verification, medicaid_plan")
+      .eq("user_id", context.userId).maybeSingle();
+    if (error) throw error;
+    return data;
+  });
+
+export const saveMyMedicaidProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    medicaid_number?: string | null;
+    npi?: string | null;
+    medicaid_cert_expires_at?: string | null;
+    medicaid_cert_doc_path?: string | null;
+    allow_live_medicaid_verification?: boolean;
+    medicaid_plan?: string | null;
+  }) => {
+    // Server-side validation
+    if (input.medicaid_number && !/^[A-Za-z0-9-]{4,32}$/.test(input.medicaid_number)) {
+      throw new Error("Medicaid Provider Number must be 4–32 letters, numbers, or dashes.");
+    }
+    if (input.npi && !/^\d{10}$/.test(input.npi)) {
+      throw new Error("NPI must be exactly 10 digits.");
+    }
+    if (input.medicaid_cert_expires_at && isNaN(Date.parse(input.medicaid_cert_expires_at))) {
+      throw new Error("Invalid expiration date.");
+    }
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const patch: any = {};
+    if (data.medicaid_number !== undefined) patch.medicaid_number = data.medicaid_number || null;
+    if (data.npi !== undefined) patch.npi = data.npi || null;
+    if (data.medicaid_cert_expires_at !== undefined) patch.medicaid_cert_expires_at = data.medicaid_cert_expires_at || null;
+    if (data.medicaid_cert_doc_path !== undefined) patch.medicaid_cert_doc_path = data.medicaid_cert_doc_path || null;
+    if (data.allow_live_medicaid_verification !== undefined) patch.allow_live_medicaid_verification = !!data.allow_live_medicaid_verification;
+    if (data.medicaid_plan !== undefined) patch.medicaid_plan = data.medicaid_plan || null;
+
+    // Auto-set verified when required fields + non-expired cert are present
+    const nowIso = new Date().toISOString();
+    const hasNum = (patch.medicaid_number ?? undefined) || undefined;
+    const hasNpi = (patch.npi ?? undefined) || undefined;
+    const exp = patch.medicaid_cert_expires_at;
+    const notExpired = exp ? new Date(exp).getTime() > Date.now() : false;
+    if (hasNum && hasNpi && patch.medicaid_cert_doc_path && notExpired) {
+      patch.medicaid_verified = true;
+      patch.medicaid_verified_at = nowIso;
+    } else {
+      patch.medicaid_verified = false;
+      patch.medicaid_verified_at = null;
+    }
+
+    const { error } = await context.supabase
+      .from("member_profiles").update(patch).eq("user_id", context.userId);
+    if (error) throw error;
+    return { ok: true, verified: !!patch.medicaid_verified };
+  });
+
+// ─────────────────────── Eligibility lookup ───────────────────────
+
+export const checkMedicaidEligibility = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    medicaid_number: string;
+    patient_last_name?: string;
+    patient_dob?: string;
+  }) => {
+    if (!input.medicaid_number || !/^[A-Za-z0-9-]{4,32}$/.test(input.medicaid_number)) {
+      throw new Error("Enter a valid Medicaid number (4–32 letters, numbers, or dashes).");
+    }
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    // Check provider has opted in and is verified
+    const { data: prof } = await context.supabase
+      .from("member_profiles")
+      .select("allow_live_medicaid_verification, medicaid_verified")
+      .eq("user_id", context.userId).maybeSingle();
+
+    let result_status = "pending_activation";
+    let result_plan: string | null = null;
+    let details: Record<string, any> = {
+      note: "Live AHCA / Sunshine Health eligibility integration pending activation for this account.",
+    };
+
+    if (prof?.allow_live_medicaid_verification && prof?.medicaid_verified) {
+      // Placeholder for the real integration (AHCA / Sunshine Health / Availity, etc.)
+      result_status = "unknown";
+      details.note = "Live eligibility endpoint is enabled but no external integration is wired yet — record logged for audit.";
+    }
+
+    const { data: row, error } = await context.supabase
+      .from("medicaid_eligibility_checks")
+      .insert({
+        provider_user_id: context.userId,
+        medicaid_number: data.medicaid_number,
+        patient_last_name: data.patient_last_name ?? null,
+        patient_dob: data.patient_dob ?? null,
+        result_status,
+        result_plan,
+        result_details: details,
+      })
+      .select("id, result_status, result_plan, result_details, created_at")
+      .single();
+    if (error) throw error;
+    return row;
+  });
+
+export const listMyEligibilityChecks = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("medicaid_eligibility_checks").select("*")
+      .eq("provider_user_id", context.userId)
+      .order("created_at", { ascending: false }).limit(50);
+    if (error) throw error;
+    return data ?? [];
+  });
