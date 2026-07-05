@@ -37,29 +37,8 @@ function AdminPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const meQ = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const { data: userRes } = await supabase.auth.getUser();
-      const userId = userRes.user?.id;
-      if (!userId) return { userId: null, roles: [] as string[], isAdmin: false, isAppManager: false, isOps: false, email: null };
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-      const roleList = (roles ?? []).map((r) => r.role as string);
-      const has = (r: string) => roleList.includes(r);
-      const isOps = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"].some(has);
-      return {
-        userId,
-        email: userRes.user?.email ?? null,
-        roles: roleList,
-        isAdmin: has("admin"),
-        isAppManager: has("app_manager"),
-        isOps,
-      };
-    },
-  });
+  const caps = useCapabilities();
+  const reviewFn = useServerFn(reviewProviderApplication);
 
   const appsQ = useQuery({
     queryKey: ["admin", "provider_applications"],
