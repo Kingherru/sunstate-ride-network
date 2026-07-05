@@ -79,11 +79,14 @@ export const grantRole = createServerFn({ method: "POST" })
   .inputValidator((input: { user_id: string; role: StaffRole }) => input)
   .handler(async ({ data, context }) => {
     const { isAppManager } = await assertManager(context);
-    if (isAppManager && data.role === "admin") throw new Error("Only administrators can grant admin.");
+    if (isAppManager && data.role === "admin") {
+      throw new Error("Permission denied: only administrators can grant the Administrator role.");
+    }
     const { error } = await context.supabase
       .from("user_roles")
       .upsert({ user_id: data.user_id, role: data.role }, { onConflict: "user_id,role" });
     if (error) throw error;
+    await logAction(context, "role_granted", "user", data.user_id, { role: data.role });
     return { ok: true };
   });
 
@@ -93,13 +96,16 @@ export const revokeRole = createServerFn({ method: "POST" })
   .inputValidator((input: { user_id: string; role: StaffRole }) => input)
   .handler(async ({ data, context }) => {
     const { isAppManager } = await assertManager(context);
-    if (isAppManager && data.role === "admin") throw new Error("Only administrators can revoke admin.");
+    if (isAppManager && data.role === "admin") {
+      throw new Error("Permission denied: only administrators can revoke the Administrator role.");
+    }
     const { error } = await context.supabase
       .from("user_roles")
       .delete()
       .eq("user_id", data.user_id)
       .eq("role", data.role);
     if (error) throw error;
+    await logAction(context, "role_revoked", "user", data.user_id, { role: data.role });
     return { ok: true };
   });
 
@@ -136,6 +142,9 @@ export const setZoneAssignment = createServerFn({ method: "POST" })
         .eq("zone_id", data.zone_id);
       if (error) throw error;
     }
+    await logAction(context, data.assigned ? "zone_assigned" : "zone_unassigned", "user", data.user_id, {
+      zone_id: data.zone_id,
+    });
     return { ok: true };
   });
 
@@ -148,7 +157,47 @@ export const resetStaffPassword = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email);
     if (error) throw error;
+    await logAction(context, "password_reset_sent", "email", data.email, {});
     return { ok: true };
+  });
+
+/** Review a provider application (approve/deny). Any ops manager (admin/app_mgr/zone_mgr) may act. */
+export const reviewProviderApplication = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; status: "approved" | "denied"; notes?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const roles = await getCallerRoles(context);
+    const allowed = ["admin", "app_manager", "zone_manager"] as StaffRole[];
+    if (!roles.some((r) => allowed.includes(r))) {
+      throw new Error("Permission denied: reviewing provider applications requires a manager role.");
+    }
+    const { error } = await context.supabase
+      .from("provider_applications")
+      .update({
+        status: data.status,
+        review_notes: data.notes ?? null,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: context.userId,
+      })
+      .eq("id", data.id);
+    if (error) throw error;
+    // The DB trigger also logs; this call is a no-op safety net kept for clarity.
+    return { ok: true };
+  });
+
+/** Recent audit log entries (admin & app_manager only). */
+export const listAuditLog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { limit?: number } = {}) => input)
+  .handler(async ({ data, context }) => {
+    await assertManager(context);
+    const { data: rows, error } = await context.supabase
+      .from("staff_audit_log")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(Math.min(data.limit ?? 100, 500));
+    if (error) throw error;
+    return { entries: rows ?? [] };
   });
 
 /** List zones (for assignment UI). */
