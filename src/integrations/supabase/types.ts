@@ -205,6 +205,150 @@ export type Database = {
         }
         Relationships: []
       }
+      medicaid_contacts: {
+        Row: {
+          contact_name: string
+          created_at: string
+          email: string | null
+          id: string
+          is_public: boolean
+          notes: string | null
+          organization: string | null
+          phone: string | null
+          provider_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_name: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_public?: boolean
+          notes?: string | null
+          organization?: string | null
+          phone?: string | null
+          provider_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_name?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_public?: boolean
+          notes?: string | null
+          organization?: string | null
+          phone?: string | null
+          provider_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medicaid_packet_items: {
+        Row: {
+          created_at: string
+          doc_path: string | null
+          id: string
+          kind: string
+          label: string | null
+          meta: Json
+          packet_id: string
+          trip_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          doc_path?: string | null
+          id?: string
+          kind: string
+          label?: string | null
+          meta?: Json
+          packet_id: string
+          trip_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          doc_path?: string | null
+          id?: string
+          kind?: string
+          label?: string | null
+          meta?: Json
+          packet_id?: string
+          trip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicaid_packet_items_packet_id_fkey"
+            columns: ["packet_id"]
+            isOneToOne: false
+            referencedRelation: "medicaid_packets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicaid_packet_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicaid_packet_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medicaid_packets: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          id: string
+          medicaid_contact_id: string | null
+          notes: string | null
+          provider_user_id: string
+          status: string
+          submission_reference: string | null
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          medicaid_contact_id?: string | null
+          notes?: string | null
+          provider_user_id: string
+          status?: string
+          submission_reference?: string | null
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          medicaid_contact_id?: string | null
+          notes?: string | null
+          provider_user_id?: string
+          status?: string
+          submission_reference?: string | null
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicaid_packets_medicaid_contact_id_fkey"
+            columns: ["medicaid_contact_id"]
+            isOneToOne: false
+            referencedRelation: "medicaid_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_profiles: {
         Row: {
           center_lat: number | null
@@ -222,6 +366,8 @@ export type Database = {
           id: string
           last_name: string | null
           long_distance_ok: boolean
+          medicaid_cert_doc_path: string | null
+          medicaid_cert_expires_at: string | null
           medicaid_number: string | null
           medicaid_plan: string | null
           membership_status: string
@@ -257,6 +403,8 @@ export type Database = {
           id?: string
           last_name?: string | null
           long_distance_ok?: boolean
+          medicaid_cert_doc_path?: string | null
+          medicaid_cert_expires_at?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
           membership_status?: string
@@ -292,6 +440,8 @@ export type Database = {
           id?: string
           last_name?: string | null
           long_distance_ok?: boolean
+          medicaid_cert_doc_path?: string | null
+          medicaid_cert_expires_at?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
           membership_status?: string
@@ -651,6 +801,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      provider_credentials: {
+        Row: {
+          created_at: string
+          doc_path: string | null
+          expires_at: string | null
+          id: string
+          kind: string
+          label: string
+          notes: string | null
+          provider_user_id: string
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doc_path?: string | null
+          expires_at?: string | null
+          id?: string
+          kind: string
+          label: string
+          notes?: string | null
+          provider_user_id: string
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doc_path?: string | null
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          notes?: string | null
+          provider_user_id?: string
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       provider_integrations: {
         Row: {
@@ -1867,6 +2056,8 @@ export type Database = {
           notes: string | null
           owner_id: string
           plate: string | null
+          registration_doc_path: string | null
+          registration_expiry: string | null
           status: string
           updated_at: string
           vehicle_type: string
@@ -1882,6 +2073,8 @@ export type Database = {
           notes?: string | null
           owner_id: string
           plate?: string | null
+          registration_doc_path?: string | null
+          registration_expiry?: string | null
           status?: string
           updated_at?: string
           vehicle_type?: string
@@ -1897,6 +2090,8 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           plate?: string | null
+          registration_doc_path?: string | null
+          registration_expiry?: string | null
           status?: string
           updated_at?: string
           vehicle_type?: string
@@ -1942,6 +2137,18 @@ export type Database = {
       }
     }
     Views: {
+      expiring_provider_credentials: {
+        Row: {
+          company_name: string | null
+          days_until_expiry: number | null
+          expires_at: string | null
+          kind: string | null
+          label: string | null
+          provider_display_id: string | null
+          provider_user_id: string | null
+        }
+        Relationships: []
+      }
       member_directory: {
         Row: {
           city: string | null
@@ -2125,6 +2332,24 @@ export type Database = {
       }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
+      list_expiring_provider_credentials: {
+        Args: never
+        Returns: {
+          company_name: string | null
+          days_until_expiry: number | null
+          expires_at: string | null
+          kind: string | null
+          label: string | null
+          provider_display_id: string | null
+          provider_user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "expiring_provider_credentials"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       log_staff_action: {
         Args: {
           _action: string
@@ -2145,6 +2370,10 @@ export type Database = {
           _provider_id: string
           _trip_miles: number
         }
+        Returns: boolean
+      }
+      provider_has_valid_credentials: {
+        Args: { _user_id: string }
         Returns: boolean
       }
     }
