@@ -17,6 +17,7 @@ import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as MembershipRouteImport } from './routes/membership'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -34,11 +35,14 @@ import { Route as FacilityLoginRouteImport } from './routes/facility.login'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
 import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
 import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
@@ -81,6 +85,11 @@ const ProvidersRoute = ProvidersRouteImport.update({
 const MembershipRoute = MembershipRouteImport.update({
   id: '/membership',
   path: '/membership',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinOurNetworkRoute = JoinOurNetworkRouteImport.update({
@@ -167,6 +176,18 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedRequestsIndexRoute =
   AuthenticatedRequestsIndexRouteImport.update({
     id: '/requests/',
@@ -196,6 +217,12 @@ const AuthenticatedFacilityDashboardRoute =
     path: '/facility/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -223,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
+  '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
@@ -231,6 +259,8 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -240,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
@@ -257,6 +288,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
+  '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
@@ -264,6 +296,8 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -273,6 +307,7 @@ export interface FileRoutesByTo {
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
   '/service-areas': typeof ServiceAreasIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
@@ -292,6 +327,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
+  '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
@@ -300,6 +336,8 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -309,6 +347,7 @@ export interface FileRoutesById {
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
@@ -328,6 +367,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/how-it-works'
     | '/join-our-network'
+    | '/mcp'
     | '/membership'
     | '/providers'
     | '/request-a-ride'
@@ -336,6 +376,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/sitemap.xml'
     | '/training'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
     | '/checkout/return'
@@ -345,6 +387,7 @@ export interface FileRouteTypes {
     | '/service-areas/$city'
     | '/staff/login'
     | '/service-areas/'
+    | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
     | '/patient/dashboard'
     | '/provider/dashboard'
@@ -362,6 +405,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/how-it-works'
     | '/join-our-network'
+    | '/mcp'
     | '/membership'
     | '/providers'
     | '/request-a-ride'
@@ -369,6 +413,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/sitemap.xml'
     | '/training'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
     | '/checkout/return'
@@ -378,6 +424,7 @@ export interface FileRouteTypes {
     | '/service-areas/$city'
     | '/staff/login'
     | '/service-areas'
+    | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
     | '/patient/dashboard'
     | '/provider/dashboard'
@@ -396,6 +443,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/how-it-works'
     | '/join-our-network'
+    | '/mcp'
     | '/membership'
     | '/providers'
     | '/request-a-ride'
@@ -404,6 +452,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/sitemap.xml'
     | '/training'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/checkout/return'
@@ -413,6 +463,7 @@ export interface FileRouteTypes {
     | '/service-areas/$city'
     | '/staff/login'
     | '/service-areas/'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/facility/dashboard'
     | '/_authenticated/patient/dashboard'
     | '/_authenticated/provider/dashboard'
@@ -432,6 +483,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   HowItWorksRoute: typeof HowItWorksRoute
   JoinOurNetworkRoute: typeof JoinOurNetworkRoute
+  McpRoute: typeof McpRoute
   MembershipRoute: typeof MembershipRoute
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
@@ -440,11 +492,14 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrainingRoute: typeof TrainingRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   FacilityLoginRoute: typeof FacilityLoginRoute
   PatientLoginRoute: typeof PatientLoginRoute
   ProviderLoginRoute: typeof ProviderLoginRoute
   StaffLoginRoute: typeof StaffLoginRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -506,6 +561,13 @@ declare module '@tanstack/react-router' {
       path: '/membership'
       fullPath: '/membership'
       preLoaderRoute: typeof MembershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join-our-network': {
@@ -627,6 +689,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/requests/': {
       id: '/_authenticated/requests/'
       path: '/requests'
@@ -661,6 +737,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/facility/dashboard'
       preLoaderRoute: typeof AuthenticatedFacilityDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
@@ -732,6 +815,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   HowItWorksRoute: HowItWorksRoute,
   JoinOurNetworkRoute: JoinOurNetworkRoute,
+  McpRoute: McpRoute,
   MembershipRoute: MembershipRoute,
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
@@ -740,11 +824,15 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrainingRoute: TrainingRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   FacilityLoginRoute: FacilityLoginRoute,
   PatientLoginRoute: PatientLoginRoute,
   ProviderLoginRoute: ProviderLoginRoute,
   StaffLoginRoute: StaffLoginRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,
@@ -754,3 +842,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
