@@ -7,6 +7,7 @@ import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
+import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -252,6 +253,10 @@ function AdminPage() {
 
       <div className="mb-8">
         <AdminUsersPanel />
+      </div>
+
+      <div className="mb-8">
+        <AdminDispatchPanel />
       </div>
 
       {/* Region grouping */}
