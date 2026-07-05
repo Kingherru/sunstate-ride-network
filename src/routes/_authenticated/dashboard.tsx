@@ -1243,9 +1243,19 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         <PatientRelationshipCard profile={profile} userId={userId} />
       )}
       {portal === "provider" && (
-        <div className="bg-card border border-border rounded-sm p-6">
-          <NetworkPanel userId={userId} />
-        </div>
+        <>
+          <ProviderCredentialsPanel />
+          <div className="bg-card border border-border rounded-sm p-6 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-extrabold tracking-tight">Medicaid Submission Center</h3>
+              <p className="text-xs text-muted-foreground">Prepare packets, upload trip logs, save billing contacts, and track submissions.</p>
+            </div>
+            <Link to="/provider/medicaid" className="portal-btn-primary px-4 py-2 text-sm">Open</Link>
+          </div>
+          <div className="bg-card border border-border rounded-sm p-6">
+            <NetworkPanel userId={userId} />
+          </div>
+        </>
       )}
     </div>
   );
