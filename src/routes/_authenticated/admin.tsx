@@ -94,22 +94,18 @@ function AdminPage() {
   };
 
   async function updateStatus(id: string, status: "approved" | "denied", notes?: string) {
-    const { data: userRes } = await supabase.auth.getUser();
-    const { error } = await supabase
-      .from("provider_applications")
-      .update({
-        status,
-        review_notes: notes ?? null,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: userRes.user?.id ?? null,
-      })
-      .eq("id", id);
-    if (error) {
-      toast.error("Update failed", { description: error.message });
+    if (!caps.canReviewProviders) {
+      toast.error(permissionMessage("canReviewProviders"));
       return;
     }
-    toast.success(status === "approved" ? "Provider approved" : "Provider denied");
-    qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+    try {
+      await reviewFn({ data: { id, status, notes } });
+      toast.success(status === "approved" ? "Provider approved" : "Provider denied");
+      qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+      qc.invalidateQueries({ queryKey: ["audit-log"] });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Update failed");
+    }
   }
 
   async function signOut() {
@@ -119,11 +115,11 @@ function AdminPage() {
     window.location.href = "/auth";
   }
 
-  if (meQ.isLoading) {
+  if (!caps.loaded) {
     return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
   }
 
-  if (!meQ.data?.isOps) {
+  if (!caps.isOps) {
     return (
       <section className="min-h-[70vh] grid place-items-center px-6 py-20">
         <div className="max-w-md text-center bg-card border border-border rounded-2xl p-8">
@@ -132,7 +128,7 @@ function AdminPage() {
           </p>
           <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Staff role needed</h1>
           <p className="text-sm text-muted mb-6">
-            You're signed in as <strong>{meQ.data?.email}</strong>, but your account has no staff role
+            You're signed in as <strong>{caps.email}</strong>, but your account has no staff role
             (Administrator, App Manager, Zone Manager, Dispatcher, or Staff). Ask an administrator to grant access.
           </p>
           <div className="flex gap-3 justify-center">
