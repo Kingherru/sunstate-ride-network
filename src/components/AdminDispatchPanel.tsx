@@ -16,6 +16,7 @@ import {
   adminCancelTrip,
   listProvidersForZone,
 } from "@/lib/system-ids.functions";
+import { useCapabilities, permissionMessage } from "@/lib/permissions";
 
 export function AdminDispatchPanel() {
   const qc = useQueryClient();
