@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
@@ -9,6 +10,9 @@ import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
+import { AuditLogPanel } from "@/components/AuditLogPanel";
+import { useCapabilities, permissionMessage } from "@/lib/permissions";
+import { reviewProviderApplication } from "@/lib/staff.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -33,33 +37,12 @@ function AdminPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const meQ = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const { data: userRes } = await supabase.auth.getUser();
-      const userId = userRes.user?.id;
-      if (!userId) return { userId: null, roles: [] as string[], isAdmin: false, isAppManager: false, isOps: false, email: null };
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-      const roleList = (roles ?? []).map((r) => r.role as string);
-      const has = (r: string) => roleList.includes(r);
-      const isOps = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"].some(has);
-      return {
-        userId,
-        email: userRes.user?.email ?? null,
-        roles: roleList,
-        isAdmin: has("admin"),
-        isAppManager: has("app_manager"),
-        isOps,
-      };
-    },
-  });
+  const caps = useCapabilities();
+  const reviewFn = useServerFn(reviewProviderApplication);
 
   const appsQ = useQuery({
     queryKey: ["admin", "provider_applications"],
-    enabled: !!meQ.data?.isOps,
+    enabled: caps.isOps,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("provider_applications")
@@ -111,22 +94,18 @@ function AdminPage() {
   };
 
   async function updateStatus(id: string, status: "approved" | "denied", notes?: string) {
-    const { data: userRes } = await supabase.auth.getUser();
-    const { error } = await supabase
-      .from("provider_applications")
-      .update({
-        status,
-        review_notes: notes ?? null,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: userRes.user?.id ?? null,
-      })
-      .eq("id", id);
-    if (error) {
-      toast.error("Update failed", { description: error.message });
+    if (!caps.canReviewProviders) {
+      toast.error(permissionMessage("canReviewProviders"));
       return;
     }
-    toast.success(status === "approved" ? "Provider approved" : "Provider denied");
-    qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+    try {
+      await reviewFn({ data: { id, status, notes } });
+      toast.success(status === "approved" ? "Provider approved" : "Provider denied");
+      qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+      qc.invalidateQueries({ queryKey: ["audit-log"] });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Update failed");
+    }
   }
 
   async function signOut() {
@@ -136,11 +115,11 @@ function AdminPage() {
     window.location.href = "/auth";
   }
 
-  if (meQ.isLoading) {
+  if (!caps.loaded) {
     return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
   }
 
-  if (!meQ.data?.isOps) {
+  if (!caps.isOps) {
     return (
       <section className="min-h-[70vh] grid place-items-center px-6 py-20">
         <div className="max-w-md text-center bg-card border border-border rounded-2xl p-8">
@@ -149,7 +128,7 @@ function AdminPage() {
           </p>
           <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Staff role needed</h1>
           <p className="text-sm text-muted mb-6">
-            You're signed in as <strong>{meQ.data?.email}</strong>, but your account has no staff role
+            You're signed in as <strong>{caps.email}</strong>, but your account has no staff role
             (Administrator, App Manager, Zone Manager, Dispatcher, or Staff). Ask an administrator to grant access.
           </p>
           <div className="flex gap-3 justify-center">
@@ -180,7 +159,16 @@ function AdminPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted">{meQ.data.email}</span>
+          <span className="text-muted">
+            {caps.email}
+            <span className="ml-2 inline-flex flex-wrap gap-1">
+              {caps.roles.map((r) => (
+                <span key={r} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700">
+                  {r.replace("_", " ")}
+                </span>
+              ))}
+            </span>
+          </span>
           <button onClick={signOut} className="font-bold text-accent hover:underline">
             Sign out
           </button>
@@ -248,27 +236,39 @@ function AdminPage() {
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
 
-      <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
-        <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
-          <span>🎨 Visual settings — colors, layout, header & footer</span>
-          <span className="text-accent transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <div className="mt-6">
-          <AdminThemePanel />
-        </div>
-      </details>
+      {caps.canConfigurePricing && (
+        <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
+          <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
+            <span>🎨 Visual settings — colors, layout, header & footer</span>
+            <span className="text-accent transition-transform group-open:rotate-45">+</span>
+          </summary>
+          <div className="mt-6">
+            <AdminThemePanel />
+          </div>
+        </details>
+      )}
 
-      <div className="mb-8">
-        <AdminUsersPanel />
-      </div>
-
-      <div className="mb-8">
-        <AdminDispatchPanel />
-      </div>
-
-      {(meQ.data.isAdmin || meQ.data.isAppManager) && (
+      {caps.isAdmin && (
         <div className="mb-8">
-          <StaffPermissionsPanel callerIsAdmin={meQ.data.isAdmin} />
+          <AdminUsersPanel />
+        </div>
+      )}
+
+      {caps.canDispatch && (
+        <div className="mb-8">
+          <AdminDispatchPanel />
+        </div>
+      )}
+
+      {caps.canManageStaff && (
+        <div className="mb-8">
+          <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} />
+        </div>
+      )}
+
+      {caps.canViewAuditLog && (
+        <div className="mb-8">
+          <AuditLogPanel />
         </div>
       )}
 
@@ -400,6 +400,8 @@ function AdminPage() {
       {selected && (
         <ReviewDrawer
           app={selected}
+          readOnly={!caps.canReviewProviders}
+          readOnlyReason={permissionMessage("canReviewProviders")}
           onClose={() => setSelectedId(null)}
           onApprove={(notes) => updateStatus(selected.id, "approved", notes)}
           onDeny={(notes) => updateStatus(selected.id, "denied", notes)}
@@ -484,11 +486,15 @@ function ReviewDrawer({
   onClose,
   onApprove,
   onDeny,
+  readOnly = false,
+  readOnlyReason,
 }: {
   app: Application;
   onClose: () => void;
   onApprove: (notes?: string) => void;
   onDeny: (notes: string) => void;
+  readOnly?: boolean;
+  readOnlyReason?: string;
 }) {
   const [notes, setNotes] = useState(app.review_notes ?? "");
   const docs = ((app.documents as unknown) as DocEntry[]) ?? [];
@@ -594,30 +600,36 @@ function ReviewDrawer({
             />
           </div>
 
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-background pb-2">
-            <button
-              onClick={() => {
-                if (notes.trim().length < 3) {
-                  toast.error("Please provide a brief reason before denying.");
-                  return;
-                }
-                onDeny(notes.trim());
-                onClose();
-              }}
-              className="flex-1 px-4 py-3 border border-red-600 text-red-600 font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-red-50 transition"
-            >
-              Deny
-            </button>
-            <button
-              onClick={() => {
-                onApprove(notes.trim() || undefined);
-                onClose();
-              }}
-              className="flex-1 px-4 py-3 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition"
-            >
-              Approve
-            </button>
-          </div>
+          {readOnly ? (
+            <div className="pt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
+              🔒 {readOnlyReason ?? "You don't have permission to approve or deny this application."}
+            </div>
+          ) : (
+            <div className="flex gap-3 pt-2 sticky bottom-0 bg-background pb-2">
+              <button
+                onClick={() => {
+                  if (notes.trim().length < 3) {
+                    toast.error("Please provide a brief reason before denying.");
+                    return;
+                  }
+                  onDeny(notes.trim());
+                  onClose();
+                }}
+                className="flex-1 px-4 py-3 border border-red-600 text-red-600 font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-red-50 transition"
+              >
+                Deny
+              </button>
+              <button
+                onClick={() => {
+                  onApprove(notes.trim() || undefined);
+                  onClose();
+                }}
+                className="flex-1 px-4 py-3 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition"
+              >
+                Approve
+              </button>
+            </div>
+          )}
         </div>
       </aside>
     </div>

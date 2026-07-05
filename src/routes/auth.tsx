@@ -26,8 +26,10 @@ function AuthPage() {
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
-    const isAdmin = (roles ?? []).some((r) => r.role === "admin" || r.role === "staff");
-    navigate({ to: isAdmin ? "/admin" : "/" });
+    const roleList = (roles ?? []).map((r) => r.role);
+    const isOps = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"]
+      .some((r) => roleList.includes(r as any));
+    navigate({ to: isOps ? "/admin" : "/" });
   }
 
   useEffect(() => {
