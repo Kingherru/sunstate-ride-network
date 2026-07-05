@@ -24,7 +24,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
       api_key: z.string().min(8).max(512),
       webhook_secret: z.string().min(8).max(256).optional(),
       enabled: z.boolean().optional(),
-      config: z.record(z.unknown()).optional(),
+      config: z.record(z.string(), z.unknown()).optional(),
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
