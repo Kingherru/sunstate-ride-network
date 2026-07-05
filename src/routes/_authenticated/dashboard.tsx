@@ -102,6 +102,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "saved_patients") return "Saved Patients";
   if (t === "business_info") return "Business Info";
   if (t === "weekly_schedule") return "Weekly Schedule";
+  if (t === "medicaid") return "Medicaid Submission";
   return "Account";
 }
 
