@@ -65,11 +65,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "weekly_schedule" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "weekly_schedule" | "medicaid" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "weekly_schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "memberships", "payouts", "integrations", "business_info", "account"],
+  provider: ["reservations", "received", "sent", "new", "weekly_schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
 
