@@ -39,6 +39,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
 import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
+import { Route as AuthenticatedProviderMedicaidRouteImport } from './routes/_authenticated/provider.medicaid'
 import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
@@ -199,6 +200,12 @@ const AuthenticatedRequestsIdRoute = AuthenticatedRequestsIdRouteImport.update({
   path: '/requests/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProviderMedicaidRoute =
+  AuthenticatedProviderMedicaidRouteImport.update({
+    id: '/provider/medicaid',
+    path: '/provider/medicaid',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProviderDashboardRoute =
   AuthenticatedProviderDashboardRouteImport.update({
     id: '/provider/dashboard',
@@ -274,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
+  '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -311,6 +319,7 @@ export interface FileRoutesByTo {
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
+  '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -351,6 +360,7 @@ export interface FileRoutesById {
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
+  '/_authenticated/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/facility/dashboard'
     | '/patient/dashboard'
     | '/provider/dashboard'
+    | '/provider/medicaid'
     | '/requests/$id'
     | '/requests/'
     | '/api/public/payments/webhook'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/facility/dashboard'
     | '/patient/dashboard'
     | '/provider/dashboard'
+    | '/provider/medicaid'
     | '/requests/$id'
     | '/requests'
     | '/api/public/payments/webhook'
@@ -467,6 +479,7 @@ export interface FileRouteTypes {
     | '/_authenticated/facility/dashboard'
     | '/_authenticated/patient/dashboard'
     | '/_authenticated/provider/dashboard'
+    | '/_authenticated/provider/medicaid'
     | '/_authenticated/requests/$id'
     | '/_authenticated/requests/'
     | '/api/public/payments/webhook'
@@ -717,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/provider/medicaid': {
+      id: '/_authenticated/provider/medicaid'
+      path: '/provider/medicaid'
+      fullPath: '/provider/medicaid'
+      preLoaderRoute: typeof AuthenticatedProviderMedicaidRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/provider/dashboard': {
       id: '/_authenticated/provider/dashboard'
       path: '/provider/dashboard'
@@ -775,6 +795,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFacilityDashboardRoute: typeof AuthenticatedFacilityDashboardRoute
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
   AuthenticatedProviderDashboardRoute: typeof AuthenticatedProviderDashboardRoute
+  AuthenticatedProviderMedicaidRoute: typeof AuthenticatedProviderMedicaidRoute
   AuthenticatedRequestsIdRoute: typeof AuthenticatedRequestsIdRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
 }
@@ -785,6 +806,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFacilityDashboardRoute: AuthenticatedFacilityDashboardRoute,
   AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
   AuthenticatedProviderDashboardRoute: AuthenticatedProviderDashboardRoute,
+  AuthenticatedProviderMedicaidRoute: AuthenticatedProviderMedicaidRoute,
   AuthenticatedRequestsIdRoute: AuthenticatedRequestsIdRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
 }
