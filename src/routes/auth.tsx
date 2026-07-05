@@ -21,11 +21,21 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  async function routeAfterAuth(userId: string) {
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    const isAdmin = (roles ?? []).some((r) => r.role === "admin" || r.role === "staff");
+    navigate({ to: isAdmin ? "/admin" : "/" });
+  }
+
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/admin" });
+      if (data.user) void routeAfterAuth(data.user.id);
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,11 +51,12 @@ function AuthPage() {
         toast.success("Account created. You can now sign in.");
         setMode("signin");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back.");
         await router.invalidate();
-        navigate({ to: "/admin" });
+        if (data.user) await routeAfterAuth(data.user.id);
+        else navigate({ to: "/" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -53,6 +64,7 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <section className="min-h-[80vh] grid place-items-center px-6 py-20">
