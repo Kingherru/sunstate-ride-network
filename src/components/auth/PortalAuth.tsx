@@ -162,6 +162,67 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                 className="portal-input"
               />
             </label>
+            {isPatient && isSignup && (
+              <>
+                <label className="block">
+                  <span className="portal-label">Who is creating this account? *</span>
+                  <select
+                    required
+                    value={patientType}
+                    onChange={(e) => setPatientType(e.target.value)}
+                    className="portal-input"
+                  >
+                    <option value="">Select…</option>
+                    {PATIENT_TYPE_OPTIONS.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </label>
+                {patientType === "Other" && (
+                  <label className="block">
+                    <span className="portal-label">Please specify *</span>
+                    <input
+                      type="text"
+                      required
+                      value={patientTypeOther}
+                      onChange={(e) => setPatientTypeOther(e.target.value)}
+                      className="portal-input"
+                      placeholder="Describe who you are"
+                    />
+                  </label>
+                )}
+                <label className="block">
+                  <span className="portal-label">Relationship to the patient *</span>
+                  <select
+                    required
+                    value={patientRelationship}
+                    onChange={(e) => setPatientRelationship(e.target.value)}
+                    className="portal-input"
+                  >
+                    <option value="">Select…</option>
+                    {PATIENT_RELATIONSHIP_OPTIONS.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </label>
+                {patientRelationship === "Other" && (
+                  <label className="block">
+                    <span className="portal-label">Please specify *</span>
+                    <input
+                      type="text"
+                      required
+                      value={patientRelationshipOther}
+                      onChange={(e) => setPatientRelationshipOther(e.target.value)}
+                      className="portal-input"
+                      placeholder="Describe your relationship"
+                    />
+                  </label>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  This helps dispatchers and providers know who is scheduling and managing care.
+                </p>
+              </>
+            )}
             <button
               type="submit"
               disabled={busy}
