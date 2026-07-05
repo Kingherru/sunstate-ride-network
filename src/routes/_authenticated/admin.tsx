@@ -600,28 +600,36 @@ function ReviewDrawer({
             />
           </div>
 
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-background pb-2">
-            <button
-              onClick={() => {
-                if (notes.trim().length < 3) {
-                  toast.error("Please provide a brief reason before denying.");
-                  return;
-                }
-                onDeny(notes.trim());
-                onClose();
-              }}
-              className="flex-1 px-4 py-3 border border-red-600 text-red-600 font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-red-50 transition"
-            >
-              Deny
-            </button>
-            <button
-              onClick={() => {
-                onApprove(notes.trim() || undefined);
-                onClose();
-              }}
-              className="flex-1 px-4 py-3 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition"
-            >
-              Approve
+          {readOnly ? (
+            <div className="pt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
+              🔒 {readOnlyReason ?? "You don't have permission to approve or deny this application."}
+            </div>
+          ) : (
+            <div className="flex gap-3 pt-2 sticky bottom-0 bg-background pb-2">
+              <button
+                onClick={() => {
+                  if (notes.trim().length < 3) {
+                    toast.error("Please provide a brief reason before denying.");
+                    return;
+                  }
+                  onDeny(notes.trim());
+                  onClose();
+                }}
+                className="flex-1 px-4 py-3 border border-red-600 text-red-600 font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-red-50 transition"
+              >
+                Deny
+              </button>
+              <button
+                onClick={() => {
+                  onApprove(notes.trim() || undefined);
+                  onClose();
+                }}
+                className="flex-1 px-4 py-3 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition"
+              >
+                Approve
+              </button>
+            </div>
+          )}
             </button>
           </div>
         </div>
