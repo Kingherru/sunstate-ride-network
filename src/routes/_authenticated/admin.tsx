@@ -266,6 +266,12 @@ function AdminPage() {
         <AdminDispatchPanel />
       </div>
 
+      {(meQ.data.isAdmin || meQ.data.isAppManager) && (
+        <div className="mb-8">
+          <StaffPermissionsPanel callerIsAdmin={meQ.data.isAdmin} />
+        </div>
+      )}
+
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
