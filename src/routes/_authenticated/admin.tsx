@@ -8,6 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
+import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
