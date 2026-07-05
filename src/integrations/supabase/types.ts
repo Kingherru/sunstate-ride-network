@@ -227,6 +227,10 @@ export type Database = {
           membership_status: string
           membership_tier: Database["public"]["Enums"]["membership_tier"]
           npi: string | null
+          patient_relationship: string | null
+          patient_relationship_other: string | null
+          patient_type: string | null
+          patient_type_other: string | null
           phone: string | null
           preferred_zip_codes: string[]
           provider_application_id: string | null
@@ -258,6 +262,10 @@ export type Database = {
           membership_status?: string
           membership_tier?: Database["public"]["Enums"]["membership_tier"]
           npi?: string | null
+          patient_relationship?: string | null
+          patient_relationship_other?: string | null
+          patient_type?: string | null
+          patient_type_other?: string | null
           phone?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
@@ -289,6 +297,10 @@ export type Database = {
           membership_status?: string
           membership_tier?: Database["public"]["Enums"]["membership_tier"]
           npi?: string | null
+          patient_relationship?: string | null
+          patient_relationship_other?: string | null
+          patient_type?: string | null
+          patient_type_other?: string | null
           phone?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
