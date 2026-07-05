@@ -205,22 +205,16 @@ export function AdminDispatchPanel() {
 
             <div className="mt-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                Recent trips in zone
+                Dispatcher — trips in zone
               </h3>
-              {tripsQ.isLoading ? (
-                <div className="text-sm text-muted-foreground">Loading…</div>
-              ) : (tripsQ.data ?? []).length === 0 ? (
-                <div className="text-sm text-muted-foreground">No trips routed to this zone yet.</div>
-              ) : (
-                <ul className="text-sm divide-y divide-border">
-                  {(tripsQ.data ?? []).slice(0, 20).map((t: any) => (
-                    <li key={t.id} className="py-2 flex justify-between">
-                      <span><span className="font-mono font-bold">{t.display_id}</span> · {t.patient_first_name} {t.patient_last_name}</span>
-                      <span className="text-xs text-muted-foreground">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {activeZoneId && <ZoneDispatcher
+                zoneId={activeZoneId}
+                trips={tripsQ.data ?? []}
+                loading={tripsQ.isLoading}
+                providersFn={providersFn}
+                onAssign={(trip_id, assigned_to) => mReassign.mutate({ trip_id, assigned_to })}
+                onCancel={(trip_id) => { if (confirm("Cancel this trip?")) mCancelTrip.mutate(trip_id); }}
+              />}
             </div>
           </div>
         )}
