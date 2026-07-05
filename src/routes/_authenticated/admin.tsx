@@ -8,6 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
+import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -37,22 +38,28 @@ function AdminPage() {
     queryFn: async () => {
       const { data: userRes } = await supabase.auth.getUser();
       const userId = userRes.user?.id;
-      if (!userId) return { userId: null, isAdmin: false, email: null };
+      if (!userId) return { userId: null, roles: [] as string[], isAdmin: false, isAppManager: false, isOps: false, email: null };
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId);
+      const roleList = (roles ?? []).map((r) => r.role as string);
+      const has = (r: string) => roleList.includes(r);
+      const isOps = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"].some(has);
       return {
         userId,
         email: userRes.user?.email ?? null,
-        isAdmin: (roles ?? []).some((r) => r.role === "admin"),
+        roles: roleList,
+        isAdmin: has("admin"),
+        isAppManager: has("app_manager"),
+        isOps,
       };
     },
   });
 
   const appsQ = useQuery({
     queryKey: ["admin", "provider_applications"],
-    enabled: !!meQ.data?.isAdmin,
+    enabled: !!meQ.data?.isOps,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("provider_applications")
@@ -133,17 +140,17 @@ function AdminPage() {
     return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
   }
 
-  if (!meQ.data?.isAdmin) {
+  if (!meQ.data?.isOps) {
     return (
       <section className="min-h-[70vh] grid place-items-center px-6 py-20">
         <div className="max-w-md text-center bg-card border border-border rounded-2xl p-8">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-3">
             Access required
           </p>
-          <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Admin role needed</h1>
+          <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Staff role needed</h1>
           <p className="text-sm text-muted mb-6">
-            You're signed in as <strong>{meQ.data?.email}</strong>, but your account has no admin
-            role. Ask the project owner to grant access, then refresh this page.
+            You're signed in as <strong>{meQ.data?.email}</strong>, but your account has no staff role
+            (Administrator, App Manager, Zone Manager, Dispatcher, or Staff). Ask an administrator to grant access.
           </p>
           <div className="flex gap-3 justify-center">
             <Link to="/" className="text-sm font-bold underline underline-offset-4">
@@ -258,6 +265,12 @@ function AdminPage() {
       <div className="mb-8">
         <AdminDispatchPanel />
       </div>
+
+      {(meQ.data.isAdmin || meQ.data.isAppManager) && (
+        <div className="mb-8">
+          <StaffPermissionsPanel callerIsAdmin={meQ.data.isAdmin} />
+        </div>
+      )}
 
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">

@@ -1863,6 +1863,35 @@ export type Database = {
           },
         ]
       }
+      zone_manager_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_manager_assignments_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       member_directory: {
@@ -2028,6 +2057,13 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2040,6 +2076,11 @@ export type Database = {
         Returns: number
       }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
+      is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
+      manages_zone: {
+        Args: { _user_id: string; _zone_id: string }
+        Returns: boolean
+      }
       provider_covers_pickup: {
         Args: {
           _pickup_lat: number
@@ -2051,7 +2092,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "staff" | "requester"
+      app_role:
+        | "admin"
+        | "staff"
+        | "requester"
+        | "app_manager"
+        | "zone_manager"
+        | "dispatcher"
       membership_tier: "none" | "free" | "paid"
       payout_account_status:
         | "not_connected"
@@ -2191,7 +2238,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "staff", "requester"],
+      app_role: [
+        "admin",
+        "staff",
+        "requester",
+        "app_manager",
+        "zone_manager",
+        "dispatcher",
+      ],
       membership_tier: ["none", "free", "paid"],
       payout_account_status: [
         "not_connected",
