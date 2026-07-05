@@ -244,6 +244,86 @@ export type Database = {
         }
         Relationships: []
       }
+      medicaid_eligibility_checks: {
+        Row: {
+          created_at: string
+          id: string
+          medicaid_number: string
+          patient_dob: string | null
+          patient_last_name: string | null
+          provider_user_id: string
+          result_details: Json
+          result_plan: string | null
+          result_status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          medicaid_number: string
+          patient_dob?: string | null
+          patient_last_name?: string | null
+          provider_user_id: string
+          result_details?: Json
+          result_plan?: string | null
+          result_status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          medicaid_number?: string
+          patient_dob?: string | null
+          patient_last_name?: string | null
+          provider_user_id?: string
+          result_details?: Json
+          result_plan?: string | null
+          result_status?: string
+        }
+        Relationships: []
+      }
+      medicaid_packet_events: {
+        Row: {
+          action: string
+          actor_display_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          packet_id: string
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_display_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          packet_id: string
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_display_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          packet_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicaid_packet_events_packet_id_fkey"
+            columns: ["packet_id"]
+            isOneToOne: false
+            referencedRelation: "medicaid_packets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicaid_packet_items: {
         Row: {
           created_at: string
@@ -351,6 +431,7 @@ export type Database = {
       }
       member_profiles: {
         Row: {
+          allow_live_medicaid_verification: boolean
           center_lat: number | null
           center_lng: number | null
           city: string | null
@@ -370,6 +451,8 @@ export type Database = {
           medicaid_cert_expires_at: string | null
           medicaid_number: string | null
           medicaid_plan: string | null
+          medicaid_verified: boolean
+          medicaid_verified_at: string | null
           membership_status: string
           membership_tier: Database["public"]["Enums"]["membership_tier"]
           npi: string | null
@@ -388,6 +471,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allow_live_medicaid_verification?: boolean
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -407,6 +491,8 @@ export type Database = {
           medicaid_cert_expires_at?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
+          medicaid_verified?: boolean
+          medicaid_verified_at?: string | null
           membership_status?: string
           membership_tier?: Database["public"]["Enums"]["membership_tier"]
           npi?: string | null
@@ -425,6 +511,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allow_live_medicaid_verification?: boolean
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -444,6 +531,8 @@ export type Database = {
           medicaid_cert_expires_at?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
+          medicaid_verified?: boolean
+          medicaid_verified_at?: string | null
           membership_status?: string
           membership_tier?: Database["public"]["Enums"]["membership_tier"]
           npi?: string | null
