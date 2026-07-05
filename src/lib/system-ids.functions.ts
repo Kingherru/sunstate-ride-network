@@ -113,10 +113,13 @@ export const listProvidersForZone = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { zone_id: string }) => input)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId, _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    const { data: rolesData } = await context.supabase
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    const roles = (rolesData ?? []).map((r: any) => r.role);
+    const ops = ["admin", "app_manager", "zone_manager", "dispatcher"];
+    if (!roles.some((r: string) => ops.includes(r))) {
+      throw new Error("Permission denied: dispatch role required to list zone providers.");
+    }
 
     // ZIPs in this zone
     const { data: zips } = await context.supabase
