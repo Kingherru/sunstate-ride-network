@@ -20,6 +20,7 @@ import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
+import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
 import { WeeklySchedulePanel } from "@/components/dashboard/WeeklySchedulePanel";
 import { SavedCards } from "@/components/payments/SavedCards";
