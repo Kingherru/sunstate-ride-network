@@ -400,6 +400,8 @@ function AdminPage() {
       {selected && (
         <ReviewDrawer
           app={selected}
+          readOnly={!caps.canReviewProviders}
+          readOnlyReason={permissionMessage("canReviewProviders")}
           onClose={() => setSelectedId(null)}
           onApprove={(notes) => updateStatus(selected.id, "approved", notes)}
           onDeny={(notes) => updateStatus(selected.id, "denied", notes)}
