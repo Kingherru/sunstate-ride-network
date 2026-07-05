@@ -342,6 +342,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "saved_patients" && <SavedPatientsPanel />}
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "weekly_schedule" && <WeeklySchedulePanel />}
+            {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
               </div>
             </section>
