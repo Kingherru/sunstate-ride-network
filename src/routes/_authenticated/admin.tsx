@@ -628,6 +628,7 @@ function ReviewDrawer({
               >
                 Approve
               </button>
+            </div>
           )}
         </div>
       </aside>
