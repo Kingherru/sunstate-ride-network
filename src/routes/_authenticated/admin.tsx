@@ -147,10 +147,10 @@ function AdminPage() {
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-3">
             Access required
           </p>
-          <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Admin role needed</h1>
+          <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Staff role needed</h1>
           <p className="text-sm text-muted mb-6">
-            You're signed in as <strong>{meQ.data?.email}</strong>, but your account has no admin
-            role. Ask the project owner to grant access, then refresh this page.
+            You're signed in as <strong>{meQ.data?.email}</strong>, but your account has no staff role
+            (Administrator, App Manager, Zone Manager, Dispatcher, or Staff). Ask an administrator to grant access.
           </p>
           <div className="flex gap-3 justify-center">
             <Link to="/" className="text-sm font-bold underline underline-offset-4">
