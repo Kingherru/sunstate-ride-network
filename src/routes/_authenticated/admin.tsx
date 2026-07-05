@@ -159,7 +159,16 @@ function AdminPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted">{meQ.data.email}</span>
+          <span className="text-muted">
+            {caps.email}
+            <span className="ml-2 inline-flex flex-wrap gap-1">
+              {caps.roles.map((r) => (
+                <span key={r} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700">
+                  {r.replace("_", " ")}
+                </span>
+              ))}
+            </span>
+          </span>
           <button onClick={signOut} className="font-bold text-accent hover:underline">
             Sign out
           </button>
