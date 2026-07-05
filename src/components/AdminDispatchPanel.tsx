@@ -7,10 +7,15 @@ import {
   listZoneZips,
   assignZipsToZone,
   removeZipFromZone,
-  findTripByDisplayId,
   listTripsByZone,
 } from "@/lib/dispatch.functions";
 import { listAllSchedules } from "@/lib/schedules.functions";
+import {
+  globalSearchById,
+  adminAssignTrip,
+  adminCancelTrip,
+  listProvidersForZone,
+} from "@/lib/system-ids.functions";
 
 export function AdminDispatchPanel() {
   const qc = useQueryClient();
@@ -18,9 +23,12 @@ export function AdminDispatchPanel() {
   const zipsFn = useServerFn(listZoneZips);
   const assignFn = useServerFn(assignZipsToZone);
   const removeFn = useServerFn(removeZipFromZone);
-  const findFn = useServerFn(findTripByDisplayId);
+  const searchFn = useServerFn(globalSearchById);
   const tripsFn = useServerFn(listTripsByZone);
   const schedFn = useServerFn(listAllSchedules);
+  const providersFn = useServerFn(listProvidersForZone);
+  const assignTripFn = useServerFn(adminAssignTrip);
+  const cancelTripFn = useServerFn(adminCancelTrip);
 
   const zonesQ = useQuery({ queryKey: ["disp", "zones"], queryFn: () => zonesFn() });
   const zipsQ = useQuery({ queryKey: ["disp", "zips"], queryFn: () => zipsFn() });
