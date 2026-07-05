@@ -37,6 +37,7 @@ export function AdminDispatchPanel() {
   const [zipInput, setZipInput] = useState("");
   const [tripQuery, setTripQuery] = useState("");
   const [foundTrip, setFoundTrip] = useState<any>(null);
+  const [searchResult, setSearchResult] = useState<{ kind: string | null; record: any } | null>(null);
 
   const tripsQ = useQuery({
     queryKey: ["disp", "trips", activeZoneId],
@@ -76,10 +77,28 @@ export function AdminDispatchPanel() {
   async function handleFindTrip() {
     const q = tripQuery.trim();
     if (!q) return;
-    const t = await findFn({ data: { display_id: q } });
-    setFoundTrip(t);
-    if (!t) toast.error("No trip found");
+    const r = await searchFn({ data: { id: q } });
+    setSearchResult(r);
+    if (r.kind === "trip") setFoundTrip(r.record); else setFoundTrip(null);
+    if (!r.kind) toast.error("No record found for that ID");
   }
+
+  const mReassign = useMutation({
+    mutationFn: (v: { trip_id: string; assigned_to: string | null }) => assignTripFn({ data: v }),
+    onSuccess: () => {
+      toast.success("Trip assignment updated");
+      qc.invalidateQueries({ queryKey: ["disp", "trips"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+  const mCancelTrip = useMutation({
+    mutationFn: (trip_id: string) => cancelTripFn({ data: { trip_id } }),
+    onSuccess: () => {
+      toast.success("Trip canceled");
+      qc.invalidateQueries({ queryKey: ["disp", "trips"] });
+    },
+  });
 
   const zones = zonesQ.data ?? [];
   const zips = zipsQ.data ?? [];
