@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
@@ -9,6 +10,9 @@ import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
+import { AuditLogPanel } from "@/components/AuditLogPanel";
+import { useCapabilities, permissionMessage } from "@/lib/permissions";
+import { reviewProviderApplication } from "@/lib/staff.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
