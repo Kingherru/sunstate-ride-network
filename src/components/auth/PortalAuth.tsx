@@ -49,7 +49,13 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [patientType, setPatientType] = useState<string>("");
+  const [patientTypeOther, setPatientTypeOther] = useState("");
+  const [patientRelationship, setPatientRelationship] = useState<string>("");
+  const [patientRelationshipOther, setPatientRelationshipOther] = useState("");
   const copy = COPY[kind];
+  const isPatient = kind === "patient";
+  const isSignup = mode === "signup";
 
   const dest = `/${kind}/dashboard` as const;
 
@@ -61,15 +67,30 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isPatient && isSignup) {
+      if (!patientType) return toast.error("Please select who is creating this account");
+      if (patientType === "Other" && !patientTypeOther.trim()) return toast.error("Please describe the patient type");
+      if (!patientRelationship) return toast.error("Please select the relationship to the patient");
+      if (patientRelationship === "Other" && !patientRelationshipOther.trim()) return toast.error("Please describe the relationship");
+    }
     setBusy(true);
     try {
       if (mode === "signup") {
+        const metaExtra = isPatient
+          ? {
+              patient_type: patientType,
+              patient_type_other: patientType === "Other" ? patientTypeOther.trim() : null,
+              patient_relationship: patientRelationship,
+              patient_relationship_other:
+                patientRelationship === "Other" ? patientRelationshipOther.trim() : null,
+            }
+          : {};
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}${dest}`,
-            data: { portal: kind },
+            data: { portal: kind, ...metaExtra },
           },
         });
         if (error) throw error;
