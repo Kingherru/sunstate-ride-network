@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  PATIENT_TYPE_OPTIONS,
+  PATIENT_RELATIONSHIP_OPTIONS,
+} from "@/lib/patient-relationships";
 
 export type PortalKind = "patient" | "provider" | "facility";
 
@@ -45,7 +49,13 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [patientType, setPatientType] = useState<string>("");
+  const [patientTypeOther, setPatientTypeOther] = useState("");
+  const [patientRelationship, setPatientRelationship] = useState<string>("");
+  const [patientRelationshipOther, setPatientRelationshipOther] = useState("");
   const copy = COPY[kind];
+  const isPatient = kind === "patient";
+  const isSignup = mode === "signup";
 
   const dest = `/${kind}/dashboard` as const;
 
@@ -57,15 +67,30 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isPatient && isSignup) {
+      if (!patientType) return toast.error("Please select who is creating this account");
+      if (patientType === "Other" && !patientTypeOther.trim()) return toast.error("Please describe the patient type");
+      if (!patientRelationship) return toast.error("Please select the relationship to the patient");
+      if (patientRelationship === "Other" && !patientRelationshipOther.trim()) return toast.error("Please describe the relationship");
+    }
     setBusy(true);
     try {
       if (mode === "signup") {
+        const metaExtra = isPatient
+          ? {
+              patient_type: patientType,
+              patient_type_other: patientType === "Other" ? patientTypeOther.trim() : null,
+              patient_relationship: patientRelationship,
+              patient_relationship_other:
+                patientRelationship === "Other" ? patientRelationshipOther.trim() : null,
+            }
+          : {};
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}${dest}`,
-            data: { portal: kind },
+            data: { portal: kind, ...metaExtra },
           },
         });
         if (error) throw error;
@@ -137,6 +162,67 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                 className="portal-input"
               />
             </label>
+            {isPatient && isSignup && (
+              <>
+                <label className="block">
+                  <span className="portal-label">Who is creating this account? *</span>
+                  <select
+                    required
+                    value={patientType}
+                    onChange={(e) => setPatientType(e.target.value)}
+                    className="portal-input"
+                  >
+                    <option value="">Select…</option>
+                    {PATIENT_TYPE_OPTIONS.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </label>
+                {patientType === "Other" && (
+                  <label className="block">
+                    <span className="portal-label">Please specify *</span>
+                    <input
+                      type="text"
+                      required
+                      value={patientTypeOther}
+                      onChange={(e) => setPatientTypeOther(e.target.value)}
+                      className="portal-input"
+                      placeholder="Describe who you are"
+                    />
+                  </label>
+                )}
+                <label className="block">
+                  <span className="portal-label">Relationship to the patient *</span>
+                  <select
+                    required
+                    value={patientRelationship}
+                    onChange={(e) => setPatientRelationship(e.target.value)}
+                    className="portal-input"
+                  >
+                    <option value="">Select…</option>
+                    {PATIENT_RELATIONSHIP_OPTIONS.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </label>
+                {patientRelationship === "Other" && (
+                  <label className="block">
+                    <span className="portal-label">Please specify *</span>
+                    <input
+                      type="text"
+                      required
+                      value={patientRelationshipOther}
+                      onChange={(e) => setPatientRelationshipOther(e.target.value)}
+                      className="portal-input"
+                      placeholder="Describe your relationship"
+                    />
+                  </label>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  This helps dispatchers and providers know who is scheduling and managing care.
+                </p>
+              </>
+            )}
             <button
               type="submit"
               disabled={busy}

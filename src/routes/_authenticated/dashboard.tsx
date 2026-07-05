@@ -25,6 +25,12 @@ import { WeeklySchedulePanel } from "@/components/dashboard/WeeklySchedulePanel"
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
+import {
+  PATIENT_TYPE_OPTIONS,
+  PATIENT_RELATIONSHIP_OPTIONS,
+  formatPatientType,
+  formatPatientRelationship,
+} from "@/lib/patient-relationships";
 
 function PaymentsTab({ portal }: { portal: PortalKind }) {
   const isFacility = portal === "facility";
@@ -370,11 +376,34 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
     first_name: "", last_name: "", company_name: "", phone: "", dispatch_email: userEmail, city: "", preferred_zip_codes: "",
     date_of_birth: "", medicaid_number: "", medicaid_plan: "", npi: "",
     emergency_contact_name: "", emergency_contact_phone: "",
+    patient_type: "", patient_type_other: "",
+    patient_relationship: "", patient_relationship_other: "",
   });
   const [busy, setBusy] = useState(false);
 
+  // Prefill patient_type / patient_relationship from auth user metadata (captured at signup)
+  useEffect(() => {
+    if (!isPatient) return;
+    void supabase.auth.getUser().then(({ data }) => {
+      const meta = (data.user?.user_metadata ?? {}) as Record<string, any>;
+      setForm((f) => ({
+        ...f,
+        patient_type: meta.patient_type ?? f.patient_type,
+        patient_type_other: meta.patient_type_other ?? f.patient_type_other,
+        patient_relationship: meta.patient_relationship ?? f.patient_relationship,
+        patient_relationship_other: meta.patient_relationship_other ?? f.patient_relationship_other,
+      }));
+    });
+  }, [isPatient]);
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (isPatient) {
+      if (!form.patient_type) return toast.error("Please select who is managing the account");
+      if (form.patient_type === "Other" && !form.patient_type_other.trim()) return toast.error("Please describe the patient type");
+      if (!form.patient_relationship) return toast.error("Please select the relationship to the patient");
+      if (form.patient_relationship === "Other" && !form.patient_relationship_other.trim()) return toast.error("Please describe the relationship");
+    }
     setBusy(true);
     try {
       const zips = form.preferred_zip_codes.split(/[,\s]+/).map((z) => z.trim()).filter(Boolean);
@@ -393,6 +422,13 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         emergency_contact_name: form.emergency_contact_name || null,
         emergency_contact_phone: form.emergency_contact_phone || null,
       };
+      if (isPatient) {
+        payload.patient_type = form.patient_type;
+        payload.patient_type_other = form.patient_type === "Other" ? form.patient_type_other.trim() : null;
+        payload.patient_relationship = form.patient_relationship;
+        payload.patient_relationship_other =
+          form.patient_relationship === "Other" ? form.patient_relationship_other.trim() : null;
+      }
       if (form.date_of_birth) payload.date_of_birth = form.date_of_birth;
       const { error } = await supabase.from("member_profiles").insert(payload);
       if (error) throw error;
@@ -427,6 +463,26 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         )}
         {isPatient && (
           <>
+            <SelectField
+              label="Who is managing this account?"
+              v={form.patient_type}
+              on={(v) => setForm({ ...form, patient_type: v })}
+              options={PATIENT_TYPE_OPTIONS as readonly string[]}
+              required
+            />
+            {form.patient_type === "Other" && (
+              <Field label="Specify patient type" v={form.patient_type_other} on={(v) => setForm({ ...form, patient_type_other: v })} required />
+            )}
+            <SelectField
+              label="Relationship to patient"
+              v={form.patient_relationship}
+              on={(v) => setForm({ ...form, patient_relationship: v })}
+              options={PATIENT_RELATIONSHIP_OPTIONS as readonly string[]}
+              required
+            />
+            {form.patient_relationship === "Other" && (
+              <Field label="Specify relationship" v={form.patient_relationship_other} on={(v) => setForm({ ...form, patient_relationship_other: v })} required />
+            )}
             <Field label="Date of birth" v={form.date_of_birth} on={(v) => setForm({ ...form, date_of_birth: v })} type="date" />
             <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
             <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply" className="col-span-2" />
@@ -442,6 +498,20 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
         </button>
       </form>
     </div>
+  );
+}
+
+function SelectField({ label, v, on, options, required, className = "" }: {
+  label: string; v: string; on: (v: string) => void; options: readonly string[]; required?: boolean; className?: string;
+}) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="portal-label">{label}{required && " *"}</span>
+      <select value={v} onChange={(e) => on(e.target.value)} required={required} className="portal-input">
+        <option value="">Select…</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
   );
 }
 
@@ -1169,6 +1239,9 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
           </button>
         </div>
       </div>
+      {portal === "patient" && (
+        <PatientRelationshipCard profile={profile} userId={userId} />
+      )}
       {portal === "provider" && (
         <div className="bg-card border border-border rounded-sm p-6">
           <NetworkPanel userId={userId} />
@@ -1177,6 +1250,103 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
     </div>
   );
 }
+
+function PatientRelationshipCard({ profile, userId }: { profile: Profile; userId: string }) {
+  const p = profile as any;
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    patient_type: p.patient_type ?? "",
+    patient_type_other: p.patient_type_other ?? "",
+    patient_relationship: p.patient_relationship ?? "",
+    patient_relationship_other: p.patient_relationship_other ?? "",
+  });
+
+  async function save() {
+    if (!form.patient_type) return toast.error("Select who is managing the account");
+    if (form.patient_type === "Other" && !form.patient_type_other.trim()) return toast.error("Specify the patient type");
+    if (!form.patient_relationship) return toast.error("Select the relationship to the patient");
+    if (form.patient_relationship === "Other" && !form.patient_relationship_other.trim()) return toast.error("Specify the relationship");
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("member_profiles").update({
+        patient_type: form.patient_type,
+        patient_type_other: form.patient_type === "Other" ? form.patient_type_other.trim() : null,
+        patient_relationship: form.patient_relationship,
+        patient_relationship_other:
+          form.patient_relationship === "Other" ? form.patient_relationship_other.trim() : null,
+      }).eq("user_id", userId);
+      if (error) throw error;
+      toast.success("Saved");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["member-profile"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-extrabold tracking-tight">Who is managing this account</h3>
+          <p className="text-xs text-muted-foreground">
+            Shared with dispatchers and providers so they know who to contact about the patient's trips.
+          </p>
+        </div>
+        {!editing && (
+          <button onClick={() => setEditing(true)} className="text-sm font-bold text-accent hover:underline">Edit</button>
+        )}
+      </div>
+
+      {!editing ? (
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-muted-foreground">Patient type</span>
+            <div className="font-bold">{formatPatientType(p.patient_type, p.patient_type_other)}</div>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Relationship</span>
+            <div className="font-bold">{formatPatientRelationship(p.patient_relationship, p.patient_relationship_other)}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <SelectField
+            label="Who is managing this account?"
+            v={form.patient_type}
+            on={(v) => setForm({ ...form, patient_type: v })}
+            options={PATIENT_TYPE_OPTIONS as readonly string[]}
+            required
+          />
+          {form.patient_type === "Other" && (
+            <Field label="Specify patient type" v={form.patient_type_other} on={(v) => setForm({ ...form, patient_type_other: v })} required />
+          )}
+          <SelectField
+            label="Relationship to patient"
+            v={form.patient_relationship}
+            on={(v) => setForm({ ...form, patient_relationship: v })}
+            options={PATIENT_RELATIONSHIP_OPTIONS as readonly string[]}
+            required
+          />
+          {form.patient_relationship === "Other" && (
+            <Field label="Specify relationship" v={form.patient_relationship_other} on={(v) => setForm({ ...form, patient_relationship_other: v })} required />
+          )}
+          <div className="col-span-2 flex gap-2">
+            <button onClick={save} disabled={busy} className="portal-btn-primary px-4 py-2">
+              {busy ? "Saving…" : "Save"}
+            </button>
+            <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 // ───────────────────────── Sidebar ─────────────────────────
 
