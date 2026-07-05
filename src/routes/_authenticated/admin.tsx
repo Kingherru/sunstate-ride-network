@@ -236,27 +236,39 @@ function AdminPage() {
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
 
-      <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
-        <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
-          <span>🎨 Visual settings — colors, layout, header & footer</span>
-          <span className="text-accent transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <div className="mt-6">
-          <AdminThemePanel />
-        </div>
-      </details>
+      {caps.canConfigurePricing && (
+        <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
+          <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
+            <span>🎨 Visual settings — colors, layout, header & footer</span>
+            <span className="text-accent transition-transform group-open:rotate-45">+</span>
+          </summary>
+          <div className="mt-6">
+            <AdminThemePanel />
+          </div>
+        </details>
+      )}
 
-      <div className="mb-8">
-        <AdminUsersPanel />
-      </div>
-
-      <div className="mb-8">
-        <AdminDispatchPanel />
-      </div>
-
-      {(meQ.data.isAdmin || meQ.data.isAppManager) && (
+      {caps.isAdmin && (
         <div className="mb-8">
-          <StaffPermissionsPanel callerIsAdmin={meQ.data.isAdmin} />
+          <AdminUsersPanel />
+        </div>
+      )}
+
+      {caps.canDispatch && (
+        <div className="mb-8">
+          <AdminDispatchPanel />
+        </div>
+      )}
+
+      {caps.canManageStaff && (
+        <div className="mb-8">
+          <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} />
+        </div>
+      )}
+
+      {caps.canViewAuditLog && (
+        <div className="mb-8">
+          <AuditLogPanel />
         </div>
       )}
 
