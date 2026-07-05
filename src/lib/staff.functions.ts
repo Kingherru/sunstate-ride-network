@@ -5,16 +5,35 @@ export type StaffRole = "admin" | "app_manager" | "zone_manager" | "dispatcher" 
 
 const STAFF_ROLES: StaffRole[] = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"];
 
+async function getCallerRoles(context: any): Promise<StaffRole[]> {
+  const { data } = await context.supabase
+    .from("user_roles").select("role").eq("user_id", context.userId);
+  return (data ?? []).map((r: any) => r.role as StaffRole);
+}
+
 async function assertManager(context: any) {
-  const { data: isAdmin } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId, _role: "admin",
+  const roles = await getCallerRoles(context);
+  const isAdmin = roles.includes("admin");
+  const isAppManager = roles.includes("app_manager");
+  if (!isAdmin && !isAppManager) {
+    throw new Error("Permission denied: Administrator or App Manager role required.");
+  }
+  return { isAdmin, isAppManager, roles };
+}
+
+async function logAction(
+  context: any,
+  action: string,
+  target_kind: string | null,
+  target_id: string | null,
+  metadata: Record<string, unknown> = {},
+) {
+  await context.supabase.rpc("log_staff_action", {
+    _action: action,
+    _target_kind: target_kind,
+    _target_id: target_id,
+    _metadata: metadata,
   });
-  if (isAdmin) return { isAdmin: true, isAppManager: false };
-  const { data: isAppMgr } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId, _role: "app_manager",
-  });
-  if (isAppMgr) return { isAdmin: false, isAppManager: true };
-  throw new Error("Forbidden");
 }
 
 /** List all staff (any user with a staff-level role). */
