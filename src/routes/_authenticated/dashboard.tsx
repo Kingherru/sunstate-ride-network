@@ -25,6 +25,12 @@ import { WeeklySchedulePanel } from "@/components/dashboard/WeeklySchedulePanel"
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 import { demoProfile, demoTrips } from "@/lib/demo-data";
+import {
+  PATIENT_TYPE_OPTIONS,
+  PATIENT_RELATIONSHIP_OPTIONS,
+  formatPatientType,
+  formatPatientRelationship,
+} from "@/lib/patient-relationships";
 
 function PaymentsTab({ portal }: { portal: PortalKind }) {
   const isFacility = portal === "facility";
