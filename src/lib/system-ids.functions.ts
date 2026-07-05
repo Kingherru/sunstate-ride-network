@@ -10,15 +10,18 @@ export const ensureMyDisplayId = createServerFn({ method: "POST" })
     return { display_id: data as string | null };
   });
 
-/** Global search by any system ID (TRP/PAT/FAC/STF/FLNP). Admin-only. */
+/** Global search by any system ID (TRP/PAT/FAC/STF/FLNP). Any ops staff. */
 export const globalSearchById = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId, _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    const { data: rolesData } = await context.supabase
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    const roles = (rolesData ?? []).map((r: any) => r.role);
+    const ops = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"];
+    if (!roles.some((r: string) => ops.includes(r))) {
+      throw new Error("Permission denied: staff role required to search by system ID.");
+    }
 
     const q = data.id.trim().toUpperCase();
     if (!q) return { kind: null, record: null };
