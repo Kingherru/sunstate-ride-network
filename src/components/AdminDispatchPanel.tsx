@@ -19,6 +19,7 @@ import {
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 
 export function AdminDispatchPanel() {
+  const caps = useCapabilities();
   const qc = useQueryClient();
   const zonesFn = useServerFn(listDispatchZones);
   const zipsFn = useServerFn(listZoneZips);
