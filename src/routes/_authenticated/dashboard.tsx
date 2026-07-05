@@ -1239,6 +1239,9 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
           </button>
         </div>
       </div>
+      {portal === "patient" && (
+        <PatientRelationshipCard profile={profile} userId={userId} />
+      )}
       {portal === "provider" && (
         <div className="bg-card border border-border rounded-sm p-6">
           <NetworkPanel userId={userId} />
