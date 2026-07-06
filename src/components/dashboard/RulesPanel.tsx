@@ -9,6 +9,37 @@ const RULES: { title: string; body: string }[] = [
   { title: "8. Communicate proactively", body: "If you'll be late, mark the trip 'En route' and let dispatch know. Silence is worse than a late arrival." },
 ];
 
+const TRANSPARENCY: { title: string; body: string }[] = [
+  {
+    title: "T1. Patient loyalty — 2-hour priority offer",
+    body: "Priority #1: if you have previously transported a patient, that patient is considered yours. On any new trip for that patient you receive a private 2-hour priority offer to accept or refuse before the trip is released to the open pool.",
+  },
+  {
+    title: "T2. Balanced, transparent scoring",
+    body: "Every open trip is scored against every eligible provider using: provider rating, competitive pricing, geographic service area coverage, vehicle capability for the trip type (wheelchair, stretcher, door-through-door), fleet size, and fair distribution of recent assignments.",
+  },
+  {
+    title: "T3. Fleet size — capacity credit, not a monopoly",
+    body: "Larger fleets receive reasonable capacity credit for their ability to cover more trips, but the credit is capped (diminishing returns). Independent owner-operators and small companies who meet the same quality standards compete on equal footing.",
+  },
+  {
+    title: "T4. NEMT-specific matching",
+    body: "Wheelchair, stretcher, bariatric, door-through-door, and other specialized requirements are enforced before scoring. A provider without the required vehicle or capability is never offered the trip, regardless of price or rating.",
+  },
+  {
+    title: "T5. Fair distribution",
+    body: "A rolling 14-day recent-assignment count reduces score temporarily so no single provider vacuums up every trip. As your load evens out, your fairness score recovers automatically.",
+  },
+  {
+    title: "T6. Credential gating",
+    body: "Expired insurance, registration, driver's license, or Medicaid credentials remove you from all assignment scoring — the algorithm cannot offer you trips until the credential is renewed.",
+  },
+  {
+    title: "T7. Dispatch zone control",
+    body: "Only Administrators can add or remove ZIP codes inside a dispatch zone. Zone Managers, App Managers, and Dispatchers can route and reassign trips within zones but cannot change the zone's ZIP boundaries.",
+  },
+];
+
 const STRIKES = [
   "1st turn-back / late / no-show in a 30-day window: warning",
   "2nd violation: 7-day suspension from auto-routing",
@@ -27,6 +58,22 @@ export function RulesPanel() {
 
       <div className="space-y-3">
         {RULES.map((r) => (
+          <div key={r.title} className="bg-card border border-border rounded-sm p-4">
+            <div className="font-extrabold">{r.title}</div>
+            <p className="text-sm text-muted-foreground mt-1">{r.body}</p>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <h3 className="text-xl font-extrabold tracking-tight mt-8">Provider trip assignment transparency rules</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          How trips are offered and scored — published so you always know why you did or did not receive a trip.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {TRANSPARENCY.map((r) => (
           <div key={r.title} className="bg-card border border-border rounded-sm p-4">
             <div className="font-extrabold">{r.title}</div>
             <p className="text-sm text-muted-foreground mt-1">{r.body}</p>
