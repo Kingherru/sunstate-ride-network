@@ -41,6 +41,9 @@ export function ScheduleCalendarPanel() {
   const qc = useQueryClient();
   const [date, setDate] = useState<string>(todayISO());
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [driverFilter, setDriverFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [hideEmptyDrivers, setHideEmptyDrivers] = useState(false);
 
   const whFn = useServerFn(getMyWorkHours);
   const driversFn = useServerFn(listMyDrivers);
