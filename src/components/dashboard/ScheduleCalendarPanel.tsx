@@ -74,8 +74,35 @@ export function ScheduleCalendarPanel() {
   const start = (dayCfg?.start ?? "06:00").slice(0, 5);
   const end = (dayCfg?.end ?? "20:00").slice(0, 5);
   const hours = useMemo(() => (closed ? [] : hoursBetween(start, end)), [closed, start, end]);
-  const drivers = driversQ.data ?? [];
-  const reservations = resvQ.data ?? [];
+  const allDrivers = driversQ.data ?? [];
+  const allReservations = resvQ.data ?? [];
+
+  const statusOptions = useMemo(
+    () => Array.from(new Set(allReservations.map((r: any) => r.status).filter(Boolean))) as string[],
+    [allReservations],
+  );
+
+  const reservations = useMemo(
+    () => allReservations.filter((r: any) => {
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (driverFilter === "unassigned" && r.assigned_driver_id) return false;
+      if (driverFilter !== "all" && driverFilter !== "unassigned" && r.assigned_driver_id !== driverFilter) return false;
+      return true;
+    }),
+    [allReservations, statusFilter, driverFilter],
+  );
+
+  const drivers = useMemo(() => {
+    let list = allDrivers;
+    if (driverFilter !== "all" && driverFilter !== "unassigned") {
+      list = list.filter((d: any) => d.id === driverFilter);
+    }
+    if (hideEmptyDrivers) {
+      const active = new Set(reservations.map((r: any) => r.assigned_driver_id).filter(Boolean));
+      list = list.filter((d: any) => active.has(d.id));
+    }
+    return list;
+  }, [allDrivers, driverFilter, hideEmptyDrivers, reservations]);
 
   const cellMap = useMemo(() => {
     const m = new Map<string, any[]>();
