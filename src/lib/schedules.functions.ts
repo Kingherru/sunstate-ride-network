@@ -64,11 +64,10 @@ export const listAllSchedules = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { week_start?: string }) => input)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+    const { data: isOps } = await context.supabase.rpc("is_ops_staff", {
       _user_id: context.userId,
-      _role: "admin",
     });
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!isOps) throw new Error("Forbidden");
     let q = context.supabase
       .from("provider_schedule_entries")
       .select("*")
