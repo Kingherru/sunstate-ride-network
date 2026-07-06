@@ -2,10 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function requireAdmin(context: any) {
-  const { data } = await context.supabase.rpc("has_role", {
+async function requireZoneManager(context: any) {
+  const { data } = await context.supabase.rpc("has_any_role", {
     _user_id: context.userId,
-    _role: "admin",
+    _roles: ["admin", "app_manager", "zone_manager"],
   });
   if (!data) throw new Error("Forbidden");
 }
