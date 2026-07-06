@@ -330,12 +330,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "reservations" && (
-              <div className="space-y-8">
-                <ScheduleCalendarPanel />
-                <ReservationsPanel userId={userId!} />
-              </div>
-            )}
+            {tab === "reservations" && <ReservationsPanel userId={userId!} />}
+            {tab === "schedule" && <ScheduleCalendarPanel />}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
