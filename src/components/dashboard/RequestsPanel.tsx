@@ -169,7 +169,10 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
     <div className="space-y-4">
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
-        <p className="text-sm text-muted-foreground">Confirmed trips assigned to you. Use the schedule tab to place them on a driver's calendar.</p>
+        <p className="text-sm text-muted-foreground">
+          Confirmed trips assigned to you. Drag any reservation card onto a driver + time slot in the schedule board above to
+          schedule or reschedule it — the driver is notified automatically.
+        </p>
       </div>
 
       <div className="inline-flex bg-card border border-border rounded-sm p-1">
