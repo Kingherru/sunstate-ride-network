@@ -43,7 +43,7 @@ export const assignZipsToZone = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => assignZipsSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await requireZoneManager(context);
+    await requireAdmin(context);
     const rows = data.zips.map((zip) => ({ zip, zone_id: data.zone_id }));
     const { error } = await context.supabase
       .from("dispatch_zone_zips")
@@ -64,7 +64,7 @@ export const removeZipFromZone = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { zip: string }) => input)
   .handler(async ({ data, context }) => {
-    await requireZoneManager(context);
+    await requireAdmin(context);
     const { error } = await context.supabase
       .from("dispatch_zone_zips")
       .delete()
