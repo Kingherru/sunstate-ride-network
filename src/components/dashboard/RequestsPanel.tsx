@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { listMyReservations } from "@/lib/schedule-board.functions";
+import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 
 type Row = {
   id: string;
