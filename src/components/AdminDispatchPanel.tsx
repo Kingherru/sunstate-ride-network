@@ -16,6 +16,7 @@ import {
   adminCancelTrip,
   listProvidersForZone,
 } from "@/lib/system-ids.functions";
+import { suggestProvidersForTrip, offerTripPriority } from "@/lib/assignment.functions";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 
 export function AdminDispatchPanel() {
@@ -304,36 +305,147 @@ function ZoneDispatcher({
         </thead>
         <tbody>
           {trips.map((t) => (
-            <tr key={t.id} className="border-b border-border">
-              <td className="py-2 pr-3 font-mono font-bold">{t.display_id}</td>
-              <td className="py-2 pr-3">{t.patient_first_name} {t.patient_last_name}</td>
-              <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
-              <td className="py-2 pr-3 text-xs">{t.status}</td>
-              <td className="py-2 pr-3">
-                <select
-                  defaultValue={t.assigned_to ?? ""}
-                  onChange={(e) => onAssign(t.id, e.target.value || null)}
-                  className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
-                >
-                  <option value="">— Unassigned —</option>
-                  {providers.map((p) => (
-                    <option key={p.user_id} value={p.user_id}>
-                      {p.company_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.display_id}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td className="py-2 pr-3 text-right">
-                {t.status !== "canceled" && (
-                  <button onClick={() => onCancel(t.id)} className="text-xs font-bold text-red-600 hover:underline">
-                    Cancel
-                  </button>
-                )}
-              </td>
-            </tr>
+            <TripRow
+              key={t.id}
+              trip={t}
+              providers={providers}
+              onAssign={onAssign}
+              onCancel={onCancel}
+            />
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+function TripRow({
+  trip: t, providers, onAssign, onCancel,
+}: {
+  trip: any;
+  providers: any[];
+  onAssign: (trip_id: string, assigned_to: string | null) => void;
+  onCancel: (trip_id: string) => void;
+}) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const suggestFn = useServerFn(suggestProvidersForTrip);
+  const offerFn = useServerFn(offerTripPriority);
+  const sugQ = useQuery({
+    queryKey: ["disp", "suggest", t.id],
+    enabled: open,
+    queryFn: () => suggestFn({ data: { trip_id: t.id } }),
+  });
+  const mOffer = useMutation({
+    mutationFn: (provider_user_id: string) => offerFn({ data: { trip_id: t.id, provider_user_id } }),
+    onSuccess: () => {
+      toast.success("2-hour priority offer sent");
+      qc.invalidateQueries({ queryKey: ["disp"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to send offer"),
+  });
+
+  return (
+    <>
+      <tr className="border-b border-border">
+        <td className="py-2 pr-3 font-mono font-bold">{t.display_id}</td>
+        <td className="py-2 pr-3">{t.patient_first_name} {t.patient_last_name}</td>
+        <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
+        <td className="py-2 pr-3 text-xs">{t.status}</td>
+        <td className="py-2 pr-3">
+          <select
+            defaultValue={t.assigned_to ?? ""}
+            onChange={(e) => onAssign(t.id, e.target.value || null)}
+            className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
+          >
+            <option value="">— Unassigned —</option>
+            {providers.map((p) => (
+              <option key={p.user_id} value={p.user_id}>
+                {p.company_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.display_id}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td className="py-2 pr-3 text-right whitespace-nowrap">
+          <button onClick={() => setOpen((v) => !v)} className="text-xs font-bold text-primary hover:underline mr-3">
+            {open ? "Hide" : "Suggest"}
+          </button>
+          {t.status !== "canceled" && (
+            <button onClick={() => onCancel(t.id)} className="text-xs font-bold text-red-600 hover:underline">
+              Cancel
+            </button>
+          )}
+        </td>
+      </tr>
+      {open && (
+        <tr className="bg-background/40">
+          <td colSpan={6} className="p-3">
+            <div className="text-xs uppercase font-bold text-muted-foreground mb-2">
+              Fair Assignment Engine — ranked providers
+            </div>
+            {sugQ.isLoading ? (
+              <div className="text-xs text-muted-foreground">Scoring providers…</div>
+            ) : (sugQ.data ?? []).length === 0 ? (
+              <div className="text-xs text-muted-foreground">No eligible providers found.</div>
+            ) : (
+              <table className="w-full text-xs">
+                <thead className="text-left text-muted-foreground">
+                  <tr>
+                    <th className="pr-2">Provider</th>
+                    <th className="pr-2">Score</th>
+                    <th className="pr-2">Rating</th>
+                    <th className="pr-2">Price</th>
+                    <th className="pr-2">Area</th>
+                    <th className="pr-2">Vehicle</th>
+                    <th className="pr-2">Fairness</th>
+                    <th className="pr-2">Fleet</th>
+                    <th className="pr-2">Reason</th>
+                    <th className="pr-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(sugQ.data as any[]).map((p) => (
+                    <tr key={p.provider_user_id} className="border-t border-border">
+                      <td className="pr-2 py-1">
+                        <div className="font-bold">{p.company_name ?? p.display_id}</div>
+                        <div className="font-mono text-[10px] text-muted-foreground">{p.display_id}</div>
+                      </td>
+                      <td className="pr-2 font-bold">{p.score}</td>
+                      <td className="pr-2">{p.rating_score}</td>
+                      <td className="pr-2">{p.price_score}</td>
+                      <td className="pr-2">{p.area_score}</td>
+                      <td className="pr-2">{p.vehicle_score}</td>
+                      <td className="pr-2">{p.fairness_score}</td>
+                      <td className="pr-2">{p.fleet_score}</td>
+                      <td className="pr-2 text-muted-foreground">
+                        {p.affinity_active && <span className="mr-1 rounded bg-amber-100 px-1 font-bold text-amber-800">Priority</span>}
+                        {p.reason}
+                      </td>
+                      <td className="pr-2 text-right whitespace-nowrap">
+                        {p.affinity_active && (
+                          <button
+                            onClick={() => mOffer.mutate(p.provider_user_id)}
+                            disabled={mOffer.isPending}
+                            className="text-primary font-bold hover:underline mr-2"
+                          >
+                            Offer 2hr
+                          </button>
+                        )}
+                        <button
+                          onClick={() => onAssign(t.id, p.provider_user_id)}
+                          className="font-bold hover:underline"
+                        >
+                          Assign
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </td>
+        </tr>
+      )}
+    </>
   );
 }

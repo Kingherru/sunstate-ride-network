@@ -1890,6 +1890,10 @@ export type Database = {
           pickup_time: string
           pickup_zip: string | null
           platform_fee_cents: number | null
+          priority_offer_created_at: string | null
+          priority_offer_expires_at: string | null
+          priority_offer_provider_id: string | null
+          priority_offer_refused_at: string | null
           provider_payout_cents: number | null
           region: string | null
           return_dropoff_time: string | null
@@ -1966,6 +1970,10 @@ export type Database = {
           pickup_time: string
           pickup_zip?: string | null
           platform_fee_cents?: number | null
+          priority_offer_created_at?: string | null
+          priority_offer_expires_at?: string | null
+          priority_offer_provider_id?: string | null
+          priority_offer_refused_at?: string | null
           provider_payout_cents?: number | null
           region?: string | null
           return_dropoff_time?: string | null
@@ -2042,6 +2050,10 @@ export type Database = {
           pickup_time?: string
           pickup_zip?: string | null
           platform_fee_cents?: number | null
+          priority_offer_created_at?: string | null
+          priority_offer_expires_at?: string | null
+          priority_offer_provider_id?: string | null
+          priority_offer_refused_at?: string | null
           provider_payout_cents?: number | null
           region?: string | null
           return_dropoff_time?: string | null
@@ -2272,6 +2284,16 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_last_provider: {
+        Row: {
+          dob_key: string | null
+          first_key: string | null
+          last_key: string | null
+          last_trip_at: string | null
+          provider_user_id: string | null
+        }
+        Relationships: []
+      }
       provider_rating_summary: {
         Row: {
           avg_cleanliness: number | null
@@ -2452,6 +2474,10 @@ export type Database = {
         Args: { _user_id: string; _zone_id: string }
         Returns: boolean
       }
+      offer_trip_priority: {
+        Args: { _provider_user_id: string; _trip_id: string }
+        Returns: undefined
+      }
       provider_covers_pickup: {
         Args: {
           _pickup_lat: number
@@ -2464,6 +2490,28 @@ export type Database = {
       provider_has_valid_credentials: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      respond_priority_offer: {
+        Args: { _accept: boolean; _trip_id: string }
+        Returns: undefined
+      }
+      suggest_providers_for_trip: {
+        Args: { _trip_id: string }
+        Returns: {
+          affinity_active: boolean
+          affinity_score: number
+          area_score: number
+          company_name: string
+          display_id: string
+          fairness_score: number
+          fleet_score: number
+          price_score: number
+          provider_user_id: string
+          rating_score: number
+          reason: string
+          score: number
+          vehicle_score: number
+        }[]
       }
     }
     Enums: {
