@@ -1455,17 +1455,6 @@ function WeeklyWorkHoursCard() {
   );
 }
 
-// Local hook wrappers so we can lazily reference server fns without duplicating imports at top of file.
-function useServerFnLocal_getMyWorkHours() {
-  const { useServerFn } = require("@tanstack/react-start") as typeof import("@tanstack/react-start");
-  const { getMyWorkHours } = require("@/lib/schedule-board.functions") as typeof import("@/lib/schedule-board.functions");
-  return useServerFn(getMyWorkHours);
-}
-function useServerFnLocal_saveMyWorkHours() {
-  const { useServerFn } = require("@tanstack/react-start") as typeof import("@tanstack/react-start");
-  const { saveMyWorkHours } = require("@/lib/schedule-board.functions") as typeof import("@/lib/schedule-board.functions");
-  return useServerFn(saveMyWorkHours);
-}
 
 
 // ───────────────────────── Sidebar ─────────────────────────
