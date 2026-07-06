@@ -39,7 +39,7 @@ export function computeCaps(roles: StaffRole[], email: string | null, userId: st
     canManageStaff: isAdmin || isAppManager,
     canManageAdmins: isAdmin,
     canConfigurePricing: isAdmin || isAppManager,
-    canManageZones: isAdmin || isAppManager,
+    canManageZones: isAdmin,
     canReviewProviders: isAdmin || isAppManager || isZoneManager,
     canDispatch: isAdmin || isAppManager || isZoneManager || isDispatcher,
     canViewAuditLog: isAdmin || isAppManager,
