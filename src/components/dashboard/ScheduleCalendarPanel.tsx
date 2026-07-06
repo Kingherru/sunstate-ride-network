@@ -149,7 +149,7 @@ export function ScheduleCalendarPanel() {
         <div
           className="bg-card border border-dashed border-border rounded-2xl p-4"
           onDragOver={(e) => e.preventDefault()}
-          onDrop={() => onDrop(null, hours[0] ?? "00:00")}
+          onDrop={(e) => onDrop(e, null, hours[0] ?? "00:00")}
         >
           <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2">
             Unassigned ({unassigned.length}) — drop here to unschedule
