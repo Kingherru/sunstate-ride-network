@@ -471,6 +471,7 @@ export type Database = {
           user_id: string
           work_hours_end: string | null
           work_hours_start: string | null
+          work_hours_weekly: Json
         }
         Insert: {
           allow_live_medicaid_verification?: boolean
@@ -513,6 +514,7 @@ export type Database = {
           user_id: string
           work_hours_end?: string | null
           work_hours_start?: string | null
+          work_hours_weekly?: Json
         }
         Update: {
           allow_live_medicaid_verification?: boolean
@@ -555,6 +557,7 @@ export type Database = {
           user_id?: string
           work_hours_end?: string | null
           work_hours_start?: string | null
+          work_hours_weekly?: Json
         }
         Relationships: [
           {

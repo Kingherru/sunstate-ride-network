@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { listMyReservations } from "@/lib/schedule-board.functions";
+import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 
 type Row = {
   id: string;
@@ -168,7 +169,10 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
     <div className="space-y-4">
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
-        <p className="text-sm text-muted-foreground">Confirmed trips assigned to you. Use the schedule tab to place them on a driver's calendar.</p>
+        <p className="text-sm text-muted-foreground">
+          Confirmed trips assigned to you. Drag any reservation card onto a driver + time slot in the schedule board above to
+          schedule or reschedule it — the driver is notified automatically.
+        </p>
       </div>
 
       <div className="inline-flex bg-card border border-border rounded-sm p-1">
@@ -201,7 +205,13 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
             </div>
             <div className="space-y-3">
               {grouped[date].map((r: any) => (
-                <div key={r.id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
+                <div
+                  key={r.id}
+                  draggable
+                  onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; }}
+                  className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing"
+                  title="Drag onto the schedule board above to (re)assign a driver and time"
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>

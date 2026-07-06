@@ -23,6 +23,8 @@ import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
 import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPanel";
+import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
@@ -66,11 +68,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "medicaid" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
+  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
 
@@ -87,7 +89,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "new") return portal === "patient" ? "Request a ride" : "New trip";
   if (t === "upload") return "Upload CSV";
   if (t === "requests") return "Requests";
-  if (t === "reservations") return "Reservations & Schedule";
+  if (t === "reservations") return "Reservations";
   if (t === "network") return "Provider Network";
   if (t === "rules") return "Rules";
   if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
@@ -102,7 +104,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "payments") return "Payments";
   if (t === "saved_patients") return "Saved Patients";
   if (t === "business_info") return "Business Info";
-  if (t === "schedule") return "Schedule";
+  
   if (t === "medicaid") return "Medicaid Submission";
   return "Account";
 }
@@ -328,7 +330,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "reservations" && <ReservationsPanel userId={userId!} />}
+            {tab === "reservations" && (
+              <div className="space-y-8">
+                <ScheduleCalendarPanel />
+                <ReservationsPanel userId={userId!} />
+              </div>
+            )}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
@@ -341,7 +348,6 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "saved_patients" && <SavedPatientsPanel />}
             {tab === "business_info" && <BusinessInfoPanel />}
-            {tab === "schedule" && <ScheduleCalendarPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
               </div>
@@ -1248,6 +1254,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
       {portal === "provider" && (
         <>
+          <WeeklyWorkHoursCard />
           <ProviderCredentialsPanel />
           <div className="bg-card border border-border rounded-sm p-6">
             <NetworkPanel userId={userId} />
@@ -1355,7 +1362,104 @@ function PatientRelationshipCard({ profile, userId }: { profile: Profile; userId
 }
 
 
+function WeeklyWorkHoursCard() {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getMyWorkHours);
+  const saveFn = useServerFn(saveMyWorkHours);
+  const q = useQuery({ queryKey: ["work-hours"], queryFn: () => getFn() });
+  const [draft, setDraft] = useState<any>(null);
+  useEffect(() => { if (q.data?.weekly && !draft) setDraft(q.data.weekly); }, [q.data, draft]);
+
+  const m = useMutation({
+    mutationFn: (weekly: any) => saveFn({ data: { weekly } }),
+    onSuccess: () => { toast.success("Work hours saved"); qc.invalidateQueries({ queryKey: ["work-hours"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
+  });
+
+  if (!draft) {
+    return <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">Loading work hours…</div>;
+  }
+
+  const DAYS: Array<[string, string]> = [
+    ["0", "Sunday"], ["1", "Monday"], ["2", "Tuesday"], ["3", "Wednesday"],
+    ["4", "Thursday"], ["5", "Friday"], ["6", "Saturday"],
+  ];
+
+  function update(key: string, patch: any) {
+    setDraft((d: any) => ({ ...d, [key]: { ...d[key], ...patch } }));
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div>
+        <h3 className="text-lg font-extrabold tracking-tight">Weekly work hours</h3>
+        <p className="text-xs text-muted-foreground">
+          Set start and end times for each day of the week. Toggle <span className="font-bold">Closed</span> for holidays or off days —
+          the schedule board hides that day. Keep it simple; you can adjust any time.
+        </p>
+      </div>
+      <div className="space-y-2">
+        {DAYS.map(([k, label]) => {
+          const d = draft[k] ?? { start: "06:00", end: "20:00", closed: false };
+          return (
+            <div key={k} className="grid grid-cols-[110px_1fr_1fr_auto] items-center gap-3 py-1 border-b border-border/60 last:border-0">
+              <div className="text-sm font-bold">{label}</div>
+              <label className="text-xs">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Start</div>
+                <input
+                  type="time"
+                  value={d.start}
+                  disabled={d.closed}
+                  onChange={(e) => update(k, { start: e.target.value })}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-sm disabled:opacity-50"
+                />
+              </label>
+              <label className="text-xs">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">End</div>
+                <input
+                  type="time"
+                  value={d.end}
+                  disabled={d.closed}
+                  onChange={(e) => update(k, { end: e.target.value })}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-sm disabled:opacity-50"
+                />
+              </label>
+              <label className="text-xs flex items-center gap-2 pt-4">
+                <input
+                  type="checkbox"
+                  checked={d.closed}
+                  onChange={(e) => update(k, { closed: e.target.checked })}
+                />
+                <span className="font-bold uppercase tracking-wider text-[10px]">Closed</span>
+              </label>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={() => m.mutate(draft)}
+          disabled={m.isPending}
+          className="portal-btn-primary px-5 py-2"
+        >
+          {m.isPending ? "Saving…" : "Save weekly hours"}
+        </button>
+        <button
+          onClick={() => setDraft(q.data?.weekly ?? null)}
+          className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+
 // ───────────────────────── Sidebar ─────────────────────────
+
+
 
 function PortalSidebar(props: {
   portal: PortalKind;
