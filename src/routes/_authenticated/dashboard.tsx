@@ -328,7 +328,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
             {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "reservations" && <ReservationsPanel userId={userId!} />}
+            {tab === "reservations" && (
+              <div className="space-y-8">
+                <ScheduleCalendarPanel />
+                <ReservationsPanel userId={userId!} />
+              </div>
+            )}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
@@ -341,7 +346,6 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "saved_patients" && <SavedPatientsPanel />}
             {tab === "business_info" && <BusinessInfoPanel />}
-            {tab === "schedule" && <ScheduleCalendarPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
               </div>
