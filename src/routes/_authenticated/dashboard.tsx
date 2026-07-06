@@ -1252,6 +1252,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
       {portal === "provider" && (
         <>
+          <WeeklyWorkHoursCard />
           <ProviderCredentialsPanel />
           <div className="bg-card border border-border rounded-sm p-6">
             <NetworkPanel userId={userId} />
