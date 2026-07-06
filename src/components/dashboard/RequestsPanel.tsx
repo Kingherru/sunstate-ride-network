@@ -147,15 +147,33 @@ export function RequestsPanel({ userId }: { userId: string }) {
 
 
 type Bucket = "past" | "current" | "future";
+type AssignFilter = "all" | "assigned" | "unassigned";
 
 export function ReservationsPanel({ userId: _userId }: { userId: string }) {
   const [bucket, setBucket] = useState<Bucket>("current");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
+  const [search, setSearch] = useState("");
   const fn = useServerFn(listMyReservations);
   const q = useQuery({
     queryKey: ["my-reservations", bucket],
     queryFn: () => fn({ data: { bucket } }),
   });
-  const rows = (q.data ?? []) as any[];
+  const allRows = (q.data ?? []) as any[];
+
+  const statusOptions = Array.from(new Set(allRows.map((r) => r.status).filter(Boolean)));
+
+  const rows = allRows.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
+    if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      const hay = `${r.patient_first_name ?? ""} ${r.patient_last_name ?? ""} ${r.pickup_city ?? ""} ${r.dropoff_city ?? ""}`.toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    return true;
+  });
 
   const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
     (acc[r.pickup_date] ||= []).push(r);
@@ -170,29 +188,65 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
         <p className="text-sm text-muted-foreground">
-          Confirmed trips assigned to you. Drag any reservation card onto a driver + time slot in the schedule board above to
-          schedule or reschedule it — the driver is notified automatically.
+          Confirmed trips assigned to you. Use the filters below to focus this list — the Schedule tab has its own separate day-view.
         </p>
       </div>
 
-      <div className="inline-flex bg-card border border-border rounded-sm p-1">
-        {(["past","current","future"] as Bucket[]).map((b) => (
-          <button
-            key={b}
-            onClick={() => setBucket(b)}
-            className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm ${
-              bucket === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {b === "past" ? "Past" : b === "current" ? "Today" : "Future"}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex bg-card border border-border rounded-sm p-1">
+          {(["past","current","future"] as Bucket[]).map((b) => (
+            <button
+              key={b}
+              onClick={() => setBucket(b)}
+              className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm ${
+                bucket === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {b === "past" ? "Past" : b === "current" ? "Today" : "Future"}
+            </button>
+          ))}
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+          aria-label="Filter by status"
+        >
+          <option value="all">All statuses</option>
+          {statusOptions.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+
+        <select
+          value={assignFilter}
+          onChange={(e) => setAssignFilter(e.target.value as AssignFilter)}
+          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+          aria-label="Filter by driver assignment"
+        >
+          <option value="all">All driver assignments</option>
+          <option value="assigned">Driver assigned</option>
+          <option value="unassigned">Unassigned</option>
+        </select>
+
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search patient or city…"
+          className="text-xs bg-card border border-border rounded-sm px-3 py-2 min-w-[220px] flex-1"
+        />
+
+        <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground ml-auto">
+          {rows.length} of {allRows.length}
+        </div>
       </div>
 
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
       {!q.isLoading && rows.length === 0 && (
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
-          No {bucket === "past" ? "past" : bucket === "current" ? "trips scheduled for today" : "upcoming"} reservations.
+          No reservations match these filters.
         </div>
       )}
 
@@ -210,7 +264,7 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; }}
                   className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing"
-                  title="Drag onto the schedule board above to (re)assign a driver and time"
+                  title="Drag onto the Schedule tab to (re)assign a driver and time"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -219,6 +273,11 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
                         <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
                           Sched {String(r.scheduled_start_time).slice(0,5)}
                         </span>
+                      )}
+                      {r.assigned_driver_id ? (
+                        <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Driver assigned</span>
+                      ) : (
+                        <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Unassigned</span>
                       )}
                     </div>
                     <div className="font-extrabold">{r.patient_first_name} {r.patient_last_name}</div>
