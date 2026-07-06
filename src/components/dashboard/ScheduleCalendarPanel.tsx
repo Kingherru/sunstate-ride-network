@@ -204,7 +204,7 @@ export function ScheduleCalendarPanel() {
                           key={h}
                           className="border-r border-border align-top p-1 min-h-[60px] hover:bg-primary/5"
                           onDragOver={(e) => e.preventDefault()}
-                          onDrop={() => onDrop(d.id, h)}
+                          onDrop={(e) => onDrop(e, d.id, h)}
                         >
                           <div className="space-y-1 min-h-[54px]">
                             {cell.map((r: any) => (
