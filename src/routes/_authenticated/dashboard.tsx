@@ -1364,8 +1364,8 @@ function PatientRelationshipCard({ profile, userId }: { profile: Profile; userId
 
 function WeeklyWorkHoursCard() {
   const qc = useQueryClient();
-  const getFn = useServerFnLocal_getMyWorkHours();
-  const saveFn = useServerFnLocal_saveMyWorkHours();
+  const getFn = useServerFn(getMyWorkHours);
+  const saveFn = useServerFn(saveMyWorkHours);
   const q = useQuery({ queryKey: ["work-hours"], queryFn: () => getFn() });
   const [draft, setDraft] = useState<any>(null);
   useEffect(() => { if (q.data?.weekly && !draft) setDraft(q.data.weekly); }, [q.data, draft]);
