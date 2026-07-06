@@ -2,12 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function requireZoneManager(context: any) {
-  const { data } = await context.supabase.rpc("has_any_role", {
+async function requireAdmin(context: any) {
+  const { data } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
-    _roles: ["admin", "app_manager", "zone_manager"],
+    _role: "admin",
   });
-  if (!data) throw new Error("Forbidden");
+  if (!data) throw new Error("Forbidden: only Administrators can modify dispatch zone ZIP codes.");
 }
 
 /* ---------- Dispatch Zones ---------- */
