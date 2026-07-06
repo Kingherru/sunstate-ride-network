@@ -167,6 +167,46 @@ export function ScheduleCalendarPanel() {
         </button>
       </div>
 
+      {/* Schedule-only filters (independent from Reservations tab) */}
+      {!closed && (
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={driverFilter}
+            onChange={(e) => setDriverFilter(e.target.value)}
+            className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+            aria-label="Filter drivers on board"
+          >
+            <option value="all">All drivers</option>
+            <option value="unassigned">Unassigned only</option>
+            {allDrivers.map((d: any) => (
+              <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+            aria-label="Filter reservations on board by status"
+          >
+            <option value="all">All statuses</option>
+            {statusOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 bg-card border border-border rounded-sm px-3 py-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hideEmptyDrivers}
+              onChange={(e) => setHideEmptyDrivers(e.target.checked)}
+            />
+            Hide drivers with no trips
+          </label>
+          <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground ml-auto">
+            {reservations.length} of {allReservations.length} trips · {drivers.length} of {allDrivers.length} drivers
+          </div>
+        </div>
+      )}
+
       {closed && (
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 text-sm">
           <span className="font-bold uppercase tracking-wider text-xs mr-2">Closed</span>
