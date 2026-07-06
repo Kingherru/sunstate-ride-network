@@ -469,6 +469,8 @@ export type Database = {
           stripe_subscription_id: string | null
           updated_at: string
           user_id: string
+          work_hours_end: string | null
+          work_hours_start: string | null
         }
         Insert: {
           allow_live_medicaid_verification?: boolean
@@ -509,6 +511,8 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
+          work_hours_end?: string | null
+          work_hours_start?: string | null
         }
         Update: {
           allow_live_medicaid_verification?: boolean
@@ -549,6 +553,8 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
+          work_hours_end?: string | null
+          work_hours_start?: string | null
         }
         Relationships: [
           {
@@ -1318,6 +1324,7 @@ export type Database = {
         Row: {
           additional_stops: Json
           appointment_time: string | null
+          assigned_driver_id: string | null
           assigned_provider_id: string | null
           cancel_reason: string | null
           canceled_at: string | null
@@ -1363,6 +1370,7 @@ export type Database = {
           return_dropoff_time: string | null
           return_pickup_time: string | null
           round_trip: boolean
+          scheduled_start_time: string | null
           service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
           status: string
@@ -1373,6 +1381,7 @@ export type Database = {
         Insert: {
           additional_stops?: Json
           appointment_time?: string | null
+          assigned_driver_id?: string | null
           assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
@@ -1418,6 +1427,7 @@ export type Database = {
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
+          scheduled_start_time?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
@@ -1428,6 +1438,7 @@ export type Database = {
         Update: {
           additional_stops?: Json
           appointment_time?: string | null
+          assigned_driver_id?: string | null
           assigned_provider_id?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
@@ -1473,6 +1484,7 @@ export type Database = {
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
+          scheduled_start_time?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
@@ -1481,6 +1493,13 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ride_requests_assigned_driver_id_fkey"
+            columns: ["assigned_driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ride_requests_hipaa_ack_id_fkey"
             columns: ["hipaa_ack_id"]
