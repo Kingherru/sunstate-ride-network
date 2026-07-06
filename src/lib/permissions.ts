@@ -71,7 +71,7 @@ export function permissionMessage(cap: keyof Capabilities): string {
     canManageStaff: "Requires Administrator or App Manager.",
     canManageAdmins: "Only Administrators can change the Administrator role.",
     canConfigurePricing: "Requires Administrator or App Manager to change pricing and system settings.",
-    canManageZones: "Requires Administrator or App Manager to edit dispatch zones.",
+    canManageZones: "Only Administrators can add or remove ZIP codes in dispatch zones.",
     canReviewProviders: "Requires Administrator, App Manager, or Zone Manager to review provider applications.",
     canDispatch: "Requires a Dispatcher, Zone Manager, App Manager, or Administrator role.",
     canViewAuditLog: "Requires Administrator or App Manager to view the audit log.",
