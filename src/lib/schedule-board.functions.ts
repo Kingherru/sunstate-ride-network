@@ -1,29 +1,58 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/** Provider work hours */
+export type DayHours = { start: string; end: string; closed: boolean };
+export type WeeklyHours = Record<"0" | "1" | "2" | "3" | "4" | "5" | "6", DayHours>;
+
+const DEFAULT_WEEKLY: WeeklyHours = {
+  "0": { start: "06:00", end: "20:00", closed: true },
+  "1": { start: "06:00", end: "20:00", closed: false },
+  "2": { start: "06:00", end: "20:00", closed: false },
+  "3": { start: "06:00", end: "20:00", closed: false },
+  "4": { start: "06:00", end: "20:00", closed: false },
+  "5": { start: "06:00", end: "20:00", closed: false },
+  "6": { start: "06:00", end: "20:00", closed: true },
+};
+
+function normalizeWeekly(raw: any): WeeklyHours {
+  const out: any = { ...DEFAULT_WEEKLY };
+  if (raw && typeof raw === "object") {
+    for (const k of Object.keys(DEFAULT_WEEKLY)) {
+      const v = raw[k];
+      if (v && typeof v === "object") {
+        out[k] = {
+          start: typeof v.start === "string" ? v.start.slice(0, 5) : DEFAULT_WEEKLY[k as keyof WeeklyHours].start,
+          end: typeof v.end === "string" ? v.end.slice(0, 5) : DEFAULT_WEEKLY[k as keyof WeeklyHours].end,
+          closed: !!v.closed,
+        };
+      }
+    }
+  }
+  return out as WeeklyHours;
+}
+
+/** Provider work hours — per day of week (0=Sun … 6=Sat) */
 export const getMyWorkHours = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("member_profiles")
-      .select("work_hours_start, work_hours_end")
+      .select("work_hours_weekly, work_hours_start, work_hours_end")
       .eq("user_id", context.userId)
       .maybeSingle();
     if (error) throw error;
-    return {
-      start: (data?.work_hours_start as string | null) ?? "06:00",
-      end: (data?.work_hours_end as string | null) ?? "20:00",
-    };
+    const weekly = normalizeWeekly(data?.work_hours_weekly);
+    return { weekly };
   });
 
 export const saveMyWorkHours = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { start: string; end: string }) => input)
+  .inputValidator((input: { weekly: WeeklyHours }) => input)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const weekly = normalizeWeekly(data.weekly);
+    const { error } = await (context.supabase as any)
       .from("member_profiles")
-      .update({ work_hours_start: data.start, work_hours_end: data.end })
+      .update({ work_hours_weekly: weekly })
       .eq("user_id", context.userId);
     if (error) throw error;
     return { ok: true };
@@ -62,7 +91,6 @@ export const assignDriverSlot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) => input)
   .handler(async ({ data, context }) => {
-    // ensure reservation belongs to caller
     const { data: r } = await context.supabase
       .from("ride_requests")
       .select("id, assigned_provider_id")
@@ -71,7 +99,6 @@ export const assignDriverSlot = createServerFn({ method: "POST" })
     if (!r || r.assigned_provider_id !== context.userId) {
       throw new Error("Reservation not found or not assigned to you");
     }
-    // ensure the driver (if any) belongs to caller
     if (data.driver_id) {
       const { data: d } = await context.supabase
         .from("drivers")
