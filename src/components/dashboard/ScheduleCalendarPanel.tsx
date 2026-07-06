@@ -87,10 +87,12 @@ export function ScheduleCalendarPanel() {
 
   const unassigned = reservations.filter((r: any) => !r.assigned_driver_id);
 
-  function onDrop(driverId: string | null, hour: string) {
-    if (!draggingId) return;
+  function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
+    e.preventDefault();
+    const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
+    if (!id) return;
     mAssign.mutate({
-      reservation_id: draggingId,
+      reservation_id: id,
       driver_id: driverId,
       scheduled_start_time: hour,
     });
