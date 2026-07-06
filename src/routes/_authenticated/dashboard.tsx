@@ -1360,7 +1360,115 @@ function PatientRelationshipCard({ profile, userId }: { profile: Profile; userId
 }
 
 
+function WeeklyWorkHoursCard() {
+  const qc = useQueryClient();
+  const getFn = useServerFnLocal_getMyWorkHours();
+  const saveFn = useServerFnLocal_saveMyWorkHours();
+  const q = useQuery({ queryKey: ["work-hours"], queryFn: () => getFn() });
+  const [draft, setDraft] = useState<any>(null);
+  useEffect(() => { if (q.data?.weekly && !draft) setDraft(q.data.weekly); }, [q.data, draft]);
+
+  const m = useMutation({
+    mutationFn: (weekly: any) => saveFn({ data: { weekly } }),
+    onSuccess: () => { toast.success("Work hours saved"); qc.invalidateQueries({ queryKey: ["work-hours"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
+  });
+
+  if (!draft) {
+    return <div className="bg-card border border-border rounded-sm p-6 text-sm text-muted-foreground">Loading work hours…</div>;
+  }
+
+  const DAYS: Array<[string, string]> = [
+    ["0", "Sunday"], ["1", "Monday"], ["2", "Tuesday"], ["3", "Wednesday"],
+    ["4", "Thursday"], ["5", "Friday"], ["6", "Saturday"],
+  ];
+
+  function update(key: string, patch: any) {
+    setDraft((d: any) => ({ ...d, [key]: { ...d[key], ...patch } }));
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div>
+        <h3 className="text-lg font-extrabold tracking-tight">Weekly work hours</h3>
+        <p className="text-xs text-muted-foreground">
+          Set start and end times for each day of the week. Toggle <span className="font-bold">Closed</span> for holidays or off days —
+          the schedule board hides that day. Keep it simple; you can adjust any time.
+        </p>
+      </div>
+      <div className="space-y-2">
+        {DAYS.map(([k, label]) => {
+          const d = draft[k] ?? { start: "06:00", end: "20:00", closed: false };
+          return (
+            <div key={k} className="grid grid-cols-[110px_1fr_1fr_auto] items-center gap-3 py-1 border-b border-border/60 last:border-0">
+              <div className="text-sm font-bold">{label}</div>
+              <label className="text-xs">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Start</div>
+                <input
+                  type="time"
+                  value={d.start}
+                  disabled={d.closed}
+                  onChange={(e) => update(k, { start: e.target.value })}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-sm disabled:opacity-50"
+                />
+              </label>
+              <label className="text-xs">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">End</div>
+                <input
+                  type="time"
+                  value={d.end}
+                  disabled={d.closed}
+                  onChange={(e) => update(k, { end: e.target.value })}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-sm disabled:opacity-50"
+                />
+              </label>
+              <label className="text-xs flex items-center gap-2 pt-4">
+                <input
+                  type="checkbox"
+                  checked={d.closed}
+                  onChange={(e) => update(k, { closed: e.target.checked })}
+                />
+                <span className="font-bold uppercase tracking-wider text-[10px]">Closed</span>
+              </label>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={() => m.mutate(draft)}
+          disabled={m.isPending}
+          className="portal-btn-primary px-5 py-2"
+        >
+          {m.isPending ? "Saving…" : "Save weekly hours"}
+        </button>
+        <button
+          onClick={() => setDraft(q.data?.weekly ?? null)}
+          className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Local hook wrappers so we can lazily reference server fns without duplicating imports at top of file.
+function useServerFnLocal_getMyWorkHours() {
+  const { useServerFn } = require("@tanstack/react-start") as typeof import("@tanstack/react-start");
+  const { getMyWorkHours } = require("@/lib/schedule-board.functions") as typeof import("@/lib/schedule-board.functions");
+  return useServerFn(getMyWorkHours);
+}
+function useServerFnLocal_saveMyWorkHours() {
+  const { useServerFn } = require("@tanstack/react-start") as typeof import("@tanstack/react-start");
+  const { saveMyWorkHours } = require("@/lib/schedule-board.functions") as typeof import("@/lib/schedule-board.functions");
+  return useServerFn(saveMyWorkHours);
+}
+
+
 // ───────────────────────── Sidebar ─────────────────────────
+
+
 
 function PortalSidebar(props: {
   portal: PortalKind;
