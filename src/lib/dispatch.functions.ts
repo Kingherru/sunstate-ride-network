@@ -2,10 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function requireAdmin(context: any) {
-  const { data } = await context.supabase.rpc("has_role", {
+async function requireZoneManager(context: any) {
+  const { data } = await context.supabase.rpc("has_any_role", {
     _user_id: context.userId,
-    _role: "admin",
+    _roles: ["admin", "app_manager", "zone_manager"],
   });
   if (!data) throw new Error("Forbidden");
 }
@@ -43,7 +43,7 @@ export const assignZipsToZone = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => assignZipsSchema.parse(input))
   .handler(async ({ data, context }) => {
-    await requireAdmin(context);
+    await requireZoneManager(context);
     const rows = data.zips.map((zip) => ({ zip, zone_id: data.zone_id }));
     const { error } = await context.supabase
       .from("dispatch_zone_zips")
@@ -64,7 +64,7 @@ export const removeZipFromZone = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { zip: string }) => input)
   .handler(async ({ data, context }) => {
-    await requireAdmin(context);
+    await requireZoneManager(context);
     const { error } = await context.supabase
       .from("dispatch_zone_zips")
       .delete()
