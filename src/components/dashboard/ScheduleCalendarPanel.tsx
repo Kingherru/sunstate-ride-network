@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+export const RESV_DND_MIME = "application/x-reservation-id";
 import {
   getMyWorkHours,
   listMyDrivers,
