@@ -22,7 +22,7 @@ import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
-import { WeeklySchedulePanel } from "@/components/dashboard/WeeklySchedulePanel";
+import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPanel";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
@@ -66,11 +66,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "weekly_schedule" | "medicaid" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "weekly_schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
+  provider: ["reservations", "received", "sent", "new", "schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
 
@@ -102,7 +102,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "payments") return "Payments";
   if (t === "saved_patients") return "Saved Patients";
   if (t === "business_info") return "Business Info";
-  if (t === "weekly_schedule") return "Weekly Schedule";
+  if (t === "schedule") return "Schedule";
   if (t === "medicaid") return "Medicaid Submission";
   return "Account";
 }
@@ -341,7 +341,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "saved_patients" && <SavedPatientsPanel />}
             {tab === "business_info" && <BusinessInfoPanel />}
-            {tab === "weekly_schedule" && <WeeklySchedulePanel />}
+            {tab === "schedule" && <ScheduleCalendarPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
               </div>

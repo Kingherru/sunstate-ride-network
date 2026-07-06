@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { listMyReservations } from "@/lib/schedule-board.functions";
 
 type Row = {
   id: string;
@@ -141,57 +144,86 @@ export function RequestsPanel({ userId }: { userId: string }) {
   );
 }
 
-export function ReservationsPanel({ userId }: { userId: string }) {
+
+type Bucket = "past" | "current" | "future";
+
+export function ReservationsPanel({ userId: _userId }: { userId: string }) {
+  const [bucket, setBucket] = useState<Bucket>("current");
+  const fn = useServerFn(listMyReservations);
   const q = useQuery({
-    queryKey: ["reservations", userId],
-    queryFn: async (): Promise<Row[]> => {
-      const { data, error } = await supabase
-        .from("ride_requests")
-        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
-        .eq("assigned_provider_id", userId)
-        .order("pickup_date", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as Row[];
-    },
+    queryKey: ["my-reservations", bucket],
+    queryFn: () => fn({ data: { bucket } }),
   });
-  const rows = q.data ?? [];
+  const rows = (q.data ?? []) as any[];
+
+  const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
+    (acc[r.pickup_date] ||= []).push(r);
+    return acc;
+  }, {});
+  const dates = Object.keys(grouped).sort((a, b) =>
+    bucket === "past" ? b.localeCompare(a) : a.localeCompare(b),
+  );
+
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
-        <p className="text-sm text-muted-foreground">Approved trips assigned to you. Click Review to see full request & trip details.</p>
+        <p className="text-sm text-muted-foreground">Confirmed trips assigned to you. Use the schedule tab to place them on a driver's calendar.</p>
       </div>
+
+      <div className="inline-flex bg-card border border-border rounded-sm p-1">
+        {(["past","current","future"] as Bucket[]).map((b) => (
+          <button
+            key={b}
+            onClick={() => setBucket(b)}
+            className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm ${
+              bucket === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {b === "past" ? "Past" : b === "current" ? "Today" : "Future"}
+          </button>
+        ))}
+      </div>
+
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
       {!q.isLoading && rows.length === 0 && (
-        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">No reservations yet. Approve a request to see it here.</div>
+        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
+          No {bucket === "past" ? "past" : bucket === "current" ? "trips scheduled for today" : "upcoming"} reservations.
+        </div>
       )}
-      <div className="space-y-3">
-        {rows.map((r) => (
-          <div key={r.id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                {sourceBadge(r.dispatch_source, !!r.requester_user_id)}
-                <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
-              </div>
-              <div className="font-extrabold">{r.patient_first_name} {r.patient_last_name} · {r.pickup_date}</div>
-              <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
-                <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
-                {(r.round_trip || r.trip_type === "round_trip" || r.return_pickup_time) && (
-                  <>
-                    <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return pickup:</span> {r.return_pickup_time || "—"}</span>
-                    {r.return_dropoff_time && (
-                      <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return drop-off:</span> {r.return_dropoff_time}</span>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">
-                <div>{r.pickup_address}{r.pickup_address_details ? ` (${r.pickup_address_details})` : ""}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
-              </div>
 
+      <div className="space-y-6">
+        {dates.map((date) => (
+          <div key={date}>
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              {new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
+              <span className="ml-2 text-foreground">· {grouped[date].length} trip{grouped[date].length === 1 ? "" : "s"}</span>
             </div>
-            <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted shrink-0">Review</Link>
+            <div className="space-y-3">
+              {grouped[date].map((r: any) => (
+                <div key={r.id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
+                      {r.scheduled_start_time && (
+                        <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
+                          Sched {String(r.scheduled_start_time).slice(0,5)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="font-extrabold">{r.patient_first_name} {r.patient_last_name}</div>
+                    <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                      <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
+                      <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      <div>{r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
+                    </div>
+                  </div>
+                  <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted shrink-0">Review</Link>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
