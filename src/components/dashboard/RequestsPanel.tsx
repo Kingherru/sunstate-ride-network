@@ -144,9 +144,6 @@ export function RequestsPanel({ userId }: { userId: string }) {
   );
 }
 
-import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { listMyReservations } from "@/lib/schedule-board.functions";
 
 type Bucket = "past" | "current" | "future";
 
