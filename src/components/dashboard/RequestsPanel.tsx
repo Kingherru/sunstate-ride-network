@@ -205,7 +205,13 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
             </div>
             <div className="space-y-3">
               {grouped[date].map((r: any) => (
-                <div key={r.id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
+                <div
+                  key={r.id}
+                  draggable
+                  onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; }}
+                  className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing"
+                  title="Drag onto the schedule board above to (re)assign a driver and time"
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
