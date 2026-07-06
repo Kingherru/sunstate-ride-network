@@ -70,7 +70,7 @@ type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" 
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "payments", "account"],
-  provider: ["reservations", "received", "sent", "new", "schedule", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
+  provider: ["reservations", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "business_info", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "payments", "account"],
 };
 
