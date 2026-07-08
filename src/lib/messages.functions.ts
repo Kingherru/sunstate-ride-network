@@ -196,7 +196,7 @@ export const discoverContacts = createServerFn({ method: "POST" })
       supabase.from("ride_requests").select("assigned_provider_id").eq("requester_user_id", userId),
     ]);
     const provIds = new Set<string>();
-    (trips ?? []).forEach((t: any) => { if (t.assigned_to) provIds.add(t.assigned_to); if (t.assigned_provider_id) provIds.add(t.assigned_provider_id); });
+    (trips ?? []).forEach((t: any) => { if (t.assigned_to) provIds.add(t.assigned_to); });
     (reqs ?? []).forEach((r: any) => { if (r.assigned_provider_id) provIds.add(r.assigned_provider_id); });
     const ids = Array.from(provIds).filter((id) => id !== userId);
     if (ids.length === 0) return { ok: true as const, contacts: [] };
