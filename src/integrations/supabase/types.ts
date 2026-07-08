@@ -569,6 +569,62 @@ export type Database = {
           },
         ]
       }
+      message_threads: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          last_message_at: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          last_message_at?: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          last_message_at?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_email_queue: {
         Row: {
           body: string
@@ -1786,6 +1842,35 @@ export type Database = {
         }
         Relationships: []
       }
+      thread_participants: {
+        Row: {
+          joined_at: string
+          last_read_at: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          last_read_at?: string | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          last_read_at?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thread_participants_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_payments: {
         Row: {
           amount_cents: number
@@ -2412,6 +2497,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
       ensure_member_display_id: { Args: never; Returns: string }
       get_trips_admin_metadata: {
@@ -2465,6 +2551,10 @@ export type Database = {
       }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_thread_participant: {
+        Args: { _thread_id: string; _user_id: string }
+        Returns: boolean
+      }
       list_expiring_provider_credentials: {
         Args: never
         Returns: {
@@ -2517,6 +2607,7 @@ export type Database = {
         Args: { _accept: boolean; _trip_id: string }
         Returns: undefined
       }
+      start_direct_thread: { Args: { _recipient: string }; Returns: string }
       suggest_providers_for_trip: {
         Args: { _trip_id: string }
         Returns: {
