@@ -192,7 +192,7 @@ export const discoverContacts = createServerFn({ method: "POST" })
 
     // my_providers: providers the caller has interacted with
     const [{ data: trips }, { data: reqs }] = await Promise.all([
-      supabase.from("trips").select("assigned_to, assigned_provider_id").eq("requester_user_id", userId),
+      supabase.from("trips").select("assigned_to").eq("created_by", userId),
       supabase.from("ride_requests").select("assigned_provider_id").eq("requester_user_id", userId),
     ]);
     const provIds = new Set<string>();
