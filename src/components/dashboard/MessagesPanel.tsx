@@ -78,8 +78,8 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
     queryKey: ["msg-directory", directoryKind, search],
     queryFn: async () => {
       const r = await discoverFn({ data: { kind: directoryKind, search } });
-      if (!r.ok) throw new Error(r.error);
-      return r.contacts as Contact[];
+      if (!r.ok) throw new Error((r as any).error ?? "Failed");
+      return (r as any).contacts as Contact[];
     },
     enabled: composeOpen,
   });
