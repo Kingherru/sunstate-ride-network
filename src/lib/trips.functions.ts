@@ -248,3 +248,78 @@ export const updateTripStatus = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+const editableFieldsSchema = z.object({
+  patient_phone: z.string().trim().max(32).nullable().optional(),
+  emergency_contact_name: z.string().trim().max(120).nullable().optional(),
+  emergency_contact_phone: z.string().trim().max(32).nullable().optional(),
+  pickup_address: z.string().trim().max(255).nullable().optional(),
+  pickup_address_details: z.string().trim().max(255).nullable().optional(),
+  pickup_city: z.string().trim().max(80).nullable().optional(),
+  pickup_zip: z.string().trim().max(10).nullable().optional(),
+  pickup_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  pickup_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+  appointment_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+  return_pickup_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+  return_dropoff_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+  dropoff_address: z.string().trim().max(255).nullable().optional(),
+  dropoff_city: z.string().trim().max(80).nullable().optional(),
+  dropoff_zip: z.string().trim().max(10).nullable().optional(),
+  mobility_notes: z.string().trim().max(1000).nullable().optional(),
+  special_instructions: z.string().trim().max(2000).nullable().optional(),
+  provider_notes: z.string().trim().max(2000).nullable().optional(),
+});
+
+/**
+ * Update editable trip details. Authorization: caller must be sender (created_by),
+ * assigned provider (assigned_to), or an admin. Uses service role after authz check
+ * because authenticated UPDATE on public.trips is revoked.
+ */
+export const updateTripDetails = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ trip_id: z.string().uuid(), patch: editableFieldsSchema }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    // Authorize: fetch trip and confirm caller role.
+    const { data: trip, error: tripErr } = await supabase
+      .from("trips")
+      .select("id, created_by, assigned_to")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    if (tripErr) throw tripErr;
+    if (!trip) throw new Error("Trip not found");
+
+    let isAdmin = false;
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleRow) isAdmin = true;
+
+    const isSender = trip.created_by === userId;
+    const isRecipient = trip.assigned_to === userId;
+    if (!isSender && !isRecipient && !isAdmin) {
+      throw new Error("You do not have permission to edit this trip");
+    }
+
+    // Providers (recipients) may only edit provider_notes; senders/admins may edit all fields.
+    const patch: Record<string, unknown> = {};
+    const providerOnlyKeys = new Set(["provider_notes"]);
+    for (const [k, v] of Object.entries(data.patch)) {
+      if (v === undefined) continue;
+      if (isRecipient && !isSender && !isAdmin && !providerOnlyKeys.has(k)) continue;
+      patch[k] = v === "" ? null : v;
+    }
+    if (Object.keys(patch).length === 0) return { ok: true, updated: 0 };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("trips").update(patch).eq("id", data.trip_id);
+    if (error) throw error;
+    return { ok: true, updated: Object.keys(patch).length };
+  });
+
