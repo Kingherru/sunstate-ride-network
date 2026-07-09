@@ -39,6 +39,7 @@ export const rideRequestSchema = z.object({
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
   recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
   recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  embedToken: z.string().trim().min(6).max(64).optional().or(z.literal("")),
 }).superRefine((data, ctx) => {
   if (data.tripType === "round_trip" && !data.returnPickupTime) {
     ctx.addIssue({
