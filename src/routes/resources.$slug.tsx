@@ -80,15 +80,8 @@ export const Route = createFileRoute("/resources/$slug")({
   component: ArticlePage,
 });
 
-const COVER_STYLE: Record<Post["cover"], string> = {
-  navy:   "bg-gradient-to-br from-[#0c2340] via-[#123057] to-[#1D3557]",
-  peach:  "bg-gradient-to-br from-[#F9CB9F] via-[#F2A968] to-[#E68A3C]",
-  sunset: "bg-gradient-to-br from-[#b94a24] via-[#d0663a] to-[#F2A968]",
-  forest: "bg-gradient-to-br from-[#1f3d2b] via-[#2b5a3d] to-[#4a8567]",
-  cobalt: "bg-gradient-to-br from-[#123057] via-[#1e5aa8] to-[#3a86d9]",
-  coral:  "bg-gradient-to-br from-[#b94a24] via-[#e26a3d] to-[#F9CB9F]",
-  sand:   "bg-gradient-to-br from-[#e9dcc4] via-[#d4c091] to-[#b09d6a]",
-};
+const COVER_CLASS = "bg-primary";
+
 
 function ArticlePage() {
   const { post } = Route.useLoaderData() as { post: Post };
