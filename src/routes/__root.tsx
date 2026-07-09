@@ -142,15 +142,16 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const portal = getPortalContext(pathname);
   const isAuthedArea = portal !== "public";
+  const isEmbed = pathname.startsWith("/embed/");
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <div className="min-h-screen flex flex-col bg-background text-foreground">
-          {!isAuthedArea && <Header />}
+          {!isAuthedArea && !isEmbed && <Header />}
           <main className="flex-1">
             <Outlet />
           </main>
-          <Footer portal={portal} />
+          {!isEmbed && <Footer portal={portal} />}
         </div>
         <Toaster richColors position="top-center" />
         <PreviewRefreshButton />
