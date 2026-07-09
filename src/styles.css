@@ -337,11 +337,13 @@
   color: var(--foreground);
   color-scheme: dark;
 }
+/* Headings inside the portal inherit from their container (light on dark
+   navy body, dark on peach primary surfaces, etc.) */
 .portal-scope h1,
 .portal-scope h2,
 .portal-scope h3,
 .portal-scope h4,
-.portal-scope .font-display { color: var(--foreground); }
+.portal-scope .font-display { color: inherit; }
 
 /* Native form controls inherit dark theme */
 .portal-scope input,
