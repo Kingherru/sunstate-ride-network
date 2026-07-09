@@ -214,6 +214,18 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const upcoming = sent.filter((t) => ["scheduled","assigned","in_progress"].includes((t.status ?? "").toLowerCase())).length;
   const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
 
+  const listThreadsFn = useServerFn(listThreads);
+  const unreadQ = useQuery({
+    queryKey: ["msg-unread-total", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const r = await listThreadsFn();
+      return r.ok ? (r.total_unread ?? 0) : 0;
+    },
+    refetchInterval: 60_000,
+  });
+  const unreadTotal = unreadQ.data ?? 0;
+
   return (
     <div className="portal-scope min-h-screen flex">
       <PortalSidebar
@@ -223,7 +235,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         allowedTabs={allowedTabs}
         currentTab={tab}
         onTab={setTab}
-        counts={{ received: received.length, sent: sent.length }}
+        counts={{ received: received.length, sent: sent.length, unread: unreadTotal }}
         membershipStatus={profile?.membership_status ?? "inactive"}
         onSavedName={() => qc.invalidateQueries({ queryKey: ["member-profile"] })}
       />
