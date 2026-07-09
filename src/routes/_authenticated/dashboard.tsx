@@ -14,6 +14,7 @@ import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { SavedPatientsPanel } from "@/components/dashboard/SavedPatientsPanel";
+import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProviderContactsPanel";
 import { BusinessInfoPanel } from "@/components/dashboard/BusinessInfoPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
@@ -108,7 +109,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "payouts") return "Payouts";
   if (t === "integrations") return "Integrations";
   if (t === "payments") return "Payments";
-  if (t === "saved_patients") return "Saved People";
+  if (t === "saved_patients") return "Contacts";
   if (t === "business_info") return "Business Info";
   if (t === "medicaid") return "Medicaid Submission";
   if (t === "schedule") return "Schedule";
@@ -365,7 +366,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
-            {tab === "saved_patients" && <SavedPatientsPanel />}
+            {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
