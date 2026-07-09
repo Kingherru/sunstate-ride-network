@@ -247,14 +247,27 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
           </form>
-          <button
-            onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-            className="mt-4 text-sm text-muted-foreground hover:text-foreground"
-          >
-            {mode === "signin"
-              ? "Don't have an account? Sign up"
-              : "Already registered? Sign in"}
-          </button>
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {mode === "signin"
+                ? "Don't have an account? Sign up"
+                : "Already registered? Sign in"}
+            </button>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={onForgot}
+                disabled={busy}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </section>
