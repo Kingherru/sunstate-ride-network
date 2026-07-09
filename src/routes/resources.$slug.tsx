@@ -91,8 +91,9 @@ const COVER_STYLE: Record<Post["cover"], string> = {
 };
 
 function ArticlePage() {
-  const { post } = Route.useLoaderData();
+  const { post } = Route.useLoaderData() as { post: Post };
   const related = getRelatedPosts(post.slug);
+
 
   return (
     <article className="pb-24">
