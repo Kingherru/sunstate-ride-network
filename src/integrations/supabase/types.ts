@@ -2766,6 +2766,13 @@ export type Database = {
         Args: { _accept: boolean; _trip_id: string }
         Returns: undefined
       }
+      set_trip_payment_status: {
+        Args: {
+          _status: Database["public"]["Enums"]["trip_payment_status"]
+          _trip_id: string
+        }
+        Returns: undefined
+      }
       start_direct_thread: { Args: { _recipient: string }; Returns: string }
       suggest_providers_for_trip: {
         Args: { _trip_id: string }
@@ -2805,6 +2812,11 @@ export type Database = {
         | "bed_to_bed"
         | "curb_to_curb"
         | "driveway_pickup"
+      trip_payment_status:
+        | "not_confirmed"
+        | "pending"
+        | "confirmed"
+        | "refunded"
       trip_payout_status: "pending" | "held" | "released" | "canceled"
     }
     CompositeTypes: {
@@ -2953,6 +2965,12 @@ export const Constants = {
         "bed_to_bed",
         "curb_to_curb",
         "driveway_pickup",
+      ],
+      trip_payment_status: [
+        "not_confirmed",
+        "pending",
+        "confirmed",
+        "refunded",
       ],
       trip_payout_status: ["pending", "held", "released", "canceled"],
     },
