@@ -1806,6 +1806,11 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         <BusinessInfoPanel />
       )}
 
+      {subTab === "pricing" && isProvider && <PricingPanel />}
+      {subTab === "rules" && isProvider && <RulesPanel />}
+      {subTab === "integrations" && isProvider && <IntegrationsPanel />}
+      {subTab === "payouts" && isProvider && <PayoutsPanel userId={userId} />}
+
       {subTab === "membership" && (
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="hidden lg:block lg:col-span-1" />
