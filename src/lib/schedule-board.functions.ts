@@ -126,7 +126,7 @@ export const listMyReservations = createServerFn({ method: "GET" })
     const today = new Date().toISOString().slice(0, 10);
     let q = context.supabase
       .from("ride_requests")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, status, scheduled_start_time, assigned_driver_id")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, patient_phone, patient_date_of_birth, patient_gender, pickup_address, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, round_trip, transport_type, service_level, status, scheduled_start_time, assigned_driver_id, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, distance_miles, estimated_cost_cents")
       .eq("assigned_provider_id", context.userId)
       .in("status", ["assigned", "confirmed", "en_route", "in_progress", "completed", "delivered"])
       .order("pickup_date", { ascending: data.bucket === "past" ? false : true });
