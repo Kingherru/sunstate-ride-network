@@ -35,113 +35,139 @@ function ChangelogPage() {
   const fresh = latest ? daysSince(latest.date) <= 7 : false;
 
   return (
-    <div className="relative w-full min-h-screen bg-[#020617] text-white selection:bg-[#f97316]/30 overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute inset-0" />
-
-
-      {/* Nav */}
-      <nav className="relative max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-sm bg-[#f97316] flex items-center justify-center font-extrabold text-[#0b1d3a] tracking-tighter">
-            F
+    <div className="min-h-screen flex bg-background text-foreground">
+      {/* Portal-style sidebar */}
+      <aside className="w-64 shrink-0 bg-[oklch(0.20_0.05_257)] text-white min-h-screen flex flex-col">
+        <div className="px-5 py-6 border-b border-white/10">
+          <Link to="/" className="flex items-center gap-2 mb-5">
+            <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
+            <span className="font-display font-bold text-base tracking-tight uppercase">Florida NEMT</span>
+          </Link>
+          <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.10_195)] mb-1">
+            Release notes
           </div>
-          <span className="font-extrabold text-xl tracking-tight">Florida NEMT</span>
+          <div className="font-display text-lg font-bold tracking-tight">Changelog</div>
         </div>
-        <Link to="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Back to home
-        </Link>
-      </nav>
 
-      {/* Header */}
-      <section className="relative max-w-5xl mx-auto px-6 pt-10 pb-6">
-        <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-[#f97316]/10 border border-[#f97316]/25 text-[#fbbf24] text-xs font-bold uppercase tracking-widest mb-3">
-              <span className={`w-1.5 h-1.5 rounded-full ${fresh ? "bg-emerald-400 animate-pulse" : "bg-[#f97316]"}`} />
-              Changelog
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {CHANGELOG.map((c, i) => (
+            <a
+              key={c.version}
+              href={`#v${c.version}`}
+              className="relative block w-full text-left pl-4 pr-3 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+            >
+              {i === 0 && fresh && (
+                <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.872_0.078_65.2)]" />
+              )}
+              <span className="inline-flex items-center gap-2">
+                v{c.version}
+                {i === 0 && fresh && (
+                  <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-sm">
+                    New
+                  </span>
+                )}
+              </span>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-white/40 mt-0.5">{c.date}</div>
+            </a>
+          ))}
+        </nav>
+
+        <div className="px-5 py-4 border-t border-white/10 text-xs space-y-2">
+          <Link to="/dashboard" className="font-bold uppercase tracking-wider text-white/70 hover:text-white text-[11px] flex items-center gap-1.5">
+            <ArrowLeft className="w-3 h-3" /> Back to dashboard
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 min-w-0 flex flex-col">
+        <div className="h-16 bg-card border-b border-border flex items-center justify-between px-8 sticky top-0 z-10">
+          <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-foreground">
+            florida nemt / changelog
+          </span>
+          <div className="flex items-center gap-4 text-xs">
+            <span className="font-mono uppercase tracking-wider text-muted-foreground">Live</span>
+            <span className="size-2 rounded-full bg-[oklch(0.872_0.078_65.2)] animate-pulse" />
+          </div>
+        </div>
+
+        <div className="px-8 py-7 space-y-7 max-w-5xl">
+          {/* Hero */}
+          <div className="pb-2 border-b border-border">
+            <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.04_220)] mb-2">
+              Florida NEMT · release notes
             </div>
-            <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight">
+            <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight text-brand">
               {latest ? `What's new in v${latest.version}` : "Release notes"}
             </h1>
-            <p className="text-slate-400 mt-2 max-w-2xl">
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl">
               Every meaningful change shipped across the patient, provider, and facility portals.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-500">
-            {CHANGELOG.slice().reverse().map((c, i, arr) => (
-              <span key={c.version} className="flex items-center gap-2">
-                <span
-                  className={
-                    i === arr.length - 1
-                      ? "px-2 py-1 rounded-sm border border-[#fbbf24]/30 bg-[#fbbf24]/10 text-[#fbbf24]"
-                      : "px-2 py-1 rounded-sm border border-white/10 bg-white/5"
-                  }
-                >
-                  v{c.version}
-                </span>
-                {i < arr.length - 1 && <span>→</span>}
-              </span>
-            ))}
-          </div>
-        </div>
 
-        {CHANGELOG.map((entry, idx) => {
-          const isFresh = idx === 0 && fresh;
-          return (
-            <div key={entry.version} className="mb-10">
-              <div className="flex items-center gap-3 mb-3">
-                <h2 className="text-lg font-extrabold text-white">v{entry.version}</h2>
-                <span className="text-[11px] font-mono uppercase tracking-widest text-slate-500">{entry.date}</span>
-                {isFresh && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-sm">
-                    New this week
-                  </span>
-                )}
-              </div>
-              <ul className="rounded-sm border border-white/10 bg-white/[0.04] divide-y divide-white/5">
-                {entry.notes.map((note, i) => {
-                  const tag = inferTag(note);
-                  return (
-                    <li key={i} className="flex items-start gap-3 px-4 sm:px-5 py-3">
-                      <span
-                        className={
-                          "shrink-0 mt-0.5 px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-widest w-[88px] text-center " +
-                          (tag === "New"
-                            ? "bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/25"
-                            : tag === "Improved"
-                              ? "bg-[#f97316]/10 text-[#fb923c] border border-[#f97316]/25"
-                              : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/25")
-                        }
-                      >
-                        {tag}
+          {CHANGELOG.map((entry, idx) => {
+            const isFresh = idx === 0 && fresh;
+            return (
+              <section
+                id={`v${entry.version}`}
+                key={entry.version}
+                className="bg-card border border-border shadow-card scroll-mt-24"
+              >
+                <div className="px-6 py-4 border-b border-border flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <h2 className="font-display text-xl font-bold tracking-tight">v{entry.version}</h2>
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+                      {entry.date}
+                    </span>
+                    {isFresh && (
+                      <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 px-2 py-0.5 rounded-sm">
+                        New this week
                       </span>
-                      <p className="text-sm text-slate-300 leading-relaxed">{note}</p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          );
-        })}
-      </section>
+                    )}
+                  </div>
+                </div>
+                <ul className="divide-y divide-border">
+                  {entry.notes.map((note, i) => {
+                    const tag = inferTag(note);
+                    return (
+                      <li key={i} className="flex items-start gap-3 px-6 py-3">
+                        <span
+                          className={
+                            "shrink-0 mt-0.5 px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-widest w-[88px] text-center border " +
+                            (tag === "New"
+                              ? "bg-[oklch(0.96_0.05_75)] text-[oklch(0.35_0.12_45)] border-[oklch(0.872_0.078_65.2)]"
+                              : tag === "Improved"
+                                ? "bg-[oklch(0.96_0.03_220)] text-[oklch(0.30_0.08_240)] border-[oklch(0.78_0.10_220)]"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200")
+                          }
+                        >
+                          {tag}
+                        </span>
+                        <p className="text-sm text-foreground/90 leading-relaxed">{note}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            );
+          })}
 
-      {/* CTA */}
-      <section className="relative max-w-5xl mx-auto px-6 py-12">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-sm border border-white/10 bg-[#f97316]/10">
-          <div>
-            <h3 className="text-lg font-extrabold mb-1">Back to your dashboard</h3>
-            <p className="text-sm text-slate-400">Pick up where you left off.</p>
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-[oklch(0.18_0.05_257)] text-white border-l-4 border-[oklch(0.872_0.078_65.2)]">
+            <div>
+              <h3 className="font-display text-lg font-bold mb-1">Back to your dashboard</h3>
+              <p className="text-sm text-white/70">Pick up where you left off.</p>
+            </div>
+            <Link
+              to="/dashboard"
+              className="px-6 py-3 bg-[oklch(0.872_0.078_65.2)] text-[oklch(0.18_0.05_257)] font-bold uppercase tracking-wider text-xs rounded-sm flex items-center gap-2 hover:opacity-90 transition-all shrink-0"
+            >
+              <Sparkles className="w-4 h-4" strokeWidth={2.5} />
+              Open Dashboard
+            </Link>
           </div>
-          <Link
-            to="/dashboard"
-            className="px-6 py-3 bg-[#f97316] text-[#0b1d3a] font-extrabold rounded-sm flex items-center gap-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all transform hover:-translate-y-0.5 shrink-0"
-          >
-            <Sparkles className="w-4 h-4" strokeWidth={2.5} />
-            Open Dashboard
-          </Link>
         </div>
-      </section>
+      </main>
     </div>
   );
 }
