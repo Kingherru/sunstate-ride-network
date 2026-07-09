@@ -216,6 +216,61 @@ export function ScheduleCalendarPanel() {
         </div>
       )}
 
+      {/* Top summary — live driver → trip assignments */}
+      {!closed && drivers.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
+              Dispatch summary · Live
+            </div>
+            <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+              {reservations.filter((r: any) => r.assigned_driver_id).length} assigned · {unassigned.length} unassigned
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {drivers.map((d: any) => {
+              const dTrips = reservations
+                .filter((r: any) => r.assigned_driver_id === d.id)
+                .sort((a: any, b: any) =>
+                  ((a.scheduled_start_time ?? a.pickup_time ?? "") + "")
+                    .localeCompare((b.scheduled_start_time ?? b.pickup_time ?? "") + ""),
+                );
+              const next = dTrips[0];
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setOpenDriverId(d.id)}
+                  className="text-left rounded-sm border border-border bg-background hover:border-accent hover:shadow-sm transition p-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-sm truncate">{d.first_name} {d.last_name}</span>
+                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${
+                      dTrips.length === 0
+                        ? "bg-slate-100 text-slate-600"
+                        : "bg-emerald-100 text-emerald-800"
+                    }`}>
+                      {dTrips.length} trip{dTrips.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  {next ? (
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      <span className="font-mono">
+                        {(next.scheduled_start_time ?? next.pickup_time ?? "").toString().slice(0, 5)}
+                      </span>{" "}
+                      · {next.patient_first_name} {next.patient_last_name}
+                      <div className="truncate">{next.pickup_city} → {next.dropoff_city}</div>
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-[11px] text-muted-foreground italic">No trips scheduled</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Unassigned bin */}
       {!closed && (
         <div
