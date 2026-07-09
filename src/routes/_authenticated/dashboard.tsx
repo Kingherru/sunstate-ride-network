@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { createPortalSession } from "@/utils/payments.functions";
-import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, recordHipaaAck } from "@/lib/trips.functions";
+import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, updateTripDetails, recordHipaaAck } from "@/lib/trips.functions";
 import { ensureMyDisplayId } from "@/lib/system-ids.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
@@ -841,6 +841,18 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
     }
   }
 
+  if (viewing) {
+    return (
+      <TripDetailView
+        trip={viewing}
+        userId={userId}
+        role={role}
+        onBack={() => setViewing(null)}
+        onChanged={onChanged}
+      />
+    );
+  }
+
   if (!trips.length) {
     return <div className="bg-card border border-border rounded-sm p-10 text-center text-muted-foreground">No trips yet.</div>;
   }
@@ -917,35 +929,116 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
       {assigning && (
         <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
       )}
-      {viewing && <TripDetailModal trip={viewing} onClose={() => setViewing(null)} />}
       {rating && <RateProviderModal trip={rating} onClose={() => setRating(null)} onSaved={() => { setRating(null); onChanged(); }} />}
     </>
   );
 }
 
-function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
+
+type EditableFields = {
+  patient_phone: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+  pickup_address: string;
+  pickup_address_details: string;
+  pickup_city: string;
+  pickup_zip: string;
+  pickup_date: string;
+  pickup_time: string;
+  appointment_time: string;
+  return_pickup_time: string;
+  return_dropoff_time: string;
+  dropoff_address: string;
+  dropoff_city: string;
+  dropoff_zip: string;
+  mobility_notes: string;
+  special_instructions: string;
+  provider_notes: string;
+};
+
+function toFormValue(v: unknown): string {
+  if (v == null) return "";
+  return String(v);
+}
+
+function TripDetailView({
+  trip,
+  userId,
+  role,
+  onBack,
+  onChanged,
+}: {
+  trip: Trip;
+  userId: string;
+  role: "sender" | "recipient";
+  onBack: () => void;
+  onChanged: () => void;
+}) {
   const t: any = trip;
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const qc = useQueryClient();
 
-  const Field = ({ label, value, alwaysShow }: { label: string; value: any; alwaysShow?: boolean }) => {
-    const empty = value == null || value === "" || value === false;
-    if (empty && !alwaysShow) return null;
-    return (
-      <div className="space-y-1">
-        <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">{label}</div>
-        <div className="text-sm font-medium text-white break-words">{empty ? "—" : String(value)}</div>
-      </div>
-    );
-  };
+  // Permissions: senders + admins can edit all fields; recipients (providers) can only edit their notes.
+  // We infer sender/admin capability from role="sender" or ownership; provider gets a narrower edit surface.
+  const isSender = t.created_by === userId || role === "sender";
+  const isRecipient = t.assigned_to === userId || role === "recipient";
+  const canEditAll = isSender;
+  const canEditProviderNotes = isRecipient || isSender;
+  const canEdit = canEditAll || canEditProviderNotes;
 
-  const Section = ({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) => (
-    <section className="rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <span className={`inline-block h-2 w-2 rounded-full ${accent}`} />
-        <h4 className="text-[0.7rem] font-bold uppercase tracking-[0.18em] text-white/70">{title}</h4>
-      </div>
-      <div className="grid grid-cols-2 gap-x-5 gap-y-4">{children}</div>
-    </section>
-  );
+  const [form, setForm] = useState<EditableFields>(() => ({
+    patient_phone: toFormValue(t.patient_phone),
+    emergency_contact_name: toFormValue(t.emergency_contact_name),
+    emergency_contact_phone: toFormValue(t.emergency_contact_phone),
+    pickup_address: toFormValue(t.pickup_address),
+    pickup_address_details: toFormValue(t.pickup_address_details),
+    pickup_city: toFormValue(t.pickup_city),
+    pickup_zip: toFormValue(t.pickup_zip),
+    pickup_date: toFormValue(t.pickup_date),
+    pickup_time: toFormValue(t.pickup_time),
+    appointment_time: toFormValue(t.appointment_time),
+    return_pickup_time: toFormValue(t.return_pickup_time),
+    return_dropoff_time: toFormValue(t.return_dropoff_time),
+    dropoff_address: toFormValue(t.dropoff_address),
+    dropoff_city: toFormValue(t.dropoff_city),
+    dropoff_zip: toFormValue(t.dropoff_zip),
+    mobility_notes: toFormValue(t.mobility_notes),
+    special_instructions: toFormValue(t.special_instructions),
+    provider_notes: toFormValue(t.provider_notes),
+  }));
+
+  function setField<K extends keyof EditableFields>(k: K, v: string) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function save() {
+    setSaving(true);
+    try {
+      const patch: Partial<EditableFields> = {};
+      (Object.keys(form) as (keyof EditableFields)[]).forEach((k) => {
+        const orig = toFormValue((t as any)[k]);
+        if (form[k] !== orig) {
+          if (!canEditAll && k !== "provider_notes") return;
+          patch[k] = form[k];
+        }
+      });
+      if (Object.keys(patch).length === 0) {
+        toast.info("No changes to save");
+        setEditing(false);
+        return;
+      }
+      await updateTripDetails({ data: { trip_id: t.id, patch: patch as any } });
+      toast.success("Trip updated");
+      setEditing(false);
+      onChanged();
+      qc.invalidateQueries({ queryKey: ["my-trips"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const isRound = !!t.round_trip;
   const flags: string[] = [];
@@ -956,150 +1049,193 @@ function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void })
   if (t.needs_surgery_signin) flags.push("Surgery sign-in");
   if (t.needs_surgery_signout) flags.push("Surgery sign-out");
 
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <section className="bg-card border border-border rounded-sm">
+      <div className="px-5 py-3 border-b border-border">
+        <h4 className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-muted-foreground">{title}</h4>
+      </div>
+      <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">{children}</div>
+    </section>
+  );
+
+  const Row = ({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) => (
+    <div className={`space-y-1 ${full ? "sm:col-span-2" : ""}`}>
+      <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className="text-sm text-foreground break-words">{children}</div>
+    </div>
+  );
+
+  const readOnly = (v: unknown) => <div>{v == null || v === "" ? <span className="text-muted-foreground">—</span> : String(v)}</div>;
+
+  const input = (k: keyof EditableFields, allowed: boolean, opts?: { type?: string }) =>
+    editing && allowed ? (
+      <input
+        type={opts?.type ?? "text"}
+        value={form[k]}
+        onChange={(e) => setField(k, e.target.value)}
+        className="w-full border border-border rounded-sm px-2.5 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+      />
+    ) : (
+      readOnly((t as any)[k])
+    );
+
+  const textarea = (k: keyof EditableFields, allowed: boolean) =>
+    editing && allowed ? (
+      <textarea
+        value={form[k]}
+        onChange={(e) => setField(k, e.target.value)}
+        rows={3}
+        className="w-full border border-border rounded-sm px-2.5 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+      />
+    ) : (
+      readOnly((t as any)[k])
+    );
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[oklch(0.12_0.04_250_/_0.72)] backdrop-blur-md animate-in fade-in duration-200"
-      onClick={onClose}
-    >
-      <div
-        className="relative max-w-3xl w-full max-h-[88vh] overflow-hidden rounded-3xl border border-white/15 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)] animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background:
-            "linear-gradient(160deg, oklch(0.24 0.06 250) 0%, oklch(0.18 0.05 255) 60%, oklch(0.22 0.07 258) 100%)",
-        }}
-      >
-        {/* Accent glow */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.45)] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.25)] blur-3xl" />
-
-        {/* Header */}
-        <header className="relative px-7 pt-6 pb-5 border-b border-white/10 flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <TripStatusBadge s={t.status} />
-              {t.trip_number && (
-                <span className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/60">
-                  Trip #{t.trip_number}
-                </span>
-              )}
-            </div>
-            <h3 className="text-2xl font-extrabold tracking-tight text-white">
-              {t.patient_first_name} {t.patient_last_name}
-            </h3>
-            <p className="text-sm text-white/65">
-              {t.pickup_date}
-              {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
-              {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
-              {isRound && t.return_pickup_time ? ` · Return ${t.return_pickup_time}` : ""}
-            </p>
+    <div className="bg-background">
+      {/* Sticky header */}
+      <header className="bg-card border border-border rounded-sm px-5 py-4 mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1.5 min-w-0">
+          <button
+            onClick={onBack}
+            className="text-xs font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          >
+            ← Back to trips
+          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <TripStatusBadge s={t.status} />
+            {t.trip_number && (
+              <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Trip #{t.trip_number}
+              </span>
+            )}
+            {t.payer && String(t.payer).toLowerCase().includes("medicaid") && (
+              <span className="text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-orange-100 text-orange-700 border border-orange-200">
+                Medicaid
+              </span>
+            )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/70 hover:text-white text-sm font-bold rounded-full border border-white/15 px-3 py-1.5 hover:bg-white/10 transition"
-          >
-            Close
-          </button>
-        </header>
-
-        {/* Body */}
-        <div className="relative px-7 py-6 space-y-5 overflow-auto max-h-[calc(88vh-9rem)]">
-          <Section title="Patient" accent="bg-[oklch(0.872_0.078_65.2)]">
-            <Field label="Name" value={`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim()} />
-            <Field label="Phone" value={t.patient_phone} />
-            <Field label="Date of birth" value={t.patient_date_of_birth ?? t.patient_dob} />
-            <Field label="Weight" value={t.patient_weight} />
-            <Field label="Medicaid #" value={t.medicaid_number} />
-            <Field label="Medicaid plan" value={t.medicaid_plan} />
-            <Field label="Payer" value={t.payer} />
-            <Field label="Emergency contact" value={[t.emergency_contact_name, t.emergency_contact_phone].filter(Boolean).join(" · ")} />
-          </Section>
-
-          <Section title="Route & Schedule" accent="bg-[oklch(0.872_0.078_65.2)]">
-            <div className="col-span-2">
-              <Field
-                label="Pickup"
-                value={`${t.pickup_address ?? ""}${t.pickup_address_details ? `, ${t.pickup_address_details}` : ""}, ${t.pickup_city ?? ""} ${t.pickup_zip ?? ""}`.trim()}
-              />
-            </div>
-            <div className="col-span-2">
-              <Field
-                label="Dropoff"
-                value={`${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""} ${t.dropoff_zip ?? ""}`.trim()}
-              />
-            </div>
-            <Field label="Pickup date" value={t.pickup_date} alwaysShow />
-            <Field label="Pickup time" value={t.pickup_time} alwaysShow />
-            <Field label="Appointment time" value={t.appointment_time} alwaysShow />
-            {isRound && (
-              <>
-                <Field label="Return pickup time" value={t.return_pickup_time} alwaysShow />
-                <Field label="Return dropoff time" value={t.return_dropoff_time} alwaysShow />
-              </>
-            )}
-            <Field label="Distance (mi)" value={t.estimated_miles ?? t.actual_miles} />
-            <Field label="Estimated fare" value={t.estimated_fare ? `$${t.estimated_fare}` : null} />
-          </Section>
-
-          <Section title="Service & Patient Needs" accent="bg-[oklch(0.872_0.078_65.2)]">
-            <Field label="Transportation type" value={t.transport_type} alwaysShow />
-            <Field label="Service level" value={t.service_level ? String(t.service_level).replace(/_/g, " ") : null} alwaysShow />
-            <Field label="Trip type" value={isRound ? "Round trip" : "One-way"} alwaysShow />
-            <Field label="Source" value={t.source} />
-            <div className="col-span-2 space-y-2">
-              <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/55">Patient needs</div>
-              {flags.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {flags.map((f) => (
-                    <span
-                      key={f}
-                      className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[oklch(0.872_0.078_65.2_/_0.22)] text-white border border-[oklch(0.872_0.078_65.2_/_0.55)]"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm text-white/70">No special needs indicated.</div>
-              )}
-            </div>
-          </Section>
-
-          <Section title="Notes & Instructions" accent="bg-white/40">
-            <div className="col-span-2">
-              <Field label="Special instructions" value={t.special_instructions} alwaysShow />
-            </div>
-            <div className="col-span-2">
-              <Field label="Mobility notes" value={t.mobility_notes} alwaysShow />
-            </div>
-            {t.provider_notes && (
-              <div className="col-span-2">
-                <Field label="Provider notes" value={t.provider_notes} />
-              </div>
-            )}
-          </Section>
+          <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+            {t.patient_first_name} {t.patient_last_name}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {t.pickup_date}
+            {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
+            {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
+          </p>
         </div>
-
-
-        {/* Footer */}
-        <footer className="relative px-7 py-4 border-t border-white/10 flex justify-end gap-2 bg-black/20">
-          <button
-            onClick={onClose}
-            className="text-sm font-bold text-white/80 hover:text-white px-4 py-2 rounded-xl hover:bg-white/5 transition"
-          >
-            Close
-          </button>
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => downloadTripPdf(trip as TripPdfInput)}
-            className="text-sm font-bold text-[oklch(0.328_0.068_257.3)] px-5 py-2 rounded-xl bg-[oklch(0.872_0.078_65.2)] hover:brightness-105 transition shadow-[0_8px_24px_-8px_oklch(0.872_0.078_65.2_/_0.7)]"
+            className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
           >
             Download PDF
           </button>
-        </footer>
+          {canEdit && !editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
+            >
+              Edit trip
+            </button>
+          )}
+          {editing && (
+            <>
+              <button
+                onClick={() => setEditing(false)}
+                disabled={saving}
+                className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {saving ? "Saving…" : "Save changes"}
+              </button>
+            </>
+          )}
+        </div>
+      </header>
+
+      {editing && !canEditAll && canEditProviderNotes && (
+        <div className="mb-4 bg-sky-50 border border-sky-200 rounded-sm px-4 py-2 text-xs text-sky-800">
+          As the assigned provider, you can only edit the <b>Provider notes</b> field. Other changes must be made by the sender or an admin.
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <Section title="Patient">
+          <Row label="Name">{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
+          <Row label="Phone">{input("patient_phone", canEditAll)}</Row>
+          <Row label="Date of birth">{readOnly(t.patient_date_of_birth ?? t.patient_dob)}</Row>
+          <Row label="Weight">{readOnly(t.patient_weight)}</Row>
+          <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
+          <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
+          <Row label="Payer">{readOnly(t.payer)}</Row>
+          <Row label="Emergency contact name">{input("emergency_contact_name", canEditAll)}</Row>
+          <Row label="Emergency contact phone">{input("emergency_contact_phone", canEditAll)}</Row>
+        </Section>
+
+        <Section title="Pickup">
+          <Row label="Address" full>{input("pickup_address", canEditAll)}</Row>
+          <Row label="Suite / details" full>{input("pickup_address_details", canEditAll)}</Row>
+          <Row label="City">{input("pickup_city", canEditAll)}</Row>
+          <Row label="ZIP">{input("pickup_zip", canEditAll)}</Row>
+          <Row label="Pickup date">{input("pickup_date", canEditAll, { type: "date" })}</Row>
+          <Row label="Pickup time">{input("pickup_time", canEditAll, { type: "time" })}</Row>
+          <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>
+          {isRound && (
+            <>
+              <Row label="Return pickup time">{input("return_pickup_time", canEditAll, { type: "time" })}</Row>
+              <Row label="Return dropoff time">{input("return_dropoff_time", canEditAll, { type: "time" })}</Row>
+            </>
+          )}
+        </Section>
+
+        <Section title="Dropoff">
+          <Row label="Address" full>{input("dropoff_address", canEditAll)}</Row>
+          <Row label="City">{input("dropoff_city", canEditAll)}</Row>
+          <Row label="ZIP">{input("dropoff_zip", canEditAll)}</Row>
+          <Row label="Distance (mi)">{readOnly(t.estimated_miles ?? t.actual_miles)}</Row>
+          <Row label="Estimated fare">{readOnly(t.estimated_fare ? `$${t.estimated_fare}` : null)}</Row>
+        </Section>
+
+        <Section title="Service & needs">
+          <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
+          <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
+          <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
+          <Row label="Source">{readOnly(t.source)}</Row>
+          <Row label="Patient needs" full>
+            {flags.length ? (
+              <div className="flex flex-wrap gap-1.5">
+                {flags.map((f) => (
+                  <span
+                    key={f}
+                    className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30"
+                  >
+                    {f}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-muted-foreground">No special needs indicated.</span>
+            )}
+          </Row>
+        </Section>
+
+        <Section title="Notes & instructions">
+          <Row label="Special instructions" full>{textarea("special_instructions", canEditAll)}</Row>
+          <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>
+          <Row label="Provider notes" full>{textarea("provider_notes", canEditProviderNotes)}</Row>
+        </Section>
       </div>
     </div>
   );
 }
+
 
 
 function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: () => void; onSaved: () => void }) {
