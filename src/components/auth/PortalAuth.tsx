@@ -53,6 +53,8 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [patientTypeOther, setPatientTypeOther] = useState("");
   const [patientRelationship, setPatientRelationship] = useState<string>("");
   const [patientRelationshipOther, setPatientRelationshipOther] = useState("");
+  const [billingSameAsAccount, setBillingSameAsAccount] = useState(true);
+  const [billing, setBilling] = useState({ firstName: "", lastName: "", email: "", phone: "" });
   const copy = COPY[kind];
   const isPatient = kind === "patient";
   const isSignup = mode === "signup";
