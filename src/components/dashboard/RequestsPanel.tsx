@@ -358,10 +358,14 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           aria-label="Filter by status"
         >
           <option value="all">All statuses</option>
-          {statusOptions.map((s) => (
+          {["pending","accepted","assigned","in_progress","completed","cancelled"].map((s) => (
+            <option key={s} value={s}>{s.replace("_", " ")}</option>
+          ))}
+          {statusOptions.filter((s) => !["pending","accepted","assigned","in_progress","completed","cancelled"].includes(String(s))).map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
+
 
         <select
           value={assignFilter}
