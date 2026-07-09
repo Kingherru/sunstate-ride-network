@@ -309,9 +309,9 @@ export const updateTripDetails = createServerFn({ method: "POST" })
       throw new Error("You do not have permission to edit this trip");
     }
 
-    // Providers (recipients) may only edit provider_notes; senders/admins may edit all fields.
+    // Providers (recipients) may edit provider_notes and their quote (cost_total); senders/admins may edit all fields.
     const patch: Record<string, unknown> = {};
-    const providerOnlyKeys = new Set(["provider_notes"]);
+    const providerOnlyKeys = new Set(["provider_notes", "cost_total"]);
     for (const [k, v] of Object.entries(data.patch)) {
       if (v === undefined) continue;
       if (isRecipient && !isSender && !isAdmin && !providerOnlyKeys.has(k)) continue;
