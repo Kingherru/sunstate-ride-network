@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as MembershipRouteImport } from './routes/membership'
@@ -71,6 +72,11 @@ const ServiceAreasRoute = ServiceAreasRouteImport.update({
 const ResourcesRoute = ResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RequestARideRoute = RequestARideRouteImport.update({
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByTo {
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/membership': typeof MembershipRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/membership'
     | '/providers'
     | '/request-a-ride'
+    | '/reset-password'
     | '/resources'
     | '/service-areas'
     | '/services'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
     | '/membership'
     | '/providers'
     | '/request-a-ride'
+    | '/reset-password'
     | '/resources'
     | '/services'
     | '/sitemap.xml'
@@ -459,6 +470,7 @@ export interface FileRouteTypes {
     | '/membership'
     | '/providers'
     | '/request-a-ride'
+    | '/reset-password'
     | '/resources'
     | '/service-areas'
     | '/services'
@@ -500,6 +512,7 @@ export interface RootRouteChildren {
   MembershipRoute: typeof MembershipRoute
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
   ServicesRoute: typeof ServicesRoute
@@ -553,6 +566,13 @@ declare module '@tanstack/react-router' {
       path: '/resources'
       fullPath: '/resources'
       preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/request-a-ride': {
@@ -841,6 +861,7 @@ const rootRouteChildren: RootRouteChildren = {
   MembershipRoute: MembershipRoute,
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
   ServicesRoute: ServicesRoute,

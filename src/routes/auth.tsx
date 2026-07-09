@@ -21,6 +21,22 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  async function onForgot() {
+    if (!email) return toast.error("Enter your email above, then click Forgot password");
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Password reset email sent. Check your inbox.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function routeAfterAuth(userId: string) {
     const { data: roles } = await supabase
       .from("user_roles")
@@ -103,13 +119,25 @@ function AuthPage() {
             {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
           </button>
         </form>
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-5 text-xs text-muted hover:text-foreground underline underline-offset-4"
-        >
-          {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
-        </button>
+        <div className="mt-5 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="text-xs text-muted hover:text-foreground underline underline-offset-4 text-left"
+          >
+            {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
+          </button>
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={onForgot}
+              disabled={busy}
+              className="text-xs text-muted hover:text-foreground underline underline-offset-4 text-left"
+            >
+              Forgot password?
+            </button>
+          )}
+        </div>
         <p className="mt-6 text-xs text-muted leading-relaxed">
           New accounts have no admin permissions until granted by the project owner.
         </p>

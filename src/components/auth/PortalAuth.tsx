@@ -109,6 +109,22 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
     }
   }
 
+  async function onForgot() {
+    if (!email) return toast.error("Enter your email above, then click Forgot password");
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Password reset email sent. Check your inbox.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <section className="portal-scope min-h-[80vh] grid md:grid-cols-2 gap-0">
       <div className="hidden md:flex flex-col justify-between bg-card border-r border-border p-12">
@@ -231,14 +247,27 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
           </form>
-          <button
-            onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-            className="mt-4 text-sm text-muted-foreground hover:text-foreground"
-          >
-            {mode === "signin"
-              ? "Don't have an account? Sign up"
-              : "Already registered? Sign in"}
-          </button>
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {mode === "signin"
+                ? "Don't have an account? Sign up"
+                : "Already registered? Sign in"}
+            </button>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={onForgot}
+                disabled={busy}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </section>
