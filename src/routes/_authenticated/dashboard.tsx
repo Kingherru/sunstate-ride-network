@@ -76,7 +76,7 @@ type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" 
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "pricing", "rules", "medicaid", "payouts", "integrations", "messages", "account"],
+  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "medicaid", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "messages", "payments", "account"],
 };
 
@@ -1716,7 +1716,7 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
 }
 
 /* -------- Account (tabbed) -------- */
-type AccountTab = "profile" | "business" | "membership" | "security";
+type AccountTab = "profile" | "business" | "pricing" | "rules" | "integrations" | "payouts" | "membership" | "security";
 
 function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: PortalKind; userId: string }) {
   const [busy, setBusy] = useState(false);
@@ -1735,9 +1735,16 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
   }
 
   const showBusiness = portal === "provider" || portal === "facility";
+  const isProvider = portal === "provider";
   const tabs: Array<[AccountTab, string]> = [
     ["profile", "Profile"],
     ...(showBusiness ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ...(isProvider ? ([
+      ["pricing", "Pricing"],
+      ["rules", "Rules"],
+      ["integrations", "Integrations"],
+      ["payouts", "Payouts"],
+    ] as Array<[AccountTab, string]>) : []),
     ["membership", "Membership"],
     ["security", "Security"],
   ];
@@ -1798,6 +1805,11 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       {subTab === "business" && showBusiness && (
         <BusinessInfoPanel />
       )}
+
+      {subTab === "pricing" && isProvider && <PricingPanel />}
+      {subTab === "rules" && isProvider && <RulesPanel />}
+      {subTab === "integrations" && isProvider && <IntegrationsPanel />}
+      {subTab === "payouts" && isProvider && <PayoutsPanel userId={userId} />}
 
       {subTab === "membership" && (
         <div className="grid lg:grid-cols-3 gap-6">
