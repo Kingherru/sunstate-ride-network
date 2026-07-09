@@ -119,13 +119,25 @@ function AuthPage() {
             {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
           </button>
         </form>
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-5 text-xs text-muted hover:text-foreground underline underline-offset-4"
-        >
-          {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
-        </button>
+        <div className="mt-5 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="text-xs text-muted hover:text-foreground underline underline-offset-4 text-left"
+          >
+            {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
+          </button>
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={onForgot}
+              disabled={busy}
+              className="text-xs text-muted hover:text-foreground underline underline-offset-4 text-left"
+            >
+              Forgot password?
+            </button>
+          )}
+        </div>
         <p className="mt-6 text-xs text-muted leading-relaxed">
           New accounts have no admin permissions until granted by the project owner.
         </p>
