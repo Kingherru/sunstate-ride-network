@@ -21,6 +21,7 @@ import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
+import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { listThreads } from "@/lib/messages.functions";
 import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
