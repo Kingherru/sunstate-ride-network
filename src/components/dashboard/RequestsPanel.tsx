@@ -309,17 +309,55 @@ export function ReservationsPanel({ userId }: { userId: string }) {
               <span className="ml-2 text-foreground">· {grouped[date].length} trip{grouped[date].length === 1 ? "" : "s"}</span>
             </div>
             <div className="space-y-3">
-              {grouped[date].map((r: any) => (
+              {grouped[date].map((r: any) => {
+                const medicaid = isMedicaidTrip(r);
+                const onDownloadCms = () => {
+                  const p = provider.data;
+                  downloadCms1500({
+                    claim_id: r.id.slice(0, 8),
+                    service_date: r.pickup_date,
+                    patient_first_name: r.patient_first_name,
+                    patient_last_name: r.patient_last_name,
+                    patient_date_of_birth: r.patient_date_of_birth,
+                    patient_gender: r.patient_gender,
+                    patient_phone: r.patient_phone,
+                    payer: r.payer,
+                    medicaid_number: r.medicaid_number,
+                    medicaid_plan: r.medicaid_plan,
+                    authorization_number: r.authorization_number,
+                    diagnosis_code: r.diagnosis_code,
+                    provider_company: p?.company_name,
+                    provider_npi: p?.npi,
+                    provider_city: p?.city,
+                    provider_phone: p?.phone,
+                    service_level: r.service_level,
+                    transport_type: r.transport_type,
+                    round_trip: r.round_trip,
+                    distance_miles: r.distance_miles,
+                    charge_cents: r.estimated_cost_cents,
+                    pickup_address: r.pickup_address,
+                    pickup_city: r.pickup_city,
+                    pickup_zip: r.pickup_zip,
+                    pickup_time: r.pickup_time,
+                    dropoff_address: r.dropoff_address,
+                    dropoff_city: r.dropoff_city,
+                    dropoff_zip: r.dropoff_zip,
+                    appointment_time: r.appointment_time,
+                  });
+                  if (!p) toast.info("CMS form downloaded — add your NPI & business info in Account to auto-fill provider block 33.");
+                };
+                return (
                 <div
                   key={r.id}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; }}
-                  className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing"
+                  className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing border ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
                   title="Drag onto the Schedule tab to (re)assign a driver and time"
                 >
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
+                      {medicaid && <MedicaidBadge />}
                       {r.scheduled_start_time && (
                         <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
                           Sched {String(r.scheduled_start_time).slice(0,5)}
@@ -335,14 +373,28 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                     <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                       <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
                       <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
+                      {medicaid && r.medicaid_number && (
+                        <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Medicaid #:</span> {r.medicaid_number}</span>
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       <div>{r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
                     </div>
                   </div>
-                  <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted shrink-0">Review</Link>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review</Link>
+                    <button
+                      type="button"
+                      onClick={onDownloadCms}
+                      className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
+                      title="Generate a CMS-1500 claim form pre-filled with trip, patient, and provider data"
+                    >
+                      Download CMS-1500
+                    </button>
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
