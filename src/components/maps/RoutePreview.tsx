@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const CHANNEL = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 
-let mapsPromise: Promise<typeof google> | null = null;
+let mapsPromise: Promise<any> | null = null;
 
-function loadMaps(): Promise<typeof google> {
+function loadMaps(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
   if ((window as any).google?.maps) return Promise.resolve((window as any).google);
   if (mapsPromise) return mapsPromise;
