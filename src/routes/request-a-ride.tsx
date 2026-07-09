@@ -12,6 +12,7 @@ import {
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
+import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 
 export const Route = createFileRoute("/request-a-ride")({
   validateSearch: (s: Record<string, unknown>) =>
