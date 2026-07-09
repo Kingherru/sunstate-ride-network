@@ -12,6 +12,7 @@ import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 import { AuditLogPanel } from "@/components/AuditLogPanel";
 import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel";
+import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { reviewProviderApplication } from "@/lib/staff.functions";
 
