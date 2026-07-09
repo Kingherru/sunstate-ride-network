@@ -28,6 +28,7 @@ import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProviders
 import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPanel";
 import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { useTripSync } from "@/hooks/useTripSync";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
