@@ -504,3 +504,37 @@
   .portal-badge-warn    { background: oklch(0.78 0.13 60 / 18%);  color: oklch(0.88 0.10 60);  border-color: oklch(0.78 0.13 60 / 35%);  }
   .portal-badge-danger  { background: oklch(0.66 0.20 27 / 18%);  color: oklch(0.85 0.15 27);  border-color: oklch(0.66 0.20 27 / 35%);  }
 }
+
+/* =================================================================
+ * Navy background auto-contrast — any element using #1D3557 (or its
+ * uppercase/lowercase/rgb equivalents) as an inline background gets
+ * white text automatically, including descendant text elements.
+ * ================================================================= */
+[style*="#1D3557"],
+[style*="#1d3557"],
+[style*="rgb(29, 53, 87)"],
+[style*="rgb(29,53,87)"] {
+  color: #ffffff;
+}
+[style*="background:#1D3557"] *,
+[style*="background:#1d3557"] *,
+[style*="background: #1D3557"] *,
+[style*="background: #1d3557"] *,
+[style*="background-color:#1D3557"] *,
+[style*="background-color:#1d3557"] *,
+[style*="background-color: #1D3557"] *,
+[style*="background-color: #1d3557"] *,
+[style*="background:rgb(29, 53, 87)"] *,
+[style*="background: rgb(29, 53, 87)"] *,
+[style*="background-color:rgb(29, 53, 87)"] *,
+[style*="background-color: rgb(29, 53, 87)"] * {
+  color: #ffffff;
+}
+
+/* Opt-in utility class for the same guarantee */
+.bg-navy-1d3557,
+.bg-navy-1d3557 * {
+  background-color: #1D3557;
+  color: #ffffff;
+}
+
