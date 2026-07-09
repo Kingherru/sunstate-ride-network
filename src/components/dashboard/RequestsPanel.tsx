@@ -32,6 +32,8 @@ type Row = {
   needs_wheelchair: boolean | null;
   distance_miles: number | null;
   estimated_cost_cents: number | null;
+  estimated_duration_seconds: number | null;
+  estimated_duration_traffic_seconds: number | null;
   payer: string | null;
   medicaid_number: string | null;
   medicaid_plan: string | null;
