@@ -14,7 +14,7 @@ function loadMaps(): Promise<any> {
     (window as any).__initFLNemtMap = () => resolve((window as any).google);
     const s = document.createElement("script");
     const channel = CHANNEL ? `&channel=${encodeURIComponent(CHANNEL)}` : "";
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${BROWSER_KEY}&loading=async&callback=__initFLNemtMap${channel}`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${BROWSER_KEY}&loading=async&libraries=geometry&callback=__initFLNemtMap${channel}`;
     s.async = true;
     s.defer = true;
     s.onerror = () => reject(new Error("Failed to load Google Maps"));
