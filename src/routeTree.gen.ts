@@ -46,6 +46,7 @@ import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_aut
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as AuthenticatedReservationsIdReviewRouteImport } from './routes/_authenticated/reservations.$id.review'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
 
@@ -242,6 +243,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedReservationsIdReviewRoute =
+  AuthenticatedReservationsIdReviewRouteImport.update({
+    id: '/reservations/$id/review',
+    path: '/reservations/$id/review',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicIntegrationsRoutegenieWebhookRoute =
   ApiPublicIntegrationsRoutegenieWebhookRouteImport.update({
     id: '/api/public/integrations/routegenie/webhook',
@@ -291,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
+  '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -330,6 +338,7 @@ export interface FileRoutesByTo {
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
+  '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -372,6 +381,7 @@ export interface FileRoutesById {
   '/_authenticated/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
+  '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/provider/medicaid'
     | '/requests/$id'
     | '/requests/'
+    | '/reservations/$id/review'
     | '/api/public/payments/webhook'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/provider/medicaid'
     | '/requests/$id'
     | '/requests'
+    | '/reservations/$id/review'
     | '/api/public/payments/webhook'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -494,6 +506,7 @@ export interface FileRouteTypes {
     | '/_authenticated/provider/medicaid'
     | '/_authenticated/requests/$id'
     | '/_authenticated/requests/'
+    | '/_authenticated/reservations/$id/review'
     | '/api/public/payments/webhook'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -792,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/reservations/$id/review': {
+      id: '/_authenticated/reservations/$id/review'
+      path: '/reservations/$id/review'
+      fullPath: '/reservations/$id/review'
+      preLoaderRoute: typeof AuthenticatedReservationsIdReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/integrations/routegenie/webhook': {
       id: '/api/public/integrations/routegenie/webhook'
       path: '/api/public/integrations/routegenie/webhook'
@@ -818,6 +838,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProviderMedicaidRoute: typeof AuthenticatedProviderMedicaidRoute
   AuthenticatedRequestsIdRoute: typeof AuthenticatedRequestsIdRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
+  AuthenticatedReservationsIdReviewRoute: typeof AuthenticatedReservationsIdReviewRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -829,6 +850,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProviderMedicaidRoute: AuthenticatedProviderMedicaidRoute,
   AuthenticatedRequestsIdRoute: AuthenticatedRequestsIdRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
+  AuthenticatedReservationsIdReviewRoute:
+    AuthenticatedReservationsIdReviewRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
