@@ -30,6 +30,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
+import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProviderLoginRouteImport } from './routes/provider.login'
 import { Route as PatientLoginRouteImport } from './routes/patient.login'
 import { Route as FacilityLoginRouteImport } from './routes/facility.login'
@@ -154,6 +155,11 @@ const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   id: '/$city',
   path: '/$city',
   getParentRoute: () => ServiceAreasRoute,
+} as any)
+const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ResourcesRoute,
 } as any)
 const ProviderLoginRoute = ProviderLoginRouteImport.update({
   id: '/provider/login',
@@ -281,7 +287,7 @@ export interface FileRoutesByFullPath {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
+  '/resources': typeof ResourcesRouteWithChildren
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -294,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
@@ -323,7 +330,7 @@ export interface FileRoutesByTo {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
+  '/resources': typeof ResourcesRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
@@ -335,6 +342,7 @@ export interface FileRoutesByTo {
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
   '/service-areas': typeof ServiceAreasIndexRoute
@@ -366,7 +374,7 @@ export interface FileRoutesById {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
+  '/resources': typeof ResourcesRouteWithChildren
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -379,6 +387,7 @@ export interface FileRoutesById {
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
@@ -423,6 +432,7 @@ export interface FileRouteTypes {
     | '/facility/login'
     | '/patient/login'
     | '/provider/login'
+    | '/resources/$slug'
     | '/service-areas/$city'
     | '/staff/login'
     | '/service-areas/'
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/facility/login'
     | '/patient/login'
     | '/provider/login'
+    | '/resources/$slug'
     | '/service-areas/$city'
     | '/staff/login'
     | '/service-areas'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/facility/login'
     | '/patient/login'
     | '/provider/login'
+    | '/resources/$slug'
     | '/service-areas/$city'
     | '/staff/login'
     | '/service-areas/'
@@ -538,7 +550,7 @@ export interface RootRouteChildren {
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ResourcesRoute: typeof ResourcesRoute
+  ResourcesRoute: typeof ResourcesRouteWithChildren
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -705,6 +717,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/service-areas/$city'
       preLoaderRoute: typeof ServiceAreasCityRouteImport
       parentRoute: typeof ServiceAreasRoute
+    }
+    '/resources/$slug': {
+      id: '/resources/$slug'
+      path: '/$slug'
+      fullPath: '/resources/$slug'
+      preLoaderRoute: typeof ResourcesSlugRouteImport
+      parentRoute: typeof ResourcesRoute
     }
     '/provider/login': {
       id: '/provider/login'
@@ -877,6 +896,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ResourcesRouteChildren {
+  ResourcesSlugRoute: typeof ResourcesSlugRoute
+}
+
+const ResourcesRouteChildren: ResourcesRouteChildren = {
+  ResourcesSlugRoute: ResourcesSlugRoute,
+}
+
+const ResourcesRouteWithChildren = ResourcesRoute._addFileChildren(
+  ResourcesRouteChildren,
+)
+
 interface ServiceAreasRouteChildren {
   ServiceAreasCityRoute: typeof ServiceAreasCityRoute
   ServiceAreasIndexRoute: typeof ServiceAreasIndexRoute
@@ -905,7 +936,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ResourcesRoute: ResourcesRoute,
+  ResourcesRoute: ResourcesRouteWithChildren,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
