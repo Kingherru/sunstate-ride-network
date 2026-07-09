@@ -20,6 +20,7 @@ const PRESETS: Array<{ name: string; primary: string; accent: string }> = [
 ];
 
 const PORTAL_PRESETS: Array<{ name: string; primary: string; accent: string; bg: string; card: string; fg: string; border: string }> = [
+  { name: "Provider Portal Light", primary: "#1e40af", accent: "#2563eb", bg: "#f8fafc", card: "#ffffff", fg: "#0f172a", border: "#e2e8f0" },
   { name: "Navy + Peach", primary: "#1D3557", accent: "#F9CB9F", bg: "#0f1f33", card: "#16294099", fg: "#f5f7fa", border: "#ffffff1f" },
   { name: "Charcoal + Lime", primary: "#1f2937", accent: "#84cc16", bg: "#0b1220", card: "#1f293799", fg: "#f8fafc", border: "#ffffff1a" },
   { name: "Midnight + Cyan", primary: "#0a0a1a", accent: "#06b6d4", bg: "#0a0a1a", card: "#14143299", fg: "#e8ecf1", border: "#ffffff14" },

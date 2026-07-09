@@ -63,8 +63,22 @@ function radiusBlock(scale: PlatformTheme["radius_scale"]) {
   }
 }
 
+function readableOn(hex: string): string {
+  const h = (hex || "").replace("#", "").slice(0, 6);
+  if (h.length !== 6) return "#ffffff";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const toLin = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  const L = 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
+  return L > 0.5 ? "#0f172a" : "#ffffff";
+}
+
 export function themeToCss(t: PlatformTheme) {
-  const root = `:root{--background:${t.background_color};--foreground:${t.foreground_color};--card:${t.card_color};--card-foreground:${t.foreground_color};--popover:${t.card_color};--popover-foreground:${t.foreground_color};--primary:${t.primary_color};--primary-foreground:#ffffff;--secondary:#f1f5f9;--secondary-foreground:${t.primary_color};--muted:${t.muted_color};--muted-foreground:${t.muted_color};--accent:${t.accent_color};--accent-foreground:#ffffff;--border:${t.border_color};--input:${t.border_color};--ring:${t.primary_color};${radiusBlock(t.radius_scale)}}`;
+  const root = `:root{--background:${t.background_color};--foreground:${t.foreground_color};--card:${t.card_color};--card-foreground:${t.foreground_color};--popover:${t.card_color};--popover-foreground:${t.foreground_color};--primary:${t.primary_color};--primary-foreground:${readableOn(t.primary_color)};--secondary:#f1f5f9;--secondary-foreground:${t.primary_color};--muted:${t.muted_color};--muted-foreground:${t.muted_color};--accent:${t.accent_color};--accent-foreground:${readableOn(t.accent_color)};--border:${t.border_color};--input:${t.border_color};--ring:${t.primary_color};${radiusBlock(t.radius_scale)}}`;
 
   const pPrimary = t.portal_primary_color || t.primary_color;
   const pAccent = t.portal_accent_color || t.accent_color;
@@ -72,13 +86,17 @@ export function themeToCss(t: PlatformTheme) {
   const pCard = t.portal_card_color || "#16294099";
   const pFg = t.portal_foreground_color || "#f5f7fa";
   const pBorder = t.portal_border_color || "#ffffff1f";
+  const pPrimaryFg = readableOn(pPrimary);
+  const pAccentFg = readableOn(pAccent);
+  const pCardFg = readableOn(pCard);
 
-  const portal = `.portal-scope{--background:${pBg};--foreground:${pFg};--card:${pCard};--card-foreground:${pFg};--popover:${pCard};--popover-foreground:${pFg};--primary:${pAccent};--primary-foreground:${pPrimary};--secondary:${pPrimary};--secondary-foreground:${pFg};--muted:${pCard};--muted-foreground:${pFg}b3;--accent:${pAccent};--accent-foreground:${pPrimary};--border:${pBorder};--input:${pBorder};--ring:${pAccent};--brand:${pFg};}`;
+  const portal = `.portal-scope{--background:${pBg};--foreground:${pFg};--card:${pCard};--card-foreground:${pCardFg};--popover:${pCard};--popover-foreground:${pCardFg};--primary:${pAccent};--primary-foreground:${pAccentFg};--secondary:${pPrimary};--secondary-foreground:${pPrimaryFg};--muted:${pCard};--muted-foreground:${pCardFg}b3;--accent:${pAccent};--accent-foreground:${pAccentFg};--border:${pBorder};--input:${pBorder};--ring:${pAccent};--brand:${pFg};--sidebar:${pPrimary};--sidebar-foreground:${pPrimaryFg};--sidebar-primary:${pAccent};--sidebar-primary-foreground:${pAccentFg};--sidebar-accent:${pAccent}33;--sidebar-accent-foreground:${pPrimaryFg};--sidebar-border:${pBorder};--sidebar-ring:${pAccent};}`;
 
   const fPrimary = t.form_primary_color || pPrimary;
   const fAccent = t.form_accent_color || pAccent;
+  const fAccentFg = readableOn(fAccent);
   // Apply form colors to inputs/selects/textareas + buttons inside forms across the app
-  const forms = `form input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]):focus-visible,form select:focus-visible,form textarea:focus-visible{border-color:${fAccent} !important;box-shadow:0 0 0 3px ${fAccent}40 !important;outline:none;}form button[type=submit]{background:${fAccent} !important;color:${fPrimary} !important;border-color:${fAccent} !important;}form .form-accent{color:${fAccent} !important;}form label{color:${fPrimary};}`;
+  const forms = `form input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]):focus-visible,form select:focus-visible,form textarea:focus-visible{border-color:${fAccent} !important;box-shadow:0 0 0 3px ${fAccent}40 !important;outline:none;}form button[type=submit]{background:${fAccent} !important;color:${fAccentFg} !important;border-color:${fAccent} !important;}form .form-accent{color:${fAccent} !important;}form label{color:${fPrimary};}`;
 
   return root + portal + forms + (t.custom_css ?? "");
 }
