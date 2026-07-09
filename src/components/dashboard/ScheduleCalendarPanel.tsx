@@ -45,6 +45,7 @@ export function ScheduleCalendarPanel() {
   const [driverFilter, setDriverFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideEmptyDrivers, setHideEmptyDrivers] = useState(false);
+  const [openDriverId, setOpenDriverId] = useState<string | null>(null);
 
   const whFn = useServerFn(getMyWorkHours);
   const driversFn = useServerFn(listMyDrivers);
