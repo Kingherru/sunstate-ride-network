@@ -158,6 +158,14 @@
     h2 { font-size: clamp(1.5rem, 5.5vw, 2rem); line-height: 1.1; }
   }
   ::selection { background: var(--accent); color: var(--accent-foreground); }
+
+  /* CONTRAST FIX: `text-muted` is used ~200x across the app but Tailwind v4
+     resolves it to `--muted` (a background token) — near-invisible text.
+     Force it to the actual muted-foreground token so every "helper copy"
+     label stays readable in light + dark portal themes. */
+  .text-muted { color: var(--muted-foreground) !important; }
+  /* Same idea for bg tokens used as text */
+  .text-card { color: var(--card-foreground) !important; }
 }
 
 @layer utilities {
