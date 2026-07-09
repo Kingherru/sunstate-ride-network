@@ -80,15 +80,8 @@ export const Route = createFileRoute("/resources/$slug")({
   component: ArticlePage,
 });
 
-const COVER_STYLE: Record<Post["cover"], string> = {
-  navy:   "bg-gradient-to-br from-[#0c2340] via-[#123057] to-[#1D3557]",
-  peach:  "bg-gradient-to-br from-[#F9CB9F] via-[#F2A968] to-[#E68A3C]",
-  sunset: "bg-gradient-to-br from-[#b94a24] via-[#d0663a] to-[#F2A968]",
-  forest: "bg-gradient-to-br from-[#1f3d2b] via-[#2b5a3d] to-[#4a8567]",
-  cobalt: "bg-gradient-to-br from-[#123057] via-[#1e5aa8] to-[#3a86d9]",
-  coral:  "bg-gradient-to-br from-[#b94a24] via-[#e26a3d] to-[#F9CB9F]",
-  sand:   "bg-gradient-to-br from-[#e9dcc4] via-[#d4c091] to-[#b09d6a]",
-};
+const COVER_CLASS = "bg-primary";
+
 
 function ArticlePage() {
   const { post } = Route.useLoaderData() as { post: Post };
@@ -105,7 +98,7 @@ function ArticlePage() {
       </div>
 
       {/* Cover */}
-      <div className={"mt-6 " + COVER_STYLE[post.cover]}>
+      <div className={"mt-6 " + COVER_CLASS}>
         <div className="max-w-3xl mx-auto px-6 py-14 lg:py-20 text-white">
           <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-5 text-white/85">
             {post.category}
@@ -143,7 +136,7 @@ function ArticlePage() {
                 params={{ slug: r.slug }}
                 className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col hover:border-accent transition-colors"
               >
-                <div className={"aspect-[16/9] " + COVER_STYLE[r.cover]} aria-hidden />
+                <div className={"aspect-[16/9] " + COVER_CLASS} aria-hidden />
                 <div className="p-5 flex flex-col gap-2 flex-1">
                   <span className="text-xs font-mono uppercase tracking-widest text-accent font-bold">{r.category}</span>
                   <h3 className="text-base font-extrabold tracking-tight leading-tight">{r.title}</h3>

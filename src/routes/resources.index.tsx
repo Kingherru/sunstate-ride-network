@@ -22,15 +22,8 @@ export const Route = createFileRoute("/resources/")({
   component: ResourcesPage,
 });
 
-const COVER_STYLE: Record<Post["cover"], string> = {
-  navy:   "bg-gradient-to-br from-[#0c2340] via-[#123057] to-[#1D3557]",
-  peach:  "bg-gradient-to-br from-[#F9CB9F] via-[#F2A968] to-[#E68A3C]",
-  sunset: "bg-gradient-to-br from-[#b94a24] via-[#d0663a] to-[#F2A968]",
-  forest: "bg-gradient-to-br from-[#1f3d2b] via-[#2b5a3d] to-[#4a8567]",
-  cobalt: "bg-gradient-to-br from-[#123057] via-[#1e5aa8] to-[#3a86d9]",
-  coral:  "bg-gradient-to-br from-[#b94a24] via-[#e26a3d] to-[#F9CB9F]",
-  sand:   "bg-gradient-to-br from-[#e9dcc4] via-[#d4c091] to-[#b09d6a]",
-};
+const COVER_CLASS = "bg-primary";
+
 
 const PAGE_SIZE = 6;
 
@@ -130,7 +123,7 @@ function ResourcesPage() {
               className="block bg-primary text-primary-foreground rounded-3xl overflow-hidden mb-10 group"
             >
               <div className="grid lg:grid-cols-[1.2fr_1fr]">
-                <div className={"aspect-[16/10] lg:aspect-auto " + COVER_STYLE[featured.cover]} aria-hidden />
+                <div className={"aspect-[16/10] lg:aspect-auto " + COVER_CLASS} aria-hidden />
                 <div className="p-8 lg:p-12 flex flex-col justify-center">
                   <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-3">
                     Featured · {featured.category}
@@ -160,7 +153,7 @@ function ResourcesPage() {
                   params={{ slug: p.slug }}
                   className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col hover:border-accent transition-colors group"
                 >
-                  <div className={"aspect-[16/9] " + COVER_STYLE[p.cover]} aria-hidden />
+                  <div className={"aspect-[16/9] " + COVER_CLASS} aria-hidden />
                   <div className="p-6 flex flex-col gap-3 flex-1">
                     <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest">
                       <span className="text-accent font-bold">{p.category}</span>
