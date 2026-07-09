@@ -154,6 +154,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     });
   }, []);
 
+  // Realtime cross-tab sync — Reservations ↔ Schedule ↔ Referrals ↔ Trip History
+  useTripSync(userId);
+
   const adminQ = useQuery({
     queryKey: ["is-admin", userId],
     enabled: !!userId,
