@@ -11,16 +11,38 @@ import {
 import type { PortalKind } from "@/routes/_authenticated/dashboard";
 import { useCapabilities } from "@/lib/permissions";
 
+type Relationship = "staff" | "provider_network" | "prior_trip" | "subscription" | "unknown";
+
 type Thread = {
   id: string;
   subject: string | null;
   last_message_at: string;
   unread_count: number;
-  participants: { user_id: string; name: string; company: string | null; display_id: string | null }[];
+  relationship: Relationship;
+  relationship_label: string;
+  participants: { user_id: string; name: string; company: string | null; display_id: string | null; city: string | null }[];
   last_message: { body: string; created_at: string; sender_id: string } | null;
 };
 
-type Contact = { user_id: string; name: string; subtitle?: string; company?: string | null; display_id?: string | null };
+type Contact = {
+  user_id: string;
+  name: string;
+  subtitle?: string;
+  company?: string | null;
+  city?: string | null;
+  display_id?: string | null;
+  relationship_label?: string;
+};
+
+type SortKey = "name" | "company" | "city";
+
+function relBadgeClass(rel: Relationship): string {
+  if (rel === "staff") return "bg-blue-100 text-blue-800 border border-blue-200";
+  if (rel === "provider_network") return "bg-amber-100 text-amber-900 border border-amber-200";
+  if (rel === "prior_trip") return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+  if (rel === "subscription") return "bg-violet-100 text-violet-800 border border-violet-200";
+  return "bg-secondary text-secondary-foreground border border-border";
+}
 
 export function MessagesPanel({ userId, portal }: { userId: string; portal: PortalKind }) {
   const qc = useQueryClient();
@@ -33,10 +55,13 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
 
   const [activeThread, setActiveThread] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [composeError, setComposeError] = useState<string | null>(null);
   const [directoryKind, setDirectoryKind] = useState<"staff" | "providers" | "my_providers">(
     portal === "patient" ? "my_providers" : caps.isOps ? "staff" : "staff"
   );
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [threadSearch, setThreadSearch] = useState("");
   const [draft, setDraft] = useState("");
 
   const threadsQ = useQuery({
@@ -44,7 +69,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
     queryFn: async () => {
       const r = await listFn();
       if (!r.ok) throw new Error(r.error);
-      return r.threads as Thread[];
+      return { threads: r.threads as Thread[], total_unread: r.total_unread ?? 0 };
     },
     refetchInterval: 30_000,
   });
@@ -55,6 +80,9 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
       if (!activeThread) return [] as any[];
       const r = await msgsFn({ data: { thread_id: activeThread } });
       if (!r.ok) throw new Error(r.error);
+      // opening the thread marks it read — refresh unread badges
+      qc.invalidateQueries({ queryKey: ["msg-threads"] });
+      qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
       return r.messages;
     },
     enabled: !!activeThread,
@@ -75,9 +103,9 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   });
 
   const contactsQ = useQuery({
-    queryKey: ["msg-directory", directoryKind, search],
+    queryKey: ["msg-directory", directoryKind, search, sortKey],
     queryFn: async () => {
-      const r = await discoverFn({ data: { kind: directoryKind, search } });
+      const r = await discoverFn({ data: { kind: directoryKind, search, sort: sortKey } });
       if (!r.ok) throw new Error((r as any).error ?? "Failed");
       return (r as any).contacts as Contact[];
     },
@@ -91,14 +119,27 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
       return r.thread_id;
     },
     onSuccess: (tid) => {
+      setComposeError(null);
       setComposeOpen(false);
       setActiveThread(tid);
       qc.invalidateQueries({ queryKey: ["msg-threads"] });
     },
-    onError: (e: any) => alert(e?.message ?? "Unable to start conversation"),
+    onError: (e: any) => setComposeError(e?.message ?? "Unable to start conversation"),
   });
 
-  const threads = threadsQ.data ?? [];
+  const threads = threadsQ.data?.threads ?? [];
+  const filteredThreads = useMemo(() => {
+    const q = threadSearch.trim().toLowerCase();
+    if (!q) return threads;
+    return threads.filter((t) => {
+      const hay = [
+        ...t.participants.flatMap((p) => [p.name, p.company ?? "", p.city ?? ""]),
+        t.last_message?.body ?? "",
+        t.relationship_label,
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }, [threads, threadSearch]);
   const active = useMemo(() => threads.find((t) => t.id === activeThread) ?? null, [threads, activeThread]);
   const messages = messagesQ.data ?? [];
 
@@ -111,25 +152,43 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   }, [portal]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[320px,1fr] gap-4 min-h-[560px]">
+    <div className="grid grid-cols-1 md:grid-cols-[340px,1fr] gap-4 min-h-[560px]">
       {/* Thread list */}
-      <aside className="rounded-lg border border-border bg-card">
+      <aside className="rounded-lg border border-border bg-card flex flex-col">
         <div className="flex items-center justify-between p-3 border-b border-border">
-          <h3 className="font-semibold text-sm">Conversations</h3>
+          <h3 className="font-semibold text-sm">
+            Conversations
+            {(threadsQ.data?.total_unread ?? 0) > 0 && (
+              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white align-middle">
+                {threadsQ.data?.total_unread}
+              </span>
+            )}
+          </h3>
           <button
-            onClick={() => setComposeOpen((v) => !v)}
+            onClick={() => { setComposeError(null); setComposeOpen((v) => !v); }}
             className="rounded bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90"
           >
             {composeOpen ? "Close" : "New message"}
           </button>
         </div>
-        <ul className="max-h-[520px] overflow-y-auto divide-y divide-border">
+        <div className="p-2 border-b border-border">
+          <input
+            value={threadSearch}
+            onChange={(e) => setThreadSearch(e.target.value)}
+            placeholder="Search conversations…"
+            className="w-full rounded border border-border bg-background px-2.5 py-1.5 text-xs"
+          />
+        </div>
+        <ul className="flex-1 max-h-[520px] overflow-y-auto divide-y divide-border">
           {threadsQ.isLoading && <li className="p-4 text-sm text-muted-foreground">Loading…</li>}
-          {!threadsQ.isLoading && threads.length === 0 && (
-            <li className="p-4 text-sm text-muted-foreground">No conversations yet. Click "New message" to start one.</li>
+          {!threadsQ.isLoading && filteredThreads.length === 0 && (
+            <li className="p-4 text-sm text-muted-foreground">
+              {threadSearch ? "No conversations match your search." : "No conversations yet. Click \"New message\" to start one."}
+            </li>
           )}
-          {threads.map((t) => {
+          {filteredThreads.map((t) => {
             const others = t.participants.map((p) => p.name).join(", ") || "Direct message";
+            const city = t.participants.find((p) => p.city)?.city;
             const isActive = t.id === activeThread;
             return (
               <li key={t.id}>
@@ -144,6 +203,12 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
                         {t.unread_count}
                       </span>
                     )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(t.relationship)}`}>
+                      {t.relationship_label}
+                    </span>
+                    {city && <span className="text-[10px] text-muted-foreground">{city}</span>}
                   </div>
                   {t.last_message && (
                     <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{t.last_message.body}</p>
@@ -175,20 +240,36 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
                   </button>
                 ))}
               </div>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name or company…"
-                className="w-full rounded border border-border bg-background px-2.5 py-1.5 text-sm"
-              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by name, company, or city…"
+                  className="flex-1 rounded border border-border bg-background px-2.5 py-1.5 text-sm"
+                />
+                <select
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value as SortKey)}
+                  className="rounded border border-border bg-background px-2 py-1.5 text-sm"
+                >
+                  <option value="name">Sort: Name</option>
+                  <option value="company">Sort: Company</option>
+                  <option value="city">Sort: City</option>
+                </select>
+              </div>
+              {composeError && (
+                <div className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                  {composeError}
+                </div>
+              )}
               {directoryKind === "providers" && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  This directory lists subscribed providers on the network. You can message any provider once both accounts have an active subscription.
+                  Subscribed providers on the network. You can message any provider once both accounts have an active subscription.
                 </p>
               )}
               {directoryKind === "my_providers" && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  These are transportation providers you've previously ridden with or booked through the platform.
+                  Providers you've previously ridden with or booked through the platform.
                 </p>
               )}
             </div>
@@ -202,7 +283,9 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
                   <li key={c.user_id} className="flex items-center justify-between gap-2 p-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{c.name}</p>
-                      {c.subtitle && <p className="text-xs text-muted-foreground truncate">{c.subtitle}</p>}
+                      <p className="text-xs text-muted-foreground truncate">
+                        {[c.company, c.city, c.subtitle].filter(Boolean).join(" · ")}
+                      </p>
                     </div>
                     <button
                       onClick={() => startWith.mutate(c.user_id)}
@@ -219,11 +302,18 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
         ) : active ? (
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border">
-              <h3 className="font-semibold text-sm">
-                {active.participants.map((p) => p.name).join(", ")}
-              </h3>
-              {active.participants[0]?.company && (
-                <p className="text-xs text-muted-foreground">{active.participants[0].company}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-sm">
+                  {active.participants.map((p) => p.name).join(", ")}
+                </h3>
+                <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
+                  {active.relationship_label}
+                </span>
+              </div>
+              {(active.participants[0]?.company || active.participants[0]?.city) && (
+                <p className="text-xs text-muted-foreground">
+                  {[active.participants[0]?.company, active.participants[0]?.city].filter(Boolean).join(" · ")}
+                </p>
               )}
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
