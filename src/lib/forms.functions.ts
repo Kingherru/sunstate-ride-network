@@ -16,6 +16,14 @@ export const additionalStopSchema = z.object({
 });
 export type AdditionalStop = z.infer<typeof additionalStopSchema>;
 
+export const billingContactSchema = z.object({
+  firstName: z.string().trim().min(1).max(80),
+  lastName: z.string().trim().min(1).max(80),
+  email: z.string().trim().email().max(200),
+  phone: z.string().trim().min(7).max(30),
+});
+export type BillingContact = z.infer<typeof billingContactSchema>;
+
 export const rideRequestSchema = z.object({
   patientFirstName: z.string().trim().min(1).max(80),
   patientLastName: z.string().trim().min(1).max(80),
@@ -40,7 +48,16 @@ export const rideRequestSchema = z.object({
   recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
   recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   embedToken: z.string().trim().min(6).max(64).optional().or(z.literal("")),
+  billingSource: z.enum(["account", "saved", "custom"]).default("account"),
+  billingContact: billingContactSchema.optional(),
 }).superRefine((data, ctx) => {
+  if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["billingContact"],
+      message: "Billing contact is required.",
+    });
+  }
   if (data.tripType === "round_trip" && !data.returnPickupTime) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
