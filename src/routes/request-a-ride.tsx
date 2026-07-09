@@ -7,12 +7,14 @@ import {
   submitRideRequest,
   rideRequestSchema,
   type RideRequestInput,
+  type BillingContact,
   RECURRENCE_OPTIONS,
 } from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/request-a-ride")({
   validateSearch: (s: Record<string, unknown>) =>
