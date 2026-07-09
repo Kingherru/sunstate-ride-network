@@ -142,11 +142,16 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  h1, h2, h3, h4, .font-display {
+  /* Headings inherit color from their container so dark surfaces (bg-primary,
+     bg-brand, portal-scope, glass-dark, etc.) automatically get light text
+     and light surfaces get dark text — no more navy-on-navy or white-on-white. */
+  h1, h2, h3, h4, h5, h6, .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
-    color: var(--brand);
+    color: inherit;
   }
+  /* Form labels inherit too — muted contexts can still opt in via text-muted-foreground */
+  label { color: inherit; }
   button, [role="button"], a.btn { min-height: 40px; }
   @media (max-width: 640px) {
     h1 { font-size: clamp(1.875rem, 7vw, 2.5rem); line-height: 1.05; }
