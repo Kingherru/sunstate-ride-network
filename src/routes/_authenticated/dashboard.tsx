@@ -30,7 +30,7 @@ import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions"
 import { useServerFn } from "@tanstack/react-start";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
-import { ChangelogChip } from "@/components/ChangelogChip";
+
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 import {
   PATIENT_TYPE_OPTIONS,
