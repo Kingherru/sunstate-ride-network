@@ -12,6 +12,7 @@ import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 import { AuditLogPanel } from "@/components/AuditLogPanel";
 import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel";
+import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { reviewProviderApplication } from "@/lib/staff.functions";
 
@@ -278,6 +279,16 @@ function AdminPage() {
           <AuditLogPanel />
         </div>
       )}
+
+      <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
+        <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
+          <span>📝 Changelog — recent releases</span>
+          <span className="text-accent transition-transform group-open:rotate-45">+</span>
+        </summary>
+        <div className="mt-6">
+          <ChangelogPanel />
+        </div>
+      </details>
 
       {/* Region grouping */}
       <div className="mb-8 bg-card border border-border rounded-2xl p-5">

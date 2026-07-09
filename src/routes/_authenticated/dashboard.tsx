@@ -21,6 +21,7 @@ import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
+import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { listThreads } from "@/lib/messages.functions";
 import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
@@ -70,11 +71,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "messages" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "messages" | "changelog" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "messages", "business_info", "account"],
+  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "messages", "business_info", "changelog", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "messages", "payments", "account"],
 };
 
@@ -109,6 +110,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "medicaid") return "Medicaid Submission";
   if (t === "schedule") return "Schedule";
   if (t === "messages") return "Messages";
+  if (t === "changelog") return "Changelog";
   return "Account";
 }
 
@@ -252,13 +254,6 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 ID · {displayIdQ.data.display_id}
               </span>
             )}
-            <Link
-              to="/changelog"
-              className="font-mono font-bold uppercase tracking-wider px-2.5 py-1 border border-[oklch(0.872_0.078_65.2)] text-[oklch(0.35_0.12_45)] hover:bg-[oklch(0.872_0.078_65.2)] hover:text-[oklch(0.18_0.05_257)] transition-colors rounded-sm"
-              title="View release notes"
-            >
-              Changelog
-            </Link>
             <span className="font-mono uppercase tracking-wider text-muted-foreground">Live</span>
             <span className="size-2 rounded-full bg-[oklch(0.872_0.078_65.2)] animate-pulse" />
           </div>
@@ -368,6 +363,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
+            {tab === "changelog" && <ChangelogPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
               </div>
             </section>
