@@ -74,9 +74,9 @@ export type PortalKind = "patient" | "provider" | "facility";
 type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "messages" | "changelog" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
+  patient:  ["new", "sent", "saved_patients", "messages", "payments", "changelog", "account"],
   provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "messages", "business_info", "changelog", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "messages", "payments", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "messages", "payments", "changelog", "account"],
 };
 
 
