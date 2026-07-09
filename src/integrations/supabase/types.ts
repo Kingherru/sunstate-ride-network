@@ -1423,6 +1423,8 @@ export type Database = {
           dropoff_city: string
           dropoff_lat: number | null
           dropoff_lng: number | null
+          embed_provider_id: string | null
+          embed_token: string | null
           estimated_cost_cents: number | null
           estimated_duration_seconds: number | null
           estimated_duration_traffic_seconds: number | null
@@ -1491,6 +1493,8 @@ export type Database = {
           dropoff_city: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          embed_provider_id?: string | null
+          embed_token?: string | null
           estimated_cost_cents?: number | null
           estimated_duration_seconds?: number | null
           estimated_duration_traffic_seconds?: number | null
@@ -1559,6 +1563,8 @@ export type Database = {
           dropoff_city?: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          embed_provider_id?: string | null
+          embed_token?: string | null
           estimated_cost_cents?: number | null
           estimated_duration_seconds?: number | null
           estimated_duration_traffic_seconds?: number | null

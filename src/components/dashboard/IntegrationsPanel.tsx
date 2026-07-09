@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listIntegrations, upsertIntegration, deleteIntegration } from "@/lib/integrations.functions";
+import { EmbedCodePanel } from "./EmbedCodePanel";
 
 type Vendor = "hibambi" | "routegenie" | "duetride";
 
@@ -48,6 +49,7 @@ export function IntegrationsPanel() {
         <p>Inbound hiBambi: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/hibambi/webhook</code></p>
         <p>Inbound RouteGenie: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/routegenie/webhook</code></p>
       </div>
+      <EmbedCodePanel />
     </div>
   );
 }

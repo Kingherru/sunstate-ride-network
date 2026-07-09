@@ -39,6 +39,7 @@ export const rideRequestSchema = z.object({
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
   recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
   recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  embedToken: z.string().trim().min(6).max(64).optional().or(z.literal("")),
 }).superRefine((data, ctx) => {
   if (data.tripType === "round_trip" && !data.returnPickupTime) {
     ctx.addIssue({
@@ -88,6 +89,21 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       // anonymous submission is fine
     }
 
+    // Resolve optional embed token to attribute the request to the provider whose website hosted the form.
+    let embedProviderId: string | null = null;
+    let embedTokenStored: string | null = null;
+    if (data.embedToken) {
+      const { data: tok } = await supabaseAdmin
+        .from("provider_embed_tokens")
+        .select("provider_user_id, revoked_at")
+        .eq("token", data.embedToken)
+        .maybeSingle();
+      if (tok && !tok.revoked_at) {
+        embedProviderId = tok.provider_user_id;
+        embedTokenStored = data.embedToken;
+      }
+    }
+
     const { error, data: row } = await supabaseAdmin
       .from("ride_requests")
       .insert({
@@ -115,6 +131,8 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         requester_user_id: requesterUserId,
         recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
         recurrence_end_date: data.recurrenceEndDate || null,
+        embed_provider_id: embedProviderId,
+        embed_token: embedTokenStored,
       })
       .select("id")
       .single();

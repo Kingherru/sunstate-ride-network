@@ -39,6 +39,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
+import { Route as EmbedRequestARideTokenRouteImport } from './routes/embed.request-a-ride.$token'
 import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
 import { Route as AuthenticatedProviderMedicaidRouteImport } from './routes/_authenticated/provider.medicaid'
 import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
@@ -202,6 +203,11 @@ const AuthenticatedRequestsIndexRoute =
     path: '/requests/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const EmbedRequestARideTokenRoute = EmbedRequestARideTokenRouteImport.update({
+  id: '/embed/request-a-ride/$token',
+  path: '/embed/request-a-ride/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRequestsIdRoute = AuthenticatedRequestsIdRouteImport.update({
   id: '/requests/$id',
   path: '/requests/$id',
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
+  '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
+  '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -380,6 +388,7 @@ export interface FileRoutesById {
   '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/_authenticated/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
+  '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -423,6 +432,7 @@ export interface FileRouteTypes {
     | '/provider/dashboard'
     | '/provider/medicaid'
     | '/requests/$id'
+    | '/embed/request-a-ride/$token'
     | '/requests/'
     | '/reservations/$id/review'
     | '/api/public/payments/webhook'
@@ -463,6 +473,7 @@ export interface FileRouteTypes {
     | '/provider/dashboard'
     | '/provider/medicaid'
     | '/requests/$id'
+    | '/embed/request-a-ride/$token'
     | '/requests'
     | '/reservations/$id/review'
     | '/api/public/payments/webhook'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/_authenticated/provider/dashboard'
     | '/_authenticated/provider/medicaid'
     | '/_authenticated/requests/$id'
+    | '/embed/request-a-ride/$token'
     | '/_authenticated/requests/'
     | '/_authenticated/reservations/$id/review'
     | '/api/public/payments/webhook'
@@ -539,6 +551,7 @@ export interface RootRouteChildren {
   ProviderLoginRoute: typeof ProviderLoginRoute
   StaffLoginRoute: typeof StaffLoginRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -756,6 +769,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/embed/request-a-ride/$token': {
+      id: '/embed/request-a-ride/$token'
+      path: '/embed/request-a-ride/$token'
+      fullPath: '/embed/request-a-ride/$token'
+      preLoaderRoute: typeof EmbedRequestARideTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/requests/$id': {
       id: '/_authenticated/requests/$id'
       path: '/requests/$id'
@@ -899,6 +919,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProviderLoginRoute: ProviderLoginRoute,
   StaffLoginRoute: StaffLoginRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,

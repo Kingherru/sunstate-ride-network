@@ -1,0 +1,1 @@
+ALTER TABLE public.ride_requests ADD COLUMN IF NOT EXISTS embed_provider_id uuid REFERENCES auth.users(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS embed_token text;
