@@ -49,6 +49,7 @@ export function IntegrationsPanel() {
         <p>Inbound hiBambi: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/hibambi/webhook</code></p>
         <p>Inbound RouteGenie: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/routegenie/webhook</code></p>
       </div>
+      <EmbedCodePanel />
     </div>
   );
 }
