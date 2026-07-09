@@ -101,7 +101,18 @@ function RequestRidePage() {
   const [form, setForm] = useState<RideRequestInput>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<{ id: string; miles?: number | null; cents?: number | null } | null>(null);
+  const [done, setDone] = useState<{
+    id: string;
+    miles?: number | null;
+    cents?: number | null;
+    durationSec?: number | null;
+    trafficSec?: number | null;
+    polyline?: string | null;
+    pickupLat?: number | null;
+    pickupLng?: number | null;
+    dropoffLat?: number | null;
+    dropoffLng?: number | null;
+  } | null>(null);
   const [copiedFromId, setCopiedFromId] = useState<string | null>(null);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
