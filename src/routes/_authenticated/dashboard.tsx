@@ -252,6 +252,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 ID · {displayIdQ.data.display_id}
               </span>
             )}
+            <Link
+              to="/changelog"
+              className="font-mono font-bold uppercase tracking-wider px-2.5 py-1 border border-[oklch(0.872_0.078_65.2)] text-[oklch(0.35_0.12_45)] hover:bg-[oklch(0.872_0.078_65.2)] hover:text-[oklch(0.18_0.05_257)] transition-colors rounded-sm"
+              title="View release notes"
+            >
+              Changelog
+            </Link>
             <span className="font-mono uppercase tracking-wider text-muted-foreground">Live</span>
             <span className="size-2 rounded-full bg-[oklch(0.872_0.078_65.2)] animate-pulse" />
           </div>

@@ -228,7 +228,16 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
         {composeOpen ? (
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border">
-              <h3 className="font-semibold text-sm mb-2">Start a new conversation</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-sm">Start a new conversation</h3>
+                <a
+                  href="/changelog"
+                  className="font-mono font-bold uppercase tracking-wider text-[10px] px-2 py-1 border border-[oklch(0.872_0.078_65.2)] text-[oklch(0.35_0.12_45)] hover:bg-[oklch(0.872_0.078_65.2)] hover:text-[oklch(0.18_0.05_257)] transition-colors rounded-sm"
+                  title="View release notes"
+                >
+                  Changelog
+                </a>
+              </div>
               <div className="flex flex-wrap gap-2 mb-2">
                 {availableKinds.map((k) => (
                   <button
