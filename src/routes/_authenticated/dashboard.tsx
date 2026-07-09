@@ -1480,7 +1480,7 @@ function PortalSidebar(props: {
   allowedTabs: Tab[];
   currentTab: Tab;
   onTab: (t: Tab) => void;
-  counts: { received: number; sent: number };
+  counts: { received: number; sent: number; unread?: number };
   membershipStatus: string;
   onSavedName: () => void;
 }) {
