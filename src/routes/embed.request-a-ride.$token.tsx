@@ -96,7 +96,7 @@ function EmbedRequestForm() {
         <div className="grid grid-cols-2 gap-3">
           <select required className={inputCls} value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)}>
             <option value="">Pickup city*</option>
-            {CITY_LIST.map((c) => <option key={c} value={c}>{c}</option>)}
+            {CITY_LIST.map((c) => <option key={c.slug} value={c.name}>{c.name}</option>)}
           </select>
           <input required type="date" className={inputCls} value={form.pickupDate} onChange={(e) => upd("pickupDate", e.target.value)} />
         </div>
@@ -107,7 +107,7 @@ function EmbedRequestForm() {
         <input required placeholder="Drop-off address*" className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} />
         <select required className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)}>
           <option value="">Drop-off city*</option>
-          {CITY_LIST.map((c) => <option key={c} value={c}>{c}</option>)}
+          {CITY_LIST.map((c) => <option key={c.slug} value={c.name}>{c.name}</option>)}
         </select>
         <select className={inputCls} value={form.transportType} onChange={(e) => upd("transportType", e.target.value as any)}>
           <option value="ambulatory">Ambulatory</option>
