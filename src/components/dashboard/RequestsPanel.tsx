@@ -193,7 +193,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("member_profiles")
-        .select("company_name, npi, address_line1, city, state, zip, phone")
+        .select("company_name, npi, city, phone")
         .eq("user_id", userId)
         .maybeSingle();
       return data;
