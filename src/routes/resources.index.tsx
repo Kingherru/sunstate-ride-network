@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, Search, Clock, Calendar } from "lucide-react";
 import { CATEGORIES, getAllPosts, type Category, type Post } from "@/content/blog";
 
-export const Route = createFileRoute("/resources")({
+export const Route = createFileRoute("/resources/")({
   head: () => ({
     meta: [
       { title: "Blog & Resources — Florida NEMT" },
