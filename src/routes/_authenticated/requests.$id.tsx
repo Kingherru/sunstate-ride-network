@@ -302,6 +302,7 @@ function RequestDetailPage() {
               </a>
             </div>
           </Card>
+        </section>
       ) : (
         <RescheduleForm
           initial={{
