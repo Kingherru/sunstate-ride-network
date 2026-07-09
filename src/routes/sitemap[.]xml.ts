@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { getAllSlugs } from "@/content/blog";
 
 const BASE_URL = "";
 
-const paths = [
+const staticPaths = [
   "/",
   "/services",
   "/service-areas",
@@ -22,6 +23,12 @@ const paths = [
   "/contact",
   "/request-a-ride",
 ];
+
+const paths = [
+  ...staticPaths,
+  ...getAllSlugs().map((slug) => `/resources/${slug}`),
+];
+
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
