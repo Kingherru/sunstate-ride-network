@@ -276,6 +276,55 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                 <p className="text-xs text-muted-foreground">
                   This helps dispatchers and providers know who is scheduling and managing care.
                 </p>
+
+                <div className="pt-2 border-t border-border/60 mt-2">
+                  <p className="portal-label mb-2">Billing information</p>
+                  <label className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={billingSameAsAccount}
+                      onChange={(e) => setBillingSameAsAccount(e.target.checked)}
+                    />
+                    <span>Use same information as account holder</span>
+                  </label>
+                  {!billingSameAsAccount && (
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <label className="block col-span-1">
+                        <span className="portal-label">First name *</span>
+                        <input
+                          type="text" required className="portal-input"
+                          value={billing.firstName}
+                          onChange={(e) => setBilling((b) => ({ ...b, firstName: e.target.value }))}
+                        />
+                      </label>
+                      <label className="block col-span-1">
+                        <span className="portal-label">Last name *</span>
+                        <input
+                          type="text" required className="portal-input"
+                          value={billing.lastName}
+                          onChange={(e) => setBilling((b) => ({ ...b, lastName: e.target.value }))}
+                        />
+                      </label>
+                      <label className="block col-span-2">
+                        <span className="portal-label">Email *</span>
+                        <input
+                          type="email" required className="portal-input"
+                          value={billing.email}
+                          onChange={(e) => setBilling((b) => ({ ...b, email: e.target.value }))}
+                        />
+                      </label>
+                      <label className="block col-span-2">
+                        <span className="portal-label">Phone *</span>
+                        <input
+                          type="tel" required className="portal-input"
+                          value={billing.phone}
+                          onChange={(e) => setBilling((b) => ({ ...b, phone: e.target.value }))}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
               </>
             )}
             <button
