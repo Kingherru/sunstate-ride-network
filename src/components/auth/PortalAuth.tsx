@@ -101,6 +101,12 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
         if (error) throw error;
         await router.invalidate();
         navigate({ to: dest } as any);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Authentication failed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function onForgot() {
@@ -114,11 +120,6 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
       toast.success("Password reset email sent. Check your inbox.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send reset email");
-    } finally {
-      setBusy(false);
-    }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setBusy(false);
     }
