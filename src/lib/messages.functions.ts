@@ -92,10 +92,8 @@ export const listThreads = createServerFn({ method: "GET" })
       }
     }
 
-    const iAmStaff = await supabase
-      .rpc("is_ops_staff", { _user_id: userId })
-      .then((r) => Boolean(r.data))
-      .catch(() => false);
+    const iAmStaffRes = await supabase.rpc("is_ops_staff", { _user_id: userId });
+    const iAmStaff = Boolean(iAmStaffRes.data);
 
     const enriched = (threads ?? []).map((t: any) => {
       const others = (allParts ?? [])
