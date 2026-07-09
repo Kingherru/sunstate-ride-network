@@ -30,7 +30,7 @@ import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions"
 import { useServerFn } from "@tanstack/react-start";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
-import { ChangelogChip } from "@/components/ChangelogChip";
+
 import { demoProfile, demoTrips } from "@/lib/demo-data";
 import {
   PATIENT_TYPE_OPTIONS,
@@ -74,9 +74,9 @@ export type PortalKind = "patient" | "provider" | "facility";
 type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "messages" | "changelog" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
+  patient:  ["new", "sent", "saved_patients", "messages", "payments", "changelog", "account"],
   provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "messages", "business_info", "changelog", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "messages", "payments", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "messages", "payments", "changelog", "account"],
 };
 
 
@@ -1601,7 +1601,7 @@ function PortalSidebar(props: {
           onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
           className="font-bold uppercase tracking-wider text-white/70 hover:text-white text-[11px]"
         >Sign out</button>
-        <ChangelogChip />
+        
       </div>
     </aside>
   );
