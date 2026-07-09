@@ -7,12 +7,14 @@ import {
   submitRideRequest,
   rideRequestSchema,
   type RideRequestInput,
+  type BillingContact,
   RECURRENCE_OPTIONS,
 } from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/request-a-ride")({
   validateSearch: (s: Record<string, unknown>) =>
@@ -57,6 +59,7 @@ const empty: RideRequestInput = {
   specialInstructions: "",
   recurrence: "none",
   recurrenceEndDate: "",
+  billingSource: "account",
 };
 
 
@@ -114,6 +117,26 @@ function RequestRidePage() {
     dropoffLng?: number | null;
   } | null>(null);
   const [copiedFromId, setCopiedFromId] = useState<string | null>(null);
+  const [savedBilling, setSavedBilling] = useState<BillingContact | null>(null);
+  const [customBilling, setCustomBilling] = useState<BillingContact>({
+    firstName: "", lastName: "", email: "", phone: "",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user || cancelled) return;
+      const { data: p } = await supabase
+        .from("member_profiles")
+        .select("billing_contact")
+        .eq("user_id", u.user.id)
+        .maybeSingle();
+      const bc = (p as any)?.billing_contact as BillingContact | null;
+      if (bc && !cancelled) setSavedBilling(bc);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -158,7 +181,7 @@ function RequestRidePage() {
           specialInstructions: row.special_instructions ?? "",
           recurrence: rec,
           recurrenceEndDate: "",
-
+          billingSource: "account",
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set a new pickup date to continue.");
@@ -176,7 +199,14 @@ function RequestRidePage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
-    const parsed = rideRequestSchema.safeParse(form);
+    const withBilling: RideRequestInput = {
+      ...form,
+      billingContact:
+        form.billingSource === "saved" ? savedBilling ?? undefined
+        : form.billingSource === "custom" ? customBilling
+        : undefined,
+    };
+    const parsed = rideRequestSchema.safeParse(withBilling);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
@@ -186,7 +216,6 @@ function RequestRidePage() {
       toast.error("Please fix the highlighted fields.");
       return;
     }
-    setSubmitting(true);
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
@@ -611,9 +640,76 @@ function RequestRidePage() {
             </div>
           </fieldset>
 
+          {/* Billing information */}
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+              Billing information
+            </legend>
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.billingSource === "account"}
+                onChange={(e) =>
+                  upd("billingSource", e.target.checked ? "account" : (savedBilling ? "saved" : "custom"))
+                }
+              />
+              <span>Use same information as account holder</span>
+            </label>
 
+            {form.billingSource !== "account" && (
+              <div className="space-y-4 pl-6 border-l-2 border-border">
+                {savedBilling && (
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="billingSource"
+                        checked={form.billingSource === "saved"}
+                        onChange={() => upd("billingSource", "saved")}
+                      />
+                      <span>
+                        Use saved billing contact ({savedBilling.firstName} {savedBilling.lastName})
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="billingSource"
+                        checked={form.billingSource === "custom"}
+                        onChange={() => upd("billingSource", "custom")}
+                      />
+                      <span>Enter different billing contact for this trip</span>
+                    </label>
+                  </div>
+                )}
+
+                {form.billingSource === "custom" && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Field label="First name" required error={errors["billingContact.firstName"]}>
+                      <input className={inputCls} value={customBilling.firstName}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, firstName: e.target.value }))} />
+                    </Field>
+                    <Field label="Last name" required error={errors["billingContact.lastName"]}>
+                      <input className={inputCls} value={customBilling.lastName}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, lastName: e.target.value }))} />
+                    </Field>
+                    <Field label="Email" required error={errors["billingContact.email"]}>
+                      <input type="email" className={inputCls} value={customBilling.email}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, email: e.target.value }))} />
+                    </Field>
+                    <Field label="Phone" required error={errors["billingContact.phone"]}>
+                      <input type="tel" className={inputCls} value={customBilling.phone}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, phone: e.target.value }))} />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            )}
+          </fieldset>
 
           <datalist id="fl-cities">
+
             {CITY_LIST.map((c) => (
               <option key={c.slug} value={c.name} />
             ))}

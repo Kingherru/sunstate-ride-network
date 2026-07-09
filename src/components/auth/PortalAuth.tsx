@@ -53,6 +53,8 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [patientTypeOther, setPatientTypeOther] = useState("");
   const [patientRelationship, setPatientRelationship] = useState<string>("");
   const [patientRelationshipOther, setPatientRelationshipOther] = useState("");
+  const [billingSameAsAccount, setBillingSameAsAccount] = useState(true);
+  const [billing, setBilling] = useState({ firstName: "", lastName: "", email: "", phone: "" });
   const copy = COPY[kind];
   const isPatient = kind === "patient";
   const isSignup = mode === "signup";
@@ -72,10 +74,23 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
       if (patientType === "Other" && !patientTypeOther.trim()) return toast.error("Please describe the patient type");
       if (!patientRelationship) return toast.error("Please select the relationship to the patient");
       if (patientRelationship === "Other" && !patientRelationshipOther.trim()) return toast.error("Please describe the relationship");
+      if (!billingSameAsAccount) {
+        if (!billing.firstName.trim() || !billing.lastName.trim() || !billing.email.trim() || !billing.phone.trim()) {
+          return toast.error("Please complete all billing contact fields");
+        }
+      }
     }
     setBusy(true);
     try {
       if (mode === "signup") {
+        const billingContact = isPatient && !billingSameAsAccount
+          ? {
+              firstName: billing.firstName.trim(),
+              lastName: billing.lastName.trim(),
+              email: billing.email.trim(),
+              phone: billing.phone.trim(),
+            }
+          : null;
         const metaExtra = isPatient
           ? {
               patient_type: patientType,
@@ -83,9 +98,10 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
               patient_relationship: patientRelationship,
               patient_relationship_other:
                 patientRelationship === "Other" ? patientRelationshipOther.trim() : null,
+              billing_contact: billingContact,
             }
           : {};
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -94,11 +110,34 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
           },
         });
         if (error) throw error;
+        // If we already have a session (email confirmation disabled), persist billing contact to profile now.
+        if (billingContact && signUpData.session?.user?.id) {
+          await supabase
+            .from("member_profiles")
+            .update({ billing_contact: billingContact })
+            .eq("user_id", signUpData.session.user.id);
+        }
         toast.success("Account created. You can now sign in.");
         setMode("signin");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // Sync billing_contact from user metadata to profile if not yet set (first sign-in after email confirm).
+        const uid = signInData.user?.id;
+        const metaBilling = (signInData.user?.user_metadata as any)?.billing_contact;
+        if (uid && metaBilling) {
+          const { data: prof } = await supabase
+            .from("member_profiles")
+            .select("billing_contact")
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (!(prof as any)?.billing_contact) {
+            await supabase
+              .from("member_profiles")
+              .update({ billing_contact: metaBilling })
+              .eq("user_id", uid);
+          }
+        }
         await router.invalidate();
         navigate({ to: dest } as any);
       }
@@ -237,6 +276,55 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                 <p className="text-xs text-muted-foreground">
                   This helps dispatchers and providers know who is scheduling and managing care.
                 </p>
+
+                <div className="pt-2 border-t border-border/60 mt-2">
+                  <p className="portal-label mb-2">Billing information</p>
+                  <label className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={billingSameAsAccount}
+                      onChange={(e) => setBillingSameAsAccount(e.target.checked)}
+                    />
+                    <span>Use same information as account holder</span>
+                  </label>
+                  {!billingSameAsAccount && (
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <label className="block col-span-1">
+                        <span className="portal-label">First name *</span>
+                        <input
+                          type="text" required className="portal-input"
+                          value={billing.firstName}
+                          onChange={(e) => setBilling((b) => ({ ...b, firstName: e.target.value }))}
+                        />
+                      </label>
+                      <label className="block col-span-1">
+                        <span className="portal-label">Last name *</span>
+                        <input
+                          type="text" required className="portal-input"
+                          value={billing.lastName}
+                          onChange={(e) => setBilling((b) => ({ ...b, lastName: e.target.value }))}
+                        />
+                      </label>
+                      <label className="block col-span-2">
+                        <span className="portal-label">Email *</span>
+                        <input
+                          type="email" required className="portal-input"
+                          value={billing.email}
+                          onChange={(e) => setBilling((b) => ({ ...b, email: e.target.value }))}
+                        />
+                      </label>
+                      <label className="block col-span-2">
+                        <span className="portal-label">Phone *</span>
+                        <input
+                          type="tel" required className="portal-input"
+                          value={billing.phone}
+                          onChange={(e) => setBilling((b) => ({ ...b, phone: e.target.value }))}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
               </>
             )}
             <button
