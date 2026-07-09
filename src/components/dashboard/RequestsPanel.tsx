@@ -177,15 +177,27 @@ export function RequestsPanel({ userId }: { userId: string }) {
 type Bucket = "past" | "current" | "future";
 type AssignFilter = "all" | "assigned" | "unassigned";
 
-export function ReservationsPanel({ userId: _userId }: { userId: string }) {
+export function ReservationsPanel({ userId }: { userId: string }) {
   const [bucket, setBucket] = useState<Bucket>("current");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
+  const [payerFilter, setPayerFilter] = useState<"all" | "medicaid">("all");
   const [search, setSearch] = useState("");
   const fn = useServerFn(listMyReservations);
   const q = useQuery({
     queryKey: ["my-reservations", bucket],
     queryFn: () => fn({ data: { bucket } }),
+  });
+  const provider = useQuery({
+    queryKey: ["provider-profile-cms", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_profiles")
+        .select("company_name, npi, address_line1, city, state, zip, phone")
+        .eq("user_id", userId)
+        .maybeSingle();
+      return data;
+    },
   });
   const allRows = (q.data ?? []) as any[];
 
