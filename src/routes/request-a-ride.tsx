@@ -216,7 +216,6 @@ function RequestRidePage() {
       toast.error("Please fix the highlighted fields.");
       return;
     }
-    setSubmitting(true);
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
