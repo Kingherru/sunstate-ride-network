@@ -117,6 +117,26 @@ function RequestRidePage() {
     dropoffLng?: number | null;
   } | null>(null);
   const [copiedFromId, setCopiedFromId] = useState<string | null>(null);
+  const [savedBilling, setSavedBilling] = useState<BillingContact | null>(null);
+  const [customBilling, setCustomBilling] = useState<BillingContact>({
+    firstName: "", lastName: "", email: "", phone: "",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user || cancelled) return;
+      const { data: p } = await supabase
+        .from("member_profiles")
+        .select("billing_contact")
+        .eq("user_id", u.user.id)
+        .maybeSingle();
+      const bc = (p as any)?.billing_contact as BillingContact | null;
+      if (bc && !cancelled) setSavedBilling(bc);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
