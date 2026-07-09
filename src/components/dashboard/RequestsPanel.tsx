@@ -167,7 +167,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
               </div>
             </div>
           </div>
-        ))}
+        );})}
       </div>
     </div>
   );
