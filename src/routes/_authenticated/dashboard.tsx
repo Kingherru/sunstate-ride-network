@@ -1756,20 +1756,26 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         <p className="text-sm text-muted-foreground">Manage your profile, business details, membership, and security.</p>
       </div>
 
-      <div className="flex flex-wrap gap-1 border-b border-border">
-        {tabs.map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setSubTab(key)}
-            className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px transition-colors ${
-              subTab === key
-                ? "border-accent text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none border-b border-border">
+        <div className="flex flex-nowrap gap-1 min-w-max">
+          {tabs.map(([key, label]) => {
+            const active = subTab === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setSubTab(key)}
+                aria-current={active ? "page" : undefined}
+                className={`whitespace-nowrap px-4 py-2.5 text-sm font-bold border-b-2 -mb-px transition-colors ${
+                  active
+                    ? "border-accent text-accent bg-accent/10 sm:bg-transparent"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-foreground/5 sm:hover:bg-transparent"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {subTab === "profile" && (
