@@ -47,7 +47,7 @@ function daysSince(iso: string): number {
   return Math.floor((Date.now() - then) / 86_400_000);
 }
 
-export function ChangelogChip() {
+export function ChangelogChip({ onClick }: { onClick?: () => void }) {
   const latest = CHANGELOG[0];
   const fresh = daysSince(latest.date) <= 7;
 
@@ -56,8 +56,9 @@ export function ChangelogChip() {
     : "bg-sky-100 text-sky-800 hover:bg-sky-200 border border-sky-200";
 
   return (
-    <Link
-      to="/changelog"
+    <button
+      type="button"
+      onClick={onClick}
       className={`block w-full text-left text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm transition-colors ${chipClass}`}
       title={fresh ? "Updated this week — view changelog" : "View changelog"}
     >
@@ -65,7 +66,7 @@ export function ChangelogChip() {
       <span className="ml-1 font-medium normal-case opacity-80">
         {fresh ? "· New this week" : "· What's new"}
       </span>
-    </Link>
+    </button>
   );
 }
 
