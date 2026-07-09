@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DriverDetailModal } from "./DriverDetailModal";
 
 export const RESV_DND_MIME = "application/x-reservation-id";
 import {
@@ -44,6 +45,7 @@ export function ScheduleCalendarPanel() {
   const [driverFilter, setDriverFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [hideEmptyDrivers, setHideEmptyDrivers] = useState(false);
+  const [openDriverId, setOpenDriverId] = useState<string | null>(null);
 
   const whFn = useServerFn(getMyWorkHours);
   const driversFn = useServerFn(listMyDrivers);
@@ -263,7 +265,14 @@ export function ScheduleCalendarPanel() {
                 {drivers.map((d: any) => (
                   <tr key={d.id} className="border-t border-border">
                     <td className="sticky left-0 z-10 bg-card border-r border-border px-3 py-2 font-bold whitespace-nowrap">
-                      {d.first_name} {d.last_name}
+                      <button
+                        type="button"
+                        onClick={() => setOpenDriverId(d.id)}
+                        className="text-left hover:text-accent hover:underline decoration-dotted underline-offset-2"
+                        title="View schedule & email driver"
+                      >
+                        {d.first_name} {d.last_name}
+                      </button>
                       <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{d.status}</div>
                     </td>
                     {hours.map((h) => {
@@ -290,6 +299,10 @@ export function ScheduleCalendarPanel() {
             </table>
           )}
         </div>
+      )}
+
+      {openDriverId && (
+        <DriverDetailModal driverId={openDriverId} onClose={() => setOpenDriverId(null)} />
       )}
     </div>
   );
