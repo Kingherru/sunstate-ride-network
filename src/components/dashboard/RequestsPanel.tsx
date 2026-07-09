@@ -207,6 +207,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
+    if (payerFilter === "medicaid" && !isMedicaidTrip(r)) return false;
     if (search) {
       const s = search.toLowerCase();
       const hay = `${r.patient_first_name ?? ""} ${r.patient_last_name ?? ""} ${r.pickup_city ?? ""} ${r.dropoff_city ?? ""}`.toLowerCase();
