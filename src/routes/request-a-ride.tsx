@@ -57,6 +57,7 @@ const empty: RideRequestInput = {
   specialInstructions: "",
   recurrence: "none",
   recurrenceEndDate: "",
+  billingSource: "account",
 };
 
 
