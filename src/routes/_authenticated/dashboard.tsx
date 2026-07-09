@@ -891,6 +891,9 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
                 <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
+                <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                  <PaymentStatusControl trip={t} canEdit={role === "sender" || role === "recipient"} onChanged={onChanged} />
+                </td>
                 {showSavedBadge && (
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     {!t.assigned_to ? (
@@ -917,12 +920,30 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                   {canRate && t.assigned_to && (t.status === "completed" || t.status === "accepted") && (
                     <button onClick={() => setRating(t)} className="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-sm hover:bg-amber-600 mr-2">★ Rate</button>
                   )}
-                  {role === "recipient" && t.status === "assigned" && (
+                  {role === "recipient" && ["assigned","open","pending","offered"].includes((t.status ?? "").toLowerCase()) && (
                     <>
-                      <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } }); toast.success("Accepted"); onChanged(); }}
-                              className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
-                      <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "declined" } }); toast.success("Declined"); onChanged(); }}
-                              className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } });
+                            toast.success("Accepted");
+                            onChanged();
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "Could not accept trip");
+                          }
+                        }}
+                        className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateTripStatus({ data: { trip_id: t.id, status: "declined" } });
+                            toast.success("Declined");
+                            onChanged();
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "Could not decline trip");
+                          }
+                        }}
+                        className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
                     </>
                   )}
                 </td>
