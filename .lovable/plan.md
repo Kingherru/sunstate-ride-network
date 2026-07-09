@@ -1,81 +1,64 @@
+# Portal Updates — Items 49–57
 
-## Group 1 — Payments & saved cards (patient + facility)
+This is a large batch touching sidebar nav, portals, account structure, and one new feature (embed code). Below is a scoped plan grouped by area so you can approve or trim before I start.
 
-**DB (migration)**
-- `stripe_customers (user_id PK → auth.users, stripe_customer_id, environment)` — RLS: owner-only.
-- `saved_payment_methods (id, user_id, stripe_payment_method_id, brand, last4, exp_month, exp_year, is_default, environment, created_at)` — RLS: owner-only read/insert/update/delete. No anon, no admin grant.
-- `trip_payments (id, trip_id, ride_request_id, payer_user_id, stripe_payment_intent_id, amount_cents, platform_fee_cents, status, environment, created_at)` — RLS: payer can read own; provider on the trip can read own; admin read.
-- Add `payment_status` ('unpaid' | 'authorized' | 'paid' | 'refunded') to `ride_requests` + `trips`.
+## 1. Sidebar & Page Consolidation (items 49, 54, 55)
 
-**Server fns (`src/lib/payments.functions.ts`)**
-- `ensureStripeCustomer()` — get-or-create per user.
-- `createSetupIntent()` — returns client_secret for saving a card.
-- `listSavedPaymentMethods()` — owner only.
-- `deletePaymentMethod({id})` — detaches from Stripe + deletes row.
-- `setDefaultPaymentMethod({id})`.
-- `payForConfirmedTrip({ride_request_id, payment_method_id?})` — creates PaymentIntent, charges, marks trip `paid`. Triggered when status flips to `confirmed`.
+- **49. Remove Weekly Schedule tab.** Delete the sidebar entry. On the Schedule/Reservation page, render a driver list showing today's/this week's assignments. Clicking a driver's name opens a small dialog: "Send weekly schedule to {driver}?" → triggers a server function that renders the driver's next-7-days assignments and emails them via Lovable Emails (new template `driver-weekly-schedule.tsx`).
+- **54. Merge New Trip + Reservations into one page.** New route `/dashboard?tab=trips-and-reservations` (replacing the two existing tabs). Two-column layout: left = New Trip form (existing component), right = Reservations list (existing component). Old tabs redirect to the merged tab.
+- **55. Merge Saved Contacts + Saved Patients.** One combined "Saved People" section with a type toggle (Patient / Contact) and unified table. Existing `saved_patients` table stays; add a `kind` column (`patient` | `contact`) via migration, plus optional contact-only fields. Migrate existing rows to `kind='patient'`.
 
-All Stripe calls go through `createStripeClient(env)` from `@/lib/stripe.server` per shared utility.
+## 2. Account Page Restructure (items 56, 57)
 
-**UI**
-- `src/components/payments/SavedCards.tsx` — list + add (Stripe Elements `<PaymentElement>` against SetupIntent) + delete + set default.
-- New "Payments" tab in patient + facility Account panels.
-- `PayTripButton` shown on confirmed trips in the Patient "My Rides" and Facility "Trip History" panels.
+- Convert Account page into tabs: **Profile · Business Information · Membership · Security**.
+- **56.** Move Membership block into the Membership tab; on desktop it sits on the right side of the Account layout.
+- **57.** Move Business Information into its own tab (currently a separate page). Delete the standalone Business Information sidebar link.
 
----
+## 3. Rules Page (item 51)
 
-## Group 2 — Staff + Dispatcher roles, staff login
+- Two-column desktop layout: **Rules of the Road** (left) · **Provider Trip Assignment Transparency Rules** (right). Stack on mobile.
+- Remove **Rule T7** from the Transparency list.
 
-**DB**
-- Extend `app_role` enum: add `'staff'` and `'dispatcher'` (keep `'admin'`, `'user'`).
-- Permissions enforced **server-side** via `has_role()` checks inside server fns + RLS policies. No client-side gating only.
-  - `staff`: read access to providers/facilities/trips, write access ONLY to: notes, contact messages, mark-read notifications, edit provider contacts. CANNOT: change roles, change pricing, change platform_theme, approve providers, delete anything, view payment methods.
-  - `dispatcher`: everything staff can do, plus: approve/deny provider applications, assign trips to providers, change trip status, send referrals, edit reservations. Still cannot: change roles, theme, billing/payouts settings.
-- New RLS policies on relevant tables keyed off `has_role(auth.uid(),'staff'|'dispatcher')`.
-- Audit trail: `staff_audit_log (id, actor_user_id, role_at_time, action, target_table, target_id, before jsonb, after jsonb, created_at)` — admin-read only. Every staff/dispatcher write server fn inserts a row.
+## 4. Facility Auto-Upgrade (item 52)
 
-**UI**
-- `/staff/login` route (PortalAuth variant) — link in footer ("Staff sign-in").
-- Reuse `/dashboard` layout; sidebar tabs gated by role.
-- Admin tab "Team" — invite staff/dispatcher by email, set/change role.
+- DB trigger on `saved_patients` (or wherever patients are counted): when a `patient` portal account exceeds 3 patients, update `member_profiles.portal = 'facility'`.
+- Show a one-time in-app banner: "Your account was upgraded to a Facility Portal because you manage 3+ patients. Pricing is unchanged — it's based on provider availability in your area."
 
----
+## 5. Manual Trip Completion (item 53)
 
-## Group 3 — Changelog chip
+- On the Trip Details page (provider view), add **Mark Completed** / **Mark Uncompleted** buttons.
+- Marking completed opens a required **Trip Summary Log** form (pickup arrival time, dropoff arrival time, mileage, notes, any incidents). Saves to a new `trip_summary_logs` table linked to `trips`.
+- Extend `updateTripDetails` server fn to accept the status change + summary log payload atomically.
 
-- `changelog (id, version, title, body markdown, released_at)` table — public SELECT (read-only), admin write.
-- `APP_VERSION` constant + `LATEST_CHANGELOG_RELEASED_AT` derived from latest row.
-- New `<ChangelogChip />` next to "Sign out" in sidebar footer.
-  - Default: light blue dot + "Changelog".
-  - If `now - released_at < 7 days` AND user hasn't dismissed: light green dot + "New".
-  - Click → side sheet listing entries newest first.
-- `user_changelog_seen (user_id, last_seen_version)` so dismiss is per-user.
+## 6. Provider Embed Code (item 50) — new feature
 
----
+- Add `provider_embed_tokens` table: `id, provider_user_id, token (unique), created_at, revoked_at`.
+- New public route `/embed/request-a-ride/$token` — renders the Request-a-Ride form in an iframe-friendly layout (no header/footer), and pre-assigns submissions to that provider.
+- Provider Portal → new **Embed Code** section under Business Information tab: shows a snippet like:
+  ```html
+  <iframe src="https://…/embed/request-a-ride/{token}" width="100%" height="800" frameborder="0"></iframe>
+  ```
+  With Copy and Regenerate buttons. Regenerate revokes the old token.
+- Token validated server-side on submit; invalid/revoked tokens return 404.
 
-## Group 4 — Trip UX batch
+## Technical Notes
 
-- **Trip type selector** on all reservation/new-trip forms: One-way / Round trip / Multi-leg (dynamic leg rows). Stored as `trip_kind` + `legs jsonb` on `ride_requests`.
-- **Recurring trips**: pattern picker (daily/weekly/Mon-Fri/custom days + end date). Expands into individual `ride_requests` rows tagged with `recurrence_group_id`. Cancel "next only" / "all future" already exists in the requests portal — wire to new groups.
-- **Copy trip** button on Patient / Facility / Provider trip rows → pre-fills New Trip form with everything except date/time.
-- **Saved patients** (Patient portal): `saved_patients (id, owner_user_id, full_name, dob, phone, medicaid_id, npi, default_pickup, default_dropoff, notes)` — owner-only RLS. Quick-select on the reservation form. Facilities already have `provider_contacts`; mirror UX.
-- **Clickable name → modal**: row click opens reservation detail modal with full info + Edit mode for fields the actor is allowed to change (RLS-enforced). Available across Patient/Provider/Facility.
-- **Accept / Decline restyle**: smaller, consistent throughout — Accept `bg-green-200 text-green-900 hover:bg-green-300`, Decline `bg-pink-200 text-pink-900 hover:bg-pink-300`, `px-3 py-1 text-sm font-bold rounded-sm`.
-- **Integration label**: change "duetride" display to "DueRide" everywhere (label only; vendor id stays).
-- **Provider business-info tab**: new "Business Info" tab in Provider account showing read-only view of original `provider_applications` row (company, EIN, NPI, W9 path, insurance, driver license, etc.) + uploaded docs links + an "Update" button that opens an editable form (writes to `provider_applications` with `status='resubmitted'` requiring admin re-approval for sensitive fields).
-- **Driver email + in-app notifications**:
-  - Add `auth_user_id` (nullable) FK to `drivers` so drivers can have logins. Provider can invite driver → magic-link signup → linked.
-  - On trip assigned: enqueue email (notification_email_queue) to driver + insert `notifications` row scoped to driver user.
-  - "Send week" button on Vehicles & Drivers / driver row: PDF + email of all trips assigned to that driver for next 7 days.
-  - Driver portal (minimal): sees only own assigned trips, can mark on-scene / completed.
+- Migrations: `saved_patients.kind`, `trip_summary_logs`, `provider_embed_tokens`, facility-upgrade trigger.
+- New route files: `/embed/request-a-ride/$token.tsx`.
+- Email template: `driver-weekly-schedule.tsx` + trigger from schedule page.
+- Account page becomes tab-based (`shadcn/ui Tabs`).
+- Rules page becomes 2-col grid (`md:grid-cols-2`).
+- All work stays inside the portal shell (no website header/footer on embed route either).
 
----
+## Suggested Order
 
-## Order of execution (one chat turn per group so each is reviewable)
+1. Schema migrations (saved_patients.kind, trip_summary_logs, provider_embed_tokens, facility-upgrade trigger)
+2. Sidebar cleanup + merged Trips/Reservations + merged Saved People (49 partial, 54, 55)
+3. Account tabs + move Membership + Business Info (56, 57)
+4. Rules page layout + T7 removal (51)
+5. Manual trip completion + summary log (53)
+6. Weekly driver schedule email flow (49 completion)
+7. Facility auto-upgrade banner (52)
+8. Provider embed code end-to-end (50)
 
-1. **This turn:** Group 1 — Payments & saved cards (migration + Stripe wiring + SavedCards UI + PayTripButton).
-2. Next turn: Group 2 — Staff/Dispatcher + audit log + staff login.
-3. Next turn: Group 3 — Changelog chip.
-4. Next turn: Group 4 — Trip UX batch (largest; may split into 4a forms/recurring/copy and 4b saved patients/edit modal/driver notifications).
-
-Approve and I'll start with Group 1.
+Approve as-is, or tell me which items to drop/reorder and I'll start.

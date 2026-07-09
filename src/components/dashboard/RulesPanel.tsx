@@ -34,10 +34,6 @@ const TRANSPARENCY: { title: string; body: string }[] = [
     title: "T6. Credential gating",
     body: "Expired insurance, registration, driver's license, or Medicaid credentials remove you from all assignment scoring — the algorithm cannot offer you trips until the credential is renewed.",
   },
-  {
-    title: "T7. Dispatch zone control",
-    body: "Only Administrators can add or remove ZIP codes inside a dispatch zone. Zone Managers, App Managers, and Dispatchers can route and reassign trips within zones but cannot change the zone's ZIP boundaries.",
-  },
 ];
 
 const STRIKES = [
@@ -48,47 +44,53 @@ const STRIKES = [
 
 export function RulesPanel() {
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <h2 className="text-2xl font-extrabold tracking-tight">Rules of the Road</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Simple, non-negotiable. Patients depend on us — these rules keep the network reliable.
-        </p>
-      </div>
-
-      <div className="space-y-3">
-        {RULES.map((r) => (
-          <div key={r.title} className="bg-card border border-border rounded-sm p-4">
-            <div className="font-extrabold">{r.title}</div>
-            <p className="text-sm text-muted-foreground mt-1">{r.body}</p>
+    <div className="max-w-6xl space-y-8">
+      <div className="grid gap-8 md:grid-cols-2">
+        {/* Rules of the Road */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight">Rules of the Road</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Simple, non-negotiable. Patients depend on us — these rules keep the network reliable.
+            </p>
           </div>
-        ))}
-      </div>
-
-      <div>
-        <h3 className="text-xl font-extrabold tracking-tight mt-8">Provider trip assignment transparency rules</h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          How trips are offered and scored — published so you always know why you did or did not receive a trip.
-        </p>
-      </div>
-
-      <div className="space-y-3">
-        {TRANSPARENCY.map((r) => (
-          <div key={r.title} className="bg-card border border-border rounded-sm p-4">
-            <div className="font-extrabold">{r.title}</div>
-            <p className="text-sm text-muted-foreground mt-1">{r.body}</p>
+          <div className="space-y-3">
+            {RULES.map((r) => (
+              <div key={r.title} className="bg-card border border-border rounded-sm p-4">
+                <div className="font-extrabold">{r.title}</div>
+                <p className="text-sm text-muted-foreground mt-1">{r.body}</p>
+              </div>
+            ))}
           </div>
-        ))}
+        </section>
+
+        {/* Transparency Rules — right side on desktop */}
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-2xl font-extrabold tracking-tight">Provider trip assignment transparency rules</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              How trips are offered and scored — published so you always know why you did or did not receive a trip.
+            </p>
+          </div>
+          <div className="space-y-3">
+            {TRANSPARENCY.map((r) => (
+              <div key={r.title} className="bg-card border border-border rounded-sm p-4">
+                <div className="font-extrabold">{r.title}</div>
+                <p className="text-sm text-muted-foreground mt-1">{r.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
-      <div className="bg-orange-50 border border-orange-200 rounded-sm p-5">
+      <div className="bg-orange-50 border border-orange-200 rounded-sm p-5 max-w-3xl">
         <div className="font-extrabold text-orange-900 mb-2">Three-strike enforcement</div>
         <ul className="text-sm text-orange-900 space-y-1 list-disc list-inside">
           {STRIKES.map((s) => <li key={s}>{s}</li>)}
         </ul>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground max-w-3xl">
         By accepting trips on this platform you agree to these rules. Updated rules will be announced before they take effect.
       </p>
     </div>

@@ -432,6 +432,7 @@ export type Database = {
       member_profiles: {
         Row: {
           allow_live_medicaid_verification: boolean
+          auto_upgraded_to_facility_at: string | null
           center_lat: number | null
           center_lng: number | null
           city: string | null
@@ -475,6 +476,7 @@ export type Database = {
         }
         Insert: {
           allow_live_medicaid_verification?: boolean
+          auto_upgraded_to_facility_at?: string | null
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -518,6 +520,7 @@ export type Database = {
         }
         Update: {
           allow_live_medicaid_verification?: boolean
+          auto_upgraded_to_facility_at?: string | null
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -992,6 +995,30 @@ export type Database = {
           provider_user_id?: string
           required?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_embed_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          provider_user_id: string
+          revoked_at: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          provider_user_id: string
+          revoked_at?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          provider_user_id?: string
+          revoked_at?: string | null
+          token?: string
         }
         Relationships: []
       }
@@ -1668,6 +1695,7 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
+          kind: string
           last_name: string
           medicaid_id: string | null
           mobility: string | null
@@ -1686,6 +1714,7 @@ export type Database = {
           email?: string | null
           first_name: string
           id?: string
+          kind?: string
           last_name: string
           medicaid_id?: string | null
           mobility?: string | null
@@ -1704,6 +1733,7 @@ export type Database = {
           email?: string | null
           first_name?: string
           id?: string
+          kind?: string
           last_name?: string
           medicaid_id?: string | null
           mobility?: string | null
@@ -1971,6 +2001,66 @@ export type Database = {
           },
         ]
       }
+      trip_summary_logs: {
+        Row: {
+          created_at: string
+          dropoff_arrival_at: string | null
+          id: string
+          incidents: string | null
+          notes: string | null
+          odometer_end: number | null
+          odometer_start: number | null
+          pickup_arrival_at: string | null
+          provider_user_id: string
+          total_miles: number | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dropoff_arrival_at?: string | null
+          id?: string
+          incidents?: string | null
+          notes?: string | null
+          odometer_end?: number | null
+          odometer_start?: number | null
+          pickup_arrival_at?: string | null
+          provider_user_id: string
+          total_miles?: number | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dropoff_arrival_at?: string | null
+          id?: string
+          incidents?: string | null
+          notes?: string | null
+          odometer_end?: number | null
+          odometer_start?: number | null
+          pickup_arrival_at?: string | null
+          provider_user_id?: string
+          total_miles?: number | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_summary_logs_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_summary_logs_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           actual_dropoff_at: string | null
@@ -2006,6 +2096,8 @@ export type Database = {
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
+          manually_completed_at: string | null
+          manually_completed_by: string | null
           medicaid_number: string | null
           medicaid_plan: string | null
           mileage: number | null
@@ -2094,6 +2186,8 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          manually_completed_at?: string | null
+          manually_completed_by?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
           mileage?: number | null
@@ -2182,6 +2276,8 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          manually_completed_at?: string | null
+          manually_completed_by?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
           mileage?: number | null
