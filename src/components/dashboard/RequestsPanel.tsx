@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { listMyReservations } from "@/lib/schedule-board.functions";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
+import { formatMinutes } from "@/components/maps/RoutePreview";
 
 type Row = {
   id: string;
