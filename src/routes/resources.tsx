@@ -1,149 +1,220 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, Search, Clock, Calendar } from "lucide-react";
+import { CATEGORIES, getAllPosts, type Category, type Post } from "@/content/blog";
 
 export const Route = createFileRoute("/resources")({
   head: () => ({
     meta: [
-      { title: "Resources & Insights — Florida NEMT Blog" },
+      { title: "Blog & Resources — Florida NEMT" },
       {
         name: "description",
         content:
-          "Guides and articles for Florida patients, providers, and entrepreneurs in non-emergency medical transportation — Medicaid, Workers' Comp, ADA compliance, and starting a NEMT business.",
+          "The Florida NEMT blog: guides, playbooks, and reference articles for patients, caregivers, providers, and dispatchers across Florida's non-emergency medical transportation industry.",
       },
-      { property: "og:title", content: "Florida NEMT Resources & Blog" },
-      { property: "og:description", content: "NEMT insights for patients, providers, and operators across Florida." },
+      { property: "og:title", content: "Florida NEMT Blog & Resources" },
+      { property: "og:description", content: "Search NEMT guides for patients, providers, caregivers, and Florida transportation planners." },
       { property: "og:url", content: "/resources" },
+      { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "/resources" }],
   }),
   component: ResourcesPage,
 });
 
-type Post = {
-  slug: string;
-  category: string;
-  title: string;
-  excerpt: string;
-  read: string;
+const COVER_STYLE: Record<Post["cover"], string> = {
+  navy:   "bg-gradient-to-br from-[#0c2340] via-[#123057] to-[#1D3557]",
+  peach:  "bg-gradient-to-br from-[#F9CB9F] via-[#F2A968] to-[#E68A3C]",
+  sunset: "bg-gradient-to-br from-[#b94a24] via-[#d0663a] to-[#F2A968]",
+  forest: "bg-gradient-to-br from-[#1f3d2b] via-[#2b5a3d] to-[#4a8567]",
+  cobalt: "bg-gradient-to-br from-[#123057] via-[#1e5aa8] to-[#3a86d9]",
+  coral:  "bg-gradient-to-br from-[#b94a24] via-[#e26a3d] to-[#F9CB9F]",
+  sand:   "bg-gradient-to-br from-[#e9dcc4] via-[#d4c091] to-[#b09d6a]",
 };
 
-const posts: Post[] = [
-  {
-    slug: "ada-ramp-guidelines-2026",
-    category: "Compliance",
-    title: "ADA Ramp Guidelines Every Florida NEMT Owner Should Know in 2026",
-    excerpt:
-      "Launching a NEMT business in Florida? Your van must be safe, professional, and ADA-compliant — and that starts with the ramp. Here's what the Americans with Disabilities Act requires for slope, width, and securement.",
-    read: "6 min read",
-  },
-  {
-    slug: "how-to-secure-nemt-vans",
-    category: "Operations",
-    title: "How to Secure NEMT Vans for Your Florida Business",
-    excerpt:
-      "Demand for safe, reliable transportation across Florida is at an all-time high. Before you can start moving patients, here's how to source, finance, and inspect compliant NEMT vehicles.",
-    read: "8 min read",
-  },
-  {
-    slug: "right-time-to-start-nemt-florida",
-    category: "Business",
-    title: "Why Now Might Be the Right Time to Start a NEMT Business in Florida",
-    excerpt:
-      "Florida's aging population, expanded Medicaid managed-care contracts, and a wave of new Workers' Comp claims are creating real opportunity for new NEMT operators across the state.",
-    read: "7 min read",
-  },
-  {
-    slug: "navigating-slow-seasons",
-    category: "Business",
-    title: "Navigating Slow Seasons in NEMT — Strategies to Boost Your Business",
-    excerpt:
-      "Every Florida NEMT operator hits a slow stretch. Here's how to diversify your trip mix — adult day care, dialysis contracts, and private-pay long-distance work — to keep revenue steady.",
-    read: "5 min read",
-  },
-  {
-    slug: "switch-nemt-provider-florida",
-    category: "For Patients",
-    title: "Having Trouble With Your Insurance-Assigned NEMT Provider? Here's How to Switch.",
-    excerpt:
-      "Late pickups, no-shows, and rude drivers are common complaints. Florida patients have more options than most insurance plans advertise — here's how to request a new provider.",
-    read: "4 min read",
-  },
-  {
-    slug: "5-problems-workers-comp-transport",
-    category: "Workers' Comp",
-    title: "5 Critical Problems With Workers' Comp Transportation — and How to Solve Them",
-    excerpt:
-      "Florida injured workers face transportation gaps that delay recovery. From scheduling chaos to no-shows, here's a practical guide to fixing the most common issues.",
-    read: "9 min read",
-  },
-];
-
-const categories = ["All", "Compliance", "Operations", "Business", "For Patients", "Workers' Comp"];
+const PAGE_SIZE = 6;
 
 function ResourcesPage() {
-  const [featured, ...rest] = posts;
+  const all = useMemo(getAllPosts, []);
+  const [category, setCategory] = useState<Category | "All">("All");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return all.filter((p) => {
+      if (category !== "All" && p.category !== category) return false;
+      if (!q) return true;
+      return (
+        p.title.toLowerCase().includes(q) ||
+        p.excerpt.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.keywords.some((k) => k.toLowerCase().includes(q))
+      );
+    });
+  }, [all, category, query]);
+
+  const featured = filtered[0];
+  const rest = filtered.slice(1);
+  const pageCount = Math.max(1, Math.ceil(rest.length / PAGE_SIZE));
+  const clampedPage = Math.min(page, pageCount);
+  const pageItems = rest.slice((clampedPage - 1) * PAGE_SIZE, clampedPage * PAGE_SIZE);
+
   return (
     <>
       <section className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.22em] mb-5">
-            Resources & Insights
+            Blog & Resources
           </p>
-          <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter leading-[0.95] mb-6 max-w-4xl">
+          <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tighter leading-[0.95] mb-6 max-w-4xl">
             The Florida NEMT blog.
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Guides, playbooks, and field notes for patients, caregivers, providers, and
-            entrepreneurs working in non-emergency medical transportation across Florida.
+            Search plain-English guides on Medicaid transportation, provider credentialing,
+            caregiver logistics, and Florida discharge planning — written by dispatchers,
+            not marketers.
           </p>
-          <div className="mt-8 flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <span
-                key={c}
-                className="px-4 py-2 text-xs font-mono uppercase tracking-widest border border-border rounded-full bg-card"
-              >
-                {c}
-              </span>
-            ))}
+
+          <div className="mt-8 flex flex-col md:flex-row gap-3 md:items-center">
+            <label className="relative flex-1 max-w-xl">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" aria-hidden />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                placeholder="Search articles…"
+                aria-label="Search articles"
+                className="w-full pl-11 pr-4 py-3 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </label>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {(["All", ...CATEGORIES] as const).map((c) => {
+              const active = c === category;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { setCategory(c); setPage(1); }}
+                  aria-pressed={active}
+                  className={
+                    "px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-full border transition-colors " +
+                    (active
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border hover:border-accent")
+                  }
+                >
+                  {c}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <section className="py-16 lg:py-20 px-6">
+      <section className="py-14 lg:py-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <article className="bg-primary text-primary-foreground rounded-3xl p-10 lg:p-16 mb-10 grid lg:grid-cols-[1fr_auto] gap-8 items-end">
-            <div>
-              <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-3">
-                Featured · {featured.category}
-              </p>
-              <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-4 max-w-3xl">
-                {featured.title}
-              </h2>
-              <p className="text-primary-foreground/80 max-w-2xl">{featured.excerpt}</p>
+          {!featured && (
+            <div className="rounded-2xl border border-border bg-card p-12 text-center">
+              <h2 className="text-2xl font-extrabold tracking-tight mb-2">No articles match your search.</h2>
+              <p className="text-muted-foreground">Try a different keyword or clear the category filter.</p>
             </div>
-            <span className="inline-flex items-center gap-2 text-sm font-bold text-accent uppercase tracking-widest">
-              Read article <ArrowRight className="size-4" />
-            </span>
-          </article>
+          )}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rest.map((p) => (
-              <article
-                key={p.slug}
-                className="bg-card border border-border rounded-2xl p-7 flex flex-col gap-4 hover:border-accent transition-colors"
-              >
-                <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest">
-                  <span className="text-accent font-bold">{p.category}</span>
-                  <span className="text-muted-foreground">{p.read}</span>
+          {featured && (
+            <Link
+              to="/resources/$slug"
+              params={{ slug: featured.slug }}
+              className="block bg-primary text-primary-foreground rounded-3xl overflow-hidden mb-10 group"
+            >
+              <div className="grid lg:grid-cols-[1.2fr_1fr]">
+                <div className={"aspect-[16/10] lg:aspect-auto " + COVER_STYLE[featured.cover]} aria-hidden />
+                <div className="p-8 lg:p-12 flex flex-col justify-center">
+                  <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-3">
+                    Featured · {featured.category}
+                  </p>
+                  <h2 className="text-2xl lg:text-4xl font-extrabold tracking-tighter mb-4">
+                    {featured.title}
+                  </h2>
+                  <p className="text-primary-foreground/85 mb-6">{featured.excerpt}</p>
+                  <div className="flex items-center gap-4 text-xs font-mono uppercase tracking-widest text-primary-foreground/70">
+                    <span className="inline-flex items-center gap-1"><Calendar className="size-3.5" />{formatDate(featured.publishedAt)}</span>
+                    <span className="inline-flex items-center gap-1"><Clock className="size-3.5" />{featured.readMinutes} min read</span>
+                  </div>
+                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-accent uppercase tracking-widest group-hover:gap-3 transition-all">
+                    Read article <ArrowRight className="size-4" />
+                  </span>
                 </div>
-                <h3 className="text-xl font-extrabold tracking-tight leading-tight">{p.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">{p.excerpt}</p>
-                <span className="inline-flex items-center gap-1 text-sm font-bold text-primary mt-2">
-                  Read more <ArrowRight className="size-4" />
-                </span>
-              </article>
-            ))}
-          </div>
+              </div>
+            </Link>
+          )}
+
+          {pageItems.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pageItems.map((p) => (
+                <Link
+                  key={p.slug}
+                  to="/resources/$slug"
+                  params={{ slug: p.slug }}
+                  className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col hover:border-accent transition-colors group"
+                >
+                  <div className={"aspect-[16/9] " + COVER_STYLE[p.cover]} aria-hidden />
+                  <div className="p-6 flex flex-col gap-3 flex-1">
+                    <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest">
+                      <span className="text-accent font-bold">{p.category}</span>
+                      <span className="text-muted-foreground inline-flex items-center gap-1">
+                        <Clock className="size-3" />{p.readMinutes} min
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-extrabold tracking-tight leading-tight">{p.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed flex-1">{p.excerpt}</p>
+                    <span className="inline-flex items-center gap-1 text-sm font-bold text-primary mt-2 group-hover:gap-2 transition-all">
+                      Read more <ArrowRight className="size-4" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {pageCount > 1 && (
+            <nav aria-label="Pagination" className="mt-10 flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={clampedPage === 1}
+                className="px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-full border border-border bg-card disabled:opacity-40"
+              >
+                Prev
+              </button>
+              {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setPage(n)}
+                  aria-current={n === clampedPage ? "page" : undefined}
+                  className={
+                    "px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-full border transition-colors " +
+                    (n === clampedPage
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border hover:border-accent")
+                  }
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                disabled={clampedPage === pageCount}
+                className="px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-full border border-border bg-card disabled:opacity-40"
+              >
+                Next
+              </button>
+            </nav>
+          )}
         </div>
       </section>
 
@@ -165,4 +236,9 @@ function ResourcesPage() {
       </section>
     </>
   );
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso + "T12:00:00Z");
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
