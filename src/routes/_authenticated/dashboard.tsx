@@ -14,6 +14,7 @@ import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { SavedPatientsPanel } from "@/components/dashboard/SavedPatientsPanel";
+import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProviderContactsPanel";
 import { BusinessInfoPanel } from "@/components/dashboard/BusinessInfoPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
