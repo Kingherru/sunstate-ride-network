@@ -254,7 +254,7 @@
     display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
     padding: 0.8rem 1.35rem;
     background: var(--gradient-accent);
-    color: oklch(0.18 0.04 255);
+    color: oklch(0.99 0 0);
     border-radius: var(--radius);
     font-weight: 700; font-size: 0.9rem;
     box-shadow: var(--glow-accent);
