@@ -216,3 +216,57 @@ export const markNotificationRead = createServerFn({ method: "POST" })
     if (error) return { ok: false as const, error: "Could not mark notifications read." };
     return { ok: true as const };
   });
+
+/**
+ * Return full reservation detail for the assigned provider (or admin/staff).
+ * Used by the Reservation Review page. Returns both the "original request"
+ * fields and the "reservation" fields from the same ride_requests row —
+ * historical audit of edits will be added when a revisions table exists.
+ */
+export const getReservationReview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const cols =
+      SELECT_COLS +
+      ", pickup_address_details, pickup_zip, dropoff_zip, appointment_time, return_pickup_time, return_dropoff_time, dispatch_source, scheduled_start_time, assigned_driver_id, service_level, needs_wheelchair, payer, medicaid_number, medicaid_plan";
+    const { data: row, error } = await supabase
+      .from("ride_requests")
+      .select(cols)
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) return { ok: false as const, error: "Could not load reservation." };
+    if (!row) return { ok: false as const, error: "Reservation not found." };
+
+    // Authorize: assigned provider, requester, or ops staff.
+    const isProvider = (row as any).assigned_provider_id === userId;
+    const isRequester = (row as any).requester_user_id === userId;
+    let isStaff = false;
+    if (!isProvider && !isRequester) {
+      const { data: r } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .in("role", ["admin", "staff", "app_manager", "dispatcher"] as any)
+        .maybeSingle();
+      if (r) isStaff = true;
+    }
+    if (!isProvider && !isRequester && !isStaff) {
+      return { ok: false as const, error: "You do not have access to this reservation." };
+    }
+
+    // Look up driver if assigned.
+    let driver: { first_name: string | null; last_name: string | null; phone: string | null } | null = null;
+    const driverId = (row as any).assigned_driver_id as string | null;
+    if (driverId) {
+      const { data: d } = await supabase
+        .from("drivers")
+        .select("first_name, last_name, phone")
+        .eq("id", driverId)
+        .maybeSingle();
+      driver = d ?? null;
+    }
+    return { ok: true as const, row, driver };
+  });
+
