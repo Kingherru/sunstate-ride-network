@@ -3,6 +3,28 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import {
+  LayoutDashboard,
+  Users as UsersIcon,
+  Building2,
+  Building,
+  Car,
+  CalendarClock,
+  DollarSign,
+  Plug,
+  Wallet,
+  FileText,
+  Search as SearchIcon,
+  BookOpen,
+  Settings,
+  Palette,
+  ShieldCheck,
+  ClipboardList,
+  History,
+  ShieldAlert,
+  Radar,
+  LogOut,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
@@ -15,11 +37,25 @@ import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel"
 import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { reviewProviderApplication } from "@/lib/staff.functions";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Provider Admin — Florida NEMT" },
+      { title: "Admin Dashboard — Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -28,19 +64,289 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Application = Database["public"]["Tables"]["provider_applications"]["Row"];
 type DocEntry = { kind: string; path: string; filename: string; size: number };
-
 type StatusFilter = "all" | "new" | "approved" | "denied";
+
+type TabId =
+  | "overview"
+  | "users"
+  | "providers"
+  | "facilities"
+  | "trips"
+  | "reservations"
+  | "dispatch"
+  | "credentials"
+  | "pricing"
+  | "integrations"
+  | "payouts"
+  | "content"
+  | "seo"
+  | "blog"
+  | "theme"
+  | "staff"
+  | "audit"
+  | "changelog"
+  | "system";
+
+type NavItem = {
+  id: TabId;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  visible: (caps: ReturnType<typeof useCapabilities>) => boolean;
+};
+
+type NavGroup = { label: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps },
+    ],
+  },
+  {
+    label: "People & Accounts",
+    items: [
+      { id: "users", label: "Users", icon: UsersIcon, visible: (c) => c.isAdmin },
+      { id: "providers", label: "Providers", icon: Building2, visible: (c) => c.isOps },
+      { id: "facilities", label: "Facilities", icon: Building, visible: (c) => c.isOps },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { id: "trips", label: "Trips", icon: Car, visible: (c) => c.isOps },
+      { id: "reservations", label: "Reservations", icon: CalendarClock, visible: (c) => c.isOps },
+      { id: "dispatch", label: "Dispatch", icon: Radar, visible: (c) => c.canDispatch },
+      { id: "credentials", label: "Expiring credentials", icon: ShieldAlert, visible: (c) => c.canDispatch },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing },
+      { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps },
+      { id: "integrations", label: "Integrations", icon: Plug, visible: (c) => c.isAdmin },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { id: "content", label: "Content management", icon: FileText, visible: (c) => c.isAdmin },
+      { id: "seo", label: "SEO settings", icon: SearchIcon, visible: (c) => c.isAdmin },
+      { id: "blog", label: "Blog / Resources", icon: BookOpen, visible: (c) => c.isAdmin },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { id: "theme", label: "Theme & branding", icon: Palette, visible: (c) => c.canConfigurePricing },
+      { id: "staff", label: "Staff permissions", icon: ShieldCheck, visible: (c) => c.canManageStaff },
+      { id: "audit", label: "Audit log", icon: ClipboardList, visible: (c) => c.canViewAuditLog },
+      { id: "changelog", label: "Changelog", icon: History, visible: (c) => c.isOps },
+      { id: "system", label: "System settings", icon: Settings, visible: (c) => c.isAdmin },
+    ],
+  },
+];
 
 function AdminPage() {
   const qc = useQueryClient();
+  const caps = useCapabilities();
+  const [tab, setTab] = useState<TabId>("overview");
+
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    window.location.href = "/auth";
+  }
+
+  if (!caps.loaded) {
+    return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
+  }
+
+  if (!caps.isOps) {
+    return (
+      <section className="min-h-[70vh] grid place-items-center px-6 py-20">
+        <div className="max-w-md text-center bg-card border border-border rounded-2xl p-8">
+          <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-3">
+            Access required
+          </p>
+          <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Staff role needed</h1>
+          <p className="text-sm text-muted mb-6">
+            You're signed in as <strong>{caps.email}</strong>, but your account has no staff role.
+            Ask an administrator to grant access.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link to="/" className="text-sm font-bold underline underline-offset-4">Back home</Link>
+            <button onClick={signOut} className="text-sm font-bold text-accent">Sign out</button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const visibleGroups = NAV_GROUPS
+    .map((g) => ({ ...g, items: g.items.filter((i) => i.visible(caps)) }))
+    .filter((g) => g.items.length > 0);
+
+  const activeItem =
+    visibleGroups.flatMap((g) => g.items).find((i) => i.id === tab) ?? { id: "overview", label: "Overview" };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar collapsible="icon">
+          <SidebarHeader className="border-b border-border">
+            <div className="px-2 py-2">
+              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">Florida NEMT</p>
+              <p className="text-sm font-extrabold tracking-tight">Admin</p>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            {visibleGroups.map((group) => (
+              <SidebarGroup key={group.label}>
+                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          isActive={tab === item.id}
+                          onClick={() => setTab(item.id)}
+                          tooltip={item.label}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={signOut} tooltip="Sign out">
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign out</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset>
+          <header className="h-14 flex items-center gap-3 border-b border-border px-4 sticky top-0 bg-background z-10">
+            <SidebarTrigger />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base font-extrabold tracking-tight truncate">{activeItem.label}</h1>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-muted">
+              <span className="truncate max-w-[220px]">{caps.email}</span>
+              <span className="inline-flex flex-wrap gap-1">
+                {caps.roles.map((r) => (
+                  <span key={r} className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
+                    {r.replace("_", " ")}
+                  </span>
+                ))}
+              </span>
+            </div>
+          </header>
+
+          <main className="p-6 max-w-[1500px] w-full mx-auto">
+            <TabPanel tab={tab} caps={caps} />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabilities> }) {
+  switch (tab) {
+    case "overview": return <OverviewTab />;
+    case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
+    case "providers": return <ProvidersTab caps={caps} />;
+    case "dispatch": return caps.canDispatch ? <AdminDispatchPanel /> : <NoAccess />;
+    case "credentials": return caps.canDispatch ? <ExpiringCredentialsPanel /> : <NoAccess />;
+    case "staff": return caps.canManageStaff ? <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} /> : <NoAccess />;
+    case "audit": return caps.canViewAuditLog ? <AuditLogPanel /> : <NoAccess />;
+    case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
+    case "changelog": return <ChangelogPanel />;
+    case "facilities": return <ComingSoon title="Facilities" description="Manage facility accounts, saved patients, and provider relationships." />;
+    case "trips": return <ComingSoon title="Trips" description="Search, review, and export completed and in-progress trips across all providers." />;
+    case "reservations": return <ComingSoon title="Reservations" description="Global view of scheduled and recurring rides awaiting a provider." />;
+    case "pricing": return <ComingSoon title="Pricing" description="Configure statewide base fares, per-mile rates, and surge windows." />;
+    case "integrations": return <ComingSoon title="Integrations" description="Manage Stripe, HIPAA-compliant messaging, and third-party dispatch webhooks." />;
+    case "payouts": return <ComingSoon title="Payouts" description="Track provider disbursements, refunds, and reconciliation reports." />;
+    case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
+    case "seo": return <ComingSoon title="SEO settings" description="Site-wide meta defaults, robots directives, and sitemap controls." />;
+    case "blog": return <ComingSoon title="Blog / Resources" description="Author, edit, and publish resource articles. Direct link: /resources." />;
+    case "system": return <ComingSoon title="System settings" description="Feature flags, notification defaults, and environment configuration." />;
+    default: return <OverviewTab />;
+  }
+}
+
+function NoAccess() {
+  return (
+    <div className="bg-card border border-border rounded-2xl p-6 text-sm text-muted">
+      You don't have permission to view this section.
+    </div>
+  );
+}
+
+function ComingSoon({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="bg-card border border-border rounded-2xl p-8">
+      <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">Admin</p>
+      <h2 className="text-2xl font-extrabold tracking-tight mb-2">{title}</h2>
+      <p className="text-sm text-muted max-w-2xl">{description}</p>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-muted">Coming soon</p>
+    </div>
+  );
+}
+
+/* ---------------- Overview ---------------- */
+
+function OverviewTab() {
+  return (
+    <div className="space-y-6">
+      <div className="bg-card border border-border rounded-2xl p-6">
+        <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">Internal · admin only</p>
+        <h2 className="text-lg font-extrabold tracking-tight">Portal QA &amp; test access</h2>
+        <p className="text-sm text-muted mt-1 max-w-2xl">
+          Jump into any portal exactly as that user type would see it. Use the dashboard links if
+          you're signed in as that role, or open a login page to test the sign-up flow.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+          <PortalTestCard label="Patient" tone="primary" description="Riders requesting Medicaid transportation." dashboardTo="/patient/dashboard" loginTo="/patient/login" />
+          <PortalTestCard label="Provider" tone="accent" description="NEMT companies receiving trip leads." dashboardTo="/provider/dashboard" loginTo="/provider/login" />
+          <PortalTestCard label="Facility" tone="success" description="Clinics & coordinators referring patients." dashboardTo="/facility/dashboard" loginTo="/facility/login" />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <Link to="/dashboard" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">Generic /dashboard router</Link>
+          <Link to="/" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">Public home</Link>
+          <Link to="/auth" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">Legacy /auth</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Providers ---------------- */
+
+function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
+  const qc = useQueryClient();
+  const reviewFn = useServerFn(reviewProviderApplication);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("new");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const caps = useCapabilities();
-  const reviewFn = useServerFn(reviewProviderApplication);
 
   const appsQ = useQuery({
     queryKey: ["admin", "provider_applications"],
@@ -59,10 +365,6 @@ function AdminPage() {
 
   const cities = useMemo(
     () => Array.from(new Set(apps.map((a) => a.city).filter(Boolean))).sort(),
-    [apps],
-  );
-  const regions = useMemo(
-    () => Array.from(new Set(apps.map((a) => a.region).filter(Boolean) as string[])).sort(),
     [apps],
   );
 
@@ -110,191 +412,19 @@ function AdminPage() {
     }
   }
 
-  async function signOut() {
-    await qc.cancelQueries();
-    qc.clear();
-    await supabase.auth.signOut();
-    window.location.href = "/auth";
-  }
-
-  if (!caps.loaded) {
-    return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
-  }
-
-  if (!caps.isOps) {
-    return (
-      <section className="min-h-[70vh] grid place-items-center px-6 py-20">
-        <div className="max-w-md text-center bg-card border border-border rounded-2xl p-8">
-          <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-3">
-            Access required
-          </p>
-          <h1 className="text-2xl font-extrabold tracking-tighter mb-3">Staff role needed</h1>
-          <p className="text-sm text-muted mb-6">
-            You're signed in as <strong>{caps.email}</strong>, but your account has no staff role
-            (Administrator, App Manager, Zone Manager, Dispatcher, or Staff). Ask an administrator to grant access.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Link to="/" className="text-sm font-bold underline underline-offset-4">
-              Back home
-            </Link>
-            <button onClick={signOut} className="text-sm font-bold text-accent">
-              Sign out
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   const selected = selectedId ? apps.find((a) => a.id === selectedId) ?? null : null;
 
   return (
-    <section className="px-6 py-10 max-w-[1500px] mx-auto">
-      <header className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div>
-          <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">
-            Operations
-          </p>
-          <h1 className="text-4xl font-extrabold tracking-tighter">Provider Admin</h1>
-          <p className="text-sm text-muted mt-1">
-            Review, approve, or deny NEMT provider applications statewide.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted">
-            {caps.email}
-            <span className="ml-2 inline-flex flex-wrap gap-1">
-              {caps.roles.map((r) => (
-                <span key={r} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700">
-                  {r.replace("_", " ")}
-                </span>
-              ))}
-            </span>
-          </span>
-          <button onClick={signOut} className="font-bold text-accent hover:underline">
-            Sign out
-          </button>
-        </div>
-      </header>
-
-      {/* Internal-only positioning note + portal test launcher */}
-      <div className="mb-6 bg-card border border-border rounded-2xl p-5">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="max-w-2xl">
-            <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">
-              Internal · admin only
-            </p>
-            <h2 className="text-lg font-extrabold tracking-tight">Portal QA &amp; test access</h2>
-            <p className="text-sm text-muted mt-1">
-              Jump into any portal exactly as that user type would see it. Use the dashboard links
-              if you're already signed in as that role, or open a login page in a new tab to test
-              the sign-up / sign-in flow end to end.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
-          <PortalTestCard
-            label="Patient"
-            tone="primary"
-            description="Riders requesting Medicaid transportation."
-            dashboardTo="/patient/dashboard"
-            loginTo="/patient/login"
-          />
-          <PortalTestCard
-            label="Provider"
-            tone="accent"
-            description="NEMT companies receiving trip leads."
-            dashboardTo="/provider/dashboard"
-            loginTo="/provider/login"
-          />
-          <PortalTestCard
-            label="Facility"
-            tone="success"
-            description="Clinics & coordinators referring patients."
-            dashboardTo="/facility/dashboard"
-            loginTo="/facility/login"
-          />
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          <Link to="/dashboard" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">
-            Generic /dashboard router
-          </Link>
-          <Link to="/" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">
-            Public home
-          </Link>
-          <Link to="/auth" className="px-3 py-1.5 border border-border rounded-sm font-semibold hover:border-primary/40">
-            Legacy /auth
-          </Link>
-        </div>
-      </div>
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Total" value={counts.total} />
         <Stat label="New" value={counts.new} tone="accent" />
         <Stat label="Approved" value={counts.approved} tone="success" />
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
 
-      {caps.canConfigurePricing && (
-        <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
-          <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
-            <span>🎨 Visual settings — colors, layout, header & footer</span>
-            <span className="text-accent transition-transform group-open:rotate-45">+</span>
-          </summary>
-          <div className="mt-6">
-            <AdminThemePanel />
-          </div>
-        </details>
-      )}
-
-      {caps.isAdmin && (
-        <div className="mb-8">
-          <AdminUsersPanel />
-        </div>
-      )}
-
-      {caps.canDispatch && (
-        <div className="mb-8">
-          <AdminDispatchPanel />
-        </div>
-      )}
-
-      {caps.canDispatch && (
-        <div className="mb-8">
-          <ExpiringCredentialsPanel />
-        </div>
-      )}
-
-      {caps.canManageStaff && (
-        <div className="mb-8">
-          <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} />
-        </div>
-      )}
-
-      {caps.canViewAuditLog && (
-        <div className="mb-8">
-          <AuditLogPanel />
-        </div>
-      )}
-
-      <details className="mb-8 bg-card border border-border rounded-2xl p-5 group">
-        <summary className="cursor-pointer flex items-center justify-between text-sm font-bold">
-          <span>📝 Changelog — recent releases</span>
-          <span className="text-accent transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <div className="mt-6">
-          <ChangelogPanel />
-        </div>
-      </details>
-
-      {/* Region grouping */}
-      <div className="mb-8 bg-card border border-border rounded-2xl p-5">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">
-          By region
-        </h2>
+      <div className="bg-card border border-border rounded-2xl p-5">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">By region</h2>
         <div className="flex flex-wrap gap-2">
           {Array.from(byRegion.entries()).map(([region, list]) => (
             <button
@@ -310,37 +440,21 @@ function AdminPage() {
             </button>
           ))}
           {regionFilter !== "all" && (
-            <button
-              onClick={() => setRegionFilter("all")}
-              className="text-xs font-semibold px-3 py-2 rounded-sm border border-border text-muted hover:text-foreground"
-            >
-              Clear
-            </button>
+            <button onClick={() => setRegionFilter("all")} className="text-xs font-semibold px-3 py-2 rounded-sm border border-border text-muted hover:text-foreground">Clear</button>
           )}
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-5">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="bg-card border border-border rounded-sm px-3 py-2 text-sm"
-        >
+      <div className="flex flex-wrap gap-3">
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
           <option value="new">New ({counts.new})</option>
           <option value="approved">Approved ({counts.approved})</option>
           <option value="denied">Denied ({counts.denied})</option>
           <option value="all">All ({counts.total})</option>
         </select>
-        <select
-          value={cityFilter}
-          onChange={(e) => setCityFilter(e.target.value)}
-          className="bg-card border border-border rounded-sm px-3 py-2 text-sm"
-        >
+        <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
           <option value="all">All cities</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
+          {cities.map((c) => (<option key={c} value={c}>{c}</option>))}
         </select>
         <input
           placeholder="Search company, name, email, ZIP, county…"
@@ -350,7 +464,6 @@ function AdminPage() {
         />
       </div>
 
-      {/* Table */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -400,10 +513,7 @@ function AdminPage() {
                       {new Date(a.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setSelectedId(a.id)}
-                        className="text-xs font-bold text-primary hover:underline"
-                      >
+                      <button onClick={() => setSelectedId(a.id)} className="text-xs font-bold text-primary hover:underline">
                         Review →
                       </button>
                     </td>
@@ -425,9 +535,11 @@ function AdminPage() {
           onDeny={(notes) => updateStatus(selected.id, "denied", notes)}
         />
       )}
-    </section>
+    </div>
   );
 }
+
+/* ---------------- Shared helpers ---------------- */
 
 function PortalTestCard({
   label,
