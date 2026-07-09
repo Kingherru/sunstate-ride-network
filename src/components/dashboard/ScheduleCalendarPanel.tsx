@@ -265,7 +265,14 @@ export function ScheduleCalendarPanel() {
                 {drivers.map((d: any) => (
                   <tr key={d.id} className="border-t border-border">
                     <td className="sticky left-0 z-10 bg-card border-r border-border px-3 py-2 font-bold whitespace-nowrap">
-                      {d.first_name} {d.last_name}
+                      <button
+                        type="button"
+                        onClick={() => setOpenDriverId(d.id)}
+                        className="text-left hover:text-accent hover:underline decoration-dotted underline-offset-2"
+                        title="View schedule & email driver"
+                      >
+                        {d.first_name} {d.last_name}
+                      </button>
                       <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{d.status}</div>
                     </td>
                     {hours.map((h) => {
