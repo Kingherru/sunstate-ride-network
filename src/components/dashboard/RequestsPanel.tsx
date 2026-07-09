@@ -62,13 +62,36 @@ function MedicaidBadge() {
 function sourceBadge(src: string | null, hasRequester: boolean) {
   const v = (src ?? (hasRequester ? "provider" : "auto")).toLowerCase();
   if (v === "auto")
-    return <span className="bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Florida NEMT auto-route</span>;
+    return <span className="bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Florida NEMT Auto Match</span>;
   if (v === "provider")
-    return <span className="bg-accent/15 text-accent text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">From provider</span>;
+    return <span className="bg-accent/15 text-accent text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Provider Submitted</span>;
   if (v === "facility")
-    return <span className="bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">From facility</span>;
-  return <span className="bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">From patient</span>;
+    return <span className="bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Facility Submitted</span>;
+  return <span className="bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Patient Submitted</span>;
 }
+
+function mobilityLabel(r: { transport_type?: string | null; needs_wheelchair?: boolean | null; service_level?: string | null }): string {
+  const t = (r.transport_type ?? "").toLowerCase();
+  if (t === "stretcher" || (r.service_level ?? "").toLowerCase() === "stretcher") return "Stretcher";
+  if (t === "wheelchair" || r.needs_wheelchair) return "Wheelchair";
+  return "Ambulatory";
+}
+
+function fmtRelative(iso?: string | null): string {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return "";
+  const diff = Math.max(0, Date.now() - then);
+  const m = Math.round(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 
 export function RequestsPanel({ userId }: { userId: string }) {
   const qc = useQueryClient();
