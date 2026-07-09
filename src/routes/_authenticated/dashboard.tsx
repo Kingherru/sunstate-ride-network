@@ -841,6 +841,18 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
     }
   }
 
+  if (viewing) {
+    return (
+      <TripDetailView
+        trip={viewing}
+        userId={userId}
+        role={role}
+        onBack={() => setViewing(null)}
+        onChanged={onChanged}
+      />
+    );
+  }
+
   if (!trips.length) {
     return <div className="bg-card border border-border rounded-sm p-10 text-center text-muted-foreground">No trips yet.</div>;
   }
@@ -917,11 +929,11 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
       {assigning && (
         <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
       )}
-      {viewing && <TripDetailModal trip={viewing} onClose={() => setViewing(null)} />}
       {rating && <RateProviderModal trip={rating} onClose={() => setRating(null)} onSaved={() => { setRating(null); onChanged(); }} />}
     </>
   );
 }
+
 
 function TripDetailModal({ trip, onClose }: { trip: Trip; onClose: () => void }) {
   const t: any = trip;
