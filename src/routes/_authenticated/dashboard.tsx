@@ -29,6 +29,7 @@ import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPa
 import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useTripSync } from "@/hooks/useTripSync";
+import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
