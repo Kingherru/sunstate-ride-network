@@ -38,6 +38,8 @@ type Row = {
   payer: string | null;
   medicaid_number: string | null;
   medicaid_plan: string | null;
+  created_at?: string | null;
+
 };
 
 function isMedicaidTrip(r: { payer?: string | null; medicaid_number?: string | null; medicaid_plan?: string | null }) {
