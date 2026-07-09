@@ -150,6 +150,11 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         recurrence_end_date: data.recurrenceEndDate || null,
         embed_provider_id: embedProviderId,
         embed_token: embedTokenStored,
+        trip_billing_source: data.billingSource,
+        trip_billing_first_name: data.billingContact?.firstName ?? null,
+        trip_billing_last_name: data.billingContact?.lastName ?? null,
+        trip_billing_email: data.billingContact?.email ?? null,
+        trip_billing_phone: data.billingContact?.phone ?? null,
       })
       .select("id")
       .single();
