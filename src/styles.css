@@ -293,6 +293,13 @@
   .btn-ghost:hover { background: var(--secondary); border-color: var(--brand); }
 }
 
+/* Hidden scrollbar utility for horizontally scrollable tab bars */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
 /* =================================================================
  * PORTAL SCOPE — Dark navy / teal theme for authenticated portals.
  * Wrap the authenticated dashboard root in `.portal-scope` to retone
