@@ -21,6 +21,7 @@ import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
+import { listThreads } from "@/lib/messages.functions";
 import { ProviderCredentialsPanel } from "@/components/dashboard/ProviderCredentialsPanel";
 import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
 import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPanel";
@@ -213,6 +214,18 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const upcoming = sent.filter((t) => ["scheduled","assigned","in_progress"].includes((t.status ?? "").toLowerCase())).length;
   const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
 
+  const listThreadsFn = useServerFn(listThreads);
+  const unreadQ = useQuery({
+    queryKey: ["msg-unread-total", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const r = await listThreadsFn();
+      return r.ok ? (r.total_unread ?? 0) : 0;
+    },
+    refetchInterval: 60_000,
+  });
+  const unreadTotal = unreadQ.data ?? 0;
+
   return (
     <div className="portal-scope min-h-screen flex">
       <PortalSidebar
@@ -222,7 +235,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         allowedTabs={allowedTabs}
         currentTab={tab}
         onTab={setTab}
-        counts={{ received: received.length, sent: sent.length }}
+        counts={{ received: received.length, sent: sent.length, unread: unreadTotal }}
         membershipStatus={profile?.membership_status ?? "inactive"}
         onSavedName={() => qc.invalidateQueries({ queryKey: ["member-profile"] })}
       />
@@ -1467,7 +1480,7 @@ function PortalSidebar(props: {
   allowedTabs: Tab[];
   currentTab: Tab;
   onTab: (t: Tab) => void;
-  counts: { received: number; sent: number };
+  counts: { received: number; sent: number; unread?: number };
   membershipStatus: string;
   onSavedName: () => void;
 }) {
@@ -1566,7 +1579,14 @@ function PortalSidebar(props: {
               }`}
             >
               {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.872_0.078_65.2)]" />}
-              {tabLabel(key, portal, counts)}
+              <span className="inline-flex items-center gap-2">
+                {tabLabel(key, portal, counts)}
+                {key === "messages" && (counts.unread ?? 0) > 0 && (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
+                    {counts.unread}
+                  </span>
+                )}
+              </span>
             </button>
           );
         })}
