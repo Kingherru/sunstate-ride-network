@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { listMyReservations } from "@/lib/schedule-board.functions";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
+import { downloadCms1500 } from "@/lib/cms-form";
 
 type Row = {
   id: string;
@@ -31,8 +32,29 @@ type Row = {
   needs_wheelchair: boolean | null;
   distance_miles: number | null;
   estimated_cost_cents: number | null;
-
+  payer: string | null;
+  medicaid_number: string | null;
+  medicaid_plan: string | null;
 };
+
+function isMedicaidTrip(r: { payer?: string | null; medicaid_number?: string | null; medicaid_plan?: string | null }) {
+  return (
+    !!r.medicaid_number ||
+    !!r.medicaid_plan ||
+    (!!r.payer && r.payer.toLowerCase().includes("medicaid"))
+  );
+}
+
+function MedicaidBadge() {
+  return (
+    <span
+      title="Medicaid-funded trip — check credentials & authorization before assigning"
+      className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm"
+    >
+      <span aria-hidden>★</span> Medicaid
+    </span>
+  );
+}
 
 function sourceBadge(src: string | null, hasRequester: boolean) {
   const v = (src ?? (hasRequester ? "provider" : "auto")).toLowerCase();
