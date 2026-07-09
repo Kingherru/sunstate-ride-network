@@ -142,11 +142,16 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  h1, h2, h3, h4, .font-display {
+  /* Headings inherit color from their container so dark surfaces (bg-primary,
+     bg-brand, portal-scope, glass-dark, etc.) automatically get light text
+     and light surfaces get dark text — no more navy-on-navy or white-on-white. */
+  h1, h2, h3, h4, h5, h6, .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
-    color: var(--brand);
+    color: inherit;
   }
+  /* Form labels inherit too — muted contexts can still opt in via text-muted-foreground */
+  label { color: inherit; }
   button, [role="button"], a.btn { min-height: 40px; }
   @media (max-width: 640px) {
     h1 { font-size: clamp(1.875rem, 7vw, 2.5rem); line-height: 1.05; }
@@ -288,6 +293,13 @@
   .btn-ghost:hover { background: var(--secondary); border-color: var(--brand); }
 }
 
+/* Hidden scrollbar utility for horizontally scrollable tab bars */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
 /* =================================================================
  * PORTAL SCOPE — Dark navy / teal theme for authenticated portals.
  * Wrap the authenticated dashboard root in `.portal-scope` to retone
@@ -332,11 +344,13 @@
   color: var(--foreground);
   color-scheme: dark;
 }
+/* Headings inside the portal inherit from their container (light on dark
+   navy body, dark on peach primary surfaces, etc.) */
 .portal-scope h1,
 .portal-scope h2,
 .portal-scope h3,
 .portal-scope h4,
-.portal-scope .font-display { color: var(--foreground); }
+.portal-scope .font-display { color: inherit; }
 
 /* Native form controls inherit dark theme */
 .portal-scope input,
