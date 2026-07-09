@@ -1579,7 +1579,14 @@ function PortalSidebar(props: {
               }`}
             >
               {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.872_0.078_65.2)]" />}
-              {tabLabel(key, portal, counts)}
+              <span className="inline-flex items-center gap-2">
+                {tabLabel(key, portal, counts)}
+                {key === "messages" && (counts.unread ?? 0) > 0 && (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
+                    {counts.unread}
+                  </span>
+                )}
+              </span>
             </button>
           );
         })}
