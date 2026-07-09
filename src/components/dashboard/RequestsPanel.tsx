@@ -271,6 +271,16 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           <option value="unassigned">Unassigned</option>
         </select>
 
+        <select
+          value={payerFilter}
+          onChange={(e) => setPayerFilter(e.target.value as "all" | "medicaid")}
+          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+          aria-label="Filter by payer"
+        >
+          <option value="all">All payers</option>
+          <option value="medicaid">Medicaid only</option>
+        </select>
+
         <input
           type="search"
           value={search}
