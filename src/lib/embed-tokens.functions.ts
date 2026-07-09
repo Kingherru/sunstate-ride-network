@@ -65,12 +65,12 @@ export const resolveEmbedToken = createServerFn({ method: "GET" })
     if (!row || row.revoked_at) return { ok: false as const };
     const { data: profile } = await supabaseAdmin
       .from("member_profiles")
-      .select("business_name, first_name, last_name")
+      .select("company_name, first_name, last_name")
       .eq("user_id", row.provider_user_id)
       .maybeSingle();
     const name =
-      profile?.business_name?.trim() ||
+      profile?.company_name?.trim() ||
       [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
       "your provider";
-    return { ok: true as const, providerName: name };
+    return { ok: true as const, providerName: name, providerId: row.provider_user_id };
   });
