@@ -155,9 +155,17 @@ export function RequestsPanel({ userId }: { userId: string }) {
 
                   <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}{r.pickup_address_details ? ` — ${r.pickup_address_details}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
-                  {(r.distance_miles != null || r.estimated_cost_cents != null) && (
-                    <div className="mt-1 text-xs">
-                      {r.distance_miles != null && <span className="mr-3"><span className="font-bold text-foreground">Distance:</span> {Number(r.distance_miles).toFixed(1)} mi</span>}
+                  {(r.distance_miles != null || r.estimated_cost_cents != null || r.estimated_duration_traffic_seconds != null) && (
+                    <div className="mt-1 text-xs flex flex-wrap gap-x-3 gap-y-1">
+                      {r.distance_miles != null && <span><span className="font-bold text-foreground">Distance:</span> {Number(r.distance_miles).toFixed(1)} mi</span>}
+                      {r.estimated_duration_traffic_seconds != null && (
+                        <span>
+                          <span className="font-bold text-foreground">ETA (traffic):</span> {formatMinutes(r.estimated_duration_traffic_seconds)}
+                          {r.estimated_duration_seconds != null && r.estimated_duration_seconds !== r.estimated_duration_traffic_seconds && (
+                            <span className="text-muted-foreground"> · typical {formatMinutes(r.estimated_duration_seconds)}</span>
+                          )}
+                        </span>
+                      )}
                       {r.estimated_cost_cents != null && <span><span className="font-bold text-foreground">Est. fare:</span> ${(r.estimated_cost_cents / 100).toFixed(2)}</span>}
                     </div>
                   )}
