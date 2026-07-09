@@ -199,7 +199,14 @@ function RequestRidePage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
-    const parsed = rideRequestSchema.safeParse(form);
+    const withBilling: RideRequestInput = {
+      ...form,
+      billingContact:
+        form.billingSource === "saved" ? savedBilling ?? undefined
+        : form.billingSource === "custom" ? customBilling
+        : undefined,
+    };
+    const parsed = rideRequestSchema.safeParse(withBilling);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
