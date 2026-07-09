@@ -870,6 +870,7 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
               <th className="px-3 py-2 text-left">Patient</th>
               <th className="px-3 py-2 text-left">Pickup → Dropoff</th>
               <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2 text-left">Payment</th>
               {showSavedBadge && <th className="px-3 py-2 text-left">Provider</th>}
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
