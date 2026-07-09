@@ -300,6 +300,10 @@ export function ScheduleCalendarPanel() {
           )}
         </div>
       )}
+
+      {openDriverId && (
+        <DriverDetailModal driverId={openDriverId} onClose={() => setOpenDriverId(null)} />
+      )}
     </div>
   );
 }
