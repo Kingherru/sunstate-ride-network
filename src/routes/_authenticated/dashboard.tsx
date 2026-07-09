@@ -28,6 +28,8 @@ import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProviders
 import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPanel";
 import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { useTripSync } from "@/hooks/useTripSync";
+import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
@@ -152,6 +154,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
       setUserEmail(data.user?.email ?? null);
     });
   }, []);
+
+  // Realtime cross-tab sync — Reservations ↔ Schedule ↔ Referrals ↔ Trip History
+  useTripSync(userId);
 
   const adminQ = useQuery({
     queryKey: ["is-admin", userId],
@@ -866,6 +871,7 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
               <th className="px-3 py-2 text-left">Patient</th>
               <th className="px-3 py-2 text-left">Pickup → Dropoff</th>
               <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2 text-left">Payment</th>
               {showSavedBadge && <th className="px-3 py-2 text-left">Provider</th>}
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
@@ -886,6 +892,9 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
                 <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
+                <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                  <PaymentStatusControl trip={t} canEdit={role === "sender" || role === "recipient"} onChanged={onChanged} />
+                </td>
                 {showSavedBadge && (
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     {!t.assigned_to ? (
@@ -912,12 +921,30 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                   {canRate && t.assigned_to && (t.status === "completed" || t.status === "accepted") && (
                     <button onClick={() => setRating(t)} className="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-sm hover:bg-amber-600 mr-2">★ Rate</button>
                   )}
-                  {role === "recipient" && t.status === "assigned" && (
+                  {role === "recipient" && ["assigned","open","pending","offered"].includes((t.status ?? "").toLowerCase()) && (
                     <>
-                      <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } }); toast.success("Accepted"); onChanged(); }}
-                              className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
-                      <button onClick={async () => { await updateTripStatus({ data: { trip_id: t.id, status: "declined" } }); toast.success("Declined"); onChanged(); }}
-                              className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } });
+                            toast.success("Accepted");
+                            onChanged();
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "Could not accept trip");
+                          }
+                        }}
+                        className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateTripStatus({ data: { trip_id: t.id, status: "declined" } });
+                            toast.success("Declined");
+                            onChanged();
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "Could not decline trip");
+                          }
+                        }}
+                        className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
                     </>
                   )}
                 </td>
