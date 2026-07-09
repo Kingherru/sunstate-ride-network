@@ -11,58 +11,58 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
 
   if (isAuthed) {
     return (
-      <footer className="bg-[#0b1220] text-slate-200 mt-16">
+      <footer className="mt-16 border-t border-border bg-sidebar text-sidebar-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
               <Link
                 to="/"
-                className="font-extrabold text-xl tracking-tighter text-white uppercase block mb-3"
+                className="font-extrabold text-xl tracking-tighter uppercase block mb-3"
               >
                 Florida NEMT
               </Link>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
+              <p className="text-xs opacity-70 leading-relaxed max-w-xs">
                 Florida's statewide Medicaid transportation network.
               </p>
             </div>
 
             {showProviderLinks && (
               <div>
-                <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
+                <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 opacity-60">
                   More
                 </h4>
                 <ul className="space-y-2 text-sm">
-                  <li><Link to="/membership" className="text-slate-300 hover:text-white">Membership</Link></li>
-                  <li><Link to="/training" className="text-slate-300 hover:text-white">Training</Link></li>
-                  <li><Link to="/service-areas" className="text-slate-300 hover:text-white">Service Areas</Link></li>
+                  <li><Link to="/membership" className="opacity-80 hover:opacity-100">Membership</Link></li>
+                  <li><Link to="/training" className="opacity-80 hover:opacity-100">Training</Link></li>
+                  <li><Link to="/service-areas" className="opacity-80 hover:opacity-100">Service Areas</Link></li>
                 </ul>
               </div>
             )}
 
             {showCompanyLinks && (
               <div>
-                <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
+                <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 opacity-60">
                   Company
                 </h4>
                 <ul className="space-y-2 text-sm">
-                  <li><Link to="/about" className="text-slate-300 hover:text-white">About</Link></li>
-                  <li><Link to="/contact" className="text-slate-300 hover:text-white">Contact</Link></li>
-                  <li><a href="mailto:myfloridanemt@gmail.com" className="text-slate-300 hover:text-white">Support</a></li>
+                  <li><Link to="/about" className="opacity-80 hover:opacity-100">About</Link></li>
+                  <li><Link to="/contact" className="opacity-80 hover:opacity-100">Contact</Link></li>
+                  <li><a href="mailto:myfloridanemt@gmail.com" className="opacity-80 hover:opacity-100">Support</a></li>
                 </ul>
               </div>
             )}
 
             <div>
-              <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 text-slate-400">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-widest mb-4 opacity-60">
                 Support
               </h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="mailto:myfloridanemt@gmail.com" className="text-slate-300 hover:text-white">myfloridanemt@gmail.com</a></li>
+                <li><a href="mailto:myfloridanemt@gmail.com" className="opacity-80 hover:opacity-100">myfloridanemt@gmail.com</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-6 mt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-slate-500">
+          <div className="pt-6 mt-8 border-t border-sidebar-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs opacity-60">
             <p>© {new Date().getFullYear()} Florida NEMT. All rights reserved.</p>
             <p>Florida's statewide Medicaid transportation network.</p>
           </div>
