@@ -118,12 +118,18 @@ export function RequestsPanel({ userId }: { userId: string }) {
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">No open requests right now.</div>
       )}
       <div className="space-y-3">
-        {rows.map((r) => (
-          <div key={r.id} className="bg-card border border-border rounded-sm p-4">
+        {rows.map((r) => {
+          const medicaid = isMedicaidTrip(r);
+          return (
+          <div
+            key={r.id}
+            className={`rounded-sm p-4 border ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
+          >
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   {sourceBadge(r.dispatch_source, !!r.requester_user_id)}
+                  {medicaid && <MedicaidBadge />}
                   {r.needs_wheelchair && <span className="bg-orange-100 text-orange-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Wheelchair</span>}
                   {r.service_level && <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.service_level.replace(/_/g, " ")}</span>}
                 </div>
