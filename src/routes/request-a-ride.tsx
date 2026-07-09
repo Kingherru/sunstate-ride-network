@@ -640,9 +640,76 @@ function RequestRidePage() {
             </div>
           </fieldset>
 
+          {/* Billing information */}
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+              Billing information
+            </legend>
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.billingSource === "account"}
+                onChange={(e) =>
+                  upd("billingSource", e.target.checked ? "account" : (savedBilling ? "saved" : "custom"))
+                }
+              />
+              <span>Use same information as account holder</span>
+            </label>
 
+            {form.billingSource !== "account" && (
+              <div className="space-y-4 pl-6 border-l-2 border-border">
+                {savedBilling && (
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="billingSource"
+                        checked={form.billingSource === "saved"}
+                        onChange={() => upd("billingSource", "saved")}
+                      />
+                      <span>
+                        Use saved billing contact ({savedBilling.firstName} {savedBilling.lastName})
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="billingSource"
+                        checked={form.billingSource === "custom"}
+                        onChange={() => upd("billingSource", "custom")}
+                      />
+                      <span>Enter different billing contact for this trip</span>
+                    </label>
+                  </div>
+                )}
+
+                {form.billingSource === "custom" && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Field label="First name" required error={errors["billingContact.firstName"]}>
+                      <input className={inputCls} value={customBilling.firstName}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, firstName: e.target.value }))} />
+                    </Field>
+                    <Field label="Last name" required error={errors["billingContact.lastName"]}>
+                      <input className={inputCls} value={customBilling.lastName}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, lastName: e.target.value }))} />
+                    </Field>
+                    <Field label="Email" required error={errors["billingContact.email"]}>
+                      <input type="email" className={inputCls} value={customBilling.email}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, email: e.target.value }))} />
+                    </Field>
+                    <Field label="Phone" required error={errors["billingContact.phone"]}>
+                      <input type="tel" className={inputCls} value={customBilling.phone}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, phone: e.target.value }))} />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            )}
+          </fieldset>
 
           <datalist id="fl-cities">
+
             {CITY_LIST.map((c) => (
               <option key={c.slug} value={c.name} />
             ))}
