@@ -1397,6 +1397,8 @@ export type Database = {
           dropoff_lat: number | null
           dropoff_lng: number | null
           estimated_cost_cents: number | null
+          estimated_duration_seconds: number | null
+          estimated_duration_traffic_seconds: number | null
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
@@ -1436,6 +1438,8 @@ export type Database = {
           return_dropoff_time: string | null
           return_pickup_time: string | null
           round_trip: boolean
+          route_computed_at: string | null
+          route_polyline: string | null
           scheduled_start_time: string | null
           service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
@@ -1461,6 +1465,8 @@ export type Database = {
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           estimated_cost_cents?: number | null
+          estimated_duration_seconds?: number | null
+          estimated_duration_traffic_seconds?: number | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -1500,6 +1506,8 @@ export type Database = {
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
+          route_computed_at?: string | null
+          route_polyline?: string | null
           scheduled_start_time?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
@@ -1525,6 +1533,8 @@ export type Database = {
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           estimated_cost_cents?: number | null
+          estimated_duration_seconds?: number | null
+          estimated_duration_traffic_seconds?: number | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -1564,6 +1574,8 @@ export type Database = {
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
+          route_computed_at?: string | null
+          route_polyline?: string | null
           scheduled_start_time?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
@@ -1980,11 +1992,15 @@ export type Database = {
           driver_id: string | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_lat: number | null
+          dropoff_lng: number | null
           dropoff_location_id: string | null
           dropoff_zip: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           estimated_dropoff_at: string | null
+          estimated_duration_seconds: number | null
+          estimated_duration_traffic_seconds: number | null
           estimated_miles: number | null
           estimated_pickup_at: string | null
           has_passenger: boolean
@@ -2014,6 +2030,8 @@ export type Database = {
           pickup_address_details: string | null
           pickup_city: string
           pickup_date: string
+          pickup_lat: number | null
+          pickup_lng: number | null
           pickup_location_id: string | null
           pickup_time: string
           pickup_zip: string | null
@@ -2027,6 +2045,8 @@ export type Database = {
           return_dropoff_time: string | null
           return_pickup_time: string | null
           round_trip: boolean
+          route_computed_at: string | null
+          route_polyline: string | null
           service_level: Database["public"]["Enums"]["service_level"] | null
           signature_name: string | null
           signature_relation: string | null
@@ -2060,11 +2080,15 @@ export type Database = {
           driver_id?: string | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           estimated_dropoff_at?: string | null
+          estimated_duration_seconds?: number | null
+          estimated_duration_traffic_seconds?: number | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
           has_passenger?: boolean
@@ -2094,6 +2118,8 @@ export type Database = {
           pickup_address_details?: string | null
           pickup_city: string
           pickup_date: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           pickup_location_id?: string | null
           pickup_time: string
           pickup_zip?: string | null
@@ -2107,6 +2133,8 @@ export type Database = {
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
+          route_computed_at?: string | null
+          route_polyline?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           signature_name?: string | null
           signature_relation?: string | null
@@ -2140,11 +2168,15 @@ export type Database = {
           driver_id?: string | null
           dropoff_address?: string
           dropoff_city?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           estimated_dropoff_at?: string | null
+          estimated_duration_seconds?: number | null
+          estimated_duration_traffic_seconds?: number | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
           has_passenger?: boolean
@@ -2174,6 +2206,8 @@ export type Database = {
           pickup_address_details?: string | null
           pickup_city?: string
           pickup_date?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           pickup_location_id?: string | null
           pickup_time?: string
           pickup_zip?: string | null
@@ -2187,6 +2221,8 @@ export type Database = {
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
+          route_computed_at?: string | null
+          route_polyline?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           signature_name?: string | null
           signature_relation?: string | null
