@@ -318,7 +318,7 @@ export const updateTripDetails = createServerFn({ method: "POST" })
     if (Object.keys(patch).length === 0) return { ok: true, updated: 0 };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("trips").update(patch).eq("id", data.trip_id);
+    const { error } = await supabaseAdmin.from("trips").update(patch as never).eq("id", data.trip_id);
     if (error) throw error;
     return { ok: true, updated: Object.keys(patch).length };
   });
