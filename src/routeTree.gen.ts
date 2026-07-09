@@ -13,7 +13,6 @@ import { Route as TrainingRouteImport } from './routes/training'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
-import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
@@ -28,6 +27,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
+import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
@@ -70,11 +70,6 @@ const ServicesRoute = ServicesRouteImport.update({
 const ServiceAreasRoute = ServiceAreasRouteImport.update({
   id: '/service-areas',
   path: '/service-areas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResourcesRoute = ResourcesRouteImport.update({
-  id: '/resources',
-  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -146,6 +141,11 @@ const ServiceAreasIndexRoute = ServiceAreasIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ServiceAreasRoute,
 } as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/resources/',
+  path: '/resources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffLoginRoute = StaffLoginRouteImport.update({
   id: '/staff/login',
   path: '/staff/login',
@@ -157,9 +157,9 @@ const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   getParentRoute: () => ServiceAreasRoute,
 } as any)
 const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ResourcesRoute,
+  id: '/resources/$slug',
+  path: '/resources/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProviderLoginRoute = ProviderLoginRouteImport.update({
   id: '/provider/login',
@@ -287,7 +287,6 @@ export interface FileRoutesByFullPath {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRouteWithChildren
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -303,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
@@ -330,7 +330,6 @@ export interface FileRoutesByTo {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
@@ -345,6 +344,7 @@ export interface FileRoutesByTo {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
+  '/resources': typeof ResourcesIndexRoute
   '/service-areas': typeof ServiceAreasIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
@@ -374,7 +374,6 @@ export interface FileRoutesById {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRouteWithChildren
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -390,6 +389,7 @@ export interface FileRoutesById {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/staff/login': typeof StaffLoginRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
@@ -419,7 +419,6 @@ export interface FileRouteTypes {
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
-    | '/resources'
     | '/service-areas'
     | '/services'
     | '/sitemap.xml'
@@ -435,6 +434,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/staff/login'
+    | '/resources/'
     | '/service-areas/'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
@@ -462,7 +462,6 @@ export interface FileRouteTypes {
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
-    | '/resources'
     | '/services'
     | '/sitemap.xml'
     | '/training'
@@ -477,6 +476,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/staff/login'
+    | '/resources'
     | '/service-areas'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
@@ -505,7 +505,6 @@ export interface FileRouteTypes {
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
-    | '/resources'
     | '/service-areas'
     | '/services'
     | '/sitemap.xml'
@@ -521,6 +520,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/staff/login'
+    | '/resources/'
     | '/service-areas/'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/facility/dashboard'
@@ -550,7 +550,6 @@ export interface RootRouteChildren {
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ResourcesRoute: typeof ResourcesRouteWithChildren
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -561,7 +560,9 @@ export interface RootRouteChildren {
   FacilityLoginRoute: typeof FacilityLoginRoute
   PatientLoginRoute: typeof PatientLoginRoute
   ProviderLoginRoute: typeof ProviderLoginRoute
+  ResourcesSlugRoute: typeof ResourcesSlugRoute
   StaffLoginRoute: typeof StaffLoginRoute
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -597,13 +598,6 @@ declare module '@tanstack/react-router' {
       path: '/service-areas'
       fullPath: '/service-areas'
       preLoaderRoute: typeof ServiceAreasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/resources': {
-      id: '/resources'
-      path: '/resources'
-      fullPath: '/resources'
-      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -704,6 +698,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceAreasIndexRouteImport
       parentRoute: typeof ServiceAreasRoute
     }
+    '/resources/': {
+      id: '/resources/'
+      path: '/resources'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/login': {
       id: '/staff/login'
       path: '/staff/login'
@@ -720,10 +721,10 @@ declare module '@tanstack/react-router' {
     }
     '/resources/$slug': {
       id: '/resources/$slug'
-      path: '/$slug'
+      path: '/resources/$slug'
       fullPath: '/resources/$slug'
       preLoaderRoute: typeof ResourcesSlugRouteImport
-      parentRoute: typeof ResourcesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/provider/login': {
       id: '/provider/login'
@@ -896,18 +897,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface ResourcesRouteChildren {
-  ResourcesSlugRoute: typeof ResourcesSlugRoute
-}
-
-const ResourcesRouteChildren: ResourcesRouteChildren = {
-  ResourcesSlugRoute: ResourcesSlugRoute,
-}
-
-const ResourcesRouteWithChildren = ResourcesRoute._addFileChildren(
-  ResourcesRouteChildren,
-)
-
 interface ServiceAreasRouteChildren {
   ServiceAreasCityRoute: typeof ServiceAreasCityRoute
   ServiceAreasIndexRoute: typeof ServiceAreasIndexRoute
@@ -936,7 +925,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ResourcesRoute: ResourcesRouteWithChildren,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -948,7 +936,9 @@ const rootRouteChildren: RootRouteChildren = {
   FacilityLoginRoute: FacilityLoginRoute,
   PatientLoginRoute: PatientLoginRoute,
   ProviderLoginRoute: ProviderLoginRoute,
+  ResourcesSlugRoute: ResourcesSlugRoute,
   StaffLoginRoute: StaffLoginRoute,
+  ResourcesIndexRoute: ResourcesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
