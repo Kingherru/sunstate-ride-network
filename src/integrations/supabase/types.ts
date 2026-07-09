@@ -1385,9 +1385,11 @@ export type Database = {
           appointment_time: string | null
           assigned_driver_id: string | null
           assigned_provider_id: string | null
+          authorization_number: string | null
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
+          diagnosis_code: string | null
           dispatch_source: string
           distance_miles: number | null
           dropoff_address: string
@@ -1400,15 +1402,20 @@ export type Database = {
           id: string
           ip_address: string | null
           last_updated_at: string
+          medicaid_number: string | null
+          medicaid_plan: string | null
           mobility_notes: string | null
           needs_assistance_to_vehicle: boolean
           needs_surgery_signin: boolean
           needs_surgery_signout: boolean
           needs_wheelchair: boolean
+          patient_date_of_birth: string | null
           patient_email: string | null
           patient_first_name: string
+          patient_gender: string | null
           patient_last_name: string
           patient_phone: string
+          payer: string | null
           payment_amount_cents: number | null
           payment_status: string
           pickup_address: string
@@ -1442,9 +1449,11 @@ export type Database = {
           appointment_time?: string | null
           assigned_driver_id?: string | null
           assigned_provider_id?: string | null
+          authorization_number?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          diagnosis_code?: string | null
           dispatch_source?: string
           distance_miles?: number | null
           dropoff_address: string
@@ -1457,15 +1466,20 @@ export type Database = {
           id?: string
           ip_address?: string | null
           last_updated_at?: string
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name: string
+          patient_gender?: string | null
           patient_last_name: string
           patient_phone: string
+          payer?: string | null
           payment_amount_cents?: number | null
           payment_status?: string
           pickup_address: string
@@ -1499,9 +1513,11 @@ export type Database = {
           appointment_time?: string | null
           assigned_driver_id?: string | null
           assigned_provider_id?: string | null
+          authorization_number?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          diagnosis_code?: string | null
           dispatch_source?: string
           distance_miles?: number | null
           dropoff_address?: string
@@ -1514,15 +1530,20 @@ export type Database = {
           id?: string
           ip_address?: string | null
           last_updated_at?: string
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name?: string
+          patient_gender?: string | null
           patient_last_name?: string
           patient_phone?: string
+          payer?: string | null
           payment_amount_cents?: number | null
           payment_status?: string
           pickup_address?: string

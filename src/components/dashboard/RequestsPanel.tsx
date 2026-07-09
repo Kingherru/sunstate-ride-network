@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { listMyReservations } from "@/lib/schedule-board.functions";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
+import { downloadCms1500 } from "@/lib/cms-form";
 
 type Row = {
   id: string;
@@ -31,8 +32,29 @@ type Row = {
   needs_wheelchair: boolean | null;
   distance_miles: number | null;
   estimated_cost_cents: number | null;
-
+  payer: string | null;
+  medicaid_number: string | null;
+  medicaid_plan: string | null;
 };
+
+function isMedicaidTrip(r: { payer?: string | null; medicaid_number?: string | null; medicaid_plan?: string | null }) {
+  return (
+    !!r.medicaid_number ||
+    !!r.medicaid_plan ||
+    (!!r.payer && r.payer.toLowerCase().includes("medicaid"))
+  );
+}
+
+function MedicaidBadge() {
+  return (
+    <span
+      title="Medicaid-funded trip — check credentials & authorization before assigning"
+      className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm"
+    >
+      <span aria-hidden>★</span> Medicaid
+    </span>
+  );
+}
 
 function sourceBadge(src: string | null, hasRequester: boolean) {
   const v = (src ?? (hasRequester ? "provider" : "auto")).toLowerCase();
@@ -52,7 +74,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,payer,medicaid_number,medicaid_plan")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -96,12 +118,18 @@ export function RequestsPanel({ userId }: { userId: string }) {
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">No open requests right now.</div>
       )}
       <div className="space-y-3">
-        {rows.map((r) => (
-          <div key={r.id} className="bg-card border border-border rounded-sm p-4">
+        {rows.map((r) => {
+          const medicaid = isMedicaidTrip(r);
+          return (
+          <div
+            key={r.id}
+            className={`rounded-sm p-4 border ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
+          >
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   {sourceBadge(r.dispatch_source, !!r.requester_user_id)}
+                  {medicaid && <MedicaidBadge />}
                   {r.needs_wheelchair && <span className="bg-orange-100 text-orange-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Wheelchair</span>}
                   {r.service_level && <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.service_level.replace(/_/g, " ")}</span>}
                 </div>
@@ -139,7 +167,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
               </div>
             </div>
           </div>
-        ))}
+        );})}
       </div>
     </div>
   );
@@ -149,15 +177,27 @@ export function RequestsPanel({ userId }: { userId: string }) {
 type Bucket = "past" | "current" | "future";
 type AssignFilter = "all" | "assigned" | "unassigned";
 
-export function ReservationsPanel({ userId: _userId }: { userId: string }) {
+export function ReservationsPanel({ userId }: { userId: string }) {
   const [bucket, setBucket] = useState<Bucket>("current");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
+  const [payerFilter, setPayerFilter] = useState<"all" | "medicaid">("all");
   const [search, setSearch] = useState("");
   const fn = useServerFn(listMyReservations);
   const q = useQuery({
     queryKey: ["my-reservations", bucket],
     queryFn: () => fn({ data: { bucket } }),
+  });
+  const provider = useQuery({
+    queryKey: ["provider-profile-cms", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_profiles")
+        .select("company_name, npi, city, phone")
+        .eq("user_id", userId)
+        .maybeSingle();
+      return data;
+    },
   });
   const allRows = (q.data ?? []) as any[];
 
@@ -167,6 +207,7 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
+    if (payerFilter === "medicaid" && !isMedicaidTrip(r)) return false;
     if (search) {
       const s = search.toLowerCase();
       const hay = `${r.patient_first_name ?? ""} ${r.patient_last_name ?? ""} ${r.pickup_city ?? ""} ${r.dropoff_city ?? ""}`.toLowerCase();
@@ -230,6 +271,16 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
           <option value="unassigned">Unassigned</option>
         </select>
 
+        <select
+          value={payerFilter}
+          onChange={(e) => setPayerFilter(e.target.value as "all" | "medicaid")}
+          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+          aria-label="Filter by payer"
+        >
+          <option value="all">All payers</option>
+          <option value="medicaid">Medicaid only</option>
+        </select>
+
         <input
           type="search"
           value={search}
@@ -258,17 +309,55 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
               <span className="ml-2 text-foreground">· {grouped[date].length} trip{grouped[date].length === 1 ? "" : "s"}</span>
             </div>
             <div className="space-y-3">
-              {grouped[date].map((r: any) => (
+              {grouped[date].map((r: any) => {
+                const medicaid = isMedicaidTrip(r);
+                const onDownloadCms = () => {
+                  const p = provider.data;
+                  downloadCms1500({
+                    claim_id: r.id.slice(0, 8),
+                    service_date: r.pickup_date,
+                    patient_first_name: r.patient_first_name,
+                    patient_last_name: r.patient_last_name,
+                    patient_date_of_birth: r.patient_date_of_birth,
+                    patient_gender: r.patient_gender,
+                    patient_phone: r.patient_phone,
+                    payer: r.payer,
+                    medicaid_number: r.medicaid_number,
+                    medicaid_plan: r.medicaid_plan,
+                    authorization_number: r.authorization_number,
+                    diagnosis_code: r.diagnosis_code,
+                    provider_company: p?.company_name,
+                    provider_npi: p?.npi,
+                    provider_city: p?.city,
+                    provider_phone: p?.phone,
+                    service_level: r.service_level,
+                    transport_type: r.transport_type,
+                    round_trip: r.round_trip,
+                    distance_miles: r.distance_miles,
+                    charge_cents: r.estimated_cost_cents,
+                    pickup_address: r.pickup_address,
+                    pickup_city: r.pickup_city,
+                    pickup_zip: r.pickup_zip,
+                    pickup_time: r.pickup_time,
+                    dropoff_address: r.dropoff_address,
+                    dropoff_city: r.dropoff_city,
+                    dropoff_zip: r.dropoff_zip,
+                    appointment_time: r.appointment_time,
+                  });
+                  if (!p) toast.info("CMS form downloaded — add your NPI & business info in Account to auto-fill provider block 33.");
+                };
+                return (
                 <div
                   key={r.id}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; }}
-                  className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing"
+                  className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing border ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
                   title="Drag onto the Schedule tab to (re)assign a driver and time"
                 >
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
+                      {medicaid && <MedicaidBadge />}
                       {r.scheduled_start_time && (
                         <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
                           Sched {String(r.scheduled_start_time).slice(0,5)}
@@ -284,14 +373,28 @@ export function ReservationsPanel({ userId: _userId }: { userId: string }) {
                     <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                       <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
                       <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
+                      {medicaid && r.medicaid_number && (
+                        <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Medicaid #:</span> {r.medicaid_number}</span>
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       <div>{r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
                     </div>
                   </div>
-                  <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted shrink-0">Review</Link>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Link to="/requests/$id" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review</Link>
+                    <button
+                      type="button"
+                      onClick={onDownloadCms}
+                      className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
+                      title="Generate a CMS-1500 claim form pre-filled with trip, patient, and provider data"
+                    >
+                      Download CMS-1500
+                    </button>
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
