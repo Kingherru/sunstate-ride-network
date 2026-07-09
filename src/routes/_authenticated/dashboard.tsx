@@ -2130,20 +2130,21 @@ function PortalSidebar(props: {
         )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {allowedTabs.map((key) => {
           const active = currentTab === key;
           return (
             <button
               key={key}
               onClick={() => onTab(key)}
-              className={`relative w-full text-left pl-4 pr-3 py-2.5 text-sm font-semibold transition-colors ${
+              aria-current={active ? "page" : undefined}
+              className={`relative w-full text-left pl-4 pr-3 py-2.5 text-sm font-semibold rounded-md transition-colors ${
                 active
-                  ? "bg-white/10 text-white"
-                  : "text-white/70 hover:bg-white/5 hover:text-white"
+                  ? "bg-white text-[oklch(0.20_0.05_257)] shadow-sm"
+                  : "text-white hover:bg-white/10"
               }`}
             >
-              {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[oklch(0.872_0.078_65.2)]" />}
+              {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r bg-[oklch(0.872_0.078_65.2)]" />}
               <span className="inline-flex items-center gap-2">
                 {tabLabel(key, portal, counts)}
                 {key === "messages" && (counts.unread ?? 0) > 0 && (
