@@ -954,6 +954,8 @@ type EditableFields = {
   mobility_notes: string;
   special_instructions: string;
   provider_notes: string;
+  cost_total: string;
+  payer: string;
 };
 
 function toFormValue(v: unknown): string {
@@ -961,33 +963,8 @@ function toFormValue(v: unknown): string {
   return String(v);
 }
 
-function TripDetailView({
-  trip,
-  userId,
-  role,
-  onBack,
-  onChanged,
-}: {
-  trip: Trip;
-  userId: string;
-  role: "sender" | "recipient";
-  onBack: () => void;
-  onChanged: () => void;
-}) {
-  const t: any = trip;
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const qc = useQueryClient();
-
-  // Permissions: senders + admins can edit all fields; recipients (providers) can only edit their notes.
-  // We infer sender/admin capability from role="sender" or ownership; provider gets a narrower edit surface.
-  const isSender = t.created_by === userId || role === "sender";
-  const isRecipient = t.assigned_to === userId || role === "recipient";
-  const canEditAll = isSender;
-  const canEditProviderNotes = isRecipient || isSender;
-  const canEdit = canEditAll || canEditProviderNotes;
-
-  const [form, setForm] = useState<EditableFields>(() => ({
+function buildForm(t: any): EditableFields {
+  return {
     patient_phone: toFormValue(t.patient_phone),
     emergency_contact_name: toFormValue(t.emergency_contact_name),
     emergency_contact_phone: toFormValue(t.emergency_contact_phone),
@@ -1006,26 +983,103 @@ function TripDetailView({
     mobility_notes: toFormValue(t.mobility_notes),
     special_instructions: toFormValue(t.special_instructions),
     provider_notes: toFormValue(t.provider_notes),
-  }));
+    cost_total: toFormValue(t.cost_total),
+    payer: toFormValue(t.payer),
+  };
+}
+
+function fmtMoney(v: number | string | null | undefined): string {
+  if (v == null || v === "") return "—";
+  const n = typeof v === "string" ? parseFloat(v) : v;
+  if (!isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function fmtDateTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+  } catch {
+    return String(iso);
+  }
+}
+
+function TripDetailView({
+  trip,
+  userId,
+  role,
+  onBack,
+  onChanged,
+}: {
+  trip: Trip;
+  userId: string;
+  role: "sender" | "recipient";
+  onBack: () => void;
+  onChanged: () => void;
+}) {
+  const t: any = trip;
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState<null | { onProceed: () => void }>(null);
+  const qc = useQueryClient();
+
+  const isSender = t.created_by === userId || role === "sender";
+  const isRecipient = t.assigned_to === userId || role === "recipient";
+  const canEditAll = isSender;
+  const canEditProviderFields = isRecipient || isSender;
+  const canEdit = canEditAll || canEditProviderFields;
+
+  const original = useMemo(() => buildForm(t), [t]);
+  const [form, setForm] = useState<EditableFields>(original);
+  useEffect(() => { setForm(original); }, [original]);
+
+  const dirty = useMemo(
+    () => (Object.keys(form) as (keyof EditableFields)[]).some((k) => form[k] !== original[k]),
+    [form, original],
+  );
+
+  // Warn on browser navigation / tab close while dirty.
+  useEffect(() => {
+    if (!editing || !dirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [editing, dirty]);
 
   function setField<K extends keyof EditableFields>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  async function save() {
+  function tryLeave(action: () => void) {
+    if (editing && dirty) {
+      setConfirmLeave({ onProceed: action });
+    } else {
+      action();
+    }
+  }
+
+  async function save(afterSave?: () => void) {
     setSaving(true);
     try {
-      const patch: Partial<EditableFields> = {};
+      const patch: Record<string, unknown> = {};
       (Object.keys(form) as (keyof EditableFields)[]).forEach((k) => {
-        const orig = toFormValue((t as any)[k]);
-        if (form[k] !== orig) {
-          if (!canEditAll && k !== "provider_notes") return;
+        const orig = original[k];
+        if (form[k] === orig) return;
+        if (!canEditAll && !(k === "provider_notes" || k === "cost_total")) return;
+        if (k === "cost_total") {
+          const n = form[k] === "" ? null : Number(form[k]);
+          patch[k] = n == null || isNaN(n) ? null : n;
+        } else {
           patch[k] = form[k];
         }
       });
       if (Object.keys(patch).length === 0) {
         toast.info("No changes to save");
         setEditing(false);
+        afterSave?.();
         return;
       }
       await updateTripDetails({ data: { trip_id: t.id, patch: patch as any } });
@@ -1033,12 +1087,51 @@ function TripDetailView({
       setEditing(false);
       onChanged();
       qc.invalidateQueries({ queryKey: ["my-trips"] });
+      afterSave?.();
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to save");
     } finally {
       setSaving(false);
     }
   }
+
+  function discardAndProceed(action: () => void) {
+    setForm(original);
+    setEditing(false);
+    setConfirmLeave(null);
+    action();
+  }
+
+  const paymentsQ = useQuery({
+    queryKey: ["trip-payments", t.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("trip_payments")
+        .select("id, amount_cents, status, environment, created_at, stripe_payment_intent_id")
+        .eq("trip_id", t.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const paidCents = (paymentsQ.data ?? [])
+    .filter((p) => ["succeeded", "paid", "captured"].includes(String(p.status).toLowerCase()))
+    .reduce((a, p) => a + (p.amount_cents ?? 0), 0);
+  const refundedCents = (paymentsQ.data ?? [])
+    .filter((p) => ["refunded", "partial_refund"].includes(String(p.status).toLowerCase()))
+    .reduce((a, p) => a + (p.amount_cents ?? 0), 0);
+  const quoteDollars = t.cost_total != null ? Number(t.cost_total) : null;
+  const paidDollars = paidCents / 100;
+  const outstandingDollars = quoteDollars != null ? Math.max(0, quoteDollars - paidDollars) : null;
+  const needsQuote = quoteDollars == null || quoteDollars <= 0;
+
+  let paymentLabel = "No payments yet";
+  let paymentTone = "bg-muted text-muted-foreground";
+  if (refundedCents > 0) { paymentLabel = "Refunded"; paymentTone = "bg-slate-200 text-slate-700"; }
+  else if (quoteDollars != null && paidDollars >= quoteDollars && quoteDollars > 0) { paymentLabel = "Paid"; paymentTone = "bg-emerald-100 text-emerald-700"; }
+  else if (paidDollars > 0) { paymentLabel = "Partially paid"; paymentTone = "bg-amber-100 text-amber-700"; }
+  else if (!needsQuote) { paymentLabel = "Pending"; paymentTone = "bg-amber-100 text-amber-700"; }
 
   const isRound = !!t.round_trip;
   const flags: string[] = [];
@@ -1049,13 +1142,55 @@ function TripDetailView({
   if (t.needs_surgery_signin) flags.push("Surgery sign-in");
   if (t.needs_surgery_signout) flags.push("Surgery sign-out");
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <section className="bg-card border border-border rounded-sm">
-      <div className="px-5 py-3 border-b border-border">
-        <h4 className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-muted-foreground">{title}</h4>
-      </div>
-      <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">{children}</div>
-    </section>
+  // Build derived timeline from available columns.
+  const status = String(t.status ?? "").toLowerCase();
+  type TimelineStep = { key: string; label: string; at?: string | null; state: "done" | "current" | "pending"; note?: string };
+  const steps: TimelineStep[] = [];
+  steps.push({ key: "requested", label: "Requested", at: t.created_at, state: "done" });
+  steps.push({
+    key: "confirmed",
+    label: "Confirmed",
+    at: t.hipaa_ack_id ? t.created_at : null,
+    state: t.hipaa_ack_id ? "done" : "pending",
+  });
+  steps.push({
+    key: "assigned",
+    label: "Assigned",
+    at: t.assigned_to ? t.route_computed_at ?? t.created_at : null,
+    state: t.assigned_to ? "done" : status === "canceled" ? "pending" : "pending",
+    note: t.assigned_to ? "Provider assigned" : "Awaiting assignment",
+  });
+  steps.push({
+    key: "en_route",
+    label: "Driver en route",
+    at: t.estimated_pickup_at ?? null,
+    state: t.actual_pickup_at || status === "completed" ? "done" : status === "accepted" ? "current" : "pending",
+  });
+  steps.push({
+    key: "pickup",
+    label: "Pickup",
+    at: t.actual_pickup_at ?? t.estimated_pickup_at ?? null,
+    state: t.actual_pickup_at ? "done" : "pending",
+  });
+  steps.push({
+    key: "dropoff",
+    label: "Drop-off",
+    at: t.actual_dropoff_at ?? t.estimated_dropoff_at ?? null,
+    state: t.actual_dropoff_at ? "done" : "pending",
+  });
+  if (status === "canceled" || status === "declined") {
+    steps.push({ key: "canceled", label: "Canceled", at: null, state: "current", note: t.cancel_reason ?? undefined });
+  } else {
+    steps.push({
+      key: "completed",
+      label: "Completed",
+      at: status === "completed" ? t.actual_dropoff_at ?? null : null,
+      state: status === "completed" ? "done" : "pending",
+    });
+  }
+
+  const H = ({ children }: { children: React.ReactNode }) => (
+    <h4 className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-3">{children}</h4>
   );
 
   const Row = ({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) => (
@@ -1067,11 +1202,12 @@ function TripDetailView({
 
   const readOnly = (v: unknown) => <div>{v == null || v === "" ? <span className="text-muted-foreground">—</span> : String(v)}</div>;
 
-  const input = (k: keyof EditableFields, allowed: boolean, opts?: { type?: string }) =>
+  const input = (k: keyof EditableFields, allowed: boolean, opts?: { type?: string; placeholder?: string }) =>
     editing && allowed ? (
       <input
         type={opts?.type ?? "text"}
         value={form[k]}
+        placeholder={opts?.placeholder}
         onChange={(e) => setField(k, e.target.value)}
         className="w-full border border-border rounded-sm px-2.5 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
       />
@@ -1093,20 +1229,23 @@ function TripDetailView({
 
   return (
     <div className="bg-background">
-      {/* Sticky header */}
-      <header className="bg-card border border-border rounded-sm px-5 py-4 mb-4 flex flex-wrap items-start justify-between gap-3">
+      {/* Header */}
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-border">
         <div className="space-y-1.5 min-w-0">
           <button
-            onClick={onBack}
+            onClick={() => tryLeave(onBack)}
             className="text-xs font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
           >
             ← Back to trips
           </button>
           <div className="flex items-center gap-2 flex-wrap">
             <TripStatusBadge s={t.status} />
-            {t.trip_number && (
+            <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>
+              {paymentLabel}
+            </span>
+            {t.display_id && (
               <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                Trip #{t.trip_number}
+                {t.display_id}
               </span>
             )}
             {t.payer && String(t.payer).toLowerCase().includes("medicaid") && (
@@ -1142,15 +1281,15 @@ function TripDetailView({
           {editing && (
             <>
               <button
-                onClick={() => setEditing(false)}
+                onClick={() => tryLeave(() => { setForm(original); setEditing(false); })}
                 disabled={saving}
                 className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
               >
                 Cancel
               </button>
               <button
-                onClick={save}
-                disabled={saving}
+                onClick={() => save()}
+                disabled={saving || !dirty}
                 className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
               >
                 {saving ? "Saving…" : "Save changes"}
@@ -1160,81 +1299,290 @@ function TripDetailView({
         </div>
       </header>
 
-      {editing && !canEditAll && canEditProviderNotes && (
+      {editing && !canEditAll && canEditProviderFields && (
         <div className="mb-4 bg-sky-50 border border-sky-200 rounded-sm px-4 py-2 text-xs text-sky-800">
-          As the assigned provider, you can only edit the <b>Provider notes</b> field. Other changes must be made by the sender or an admin.
+          As the assigned provider, you can edit your <b>quote</b> and <b>provider notes</b>. Other changes must be made by the sender or an admin.
         </div>
       )}
 
-      <div className="space-y-4">
-        <Section title="Patient">
-          <Row label="Name">{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
-          <Row label="Phone">{input("patient_phone", canEditAll)}</Row>
-          <Row label="Date of birth">{readOnly(t.patient_date_of_birth ?? t.patient_dob)}</Row>
-          <Row label="Weight">{readOnly(t.patient_weight)}</Row>
-          <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
-          <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
-          <Row label="Payer">{readOnly(t.payer)}</Row>
-          <Row label="Emergency contact name">{input("emergency_contact_name", canEditAll)}</Row>
-          <Row label="Emergency contact phone">{input("emergency_contact_phone", canEditAll)}</Row>
-        </Section>
+      {editing && dirty && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-sm px-4 py-2 text-xs text-amber-800">
+          You have unsaved changes.
+        </div>
+      )}
 
-        <Section title="Pickup">
-          <Row label="Address" full>{input("pickup_address", canEditAll)}</Row>
-          <Row label="Suite / details" full>{input("pickup_address_details", canEditAll)}</Row>
-          <Row label="City">{input("pickup_city", canEditAll)}</Row>
-          <Row label="ZIP">{input("pickup_zip", canEditAll)}</Row>
-          <Row label="Pickup date">{input("pickup_date", canEditAll, { type: "date" })}</Row>
-          <Row label="Pickup time">{input("pickup_time", canEditAll, { type: "time" })}</Row>
-          <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>
-          {isRound && (
-            <>
-              <Row label="Return pickup time">{input("return_pickup_time", canEditAll, { type: "time" })}</Row>
-              <Row label="Return dropoff time">{input("return_dropoff_time", canEditAll, { type: "time" })}</Row>
-            </>
-          )}
-        </Section>
+      {/* Two-column responsive layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main column */}
+        <div className="lg:col-span-2 space-y-8">
+          <section>
+            <H>Trip information</H>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              <Row label="Trip #">{readOnly(t.trip_number ?? t.display_id)}</Row>
+              <Row label="Source">{readOnly(t.source)}</Row>
+              <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
+              <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
+              <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
+              <Row label="Authorization #">{readOnly(t.authorization_number)}</Row>
+              <Row label="Patient needs" full>
+                {flags.length ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {flags.map((f) => (
+                      <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30">
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">No special needs indicated.</span>
+                )}
+              </Row>
+            </div>
+          </section>
 
-        <Section title="Dropoff">
-          <Row label="Address" full>{input("dropoff_address", canEditAll)}</Row>
-          <Row label="City">{input("dropoff_city", canEditAll)}</Row>
-          <Row label="ZIP">{input("dropoff_zip", canEditAll)}</Row>
-          <Row label="Distance (mi)">{readOnly(t.estimated_miles ?? t.actual_miles)}</Row>
-          <Row label="Estimated fare">{readOnly(t.estimated_fare ? `$${t.estimated_fare}` : null)}</Row>
-        </Section>
+          <div className="border-t border-border" />
 
-        <Section title="Service & needs">
-          <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
-          <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
-          <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
-          <Row label="Source">{readOnly(t.source)}</Row>
-          <Row label="Patient needs" full>
-            {flags.length ? (
-              <div className="flex flex-wrap gap-1.5">
-                {flags.map((f) => (
-                  <span
-                    key={f}
-                    className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30"
-                  >
-                    {f}
-                  </span>
-                ))}
+          <section>
+            <H>Passenger information</H>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              <Row label="Name">{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
+              <Row label="Phone">{input("patient_phone", canEditAll, { type: "tel" })}</Row>
+              <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
+              <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
+              <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
+              <Row label="Emergency contact">{input("emergency_contact_name", canEditAll)}</Row>
+              <Row label="Emergency phone">{input("emergency_contact_phone", canEditAll, { type: "tel" })}</Row>
+            </div>
+          </section>
+
+          <div className="border-t border-border" />
+
+          <section>
+            <H>Locations</H>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <div className="space-y-3">
+                <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary">Pickup</div>
+                <Row label="Address">{input("pickup_address", canEditAll)}</Row>
+                <Row label="Suite / details">{input("pickup_address_details", canEditAll)}</Row>
+                <div className="grid grid-cols-2 gap-4">
+                  <Row label="City">{input("pickup_city", canEditAll)}</Row>
+                  <Row label="ZIP">{input("pickup_zip", canEditAll)}</Row>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Row label="Date">{input("pickup_date", canEditAll, { type: "date" })}</Row>
+                  <Row label="Time">{input("pickup_time", canEditAll, { type: "time" })}</Row>
+                </div>
+                <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>
               </div>
-            ) : (
-              <span className="text-muted-foreground">No special needs indicated.</span>
-            )}
-          </Row>
-        </Section>
+              <div className="space-y-3">
+                <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary">Drop-off</div>
+                <Row label="Address">{input("dropoff_address", canEditAll)}</Row>
+                <div className="grid grid-cols-2 gap-4">
+                  <Row label="City">{input("dropoff_city", canEditAll)}</Row>
+                  <Row label="ZIP">{input("dropoff_zip", canEditAll)}</Row>
+                </div>
+                <Row label="Distance">{readOnly(t.estimated_miles ? `${t.estimated_miles} mi` : t.actual_miles ? `${t.actual_miles} mi` : null)}</Row>
+                {isRound && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <Row label="Return pickup">{input("return_pickup_time", canEditAll, { type: "time" })}</Row>
+                    <Row label="Return dropoff">{input("return_dropoff_time", canEditAll, { type: "time" })}</Row>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
 
-        <Section title="Notes & instructions">
-          <Row label="Special instructions" full>{textarea("special_instructions", canEditAll)}</Row>
-          <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>
-          <Row label="Provider notes" full>{textarea("provider_notes", canEditProviderNotes)}</Row>
-        </Section>
+          <div className="border-t border-border" />
+
+          <section>
+            <H>Notes & instructions</H>
+            <div className="space-y-4">
+              <Row label="Special instructions" full>{textarea("special_instructions", canEditAll)}</Row>
+              <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>
+              <Row label="Provider notes" full>{textarea("provider_notes", canEditProviderFields)}</Row>
+            </div>
+          </section>
+
+          <div className="border-t border-border" />
+
+          <section>
+            <H>Trip status timeline</H>
+            <ol className="relative border-l-2 border-border ml-2 space-y-4">
+              {steps.map((s) => {
+                const dot =
+                  s.state === "done"
+                    ? "bg-emerald-500 border-emerald-500"
+                    : s.state === "current"
+                    ? "bg-amber-500 border-amber-500"
+                    : "bg-background border-border";
+                return (
+                  <li key={s.key} className="pl-6 relative">
+                    <span className={`absolute -left-[9px] top-1 inline-block w-4 h-4 rounded-full border-2 ${dot}`} />
+                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                      <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                      <div className="text-xs text-muted-foreground">{fmtDateTime(s.at ?? null)}</div>
+                    </div>
+                    {s.note && <div className="text-xs text-muted-foreground mt-0.5">{s.note}</div>}
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="mt-3 text-[0.7rem] text-muted-foreground">
+              Timeline is derived from trip events. Individual user attribution is available in the audit log.
+            </p>
+          </section>
+        </div>
+
+        {/* Side column */}
+        <div className="space-y-8">
+          <section>
+            <H>Driver & assignment</H>
+            <div className="space-y-3 text-sm">
+              <Row label="Assigned to">{readOnly(t.assigned_to ? "Provider assigned" : "Unassigned")}</Row>
+              <Row label="Region">{readOnly(t.region)}</Row>
+              <Row label="Dispatch zone">{readOnly(t.dispatch_zone_id ? "Zone set" : null)}</Row>
+              <Row label="Driver">{readOnly(t.driver_id ? "Driver assigned" : null)}</Row>
+            </div>
+          </section>
+
+          <div className="border-t border-border" />
+
+          <section>
+            <H>Pricing &amp; billing</H>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Payment status</span>
+                <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>{paymentLabel}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Responsible party</span>
+                {editing && canEditAll ? (
+                  <select
+                    value={form.payer}
+                    onChange={(e) => setField("payer", e.target.value)}
+                    className="border border-border rounded-sm px-2 py-1 text-sm bg-background"
+                  >
+                    <option value="">—</option>
+                    <option value="Patient">Patient</option>
+                    <option value="Facility">Facility</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Medicaid">Medicaid</option>
+                    <option value="Broker">Broker</option>
+                    <option value="Other">Other</option>
+                  </select>
+                ) : (
+                  <span className="font-semibold">{t.payer ?? "—"}</span>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Estimated price</span>
+                <span className="font-semibold">{fmtMoney(t.estimated_miles && t.cost_total == null ? null : t.cost_total)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Provider quote</span>
+                {editing && canEditProviderFields ? (
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.cost_total}
+                    onChange={(e) => setField("cost_total", e.target.value)}
+                    placeholder="0.00"
+                    className="w-28 border border-border rounded-sm px-2 py-1 text-sm bg-background text-right"
+                  />
+                ) : (
+                  <span className="font-semibold">{fmtMoney(quoteDollars)}</span>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Amount paid</span>
+                <span className="font-semibold">{fmtMoney(paidDollars)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Outstanding balance</span>
+                <span className="font-semibold">{outstandingDollars == null ? "—" : fmtMoney(outstandingDollars)}</span>
+              </div>
+              {refundedCents > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Refunded</span>
+                  <span className="font-semibold">{fmtMoney(refundedCents / 100)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Payment method</span>
+                <span className="font-semibold">{(paymentsQ.data ?? []).length ? "Card (Stripe)" : "—"}</span>
+              </div>
+
+              {needsQuote && (
+                <div className="mt-2 rounded-sm bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                  {canEditProviderFields
+                    ? "Quote required — enter your quote above and save."
+                    : "Awaiting manual quote from provider."}
+                </div>
+              )}
+              {canEditProviderFields && !editing && (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="w-full mt-2 text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
+                >
+                  {needsQuote ? "Create quote" : "Update quote"}
+                </button>
+              )}
+
+              {t.cost_breakdown?.lines?.length ? (
+                <div className="mt-3 pt-3 border-t border-border space-y-1">
+                  <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1">Line items</div>
+                  {t.cost_breakdown.lines.map((l: any, i: number) => (
+                    <div key={i} className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">{l.label}</span>
+                      <span>{fmtMoney(l.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        </div>
       </div>
+
+      {confirmLeave && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-sm max-w-md w-full p-6 space-y-4">
+            <h3 className="text-lg font-extrabold">Unsaved changes</h3>
+            <p className="text-sm text-muted-foreground">
+              You have unsaved edits to this trip. What would you like to do?
+            </p>
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
+              <button
+                onClick={() => setConfirmLeave(null)}
+                className="text-sm font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => discardAndProceed(confirmLeave.onProceed)}
+                className="text-sm font-bold border border-red-300 text-red-700 px-3 py-2 rounded-sm hover:bg-red-50"
+              >
+                Discard changes
+              </button>
+              <button
+                disabled={saving}
+                onClick={() => {
+                  const proceed = confirmLeave.onProceed;
+                  save(() => { setConfirmLeave(null); proceed(); });
+                }}
+                className="text-sm font-bold bg-emerald-600 text-white px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {saving ? "Saving…" : "Save changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 
 
