@@ -159,7 +159,7 @@ function RequestRidePage() {
           specialInstructions: row.special_instructions ?? "",
           recurrence: rec,
           recurrenceEndDate: "",
-
+          billingSource: "account",
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set a new pickup date to continue.");
