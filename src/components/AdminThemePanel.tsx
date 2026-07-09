@@ -286,21 +286,21 @@ export function AdminThemePanel() {
             ["form_primary_color", "Form label / text accent"],
             ["form_accent_color", "Form focus & submit"],
           ] as const).map(([key, label]) => (
-            <label key={key} className="flex items-center gap-3 p-3 border border-border rounded-md bg-background">
+            <label key={key} className="flex items-center gap-3 p-3 border border-border rounded-md bg-background text-foreground">
               <input
                 type="color"
                 value={String(theme[key] ?? theme.portal_accent_color ?? "#000000").slice(0, 7)}
                 onChange={(e) => update(key, e.target.value as never)}
-                className="size-9 rounded cursor-pointer border-0 bg-transparent"
+                className="size-9 rounded cursor-pointer border border-border bg-transparent"
               />
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold">{label}</div>
+                <div className="text-xs font-bold text-foreground">{label}</div>
                 <input
                   type="text"
                   placeholder="(inherits portal)"
                   value={String(theme[key] ?? "")}
                   onChange={(e) => update(key, (e.target.value || null) as never)}
-                  className="w-full font-mono text-xs bg-transparent outline-none"
+                  className="w-full font-mono text-xs bg-card text-foreground border border-input rounded px-2 py-1 mt-1 outline-none focus:border-ring placeholder:text-muted-foreground"
                 />
               </div>
             </label>
