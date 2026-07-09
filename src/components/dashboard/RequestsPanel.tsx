@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { listMyReservations } from "@/lib/schedule-board.functions";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
+import { formatMinutes } from "@/components/maps/RoutePreview";
 
 type Row = {
   id: string;
@@ -32,6 +33,8 @@ type Row = {
   needs_wheelchair: boolean | null;
   distance_miles: number | null;
   estimated_cost_cents: number | null;
+  estimated_duration_seconds: number | null;
+  estimated_duration_traffic_seconds: number | null;
   payer: string | null;
   medicaid_number: string | null;
   medicaid_plan: string | null;
@@ -74,7 +77,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,payer,medicaid_number,medicaid_plan")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,medicaid_number,medicaid_plan")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -152,9 +155,17 @@ export function RequestsPanel({ userId }: { userId: string }) {
 
                   <div><span className="font-bold text-foreground">Pickup:</span> {r.pickup_address}{r.pickup_city ? `, ${r.pickup_city}` : ""}{r.pickup_address_details ? ` — ${r.pickup_address_details}` : ""}</div>
                   <div><span className="font-bold text-foreground">Dropoff:</span> {r.dropoff_address}{r.dropoff_city ? `, ${r.dropoff_city}` : ""}</div>
-                  {(r.distance_miles != null || r.estimated_cost_cents != null) && (
-                    <div className="mt-1 text-xs">
-                      {r.distance_miles != null && <span className="mr-3"><span className="font-bold text-foreground">Distance:</span> {Number(r.distance_miles).toFixed(1)} mi</span>}
+                  {(r.distance_miles != null || r.estimated_cost_cents != null || r.estimated_duration_traffic_seconds != null) && (
+                    <div className="mt-1 text-xs flex flex-wrap gap-x-3 gap-y-1">
+                      {r.distance_miles != null && <span><span className="font-bold text-foreground">Distance:</span> {Number(r.distance_miles).toFixed(1)} mi</span>}
+                      {r.estimated_duration_traffic_seconds != null && (
+                        <span>
+                          <span className="font-bold text-foreground">ETA (traffic):</span> {formatMinutes(r.estimated_duration_traffic_seconds)}
+                          {r.estimated_duration_seconds != null && r.estimated_duration_seconds !== r.estimated_duration_traffic_seconds && (
+                            <span className="text-muted-foreground"> · typical {formatMinutes(r.estimated_duration_seconds)}</span>
+                          )}
+                        </span>
+                      )}
                       {r.estimated_cost_cents != null && <span><span className="font-bold text-foreground">Est. fare:</span> ${(r.estimated_cost_cents / 100).toFixed(2)}</span>}
                     </div>
                   )}

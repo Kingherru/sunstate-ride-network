@@ -8,6 +8,7 @@ import {
   cancelMyRequest,
   rescheduleMyRequest,
 } from "@/lib/requests.functions";
+import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 
 export const Route = createFileRoute("/_authenticated/requests/$id")({
   head: () => ({
@@ -254,6 +255,52 @@ function RequestDetailPage() {
                 {r.cancel_reason ? ` — ${r.cancel_reason}` : ""}
               </p>
             )}
+          </Card>
+
+          <Card title="Route & travel">
+            {(r as any).distance_miles != null && (
+              <Row label="Total miles">{Number((r as any).distance_miles).toFixed(1)} mi</Row>
+            )}
+            {(r as any).estimated_duration_traffic_seconds != null && (
+              <Row label="Drive time (traffic)">
+                {formatMinutes((r as any).estimated_duration_traffic_seconds)}
+                {(r as any).estimated_duration_seconds != null &&
+                  (r as any).estimated_duration_seconds !== (r as any).estimated_duration_traffic_seconds && (
+                    <span className="ml-2 text-xs text-zinc-500">
+                      typical {formatMinutes((r as any).estimated_duration_seconds)}
+                    </span>
+                  )}
+              </Row>
+            )}
+            {(r as any).estimated_duration_traffic_seconds == null &&
+              (r as any).estimated_duration_seconds != null && (
+                <Row label="Estimated drive time">{formatMinutes((r as any).estimated_duration_seconds)}</Row>
+              )}
+            <div className="mt-2">
+              <RoutePreview
+                polyline={(r as any).route_polyline}
+                pickupLat={(r as any).pickup_lat}
+                pickupLng={(r as any).pickup_lng}
+                dropoffLat={(r as any).dropoff_lat}
+                dropoffLng={(r as any).dropoff_lng}
+                height={220}
+              />
+              <a
+                href={googleRouteUrl(
+                  (r as any).pickup_lat,
+                  (r as any).pickup_lng,
+                  (r as any).dropoff_lat,
+                  (r as any).dropoff_lng,
+                  [r.pickup_address, r.pickup_city, "FL"].filter(Boolean).join(", "),
+                  [r.dropoff_address, r.dropoff_city, "FL"].filter(Boolean).join(", "),
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block text-xs font-semibold text-blue-700 hover:underline"
+              >
+                Open route in Google Maps →
+              </a>
+            </div>
           </Card>
         </section>
       ) : (
