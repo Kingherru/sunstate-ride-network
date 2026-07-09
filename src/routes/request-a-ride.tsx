@@ -190,13 +190,26 @@ function RequestRidePage() {
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
-        // Geocode + compute miles & estimated cost in the background; if it fails we still confirm the booking.
-        let miles: number | null | undefined; let cents: number | null | undefined;
+        // Geocode + compute miles, drive time, traffic-aware ETA & polyline in the background;
+        // if it fails we still confirm the booking.
+        let enrichedInfo: Partial<NonNullable<typeof done>> = {};
         try {
           const enriched = await enrich({ data: { id: res.id } });
-          if (enriched.ok) { miles = enriched.miles; cents = enriched.estimated_cost_cents; }
+          if (enriched.ok) {
+            enrichedInfo = {
+              miles: enriched.miles,
+              cents: enriched.estimated_cost_cents,
+              durationSec: enriched.duration_seconds,
+              trafficSec: enriched.duration_traffic_seconds,
+              polyline: enriched.polyline,
+              pickupLat: enriched.pickup_lat,
+              pickupLng: enriched.pickup_lng,
+              dropoffLat: enriched.dropoff_lat,
+              dropoffLng: enriched.dropoff_lng,
+            };
+          }
         } catch { /* ignore — non-fatal */ }
-        setDone({ id: res.id, miles, cents });
+        setDone({ id: res.id, ...enrichedInfo });
         toast.success("Ride request received. A dispatcher will call you shortly.");
         router.invalidate();
       } else {
@@ -211,19 +224,64 @@ function RequestRidePage() {
   }
 
   if (done) {
+    const hasRoute =
+      done.miles != null ||
+      done.cents != null ||
+      done.trafficSec != null ||
+      done.durationSec != null;
     return (
-      <section className="py-32 px-6">
+      <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
             Confirmation #{done.id.slice(0, 8).toUpperCase()}
           </p>
           <h1 className="text-5xl font-extrabold tracking-tighter mb-6">Ride request received.</h1>
-          {(done.miles != null || done.cents != null) && (
-            <div className="bg-card border border-border rounded-sm p-5 mb-8 inline-flex flex-col items-center gap-1">
-              {done.miles != null && <div className="text-sm"><span className="font-bold">Distance:</span> {done.miles.toFixed(1)} miles</div>}
-              {done.cents != null && <div className="text-sm"><span className="font-bold">Estimated fare:</span> ${(done.cents / 100).toFixed(2)} <span className="text-muted text-xs">(Florida NEMT avg rates)</span></div>}
+
+          {hasRoute && (
+            <div className="bg-card border border-border rounded-sm p-5 mb-6 text-left">
+              <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                {done.miles != null && (
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Total miles</div>
+                    <div className="text-lg font-extrabold">{done.miles.toFixed(1)} mi</div>
+                  </div>
+                )}
+                {done.trafficSec != null && (
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Drive time (traffic)</div>
+                    <div className="text-lg font-extrabold">{formatMinutes(done.trafficSec)}</div>
+                    {done.durationSec != null && done.durationSec !== done.trafficSec && (
+                      <div className="text-[11px] text-muted">Typical {formatMinutes(done.durationSec)}</div>
+                    )}
+                  </div>
+                )}
+                {done.cents != null && (
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Estimated fare</div>
+                    <div className="text-lg font-extrabold">${(done.cents / 100).toFixed(2)}</div>
+                    <div className="text-[11px] text-muted">FL NEMT avg</div>
+                  </div>
+                )}
+              </div>
+              <RoutePreview
+                polyline={done.polyline}
+                pickupLat={done.pickupLat}
+                pickupLng={done.pickupLng}
+                dropoffLat={done.dropoffLat}
+                dropoffLng={done.dropoffLng}
+                height={240}
+              />
+              <a
+                href={googleRouteUrl(done.pickupLat, done.pickupLng, done.dropoffLat, done.dropoffLng)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-block text-xs font-bold uppercase tracking-wider text-primary hover:underline"
+              >
+                Open route in Google Maps →
+              </a>
             </div>
           )}
+
           <p className="text-muted text-lg mb-10">
             A dispatcher will confirm pickup details by phone within 2 hours. For urgent same-day
             requests, call <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
