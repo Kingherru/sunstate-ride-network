@@ -76,7 +76,7 @@ type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" 
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "memberships", "payouts", "integrations", "messages", "business_info", "account"],
+  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "contacts", "saved_patients", "pricing", "rules", "medicaid", "payouts", "integrations", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "contacts", "saved_patients", "messages", "payments", "account"],
 };
 
@@ -1715,9 +1715,12 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
   );
 }
 
-/* -------- Account -------- */
+/* -------- Account (tabbed) -------- */
+type AccountTab = "profile" | "business" | "membership" | "security";
+
 function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: PortalKind; userId: string }) {
   const [busy, setBusy] = useState(false);
+  const [subTab, setSubTab] = useState<AccountTab>("profile");
   async function openPortal() {
     setBusy(true);
     try {
@@ -1730,40 +1733,96 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       toast.error(e.message ?? "Could not open billing portal");
     } finally { setBusy(false); }
   }
+
+  const showBusiness = portal === "provider" || portal === "facility";
+  const tabs: Array<[AccountTab, string]> = [
+    ["profile", "Profile"],
+    ...(showBusiness ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ["membership", "Membership"],
+    ["security", "Security"],
+  ];
+
   return (
-    <div className="max-w-3xl space-y-6">
-      <div className="bg-card border border-border rounded-sm p-6 space-y-3">
-        <h2 className="text-xl font-extrabold tracking-tight">Account</h2>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
-          <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
-          <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
-          <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
-          <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
-          <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+    <div className="max-w-5xl space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight">Account</h2>
+        <p className="text-sm text-muted-foreground">Manage your profile, business details, membership, and security.</p>
+      </div>
+
+      <div className="flex flex-wrap gap-1 border-b border-border">
+        {tabs.map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setSubTab(key)}
+            className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px transition-colors ${
+              subTab === key
+                ? "border-accent text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {subTab === "profile" && (
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-card border border-border rounded-sm p-6 space-y-3">
+              <h3 className="text-lg font-extrabold tracking-tight">Profile</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
+                <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
+                <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
+                <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
+                <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
+                <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
+              </div>
+            </div>
+            {portal === "patient" && (
+              <PatientRelationshipCard profile={profile} userId={userId} />
+            )}
+            {portal === "provider" && (
+              <>
+                <WeeklyWorkHoursCard />
+                <ProviderCredentialsPanel />
+                <div className="bg-card border border-border rounded-sm p-6">
+                  <NetworkPanel userId={userId} />
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        <div className="pt-4 border-t border-border">
-          <button onClick={openPortal} disabled={busy}
-                  className="portal-btn-primary px-5 py-2">
+      )}
+
+      {subTab === "business" && showBusiness && (
+        <BusinessInfoPanel />
+      )}
+
+      {subTab === "membership" && (
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="hidden lg:block lg:col-span-1" />
+          <div className="lg:col-span-2">
+            <MembershipsTab profile={profile} />
+          </div>
+        </div>
+      )}
+
+      {subTab === "security" && (
+        <div className="bg-card border border-border rounded-sm p-6 space-y-4 max-w-2xl">
+          <h3 className="text-lg font-extrabold tracking-tight">Security & Billing</h3>
+          <p className="text-sm text-muted-foreground">
+            Manage your billing details, payment methods, and subscription in the secure billing portal.
+          </p>
+          <button onClick={openPortal} disabled={busy} className="portal-btn-primary px-5 py-2">
             {busy ? "Opening…" : "Manage billing"}
           </button>
         </div>
-      </div>
-      {portal === "patient" && (
-        <PatientRelationshipCard profile={profile} userId={userId} />
-      )}
-      {portal === "provider" && (
-        <>
-          <WeeklyWorkHoursCard />
-          <ProviderCredentialsPanel />
-          <div className="bg-card border border-border rounded-sm p-6">
-            <NetworkPanel userId={userId} />
-          </div>
-        </>
       )}
     </div>
   );
 }
+
 
 function PatientRelationshipCard({ profile, userId }: { profile: Profile; userId: string }) {
   const p = profile as any;
