@@ -86,7 +86,7 @@ export function RoutePreview({
             strokeOpacity: 0.9,
             strokeWeight: 4,
           });
-          path.forEach((p) => bounds.extend(p));
+          path.forEach((p: any) => bounds.extend(p));
         } else {
           new g.maps.Polyline({
             path: [
