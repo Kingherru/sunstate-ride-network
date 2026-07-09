@@ -1601,7 +1601,7 @@ function PortalSidebar(props: {
           onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
           className="font-bold uppercase tracking-wider text-white/70 hover:text-white text-[11px]"
         >Sign out</button>
-        <ChangelogChip />
+        
       </div>
     </aside>
   );
