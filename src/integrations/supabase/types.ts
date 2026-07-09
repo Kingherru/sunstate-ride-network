@@ -433,6 +433,7 @@ export type Database = {
         Row: {
           allow_live_medicaid_verification: boolean
           auto_upgraded_to_facility_at: string | null
+          billing_contact: Json | null
           center_lat: number | null
           center_lng: number | null
           city: string | null
@@ -477,6 +478,7 @@ export type Database = {
         Insert: {
           allow_live_medicaid_verification?: boolean
           auto_upgraded_to_facility_at?: string | null
+          billing_contact?: Json | null
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -521,6 +523,7 @@ export type Database = {
         Update: {
           allow_live_medicaid_verification?: boolean
           auto_upgraded_to_facility_at?: string | null
+          billing_contact?: Json | null
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -1474,6 +1477,11 @@ export type Database = {
           special_instructions: string | null
           status: string
           transport_type: string
+          trip_billing_email: string | null
+          trip_billing_first_name: string | null
+          trip_billing_last_name: string | null
+          trip_billing_phone: string | null
+          trip_billing_source: string | null
           trip_type: string
           user_agent: string | null
         }
@@ -1544,6 +1552,11 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           transport_type: string
+          trip_billing_email?: string | null
+          trip_billing_first_name?: string | null
+          trip_billing_last_name?: string | null
+          trip_billing_phone?: string | null
+          trip_billing_source?: string | null
           trip_type?: string
           user_agent?: string | null
         }
@@ -1614,6 +1627,11 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           transport_type?: string
+          trip_billing_email?: string | null
+          trip_billing_first_name?: string | null
+          trip_billing_last_name?: string | null
+          trip_billing_phone?: string | null
+          trip_billing_source?: string | null
           trip_type?: string
           user_agent?: string | null
         }
