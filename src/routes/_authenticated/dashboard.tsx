@@ -1716,7 +1716,7 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
 }
 
 /* -------- Account (tabbed) -------- */
-type AccountTab = "profile" | "business" | "membership" | "security";
+type AccountTab = "profile" | "business" | "pricing" | "rules" | "integrations" | "payouts" | "membership" | "security";
 
 function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: PortalKind; userId: string }) {
   const [busy, setBusy] = useState(false);
@@ -1735,9 +1735,16 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
   }
 
   const showBusiness = portal === "provider" || portal === "facility";
+  const isProvider = portal === "provider";
   const tabs: Array<[AccountTab, string]> = [
     ["profile", "Profile"],
     ...(showBusiness ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ...(isProvider ? ([
+      ["pricing", "Pricing"],
+      ["rules", "Rules"],
+      ["integrations", "Integrations"],
+      ["payouts", "Payouts"],
+    ] as Array<[AccountTab, string]>) : []),
     ["membership", "Membership"],
     ["security", "Security"],
   ];
