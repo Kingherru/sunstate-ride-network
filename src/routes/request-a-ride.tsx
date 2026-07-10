@@ -183,6 +183,7 @@ function RequestRidePage() {
           recurrence: rec,
           recurrenceEndDate: "",
           billingSource: "account",
+          createAccount: false,
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set a new pickup date to continue.");
