@@ -753,6 +753,22 @@ function RequestRidePage() {
             ))}
           </datalist>
 
+          {form.patientEmail && (
+            <label className="flex items-start gap-3 text-sm bg-primary/5 border border-primary/20 rounded-sm p-4">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.createAccount ?? false}
+                onChange={(e) => upd("createAccount", e.target.checked)}
+              />
+              <span>
+                <strong className="font-bold">Create a Patient Portal account</strong> using{" "}
+                <span className="font-mono">{form.patientEmail}</span>. We'll email you a link to set
+                your password so you can track this ride, save patients, and book future trips faster.
+              </span>
+            </label>
+          )}
+
           <button
             type="submit"
             disabled={submitting}
