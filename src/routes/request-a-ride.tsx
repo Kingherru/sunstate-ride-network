@@ -353,12 +353,25 @@ function RequestRidePage() {
             on the lookout for our communication. For urgent same-day requests, call{" "}
             <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
           </p>
-          <Link
-            to="/"
-            className="inline-block px-8 py-4 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-wide uppercase"
-          >
-            Back to home
-          </Link>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link
+              to="/requests/$id"
+              params={{ id: done.id }}
+              className="inline-block px-8 py-4 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-wide uppercase"
+            >
+              Preview trip details
+            </Link>
+            <Link
+              to="/"
+              className="inline-block px-8 py-4 bg-card border border-border text-foreground font-bold rounded-sm text-sm tracking-wide uppercase"
+            >
+              Back to home
+            </Link>
+          </div>
+          <p className="mt-4 text-xs text-muted">
+            You can review and edit the reservation from the trip details page until a dispatcher claims it.
+          </p>
+
         </div>
       </section>
     );
