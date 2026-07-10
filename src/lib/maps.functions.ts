@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_maps";
 
@@ -82,10 +83,19 @@ export function estimateCostCents(transportType: string | null | undefined, mile
   return Math.round((loadMid + mileMid * miles) * 100);
 }
 
-/** Geocode pickup & dropoff for a public ride request, compute miles + duration + polyline + estimate, then write back. */
+/** Geocode pickup & dropoff for a public ride request, compute miles + duration + polyline + estimate, then write back.
+ *  Callers must present a short-lived enrichment token issued by submitRideRequest so anonymous visitors
+ *  can't harvest data or trigger paid Maps calls against arbitrary ride_request UUIDs.
+ */
 export const enrichRideRequest = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .inputValidator((i: unknown) =>
+    z.object({ id: z.string().uuid(), token: z.string().min(10).max(400) }).parse(i),
+  )
   .handler(async ({ data }) => {
+    const { verifyEnrichmentToken } = await import("@/lib/enrichment-token.server");
+    if (!verifyEnrichmentToken(data.id, data.token)) {
+      return { ok: false as const, error: "invalid_token" };
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: req, error } = await supabaseAdmin
       .from("ride_requests")
@@ -126,8 +136,10 @@ export const enrichRideRequest = createServerFn({ method: "POST" })
     };
   });
 
-/** Geocode a single address string (used by the provider Network panel to set their service center). */
+/** Geocode a single address string (used by the provider Network panel to set their service center).
+ *  Requires an authenticated session so anonymous callers can't burn the Google Maps quota. */
 export const geocodeAddress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ address: z.string().min(3).max(300) }).parse(i))
   .handler(async ({ data }) => {
     const g = await geocode(data.address);

@@ -224,7 +224,7 @@ function RequestRidePage() {
         // if it fails we still confirm the booking.
         let enrichedInfo: Partial<NonNullable<typeof done>> = {};
         try {
-          const enriched = await enrich({ data: { id: res.id } });
+          const enriched = await enrich({ data: { id: res.id, token: res.enrichmentToken } });
           if (enriched.ok) {
             enrichedInfo = {
               miles: enriched.miles,
