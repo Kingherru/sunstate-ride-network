@@ -274,8 +274,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         userEmail={userEmail}
         allowedTabs={allowedTabs}
         currentTab={tab}
-        onTab={setTab}
+        onTab={handleTab}
         counts={{ received: received.length, sent: sent.length, unread: unreadTotal }}
+        unread={unread as Partial<Record<TabKey, number>>}
+        tabKeyFor={tabKeyFor}
+
         membershipStatus={profile?.membership_status ?? "inactive"}
         onSavedName={() => qc.invalidateQueries({ queryKey: ["member-profile"] })}
       />
