@@ -51,6 +51,7 @@ export const rideRequestSchema = z.object({
   embedToken: z.string().trim().min(6).max(64).optional().or(z.literal("")),
   billingSource: z.enum(["account", "saved", "custom"]).default("account"),
   billingContact: billingContactSchema.optional(),
+  createAccount: z.boolean().optional().default(false),
 }).superRefine((data, ctx) => {
   if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
     ctx.addIssue({
