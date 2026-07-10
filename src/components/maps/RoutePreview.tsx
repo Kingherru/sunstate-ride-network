@@ -68,6 +68,10 @@ export function RoutePreview({
   useEffect(() => {
     if (!ref.current || !hasPoints) return;
     let disposed = false;
+    const onAuthFailure = () => {
+      if (!disposed) setErr("auth_failure");
+    };
+    authFailureListeners.add(onAuthFailure);
     (async () => {
       try {
         const g = await loadMaps();
@@ -112,11 +116,12 @@ export function RoutePreview({
 
         map.fitBounds(bounds, 32);
       } catch (e: any) {
-        if (!disposed) setErr(e?.message ?? "Map failed to load");
+        if (!disposed) setErr(e?.message ?? "script_error");
       }
     })();
     return () => {
       disposed = true;
+      authFailureListeners.delete(onAuthFailure);
     };
   }, [polyline, pickupLat, pickupLng, dropoffLat, dropoffLng, pickupLabel, dropoffLabel, hasPoints]);
 
@@ -131,13 +136,50 @@ export function RoutePreview({
     );
   }
 
+  if (err) {
+    return <MapFallback height={height} className={className} reason={err} />;
+  }
+
   return (
     <div className={className}>
       <div ref={ref} className="w-full rounded-sm border border-border overflow-hidden" style={{ height }} />
-      {err && <p className="mt-2 text-xs text-destructive">{err}</p>}
     </div>
   );
 }
+
+function MapFallback({
+  height,
+  className,
+  reason,
+}: {
+  height: number;
+  className?: string;
+  reason: string;
+}) {
+  const message =
+    reason === "auth_failure"
+      ? "The map couldn't be authorized for this domain."
+      : "The map couldn't be loaded right now.";
+  return (
+    <div
+      className={`bg-secondary border border-border rounded-sm p-4 text-sm text-muted-foreground flex flex-col items-center justify-center text-center gap-2 ${className ?? ""}`}
+      style={{ height }}
+      role="alert"
+    >
+      <p className="font-medium text-foreground">Map preview unavailable</p>
+      <p className="text-xs max-w-xs">
+        {message} You can still continue with your request — routing will be confirmed by dispatch.
+      </p>
+      <a
+        href="/contact"
+        className="text-xs font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+      >
+        Contact support
+      </a>
+    </div>
+  );
+}
+
 
 export function googleRouteUrl(
   pickupLat?: number | null,
