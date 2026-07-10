@@ -157,6 +157,27 @@ function AdminPage() {
   const caps = useCapabilities();
   const [tab, setTab] = useState<TabId>("overview");
 
+  const unread = useUnreadCounts(caps.userId ?? null);
+  const markViewed = useMarkTabViewed(caps.userId ?? null);
+  const adminTabKeyFor = (id: TabId): TabKey | null => {
+    if (id === "reservations") return TAB_KEYS.adminReservations;
+    if (id === "dispatch") return TAB_KEYS.adminDispatch;
+    if (id === "trips") return TAB_KEYS.adminTrips;
+    return null;
+  };
+  const handleAdminTab = (id: TabId) => {
+    setTab(id);
+    const key = adminTabKeyFor(id);
+    if (key) markViewed(key);
+  };
+  useEffect(() => {
+    const key = adminTabKeyFor(tab);
+    if (key && ((unread as any)[key] ?? 0) > 0) markViewed(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, (unread as any)[adminTabKeyFor(tab) ?? ""]]);
+
+
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
