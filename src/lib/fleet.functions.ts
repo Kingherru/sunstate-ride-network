@@ -111,7 +111,7 @@ export const assignDriverVehicle = createServerFn({ method: "POST" })
         const body = [
           `Hi ${driver.first_name},`,
           ``,
-          `You've been assigned a new trip on Florida NEMT.`,
+          `You've been assigned a new trip on MyFloridaNemt.com.`,
           ``,
           `Patient: ${trip.patient_first_name} ${trip.patient_last_name}${trip.patient_phone ? ` (${trip.patient_phone})` : ""}`,
           `When: ${trip.pickup_date} at ${String(trip.pickup_time).slice(0, 5)}`,
@@ -173,12 +173,12 @@ export const sendDriverWeeklySchedule = createServerFn({ method: "POST" })
         lines.push("");
       }
     }
-    lines.push("— Florida NEMT");
+    lines.push("— MyFloridaNemt.com");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: qErr } = await supabaseAdmin.from("notification_email_queue").insert({
       recipient_email: driver.email,
-      subject: `Your Florida NEMT schedule — week of ${data.week_start} (${trips?.length ?? 0} trip${(trips?.length ?? 0) === 1 ? "" : "s"})`,
+      subject: `Your MyFloridaNemt.com schedule — week of ${data.week_start} (${trips?.length ?? 0} trip${(trips?.length ?? 0) === 1 ? "" : "s"})`,
       body: lines.join("\n"),
     });
     if (qErr) throw qErr;

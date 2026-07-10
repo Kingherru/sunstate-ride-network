@@ -7,7 +7,7 @@ import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/R
 export const Route = createFileRoute("/_authenticated/reservations/$id/review")({
   head: () => ({
     meta: [
-      { title: "Reservation Review — Florida NEMT" },
+      { title: "Reservation Review — MyFloridaNemt.com" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -23,7 +23,7 @@ function mobilityLabel(r: any): string {
 
 function sourceLabel(src: string | null | undefined, hasRequester: boolean) {
   const v = (src ?? (hasRequester ? "provider" : "auto")).toLowerCase();
-  if (v === "auto") return "Florida NEMT Auto Match";
+  if (v === "auto") return "MyFloridaNemt.com Auto Match";
   if (v === "provider") return "Provider Submitted";
   if (v === "facility") return "Facility Submitted";
   return "Patient Submitted";

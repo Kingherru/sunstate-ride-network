@@ -14,7 +14,7 @@ export function BusinessInfoPanel() {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Business info</h2>
         <p className="text-sm text-muted-foreground">
-          The business data and documents you submitted when applying to Florida NEMT.
+          The business data and documents you submitted when applying to MyFloridaNemt.com.
         </p>
       </div>
 

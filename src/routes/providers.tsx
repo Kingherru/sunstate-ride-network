@@ -13,13 +13,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/providers")({
   head: () => ({
     meta: [
-      { title: "Become an NEMT Provider — Florida NEMT" },
+      { title: "Become an NEMT Provider — MyFloridaNemt.com" },
       {
         name: "description",
         content:
-          "Apply to join the Florida NEMT provider network. Upload your driver license, insurance, W-9, EIN letter, NPI, agreements, and vehicle photos. Get categorized by your service area and onboarded statewide.",
+          "Apply to join the MyFloridaNemt.com provider network. Upload your driver license, insurance, W-9, EIN letter, NPI, agreements, and vehicle photos. Get categorized by your service area and onboarded statewide.",
       },
-      { property: "og:title", content: "Join the Florida NEMT Provider Network" },
+      { property: "og:title", content: "Join the MyFloridaNemt.com Provider Network" },
       { property: "og:description", content: "Register your NEMT company, upload credentials, and start receiving trips." },
       { property: "og:url", content: "/providers" },
     ],

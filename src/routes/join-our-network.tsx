@@ -4,13 +4,13 @@ import { CheckCircle2, TrendingUp, Globe, ShieldCheck, LifeBuoy, MapPin } from "
 export const Route = createFileRoute("/join-our-network")({
   head: () => ({
     meta: [
-      { title: "Join Our Network — Florida NEMT Providers Statewide" },
+      { title: "Join Our Network — MyFloridaNemt.com Providers Statewide" },
       {
         name: "description",
         content:
           "Launching a non-emergency medical transportation business in Florida? Get exclusive NEMT leads, a verified profile, and statewide patient demand from Pensacola to the Keys.",
       },
-      { property: "og:title", content: "Join the Florida NEMT Provider Network" },
+      { property: "og:title", content: "Join the MyFloridaNemt.com Provider Network" },
       { property: "og:description", content: "Exclusive NEMT leads and statewide demand for Florida providers." },
       { property: "og:url", content: "/join-our-network" },
     ],
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/join-our-network")({
 const benefits = [
   {
     icon: TrendingUp,
-    title: "Exclusive Florida NEMT Leads",
+    title: "Exclusive MyFloridaNemt.com Leads",
     body:
       "Stop chasing dispatch boards. Get high-intent trip requests routed to your service area — Jacksonville, Tampa, Orlando, Miami, Gainesville, Daytona, Southwest Florida and every county in between.",
   },
@@ -73,10 +73,10 @@ function JoinNetworkPage() {
               Provider Network · Statewide Florida
             </p>
             <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter leading-[0.95] mb-6">
-              Join the Florida NEMT network.
+              Join the MyFloridaNemt.com network.
             </h1>
             <p className="text-lg lg:text-xl text-primary-foreground/80 max-w-2xl">
-              Whether you're a brand-new NEMT entrepreneur or an established fleet, Florida NEMT
+              Whether you're a brand-new NEMT entrepreneur or an established fleet, MyFloridaNemt.com
               connects you with real patient demand across the state — and the support to scale.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
@@ -111,7 +111,7 @@ function JoinNetworkPage() {
       <section className="py-20 lg:py-28 px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-12 max-w-3xl">
-            Why providers partner with Florida NEMT.
+            Why providers partner with MyFloridaNemt.com.
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {benefits.map((b) => (

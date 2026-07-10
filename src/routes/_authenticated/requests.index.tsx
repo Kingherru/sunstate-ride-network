@@ -9,7 +9,7 @@ import { NotificationsBell } from "@/components/NotificationsBell";
 export const Route = createFileRoute("/_authenticated/requests/")({
   head: () => ({
     meta: [
-      { title: "My Ride Requests — Florida NEMT" },
+      { title: "My Ride Requests — MyFloridaNemt.com" },
       { name: "robots", content: "noindex" },
     ],
   }),

@@ -4,13 +4,13 @@ import { Phone, Calendar, Car, ShieldCheck } from "lucide-react";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How It Works — Florida NEMT for Patients & Caregivers" },
+      { title: "How It Works — MyFloridaNemt.com for Patients & Caregivers" },
       {
         name: "description",
         content:
-          "Learn how Florida NEMT helps patients across the state get safe, dignified non-emergency medical transportation — from coverage check to door-to-door pickup.",
+          "Learn how MyFloridaNemt.com helps patients across the state get safe, dignified non-emergency medical transportation — from coverage check to door-to-door pickup.",
       },
-      { property: "og:title", content: "How Florida NEMT Works" },
+      { property: "og:title", content: "How MyFloridaNemt.com Works" },
       { property: "og:description", content: "Coverage check, booking, and door-to-door pickup across Florida." },
       { property: "og:url", content: "/how-it-works" },
     ],
@@ -32,7 +32,7 @@ const steps = [
     n: "02",
     title: "Book a ride with a local provider",
     body:
-      "Request a ride through Florida NEMT and we route it to a vetted local provider in your county. Unlike rideshare, NEMT providers don't cancel after booking — and they arrive on time for dialysis, oncology, therapy, and follow-up appointments.",
+      "Request a ride through MyFloridaNemt.com and we route it to a vetted local provider in your county. Unlike rideshare, NEMT providers don't cancel after booking — and they arrive on time for dialysis, oncology, therapy, and follow-up appointments.",
   },
   {
     icon: Car,
@@ -60,11 +60,11 @@ function HowItWorksPage() {
             For Patients · Statewide Florida
           </p>
           <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter leading-[0.95] mb-6 max-w-4xl">
-            How Florida NEMT works for patients.
+            How MyFloridaNemt.com works for patients.
           </h1>
           <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl">
             Whether you've been injured on the job, are recovering from surgery, or simply lack
-            access to a car, Florida NEMT tailors safe, VIP-style transportation to your needs —
+            access to a car, MyFloridaNemt.com tailors safe, VIP-style transportation to your needs —
             from Pensacola to the Keys. You'll feel more like family than a passenger.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">

@@ -64,7 +64,7 @@ async function routeInfo(
   };
 }
 
-// Florida NEMT average pricing defaults (used when a provider hasn't set their own pricing).
+// MyFloridaNemt.com average pricing defaults (used when a provider hasn't set their own pricing).
 // Ranges reflect typical Florida Medicaid / private-pay rates; midpoint is used for estimates.
 export const FL_DEFAULTS = {
   ambulatory: { load: 50,  loadMax: 50,  perMileMin: 1.50, perMileMax: 3.50 },

@@ -4,8 +4,8 @@ import { PortalAuth } from "@/components/auth/PortalAuth";
 export const Route = createFileRoute("/staff/login")({
   head: () => ({
     meta: [
-      { title: "Staff Sign In — Florida NEMT" },
-      { name: "description", content: "Florida NEMT staff and dispatcher sign in." },
+      { title: "Staff Sign In — MyFloridaNemt.com" },
+      { name: "description", content: "MyFloridaNemt.com staff and dispatcher sign in." },
       { name: "robots", content: "noindex" },
     ],
   }),
