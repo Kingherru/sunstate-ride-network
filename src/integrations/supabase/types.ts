@@ -1973,6 +1973,24 @@ export type Database = {
         }
         Relationships: []
       }
+      tab_view_marks: {
+        Row: {
+          last_viewed_at: string
+          tab_key: string
+          user_id: string
+        }
+        Insert: {
+          last_viewed_at?: string
+          tab_key: string
+          user_id: string
+        }
+        Update: {
+          last_viewed_at?: string
+          tab_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       thread_participants: {
         Row: {
           joined_at: string

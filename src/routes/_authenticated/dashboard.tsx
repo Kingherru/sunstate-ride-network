@@ -30,6 +30,9 @@ import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPa
 import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useTripSync } from "@/hooks/useTripSync";
+import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
+import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
+
 import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { SavedCards } from "@/components/payments/SavedCards";
@@ -159,6 +162,34 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // Realtime cross-tab sync — Reservations ↔ Schedule ↔ Referrals ↔ Trip History
   useTripSync(userId);
 
+  // Real-time sidebar badges: unread counts per queue tab
+  const unread = useUnreadCounts(userId);
+  const markViewed = useMarkTabViewed(userId);
+
+  // Map portal + tab → tab_key we track for unread counts
+  function tabKeyFor(t: Tab): TabKey | null {
+    if (portal === "provider" && t === "reservations") return TAB_KEYS.providerReservations;
+    if (portal === "provider" && t === "received") return TAB_KEYS.providerReferrals;
+    if (portal === "facility" && t === "sent") return TAB_KEYS.facilitySent;
+    if (portal === "patient" && t === "sent") return TAB_KEYS.patientSent;
+    return null;
+  }
+
+  function handleTab(t: Tab) {
+    setTab(t);
+    const key = tabKeyFor(t);
+    if (key) markViewed(key);
+  }
+
+  // Clear badge when a tab is already the current view (e.g. after realtime bump).
+  useEffect(() => {
+    const key = tabKeyFor(tab);
+    if (key && (unread as any)[key] > 0) markViewed(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, (unread as any)[tabKeyFor(tab) ?? ""]]);
+
+
+
   const adminQ = useQuery({
     queryKey: ["is-admin", userId],
     enabled: !!userId,
@@ -243,8 +274,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         userEmail={userEmail}
         allowedTabs={allowedTabs}
         currentTab={tab}
-        onTab={setTab}
+        onTab={handleTab}
         counts={{ received: received.length, sent: sent.length, unread: unreadTotal }}
+        unread={unread as Partial<Record<TabKey, number>>}
+        tabKeyFor={tabKeyFor}
+
         membershipStatus={profile?.membership_status ?? "inactive"}
         onSavedName={() => qc.invalidateQueries({ queryKey: ["member-profile"] })}
       />
@@ -2074,10 +2108,13 @@ function PortalSidebar(props: {
   currentTab: Tab;
   onTab: (t: Tab) => void;
   counts: { received: number; sent: number; unread?: number };
+  unread?: Partial<Record<TabKey, number>>;
+  tabKeyFor?: (t: Tab) => TabKey | null;
   membershipStatus: string;
   onSavedName: () => void;
 }) {
-  const { portal, profile, userEmail, allowedTabs, currentTab, onTab, counts, membershipStatus, onSavedName } = props;
+  const { portal, profile, userEmail, allowedTabs, currentTab, onTab, counts, unread, tabKeyFor, membershipStatus, onSavedName } = props;
+
 
   const displayName =
     portal === "patient"
@@ -2180,7 +2217,20 @@ function PortalSidebar(props: {
                     {counts.unread}
                   </span>
                 )}
+                {(() => {
+                  const tk = tabKeyFor ? tabKeyFor(key) : null;
+                  const n = tk ? (unread?.[tk] ?? 0) : 0;
+                  return n > 0 ? (
+                    <span
+                      aria-label={`${n} new`}
+                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white animate-pulse"
+                    >
+                      {n > 99 ? "99+" : n}
+                    </span>
+                  ) : null;
+                })()}
               </span>
+
             </button>
           );
         })}

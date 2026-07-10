@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -36,6 +37,9 @@ import { AuditLogPanel } from "@/components/AuditLogPanel";
 import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel";
 import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
+import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
+import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
+
 import { reviewProviderApplication } from "@/lib/staff.functions";
 import {
   Sidebar,
@@ -153,6 +157,27 @@ function AdminPage() {
   const caps = useCapabilities();
   const [tab, setTab] = useState<TabId>("overview");
 
+  const unread = useUnreadCounts(caps.userId ?? null);
+  const markViewed = useMarkTabViewed(caps.userId ?? null);
+  const adminTabKeyFor = (id: TabId): TabKey | null => {
+    if (id === "reservations") return TAB_KEYS.adminReservations;
+    if (id === "dispatch") return TAB_KEYS.adminDispatch;
+    if (id === "trips") return TAB_KEYS.adminTrips;
+    return null;
+  };
+  const handleAdminTab = (id: TabId) => {
+    setTab(id);
+    const key = adminTabKeyFor(id);
+    if (key) markViewed(key);
+  };
+  useEffect(() => {
+    const key = adminTabKeyFor(tab);
+    if (key && ((unread as any)[key] ?? 0) > 0) markViewed(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, (unread as any)[adminTabKeyFor(tab) ?? ""]]);
+
+
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
@@ -208,18 +233,32 @@ function AdminPage() {
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {group.items.map((item) => (
-                      <SidebarMenuItem key={item.id}>
-                        <SidebarMenuButton
-                          isActive={tab === item.id}
-                          onClick={() => setTab(item.id)}
-                          tooltip={item.label}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    {group.items.map((item) => {
+                      const tk = adminTabKeyFor(item.id);
+                      const badge = tk ? ((unread as any)[tk] ?? 0) : 0;
+                      return (
+                        <SidebarMenuItem key={item.id}>
+                          <SidebarMenuButton
+                            isActive={tab === item.id}
+                            onClick={() => handleAdminTab(item.id)}
+                            tooltip={item.label}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            <span className="flex-1">{item.label}</span>
+                            {badge > 0 && (
+                              <span
+                                aria-label={`${badge} new`}
+                                className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white animate-pulse"
+                              >
+                                {badge > 99 ? "99+" : badge}
+                              </span>
+                            )}
+                          </SidebarMenuButton>
+
+                        </SidebarMenuItem>
+                      );
+                    })}
+
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
