@@ -2108,10 +2108,13 @@ function PortalSidebar(props: {
   currentTab: Tab;
   onTab: (t: Tab) => void;
   counts: { received: number; sent: number; unread?: number };
+  unread?: Partial<Record<TabKey, number>>;
+  tabKeyFor?: (t: Tab) => TabKey | null;
   membershipStatus: string;
   onSavedName: () => void;
 }) {
-  const { portal, profile, userEmail, allowedTabs, currentTab, onTab, counts, membershipStatus, onSavedName } = props;
+  const { portal, profile, userEmail, allowedTabs, currentTab, onTab, counts, unread, tabKeyFor, membershipStatus, onSavedName } = props;
+
 
   const displayName =
     portal === "patient"
