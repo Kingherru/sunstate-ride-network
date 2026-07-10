@@ -162,6 +162,34 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // Realtime cross-tab sync — Reservations ↔ Schedule ↔ Referrals ↔ Trip History
   useTripSync(userId);
 
+  // Real-time sidebar badges: unread counts per queue tab
+  const unread = useUnreadCounts(userId);
+  const markViewed = useMarkTabViewed(userId);
+
+  // Map portal + tab → tab_key we track for unread counts
+  function tabKeyFor(t: Tab): TabKey | null {
+    if (portal === "provider" && t === "reservations") return TAB_KEYS.providerReservations;
+    if (portal === "provider" && t === "received") return TAB_KEYS.providerReferrals;
+    if (portal === "facility" && t === "sent") return TAB_KEYS.facilitySent;
+    if (portal === "patient" && t === "sent") return TAB_KEYS.patientSent;
+    return null;
+  }
+
+  function handleTab(t: Tab) {
+    setTab(t);
+    const key = tabKeyFor(t);
+    if (key) markViewed(key);
+  }
+
+  // Clear badge when a tab is already the current view (e.g. after realtime bump).
+  useEffect(() => {
+    const key = tabKeyFor(tab);
+    if (key && (unread as any)[key] > 0) markViewed(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, (unread as any)[tabKeyFor(tab) ?? ""]]);
+
+
+
   const adminQ = useQuery({
     queryKey: ["is-admin", userId],
     enabled: !!userId,
