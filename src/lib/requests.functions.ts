@@ -149,9 +149,10 @@ export const rescheduleMyRequest = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!row) return { ok: false as const, error: "Request not found." };
     const s = (row.status ?? "").toLowerCase();
-    if (["completed", "canceled", "cancelled", "in_progress"].includes(s)) {
-      return { ok: false as const, error: `This request can no longer be rescheduled (${row.status}).` };
+    if (["completed", "canceled", "cancelled", "in_progress", "assigned"].includes(s)) {
+      return { ok: false as const, error: `This trip has been claimed or dispatched and can no longer be edited by the requester. Please contact dispatch to make changes.` };
     }
+
 
     const update: Record<string, unknown> = {
       pickup_date: data.pickupDate,
