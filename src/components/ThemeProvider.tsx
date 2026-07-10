@@ -89,8 +89,15 @@ export function themeToCss(t: PlatformTheme) {
   const pPrimaryFg = readableOn(pPrimary);
   const pAccentFg = readableOn(pAccent);
   const pCardFg = readableOn(pCard);
+  // Detect light portal theme (readable text on bg is dark = light bg)
+  const isLight = readableOn(pBg) === "#0f172a";
+  const pSecondary = isLight ? "#f1f5f9" : pPrimary;
+  const pSecondaryFg = isLight ? "#0f172a" : pPrimaryFg;
+  const pMuted = isLight ? "#f1f5f9" : pCard;
+  const pMutedFg = isLight ? "#64748b" : `${pCardFg}b3`;
+  const pSidebarAccent = isLight ? "#ffffff26" : `${pAccent}33`;
 
-  const portal = `.portal-scope{--background:${pBg};--foreground:${pFg};--card:${pCard};--card-foreground:${pCardFg};--popover:${pCard};--popover-foreground:${pCardFg};--primary:${pAccent};--primary-foreground:${pAccentFg};--secondary:${pPrimary};--secondary-foreground:${pPrimaryFg};--muted:${pCard};--muted-foreground:${pCardFg}b3;--accent:${pAccent};--accent-foreground:${pAccentFg};--border:${pBorder};--input:${pBorder};--ring:${pAccent};--brand:${pFg};--sidebar:${pPrimary};--sidebar-foreground:${pPrimaryFg};--sidebar-primary:${pAccent};--sidebar-primary-foreground:${pAccentFg};--sidebar-accent:${pAccent}33;--sidebar-accent-foreground:${pPrimaryFg};--sidebar-border:${pBorder};--sidebar-ring:${pAccent};}`;
+  const portal = `.portal-scope{--background:${pBg};--foreground:${pFg};--card:${pCard};--card-foreground:${pCardFg};--popover:${pCard};--popover-foreground:${pCardFg};--primary:${pAccent};--primary-foreground:${pAccentFg};--secondary:${pSecondary};--secondary-foreground:${pSecondaryFg};--muted:${pMuted};--muted-foreground:${pMutedFg};--accent:${pAccent};--accent-foreground:${pAccentFg};--border:${pBorder};--input:${pBorder};--ring:${pAccent};--brand:${pFg};--sidebar:${pPrimary};--sidebar-foreground:${pPrimaryFg};--sidebar-primary:${pAccent};--sidebar-primary-foreground:${pAccentFg};--sidebar-accent:${pSidebarAccent};--sidebar-accent-foreground:${pPrimaryFg};--sidebar-border:${pBorder};--sidebar-ring:${pAccent};}`;
 
   const fPrimary = t.form_primary_color || pPrimary;
   const fAccent = t.form_accent_color || pAccent;
