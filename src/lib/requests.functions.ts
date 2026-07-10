@@ -140,15 +140,19 @@ export const rescheduleMyRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Block reschedule on completed/canceled
+    // Block reschedule once dispatched/assigned/completed
     const { data: row } = await supabase
       .from("ride_requests")
-      .select("status")
+      .select("status, assigned_provider_id")
       .eq("id", data.id)
       .eq("requester_user_id", userId)
       .maybeSingle();
     if (!row) return { ok: false as const, error: "Request not found." };
     const s = (row.status ?? "").toLowerCase();
+    if ((row as any).assigned_provider_id) {
+      return { ok: false as const, error: "This trip has been assigned to a provider and can no longer be edited by the requester. Please contact dispatch." };
+    }
+
     if (["completed", "canceled", "cancelled", "in_progress", "assigned"].includes(s)) {
       return { ok: false as const, error: `This trip has been claimed or dispatched and can no longer be edited by the requester. Please contact dispatch to make changes.` };
     }
