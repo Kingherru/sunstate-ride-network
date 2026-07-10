@@ -2538,7 +2538,10 @@ export type Database = {
         Row: {
           city: string | null
           company_name: string | null
-          display_name: string | null
+          display_id: string | null
+          first_name: string | null
+          last_name: string | null
+          membership_status: string | null
           membership_tier: Database["public"]["Enums"]["membership_tier"] | null
           preferred_zip_codes: string[] | null
           region: string | null
@@ -2547,7 +2550,10 @@ export type Database = {
         Insert: {
           city?: string | null
           company_name?: string | null
-          display_name?: never
+          display_id?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          membership_status?: string | null
           membership_tier?:
             | Database["public"]["Enums"]["membership_tier"]
             | null
@@ -2558,7 +2564,10 @@ export type Database = {
         Update: {
           city?: string | null
           company_name?: string | null
-          display_name?: never
+          display_id?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          membership_status?: string | null
           membership_tier?:
             | Database["public"]["Enums"]["membership_tier"]
             | null
