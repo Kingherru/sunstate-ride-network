@@ -255,8 +255,10 @@ function AdminPage() {
                             )}
                           </SidebarMenuButton>
 
-                      </SidebarMenuItem>
-                    ))}
+                        </SidebarMenuItem>
+                      );
+                    })}
+
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
