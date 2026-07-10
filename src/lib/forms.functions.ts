@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { signEnrichmentToken } from "@/lib/maps.functions";
+import { signEnrichmentToken } from "@/lib/enrichment-token.server";
 
 export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
 export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
