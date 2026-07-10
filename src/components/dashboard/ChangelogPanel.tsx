@@ -34,7 +34,7 @@ export function ChangelogPanel() {
     <div className="space-y-6">
       <div>
         <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.04_220)] mb-2">
-          Florida NEMT · release notes
+          MyFloridaNemt.com · release notes
         </div>
         <h2 className="font-display text-2xl font-extrabold tracking-tight">
           {latest ? `What's new in v${latest.version}` : "Release notes"}

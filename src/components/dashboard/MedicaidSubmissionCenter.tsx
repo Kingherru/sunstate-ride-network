@@ -134,7 +134,7 @@ function ContactsTab({ scope }: { scope: "mine" | "directory" }) {
           <p className="text-xs text-muted-foreground">
             {scope === "mine"
               ? "Save billing contacts you work with. Toggle 'Share' to help other providers."
-              : "Contacts other Florida NEMT providers have shared. Read-only."}
+              : "Contacts other MyFloridaNemt.com providers have shared. Read-only."}
           </p>
         </div>
         {canEdit && (
@@ -151,7 +151,7 @@ function ContactsTab({ scope }: { scope: "mine" | "directory" }) {
           <Field label="Phone" v={editing.phone ?? ""} on={(v) => setEditing({ ...editing, phone: v })} />
           <label className="col-span-2 flex items-center gap-2 text-sm">
             <input type="checkbox" checked={!!editing.is_public} onChange={(e) => setEditing({ ...editing, is_public: e.target.checked })} />
-            Share with statewide Florida NEMT directory
+            Share with statewide MyFloridaNemt.com directory
           </label>
           <label className="block col-span-2">
             <span className="portal-label">Notes</span>

@@ -12,13 +12,13 @@ const CREAM = "#F1FAEE";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Florida NEMT — Statewide Medical Transportation" },
+      { title: "MyFloridaNemt.com — Statewide Medical Transportation" },
       {
         name: "description",
         content:
           "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network.",
       },
-      { property: "og:title", content: "Florida NEMT — Statewide Medical Transportation" },
+      { property: "og:title", content: "MyFloridaNemt.com — Statewide Medical Transportation" },
       { property: "og:description", content: "Reliable Medicaid NEMT across all 67 Florida counties." },
       { property: "og:url", content: "/" },
     ],
@@ -80,7 +80,7 @@ function HomePage() {
         <div className="relative min-h-[400px] overflow-hidden bg-slate-100">
           <img
             src={heroVan}
-            alt="Florida NEMT van outside a clinic"
+            alt="MyFloridaNemt.com van outside a clinic"
             className="absolute inset-0 w-full h-full object-cover"
           />
         </div>

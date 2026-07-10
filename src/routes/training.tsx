@@ -4,13 +4,13 @@ import { useProviderOnlyGate } from "@/lib/portal-guard";
 export const Route = createFileRoute("/training")({
   head: () => ({
     meta: [
-      { title: "Training Academy — Florida NEMT & HIPAA Courses" },
+      { title: "Training Academy — MyFloridaNemt.com & HIPAA Courses" },
       {
         name: "description",
         content:
-          "Florida NEMT training academy. Certified online courses for non-emergency medical transport drivers: Florida NEMT Basics ($100) and HIPAA Training ($100).",
+          "MyFloridaNemt.com training academy. Certified online courses for non-emergency medical transport drivers: MyFloridaNemt.com Basics ($100) and HIPAA Training ($100).",
       },
-      { property: "og:title", content: "NEMT Training Academy — Florida NEMT" },
+      { property: "og:title", content: "NEMT Training Academy — MyFloridaNemt.com" },
       { property: "og:description", content: "$100 online certification courses for NEMT professionals." },
       { property: "og:url", content: "/training" },
     ],
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/training")({
 const courses = [
   {
     code: "C-01",
-    title: "Florida NEMT Basics",
+    title: "MyFloridaNemt.com Basics",
     summary:
       "The foundation course for non-emergency medical transport in Florida. State regulations, safe patient handling, securement, defensive driving, and trip documentation.",
     modules: [
@@ -65,7 +65,7 @@ function TrainingPage() {
             Certified NEMT professionals start here.
           </h1>
           <p className="text-lg text-muted max-w-2xl">
-            Two essential online courses for every Florida NEMT driver and dispatcher. Self-paced,
+            Two essential online courses for every MyFloridaNemt.com driver and dispatcher. Self-paced,
             with a certificate of completion at the end of each.
           </p>
         </div>

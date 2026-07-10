@@ -5,10 +5,10 @@ import { CHANGELOG } from "@/components/ChangelogChip";
 export const Route = createFileRoute("/changelog")({
   head: () => ({
     meta: [
-      { title: "Changelog — Florida NEMT" },
-      { name: "description", content: "What's new on Florida NEMT — recent releases, fixes, and improvements across the patient, provider, and facility portals." },
-      { property: "og:title", content: "Changelog — Florida NEMT" },
-      { property: "og:description", content: "Recent releases, fixes, and improvements across Florida NEMT." },
+      { title: "Changelog — MyFloridaNemt.com" },
+      { name: "description", content: "What's new on MyFloridaNemt.com — recent releases, fixes, and improvements across the patient, provider, and facility portals." },
+      { property: "og:title", content: "Changelog — MyFloridaNemt.com" },
+      { property: "og:description", content: "Recent releases, fixes, and improvements across MyFloridaNemt.com." },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "https://floridanemt.com/changelog" }],
@@ -41,7 +41,7 @@ function ChangelogPage() {
         <div className="px-5 py-6 border-b border-white/10">
           <Link to="/" className="flex items-center gap-2 mb-5">
             <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
-            <span className="font-display font-bold text-base tracking-tight uppercase">Florida NEMT</span>
+            <span className="font-display font-bold text-base tracking-tight uppercase">MyFloridaNemt.com</span>
           </Link>
           <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.10_195)] mb-1">
             Release notes
@@ -95,7 +95,7 @@ function ChangelogPage() {
           {/* Hero */}
           <div className="pb-2 border-b border-border">
             <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.04_220)] mb-2">
-              Florida NEMT · release notes
+              MyFloridaNemt.com · release notes
             </div>
             <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight text-brand">
               {latest ? `What's new in v${latest.version}` : "Release notes"}

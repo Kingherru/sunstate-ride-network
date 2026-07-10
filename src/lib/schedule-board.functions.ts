@@ -220,7 +220,7 @@ export const emailDriverWeeklySchedule = createServerFn({ method: "POST" })
       }
     }
     lines.push("");
-    lines.push("— FloridaNEMT");
+    lines.push("— MyFloridaNemt.com");
 
     const body = lines.join("\n");
     const { error: qErr } = await (context.supabase as any)

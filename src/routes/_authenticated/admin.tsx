@@ -55,7 +55,7 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Dashboard — Florida NEMT" },
+      { title: "Admin Dashboard — MyFloridaNemt.com" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -198,7 +198,7 @@ function AdminPage() {
         <Sidebar collapsible="icon">
           <SidebarHeader className="border-b border-border">
             <div className="px-2 py-2">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">Florida NEMT</p>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">MyFloridaNemt.com</p>
               <p className="text-sm font-extrabold tracking-tight">Admin</p>
             </div>
           </SidebarHeader>

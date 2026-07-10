@@ -72,7 +72,7 @@ export function NetworkPanel({ userId }: { userId: string }) {
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">Provider Network</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Tell Florida NEMT where you'll accept auto-routed trips. We match incoming requests to providers whose ZIPs and radius cover the pickup.
+          Tell MyFloridaNemt.com where you'll accept auto-routed trips. We match incoming requests to providers whose ZIPs and radius cover the pickup.
         </p>
       </div>
 

@@ -1,4 +1,4 @@
-// Florida NEMT blog content — pillar articles seeded for the blog engine.
+// MyFloridaNemt.com blog content — pillar articles seeded for the blog engine.
 // Structured blocks keep authoring type-safe and avoid a runtime markdown parser.
 
 export type Category =
@@ -62,7 +62,7 @@ export const POSTS: Post[] = [
       "Missed appointments cost your health. Learn how non-emergency medical transportation works in Florida — who qualifies, what it costs, and how to book a ride you can rely on.",
     publishedAt: "2026-06-05",
     readMinutes: 8,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "cobalt",
     keywords: [
       "non emergency medical transportation Florida",
@@ -89,7 +89,7 @@ export const POSTS: Post[] = [
       ]},
 
       { t: "h2", c: "What if I have Medicare, private insurance, or workers' comp?" },
-      { t: "p", c: "Traditional Medicare Part B does not cover NEMT. Many Medicare Advantage plans do, as a supplemental benefit — check your Evidence of Coverage or call the number on your card. Workers' compensation insurers routinely authorize NEMT for injured workers attending IME appointments, physical therapy, and specialist referrals. Private-pay patients can book any Florida NEMT provider directly; ambulatory rates typically run $35–$65 base plus a per-mile charge, with wheelchair and stretcher runs priced higher because of the specialized vehicle." },
+      { t: "p", c: "Traditional Medicare Part B does not cover NEMT. Many Medicare Advantage plans do, as a supplemental benefit — check your Evidence of Coverage or call the number on your card. Workers' compensation insurers routinely authorize NEMT for injured workers attending IME appointments, physical therapy, and specialist referrals. Private-pay patients can book any MyFloridaNemt.com provider directly; ambulatory rates typically run $35–$65 base plus a per-mile charge, with wheelchair and stretcher runs priced higher because of the specialized vehicle." },
 
       { t: "h2", c: "How to book a ride, step by step" },
       { t: "ol", items: [
@@ -101,12 +101,12 @@ export const POSTS: Post[] = [
       ]},
 
       { t: "h2", c: "What a good NEMT experience looks like" },
-      { t: "p", c: "A professional Florida NEMT provider will call or text before pickup, arrive in a marked vehicle with a visibly ID-badged driver, help you into the seat or secure your wheelchair, and give you a written pickup time for the return trip. The driver should be quiet, courteous, and never leave you unattended at a hospital entrance. If any of that is missing — late arrivals, no-shows, unsafe driving, unprofessional behavior — you have the right to switch providers." },
+      { t: "p", c: "A professional MyFloridaNemt.com provider will call or text before pickup, arrive in a marked vehicle with a visibly ID-badged driver, help you into the seat or secure your wheelchair, and give you a written pickup time for the return trip. The driver should be quiet, courteous, and never leave you unattended at a hospital entrance. If any of that is missing — late arrivals, no-shows, unsafe driving, unprofessional behavior — you have the right to switch providers." },
 
       { t: "h2", c: "When to request a new provider" },
       { t: "p", c: "You do not have to accept poor service. Late pickups that make you miss dialysis, drivers who refuse to help with your wheelchair, unsafe vehicles, or repeated no-shows are all grounds to request a change. Call your plan's transportation broker, state the trip dates and what happened, and ask for a different provider to be assigned going forward. Keep a short log of dates and issues in case you need to escalate." },
 
-      { t: "cta", heading: "Need a ride now?", body: "Request a verified Florida NEMT provider in your county. We match you with the right vehicle type — ambulatory, wheelchair, or stretcher — and confirm within minutes.", to: "/request-a-ride", label: "Request a Ride" },
+      { t: "cta", heading: "Need a ride now?", body: "Request a verified MyFloridaNemt.com provider in your county. We match you with the right vehicle type — ambulatory, wheelchair, or stretcher — and confirm within minutes.", to: "/request-a-ride", label: "Request a Ride" },
     ],
   },
 
@@ -114,15 +114,15 @@ export const POSTS: Post[] = [
   {
     slug: "provider-onboarding-guide",
     category: "Provider Resources",
-    title: "How to Join the Florida NEMT Provider Network: A Complete 2026 Guide",
-    metaTitle: "Join a Florida NEMT Network: Credentials, Contracts, Rates (2026)",
+    title: "How to Join the MyFloridaNemt.com Provider Network: A Complete 2026 Guide",
+    metaTitle: "Join a MyFloridaNemt.com Network: Credentials, Contracts, Rates (2026)",
     metaDescription:
-      "Everything a Florida NEMT operator needs to join a provider network in 2026 — AHCA registration, insurance minimums, vehicle standards, credentialing, and how trips are dispatched.",
+      "Everything a MyFloridaNemt.com operator needs to join a provider network in 2026 — AHCA registration, insurance minimums, vehicle standards, credentialing, and how trips are dispatched.",
     excerpt:
-      "AHCA registration, insurance, vehicle inspections, credentialing, and dispatch — a practical 2026 guide for Florida NEMT operators who want steady contract volume.",
+      "AHCA registration, insurance, vehicle inspections, credentialing, and dispatch — a practical 2026 guide for MyFloridaNemt.com operators who want steady contract volume.",
     publishedAt: "2026-06-10",
     readMinutes: 10,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "peach",
     keywords: [
       "NEMT provider Florida",
@@ -164,7 +164,7 @@ export const POSTS: Post[] = [
       { t: "h2", c: "Step 7 — Operate to the standard the plans measure" },
       { t: "p", c: "Once you are dispatched, you are graded on on-time performance, no-show rate, complaint rate, and billing accuracy. Providers who hit 95%+ on-time and keep complaint rates below 1% get more volume, priority routing, and eventually direct contracts with the plans themselves. That is where the margin is." },
 
-      { t: "cta", heading: "Ready to join a Florida NEMT network?", body: "Skip the broker-by-broker paperwork. Apply once through Florida NEMT and get access to trips across every major managed-care plan.", to: "/join-our-network", label: "Apply to Join" },
+      { t: "cta", heading: "Ready to join a MyFloridaNemt.com network?", body: "Skip the broker-by-broker paperwork. Apply once through MyFloridaNemt.com and get access to trips across every major managed-care plan.", to: "/join-our-network", label: "Apply to Join" },
     ],
   },
 
@@ -180,7 +180,7 @@ export const POSTS: Post[] = [
       "A plain-English walkthrough of Florida Medicaid's transportation benefit — eligibility rules, covered appointment types, booking timelines, and what to do when a ride is denied.",
     publishedAt: "2026-06-15",
     readMinutes: 9,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "navy",
     keywords: [
       "Florida Medicaid transportation",
@@ -225,7 +225,7 @@ export const POSTS: Post[] = [
       { t: "h2", c: "Long-distance and out-of-county trips" },
       { t: "p", c: "Florida Medicaid covers medically necessary long-distance transportation when the required specialty is not available closer to home — a rural patient traveling to Shands or Mayo, for example. These trips need prior authorization and usually a letter from the treating physician documenting medical necessity. Plan ahead; approvals routinely take five to ten business days." },
 
-      { t: "cta", heading: "Book your Medicaid ride the easy way", body: "Florida NEMT works with providers contracted to every major Medicaid managed-care plan. Request a ride and we'll route your trip to the right dispatcher.", to: "/request-a-ride", label: "Request a Ride" },
+      { t: "cta", heading: "Book your Medicaid ride the easy way", body: "MyFloridaNemt.com works with providers contracted to every major Medicaid managed-care plan. Request a ride and we'll route your trip to the right dispatcher.", to: "/request-a-ride", label: "Request a Ride" },
     ],
   },
 
@@ -241,7 +241,7 @@ export const POSTS: Post[] = [
       "You are already coordinating meds, appointments, and paperwork. Here is how to make medical transportation the easiest part of caregiving instead of the hardest.",
     publishedAt: "2026-06-20",
     readMinutes: 8,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "sand",
     keywords: [
       "caregiver medical transport",
@@ -273,7 +273,7 @@ export const POSTS: Post[] = [
       { t: "p", c: "The single most common caregiver complaint is being stranded after a discharge or dialysis session. Book the return leg at the same time as the pickup, and confirm the return-trip pickup window when the outbound ride drops off. If the appointment runs long, call the broker or provider immediately — they can usually push the return by an hour or two if given notice." },
 
       { t: "h2", c: "Ride with your loved one when it matters" },
-      { t: "p", c: "Most Florida NEMT providers allow one attendant to ride at no additional cost, especially for pediatric patients, dementia patients, and post-op discharges. Say so when you book. Bring the insurance card, a printed medication list, and a phone charger. Introduce yourself to the driver so they know who to look for on the return." },
+      { t: "p", c: "Most MyFloridaNemt.com providers allow one attendant to ride at no additional cost, especially for pediatric patients, dementia patients, and post-op discharges. Say so when you book. Bring the insurance card, a printed medication list, and a phone charger. Introduce yourself to the driver so they know who to look for on the return." },
 
       { t: "h2", c: "Set up standing orders for recurring care" },
       { t: "p", c: "Dialysis, chemo, physical therapy, and behavioral-health appointments repeat on predictable schedules. Ask for a standing order so the same provider dispatches the same driver and vehicle each time. Patients — especially those with dementia or anxiety — do noticeably better when they recognize the driver." },
@@ -284,7 +284,7 @@ export const POSTS: Post[] = [
       { t: "h2", c: "Know when to escalate to your care team" },
       { t: "p", c: "Persistent transportation gaps deserve a note in the medical record. Ask the clinic's social worker or care coordinator to help escalate. Case managers at Medicaid plans have direct lines to the transportation department that regular members do not." },
 
-      { t: "cta", heading: "Book one ride or a whole month at once", body: "Florida NEMT lets caregivers save patient profiles and schedule recurring trips in one place. Request a ride and set up standing orders in the same flow.", to: "/request-a-ride", label: "Book a Ride" },
+      { t: "cta", heading: "Book one ride or a whole month at once", body: "MyFloridaNemt.com lets caregivers save patient profiles and schedule recurring trips in one place. Request a ride and set up standing orders in the same flow.", to: "/request-a-ride", label: "Book a Ride" },
     ],
   },
 
@@ -292,18 +292,18 @@ export const POSTS: Post[] = [
   {
     slug: "nemt-industry-trends-2026",
     category: "Industry News",
-    title: "Florida NEMT in 2026: Market Growth, Managed-Care Contracts, and What's Next",
-    metaTitle: "Florida NEMT 2026 Trends: Market Growth & Managed-Care Contracts",
+    title: "MyFloridaNemt.com in 2026: Market Growth, Managed-Care Contracts, and What's Next",
+    metaTitle: "MyFloridaNemt.com 2026 Trends: Market Growth & Managed-Care Contracts",
     metaDescription:
       "The 2026 state of Florida non-emergency medical transportation — market growth drivers, managed-care contracting shifts, technology adoption, and where new operators can win contracts.",
     excerpt:
       "A concise look at where Florida's NEMT market is heading in 2026 — the demographic tailwind, the managed-care re-procurement, and the technology shifts that separate the winners.",
     publishedAt: "2026-06-25",
     readMinutes: 7,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "coral",
     keywords: [
-      "Florida NEMT market 2026",
+      "MyFloridaNemt.com market 2026",
       "NEMT industry trends",
       "Medicaid managed care Florida",
       "non emergency transportation growth",
@@ -336,7 +336,7 @@ export const POSTS: Post[] = [
         "Pursue at least one direct hospital or TPA contract to diversify revenue.",
       ]},
 
-      { t: "cta", heading: "Compete for premium contracts", body: "Florida NEMT gives contracted operators a live dispatch board, EDI-ready billing, and per-trip performance reporting the plans actually accept.", to: "/join-our-network", label: "Join the Network" },
+      { t: "cta", heading: "Compete for premium contracts", body: "MyFloridaNemt.com gives contracted operators a live dispatch board, EDI-ready billing, and per-trip performance reporting the plans actually accept.", to: "/join-our-network", label: "Join the Network" },
     ],
   },
 
@@ -347,12 +347,12 @@ export const POSTS: Post[] = [
     title: "NEMT Driver Training: HIPAA, Passenger Safety, and Wheelchair Securement",
     metaTitle: "NEMT Driver Training: HIPAA, Safety & Wheelchair Securement",
     metaDescription:
-      "The core training every Florida NEMT driver needs: HIPAA privacy, passenger assistance, ADA-compliant wheelchair securement, defensive driving, and first-aid.",
+      "The core training every MyFloridaNemt.com driver needs: HIPAA privacy, passenger assistance, ADA-compliant wheelchair securement, defensive driving, and first-aid.",
     excerpt:
-      "The five training modules every professional Florida NEMT driver must complete before their first solo dispatch — with a straight-talk checklist for owners building an in-house program.",
+      "The five training modules every professional MyFloridaNemt.com driver must complete before their first solo dispatch — with a straight-talk checklist for owners building an in-house program.",
     publishedAt: "2026-06-30",
     readMinutes: 9,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "forest",
     keywords: [
       "NEMT driver training",
@@ -363,7 +363,7 @@ export const POSTS: Post[] = [
     ],
     related: ["provider-onboarding-guide", "nemt-industry-trends-2026", "medicaid-transportation-florida"],
     body: [
-      { t: "p", c: "A NEMT driver is the person your patient interacts with most — and, from a compliance perspective, the person most likely to create liability if training is skipped. Every professional Florida NEMT operation runs new drivers through a formal training program before their first solo dispatch, then documents refresher training annually. Here is the core curriculum and how to actually deliver it without turning it into a paperwork exercise." },
+      { t: "p", c: "A NEMT driver is the person your patient interacts with most — and, from a compliance perspective, the person most likely to create liability if training is skipped. Every professional MyFloridaNemt.com operation runs new drivers through a formal training program before their first solo dispatch, then documents refresher training annually. Here is the core curriculum and how to actually deliver it without turning it into a paperwork exercise." },
 
       { t: "h2", c: "1. HIPAA privacy and confidentiality" },
       { t: "p", c: "Drivers routinely see medical information — appointment types on dispatch screens, medication bags at pickup, oxygen equipment, dialysis catheters. They may also overhear conversations at clinics. Federal HIPAA rules and Florida Statute Chapter 456 both apply. Cover the basics in a one-hour module: what protected health information is, why drivers are considered part of the covered entity's workforce, how to handle inadvertent disclosures, and the hard rule — do not photograph, text, post, or discuss any patient-identifiable detail outside official dispatch channels. Have every driver sign a confidentiality attestation and re-sign it annually." },
@@ -391,7 +391,7 @@ export const POSTS: Post[] = [
       { t: "h2", c: "How to run the program without burning out your team" },
       { t: "p", c: "Blend online modules (HIPAA, bloodborne pathogens, defensive driving) with in-person practicals (securement, patient transfers, road tests). Track every certificate with an expiry date. Automate the reminders so drivers do not lapse. Store signed attestations, quiz scores, and road-test evaluations in a single credentialing file per driver — plan audits will ask for exactly that." },
 
-      { t: "cta", heading: "Train drivers to the standard the plans measure", body: "Florida NEMT publishes the training curriculum, quizzes, and audit-ready credential tracker we use across our provider network.", to: "/training", label: "See the Training Modules" },
+      { t: "cta", heading: "Train drivers to the standard the plans measure", body: "MyFloridaNemt.com publishes the training curriculum, quizzes, and audit-ready credential tracker we use across our provider network.", to: "/training", label: "See the Training Modules" },
     ],
   },
 
@@ -407,7 +407,7 @@ export const POSTS: Post[] = [
       "Discharge day is often when transportation fails patients hardest. Here is how Florida hospitals and nursing homes should be arranging safe, on-time NEMT for discharges, transfers, and readmission prevention.",
     publishedAt: "2026-07-01",
     readMinutes: 8,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "sunset",
     keywords: [
       "hospital discharge transportation Florida",
@@ -463,7 +463,7 @@ export const POSTS: Post[] = [
       { t: "h2", c: "Florida-specific realities" },
       { t: "p", c: "Traffic patterns matter here. Discharge windows on I-4 in Orlando or I-95 in Broward should assume 45 additional minutes during afternoon peaks. Coastal counties dealing with a hurricane watch need pre-storm discharge lists shared with providers 48 hours in advance so patients on oxygen or dialysis do not get stranded. Good NEMT partners in Florida already have hurricane operational plans on file — ask for a copy." },
 
-      { t: "cta", heading: "Build a reliable Florida discharge network", body: "Florida NEMT contracts hospitals and SNFs statewide with a single point of dispatch, live tracking, and monthly performance reporting.", to: "/contact", label: "Talk to Our Team" },
+      { t: "cta", heading: "Build a reliable Florida discharge network", body: "MyFloridaNemt.com contracts hospitals and SNFs statewide with a single point of dispatch, live tracking, and monthly performance reporting.", to: "/contact", label: "Talk to Our Team" },
     ],
   },
 
@@ -479,7 +479,7 @@ export const POSTS: Post[] = [
       "Wheelchair transportation isn't just a bigger van. Learn what a compliant wheelchair-accessible ride looks like in Florida — from lift specs to securement to what a good driver actually does at the curb.",
     publishedAt: "2026-06-08",
     readMinutes: 7,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "cobalt",
     keywords: ["wheelchair transportation Florida", "wheelchair van NEMT", "ADA transport Florida", "medicaid wheelchair ride"],
     related: ["patient-guide-nemt-florida", "dialysis-transportation-florida", "caregiver-guide-medical-transport"],
@@ -508,7 +508,7 @@ export const POSTS: Post[] = [
         "Driver refuses to load a power chair 'because it's too heavy' without offering an alternate vehicle",
         "No documented securement checklist",
       ]},
-      { t: "cta", heading: "Book a wheelchair-accessible ride in Florida", body: "Florida NEMT dispatches lift-equipped vans statewide with trained wheelchair-transport drivers and four-point securement on every trip.", to: "/request-a-ride", label: "Request a Ride" },
+      { t: "cta", heading: "Book a wheelchair-accessible ride in Florida", body: "MyFloridaNemt.com dispatches lift-equipped vans statewide with trained wheelchair-transport drivers and four-point securement on every trip.", to: "/request-a-ride", label: "Request a Ride" },
     ],
   },
   {
@@ -522,7 +522,7 @@ export const POSTS: Post[] = [
       "Dialysis missed even once puts a patient in the hospital. Learn how recurring NEMT rides work in Florida and how to lock in a schedule that actually shows up.",
     publishedAt: "2026-06-11",
     readMinutes: 7,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "sunset",
     keywords: ["dialysis transportation Florida", "recurring NEMT dialysis", "medicaid dialysis rides", "standing order NEMT"],
     related: ["patient-guide-nemt-florida", "wheelchair-transportation-florida", "medicaid-transportation-florida"],
@@ -544,26 +544,26 @@ export const POSTS: Post[] = [
       { t: "p", c: "The most common failure is a late return pickup after a long treatment. A patient who is nauseated, cold, and hypotensive should not be sitting in a lobby for 90 minutes. Ask up front how the provider handles run-over treatments. The best answer is a live dispatch line staffed until the last dialysis chair in the region has cleared." },
       { t: "h2", c: "For caregivers" },
       { t: "p", c: "Keep an updated ride list with the provider's dispatch number, the plan's transportation number, and a backup ride if the primary fails. When a driver is more than 15 minutes late for pickup, call dispatch before you call the plan — providers can reassign a vehicle faster than the broker can escalate a complaint." },
-      { t: "cta", heading: "Set up a reliable dialysis schedule", body: "Florida NEMT runs standing dialysis orders statewide with same-driver preference, dispatch coverage through the last treatment of the day, and Medicaid & Medicare Advantage billing.", to: "/request-a-ride", label: "Request Recurring Rides" },
+      { t: "cta", heading: "Set up a reliable dialysis schedule", body: "MyFloridaNemt.com runs standing dialysis orders statewide with same-driver preference, dispatch coverage through the last treatment of the day, and Medicaid & Medicare Advantage billing.", to: "/request-a-ride", label: "Request Recurring Rides" },
     ],
   },
   {
     slug: "patient-rights-nemt-florida",
     category: "Patient Resources",
-    title: "Your Rights as a Florida NEMT Patient",
-    metaTitle: "Florida NEMT Patient Rights: Complaints, Denials, Appeals",
+    title: "Your Rights as a MyFloridaNemt.com Patient",
+    metaTitle: "MyFloridaNemt.com Patient Rights: Complaints, Denials, Appeals",
     metaDescription:
-      "What every Florida NEMT patient is entitled to — timely pickup, a safe vehicle, HIPAA privacy — and how to file a complaint or appeal a denial.",
+      "What every MyFloridaNemt.com patient is entitled to — timely pickup, a safe vehicle, HIPAA privacy — and how to file a complaint or appeal a denial.",
     excerpt:
-      "Denied a ride? Waited two hours in a lobby? Florida NEMT patients have specific, enforceable rights. Here's what they are and how to use them.",
+      "Denied a ride? Waited two hours in a lobby? MyFloridaNemt.com patients have specific, enforceable rights. Here's what they are and how to use them.",
     publishedAt: "2026-06-14",
     readMinutes: 6,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "navy",
     keywords: ["NEMT patient rights Florida", "medicaid transportation complaint", "NEMT denial appeal", "AHCA transportation"],
     related: ["patient-guide-nemt-florida", "medicaid-transportation-florida", "caregiver-guide-medical-transport"],
     body: [
-      { t: "p", c: "Florida NEMT is regulated by the Agency for Health Care Administration (AHCA), the Commission for the Transportation Disadvantaged (CTD), and each Medicaid managed-care plan's contract. Together they create a floor of patient rights that no provider or broker can override." },
+      { t: "p", c: "MyFloridaNemt.com is regulated by the Agency for Health Care Administration (AHCA), the Commission for the Transportation Disadvantaged (CTD), and each Medicaid managed-care plan's contract. Together they create a floor of patient rights that no provider or broker can override." },
       { t: "h2", c: "Your baseline rights" },
       { t: "ul", items: [
         "A ride to any Medicaid-covered service if you have no other reasonable means of transportation",
@@ -584,7 +584,7 @@ export const POSTS: Post[] = [
       { t: "h2", c: "Appealing a denial" },
       { t: "p", c: "If your plan denies a trip request, you have 60 days to file an internal appeal. The plan must respond within 30 days for standard appeals, 72 hours for expedited (urgent) appeals. If the plan denies the appeal, you can request a State Fair Hearing through Florida's Department of Children and Families. Keep every letter, every reference number, and the name of every person you speak with." },
       { t: "h2", c: "Bring a caregiver" },
-      { t: "p", c: "Every Florida NEMT patient is entitled to a caregiver or attendant seat at no extra cost when the caregiver's presence is medically necessary — for cognitive impairment, language interpretation, or physical assistance. Note the caregiver at booking; some providers require 24-hour notice." },
+      { t: "p", c: "Every MyFloridaNemt.com patient is entitled to a caregiver or attendant seat at no extra cost when the caregiver's presence is medically necessary — for cognitive impairment, language interpretation, or physical assistance. Note the caregiver at booking; some providers require 24-hour notice." },
       { t: "cta", heading: "Report a problem or get help", body: "Our patient support team helps Floridians resolve NEMT complaints and re-book denied trips.", to: "/contact", label: "Contact Support" },
     ],
   },
@@ -598,10 +598,10 @@ export const POSTS: Post[] = [
     metaDescription:
       "Step-by-step guide to launching a Florida non-emergency medical transportation company — LLC formation, CTC/CTP registration, insurance, and Medicaid contracting.",
     excerpt:
-      "The Florida NEMT market is growing fast, but the licensing path is not obvious. Here is the checklist we wish every new provider had before they bought their first van.",
+      "The MyFloridaNemt.com market is growing fast, but the licensing path is not obvious. Here is the checklist we wish every new provider had before they bought their first van.",
     publishedAt: "2026-06-16",
     readMinutes: 9,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "forest",
     keywords: ["start NEMT business Florida", "how to start NEMT company", "Florida CTC CTP registration", "NEMT licensing Florida"],
     related: ["provider-onboarding-guide", "nemt-insurance-requirements-florida", "nemt-billing-medicaid-cms1500"],
@@ -628,8 +628,8 @@ export const POSTS: Post[] = [
       { t: "h2", c: "6. Contract with the plans" },
       { t: "p", c: "Florida Medicaid transportation flows through six managed-care plans (Sunshine, Simply, Molina, Aetna Better Health, Humana, United) and their transportation brokers (typically Access2Care, ModivCare, or MTM). Each broker has its own credentialing packet, rate sheet, and IVR/dispatch platform. Expect 60-120 days to complete credentialing." },
       { t: "h2", c: "7. Build a billing workflow" },
-      { t: "p", c: "Most Florida NEMT is billed as trip records to the broker, not CMS-1500 claims. Payment is per-loaded-mile plus a base rate, with add-ons for wheelchair, additional attendants, and after-hours pickups. Set up trip verification (signature capture, GPS breadcrumbs, timestamps) from day one — brokers deny claims without them." },
-      { t: "cta", heading: "Get help launching your Florida NEMT company", body: "We onboard new Florida NEMT providers with credentialing support, insurance introductions, and dispatch software.", to: "/join-our-network", label: "Join the Network" },
+      { t: "p", c: "Most MyFloridaNemt.com is billed as trip records to the broker, not CMS-1500 claims. Payment is per-loaded-mile plus a base rate, with add-ons for wheelchair, additional attendants, and after-hours pickups. Set up trip verification (signature capture, GPS breadcrumbs, timestamps) from day one — brokers deny claims without them." },
+      { t: "cta", heading: "Get help launching your MyFloridaNemt.com company", body: "We onboard new MyFloridaNemt.com providers with credentialing support, insurance introductions, and dispatch software.", to: "/join-our-network", label: "Join the Network" },
     ],
   },
   {
@@ -638,14 +638,14 @@ export const POSTS: Post[] = [
     title: "Florida Medicaid NEMT Billing: Trip Records, Rates, and Common Denials",
     metaTitle: "Florida Medicaid NEMT Billing Guide: Codes, Rates, Denials",
     metaDescription:
-      "How Florida NEMT providers bill Medicaid managed-care plans — trip records, HCPCS codes A0080–A0130, per-mile rates, and the top denial reasons to avoid.",
+      "How MyFloridaNemt.com providers bill Medicaid managed-care plans — trip records, HCPCS codes A0080–A0130, per-mile rates, and the top denial reasons to avoid.",
     excerpt:
       "Getting paid for a Medicaid NEMT trip in Florida is not the same as billing an ambulance run. This is the trip-record workflow that keeps cash flowing.",
     publishedAt: "2026-06-19",
     readMinutes: 8,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "cobalt",
-    keywords: ["Florida NEMT billing", "medicaid transportation codes", "A0130 A0100 HCPCS", "NEMT denial reasons"],
+    keywords: ["MyFloridaNemt.com billing", "medicaid transportation codes", "A0130 A0100 HCPCS", "NEMT denial reasons"],
     related: ["provider-onboarding-guide", "starting-nemt-business-florida", "medicaid-transportation-florida"],
     body: [
       { t: "p", c: "Florida Medicaid NEMT is almost entirely capitated to managed-care plans, which delegate transportation to brokers. That means most providers do not submit CMS-1500 claims — they submit trip records through the broker's portal. Getting paid on time is a process problem, not a coding problem." },
@@ -674,22 +674,22 @@ export const POSTS: Post[] = [
       { t: "h2", c: "Rates in 2026" },
       { t: "p", c: "Rates vary by broker and county. Typical Florida ranges in 2026: ambulatory base $12-$20 with per-loaded-mile at $1.60-$2.20; wheelchair base $28-$45 with per-loaded-mile at $2.40-$3.20; stretcher base $75-$140 with per-loaded-mile at $4.00-$6.00. Long-distance (>50 miles one way) usually pays a supplemental long-distance rate — always ask." },
       { t: "h2", c: "AR discipline" },
-      { t: "p", c: "Reconcile every submitted trip against the broker's remittance within 14 days. Set up denial buckets by reason code and rework them weekly — the vast majority of Florida NEMT denials are curable with a signature capture, GPS proof, or a corrected authorization number." },
-      { t: "cta", heading: "Bill Medicaid faster with our dispatch stack", body: "The Florida NEMT platform captures signatures, GPS, and trip records automatically — export ready for every major broker.", to: "/join-our-network", label: "See the Platform" },
+      { t: "p", c: "Reconcile every submitted trip against the broker's remittance within 14 days. Set up denial buckets by reason code and rework them weekly — the vast majority of MyFloridaNemt.com denials are curable with a signature capture, GPS proof, or a corrected authorization number." },
+      { t: "cta", heading: "Bill Medicaid faster with our dispatch stack", body: "The MyFloridaNemt.com platform captures signatures, GPS, and trip records automatically — export ready for every major broker.", to: "/join-our-network", label: "See the Platform" },
     ],
   },
   {
     slug: "nemt-insurance-requirements-florida",
     category: "Provider Resources",
     title: "NEMT Insurance Requirements in Florida: What Providers Actually Need",
-    metaTitle: "Florida NEMT Insurance: Auto, GL, WC, Umbrella — 2026 Minimums",
+    metaTitle: "MyFloridaNemt.com Insurance: Auto, GL, WC, Umbrella — 2026 Minimums",
     metaDescription:
-      "2026 insurance minimums for Florida NEMT providers — commercial auto, general liability, workers comp, umbrella, and how brokers verify.",
+      "2026 insurance minimums for MyFloridaNemt.com providers — commercial auto, general liability, workers comp, umbrella, and how brokers verify.",
     excerpt:
-      "Undersized insurance is the fastest way to lose a Florida NEMT contract. Here are the 2026 minimums, the coverages brokers actually check, and where operators overpay.",
+      "Undersized insurance is the fastest way to lose a MyFloridaNemt.com contract. Here are the 2026 minimums, the coverages brokers actually check, and where operators overpay.",
     publishedAt: "2026-06-21",
     readMinutes: 6,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "peach",
     keywords: ["NEMT insurance Florida", "commercial auto NEMT", "umbrella policy NEMT", "NEMT COI requirements"],
     related: ["starting-nemt-business-florida", "provider-onboarding-guide", "nemt-billing-medicaid-cms1500"],
@@ -729,7 +729,7 @@ export const POSTS: Post[] = [
       "Six health plans deliver Florida Medicaid transportation to millions of members. Here is who covers what, which broker each uses, and how to book.",
     publishedAt: "2026-06-24",
     readMinutes: 7,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "sand",
     keywords: ["Florida Medicaid managed care", "SMMC transportation", "Sunshine Simply Molina Aetna Humana United", "medicaid ride booking Florida"],
     related: ["medicaid-transportation-florida", "medicaid-eligibility-transportation", "patient-guide-nemt-florida"],
@@ -766,7 +766,7 @@ export const POSTS: Post[] = [
       "Florida Medicaid transportation isn't automatic — patients need active Medicaid AND no other reasonable means of transport. Here's how eligibility works.",
     publishedAt: "2026-06-27",
     readMinutes: 6,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "coral",
     keywords: ["Florida Medicaid eligibility", "medicaid transportation qualify", "SMMC enrollment Florida", "no other means of transport"],
     related: ["medicaid-transportation-florida", "florida-medicaid-managed-care-plans", "patient-guide-nemt-florida"],
@@ -789,14 +789,14 @@ export const POSTS: Post[] = [
     slug: "caregiver-appointment-checklist",
     category: "Caregiver Guides",
     title: "The Caregiver's Medical-Appointment Checklist (Print-Friendly)",
-    metaTitle: "Caregiver Medical Appointment Checklist — Florida NEMT",
+    metaTitle: "Caregiver Medical Appointment Checklist — MyFloridaNemt.com",
     metaDescription:
       "Everything a caregiver should bring, know, and confirm before taking a loved one to a medical appointment by NEMT in Florida.",
     excerpt:
       "The details caregivers forget aren't the big ones — they're the tiny ones that turn a routine visit into a three-hour disaster. Print this before every appointment.",
     publishedAt: "2026-06-29",
     readMinutes: 5,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "peach",
     keywords: ["caregiver checklist", "medical appointment prep", "Florida caregiver", "NEMT preparation"],
     related: ["caregiver-guide-medical-transport", "patient-guide-nemt-florida", "senior-transportation-options-florida"],
@@ -839,7 +839,7 @@ export const POSTS: Post[] = [
       ]},
       { t: "h2", c: "Booking the return" },
       { t: "p", c: "Call the NEMT dispatch when the patient is 30 minutes from being cleared — not after they are already waiting in the lobby. A little lead time keeps the driver from double-booking." },
-      { t: "cta", heading: "Book a caregiver-friendly ride", body: "Florida NEMT welcomes caregivers on every trip and dispatches drivers trained to work with families.", to: "/request-a-ride", label: "Request a Ride" },
+      { t: "cta", heading: "Book a caregiver-friendly ride", body: "MyFloridaNemt.com welcomes caregivers on every trip and dispatches drivers trained to work with families.", to: "/request-a-ride", label: "Request a Ride" },
     ],
   },
   {
@@ -853,7 +853,7 @@ export const POSTS: Post[] = [
       "There are more transportation options for Florida seniors than most families realize. Here is how to pick the right one for a parent's routine — not just the emergency.",
     publishedAt: "2026-07-01",
     readMinutes: 7,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "sunset",
     keywords: ["senior transportation Florida", "PACE Florida", "paratransit Florida", "volunteer driver senior"],
     related: ["caregiver-guide-medical-transport", "caregiver-appointment-checklist", "patient-guide-nemt-florida"],
@@ -876,7 +876,7 @@ export const POSTS: Post[] = [
         "Wants to keep some independence for errands → ADA paratransit + rideshare",
         "Church, grocery, hair, social → volunteer driver programs and senior center vans",
       ]},
-      { t: "cta", heading: "Get help setting up a routine", body: "Florida NEMT works with families to build multi-program transportation plans for aging parents.", to: "/contact", label: "Talk to a Care Coordinator" },
+      { t: "cta", heading: "Get help setting up a routine", body: "MyFloridaNemt.com works with families to build multi-program transportation plans for aging parents.", to: "/contact", label: "Talk to a Care Coordinator" },
     ],
   },
 
@@ -889,10 +889,10 @@ export const POSTS: Post[] = [
     metaDescription:
       "The NEMT tech stack in 2026 — dispatch, routing, driver app, broker EDI, signature capture, GPS, and what to demand from any vendor demo.",
     excerpt:
-      "The NEMT software market is loud with 'AI dispatching' claims. Here's the feature list that actually keeps a Florida NEMT operation running.",
+      "The NEMT software market is loud with 'AI dispatching' claims. Here's the feature list that actually keeps a MyFloridaNemt.com operation running.",
     publishedAt: "2026-07-03",
     readMinutes: 7,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "cobalt",
     keywords: ["NEMT dispatch software", "NEMT technology 2026", "NEMT routing app", "medical transport software"],
     related: ["nemt-industry-trends-2026", "provider-onboarding-guide", "nemt-billing-medicaid-cms1500"],
@@ -920,7 +920,7 @@ export const POSTS: Post[] = [
       { t: "p", c: "Every vendor now claims AI. Ask what problem it solves: does it re-route a live driver when a hospital delay pushes a return trip 40 minutes later, without pulling him off the next pickup? Does it predict which trips are highest cancellation risk so dispatch can double-book safely? If the demo can't answer, it's marketing." },
       { t: "h2", c: "Total cost of ownership" },
       { t: "p", c: "Vendors quote per-vehicle or per-trip pricing. Add: implementation ($5K-$25K), broker EDI setup fees ($500-$2K per broker), driver-app data plans, and the internal ops time to migrate credentials and standing orders. Budget three months for a real cutover." },
-      { t: "cta", heading: "See our dispatch stack", body: "Florida NEMT operators use our platform with EDI to the major brokers, driver app, and automated credential tracking.", to: "/join-our-network", label: "Book a Demo" },
+      { t: "cta", heading: "See our dispatch stack", body: "MyFloridaNemt.com operators use our platform with EDI to the major brokers, driver app, and automated credential tracking.", to: "/join-our-network", label: "Book a Demo" },
     ],
   },
 
@@ -936,7 +936,7 @@ export const POSTS: Post[] = [
       "Improper wheelchair securement is the #1 preventable injury in NEMT. Here is the training every wheelchair-transport driver should have — and how to verify it.",
     publishedAt: "2026-07-05",
     readMinutes: 6,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "navy",
     keywords: ["wheelchair securement training", "four-point tie-down", "NEMT driver training", "PASS certification"],
     related: ["driver-training-hipaa-safety", "wheelchair-transportation-florida", "provider-onboarding-guide"],
@@ -974,14 +974,14 @@ export const POSTS: Post[] = [
     title: "NEMT Coverage by Florida County: Who Runs What",
     metaTitle: "Florida County NEMT Coverage: CTC List and Service Notes",
     metaDescription:
-      "County-by-county overview of Florida NEMT coverage — Community Transportation Coordinators, service quirks, and what patients should know before booking.",
+      "County-by-county overview of MyFloridaNemt.com coverage — Community Transportation Coordinators, service quirks, and what patients should know before booking.",
     excerpt:
-      "Florida NEMT looks different in every county because every county has its own Community Transportation Coordinator. Here's the overview patients and families need.",
+      "MyFloridaNemt.com looks different in every county because every county has its own Community Transportation Coordinator. Here's the overview patients and families need.",
     publishedAt: "2026-07-08",
     readMinutes: 8,
-    author: "Florida NEMT Editorial Team",
+    author: "MyFloridaNemt.com Editorial Team",
     cover: "sand",
-    keywords: ["Florida NEMT counties", "CTC Florida", "county transportation Florida", "Florida transportation disadvantaged"],
+    keywords: ["MyFloridaNemt.com counties", "CTC Florida", "county transportation Florida", "Florida transportation disadvantaged"],
     related: ["patient-guide-nemt-florida", "medicaid-transportation-florida", "florida-medicaid-managed-care-plans"],
     body: [
       { t: "p", c: "Florida's Commission for the Transportation Disadvantaged (CTD) designates one Community Transportation Coordinator (CTC) per county. The CTC is the local backbone for coordinated rides — Medicaid, senior programs, workforce, and disability. Managed-care NEMT operates alongside the CTC through contracted brokers, but the CTC still sets local safety, insurance, and drug-testing requirements." },
@@ -1006,8 +1006,8 @@ export const POSTS: Post[] = [
         "When does the LCB next meet, and how can I attend?",
       ]},
       { t: "h2", c: "Statewide realities" },
-      { t: "p", c: "Hurricanes, snowbird season, and I-4 / I-95 congestion patterns affect every Florida NEMT operation. During a declared emergency, non-urgent NEMT is often suspended 24-48 hours before landfall. Dialysis, oxygen, and hospital discharge trips continue with priority. Sign up for county emergency alerts before hurricane season starts." },
-      { t: "cta", heading: "Book NEMT in any Florida county", body: "Florida NEMT dispatches statewide — from the Panhandle to the Keys — with one phone number and one dispatch team.", to: "/request-a-ride", label: "Request a Ride" },
+      { t: "p", c: "Hurricanes, snowbird season, and I-4 / I-95 congestion patterns affect every MyFloridaNemt.com operation. During a declared emergency, non-urgent NEMT is often suspended 24-48 hours before landfall. Dialysis, oxygen, and hospital discharge trips continue with priority. Sign up for county emergency alerts before hurricane season starts." },
+      { t: "cta", heading: "Book NEMT in any Florida county", body: "MyFloridaNemt.com dispatches statewide — from the Panhandle to the Keys — with one phone number and one dispatch team.", to: "/request-a-ride", label: "Request a Ride" },
     ],
   },
 ];

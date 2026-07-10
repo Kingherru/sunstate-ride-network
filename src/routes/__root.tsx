@@ -79,16 +79,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#ffffff" },
-      { title: "Florida NEMT — Statewide Medical Transportation" },
+      { title: "MyFloridaNemt.com — Statewide Medical Transportation" },
       {
         name: "description",
         content:
           "Florida's statewide non-emergency medical transportation network. Ambulatory, wheelchair, and stretcher transport across Jacksonville, Orlando, Tampa, Miami, Tallahassee, and Fort Lauderdale.",
       },
-      { property: "og:title", content: "Florida NEMT" },
+      { property: "og:title", content: "MyFloridaNemt.com" },
       { property: "og:description", content: "Statewide non-emergency medical transportation across Florida." },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Florida NEMT" },
+      { property: "og:site_name", content: "MyFloridaNemt.com" },
       { name: "twitter:card", content: "summary" },
     ],
     links: [
@@ -107,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "MedicalBusiness",
-          name: "Florida NEMT",
+          name: "MyFloridaNemt.com",
           description: "Statewide non-emergency medical transportation network serving Florida.",
           areaServed: "Florida, US",
           telephone: "+1-800-555-0199",

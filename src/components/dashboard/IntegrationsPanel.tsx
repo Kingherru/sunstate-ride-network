@@ -25,7 +25,7 @@ export function IntegrationsPanel() {
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">External integrations</h2>
         <p className="text-sm text-muted-foreground">
-          Connect your dispatch software so trips you send/receive on Florida NEMT sync automatically.
+          Connect your dispatch software so trips you send/receive on MyFloridaNemt.com sync automatically.
           Inbound webhooks reject all payloads until a verified signature scheme is wired for the vendor.
         </p>
       </div>

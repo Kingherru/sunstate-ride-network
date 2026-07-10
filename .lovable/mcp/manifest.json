@@ -9,13 +9,13 @@
     "server": {
       "name": "floridanemt-mcp",
       "version": "0.1.0",
-      "title": "FloridaNEMT MCP"
+      "title": "MyFloridaNemt.com MCP"
     },
     "tools": [
       {
         "name": "list_service_areas",
         "title": "List Florida service areas",
-        "description": "Return the list of Florida cities/regions where FloridaNEMT provides non-emergency medical transportation.",
+        "description": "Return the list of Florida cities/regions where MyFloridaNemt.com provides non-emergency medical transportation.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -30,8 +30,8 @@
       },
       {
         "name": "get_contact_info",
-        "title": "Get FloridaNEMT contact info",
-        "description": "Return public contact details (phone, email, service region) for FloridaNEMT.",
+        "title": "Get MyFloridaNemt.com contact info",
+        "description": "Return public contact details (phone, email, service region) for MyFloridaNemt.com.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,

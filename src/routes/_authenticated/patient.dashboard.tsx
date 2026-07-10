@@ -4,7 +4,7 @@ import { DashboardPage } from "./dashboard";
 export const Route = createFileRoute("/_authenticated/patient/dashboard")({
   head: () => ({
     meta: [
-      { title: "Patient Dashboard — Florida NEMT" },
+      { title: "Patient Dashboard — MyFloridaNemt.com" },
       { name: "robots", content: "noindex" },
     ],
   }),
