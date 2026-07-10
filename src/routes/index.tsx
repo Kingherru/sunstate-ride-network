@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
           "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network.",
       },
       { property: "og:title", content: "MyFloridaNemt.com — Statewide Medical Transportation" },
-      { property: "og:description", content: "Reliable Medicaid NEMT across all 67 Florida counties." },
+      { property: "og:description", content: "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network." },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
