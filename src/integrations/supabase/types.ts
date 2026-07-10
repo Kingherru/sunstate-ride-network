@@ -50,6 +50,284 @@ export type Database = {
         }
         Relationships: []
       }
+      course_attempts: {
+        Row: {
+          answers: Json
+          created_at: string
+          enrollment_id: string
+          id: string
+          passed: boolean | null
+          score: number | null
+          started_at: string
+          submitted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          enrollment_id: string
+          id?: string
+          passed?: boolean | null
+          score?: number | null
+          started_at?: string
+          submitted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          enrollment_id?: string
+          id?: string
+          passed?: boolean | null
+          score?: number | null
+          started_at?: string
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_attempts_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_certificates: {
+        Row: {
+          cert_number: string
+          course_id: string
+          created_at: string
+          enrollment_id: string
+          expires_at: string | null
+          holder_name: string
+          id: string
+          issued_at: string
+          pdf_storage_path: string | null
+          user_id: string
+          verify_token: string
+        }
+        Insert: {
+          cert_number: string
+          course_id: string
+          created_at?: string
+          enrollment_id: string
+          expires_at?: string | null
+          holder_name: string
+          id?: string
+          issued_at?: string
+          pdf_storage_path?: string | null
+          user_id: string
+          verify_token: string
+        }
+        Update: {
+          cert_number?: string
+          course_id?: string
+          created_at?: string
+          enrollment_id?: string
+          expires_at?: string | null
+          holder_name?: string
+          id?: string
+          issued_at?: string
+          pdf_storage_path?: string | null
+          user_id?: string
+          verify_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_certificates_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          created_at: string
+          id: string
+          progress: Json
+          purchased_at: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          created_at?: string
+          id?: string
+          progress?: Json
+          purchased_at?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          progress?: Json
+          purchased_at?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_modules: {
+        Row: {
+          body_markdown: string
+          course_id: string
+          created_at: string
+          id: string
+          ord: number
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          body_markdown?: string
+          course_id: string
+          created_at?: string
+          id?: string
+          ord: number
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          body_markdown?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          ord?: number
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_questions: {
+        Row: {
+          choices: Json
+          correct_index: number
+          course_id: string
+          created_at: string
+          explanation: string | null
+          id: string
+          ord: number
+          prompt: string
+        }
+        Insert: {
+          choices?: Json
+          correct_index: number
+          course_id: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          ord: number
+          prompt: string
+        }
+        Update: {
+          choices?: Json
+          correct_index?: number
+          course_id?: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          ord?: number
+          prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_questions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          cert_validity_months: number
+          cover_image: string | null
+          created_at: string
+          description: string
+          duration_min: number
+          id: string
+          is_published: boolean
+          passing_score: number
+          price_cents: number
+          price_id: string | null
+          slug: string
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cert_validity_months?: number
+          cover_image?: string | null
+          created_at?: string
+          description?: string
+          duration_min?: number
+          id?: string
+          is_published?: boolean
+          passing_score?: number
+          price_cents?: number
+          price_id?: string | null
+          slug: string
+          summary?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cert_validity_months?: number
+          cover_image?: string | null
+          created_at?: string
+          description?: string
+          duration_min?: number
+          id?: string
+          is_published?: boolean
+          passing_score?: number
+          price_cents?: number
+          price_id?: string | null
+          slug?: string
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dispatch_zone_zips: {
         Row: {
           created_at: string
@@ -84,6 +362,7 @@ export type Database = {
           code: string
           created_at: string
           id: string
+          is_preset: boolean
           name: string
           sort_order: number
           updated_at: string
@@ -92,6 +371,7 @@ export type Database = {
           code: string
           created_at?: string
           id?: string
+          is_preset?: boolean
           name: string
           sort_order?: number
           updated_at?: string
@@ -100,6 +380,7 @@ export type Database = {
           code?: string
           created_at?: string
           id?: string
+          is_preset?: boolean
           name?: string
           sort_order?: number
           updated_at?: string
