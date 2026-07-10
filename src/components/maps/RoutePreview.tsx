@@ -4,6 +4,7 @@ const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_K
 const CHANNEL = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 
 let mapsPromise: Promise<any> | null = null;
+const authFailureListeners = new Set<() => void>();
 
 function loadMaps(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
@@ -12,12 +13,21 @@ function loadMaps(): Promise<any> {
   if (!BROWSER_KEY) return Promise.reject(new Error("Google Maps browser key not configured"));
   mapsPromise = new Promise((resolve, reject) => {
     (window as any).__initFLNemtMap = () => resolve((window as any).google);
+    // Google calls this global on auth/referrer failures instead of firing script.onerror
+    (window as any).gm_authFailure = () => {
+      mapsPromise = null;
+      authFailureListeners.forEach((fn) => fn());
+      reject(new Error("auth_failure"));
+    };
     const s = document.createElement("script");
     const channel = CHANNEL ? `&channel=${encodeURIComponent(CHANNEL)}` : "";
     s.src = `https://maps.googleapis.com/maps/api/js?key=${BROWSER_KEY}&loading=async&libraries=geometry&callback=__initFLNemtMap${channel}`;
     s.async = true;
     s.defer = true;
-    s.onerror = () => reject(new Error("Failed to load Google Maps"));
+    s.onerror = () => {
+      mapsPromise = null;
+      reject(new Error("script_error"));
+    };
     document.head.appendChild(s);
   });
   return mapsPromise;
@@ -58,6 +68,10 @@ export function RoutePreview({
   useEffect(() => {
     if (!ref.current || !hasPoints) return;
     let disposed = false;
+    const onAuthFailure = () => {
+      if (!disposed) setErr("auth_failure");
+    };
+    authFailureListeners.add(onAuthFailure);
     (async () => {
       try {
         const g = await loadMaps();
@@ -102,11 +116,12 @@ export function RoutePreview({
 
         map.fitBounds(bounds, 32);
       } catch (e: any) {
-        if (!disposed) setErr(e?.message ?? "Map failed to load");
+        if (!disposed) setErr(e?.message ?? "script_error");
       }
     })();
     return () => {
       disposed = true;
+      authFailureListeners.delete(onAuthFailure);
     };
   }, [polyline, pickupLat, pickupLng, dropoffLat, dropoffLng, pickupLabel, dropoffLabel, hasPoints]);
 
@@ -121,13 +136,50 @@ export function RoutePreview({
     );
   }
 
+  if (err) {
+    return <MapFallback height={height} className={className} reason={err} />;
+  }
+
   return (
     <div className={className}>
       <div ref={ref} className="w-full rounded-sm border border-border overflow-hidden" style={{ height }} />
-      {err && <p className="mt-2 text-xs text-destructive">{err}</p>}
     </div>
   );
 }
+
+function MapFallback({
+  height,
+  className,
+  reason,
+}: {
+  height: number;
+  className?: string;
+  reason: string;
+}) {
+  const message =
+    reason === "auth_failure"
+      ? "The map couldn't be authorized for this domain."
+      : "The map couldn't be loaded right now.";
+  return (
+    <div
+      className={`bg-secondary border border-border rounded-sm p-4 text-sm text-muted-foreground flex flex-col items-center justify-center text-center gap-2 ${className ?? ""}`}
+      style={{ height }}
+      role="alert"
+    >
+      <p className="font-medium text-foreground">Map preview unavailable</p>
+      <p className="text-xs max-w-xs">
+        {message} You can still continue with your request — routing will be confirmed by dispatch.
+      </p>
+      <a
+        href="/contact"
+        className="text-xs font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+      >
+        Contact support
+      </a>
+    </div>
+  );
+}
+
 
 export function googleRouteUrl(
   pickupLat?: number | null,
