@@ -6,8 +6,8 @@ const GATEWAY = "https://connector-gateway.lovable.dev/google_maps";
 
 function authHeaders() {
   const lk = process.env.LOVABLE_API_KEY;
-  // Prefer the custom (domain-restricted) connection when present; fall back to the managed one.
-  const gk = process.env.GOOGLE_MAPS_API_KEY_1 || process.env.GOOGLE_MAPS_API_KEY;
+  // Server-side Geocoding/Routes calls cannot use an HTTP-referrer-restricted browser key.
+  const gk = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY_1;
   if (!lk || !gk) throw new Error("Google Maps connector not configured");
   return { Authorization: `Bearer ${lk}`, "X-Connection-Api-Key": gk };
 }

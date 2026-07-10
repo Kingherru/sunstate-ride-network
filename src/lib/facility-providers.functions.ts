@@ -6,8 +6,8 @@ const GATEWAY = "https://connector-gateway.lovable.dev/google_maps";
 
 async function geocode(address: string): Promise<{ lat: number; lng: number; zip: string | null } | null> {
   const lk = process.env.LOVABLE_API_KEY;
-  // Prefer the custom-domain Google Maps connection when present; fall back to the original connection.
-  const gk = process.env.GOOGLE_MAPS_API_KEY_1 || process.env.GOOGLE_MAPS_API_KEY;
+  // Server-side Geocoding calls cannot use an HTTP-referrer-restricted browser key.
+  const gk = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY_1;
   if (!lk || !gk) return null;
   const r = await fetch(`${GATEWAY}/maps/api/geocode/json?address=${encodeURIComponent(address)}`, {
     headers: { Authorization: `Bearer ${lk}`, "X-Connection-Api-Key": gk },
