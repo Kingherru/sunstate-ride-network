@@ -143,6 +143,7 @@ function RootComponent() {
   const portal = getPortalContext(pathname);
   const isAuthedArea = portal !== "public";
   const isEmbed = pathname.startsWith("/embed/");
+  const isLoginPage = ["/patient/login", "/provider/login", "/facility/login", "/staff/login", "/auth"].includes(pathname);
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -151,7 +152,7 @@ function RootComponent() {
           <main className="flex-1">
             <Outlet />
           </main>
-          {!isEmbed && <Footer portal={portal} />}
+          {!isEmbed && !isLoginPage && <Footer portal={portal} />}
         </div>
         <Toaster richColors position="top-center" />
         <PreviewRefreshButton />
