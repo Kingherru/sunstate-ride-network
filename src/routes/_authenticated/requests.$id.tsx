@@ -333,6 +333,11 @@ function RequestDetailPage() {
         />
       )}
 
+      {mode === "view" && (
+        <HistorySection id={id} locked={isAssigned || isTerminal} />
+      )}
+
+
       {confirm && (
         <CancelDialog
           isRecurring={isRecurring}
