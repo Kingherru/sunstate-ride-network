@@ -103,7 +103,13 @@ function ProvidersPage() {
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
       const id = crypto.randomUUID();
-      const path = `applications/${new Date().toISOString().slice(0, 10)}/${id}-${kind}.${ext}`;
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userData.user) {
+        toast.error("You must be signed in to upload documents.");
+        setUploading(null);
+        return;
+      }
+      const path = `applications/${userData.user.id}/${new Date().toISOString().slice(0, 10)}/${id}-${kind}.${ext}`;
       const { error } = await supabase.storage.from("provider-docs").upload(path, file, {
         contentType: file.type || undefined,
         upsert: false,
