@@ -165,7 +165,7 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       console.error("submitRideRequest error", error);
       return { ok: false as const, error: "Could not submit your request. Please call (800) 555-0199." };
     }
-    return { ok: true as const, id: row.id };
+    return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
   });
 
 export const contactSchema = z.object({
