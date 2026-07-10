@@ -95,10 +95,10 @@
   --brand: oklch(0.328 0.068 257.3);
   --brand-soft: oklch(0.42 0.08 250);
 
-  --shadow-card: 0 1px 2px oklch(0.20 0.04 255 / 5%), 0 6px 16px -10px oklch(0.20 0.04 255 / 14%);
-  --shadow-elegant: 0 20px 50px -24px oklch(0.20 0.04 255 / 22%);
-  --shadow-glass: 0 4px 20px -6px oklch(0.20 0.04 255 / 12%), inset 0 1px 0 0 oklch(1 0 0 / 60%);
-  --glow-accent: 0 8px 24px -10px oklch(0.55 0.15 42 / 45%);
+  --shadow-card: none;
+  --shadow-elegant: none;
+  --shadow-glass: none;
+  --glow-accent: none;
 
   --gradient-brand: oklch(0.328 0.068 257.3);
   --gradient-accent: oklch(0.55 0.15 42);
