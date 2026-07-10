@@ -360,16 +360,16 @@
 .portal-scope h4,
 .portal-scope .font-display { color: inherit; }
 
-/* Native form controls inherit dark theme */
+/* Native form controls use semantic surfaces so light portal themes stay readable */
 .portal-scope input,
 .portal-scope select,
 .portal-scope textarea {
-  background-color: oklch(0.18 0.05 257);
+  background-color: var(--card);
   color: var(--foreground);
   border-color: var(--border);
 }
 .portal-scope input::placeholder,
-.portal-scope textarea::placeholder { color: oklch(0.65 0.02 220); }
+.portal-scope textarea::placeholder { color: var(--muted-foreground); }
 .portal-scope input:focus-visible,
 .portal-scope select:focus-visible,
 .portal-scope textarea:focus-visible {
@@ -378,7 +378,7 @@
   box-shadow: 0 0 0 3px oklch(0.872 0.078 65.2 / 35%);
 }
 .portal-scope input[type="checkbox"],
-.portal-scope input[type="radio"] { accent-color: oklch(0.872 0.078 65.2); }
+.portal-scope input[type="radio"] { accent-color: var(--accent); }
 .portal-scope input[aria-invalid="true"],
 .portal-scope select[aria-invalid="true"],
 .portal-scope textarea[aria-invalid="true"] {
@@ -411,7 +411,7 @@
     display: block;
     font-size: 0.7rem; font-weight: 700;
     letter-spacing: 0.14em; text-transform: uppercase;
-    color: oklch(0.78 0.04 220);
+    color: var(--muted-foreground);
     margin-bottom: 0.4rem;
   }
   .portal-input,
@@ -419,7 +419,7 @@
   .portal-textarea {
     width: 100%;
     padding: 0.65rem 0.85rem;
-    background: oklch(0.16 0.04 250);
+    background: var(--card);
     color: var(--foreground);
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) - 4px);
@@ -431,7 +431,7 @@
   .portal-textarea:focus {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px oklch(0.872 0.078 65.2 / 35%);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 35%, transparent);
   }
   .portal-field-error {
     display: block;
