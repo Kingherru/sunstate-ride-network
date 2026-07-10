@@ -122,9 +122,11 @@ function RequestDetailPage() {
   const r = q.data;
   const s = (r.status ?? "").toLowerCase();
   const isTerminal = ["completed", "canceled", "cancelled"].includes(s);
-  const canReschedule = !isTerminal && s !== "in_progress";
+  const isAssigned = !!(r as any).assigned_provider_id || ["assigned", "in_progress"].includes(s);
+  const canReschedule = !isTerminal && !isAssigned;
   const isRecurring = !!r.recurrence_rule;
   const exceptions = (r.recurrence_exceptions ?? []) as string[];
+
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
