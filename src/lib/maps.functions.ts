@@ -32,6 +32,7 @@ export type RouteInfo = {
 async function routeInfo(
   o: { lat: number; lng: number },
   d: { lat: number; lng: number },
+  intermediates: { lat: number; lng: number }[] = [],
 ): Promise<RouteInfo> {
   const r = await fetch(`${GATEWAY}/routes/directions/v2:computeRoutes`, {
     method: "POST",
@@ -44,6 +45,9 @@ async function routeInfo(
     body: JSON.stringify({
       origin: { location: { latLng: { latitude: o.lat, longitude: o.lng } } },
       destination: { location: { latLng: { latitude: d.lat, longitude: d.lng } } },
+      intermediates: intermediates.map((p) => ({
+        location: { latLng: { latitude: p.lat, longitude: p.lng } },
+      })),
       travelMode: "DRIVE",
       routingPreference: "TRAFFIC_AWARE",
       polylineQuality: "OVERVIEW",
