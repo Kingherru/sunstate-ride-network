@@ -7,8 +7,10 @@ import {
   getMyRequest,
   cancelMyRequest,
   rescheduleMyRequest,
+  listRequestHistory,
 } from "@/lib/requests.functions";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
+
 
 export const Route = createFileRoute("/_authenticated/requests/$id")({
   head: () => ({
@@ -120,9 +122,11 @@ function RequestDetailPage() {
   const r = q.data;
   const s = (r.status ?? "").toLowerCase();
   const isTerminal = ["completed", "canceled", "cancelled"].includes(s);
-  const canReschedule = !isTerminal && s !== "in_progress";
+  const isAssigned = !!(r as any).assigned_provider_id || ["assigned", "in_progress"].includes(s);
+  const canReschedule = !isTerminal && !isAssigned;
   const isRecurring = !!r.recurrence_rule;
   const exceptions = (r.recurrence_exceptions ?? []) as string[];
+
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
@@ -328,6 +332,11 @@ function RequestDetailPage() {
           onSubmit={(v) => rescheduleM.mutate(v)}
         />
       )}
+
+      {mode === "view" && (
+        <HistorySection id={id} locked={isAssigned || isTerminal} />
+      )}
+
 
       {confirm && (
         <CancelDialog
@@ -670,3 +679,79 @@ function CancelDialog({
     </div>
   );
 }
+
+function fmtHistoryValue(v: unknown): string {
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (typeof v === "object") return JSON.stringify(v);
+  return String(v);
+}
+
+function HistorySection({ id, locked }: { id: string; locked: boolean }) {
+  const listHistory = useServerFn(listRequestHistory);
+  const q = useQuery({
+    queryKey: ["ride-request-history", id],
+    queryFn: async () => {
+      const r = await listHistory({ data: { id } });
+      if (!r.ok) throw new Error(r.error);
+      return r.rows;
+    },
+  });
+
+  return (
+    <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-zinc-900">Change history</h2>
+        {locked && (
+          <span className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+            Locked — dispatcher review in progress
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-zinc-600">
+        Every edit to this reservation is recorded so patients, providers, and dispatchers can see what changed.
+      </p>
+
+      {q.isLoading && <p className="mt-4 text-sm text-zinc-500">Loading history…</p>}
+      {q.isError && <p className="mt-4 text-sm text-red-700">Could not load history.</p>}
+      {q.data && q.data.length === 0 && (
+        <p className="mt-4 text-sm text-zinc-500">No changes recorded yet.</p>
+      )}
+
+      {q.data && q.data.length > 0 && (
+        <ol className="mt-4 space-y-4">
+          {q.data.map((h: any) => {
+            const changes = (h.changes ?? {}) as Record<string, { from: unknown; to: unknown }>;
+            const fields = Object.keys(changes);
+            return (
+              <li key={h.id} className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600">
+                  <span className="font-semibold">
+                    {new Date(h.created_at).toLocaleString()}
+                  </span>
+                  <span className="rounded-full border border-zinc-300 bg-white px-2 py-0.5 uppercase tracking-wide">
+                    {h.changed_by_role ?? "system"}
+                    {h.changed_by_email ? ` · ${h.changed_by_email}` : ""}
+                  </span>
+                </div>
+                {fields.length > 0 && (
+                  <ul className="mt-2 space-y-1 text-sm text-zinc-800">
+                    {fields.map((f) => (
+                      <li key={f}>
+                        <span className="font-medium">{f.replace(/_/g, " ")}:</span>{" "}
+                        <span className="text-zinc-500 line-through">{fmtHistoryValue(changes[f].from)}</span>{" "}
+                        →{" "}
+                        <span className="text-zinc-900">{fmtHistoryValue(changes[f].to)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </section>
+  );
+}
+

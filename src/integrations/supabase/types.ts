@@ -1409,6 +1409,50 @@ export type Database = {
         }
         Relationships: []
       }
+      ride_request_history: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changed_by_email: string | null
+          changed_by_role: string | null
+          changes: Json
+          created_at: string
+          id: string
+          ride_request_id: string
+          summary: string | null
+        }
+        Insert: {
+          action?: string
+          changed_by?: string | null
+          changed_by_email?: string | null
+          changed_by_role?: string | null
+          changes?: Json
+          created_at?: string
+          id?: string
+          ride_request_id: string
+          summary?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changed_by_email?: string | null
+          changed_by_role?: string | null
+          changes?: Json
+          created_at?: string
+          id?: string
+          ride_request_id?: string
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_request_history_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_requests: {
         Row: {
           additional_stops: Json

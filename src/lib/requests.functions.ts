@@ -140,18 +140,23 @@ export const rescheduleMyRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Block reschedule on completed/canceled
+    // Block reschedule once dispatched/assigned/completed
     const { data: row } = await supabase
       .from("ride_requests")
-      .select("status")
+      .select("status, assigned_provider_id")
       .eq("id", data.id)
       .eq("requester_user_id", userId)
       .maybeSingle();
     if (!row) return { ok: false as const, error: "Request not found." };
     const s = (row.status ?? "").toLowerCase();
-    if (["completed", "canceled", "cancelled", "in_progress"].includes(s)) {
-      return { ok: false as const, error: `This request can no longer be rescheduled (${row.status}).` };
+    if ((row as any).assigned_provider_id) {
+      return { ok: false as const, error: "This trip has been assigned to a provider and can no longer be edited by the requester. Please contact dispatch." };
     }
+
+    if (["completed", "canceled", "cancelled", "in_progress", "assigned"].includes(s)) {
+      return { ok: false as const, error: `This trip has been claimed or dispatched and can no longer be edited by the requester. Please contact dispatch to make changes.` };
+    }
+
 
     const update: Record<string, unknown> = {
       pickup_date: data.pickupDate,
@@ -269,4 +274,24 @@ export const getReservationReview = createServerFn({ method: "GET" })
     }
     return { ok: true as const, row, driver };
   });
+
+/** List change history for a ride request (visible to requester, assigned provider, or staff). */
+export const listRequestHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("ride_request_history")
+      .select("id, created_at, changed_by, changed_by_role, changed_by_email, action, changes, summary")
+      .eq("ride_request_id", data.id)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) {
+      console.error("listRequestHistory error", error);
+      return { ok: false as const, error: "Could not load history." };
+    }
+    return { ok: true as const, rows: rows ?? [] };
+  });
+
 
