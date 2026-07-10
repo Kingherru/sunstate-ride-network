@@ -60,6 +60,7 @@ const empty: RideRequestInput = {
   recurrence: "none",
   recurrenceEndDate: "",
   billingSource: "account",
+  createAccount: false,
 };
 
 
@@ -182,6 +183,7 @@ function RequestRidePage() {
           recurrence: rec,
           recurrenceEndDate: "",
           billingSource: "account",
+          createAccount: false,
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set a new pickup date to continue.");
@@ -240,8 +242,37 @@ function RequestRidePage() {
           }
         } catch { /* ignore — non-fatal */ }
         setDone({ id: res.id, ...enrichedInfo });
-        toast.success("Ride request received. A dispatcher will call you shortly.");
+        toast.success("Ride request received. A dispatcher will contact you shortly.");
         router.invalidate();
+
+        // Optional: create a Patient Portal account with the same email.
+        if (parsed.data.createAccount && parsed.data.patientEmail) {
+          try {
+            const { data: existing } = await supabase.auth.getUser();
+            if (!existing.user) {
+              const { error: signUpErr } = await supabase.auth.signUp({
+                email: parsed.data.patientEmail,
+                password: crypto.randomUUID() + "Aa1!",
+                options: {
+                  emailRedirectTo: `${window.location.origin}/reset-password`,
+                  data: {
+                    portal: "patient",
+                    first_name: parsed.data.patientFirstName,
+                    last_name: parsed.data.patientLastName,
+                  },
+                },
+              });
+              if (!signUpErr) {
+                await supabase.auth.resetPasswordForEmail(parsed.data.patientEmail, {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                });
+                toast.success("Check your email to finish creating your Patient Portal account.");
+              }
+            }
+          } catch (e) {
+            console.error("account creation failed", e);
+          }
+        }
       } else {
         toast.error(res.error);
       }
@@ -287,9 +318,11 @@ function RequestRidePage() {
                 )}
                 {done.cents != null && (
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Estimated fare</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Estimated trip cost</div>
                     <div className="text-lg font-extrabold">${(done.cents / 100).toFixed(2)}</div>
-                    <div className="text-[11px] text-muted">FL NEMT avg</div>
+                    <div className="text-[11px] text-muted">
+                      {form.tripType === "round_trip" ? "Round trip estimate" : form.tripType === "multi_trip" ? "Multi-stop estimate" : "One-way estimate"}
+                    </div>
                   </div>
                 )}
               </div>
@@ -309,12 +342,16 @@ function RequestRidePage() {
               >
                 Open route in Google Maps →
               </a>
+              <p className="mt-4 text-[11px] leading-relaxed text-muted border-t border-border pt-3">
+                <strong className="font-bold text-foreground">This is an estimate only.</strong> The final price may change after dispatcher review, provider assignment, wait time, additional stops, or manual quoting. You will receive a confirmed price before your trip is dispatched.
+              </p>
             </div>
           )}
 
           <p className="text-muted text-lg mb-10">
-            A dispatcher will confirm pickup details by phone within 2 hours. For urgent same-day
-            requests, call <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
+            A dispatcher will confirm your pickup details by phone or email within 2 hours. Please be
+            on the lookout for our communication. For urgent same-day requests, call{" "}
+            <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
           </p>
           <Link
             to="/"
@@ -715,6 +752,22 @@ function RequestRidePage() {
               <option key={c.slug} value={c.name} />
             ))}
           </datalist>
+
+          {form.patientEmail && (
+            <label className="flex items-start gap-3 text-sm bg-primary/5 border border-primary/20 rounded-sm p-4">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.createAccount ?? false}
+                onChange={(e) => upd("createAccount", e.target.checked)}
+              />
+              <span>
+                <strong className="font-bold">Create a Patient Portal account</strong> using{" "}
+                <span className="font-mono">{form.patientEmail}</span>. We'll email you a link to set
+                your password so you can track this ride, save patients, and book future trips faster.
+              </span>
+            </label>
+          )}
 
           <button
             type="submit"

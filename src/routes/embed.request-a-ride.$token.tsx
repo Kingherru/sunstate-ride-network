@@ -29,7 +29,7 @@ const empty: RideRequestInput = {
   transportType: "ambulatory", tripType: "one_way", roundTrip: false,
   returnPickupTime: "", returnDropoffTime: "", additionalStops: [],
   mobilityNotes: "", specialInstructions: "", recurrence: "none", recurrenceEndDate: "",
-  billingSource: "account",
+  billingSource: "account", createAccount: false,
 };
 
 const inputCls = "w-full bg-card border border-input rounded-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
