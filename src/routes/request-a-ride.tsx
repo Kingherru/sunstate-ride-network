@@ -242,8 +242,37 @@ function RequestRidePage() {
           }
         } catch { /* ignore — non-fatal */ }
         setDone({ id: res.id, ...enrichedInfo });
-        toast.success("Ride request received. A dispatcher will call you shortly.");
+        toast.success("Ride request received. A dispatcher will contact you shortly.");
         router.invalidate();
+
+        // Optional: create a Patient Portal account with the same email.
+        if (parsed.data.createAccount && parsed.data.patientEmail) {
+          try {
+            const { data: existing } = await supabase.auth.getUser();
+            if (!existing.user) {
+              const { error: signUpErr } = await supabase.auth.signUp({
+                email: parsed.data.patientEmail,
+                password: crypto.randomUUID() + "Aa1!",
+                options: {
+                  emailRedirectTo: `${window.location.origin}/reset-password`,
+                  data: {
+                    portal: "patient",
+                    first_name: parsed.data.patientFirstName,
+                    last_name: parsed.data.patientLastName,
+                  },
+                },
+              });
+              if (!signUpErr) {
+                await supabase.auth.resetPasswordForEmail(parsed.data.patientEmail, {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                });
+                toast.success("Check your email to finish creating your Patient Portal account.");
+              }
+            }
+          } catch (e) {
+            console.error("account creation failed", e);
+          }
+        }
       } else {
         toast.error(res.error);
       }
