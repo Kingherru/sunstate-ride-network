@@ -9,7 +9,20 @@ const FOOTERS: PlatformTheme["footer_style"][] = ["expanded", "compact", "minima
 const CARDS: PlatformTheme["card_style"][] = ["rounded", "sharp", "soft"];
 const RADII: PlatformTheme["radius_scale"][] = ["small", "medium", "large"];
 
-const PRESETS: Array<{ name: string; primary: string; accent: string }> = [
+type SitePreset = {
+  name: string;
+  primary: string;
+  accent: string;
+  bg?: string;
+  fg?: string;
+  card?: string;
+  muted?: string;
+  border?: string;
+};
+
+const PRESETS: SitePreset[] = [
+  { name: "Admin Light", primary: "#1e40af", accent: "#2563eb", bg: "#f8fafc", fg: "#0f172a", card: "#ffffff", muted: "#64748b", border: "#e2e8f0" },
+  { name: "Admin Dark", primary: "#3b82f6", accent: "#06b6d4", bg: "#0b1220", fg: "#f8fafc", card: "#111a2e", muted: "#94a3b8", border: "#1e293b" },
   { name: "Navy + Orange", primary: "#13335a", accent: "#e07a1f" },
   { name: "Navy + Peach", primary: "#1D3557", accent: "#F9CB9F" },
   { name: "Emerald + Gold", primary: "#064e3b", accent: "#c9a84c" },
@@ -26,6 +39,11 @@ const PORTAL_PRESETS: Array<{ name: string; primary: string; accent: string; bg:
   { name: "Midnight + Cyan", primary: "#0a0a1a", accent: "#06b6d4", bg: "#0a0a1a", card: "#14143299", fg: "#e8ecf1", border: "#ffffff14" },
   { name: "Emerald + Gold", primary: "#064e3b", accent: "#c9a84c", bg: "#06281f", card: "#0d7a5f55", fg: "#f5f0e0", border: "#ffffff1f" },
 ];
+
+const APPLY_TO_PORTAL: Record<string, { primary: string; accent: string; bg: string; card: string; fg: string; border: string }> = {
+  "Admin Light": { primary: "#1e40af", accent: "#2563eb", bg: "#f8fafc", card: "#ffffff", fg: "#0f172a", border: "#e2e8f0" },
+  "Admin Dark": { primary: "#111a2e", accent: "#06b6d4", bg: "#0b1220", card: "#111a2e", fg: "#f8fafc", border: "#1e293b" },
+};
 
 
 export function AdminThemePanel() {
