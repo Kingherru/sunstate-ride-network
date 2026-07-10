@@ -92,6 +92,7 @@ export const enrichRideRequest = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), token: z.string().min(10).max(400) }).parse(i),
   )
   .handler(async ({ data }) => {
+    const { verifyEnrichmentToken } = await import("@/lib/enrichment-token.server");
     if (!verifyEnrichmentToken(data.id, data.token)) {
       return { ok: false as const, error: "invalid_token" };
     }
