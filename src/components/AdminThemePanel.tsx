@@ -161,7 +161,24 @@ export function AdminThemePanel() {
             <button
               key={p.name}
               onClick={() =>
-                setTheme((t) => ({ ...t, primary_color: p.primary, accent_color: p.accent }))
+                setTheme((t) => {
+                  const next = { ...t, primary_color: p.primary, accent_color: p.accent };
+                  if (p.bg) next.background_color = p.bg;
+                  if (p.fg) next.foreground_color = p.fg;
+                  if (p.card) next.card_color = p.card;
+                  if (p.muted) next.muted_color = p.muted;
+                  if (p.border) next.border_color = p.border;
+                  const portal = APPLY_TO_PORTAL[p.name];
+                  if (portal) {
+                    next.portal_primary_color = portal.primary;
+                    next.portal_accent_color = portal.accent;
+                    next.portal_background_color = portal.bg;
+                    next.portal_card_color = portal.card;
+                    next.portal_foreground_color = portal.fg;
+                    next.portal_border_color = portal.border;
+                  }
+                  return next;
+                })
               }
               className="flex items-center gap-2 px-3 py-2 border border-input rounded-md text-sm hover:bg-secondary"
             >
