@@ -275,3 +275,23 @@ export const getReservationReview = createServerFn({ method: "GET" })
     return { ok: true as const, row, driver };
   });
 
+/** List change history for a ride request (visible to requester, assigned provider, or staff). */
+export const listRequestHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("ride_request_history")
+      .select("id, created_at, changed_by, changed_by_role, changed_by_email, action, changes, summary")
+      .eq("ride_request_id", data.id)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) {
+      console.error("listRequestHistory error", error);
+      return { ok: false as const, error: "Could not load history." };
+    }
+    return { ok: true as const, rows: rows ?? [] };
+  });
+
+
