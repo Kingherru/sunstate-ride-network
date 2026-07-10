@@ -289,9 +289,11 @@ function RequestRidePage() {
                 )}
                 {done.cents != null && (
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Estimated fare</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Estimated trip cost</div>
                     <div className="text-lg font-extrabold">${(done.cents / 100).toFixed(2)}</div>
-                    <div className="text-[11px] text-muted">FL NEMT avg</div>
+                    <div className="text-[11px] text-muted">
+                      {form.tripType === "round_trip" ? "Round trip estimate" : form.tripType === "multi_trip" ? "Multi-stop estimate" : "One-way estimate"}
+                    </div>
                   </div>
                 )}
               </div>
@@ -311,12 +313,16 @@ function RequestRidePage() {
               >
                 Open route in Google Maps →
               </a>
+              <p className="mt-4 text-[11px] leading-relaxed text-muted border-t border-border pt-3">
+                <strong className="font-bold text-foreground">This is an estimate only.</strong> The final price may change after dispatcher review, provider assignment, wait time, additional stops, or manual quoting. You will receive a confirmed price before your trip is dispatched.
+              </p>
             </div>
           )}
 
           <p className="text-muted text-lg mb-10">
-            A dispatcher will confirm pickup details by phone within 2 hours. For urgent same-day
-            requests, call <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
+            A dispatcher will confirm your pickup details by phone or email within 2 hours. Please be
+            on the lookout for our communication. For urgent same-day requests, call{" "}
+            <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
           </p>
           <Link
             to="/"
