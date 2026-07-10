@@ -233,16 +233,28 @@ function AdminPage() {
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {group.items.map((item) => (
-                      <SidebarMenuItem key={item.id}>
-                        <SidebarMenuButton
-                          isActive={tab === item.id}
-                          onClick={() => setTab(item.id)}
-                          tooltip={item.label}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
+                    {group.items.map((item) => {
+                      const tk = adminTabKeyFor(item.id);
+                      const badge = tk ? ((unread as any)[tk] ?? 0) : 0;
+                      return (
+                        <SidebarMenuItem key={item.id}>
+                          <SidebarMenuButton
+                            isActive={tab === item.id}
+                            onClick={() => handleAdminTab(item.id)}
+                            tooltip={item.label}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            <span className="flex-1">{item.label}</span>
+                            {badge > 0 && (
+                              <span
+                                aria-label={`${badge} new`}
+                                className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white animate-pulse"
+                              >
+                                {badge > 99 ? "99+" : badge}
+                              </span>
+                            )}
+                          </SidebarMenuButton>
+
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>
