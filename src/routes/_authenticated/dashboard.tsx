@@ -2551,52 +2551,75 @@ function MembershipsTab({ profile }: { profile: Profile }) {
   );
 }
 
-// ───────────────────────── Provider Business Info (editable, single source of truth) ─────────────────────────
+// ───────────────────────── Business Info (editable, single source of truth for all portals) ─────────────────────────
 
-function ProviderBusinessInfoCard({ profile, userId }: { profile: Profile; userId: string }) {
+function BusinessInfoCard({ profile, userId, portal }: { profile: Profile; userId: string; portal: PortalKind }) {
   const qc = useQueryClient();
   const p = profile as any;
+  const isProvider = portal === "provider";
+  const isFacility = portal === "facility";
+  const isPatient = portal === "patient";
+
   const [form, setForm] = useState({
     company_name: p.company_name ?? "",
+    first_name: p.first_name ?? "",
+    last_name: p.last_name ?? "",
     phone: p.phone ?? "",
     dispatch_email: p.dispatch_email ?? "",
     business_address: p.business_address ?? "",
     city: p.city ?? "",
-    region: p.region ?? "",
+    region: p.region ?? "FL",
     postal_code: p.postal_code ?? "",
     preferred_zip_codes: (Array.isArray(p.preferred_zip_codes) ? p.preferred_zip_codes : []).join(", "),
   });
   const [busy, setBusy] = useState(false);
 
+  const nameLabel = isFacility ? "Facility name *" : isProvider ? "Company name *" : "Full name *";
+  const emailLabel = isProvider ? "Dispatch email *" : "Business email *";
+  const title = isFacility ? "Facility Information" : isProvider ? "Business Information" : "Your Information";
+  const subtitle = isPatient
+    ? "Providers you're connected with can use this to contact you about your rides."
+    : "Single source of truth for your business. Providers you're connected with can use this to reach you.";
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.company_name.trim()) return toast.error("Company name is required");
+    const nameVal = isPatient
+      ? `${form.first_name.trim()} ${form.last_name.trim()}`.trim()
+      : form.company_name.trim();
+    if (!nameVal) return toast.error(isPatient ? "Name is required" : isFacility ? "Facility name is required" : "Company name is required");
     if (!form.phone.trim()) return toast.error("Phone is required");
-    if (!form.dispatch_email.trim()) return toast.error("Dispatch email is required");
+    if (!form.dispatch_email.trim()) return toast.error("Email is required");
     setBusy(true);
     try {
       const zips = form.preferred_zip_codes
         .split(/[\s,]+/).map((s: string) => s.trim()).filter(Boolean);
-      // Auto-resolve dispatch zone from ZIP
       let dispatch_zone_id: string | null = null;
       if (form.postal_code.trim()) {
         const { data: zoneMatch } = await supabase
           .from("dispatch_zone_zips").select("zone_id").eq("zip", form.postal_code.trim()).maybeSingle();
         dispatch_zone_id = (zoneMatch?.zone_id as string | null) ?? null;
       }
-      const { error } = await supabase.from("member_profiles").update({
-        company_name: form.company_name.trim(),
+      const patch: Record<string, any> = {
         phone: form.phone.trim(),
         dispatch_email: form.dispatch_email.trim(),
         business_address: form.business_address.trim() || null,
         city: form.city.trim() || null,
-        region: form.region.trim() || null,
+        region: (form.region.trim() || "FL"),
         postal_code: form.postal_code.trim() || null,
-        preferred_zip_codes: zips,
         dispatch_zone_id,
-      } as any).eq("user_id", userId);
+      };
+      if (isPatient) {
+        patch.first_name = form.first_name.trim() || null;
+        patch.last_name = form.last_name.trim() || null;
+        patch.company_name = nameVal;
+      } else {
+        patch.company_name = nameVal;
+      }
+      if (!isPatient) patch.preferred_zip_codes = zips;
+
+      const { error } = await supabase.from("member_profiles").update(patch).eq("user_id", userId);
       if (error) throw error;
-      toast.success("Business information saved");
+      toast.success(isFacility ? "Facility information saved" : isPatient ? "Contact information saved" : "Business information saved");
       qc.invalidateQueries({ queryKey: ["member-profile"] });
       qc.invalidateQueries({ queryKey: ["my-provider-onboarding"] });
     } catch (err: any) {
@@ -2610,41 +2633,53 @@ function ProviderBusinessInfoCard({ profile, userId }: { profile: Profile; userI
   return (
     <form onSubmit={save} className="bg-card border border-border rounded-sm p-6 space-y-4">
       <div>
-        <h3 className="text-lg font-extrabold tracking-tight">Business Information</h3>
-        <p className="text-sm text-muted-foreground">
-          Single source of truth for your business. Onboarding pulls from here — no duplicate entry needed.
-        </p>
+        <h3 className="text-lg font-extrabold tracking-tight">{title}</h3>
+        <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
-        <label className="sm:col-span-2"><span className={labelCls}>Company name *</span>
-          <input className={inputCls} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} required />
-        </label>
+        {isPatient ? (
+          <>
+            <label><span className={labelCls}>First name *</span>
+              <input className={inputCls} value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required />
+            </label>
+            <label><span className={labelCls}>Last name *</span>
+              <input className={inputCls} value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required />
+            </label>
+          </>
+        ) : (
+          <label className="sm:col-span-2"><span className={labelCls}>{nameLabel}</span>
+            <input className={inputCls} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} required />
+          </label>
+        )}
         <label><span className={labelCls}>Phone *</span>
           <input className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
         </label>
-        <label><span className={labelCls}>Dispatch email *</span>
+        <label><span className={labelCls}>{emailLabel}</span>
           <input type="email" className={inputCls} value={form.dispatch_email} onChange={(e) => setForm({ ...form, dispatch_email: e.target.value })} required />
         </label>
-        <label className="sm:col-span-2"><span className={labelCls}>Business address</span>
+        <label className="sm:col-span-2"><span className={labelCls}>{isPatient ? "Address" : "Business address"}</span>
           <input className={inputCls} value={form.business_address} onChange={(e) => setForm({ ...form, business_address: e.target.value })} placeholder="123 Main St, Suite 200" />
         </label>
         <label><span className={labelCls}>City</span>
           <input className={inputCls} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
         </label>
-        <label><span className={labelCls}>Region / County</span>
-          <input className={inputCls} value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} />
+        <label><span className={labelCls}>State</span>
+          <input className={inputCls} value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} placeholder="FL" />
         </label>
-        <label><span className={labelCls}>Business ZIP code</span>
+        <label><span className={labelCls}>ZIP code</span>
           <input className={inputCls} value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="e.g. 33101" />
         </label>
-        <label><span className={labelCls}>Service ZIP codes (comma or space separated)</span>
-          <input className={inputCls} value={form.preferred_zip_codes} onChange={(e) => setForm({ ...form, preferred_zip_codes: e.target.value })} placeholder="33101, 33102, 33103" />
-        </label>
+        {!isPatient && (
+          <label><span className={labelCls}>Service ZIP codes (comma or space separated)</span>
+            <input className={inputCls} value={form.preferred_zip_codes} onChange={(e) => setForm({ ...form, preferred_zip_codes: e.target.value })} placeholder="33101, 33102, 33103" />
+          </label>
+        )}
       </div>
       <button type="submit" disabled={busy} className="portal-btn-primary px-5 py-2">
-        {busy ? "Saving…" : "Save business information"}
+        {busy ? "Saving…" : isFacility ? "Save facility information" : isPatient ? "Save contact information" : "Save business information"}
       </button>
     </form>
   );
 }
+
 
