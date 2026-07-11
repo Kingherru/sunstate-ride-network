@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
+import logoHorizontal from "@/assets/logo-horizontal.png";
 
 const primaryLinks = [
   { to: "/services", label: "Services" },
