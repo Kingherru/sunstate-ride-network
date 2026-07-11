@@ -1,0 +1,33 @@
+# MyFloridaNemt.com
+
+> Florida's statewide non-emergency medical transportation (NEMT) network — connecting Medicaid members, families, facilities, and vetted providers across all 67 counties.
+
+MyFloridaNemt.com coordinates ambulatory, wheelchair, and stretcher transport statewide, and runs a training academy that certifies NEMT drivers.
+
+## Pages
+
+- [Home](/): Overview of statewide Medicaid NEMT service.
+- [Services](/services): Ambulatory, wheelchair, and stretcher transport levels.
+- [How It Works](/how-it-works): Step-by-step patient booking flow and FAQs.
+- [Service Areas](/service-areas): County and metro coverage across Florida.
+- [Request a Ride](/request-a-ride): Book a trip with a local provider.
+- [For Providers](/providers): Join the statewide NEMT network.
+- [Join Our Network](/join-our-network): Provider onboarding details.
+- [Training](/training): NEMT and HIPAA certification training.
+- [Membership](/membership): Provider membership plans.
+- [Resources](/resources): Articles on Medicaid NEMT, compliance, and patient care.
+- [About](/about): Company overview and principles.
+- [Contact](/contact): Reach the MyFloridaNemt.com team.
+
+## Service Area Pages
+
+- [Jacksonville](/service-areas/jacksonville)
+- [Orlando](/service-areas/orlando)
+- [Tampa](/service-areas/tampa)
+- [Miami](/service-areas/miami)
+- [Tallahassee](/service-areas/tallahassee)
+- [Fort Lauderdale](/service-areas/fort-lauderdale)
+
+## Optional
+
+- [Changelog](/changelog): Recent platform updates.
