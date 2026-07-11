@@ -152,8 +152,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <div className="min-h-screen flex flex-col bg-background text-foreground">
-          {!isAuthedArea && !isEmbed && <Header />}
-          <main className="flex-1">
+          {!isAuthedArea && !isEmbed && !isLoginPage && <Header />}
+          <main className="flex-1 flex flex-col">
             <Outlet />
           </main>
           {!isEmbed && !isLoginPage && <Footer portal={portal} />}
