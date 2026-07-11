@@ -312,9 +312,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
     case "providers": return <ProvidersTab caps={caps} />;
     case "dispatch": return caps.canDispatch ? <AdminDispatchPanel /> : <NoAccess />;
-    case "credentials": return caps.canDispatch ? <ExpiringCredentialsPanel /> : <NoAccess />;
-    case "staff": return caps.canManageStaff ? <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} /> : <NoAccess />;
-    case "audit": return caps.canViewAuditLog ? <AuditLogPanel /> : <NoAccess />;
+    case "security": return <SecurityTab caps={caps} />;
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
     case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
