@@ -109,8 +109,21 @@ export function themeToCss(t: PlatformTheme) {
 }
 
 
+const THEME_CACHE_KEY = "mfn.theme.css.v1";
+
+function readCachedCss(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.localStorage.getItem(THEME_CACHE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [css, setCss] = useState<string>("");
+  // Initialize synchronously from cache so repeat visits render with the
+  // correct colors on the first paint — no visible flip from defaults.
+  const [css, setCss] = useState<string>(readCachedCss);
 
   useEffect(() => {
     let alive = true;
@@ -123,8 +136,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        if (!alive) return;
-        if (data) setCss(themeToCss({ ...DEFAULT_THEME, ...data }));
+        if (!alive || !data) return;
+        const next = themeToCss({ ...DEFAULT_THEME, ...data });
+        // Only touch state (and the DOM <style>) when the theme actually changed.
+        // This prevents an unnecessary re-flash on every navigation.
+        setCss((prev) => (prev === next ? prev : next));
+        try {
+          window.localStorage.setItem(THEME_CACHE_KEY, next);
+        } catch {
+          /* ignore quota / privacy-mode errors */
+        }
       } catch {
         /* keep defaults */
       }
@@ -141,3 +162,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     </>
   );
 }
+
