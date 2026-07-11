@@ -10,7 +10,7 @@ export const organizationSchema = {
   ],
 };
 
-export const buildServiceSchema({
+export function buildServiceSchema({
   serviceType,
   description,
   url,
