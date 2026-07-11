@@ -722,21 +722,44 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated }: { onCreated: () => void }) {
+function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initialTrip?: any }) {
+  const seed = initialTrip ?? {};
   const [form, setForm] = useState<any>({
-    patient_first_name: "", patient_last_name: "", patient_phone: "",
-    patient_date_of_birth: "", medicaid_number: "", medicaid_plan: "",
-    authorization_number: "", diagnosis_code: "",
-    emergency_contact_name: "", emergency_contact_phone: "",
-    pickup_address: "", pickup_address_details: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    patient_first_name: seed.patient_first_name ?? "",
+    patient_last_name: seed.patient_last_name ?? "",
+    patient_phone: seed.patient_phone ?? "",
+    patient_date_of_birth: seed.patient_date_of_birth ?? "",
+    medicaid_number: seed.medicaid_number ?? "",
+    medicaid_plan: seed.medicaid_plan ?? "",
+    authorization_number: seed.authorization_number ?? "",
+    diagnosis_code: seed.diagnosis_code ?? "",
+    emergency_contact_name: seed.emergency_contact_name ?? "",
+    emergency_contact_phone: seed.emergency_contact_phone ?? "",
+    pickup_address: seed.pickup_address ?? "",
+    pickup_address_details: seed.pickup_address_details ?? "",
+    pickup_city: seed.pickup_city ?? "",
+    pickup_zip: seed.pickup_zip ?? "",
+    // Date/time intentionally blank so user picks a new schedule.
+    pickup_date: "",
+    pickup_time: "",
     appointment_time: "",
-    dropoff_address: "", dropoff_city: "", dropoff_zip: "",
-    transport_type: "ambulatory", round_trip: false,
-    return_pickup_time: "", return_dropoff_time: "",
-    service_level: "curb_to_curb",
-    needs_wheelchair: false, has_passenger: false, needs_assistance_to_vehicle: false,
-    needs_surgery_signin: false, needs_surgery_signout: false,
-    mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
+    dropoff_address: seed.dropoff_address ?? "",
+    dropoff_city: seed.dropoff_city ?? "",
+    dropoff_zip: seed.dropoff_zip ?? "",
+    transport_type: seed.transport_type ?? "ambulatory",
+    round_trip: !!seed.round_trip,
+    return_pickup_time: "",
+    return_dropoff_time: "",
+    service_level: seed.service_level ?? "curb_to_curb",
+    needs_wheelchair: !!seed.needs_wheelchair,
+    has_passenger: !!seed.has_passenger,
+    needs_assistance_to_vehicle: !!seed.needs_assistance_to_vehicle,
+    needs_surgery_signin: !!seed.needs_surgery_signin,
+    needs_surgery_signout: !!seed.needs_surgery_signout,
+    mobility_notes: seed.mobility_notes ?? "",
+    special_instructions: seed.special_instructions ?? "",
+    payer: seed.payer ?? "",
+    trip_number: "",
   });
   const [hipaaOk, setHipaaOk] = useState(false);
   const m = useMutation({
