@@ -1635,7 +1635,12 @@ function TripDetailView({
           <div className="border-t border-border" />
 
           <section className="rounded-lg border-2 border-border bg-card p-4 shadow-sm">
-            <H>Pricing &amp; billing</H>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <H>Pricing &amp; billing</H>
+              <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-1 rounded-full border ${quoteStage.tone}`}>
+                {quoteStage.label}
+              </span>
+            </div>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Payment status</span>
@@ -1661,8 +1666,11 @@ function TripDetailView({
                   <span className="font-semibold">{t.payer ?? "—"}</span>
                 )}
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Estimated price</span>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-muted-foreground">Estimated price</div>
+                  <div className="text-[0.65rem] text-muted-foreground italic">Final amount may change</div>
+                </div>
                 <span className="font-semibold">{fmtMoney(t.estimated_miles && t.cost_total == null ? null : t.cost_total)}</span>
               </div>
 
