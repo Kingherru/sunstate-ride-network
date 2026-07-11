@@ -339,11 +339,12 @@ function NoAccess() {
 
 type SecuritySubTab = "staff" | "audit" | "credentials";
 function SecurityTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
-  const available: Array<{ id: SecuritySubTab; label: string; enabled: boolean }> = [
+  const all: Array<{ id: SecuritySubTab; label: string; enabled: boolean }> = [
     { id: "staff", label: "Staff permissions", enabled: caps.canManageStaff },
     { id: "audit", label: "Audit log", enabled: caps.canViewAuditLog },
     { id: "credentials", label: "Expiring credentials", enabled: caps.canDispatch },
-  ].filter((t) => t.enabled);
+  ];
+  const available = all.filter((t) => t.enabled);
   const [sub, setSub] = useState<SecuritySubTab>(available[0]?.id ?? "staff");
   if (available.length === 0) return <NoAccess />;
   return (
