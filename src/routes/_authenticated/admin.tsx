@@ -146,8 +146,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { id: "theme", label: "Theme & branding", icon: Palette, visible: (c) => c.canConfigurePricing },
-      { id: "staff", label: "Staff permissions", icon: ShieldCheck, visible: (c) => c.canManageStaff },
-      { id: "audit", label: "Audit log", icon: ClipboardList, visible: (c) => c.canViewAuditLog },
+      { id: "security", label: "Security", icon: ShieldCheck, visible: (c) => c.canManageStaff || c.canViewAuditLog || c.canDispatch },
       { id: "changelog", label: "Changelog", icon: History, visible: (c) => c.isOps },
       { id: "system", label: "System settings", icon: Settings, visible: (c) => c.isAdmin },
     ],
