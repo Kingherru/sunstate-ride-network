@@ -31,6 +31,7 @@ import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as StaffLoginRouteImport } from './routes/staff.login'
+import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
@@ -163,6 +164,11 @@ const StaffLoginRoute = StaffLoginRouteImport.update({
   id: '/staff/login',
   path: '/staff/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ShopReturnRoute = ShopReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => ShopRoute,
 } as any)
 const ShopSlugRoute = ShopSlugRouteImport.update({
   id: '/$slug',
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
@@ -365,6 +372,7 @@ export interface FileRoutesByTo {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
   '/resources': typeof ResourcesIndexRoute
   '/service-areas': typeof ServiceAreasIndexRoute
@@ -413,6 +421,7 @@ export interface FileRoutesById {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
@@ -461,6 +470,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/shop/$slug'
+    | '/shop/return'
     | '/staff/login'
     | '/resources/'
     | '/service-areas/'
@@ -505,6 +515,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/shop/$slug'
+    | '/shop/return'
     | '/staff/login'
     | '/resources'
     | '/service-areas'
@@ -552,6 +563,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/shop/$slug'
+    | '/shop/return'
     | '/staff/login'
     | '/resources/'
     | '/service-areas/'
@@ -761,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/return': {
+      id: '/shop/return'
+      path: '/return'
+      fullPath: '/shop/return'
+      preLoaderRoute: typeof ShopReturnRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/shop/$slug': {
       id: '/shop/$slug'
       path: '/$slug'
@@ -969,11 +988,13 @@ const ServiceAreasRouteWithChildren = ServiceAreasRoute._addFileChildren(
 
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
+  ShopReturnRoute: typeof ShopReturnRoute
   ShopIndexRoute: typeof ShopIndexRoute
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
   ShopSlugRoute: ShopSlugRoute,
+  ShopReturnRoute: ShopReturnRoute,
   ShopIndexRoute: ShopIndexRoute,
 }
 
