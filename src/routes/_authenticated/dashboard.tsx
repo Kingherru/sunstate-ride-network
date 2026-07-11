@@ -1169,12 +1169,14 @@ function TripDetailView({
   trip,
   userId,
   role,
+  portal,
   onBack,
   onChanged,
 }: {
   trip: Trip;
   userId: string;
   role: "sender" | "recipient";
+  portal?: PortalKind;
   onBack: () => void;
   onChanged: () => void;
 }) {
@@ -1186,9 +1188,12 @@ function TripDetailView({
 
   const isSender = t.created_by === userId || role === "sender";
   const isRecipient = t.assigned_to === userId || role === "recipient";
+  const isProviderPortal = portal === "provider";
   const canEditAll = isSender;
-  const canEditProviderFields = isRecipient || isSender;
-  const canEdit = canEditAll || canEditProviderFields;
+  // Only providers can edit the quote/cost. Patients & facilities are read-only on pricing.
+  const canEditQuote = isRecipient && isProviderPortal;
+  const canEditProviderFields = canEditQuote;
+  const canEdit = canEditAll || canEditQuote;
 
   const original = useMemo(() => buildForm(t), [t]);
   const [form, setForm] = useState<EditableFields>(original);
