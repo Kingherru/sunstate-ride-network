@@ -292,6 +292,15 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const isTabLocked = (t: Tab) =>
     isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
 
+  // Hide the Onboarding tab once the provider is approved.
+  const allowedTabs = useMemo<Tab[]>(
+    () => (isApprovedProvider ? baseAllowedTabs.filter((t) => t !== "onboarding") : baseAllowedTabs),
+    [baseAllowedTabs, isApprovedProvider],
+  );
+  useEffect(() => {
+    if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
+  }, [allowedTabs, tab]);
+
   // Patients & facilities can always send (book); providers still require paid membership.
   const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
   const realTrips = tripsQ.data ?? [];
