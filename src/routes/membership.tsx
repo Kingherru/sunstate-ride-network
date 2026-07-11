@@ -30,6 +30,7 @@ function MembershipPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [plan, setPlan] = useState<"monthly" | "yearly">("yearly");
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
