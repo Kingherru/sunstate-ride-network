@@ -90,6 +90,32 @@ export function Header() {
           </Link>
 
           <div className="hidden xl:flex items-center gap-6">
+            <div className="relative" ref={servicesRef}>
+              <button
+                type="button"
+                onClick={() => setServicesOpen((v) => !v)}
+                aria-expanded={servicesOpen}
+                className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${servicesActive ? "text-accent" : "text-foreground hover:text-accent"}`}
+              >
+                Services <ChevronDown className={`size-3.5 transition-transform ${servicesOpen ? "rotate-180" : ""}`} />
+              </button>
+              {servicesOpen && (
+                <div className="absolute left-0 top-full mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden py-1">
+                  {servicesLinks.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className="block px-4 py-3 hover:bg-secondary transition-colors"
+                      activeOptions={{ exact: true }}
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground">{l.label}</div>
+                      <div className="text-[11px] text-muted mt-0.5 normal-case tracking-normal">{l.desc}</div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {primaryLinks.map((l) => (
               <Link
                 key={l.to}
