@@ -68,18 +68,22 @@ function AmbulatoryPage() {
 
 // --- shared layout used by all three service pages ---
 export function ServiceLayout({
+  breadcrumbs,
   eyebrow,
   title,
   lede,
   icon,
   bullets,
+  relatedLinks,
   useCases,
 }: {
+  breadcrumbs: { label: string; to?: string }[];
   eyebrow: string;
   title: string;
   lede: string;
   icon: React.ReactNode;
   bullets: string[];
+  relatedLinks?: { to: string; label: string; desc: string }[];
   useCases: { h: string; p: string }[];
 }) {
   return (
