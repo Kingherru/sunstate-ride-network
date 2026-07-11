@@ -52,6 +52,7 @@ import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedProviderMedicaidRouteImport } from './routes/_authenticated/provider.medicaid'
 import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
+import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -279,6 +280,11 @@ const AuthenticatedPatientDashboardRoute =
     path: '/patient/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AuthenticatedLearnRoute,
+} as any)
 const AuthenticatedFacilityDashboardRoute =
   AuthenticatedFacilityDashboardRouteImport.update({
     id: '/facility/dashboard',
@@ -354,6 +360,7 @@ export interface FileRoutesByFullPath {
   '/shop/': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
@@ -401,6 +408,7 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
@@ -453,6 +461,7 @@ export interface FileRoutesById {
   '/shop/': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/_authenticated/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
@@ -505,6 +514,7 @@ export interface FileRouteTypes {
     | '/shop/'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
+    | '/learn/$slug'
     | '/patient/dashboard'
     | '/provider/dashboard'
     | '/provider/medicaid'
@@ -552,6 +562,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
+    | '/learn/$slug'
     | '/patient/dashboard'
     | '/provider/dashboard'
     | '/provider/medicaid'
@@ -603,6 +614,7 @@ export interface FileRouteTypes {
     | '/shop/'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/facility/dashboard'
+    | '/_authenticated/learn/$slug'
     | '/_authenticated/patient/dashboard'
     | '/_authenticated/provider/dashboard'
     | '/_authenticated/provider/medicaid'
@@ -955,6 +967,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPatientDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/learn/$slug': {
+      id: '/_authenticated/learn/$slug'
+      path: '/$slug'
+      fullPath: '/learn/$slug'
+      preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
     '/_authenticated/facility/dashboard': {
       id: '/_authenticated/facility/dashboard'
       path: '/facility/dashboard'
@@ -1001,10 +1020,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedLearnRouteChildren {
+  AuthenticatedLearnSlugRoute: typeof AuthenticatedLearnSlugRoute
   AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
 }
 
 const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
+  AuthenticatedLearnSlugRoute: AuthenticatedLearnSlugRoute,
   AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
 }
 
