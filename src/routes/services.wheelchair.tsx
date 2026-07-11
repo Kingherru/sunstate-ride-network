@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Accessibility } from "lucide-react";
+import { buildServiceSchema } from "@/lib/schema";
 import { ServiceLayout } from "./services.ambulatory";
 
 const TITLE = "Wheelchair Transportation Services in Florida | NEMT Wheelchair Rides";
