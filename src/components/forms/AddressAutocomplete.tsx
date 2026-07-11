@@ -74,6 +74,7 @@ export function AddressAutocomplete({
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ placeId: string; text: string; secondary: string }>>([]);
   const [highlight, setHighlight] = useState(0);
+  const [loadError, setLoadError] = useState<null | "no_key" | "script_error" | "referrer_blocked" | "places_api_disabled" | "request_denied" | "quota" | "unknown">(null);
   const sessionTokenRef = useRef<any>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -81,8 +82,26 @@ export function AddressAutocomplete({
 
   useEffect(() => {
     let alive = true;
-    loadMaps().then(() => { if (alive) setReady(true); }).catch(() => { if (alive) setReady(false); });
-    return () => { alive = false; };
+    loadMaps()
+      .then(() => { if (alive) { setReady(true); setLoadError(null); } })
+      .catch((err: Error) => {
+        if (!alive) return;
+        setReady(false);
+        setLoadError(err?.message === "no_key" ? "no_key" : "script_error");
+      });
+    // Google Maps writes its own errors to console.error; intercept once to surface referrer / API-not-enabled failures.
+    const origErr = console.error;
+    console.error = (...args: unknown[]) => {
+      try {
+        const msg = args.map((a) => (typeof a === "string" ? a : (a as any)?.message ?? "")).join(" ");
+        if (/RefererNotAllowedMapError|referer.*not.*allowed/i.test(msg)) setLoadError("referrer_blocked");
+        else if (/Places API \(New\) has not been used|places\.googleapis\.com.*disabled|SERVICE_DISABLED/i.test(msg)) setLoadError("places_api_disabled");
+        else if (/REQUEST_DENIED|ApiNotActivatedMapError|InvalidKeyMapError/i.test(msg)) setLoadError("request_denied");
+        else if (/OverQuota|OVER_QUERY_LIMIT/i.test(msg)) setLoadError("quota");
+      } catch { /* noop */ }
+      origErr.apply(console, args as []);
+    };
+    return () => { alive = false; console.error = origErr; };
   }, []);
 
   useEffect(() => {
