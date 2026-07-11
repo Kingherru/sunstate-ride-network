@@ -1388,72 +1388,76 @@ function TripDetailView({
   return (
     <div className="bg-background">
       {/* Header */}
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-border">
-        <div className="space-y-1.5 min-w-0">
-          <button
-            onClick={() => tryLeave(onBack)}
-            className="text-xs font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-          >
-            ← Back to trips
-          </button>
-          <div className="flex items-center gap-2 flex-wrap">
-            <TripStatusBadge s={t.status} />
-            <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>
-              {paymentLabel}
-            </span>
-            {t.display_id && (
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                {t.display_id}
+      {/* Back link — full-width, prominent */}
+      <button
+        onClick={() => tryLeave(onBack)}
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+      >
+        <span aria-hidden="true">←</span> Back to trips
+      </button>
+
+      <header className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <TripStatusBadge s={t.status} />
+              <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>
+                {paymentLabel}
               </span>
+              {t.display_id && (
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  {t.display_id}
+                </span>
+              )}
+              {t.payer && String(t.payer).toLowerCase().includes("medicaid") && (
+                <span className="text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-orange-100 text-orange-700 border border-orange-200">
+                  Medicaid
+                </span>
+              )}
+            </div>
+            <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground truncate">
+              {t.patient_first_name} {t.patient_last_name}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {t.pickup_date}
+              {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
+              {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 lg:justify-end lg:shrink-0">
+            <button
+              onClick={() => downloadTripPdf(trip as TripPdfInput)}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold border-2 border-border bg-background text-foreground px-4 py-2.5 rounded-md hover:bg-muted hover:border-foreground/40 transition-colors"
+            >
+              Download PDF
+            </button>
+            {canEdit && !editing && (
+              <button
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-4 py-2.5 rounded-md hover:bg-primary/90 shadow-sm transition-colors"
+              >
+                Edit trip
+              </button>
             )}
-            {t.payer && String(t.payer).toLowerCase().includes("medicaid") && (
-              <span className="text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-orange-100 text-orange-700 border border-orange-200">
-                Medicaid
-              </span>
+            {editing && (
+              <>
+                <button
+                  onClick={() => tryLeave(() => { setForm(original); setEditing(false); })}
+                  disabled={saving}
+                  className="text-sm font-semibold border-2 border-border bg-background text-foreground px-4 py-2.5 rounded-md hover:bg-muted disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => save()}
+                  disabled={saving || !dirty}
+                  className="text-sm font-semibold bg-emerald-600 text-white px-5 py-2.5 rounded-md hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              </>
             )}
           </div>
-          <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
-            {t.patient_first_name} {t.patient_last_name}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {t.pickup_date}
-            {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
-            {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => downloadTripPdf(trip as TripPdfInput)}
-            className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
-          >
-            Download PDF
-          </button>
-          {canEdit && !editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
-            >
-              Edit trip
-            </button>
-          )}
-          {editing && (
-            <>
-              <button
-                onClick={() => tryLeave(() => { setForm(original); setEditing(false); })}
-                disabled={saving}
-                className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => save()}
-                disabled={saving || !dirty}
-                className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
-              >
-                {saving ? "Saving…" : "Save changes"}
-              </button>
-            </>
-          )}
         </div>
       </header>
 
@@ -1565,22 +1569,32 @@ function TripDetailView({
 
           <section>
             <H>Trip status timeline</H>
-            <ol className="relative border-l-2 border-border ml-2 space-y-4">
-              {steps.map((s) => {
-                const dot =
-                  s.state === "done"
-                    ? "bg-emerald-500 border-emerald-500"
-                    : s.state === "current"
-                    ? "bg-amber-500 border-amber-500"
-                    : "bg-background border-border";
+            <ol className="space-y-3">
+              {steps.map((s, idx) => {
+                const isDone = s.state === "done";
+                const isCurrent = s.state === "current";
+                const dot = isDone
+                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  : isCurrent
+                  ? "bg-amber-500 border-amber-500 text-white ring-4 ring-amber-500/20"
+                  : "bg-background border-border text-muted-foreground";
+                const rowBg = isCurrent
+                  ? "bg-amber-50 border-amber-200"
+                  : isDone
+                  ? "bg-emerald-50/40 border-emerald-100"
+                  : "bg-muted/30 border-border";
                 return (
-                  <li key={s.key} className="pl-6 relative">
-                    <span className={`absolute -left-[9px] top-1 inline-block w-4 h-4 rounded-full border-2 ${dot}`} />
-                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
-                      <div className="text-sm font-semibold text-foreground">{s.label}</div>
-                      <div className="text-xs text-muted-foreground">{fmtDateTime(s.at ?? null)}</div>
+                  <li key={s.key} className={`flex items-start gap-3 rounded-md border px-3 py-2.5 ${rowBg}`}>
+                    <span className={`shrink-0 mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 text-[0.7rem] font-bold ${dot}`}>
+                      {isDone ? "✓" : idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                        <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                        <div className="text-xs text-muted-foreground">{fmtDateTime(s.at ?? null)}</div>
+                      </div>
+                      {s.note && <div className="text-xs text-muted-foreground mt-0.5">{s.note}</div>}
                     </div>
-                    {s.note && <div className="text-xs text-muted-foreground mt-0.5">{s.note}</div>}
                   </li>
                 );
               })}
@@ -1605,7 +1619,7 @@ function TripDetailView({
 
           <div className="border-t border-border" />
 
-          <section>
+          <section className="rounded-lg border-2 border-border bg-card p-4 shadow-sm">
             <H>Pricing &amp; billing</H>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
@@ -1636,22 +1650,45 @@ function TripDetailView({
                 <span className="text-muted-foreground">Estimated price</span>
                 <span className="font-semibold">{fmtMoney(t.estimated_miles && t.cost_total == null ? null : t.cost_total)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Provider quote</span>
-                {editing && canEditProviderFields ? (
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.cost_total}
-                    onChange={(e) => setField("cost_total", e.target.value)}
-                    placeholder="0.00"
-                    className="w-28 border border-border rounded-sm px-2 py-1 text-sm bg-background text-right"
-                  />
-                ) : (
-                  <span className="font-semibold">{fmtMoney(quoteDollars)}</span>
+
+              {/* Provider Quote — highlighted */}
+              <div className={`rounded-md border-2 px-3 py-3 ${needsQuote ? "border-amber-300 bg-amber-50" : "border-primary/30 bg-primary/5"}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-foreground">Provider quote</span>
+                  {editing && canEditProviderFields ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold text-foreground">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={form.cost_total}
+                        onChange={(e) => setField("cost_total", e.target.value)}
+                        placeholder="0.00"
+                        className="w-28 border-2 border-primary/40 rounded-md px-2 py-1.5 text-base font-bold bg-background text-right focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-lg font-extrabold text-foreground">{fmtMoney(quoteDollars)}</span>
+                  )}
+                </div>
+                {needsQuote && (
+                  <p className="mt-2 text-xs text-amber-800">
+                    {canEditProviderFields
+                      ? "Quote required — enter your quote above and save."
+                      : "Awaiting manual quote from provider."}
+                  </p>
+                )}
+                {canEditProviderFields && !editing && (
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="w-full mt-3 text-sm font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-md hover:bg-primary/90 shadow-sm"
+                  >
+                    {needsQuote ? "Create quote" : "Update quote"}
+                  </button>
                 )}
               </div>
+
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Amount paid</span>
                 <span className="font-semibold">{fmtMoney(paidDollars)}</span>
@@ -1670,22 +1707,6 @@ function TripDetailView({
                 <span className="text-muted-foreground">Payment method</span>
                 <span className="font-semibold">{(paymentsQ.data ?? []).length ? "Card (Stripe)" : "—"}</span>
               </div>
-
-              {needsQuote && (
-                <div className="mt-2 rounded-sm bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
-                  {canEditProviderFields
-                    ? "Quote required — enter your quote above and save."
-                    : "Awaiting manual quote from provider."}
-                </div>
-              )}
-              {canEditProviderFields && !editing && (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="w-full mt-2 text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
-                >
-                  {needsQuote ? "Create quote" : "Update quote"}
-                </button>
-              )}
 
               {t.cost_breakdown?.lines?.length ? (
                 <div className="mt-3 pt-3 border-t border-border space-y-1">
