@@ -13,6 +13,8 @@ import {
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
+import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
+import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 
