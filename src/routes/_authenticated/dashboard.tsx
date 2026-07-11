@@ -283,7 +283,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     }),
     [realProfile, vehiclesQ.data, driversQ.data],
   );
-  const isSoftAccess = portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete;
+  // A provider whose application has been approved (linked via
+  // provider_application_id on their profile) skips the onboarding wall
+  // entirely — they get the normal provider experience immediately.
+  const isApprovedProvider =
+    portal === "provider" && !!realProfile && !!(realProfile as any).provider_application_id;
+  const isSoftAccess =
+    portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete && !isApprovedProvider;
   const isTabLocked = (t: Tab) =>
     isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
 
