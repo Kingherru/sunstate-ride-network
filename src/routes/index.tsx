@@ -207,7 +207,7 @@ function HomePage() {
                 key={c.slug}
                 to="/service-areas/$city"
                 params={{ city: c.slug }}
-                className="group bg-white/[0.04] border border-white/15 rounded-xl p-8 hover:bg-white/[0.08] hover:border-white/30 transition-all"
+                className="group bg-white/[0.04] border border-white/[0.08] rounded-xl p-8 hover:bg-white/[0.08] hover:border-white/20 transition-all"
               >
                 <div className="flex items-start justify-between mb-8">
                   <span className="font-mono text-xs text-white/55">{c.code}</span>
