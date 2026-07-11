@@ -89,8 +89,14 @@ export function ServiceLayout({
         style={{ background: CREAM, borderBottom: `1px solid ${NAVY}` }}
       >
         <div className="max-w-5xl mx-auto">
+          <Breadcrumbs
+            items={[
+              { label: "Services", to: "/services" },
+              { label: "Ambulatory Transportation" },
+            ]}
+          />
           <div
-            className="w-16 h-16 rounded-2xl mb-8 flex items-center justify-center"
+            className="w-16 h-16 rounded-2xl mt-8 mb-8 flex items-center justify-center"
             style={{ background: ORANGE, color: NAVY }}
           >
             {icon}
