@@ -2035,61 +2035,94 @@ export type Database = {
       }
       saved_patients: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
+          authorization_number: string | null
+          city: string | null
           created_at: string
           default_dropoff_address: string | null
           default_dropoff_city: string | null
           default_pickup_address: string | null
           default_pickup_city: string | null
+          diagnosis_code: string | null
           dob: string | null
           email: string | null
           first_name: string
+          gender: string | null
           id: string
           kind: string
           last_name: string
           medicaid_id: string | null
+          medicaid_number: string | null
+          medicaid_plan: string | null
           mobility: string | null
           notes: string | null
           owner_id: string
+          payer: string | null
           phone: string | null
+          state: string | null
           updated_at: string
+          zip: string | null
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          authorization_number?: string | null
+          city?: string | null
           created_at?: string
           default_dropoff_address?: string | null
           default_dropoff_city?: string | null
           default_pickup_address?: string | null
           default_pickup_city?: string | null
+          diagnosis_code?: string | null
           dob?: string | null
           email?: string | null
           first_name: string
+          gender?: string | null
           id?: string
           kind?: string
           last_name: string
           medicaid_id?: string | null
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
           mobility?: string | null
           notes?: string | null
           owner_id: string
+          payer?: string | null
           phone?: string | null
+          state?: string | null
           updated_at?: string
+          zip?: string | null
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          authorization_number?: string | null
+          city?: string | null
           created_at?: string
           default_dropoff_address?: string | null
           default_dropoff_city?: string | null
           default_pickup_address?: string | null
           default_pickup_city?: string | null
+          diagnosis_code?: string | null
           dob?: string | null
           email?: string | null
           first_name?: string
+          gender?: string | null
           id?: string
           kind?: string
           last_name?: string
           medicaid_id?: string | null
+          medicaid_number?: string | null
+          medicaid_plan?: string | null
           mobility?: string | null
           notes?: string | null
           owner_id?: string
+          payer?: string | null
           phone?: string | null
+          state?: string | null
           updated_at?: string
+          zip?: string | null
         }
         Relationships: []
       }
