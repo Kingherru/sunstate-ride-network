@@ -670,7 +670,44 @@ function MembershipGate() {
   );
 }
 
-function PaidOnly() {
+function LockedTabOverlay({
+  onboarding,
+  onGoToOnboarding,
+}: {
+  onboarding: ReturnType<typeof computeProviderOnboarding>;
+  onGoToOnboarding: () => void;
+}) {
+  return (
+    <div className="max-w-2xl mx-auto bg-card border border-border p-10 text-center">
+      <div className="mx-auto h-12 w-12 grid place-items-center bg-primary/10 text-primary mb-4">
+        <Lock className="h-6 w-6" />
+      </div>
+      <h3 className="font-display text-2xl font-bold tracking-tight mb-2">
+        Locked while your account is in Soft Access
+      </h3>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        Finish your business profile to unlock this tab. You've completed{" "}
+        <strong>{onboarding.doneCount} of {onboarding.total}</strong> steps —
+        {onboarding.remaining} to go.
+      </p>
+      <div className="mt-4 h-2 w-full max-w-xs mx-auto bg-muted overflow-hidden">
+        <div className="h-full bg-accent transition-all" style={{ width: `${onboarding.percent}%` }} />
+      </div>
+      <button
+        type="button"
+        onClick={onGoToOnboarding}
+        className="mt-6 inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 text-sm font-bold uppercase tracking-wider hover:bg-primary/90"
+      >
+        Continue onboarding →
+      </button>
+      <p className="text-xs text-muted-foreground mt-4">
+        Available now: <strong>New Trip</strong> · <strong>Reservations</strong> · <strong>Schedule</strong>
+      </p>
+    </div>
+  );
+}
+
+
   return (
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
