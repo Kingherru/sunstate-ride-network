@@ -97,7 +97,7 @@ export const Route = createFileRoute("/service-areas/$city")({
 });
 
 function CityPage() {
-  const { city } = Route.useLoaderData();
+  const { city } = Route.useLoaderData() as { city: CityInfo };
   return (
     <div className="bg-white" style={{ color: NAVY }}>
       {/* Hero */}
