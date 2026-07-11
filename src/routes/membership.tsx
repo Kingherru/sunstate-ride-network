@@ -8,8 +8,8 @@ import { useProviderOnlyGate } from "@/lib/portal-guard";
 export const Route = createFileRoute("/membership")({
   head: () => ({
     meta: [
-      { title: "MyFloridaNemt.com Membership — $5/year dispatch network" },
-      { name: "description", content: "Join the MyFloridaNemt.com dispatch network. $5/year — send and receive trips with approved NEMT providers in your region." },
+      { title: "MyFloridaNemt.com Membership — $10/mo or $100/yr dispatch network" },
+      { name: "description", content: "Join the MyFloridaNemt.com dispatch network. $10/mo or $100/yr (save $20) — send and receive trips with approved NEMT providers in your region." },
       { rel: "canonical", href: "https://floridanemt.com/membership" } as any,
     ],
   }),
@@ -44,7 +44,7 @@ function MembershipPage() {
         <div className="max-w-4xl mx-auto text-center">
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4">Member Network</span>
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter mb-4">
-            $5/year. Run your dispatch.
+            $10/mo or $100/yr. Run your dispatch.
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Join Florida's NEMT dispatch network. Send trips. Receive trips. Export to your fleet.

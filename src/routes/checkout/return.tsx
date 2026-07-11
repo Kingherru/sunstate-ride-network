@@ -23,7 +23,7 @@ function CheckoutReturn() {
         </svg>
       </div>
       <h1 className="text-4xl font-extrabold tracking-tighter mb-3">You're a MyFloridaNemt.com Member</h1>
-      <p className="text-muted-foreground mb-2">Your $5/year membership is active.</p>
+      <p className="text-muted-foreground mb-2">Your MyFloridaNemt.com membership is active.</p>
       {session_id && <p className="text-xs font-mono text-muted-foreground mb-8 break-all">Receipt: {session_id}</p>}
       <Link
         to="/dashboard"
