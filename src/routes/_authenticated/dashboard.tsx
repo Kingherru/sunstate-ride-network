@@ -399,6 +399,18 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 <h2 className="font-display text-lg font-bold tracking-tight text-brand">{tabLabel(tab, portal, { received: received.length, sent: sent.length })}</h2>
               </div>
               <div className="p-6">
+            {isTabLocked(tab) ? (
+              <LockedTabOverlay
+                onboarding={onboarding}
+                onGoToOnboarding={() => handleTab("onboarding")}
+              />
+            ) : (<>
+            {tab === "onboarding" && portal === "provider" && (
+              <ProviderOnboardingChecklist
+                onboarding={onboarding}
+                onGoToStep={(t) => handleTab(t as Tab)}
+              />
+            )}
             {tab === "received" && (() => {
               const isFlNemt = (s: string | null | undefined) => {
                 const v = (s ?? "").toLowerCase();
