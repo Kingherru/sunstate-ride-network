@@ -46,6 +46,9 @@ import {
   formatPatientType,
   formatPatientRelationship,
 } from "@/lib/patient-relationships";
+import { computeProviderOnboarding, SOFT_ACCESS_TABS } from "@/lib/provider-onboarding";
+import { ProviderOnboardingChecklist } from "@/components/onboarding/ProviderOnboardingChecklist";
+import { Lock } from "lucide-react";
 
 function PaymentsTab({ portal }: { portal: PortalKind }) {
   const isFacility = portal === "facility";
