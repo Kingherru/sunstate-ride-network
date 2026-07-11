@@ -283,13 +283,14 @@ export const verifyCertificate = createServerFn({ method: "GET" })
   .inputValidator((d: { token: string }) => d)
   .handler(async ({ data }) => {
     // Anonymous SELECT on course_certificates is disabled. We call a scoped
-    // SECURITY DEFINER RPC that only returns the single row matching the
-    // exact verify token supplied by the caller.
-    const sb = publicClient();
-    const { data: rows, error } = await sb.rpc("verify_course_certificate" as any, {
+    // SECURITY DEFINER RPC via the service-role client so the function does
+    // not need to be executable by the anon/authenticated roles.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("verify_course_certificate" as any, {
       _token: data.token,
     });
     if (error) throw error;
+
     const cert = Array.isArray(rows) ? rows[0] : rows;
     if (!cert) return null;
     return {
