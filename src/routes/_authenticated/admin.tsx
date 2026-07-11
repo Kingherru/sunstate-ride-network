@@ -36,6 +36,7 @@ import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 import { AuditLogPanel } from "@/components/AuditLogPanel";
 import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel";
 import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
+import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
@@ -325,7 +326,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
     case "seo": return <ComingSoon title="SEO settings" description="Site-wide meta defaults, robots directives, and sitemap controls." />;
     case "blog": return <ComingSoon title="Blog / Resources" description="Author, edit, and publish resource articles. Direct link: /resources." />;
-    case "system": return <ComingSoon title="System settings" description="Feature flags, notification defaults, and environment configuration." />;
+    case "system": return caps.isAdmin ? <SystemSettingsPanel /> : <NoAccess />;
     default: return <OverviewTab />;
   }
 }

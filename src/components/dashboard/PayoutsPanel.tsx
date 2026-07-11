@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { PLATFORM_FEE_PCT, formatUsd, platformFeeCents, providerPayoutCents } from "@/lib/payouts";
+import { formatUsd, providerPayoutCents } from "@/lib/payouts";
+import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 import { createConnectOnboardingLink, refreshPayoutAccount } from "@/lib/payouts.functions";
 
 type Trip = {
@@ -49,6 +50,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
     },
   });
 
+  const feePct = usePlatformFeePct();
   const trips = tripsQ.data ?? [];
 
   const held = trips
@@ -66,10 +68,10 @@ export function PayoutsPanel({ userId }: { userId: string }) {
       <div className="grid sm:grid-cols-3 gap-3">
         <Stat label="Held funds" value={formatUsd(held)} hint="Pending completion" />
         <Stat label="Released to you" value={formatUsd(released)} hint={`${releasedCount} trip${releasedCount === 1 ? "" : "s"}`} tone="success" />
-        <Stat label="Platform fee" value={`${(PLATFORM_FEE_PCT * 100).toFixed(0)}%`} hint="Per processed payment" />
+        <Stat label="Platform fee" value={`${(feePct * 100).toFixed(2).replace(/\.00$/, "")}%`} hint="Per processed payment · set by admin" />
       </div>
 
-      <BillingExplainer />
+      <BillingExplainer feePct={feePct} />
 
       <section className="bg-card border border-border rounded-sm p-5">
         <h3 className="text-lg font-extrabold tracking-tight mb-3">Trip releases</h3>
@@ -95,7 +97,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
                   <td className="py-2 font-mono text-xs">{t.id.slice(0, 8)}</td>
                   <td>{t.pickup_date}</td>
                   <td className="text-right">{formatUsd((t.cost_total ?? 0) * 100)}</td>
-                  <td className="text-right text-muted-foreground">−{formatUsd(t.platform_fee_cents ?? platformFeeCents(Math.round((t.cost_total ?? 0) * 100)))}</td>
+                  <td className="text-right text-muted-foreground">−{formatUsd(t.platform_fee_cents ?? Math.round((t.cost_total ?? 0) * 100 * feePct))}</td>
                   <td className="text-right font-bold">{formatUsd(computePayout(t))}</td>
                   <td className="pl-3"><PayoutBadge status={t.payout_status} releasedAt={t.payout_released_at} /></td>
                 </tr>
@@ -200,24 +202,25 @@ function ConnectCard({ account, loading, userId }: { account: PayoutAccount | nu
   );
 }
 
-function BillingExplainer() {
+function BillingExplainer({ feePct }: { feePct: number }) {
   const example = 12500; // $125.00 gross
-  const fee = Math.round(example * PLATFORM_FEE_PCT);
+  const fee = Math.round(example * feePct);
   const net = example - fee;
+  const pctLabel = `${(feePct * 100).toFixed(2).replace(/\.00$/, "")}%`;
   return (
     <section className="bg-primary/5 border border-primary/20 rounded-sm p-5">
       <h3 className="text-lg font-extrabold tracking-tight mb-2">How billing works</h3>
       <ol className="text-sm text-foreground/90 space-y-2 list-decimal pl-5">
         <li><strong>Patient pays at booking.</strong> The fare is charged to the patient and held by MyFloridaNemt.com in escrow.</li>
         <li><strong>You complete the trip.</strong> Mark the trip <em>Completed</em> in your dashboard — this queues the payout automatically.</li>
-        <li><strong>We deduct a {(PLATFORM_FEE_PCT * 100).toFixed(0)}% platform fee.</strong> Covers payment processing, dispatch, and HIPAA-compliant infrastructure.</li>
+        <li><strong>We deduct a {pctLabel} platform fee.</strong> Covers payment processing, dispatch, and HIPAA-compliant infrastructure.</li>
         <li><strong>Funds release to your bank.</strong> The remainder transfers to your connected account within <strong>1–2 business days</strong>.</li>
-        <li><strong>Provider-to-provider payouts.</strong> If you dispatch a trip to another provider, their "pay" rate from <em>Pricing</em> is transferred to them on completion, minus the same {(PLATFORM_FEE_PCT * 100).toFixed(0)}% fee.</li>
+        <li><strong>Provider-to-provider payouts.</strong> If you dispatch a trip to another provider, their "pay" rate from <em>Pricing</em> is transferred to them on completion, minus the same {pctLabel} fee.</li>
       </ol>
 
       <div className="mt-4 grid sm:grid-cols-4 gap-3 bg-card border border-border rounded-sm p-4">
         <ExampleRow label="Gross fare" value={formatUsd(example)} />
-        <ExampleRow label={`Platform fee (${(PLATFORM_FEE_PCT * 100).toFixed(0)}%)`} value={`−${formatUsd(fee)}`} muted />
+        <ExampleRow label={`Platform fee (${pctLabel})`} value={`−${formatUsd(fee)}`} muted />
         <ExampleRow label="Your payout" value={formatUsd(net)} accent />
         <ExampleRow label="In your bank" value="1–2 business days" small />
       </div>
