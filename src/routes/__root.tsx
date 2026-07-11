@@ -79,6 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#ffffff" },
+      { name: "google-site-verification", content: "MjELbnAY45LuqbWT0GfTViGtbQjXgnPhWoYNhP7V0Bg" },
       { title: "MyFloridaNemt.com — Statewide Medical Transportation" },
       {
         name: "description",
