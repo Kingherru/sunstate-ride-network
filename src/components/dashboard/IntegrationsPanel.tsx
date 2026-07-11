@@ -51,6 +51,9 @@ export function IntegrationsPanel() {
         <p>Inbound RouteGenie: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/routegenie/webhook</code></p>
       </div>
       <EmbedCodePanel />
+      <div className="border-t border-border pt-6">
+        <ProviderWebhooksPanel />
+      </div>
     </div>
   );
 }
