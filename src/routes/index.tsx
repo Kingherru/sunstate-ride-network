@@ -105,7 +105,7 @@ function HomePage() {
       </section>
 
       {/* ============ PORTALS — full-bleed colorful band ============ */}
-      <section className="px-6 py-20 lg:py-28" style={{ background: CREAM }}>
+      <section className="px-6 py-20 lg:py-28" style={{ background: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
