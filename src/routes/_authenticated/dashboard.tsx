@@ -404,6 +404,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
+            {tab === "training" && <TrainingPanel />}
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
             {tab === "changelog" && <ChangelogPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
