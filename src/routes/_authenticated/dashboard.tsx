@@ -1018,6 +1018,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
         portal={portal}
         onBack={() => setViewing(null)}
         onChanged={onChanged}
+        onDuplicate={onDuplicate}
       />
     );
   }
