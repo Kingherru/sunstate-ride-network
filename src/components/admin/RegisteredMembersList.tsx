@@ -67,10 +67,15 @@ export function RegisteredMembersList({
                 <th className="py-2 pr-3">Email</th>
                 <th className="py-2 pr-3">Company / Facility</th>
                 <th className="py-2 pr-3">City</th>
-                <th className="py-2 pr-3">Region</th>
+                <th className="py-2 pr-3">State</th>
+                <th className="py-2 pr-3">ZIP</th>
+                <th className="py-2 pr-3">Dispatch Zone</th>
+                <th className="py-2 pr-3">Phone</th>
+                <th className="py-2 pr-3">Vehicles</th>
+                <th className="py-2 pr-3">Drivers</th>
+                <th className="py-2 pr-3">Status</th>
                 <th className="py-2 pr-3">Membership</th>
                 <th className="py-2 pr-3">Created</th>
-                <th className="py-2 pr-3">Last sign-in</th>
               </tr>
             </thead>
             <tbody>
@@ -79,7 +84,25 @@ export function RegisteredMembersList({
                   <td className="py-2 pr-3 font-mono text-xs">{u.email ?? "—"}</td>
                   <td className="py-2 pr-3">{u.company_name ?? "—"}</td>
                   <td className="py-2 pr-3">{u.city ?? "—"}</td>
-                  <td className="py-2 pr-3">{u.region ?? "—"}</td>
+                  <td className="py-2 pr-3">{u.state ?? "—"}</td>
+                  <td className="py-2 pr-3 font-mono text-xs">{u.postal_code ?? "—"}</td>
+                  <td className="py-2 pr-3">
+                    {u.dispatch_zone_name
+                      ? `${u.dispatch_zone_name}${u.dispatch_zone_code ? ` (${u.dispatch_zone_code})` : ""}`
+                      : u.region ?? "—"}
+                  </td>
+                  <td className="py-2 pr-3 font-mono text-xs">{u.phone ?? "—"}</td>
+                  <td className="py-2 pr-3 text-center">{u.vehicles_count ?? 0}</td>
+                  <td className="py-2 pr-3 text-center">{u.drivers_count ?? 0}</td>
+                  <td className="py-2 pr-3 text-xs">
+                    {u.application_status === "approved" ? (
+                      <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 font-semibold">Approved</span>
+                    ) : u.application_status ? (
+                      <span className="inline-block px-2 py-0.5 bg-muted text-muted-foreground">{u.application_status}</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
                   <td className="py-2 pr-3">
                     {u.membership_tier ?? "—"}
                     {u.membership_status ? ` · ${u.membership_status}` : ""}
@@ -87,14 +110,11 @@ export function RegisteredMembersList({
                   <td className="py-2 pr-3 text-xs text-muted-foreground">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
                   </td>
-                  <td className="py-2 pr-3 text-xs text-muted-foreground">
-                    {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "never"}
-                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-sm text-muted-foreground">
+                  <td colSpan={12} className="py-6 text-center text-sm text-muted-foreground">
                     No {portal} accounts yet.
                   </td>
                 </tr>
