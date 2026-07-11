@@ -2771,6 +2771,63 @@ export type Database = {
           },
         ]
       }
+      trip_quotes: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          note: string | null
+          provider_user_id: string
+          status: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          note?: string | null
+          provider_user_id: string
+          status?: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          note?: string | null
+          provider_user_id?: string
+          status?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_summary_logs: {
         Row: {
           created_at: string
@@ -2909,6 +2966,7 @@ export type Database = {
           region: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
+          ride_request_id: string | null
           round_trip: boolean
           route_computed_at: string | null
           route_polyline: string | null
@@ -3002,6 +3060,7 @@ export type Database = {
           region?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
+          ride_request_id?: string | null
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
@@ -3095,6 +3154,7 @@ export type Database = {
           region?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
+          ride_request_id?: string | null
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
@@ -3159,6 +3219,13 @@ export type Database = {
             columns: ["pickup_location_id"]
             isOneToOne: false
             referencedRelation: "saved_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
             referencedColumns: ["id"]
           },
           {
@@ -3530,12 +3597,21 @@ export type Database = {
       }
     }
     Functions: {
+      accept_trip: { Args: { _trip_id: string }; Returns: undefined }
       admin_grant_free_membership: {
         Args: { _user_id: string }
         Returns: undefined
       }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      decide_trip_quote: {
+        Args: { _approve: boolean; _decision_note?: string; _quote_id: string }
+        Returns: undefined
+      }
+      decline_trip: {
+        Args: { _reason?: string; _trip_id: string }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -3658,6 +3734,10 @@ export type Database = {
         Args: { _provider_user_id: string; _trip_id: string }
         Returns: undefined
       }
+      promote_ride_request_to_trip: {
+        Args: { _ride_request_id: string }
+        Returns: string
+      }
       provider_covers_pickup: {
         Args: {
           _pickup_lat: number
@@ -3691,6 +3771,11 @@ export type Database = {
         Returns: undefined
       }
       start_direct_thread: { Args: { _recipient: string }; Returns: string }
+      start_staff_thread: { Args: never; Returns: string }
+      submit_trip_quote: {
+        Args: { _amount_cents: number; _note?: string; _trip_id: string }
+        Returns: string
+      }
       suggest_providers_for_trip: {
         Args: { _trip_id: string }
         Returns: {
