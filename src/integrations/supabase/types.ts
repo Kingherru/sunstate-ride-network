@@ -860,6 +860,7 @@ export type Database = {
           allow_live_medicaid_verification: boolean
           auto_upgraded_to_facility_at: string | null
           billing_contact: Json | null
+          business_address: string | null
           center_lat: number | null
           center_lng: number | null
           city: string | null
@@ -868,6 +869,7 @@ export type Database = {
           current_period_end: string | null
           date_of_birth: string | null
           dispatch_email: string | null
+          dispatch_zone_id: string | null
           display_id: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -889,6 +891,7 @@ export type Database = {
           patient_type: string | null
           patient_type_other: string | null
           phone: string | null
+          postal_code: string | null
           preferred_zip_codes: string[]
           provider_application_id: string | null
           region: string | null
@@ -905,6 +908,7 @@ export type Database = {
           allow_live_medicaid_verification?: boolean
           auto_upgraded_to_facility_at?: string | null
           billing_contact?: Json | null
+          business_address?: string | null
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -913,6 +917,7 @@ export type Database = {
           current_period_end?: string | null
           date_of_birth?: string | null
           dispatch_email?: string | null
+          dispatch_zone_id?: string | null
           display_id?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -934,6 +939,7 @@ export type Database = {
           patient_type?: string | null
           patient_type_other?: string | null
           phone?: string | null
+          postal_code?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
           region?: string | null
@@ -950,6 +956,7 @@ export type Database = {
           allow_live_medicaid_verification?: boolean
           auto_upgraded_to_facility_at?: string | null
           billing_contact?: Json | null
+          business_address?: string | null
           center_lat?: number | null
           center_lng?: number | null
           city?: string | null
@@ -958,6 +965,7 @@ export type Database = {
           current_period_end?: string | null
           date_of_birth?: string | null
           dispatch_email?: string | null
+          dispatch_zone_id?: string | null
           display_id?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -979,6 +987,7 @@ export type Database = {
           patient_type?: string | null
           patient_type_other?: string | null
           phone?: string | null
+          postal_code?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
           region?: string | null
@@ -992,6 +1001,20 @@ export type Database = {
           work_hours_weekly?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "member_profiles_dispatch_zone_id_fkey"
+            columns: ["dispatch_zone_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_profiles_dispatch_zone_id_fkey"
+            columns: ["dispatch_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_pricing_averages"
+            referencedColumns: ["zone_id"]
+          },
           {
             foreignKeyName: "member_profiles_provider_application_id_fkey"
             columns: ["provider_application_id"]
