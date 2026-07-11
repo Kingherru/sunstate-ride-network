@@ -149,13 +149,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     (pathname.startsWith("/patient") ? "patient"
       : pathname.startsWith("/facility") ? "facility"
       : "provider");
-  const allowedTabs = PORTAL_TABS[portal];
+  const baseAllowedTabs = PORTAL_TABS[portal];
   const meta = PORTAL_META[portal];
 
-  const [tab, setTab] = useState<Tab>(allowedTabs[0]);
+  const [tab, setTab] = useState<Tab>(baseAllowedTabs[0]);
   const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
   function startDuplicate(t: Trip) { setDuplicateSource(t); handleTab("new"); }
-  useEffect(() => { if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]); }, [allowedTabs, tab]);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
