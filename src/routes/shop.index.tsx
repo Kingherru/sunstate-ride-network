@@ -7,7 +7,7 @@ import { Award, Clock, ShoppingBag } from "lucide-react";
 
 const coursesQO = queryOptions({ queryKey: ["shop", "courses"], queryFn: () => listPublicCourses() });
 
-export const Route = createFileRoute("/shop")({
+export const Route = createFileRoute("/shop/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(coursesQO),
   head: () => ({
     meta: [
