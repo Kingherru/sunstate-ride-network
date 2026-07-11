@@ -459,6 +459,8 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
   return (
     <div className="space-y-6">
+      <RegisteredMembersList portal="provider" title="Registered providers" />
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Total" value={counts.total} />
         <Stat label="New" value={counts.new} tone="accent" />
