@@ -318,9 +318,9 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
     case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
-    case "trips": return <ComingSoon title="Trips" description="Search, review, and export completed and in-progress trips across all providers." />;
-    case "reservations": return <ComingSoon title="Reservations" description="Global view of scheduled and recurring rides awaiting a provider." />;
-    case "pricing": return <ComingSoon title="Pricing" description="Configure statewide base fares, per-mile rates, and surge windows." />;
+    case "trips": return caps.isOps ? <AdminTripsPanel /> : <NoAccess />;
+    case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
+    case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
     case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
     case "payouts": return caps.isAdmin ? <MonthlyPayoutReport scope="admin" title="Monthly billing & payout report — all providers" /> : <NoAccess />;
     case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
