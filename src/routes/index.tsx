@@ -255,6 +255,63 @@ function HomePage() {
         </div>
       </section>
 
+      {/* ============ TRAINING & CERTIFICATION ============ */}
+      <section className="px-6 py-20 lg:py-24 bg-white" style={{ borderTop: `1px solid ${NAVY}22` }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CORAL }}>
+                Training & Certification
+              </p>
+              <h2 className="font-display font-bold text-4xl lg:text-5xl tracking-tight" style={{ color: NAVY }}>
+                Get certified. No account required.
+              </h2>
+              <p className="mt-3 text-base max-w-xl" style={{ color: `${NAVY}b3` }}>
+                Online HIPAA and Florida NEMT certification courses for drivers, dispatchers, and staff.
+                Purchase, take the exam, and download your certificate — creating an account is recommended
+                so your progress and certificate are saved.
+              </p>
+            </div>
+            <Link
+              to="/shop"
+              className="font-bold px-6 py-3 rounded-[0.75rem] border-2 inline-flex items-center gap-2"
+              style={{ borderColor: NAVY, color: NAVY }}
+            >
+              Browse all courses <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              { slug: "hipaa", title: "HIPAA Training for NEMT", desc: "Compliance essentials for NEMT drivers, dispatchers, and office staff." },
+              { slug: "nemt-certification", title: "Florida NEMT Certification", desc: "Statewide NEMT operating standards, safety, and passenger care." },
+            ].map((c) => (
+              <Link
+                key={c.slug}
+                to="/shop/$slug"
+                params={{ slug: c.slug }}
+                className="group p-8 rounded-[1rem] border-2 flex flex-col"
+                style={{ borderColor: `${NAVY}22`, background: CREAM }}
+              >
+                <div className="font-mono text-xs font-bold uppercase tracking-widest mb-3" style={{ color: CORAL }}>
+                  Online course · Certificate
+                </div>
+                <h3 className="font-display font-bold text-2xl mb-2" style={{ color: NAVY }}>{c.title}</h3>
+                <p className="text-sm mb-6 flex-1" style={{ color: `${NAVY}b3` }}>{c.desc}</p>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-3xl font-extrabold" style={{ color: NAVY }}>$50</span>
+                  <span className="text-xs font-bold uppercase tracking-widest group-hover:underline" style={{ color: CORAL }}>
+                    Enroll now →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <p className="mt-6 text-[11px] italic" style={{ color: `${NAVY}88` }}>
+            Pricing is subject to change at any time.
+          </p>
+        </div>
+      </section>
+
       {/* ============ CTA ============ */}
       <section className="px-6 py-24 text-center" style={{ background: CREAM }}>
         <div className="max-w-3xl mx-auto">
