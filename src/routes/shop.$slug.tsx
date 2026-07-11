@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPublicCourse } from "@/lib/courses.functions";
@@ -35,7 +35,7 @@ function CourseDetail() {
   const [checkout, setCheckout] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [userId, setUserId] = useState<string | undefined>();
-  const navigate = useNavigate();
+  
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => { setUserEmail(data.user?.email); setUserId(data.user?.id); }); }, []);
 
@@ -89,18 +89,22 @@ function CourseDetail() {
                 <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" />{course.duration_min} minutes</div>
                 <div className="flex items-center gap-2"><Award className="w-4 h-4 text-muted-foreground" />{course.cert_validity_months}-month certificate</div>
               </div>
-              {userId ? (
-                !checkout ? (
-                  <Button className="w-full" onClick={() => setCheckout(true)}>Enroll now</Button>
-                ) : null
-              ) : (
-                <Button className="w-full" onClick={() => navigate({ to: "/auth", search: { redirect: `/shop/${course.slug}` } as any })}>Sign in to enroll</Button>
+              {!checkout ? (
+                <Button className="w-full" onClick={() => setCheckout(true)}>
+                  {userId ? "Enroll now" : "Buy now (guest checkout)"}
+                </Button>
+              ) : null}
+              {!userId && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  Recommended: <Link to="/auth" className="underline">create a free account</Link> so your purchase, progress, and certificate are saved to your profile.
+                </p>
               )}
+              <p className="text-[11px] text-muted-foreground mt-3 italic">Pricing subject to change at any time.</p>
             </div>
           </aside>
         </div>
 
-        {checkout && userId && returnUrl && (
+        {checkout && returnUrl && (
           <div className="mt-10 border border-border rounded-lg p-4 bg-background">
             <StripeEmbeddedCheckout
               priceId={course.price_id!}

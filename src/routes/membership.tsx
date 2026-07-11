@@ -30,6 +30,7 @@ function MembershipPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [plan, setPlan] = useState<"monthly" | "yearly">("yearly");
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
@@ -64,15 +65,32 @@ function MembershipPage() {
           </ul>
         </div>
         <div className="bg-card border border-border rounded-sm p-8 shadow-sm">
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-5xl font-extrabold tracking-tighter text-primary">$5</span>
-            <span className="text-muted-foreground">/ year</span>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <button
+              type="button"
+              onClick={() => setPlan("monthly")}
+              className={`p-4 rounded-sm border text-left transition ${plan === "monthly" ? "border-accent bg-accent/5" : "border-border"}`}
+            >
+              <div className="text-2xl font-extrabold text-primary">$10</div>
+              <div className="text-xs text-muted-foreground">per month</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlan("yearly")}
+              className={`p-4 rounded-sm border text-left transition relative ${plan === "yearly" ? "border-accent bg-accent/5" : "border-border"}`}
+            >
+              <div className="text-2xl font-extrabold text-primary">$100</div>
+              <div className="text-xs text-muted-foreground">per year · save $20</div>
+            </button>
           </div>
           <p className="text-sm text-muted-foreground mb-2">
             For approved NEMT providers. Cancel anytime.
           </p>
-          <p className="text-xs text-muted-foreground mb-6">
+          <p className="text-xs text-muted-foreground mb-4">
             Not a member yet? You can still use MyFloridaNemt.com for reservations, scheduling, trip history, vehicles, and drivers — free.
+          </p>
+          <p className="text-[11px] text-muted-foreground mb-6 italic">
+            Pricing is subject to change at any time.
           </p>
 
           {!user ? (
@@ -94,12 +112,12 @@ function MembershipPage() {
               onClick={() => setCheckoutOpen(true)}
               className="w-full text-sm font-bold text-white bg-accent px-6 py-3 rounded-sm hover:bg-accent/90 shadow-sm"
             >
-              Subscribe for $5/year
+              {plan === "monthly" ? "Subscribe for $10/month" : "Subscribe for $100/year"}
             </button>
 
           ) : (
             <StripeEmbeddedCheckout
-              priceId="nemt_membership_monthly"
+              priceId={plan === "monthly" ? "nemt_membership_monthly_v2" : "nemt_membership_yearly_v2"}
               userId={user.id}
               customerEmail={user.email}
             />
