@@ -3,11 +3,14 @@ import heroVan from "@/assets/hero-van.jpg";
 import { ArrowRight, Phone, Clock, Shield, MapPin } from "lucide-react";
 import { CITY_LIST } from "@/lib/cities";
 
-const NAVY = "#1D3557";
-const PEACH = "#F9CB9F";
-const MINT = "#FFE9A8";
-const CORAL = "#E63946";
-const CREAM = "#FFF8E7";
+// Brand palette — matches the admin platform_theme (navy + orange).
+// Do NOT swap these for off-brand pastels; the whole page reads from them.
+const NAVY = "#13335a";      // primary
+const ORANGE = "#e07a1f";    // accent
+const PEACH = ORANGE;        // legacy alias — keeps all downstream styles on-brand
+const MINT = "#FFF3E4";      // soft orange-tinted neutral for card variety
+const CORAL = ORANGE;        // legacy alias
+const CREAM = "#FFF8EE";     // warm cream neutral
 
 export const Route = createFileRoute("/")({
   head: () => ({
