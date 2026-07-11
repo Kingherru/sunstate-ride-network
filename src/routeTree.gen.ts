@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -60,6 +61,11 @@ const TrainingRoute = TrainingRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -421,6 +430,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/service-areas'
     | '/services'
+    | '/shop'
     | '/sitemap.xml'
     | '/training'
     | '/.mcp/list-tools'
@@ -463,6 +473,7 @@ export interface FileRouteTypes {
     | '/request-a-ride'
     | '/reset-password'
     | '/services'
+    | '/shop'
     | '/sitemap.xml'
     | '/training'
     | '/.mcp/list-tools'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/service-areas'
     | '/services'
+    | '/shop'
     | '/sitemap.xml'
     | '/training'
     | '/.mcp/list-tools'
@@ -552,6 +564,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
   ServicesRoute: typeof ServicesRoute
+  ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrainingRoute: typeof TrainingRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -584,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -927,6 +947,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
   ServicesRoute: ServicesRoute,
+  ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrainingRoute: TrainingRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
