@@ -16,6 +16,19 @@ const patientSchema = z.object({
   default_pickup_city: z.string().trim().max(120).optional().nullable().or(z.literal("")),
   default_dropoff_address: z.string().trim().max(255).optional().nullable().or(z.literal("")),
   default_dropoff_city: z.string().trim().max(120).optional().nullable().or(z.literal("")),
+  // CMS / Medicaid billing fields
+  payer: z.string().trim().max(120).optional().nullable().or(z.literal("")),
+  medicaid_number: z.string().trim().max(60).optional().nullable().or(z.literal("")),
+  medicaid_plan: z.string().trim().max(120).optional().nullable().or(z.literal("")),
+  diagnosis_code: z.string().trim().max(60).optional().nullable().or(z.literal("")),
+  authorization_number: z.string().trim().max(80).optional().nullable().or(z.literal("")),
+  // Demographics
+  gender: z.string().trim().max(20).optional().nullable().or(z.literal("")),
+  address_line1: z.string().trim().max(255).optional().nullable().or(z.literal("")),
+  address_line2: z.string().trim().max(255).optional().nullable().or(z.literal("")),
+  city: z.string().trim().max(120).optional().nullable().or(z.literal("")),
+  state: z.string().trim().max(2).optional().nullable().or(z.literal("")),
+  zip: z.string().trim().max(10).optional().nullable().or(z.literal("")),
 });
 
 function clean(input: z.infer<typeof patientSchema>) {

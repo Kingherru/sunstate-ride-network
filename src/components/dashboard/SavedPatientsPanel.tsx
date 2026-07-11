@@ -17,6 +17,12 @@ const EMPTY = {
   medicaid_id: "", mobility: "", notes: "",
   default_pickup_address: "", default_pickup_city: "",
   default_dropoff_address: "", default_dropoff_city: "",
+  // CMS/Medicaid billing
+  payer: "", medicaid_number: "", medicaid_plan: "",
+  diagnosis_code: "", authorization_number: "",
+  // Demographics
+  gender: "", address_line1: "", address_line2: "",
+  city: "", state: "", zip: "",
 };
 
 export function SavedPatientsPanel() {
@@ -58,6 +64,17 @@ export function SavedPatientsPanel() {
       default_pickup_city: p.default_pickup_city ?? "",
       default_dropoff_address: p.default_dropoff_address ?? "",
       default_dropoff_city: p.default_dropoff_city ?? "",
+      payer: (p as any).payer ?? "",
+      medicaid_number: (p as any).medicaid_number ?? "",
+      medicaid_plan: (p as any).medicaid_plan ?? "",
+      diagnosis_code: (p as any).diagnosis_code ?? "",
+      authorization_number: (p as any).authorization_number ?? "",
+      gender: (p as any).gender ?? "",
+      address_line1: (p as any).address_line1 ?? "",
+      address_line2: (p as any).address_line2 ?? "",
+      city: (p as any).city ?? "",
+      state: (p as any).state ?? "",
+      zip: (p as any).zip ?? "",
     });
   }
 
@@ -131,6 +148,41 @@ export function SavedPatientsPanel() {
             {!isContactForm && <Field label="Default drop-off address"><input value={form.default_dropoff_address} onChange={(e) => setForm({ ...form, default_dropoff_address: e.target.value })} className={inputCls} /></Field>}
             {!isContactForm && <Field label="Default drop-off city"><input value={form.default_dropoff_city} onChange={(e) => setForm({ ...form, default_dropoff_city: e.target.value })} className={inputCls} /></Field>}
           </div>
+
+          {!isContactForm && (
+            <>
+              <div className="pt-2 mt-2 border-t border-border">
+                <h4 className="font-extrabold text-sm uppercase tracking-wide text-muted-foreground mb-2">Demographics (for CMS forms)</h4>
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  <Field label="Gender">
+                    <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className={inputCls}>
+                      <option value="">Select…</option>
+                      <option value="M">Male</option>
+                      <option value="F">Female</option>
+                      <option value="U">Unknown / Other</option>
+                    </select>
+                  </Field>
+                  <Field label="Home address line 1"><input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} className={inputCls} /></Field>
+                  <Field label="Address line 2"><input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} className={inputCls} /></Field>
+                  <Field label="City"><input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputCls} /></Field>
+                  <Field label="State (2-letter)"><input maxLength={2} value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase() })} className={inputCls} /></Field>
+                  <Field label="ZIP"><input maxLength={10} value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} className={inputCls} /></Field>
+                </div>
+              </div>
+
+              <div className="pt-2 mt-2 border-t border-border">
+                <h4 className="font-extrabold text-sm uppercase tracking-wide text-muted-foreground mb-2">Payer & Medicaid billing</h4>
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  <Field label="Payer (Medicaid MCO, insurance, private-pay…)"><input value={form.payer} onChange={(e) => setForm({ ...form, payer: e.target.value })} className={inputCls} /></Field>
+                  <Field label="Medicaid plan"><input value={form.medicaid_plan} onChange={(e) => setForm({ ...form, medicaid_plan: e.target.value })} className={inputCls} /></Field>
+                  <Field label="Medicaid number"><input value={form.medicaid_number} onChange={(e) => setForm({ ...form, medicaid_number: e.target.value })} className={inputCls} /></Field>
+                  <Field label="Authorization number"><input value={form.authorization_number} onChange={(e) => setForm({ ...form, authorization_number: e.target.value })} className={inputCls} /></Field>
+                  <Field label="Diagnosis code (ICD-10)"><input value={form.diagnosis_code} onChange={(e) => setForm({ ...form, diagnosis_code: e.target.value.toUpperCase() })} className={inputCls} /></Field>
+                </div>
+              </div>
+            </>
+          )}
+
           <Field label="Notes"><textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={inputCls} /></Field>
           <div className="flex gap-2">
             <button type="submit" disabled={createM.isPending || updateM.isPending} className="bg-primary text-primary-foreground font-bold px-4 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50">
