@@ -83,7 +83,7 @@ type TabId =
   | "trips"
   | "reservations"
   | "dispatch"
-  | "credentials"
+  | "security"
   | "pricing"
   | "integrations"
   | "payouts"
@@ -91,8 +91,6 @@ type TabId =
   | "seo"
   | "blog"
   | "theme"
-  | "staff"
-  | "audit"
   | "changelog"
   | "system";
 
