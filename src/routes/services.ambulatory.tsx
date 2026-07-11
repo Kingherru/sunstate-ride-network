@@ -45,6 +45,10 @@ export const Route = createFileRoute("/services/ambulatory")({
 function AmbulatoryPage() {
   return (
     <ServiceLayout
+      breadcrumbs={[
+        { label: "Services", to: "/services" },
+        { label: "Ambulatory Transportation" },
+      ]}
       eyebrow="Curb-to-curb & door-to-door"
       title="Ambulatory Transportation"
       lede="Ambulatory transportation provides safe and reliable non-emergency medical transportation for passengers who can walk independently or need minimal assistance. Florida NEMT providers help patients travel comfortably to doctor appointments, dialysis, therapy, hospitals, and other healthcare services while receiving professional and dependable support."
@@ -54,6 +58,10 @@ function AmbulatoryPage() {
         "Professional, courteous drivers trained in patient assistance and HIPAA compliance",
         "On-time pickups for doctor visits, dialysis, therapy, and hospital appointments",
         "Statewide coverage across all 67 Florida counties, 24/7 dispatch",
+      ]}
+      relatedLinks={[
+        { to: "/services/wheelchair", label: "Wheelchair Transportation", desc: "ADA-compliant lift-equipped vans for wheelchair passengers." },
+        { to: "/services/stretcher", label: "Gurney & Stretcher Transportation", desc: "Bed-to-bed transport for patients who cannot travel seated." },
       ]}
       useCases={[
         { h: "Doctor visits", p: "Routine primary care, specialist consults, and follow-ups." },
