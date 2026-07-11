@@ -2043,9 +2043,13 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
 
   const isProvider = portal === "provider";
   const isFacility = portal === "facility";
+  const isPatient = portal === "patient";
+  const profileTabLabel =
+    isProvider ? "Business Information"
+    : isFacility ? "Facility Information"
+    : "Your Information";
   const tabs: Array<[AccountTab, string]> = [
-    ["profile", isProvider ? "Business Information" : "Profile"],
-    ...(isFacility ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ["profile", profileTabLabel],
     ...(isProvider ? ([
       ["pricing", "Pricing"],
       ["compliance", "Compliance Certificates"],
@@ -2088,22 +2092,8 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
 
       {subTab === "profile" && (
         <div className="space-y-6">
-          {isProvider ? (
-            <ProviderBusinessInfoCard profile={profile} userId={userId} />
-          ) : (
-            <div className="bg-card border border-border rounded-sm p-6 space-y-3">
-              <h3 className="text-lg font-extrabold tracking-tight">Profile</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
-                <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
-                <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
-                <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
-                <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
-                <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
-              </div>
-            </div>
-          )}
-          {portal === "patient" && (
+          <BusinessInfoCard profile={profile} userId={userId} portal={portal} />
+          {isPatient && (
             <PatientRelationshipCard profile={profile} userId={userId} />
           )}
           {isProvider && (
@@ -2117,9 +2107,6 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         </div>
       )}
 
-      {subTab === "business" && isFacility && (
-        <BusinessInfoPanel />
-      )}
 
       {subTab === "pricing" && isProvider && <PricingPanel />}
       {subTab === "compliance" && isProvider && (
