@@ -9,6 +9,39 @@ export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
 export const TRIP_TYPE_OPTIONS = ["one_way", "round_trip", "multi_trip"] as const;
 export type TripTypeOption = (typeof TRIP_TYPE_OPTIONS)[number];
 
+export const BLACK_TIE_VEHICLE_OPTIONS = [
+  "black_suv",
+  "executive_sedan",
+  "luxury_sprinter_van",
+  "executive_shuttle_van",
+  "party_bus",
+  "mini_coach",
+  "motor_coach",
+  "charter_bus",
+  "limousine",
+] as const;
+export type BlackTieVehicleOption = (typeof BLACK_TIE_VEHICLE_OPTIONS)[number];
+
+export const BLACK_TIE_VEHICLE_LABELS: Record<BlackTieVehicleOption, string> = {
+  black_suv: "Black SUV",
+  executive_sedan: "Executive Sedan",
+  luxury_sprinter_van: "Luxury Sprinter Van",
+  executive_shuttle_van: "Executive Shuttle Van",
+  party_bus: "Party Bus",
+  mini_coach: "Mini Coach",
+  motor_coach: "Motor Coach",
+  charter_bus: "Charter Bus",
+  limousine: "Limousine",
+};
+
+export const BLACK_TIE_QUOTE_STATUSES = [
+  "awaiting_quote",
+  "quote_sent",
+  "quote_accepted",
+  "quote_declined",
+] as const;
+export type BlackTieQuoteStatus = (typeof BLACK_TIE_QUOTE_STATUSES)[number];
+
 export const additionalStopSchema = z.object({
   address: z.string().trim().min(3).max(300),
   city: z.string().trim().min(1).max(100),
@@ -52,6 +85,8 @@ export const rideRequestSchema = z.object({
   billingSource: z.enum(["account", "saved", "custom"]).default("account"),
   billingContact: billingContactSchema.optional(),
   createAccount: z.boolean().optional().default(false),
+  blackTie: z.boolean().default(false),
+  blackTieVehicle: z.enum(BLACK_TIE_VEHICLE_OPTIONS).optional(),
 }).superRefine((data, ctx) => {
   if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
     ctx.addIssue({
@@ -60,6 +95,14 @@ export const rideRequestSchema = z.object({
       message: "Billing contact is required.",
     });
   }
+  if (data.blackTie && !data.blackTieVehicle) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["blackTieVehicle"],
+      message: "Select a Black Tie vehicle type.",
+    });
+  }
+
   if (data.tripType === "round_trip" && !data.returnPickupTime) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -140,6 +183,9 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         dropoff_city: data.dropoffCity,
         transport_type: data.transportType,
         trip_type: data.tripType,
+        is_black_tie: data.blackTie ?? false,
+        black_tie_vehicle: data.blackTie ? data.blackTieVehicle ?? null : null,
+        black_tie_quote_status: data.blackTie ? "awaiting_quote" : "awaiting_quote" as const,
         round_trip: data.tripType === "round_trip" || data.roundTrip,
         return_pickup_time: data.returnPickupTime || null,
         return_dropoff_time: data.returnDropoffTime || null,

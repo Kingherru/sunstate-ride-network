@@ -9,6 +9,8 @@ import {
   type RideRequestInput,
   type BillingContact,
   RECURRENCE_OPTIONS,
+  BLACK_TIE_VEHICLE_OPTIONS,
+  BLACK_TIE_VEHICLE_LABELS,
 } from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
@@ -63,6 +65,7 @@ const empty: RideRequestInput = {
   recurrenceEndDate: "",
   billingSource: "account",
   createAccount: false,
+  blackTie: false,
 };
 
 
@@ -200,6 +203,7 @@ function RequestRidePage() {
           recurrenceEndDate: "",
           billingSource: "account",
           createAccount: false,
+          blackTie: false,
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set new pickup/drop-off dates and times to continue.");
@@ -506,14 +510,25 @@ function RequestRidePage() {
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
-            <PriceEstimate
-              pickupZip={pickupMeta.zip}
-              miles={estimatedMiles}
-              transportType={form.transportType}
-            />
+            {!form.blackTie && (
+              <PriceEstimate
+                pickupZip={pickupMeta.zip}
+                miles={estimatedMiles}
+                transportType={form.transportType}
+              />
+            )}
+            {form.blackTie && (
+              <div className="mt-2 rounded-sm border border-accent/40 bg-accent/5 p-4 text-sm">
+                <p className="font-bold uppercase tracking-widest text-accent text-xs mb-1">Manual quote</p>
+                <p className="text-muted">
+                  All Black Tie Transportation requests are quoted manually. Our team will review your
+                  request and reply with a custom price before your reservation is confirmed.
+                </p>
+              </div>
+            )}
           </fieldset>
 
-          {/* Trip type */}
+          {/* Transport details */}
           <fieldset className="space-y-6">
             <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
               Transport details
@@ -533,6 +548,55 @@ function RequestRidePage() {
                   {t === "gurney" ? "Gurney / Stretcher" : t}
                 </button>
               ))}
+            </div>
+
+            {/* Black Tie premium service */}
+            <div className="rounded-sm border border-border p-4 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 accent-accent"
+                  checked={!!form.blackTie}
+                  onChange={(e) => {
+                    upd("blackTie", e.target.checked);
+                    if (!e.target.checked) upd("blackTieVehicle", undefined);
+                  }}
+                />
+                <span>
+                  <span className="block text-sm font-bold uppercase tracking-widest">
+                    Black Tie Transportation
+                  </span>
+                  <span className="block text-xs text-muted mt-1">
+                    Premium chauffeured service for airports, weddings, corporate events, and special occasions.
+                    Manually quoted — no automatic pricing.
+                  </span>
+                </span>
+              </label>
+              {form.blackTie && (
+                <Field
+                  label="Vehicle type"
+                  required
+                  error={errors.blackTieVehicle}
+                >
+                  <select
+                    className={inputCls}
+                    value={form.blackTieVehicle ?? ""}
+                    onChange={(e) =>
+                      upd(
+                        "blackTieVehicle",
+                        (e.target.value || undefined) as RideRequestInput["blackTieVehicle"],
+                      )
+                    }
+                  >
+                    <option value="">Select a vehicle…</option>
+                    {BLACK_TIE_VEHICLE_OPTIONS.map((v) => (
+                      <option key={v} value={v}>
+                        {BLACK_TIE_VEHICLE_LABELS[v]}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
             </div>
             <div>
               <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
