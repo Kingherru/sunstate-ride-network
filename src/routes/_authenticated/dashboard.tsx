@@ -2505,7 +2505,7 @@ function MembershipsTab({ profile }: { profile: Profile }) {
   const isPaid = status === "active" && tier === "paid";
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="w-full space-y-6">
       <div className="bg-card border border-border rounded-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-extrabold tracking-tight">Your membership</h2>
@@ -2521,27 +2521,144 @@ function MembershipsTab({ profile }: { profile: Profile }) {
             <div className="font-bold capitalize">{status}</div>
           </div>
         </div>
-        <div className="pt-5 mt-5 border-t border-border">
-          {isPaid ? (
-            <p className="text-sm text-muted-foreground">
-              You have full access. Manage billing from the Account tab.
-            </p>
-          ) : (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm text-muted-foreground">
-                Upgrade to a paid membership for $5/year to send trips, bulk upload, and use API integrations.
-              </p>
-              <Link
-                to="/membership"
-                className="text-sm font-bold text-white bg-accent px-4 py-2 rounded-sm hover:bg-accent/90 shadow-sm"
-              >
-                Upgrade — $5/year
-              </Link>
-            </div>
-          )}
-        </div>
+        {isPaid && (
+          <p className="text-sm text-muted-foreground pt-5 mt-5 border-t border-border">
+            You have full access to trip dispatch, CSV upload, and API integrations.
+          </p>
+        )}
       </div>
+
+      {!isPaid && (
+        <div className="bg-card border border-border rounded-sm p-6">
+          <h3 className="text-lg font-extrabold tracking-tight mb-1">Choose your plan</h3>
+          <p className="text-sm text-muted-foreground mb-5">
+            Upgrade to send trips, bulk upload, and use API integrations. Cancel anytime.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link
+              to="/membership"
+              className="block border-2 border-border rounded-sm p-5 hover:border-accent transition-colors"
+            >
+              <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Monthly</div>
+              <div className="text-3xl font-extrabold text-primary mt-1">$10<span className="text-base font-normal text-muted-foreground">/mo</span></div>
+              <div className="text-xs text-muted-foreground mt-2">Billed every month. Cancel anytime.</div>
+            </Link>
+            <Link
+              to="/membership"
+              className="block border-2 border-accent bg-accent/5 rounded-sm p-5 relative"
+            >
+              <div className="absolute -top-2 right-3 bg-accent text-white text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-sm">Save $20</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-accent">Yearly</div>
+              <div className="text-3xl font-extrabold text-primary mt-1">$100<span className="text-base font-normal text-muted-foreground">/yr</span></div>
+              <div className="text-xs text-muted-foreground mt-2">Best value. Two months free.</div>
+            </Link>
+          </div>
+          <Link
+            to="/membership"
+            className="inline-block mt-5 text-sm font-bold text-white bg-accent px-5 py-2.5 rounded-sm hover:bg-accent/90 shadow-sm"
+          >
+            Continue to checkout →
+          </Link>
+        </div>
+      )}
     </div>
+  );
+}
+
+// ───────────────────────── Provider Business Info (editable, single source of truth) ─────────────────────────
+
+function ProviderBusinessInfoCard({ profile, userId }: { profile: Profile; userId: string }) {
+  const qc = useQueryClient();
+  const p = profile as any;
+  const [form, setForm] = useState({
+    company_name: p.company_name ?? "",
+    phone: p.phone ?? "",
+    dispatch_email: p.dispatch_email ?? "",
+    business_address: p.business_address ?? "",
+    city: p.city ?? "",
+    region: p.region ?? "",
+    postal_code: p.postal_code ?? "",
+    preferred_zip_codes: (Array.isArray(p.preferred_zip_codes) ? p.preferred_zip_codes : []).join(", "),
+  });
+  const [busy, setBusy] = useState(false);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.company_name.trim()) return toast.error("Company name is required");
+    if (!form.phone.trim()) return toast.error("Phone is required");
+    if (!form.dispatch_email.trim()) return toast.error("Dispatch email is required");
+    setBusy(true);
+    try {
+      const zips = form.preferred_zip_codes
+        .split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
+      // Auto-resolve dispatch zone from ZIP
+      let dispatch_zone_id: string | null = null;
+      if (form.postal_code.trim()) {
+        const { data: zoneMatch } = await supabase
+          .from("dispatch_zone_zips").select("zone_id").eq("zip", form.postal_code.trim()).maybeSingle();
+        dispatch_zone_id = (zoneMatch?.zone_id as string | null) ?? null;
+      }
+      const { error } = await supabase.from("member_profiles").update({
+        company_name: form.company_name.trim(),
+        phone: form.phone.trim(),
+        dispatch_email: form.dispatch_email.trim(),
+        business_address: form.business_address.trim() || null,
+        city: form.city.trim() || null,
+        region: form.region.trim() || null,
+        postal_code: form.postal_code.trim() || null,
+        preferred_zip_codes: zips,
+        dispatch_zone_id,
+      } as any).eq("user_id", userId);
+      if (error) throw error;
+      toast.success("Business information saved");
+      qc.invalidateQueries({ queryKey: ["member-profile"] });
+      qc.invalidateQueries({ queryKey: ["my-provider-onboarding"] });
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to save");
+    } finally { setBusy(false); }
+  }
+
+  const inputCls = "w-full border border-border rounded-sm px-3 py-2 text-sm bg-background";
+  const labelCls = "text-xs font-bold uppercase tracking-wide text-muted-foreground block mb-1";
+
+  return (
+    <form onSubmit={save} className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div>
+        <h3 className="text-lg font-extrabold tracking-tight">Business Information</h3>
+        <p className="text-sm text-muted-foreground">
+          Single source of truth for your business. Onboarding pulls from here — no duplicate entry needed.
+        </p>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <label className="sm:col-span-2"><span className={labelCls}>Company name *</span>
+          <input className={inputCls} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} required />
+        </label>
+        <label><span className={labelCls}>Phone *</span>
+          <input className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+        </label>
+        <label><span className={labelCls}>Dispatch email *</span>
+          <input type="email" className={inputCls} value={form.dispatch_email} onChange={(e) => setForm({ ...form, dispatch_email: e.target.value })} required />
+        </label>
+        <label className="sm:col-span-2"><span className={labelCls}>Business address</span>
+          <input className={inputCls} value={form.business_address} onChange={(e) => setForm({ ...form, business_address: e.target.value })} placeholder="123 Main St, Suite 200" />
+        </label>
+        <label><span className={labelCls}>City</span>
+          <input className={inputCls} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+        </label>
+        <label><span className={labelCls}>Region / County</span>
+          <input className={inputCls} value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} />
+        </label>
+        <label><span className={labelCls}>Business ZIP code</span>
+          <input className={inputCls} value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="e.g. 33101" />
+        </label>
+        <label><span className={labelCls}>Service ZIP codes (comma or space separated)</span>
+          <input className={inputCls} value={form.preferred_zip_codes} onChange={(e) => setForm({ ...form, preferred_zip_codes: e.target.value })} placeholder="33101, 33102, 33103" />
+        </label>
+      </div>
+      <button type="submit" disabled={busy} className="portal-btn-primary px-5 py-2">
+        {busy ? "Saving…" : "Save business information"}
+      </button>
+    </form>
   );
 }
 
