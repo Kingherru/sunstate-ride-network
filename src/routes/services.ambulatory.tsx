@@ -208,30 +208,21 @@ export function ServiceLayout({
             Not the right level of care?
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <Link
-              to="/services/wheelchair"
-              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
-              style={{ borderColor: `${NAVY}1f` }}
-            >
-              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
-                Wheelchair Transportation
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
-                ADA-compliant lift-equipped vans for passengers who remain in their wheelchair during travel.
-              </p>
-            </Link>
-            <Link
-              to="/services/stretcher"
-              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
-              style={{ borderColor: `${NAVY}1f` }}
-            >
-              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
-                Gurney & Stretcher Transportation
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
-                Bed-to-bed non-emergency transport for patients who cannot travel seated.
-              </p>
-            </Link>
+            {relatedLinks?.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+                style={{ borderColor: `${NAVY}1f` }}
+              >
+                <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                  {l.label}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                  {l.desc}
+                </p>
+              </Link>
+            ))}
           </div>
           <div className="mt-12 grid md:grid-cols-2 gap-6">
             <Link
