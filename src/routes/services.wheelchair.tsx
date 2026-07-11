@@ -40,6 +40,10 @@ export const Route = createFileRoute("/services/wheelchair")({
 function WheelchairPage() {
   return (
     <ServiceLayout
+      breadcrumbs={[
+        { label: "Services", to: "/services" },
+        { label: "Wheelchair Transportation" },
+      ]}
       eyebrow="ADA-compliant · Lift-equipped"
       title="Wheelchair Transportation"
       lede="Wheelchair transportation provides safe non-emergency medical transportation for passengers who remain in their wheelchair during travel. Florida NEMT providers offer secure wheelchair transport for medical appointments, healthcare facilities, therapy visits, and other essential destinations while prioritizing passenger safety and comfort."
@@ -49,6 +53,10 @@ function WheelchairPage() {
         "ADA-compliant vehicles with hydraulic lifts, ramps, and 4-point tie-downs",
         "Trained providers focused on passenger safety, comfort, and dignity",
         "Dependable rides to medical appointments, therapy, dialysis, and healthcare facilities",
+      ]}
+      relatedLinks={[
+        { to: "/services/ambulatory", label: "Ambulatory Transportation", desc: "For passengers who can walk independently or with minimal assistance." },
+        { to: "/services/stretcher", label: "Gurney & Stretcher Transportation", desc: "Bed-to-bed transport for patients who cannot travel seated." },
       ]}
       useCases={[
         { h: "Manual & power chairs", p: "Hydraulic lifts and low-floor ramps for every chair type." },
