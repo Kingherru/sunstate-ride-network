@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BedDouble } from "lucide-react";
-import { ServiceLayout } from "./ambulatory";
+import { ServiceLayout } from "./services.ambulatory";
 
 const TITLE = "Gurney and Stretcher Transportation Services in Florida | NEMT";
 const DESCRIPTION =
