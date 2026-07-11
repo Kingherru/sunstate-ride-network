@@ -1203,6 +1203,7 @@ function TripDetailView({
   portal,
   onBack,
   onChanged,
+  onDuplicate,
 }: {
   trip: Trip;
   userId: string;
@@ -1210,6 +1211,7 @@ function TripDetailView({
   portal?: PortalKind;
   onBack: () => void;
   onChanged: () => void;
+  onDuplicate?: (t: Trip) => void;
 }) {
   const t: any = trip;
   const [editing, setEditing] = useState(false);
