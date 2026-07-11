@@ -358,6 +358,7 @@ function ComingSoon({ title, description }: { title: string; description: string
 function OverviewTab() {
   return (
     <div className="space-y-6">
+      <AdminSyncStatusWidget />
       <div className="bg-card border border-border rounded-2xl p-6">
         <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">Internal · admin only</p>
         <h2 className="text-lg font-extrabold tracking-tight">Portal QA &amp; test access</h2>
