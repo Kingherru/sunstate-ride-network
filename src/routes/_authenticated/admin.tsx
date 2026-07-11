@@ -31,6 +31,7 @@ import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
+import { RegisteredMembersList } from "@/components/admin/RegisteredMembersList";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 import { AuditLogPanel } from "@/components/AuditLogPanel";
@@ -319,7 +320,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "audit": return caps.canViewAuditLog ? <AuditLogPanel /> : <NoAccess />;
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
-    case "facilities": return <ComingSoon title="Facilities" description="Manage facility accounts, saved patients, and provider relationships." />;
+    case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
     case "trips": return <ComingSoon title="Trips" description="Search, review, and export completed and in-progress trips across all providers." />;
     case "reservations": return <ComingSoon title="Reservations" description="Global view of scheduled and recurring rides awaiting a provider." />;
     case "pricing": return <ComingSoon title="Pricing" description="Configure statewide base fares, per-mile rates, and surge windows." />;
@@ -458,6 +459,8 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
   return (
     <div className="space-y-6">
+      <RegisteredMembersList portal="provider" title="Registered providers" />
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Total" value={counts.total} />
         <Stat label="New" value={counts.new} tone="accent" />
