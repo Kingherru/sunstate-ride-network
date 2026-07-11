@@ -35,7 +35,7 @@ function CourseDetail() {
   const [checkout, setCheckout] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [userId, setUserId] = useState<string | undefined>();
-  const navigate = useNavigate();
+  
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => { setUserEmail(data.user?.email); setUserId(data.user?.id); }); }, []);
 
