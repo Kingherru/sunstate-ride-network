@@ -84,24 +84,16 @@ function NewEndpointForm({ onClose, onSaved }: { onClose: () => void; onSaved: (
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState<string[]>(["trip.assigned"]);
+  const createFn = useServerFn(createProviderWebhookEndpoint);
 
   const save = useMutation({
     mutationFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) throw new Error("Not signed in");
-      if (!/^https:\/\//i.test(url)) throw new Error("URL must start with https://");
-      const { error } = await supabase.from("provider_webhook_endpoints" as any).insert({
-        provider_user_id: u.user.id,
-        label: label.trim(),
-        url: url.trim(),
-        events,
-        enabled: true,
-      } as any);
-      if (error) throw error;
+      await createFn({ data: { label: label.trim(), url: url.trim(), events: events as any } });
     },
-    onSuccess: () => { toast.success("Endpoint added"); onSaved(); onClose(); },
-    onError: (e: any) => toast.error(e.message ?? "Failed"),
+    onSuccess: () => { toast.success("Endpoint verified and added"); onSaved(); onClose(); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to validate endpoint"),
   });
+
 
   return (
     <div className="bg-card border border-border rounded-sm p-4 space-y-3">
