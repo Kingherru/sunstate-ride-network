@@ -31,6 +31,7 @@ import { DOC_LABEL } from "@/lib/provider-docs";
 import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
+import { RegisteredMembersList } from "@/components/admin/RegisteredMembersList";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 import { AuditLogPanel } from "@/components/AuditLogPanel";
