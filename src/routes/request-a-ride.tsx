@@ -201,6 +201,7 @@ function RequestRidePage() {
           recurrenceEndDate: "",
           billingSource: "account",
           createAccount: false,
+          blackTie: false,
         });
         setCopiedFromId(copyFrom);
         toast.success("Trip copied. Set new pickup/drop-off dates and times to continue.");
