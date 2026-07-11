@@ -74,6 +74,7 @@ export function AddressAutocomplete({
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ placeId: string; text: string; secondary: string }>>([]);
   const [highlight, setHighlight] = useState(0);
+  const [loadError, setLoadError] = useState<null | "no_key" | "script_error" | "referrer_blocked" | "places_api_disabled" | "request_denied" | "quota" | "unknown">(null);
   const sessionTokenRef = useRef<any>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -81,8 +82,26 @@ export function AddressAutocomplete({
 
   useEffect(() => {
     let alive = true;
-    loadMaps().then(() => { if (alive) setReady(true); }).catch(() => { if (alive) setReady(false); });
-    return () => { alive = false; };
+    loadMaps()
+      .then(() => { if (alive) { setReady(true); setLoadError(null); } })
+      .catch((err: Error) => {
+        if (!alive) return;
+        setReady(false);
+        setLoadError(err?.message === "no_key" ? "no_key" : "script_error");
+      });
+    // Google Maps writes its own errors to console.error; intercept once to surface referrer / API-not-enabled failures.
+    const origErr = console.error;
+    console.error = (...args: unknown[]) => {
+      try {
+        const msg = args.map((a) => (typeof a === "string" ? a : (a as any)?.message ?? "")).join(" ");
+        if (/RefererNotAllowedMapError|referer.*not.*allowed/i.test(msg)) setLoadError("referrer_blocked");
+        else if (/Places API \(New\) has not been used|places\.googleapis\.com.*disabled|SERVICE_DISABLED/i.test(msg)) setLoadError("places_api_disabled");
+        else if (/REQUEST_DENIED|ApiNotActivatedMapError|InvalidKeyMapError/i.test(msg)) setLoadError("request_denied");
+        else if (/OverQuota|OVER_QUERY_LIMIT/i.test(msg)) setLoadError("quota");
+      } catch { /* noop */ }
+      origErr.apply(console, args as []);
+    };
+    return () => { alive = false; console.error = origErr; };
   }, []);
 
   useEffect(() => {
@@ -122,7 +141,13 @@ export function AddressAutocomplete({
           }));
         setSuggestions(rows);
         setHighlight(0);
-      } catch (err) {
+      } catch (err: any) {
+        const msg = String(err?.message ?? err ?? "");
+        if (/Places API \(New\) has not been used|SERVICE_DISABLED/i.test(msg)) setLoadError("places_api_disabled");
+        else if (/referer|referrer/i.test(msg)) setLoadError("referrer_blocked");
+        else if (/REQUEST_DENIED|API key not valid|InvalidKey/i.test(msg)) setLoadError("request_denied");
+        else if (/OverQuota|OVER_QUERY_LIMIT/i.test(msg)) setLoadError("quota");
+        else setLoadError("unknown");
         console.error("autocomplete_fetch_failed", err);
         setSuggestions([]);
       }
@@ -201,6 +226,37 @@ export function AddressAutocomplete({
     else if (e.key === "Escape") { setOpen(false); }
   }
 
+  const errorCopy: Record<NonNullable<typeof loadError>, { title: string; body: string }> = {
+    no_key: {
+      title: "Address suggestions are unavailable",
+      body: "The Google Maps key isn't configured. You can still type the full address manually and we'll confirm it by phone.",
+    },
+    script_error: {
+      title: "Couldn't reach Google Maps",
+      body: "Check your internet connection, disable any ad blocker on this page, then reload. You can also type the address manually and we'll confirm by phone.",
+    },
+    referrer_blocked: {
+      title: "This site isn't authorized to use address suggestions",
+      body: "The Google Maps API key doesn't allow this domain. If you're the site owner, add this domain to the key's HTTP referrer restrictions in Google Cloud Console. You can still type the address manually.",
+    },
+    places_api_disabled: {
+      title: "Address suggestions temporarily unavailable",
+      body: "The Places API (New) isn't enabled on this project. If you're the site owner, enable \"Places API (New)\" in Google Cloud Console. You can still type the full address manually and we'll confirm by phone.",
+    },
+    request_denied: {
+      title: "Address suggestions blocked",
+      body: "Google refused the request (invalid or restricted API key). If you're the site owner, check the key's API restrictions and referrer allowlist. You can still type the address manually.",
+    },
+    quota: {
+      title: "Address suggestions temporarily unavailable",
+      body: "The daily quota has been reached. Please type the full address manually — we'll confirm every detail by phone.",
+    },
+    unknown: {
+      title: "Address suggestions aren't working",
+      body: "Something went wrong loading Google Maps. Please type the full address manually and we'll confirm by phone.",
+    },
+  };
+
   return (
     <div ref={containerRef} className="relative">
       <input
@@ -215,7 +271,19 @@ export function AddressAutocomplete({
         disabled={disabled}
         required={required}
         autoComplete="off"
+        aria-invalid={loadError ? true : undefined}
+        aria-describedby={loadError ? `${inputId ?? "addr"}-maps-error` : undefined}
       />
+      {loadError && (
+        <div
+          id={`${inputId ?? "addr"}-maps-error`}
+          role="status"
+          className="mt-2 rounded-sm border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+        >
+          <div className="font-semibold">{errorCopy[loadError].title}</div>
+          <div className="mt-0.5 text-destructive/90">{errorCopy[loadError].body}</div>
+        </div>
+      )}
       {open && suggestions.length > 0 && (
         <ul
           role="listbox"
