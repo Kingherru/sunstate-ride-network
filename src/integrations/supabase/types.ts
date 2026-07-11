@@ -2918,6 +2918,7 @@ export type Database = {
           dropoff_zip: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          estimated_cost_cents: number | null
           estimated_dropoff_at: string | null
           estimated_duration_seconds: number | null
           estimated_duration_traffic_seconds: number | null
@@ -3012,6 +3013,7 @@ export type Database = {
           dropoff_zip?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          estimated_cost_cents?: number | null
           estimated_dropoff_at?: string | null
           estimated_duration_seconds?: number | null
           estimated_duration_traffic_seconds?: number | null
@@ -3106,6 +3108,7 @@ export type Database = {
           dropoff_zip?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          estimated_cost_cents?: number | null
           estimated_dropoff_at?: string | null
           estimated_duration_seconds?: number | null
           estimated_duration_traffic_seconds?: number | null
@@ -3772,10 +3775,20 @@ export type Database = {
       }
       start_direct_thread: { Args: { _recipient: string }; Returns: string }
       start_staff_thread: { Args: never; Returns: string }
-      submit_trip_quote: {
-        Args: { _amount_cents: number; _note?: string; _trip_id: string }
-        Returns: string
-      }
+      submit_trip_quote:
+        | {
+            Args: { _amount_cents: number; _note?: string; _trip_id: string }
+            Returns: string
+          }
+        | {
+            Args: {
+              _allow_over_cap?: boolean
+              _amount_cents: number
+              _note?: string
+              _trip_id: string
+            }
+            Returns: string
+          }
       suggest_providers_for_trip: {
         Args: { _trip_id: string }
         Returns: {
