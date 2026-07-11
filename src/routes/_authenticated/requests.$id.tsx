@@ -15,7 +15,7 @@ import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/R
 export const Route = createFileRoute("/_authenticated/requests/$id")({
   head: () => ({
     meta: [
-      { title: "Ride Request Details — MyFloridaNemt.com" },
+      { title: "Ride Request Details — My Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),

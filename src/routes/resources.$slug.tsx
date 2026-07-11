@@ -13,7 +13,7 @@ export const Route = createFileRoute("/resources/$slug")({
     if (!post) {
       return {
         meta: [
-          { title: "Article not found — MyFloridaNemt.com" },
+          { title: "Article not found — My Florida NEMT" },
           { name: "description", content: "The article you requested could not be found." },
         ],
       };
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/resources/$slug")({
             author: { "@type": "Organization", name: post.author },
             publisher: {
               "@type": "Organization",
-              name: "MyFloridaNemt.com",
+              name: "My Florida NEMT",
             },
             articleSection: post.category,
             keywords: post.keywords.join(", "),

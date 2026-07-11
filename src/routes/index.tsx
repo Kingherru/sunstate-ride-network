@@ -75,7 +75,7 @@ function HomePage() {
         <div className="relative min-h-[400px] overflow-hidden bg-slate-100">
           <img
             src={heroVan}
-            alt="MyFloridaNemt.com van outside a clinic"
+            alt="My Florida NEMT van outside a clinic"
             className="absolute inset-0 w-full h-full object-cover"
           />
         </div>

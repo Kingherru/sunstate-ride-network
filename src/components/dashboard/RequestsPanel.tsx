@@ -64,7 +64,7 @@ function MedicaidBadge() {
 function sourceBadge(src: string | null, hasRequester: boolean) {
   const v = (src ?? (hasRequester ? "provider" : "auto")).toLowerCase();
   if (v === "auto")
-    return <span className="bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">MyFloridaNemt.com Auto Match</span>;
+    return <span className="bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">My Florida NEMT Auto Match</span>;
   if (v === "provider")
     return <span className="bg-accent/15 text-accent text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">Provider Submitted</span>;
   if (v === "facility")
@@ -167,7 +167,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Incoming Requests</h2>
         <p className="text-sm text-muted-foreground">
-          Trip requests routed to you by MyFloridaNemt.com (auto by ZIP) or sent directly by another provider/facility. Approve to move to Reservations.
+          Trip requests routed to you by My Florida NEMT (auto by ZIP) or sent directly by another provider/facility. Approve to move to Reservations.
         </p>
       </div>
 
@@ -175,7 +175,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
         <div className="rounded-sm border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           <div className="font-bold uppercase tracking-wider text-xs mb-1">Membership required</div>
           <p>
-            Only active paid members receive MyFloridaNemt.com Auto Match and Provider-Submitted trips.
+            Only active paid members receive My Florida NEMT Auto Match and Provider-Submitted trips.
             {hiddenForMembership > 0 && (
               <> You currently have <b>{hiddenForMembership}</b> eligible opportunit{hiddenForMembership === 1 ? "y" : "ies"} in your area.</>
             )}

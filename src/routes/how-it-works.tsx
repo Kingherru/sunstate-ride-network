@@ -4,13 +4,13 @@ import { Phone, Calendar, Car, ShieldCheck } from "lucide-react";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How It Works — MyFloridaNemt.com for Patients & Caregivers" },
+      { title: "How It Works — My Florida NEMT for Patients & Caregivers" },
       {
         name: "description",
         content:
-          "Learn how MyFloridaNemt.com helps patients across the state get safe, dignified non-emergency medical transportation — from coverage check to door-to-door pickup.",
+          "Learn how My Florida NEMT helps patients across the state get safe, dignified non-emergency medical transportation — from coverage check to door-to-door pickup.",
       },
-      { property: "og:title", content: "How MyFloridaNemt.com Works" },
+      { property: "og:title", content: "How My Florida NEMT Works" },
       { property: "og:description", content: "Coverage check, booking, and door-to-door pickup across Florida." },
       { property: "og:url", content: "https://myfloridanemt.com/how-it-works" },
     ],
@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: "Does Florida Medicaid cover non-emergency medical transportation?",
-    a: "Yes. Most Florida Medicaid managed care plans cover NEMT at no cost to eligible members when the trip is to a medically necessary, covered service. Coverage is arranged through your plan's transportation broker — MyFloridaNemt.com works with vetted local providers who accept these trips.",
+    a: "Yes. Most Florida Medicaid managed care plans cover NEMT at no cost to eligible members when the trip is to a medically necessary, covered service. Coverage is arranged through your plan's transportation broker — My Florida NEMT works with vetted local providers who accept these trips.",
   },
   {
     q: "Does Medicare cover medical transportation?",
@@ -56,7 +56,7 @@ const faqs = [
   },
   {
     q: "Who pays for non-emergency medical transportation?",
-    a: "Depending on the patient, NEMT is paid by Florida Medicaid (through the plan's transportation broker), a Medicare Advantage supplemental benefit, Workers' Compensation, private insurance, a hospital or facility discharge program, or the patient out of pocket. MyFloridaNemt.com helps you identify which of these applies before you book.",
+    a: "Depending on the patient, NEMT is paid by Florida Medicaid (through the plan's transportation broker), a Medicare Advantage supplemental benefit, Workers' Compensation, private insurance, a hospital or facility discharge program, or the patient out of pocket. My Florida NEMT helps you identify which of these applies before you book.",
   },
   {
     q: "How much does Medicaid pay for non-emergency transportation?",
@@ -90,7 +90,7 @@ const steps = [
     n: "02",
     title: "Book a ride with a local provider",
     body:
-      "Request a ride through MyFloridaNemt.com and we route it to a vetted local provider in your county. Unlike rideshare, NEMT providers don't cancel after booking — and they arrive on time for dialysis, oncology, therapy, and follow-up appointments.",
+      "Request a ride through My Florida NEMT and we route it to a vetted local provider in your county. Unlike rideshare, NEMT providers don't cancel after booking — and they arrive on time for dialysis, oncology, therapy, and follow-up appointments.",
   },
   {
     icon: Car,
@@ -118,11 +118,11 @@ function HowItWorksPage() {
             For Patients · Statewide Florida
           </p>
           <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter leading-[0.95] mb-6 max-w-4xl">
-            How MyFloridaNemt.com works for patients.
+            How My Florida NEMT works for patients.
           </h1>
           <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl">
             Whether you've been injured on the job, are recovering from surgery, or simply lack
-            access to a car, MyFloridaNemt.com tailors safe, VIP-style transportation to your needs —
+            access to a car, My Florida NEMT tailors safe, VIP-style transportation to your needs —
             from Pensacola to the Keys. You'll feel more like family than a passenger.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">

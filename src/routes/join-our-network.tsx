@@ -4,13 +4,13 @@ import { CheckCircle2, TrendingUp, Globe, ShieldCheck, LifeBuoy, MapPin } from "
 export const Route = createFileRoute("/join-our-network")({
   head: () => ({
     meta: [
-      { title: "Join Our Network — MyFloridaNemt.com Providers Statewide" },
+      { title: "Join Our Network — My Florida NEMT Providers Statewide" },
       {
         name: "description",
         content:
           "Launching a non-emergency medical transportation business in Florida? Get exclusive NEMT leads, a verified profile, and statewide patient demand from Pensacola to the Keys.",
       },
-      { property: "og:title", content: "Join the MyFloridaNemt.com Provider Network" },
+      { property: "og:title", content: "Join the My Florida NEMT Provider Network" },
       { property: "og:description", content: "Exclusive NEMT leads and statewide demand for Florida providers." },
       { property: "og:url", content: "/join-our-network" },
     ],
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/join-our-network")({
 const benefits = [
   {
     icon: TrendingUp,
-    title: "Exclusive MyFloridaNemt.com Leads",
+    title: "Exclusive My Florida NEMT Leads",
     body:
       "Stop chasing dispatch boards. Get high-intent trip requests routed to your service area — Jacksonville, Tampa, Orlando, Miami, Gainesville, Daytona, Southwest Florida and every county in between.",
   },
@@ -76,7 +76,7 @@ function JoinNetworkPage() {
               Join the FloridaNEMT network.
             </h1>
             <p className="text-lg lg:text-xl text-primary-foreground/80 max-w-2xl">
-              Whether you're a brand-new NEMT entrepreneur or an established fleet, MyFloridaNemt.com
+              Whether you're a brand-new NEMT entrepreneur or an established fleet, My Florida NEMT
               connects you with real patient demand across the state — and the support to scale.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">

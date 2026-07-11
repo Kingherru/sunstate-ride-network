@@ -239,7 +239,7 @@ async function renderCertificatePdf(args: {
   page.drawRectangle({ x: 20, y: 20, width: 752, height: 572, borderColor: rgb(0.05, 0.1, 0.25), borderWidth: 3 });
   page.drawRectangle({ x: 30, y: 30, width: 732, height: 552, borderColor: rgb(0.9, 0.5, 0.15), borderWidth: 1 });
 
-  draw("MyFloridaNemt.com", 300, 540, 20, bold, rgb(0.05, 0.1, 0.25));
+  draw("My Florida NEMT", 300, 540, 20, bold, rgb(0.05, 0.1, 0.25));
   draw("Certificate of Completion", 220, 490, 30, bold);
   draw("This certifies that", 320, 430, 14);
   draw(args.holder_name, 396 - (args.holder_name.length * 6), 390, 28, bold);

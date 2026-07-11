@@ -3,13 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/black-tie")({
   head: () => ({
     meta: [
-      { title: "Black Tie Transportation — Luxury Chauffeured Service | MyFloridaNemt.com" },
+      { title: "Black Tie Transportation — Luxury Chauffeured Service | My Florida NEMT" },
       {
         name: "description",
         content:
           "Premium chauffeured transportation across Florida — black SUVs, executive sedans, luxury sprinters, party buses, motor coaches, and limousines for weddings, corporate events, airport transfers, and private occasions.",
       },
-      { property: "og:title", content: "Black Tie Transportation — MyFloridaNemt.com" },
+      { property: "og:title", content: "Black Tie Transportation — My Florida NEMT" },
       {
         property: "og:description",
         content: "Luxury chauffeured transportation in Florida for weddings, corporate events, airport transfers, and private occasions.",
@@ -92,7 +92,7 @@ function BlackTiePage() {
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-6">
               <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#c8a24a]">
-                MyFloridaNemt.com · Black Tie Division
+                My Florida NEMT · Black Tie Division
               </span>
               <span className="h-px w-16 bg-[#c8a24a]/40" />
             </div>

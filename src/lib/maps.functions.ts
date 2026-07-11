@@ -70,7 +70,7 @@ async function routeInfo(
   };
 }
 
-// MyFloridaNemt.com average pricing defaults (used when a provider hasn't set their own pricing).
+// My Florida NEMT average pricing defaults (used when a provider hasn't set their own pricing).
 // Ranges reflect typical Florida Medicaid / private-pay rates; midpoint is used for estimates.
 export const FL_DEFAULTS = {
   ambulatory: { load: 50,  loadMax: 50,  perMileMin: 1.50, perMileMax: 3.50 },
@@ -202,11 +202,11 @@ async function enqueueConfirmationEmail(
     ``,
     `A dispatcher will confirm your pickup details by phone or email within two hours. Please be on the lookout for our communication.`,
     ``,
-    `— MyFloridaNemt.com`,
+    `— My Florida NEMT`,
   ].join("\n");
   await admin.from("notification_email_queue").insert({
     recipient_email: req.patient_email,
-    subject: "Your ride request was received — MyFloridaNemt.com",
+    subject: "Your ride request was received — My Florida NEMT",
     body,
     ride_request_id: req.id,
   });

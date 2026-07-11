@@ -114,7 +114,7 @@ export function ProviderOnboardingChecklist({
         <p className="text-xs text-muted-foreground">
           Need help?{" "}
           <Link to="/contact" className="underline font-semibold">
-            Contact the MyFloridaNemt.com team
+            Contact the My Florida NEMT team
           </Link>{" "}
           — we usually reply within one business hour.
         </p>
