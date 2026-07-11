@@ -464,6 +464,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
             {tab === "changelog" && <ChangelogPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
+            </>)}
               </div>
             </section>
           </>
