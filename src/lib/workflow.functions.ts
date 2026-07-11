@@ -25,7 +25,7 @@ export const declineTrip = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-/** Provider submits a manual quote for a trip. */
+/** Provider submits a manual quote for a trip. Enforces the 50-mile / 50%-over-estimate cap server-side. */
 export const submitTripQuote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -33,6 +33,7 @@ export const submitTripQuote = createServerFn({ method: "POST" })
       trip_id: z.string().uuid(),
       amount_cents: z.number().int().positive().max(10_000_00),
       note: z.string().trim().max(500).optional().nullable(),
+      allow_over_cap: z.boolean().optional(),
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -40,8 +41,12 @@ export const submitTripQuote = createServerFn({ method: "POST" })
       _trip_id: data.trip_id,
       _amount_cents: data.amount_cents,
       _note: data.note ?? undefined,
-    });
-    if (error) return { ok: false as const, error: error.message };
+      _allow_over_cap: data.allow_over_cap ?? false,
+    } as any);
+    if (error) {
+      const requires_override = /50%/.test(error.message) || error.code === "23514";
+      return { ok: false as const, error: error.message, requires_override };
+    }
     return { ok: true as const, quote_id: quoteId as string };
   });
 
