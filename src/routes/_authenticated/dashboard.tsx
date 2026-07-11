@@ -1291,6 +1291,21 @@ function TripDetailView({
   else if (paidDollars > 0) { paymentLabel = "Partially paid"; paymentTone = "bg-amber-100 text-amber-700"; }
   else if (!needsQuote) { paymentLabel = "Pending"; paymentTone = "bg-amber-100 text-amber-700"; }
 
+  // Quote lifecycle: estimate -> quote_required -> quoted -> approved -> paid
+  type QuoteStage = { key: string; label: string; tone: string };
+  let quoteStage: QuoteStage;
+  if (refundedCents > 0) quoteStage = { key: "refunded", label: "Refunded", tone: "bg-slate-200 text-slate-700 border-slate-300" };
+  else if (quoteDollars != null && paidDollars >= quoteDollars && quoteDollars > 0)
+    quoteStage = { key: "paid", label: "Paid", tone: "bg-emerald-100 text-emerald-800 border-emerald-300" };
+  else if (!needsQuote && (t as any).quote_approved_at)
+    quoteStage = { key: "approved", label: "Approved", tone: "bg-blue-100 text-blue-800 border-blue-300" };
+  else if (!needsQuote)
+    quoteStage = { key: "quoted", label: "Quoted", tone: "bg-primary/15 text-primary border-primary/40" };
+  else if (t.assigned_to)
+    quoteStage = { key: "required", label: "Quote required", tone: "bg-amber-100 text-amber-800 border-amber-300" };
+  else
+    quoteStage = { key: "estimate", label: "Estimate only", tone: "bg-zinc-100 text-zinc-700 border-zinc-300" };
+
   const isRound = !!t.round_trip;
   const flags: string[] = [];
   if (isRound) flags.push("Round trip");
