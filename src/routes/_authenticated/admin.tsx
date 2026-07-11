@@ -323,7 +323,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "trips": return <ComingSoon title="Trips" description="Search, review, and export completed and in-progress trips across all providers." />;
     case "reservations": return <ComingSoon title="Reservations" description="Global view of scheduled and recurring rides awaiting a provider." />;
     case "pricing": return <ComingSoon title="Pricing" description="Configure statewide base fares, per-mile rates, and surge windows." />;
-    case "integrations": return <ComingSoon title="Integrations" description="Manage Stripe, HIPAA-compliant messaging, and third-party dispatch webhooks." />;
+    case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
     case "payouts": return caps.isAdmin ? <MonthlyPayoutReport scope="admin" title="Monthly billing & payout report — all providers" /> : <NoAccess />;
     case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
     case "seo": return <ComingSoon title="SEO settings" description="Site-wide meta defaults, robots directives, and sitemap controls." />;
