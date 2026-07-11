@@ -181,6 +181,78 @@ export const reviewProviderApplication = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
     if (error) throw error;
+
+    // On approval, sync application data → member_profiles for the matching
+    // auth user (matched by email). This makes the Admin Portal show
+    // company/city/region/ZIP/zone immediately after approval, and unlocks
+    // the Provider Portal (no more onboarding wall) for the approved account.
+    if (data.status === "approved") {
+      try {
+        const { data: app } = await context.supabase
+          .from("provider_applications")
+          .select("*")
+          .eq("id", data.id)
+          .maybeSingle();
+
+        if (app?.email) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Find the auth user by email
+          let match: any = null;
+          let page = 1;
+          const target = String(app.email).toLowerCase();
+          while (!match) {
+            const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({
+              page,
+              perPage: 200,
+            });
+            if (listErr) break;
+            match = (list?.users ?? []).find((u: any) => (u.email ?? "").toLowerCase() === target);
+            if (match) break;
+            if (!list?.users?.length || list.users.length < 200) break;
+            page += 1;
+            if (page > 25) break;
+          }
+
+          if (match?.id) {
+            // Resolve dispatch zone from ZIP if available
+            let dispatch_zone_id: string | null = null;
+            if (app.zip_code) {
+              const { data: zoneId } = await supabaseAdmin.rpc("zone_id_for_zip", {
+                _zip: app.zip_code,
+              });
+              dispatch_zone_id = (zoneId as any) ?? null;
+            }
+
+            const syncFields: Record<string, unknown> = {
+              provider_application_id: app.id,
+              company_name: app.company_name ?? null,
+              first_name: app.first_name ?? null,
+              last_name: app.last_name ?? null,
+              phone: app.phone ?? null,
+              dispatch_email: app.dispatch_email ?? app.email ?? null,
+              city: app.city ?? null,
+              region: app.region ?? "Statewide Florida",
+              postal_code: app.zip_code ?? null,
+              npi: app.npi ?? null,
+            };
+            if (dispatch_zone_id) syncFields.dispatch_zone_id = dispatch_zone_id;
+            if (Array.isArray(app.preferred_zip_codes) && app.preferred_zip_codes.length) {
+              syncFields.preferred_zip_codes = app.preferred_zip_codes;
+            }
+
+            // Upsert on user_id so a missing profile row is created too.
+            await supabaseAdmin
+              .from("member_profiles")
+              .upsert({ user_id: match.id, ...syncFields }, { onConflict: "user_id" });
+          }
+        }
+      } catch (syncErr) {
+        // Sync failure must not block the approval itself.
+        console.error("Provider approval sync failed", syncErr);
+      }
+    }
+
     // The DB trigger also logs; this call is a no-op safety net kept for clarity.
     return { ok: true };
   });
