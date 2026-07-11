@@ -32,6 +32,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { AdminThemePanel } from "@/components/AdminThemePanel";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { RegisteredMembersList } from "@/components/admin/RegisteredMembersList";
+import { AdminSyncStatusWidget } from "@/components/admin/AdminSyncStatusWidget";
 import { AdminDispatchPanel } from "@/components/AdminDispatchPanel";
 import { StaffPermissionsPanel } from "@/components/StaffPermissionsPanel";
 import { AuditLogPanel } from "@/components/AuditLogPanel";
@@ -358,6 +359,7 @@ function ComingSoon({ title, description }: { title: string; description: string
 function OverviewTab() {
   return (
     <div className="space-y-6">
+      <AdminSyncStatusWidget />
       <div className="bg-card border border-border rounded-2xl p-6">
         <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">Internal · admin only</p>
         <h2 className="text-lg font-extrabold tracking-tight">Portal QA &amp; test access</h2>
