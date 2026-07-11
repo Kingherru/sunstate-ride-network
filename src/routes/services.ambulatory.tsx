@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, PersonStanding } from "lucide-react";
 import { buildServiceSchema } from "@/lib/schema";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 
 const NAVY = "#13335a";
 const ORANGE = "#e07a1f";
