@@ -73,7 +73,7 @@ function JoinNetworkPage() {
               Provider Network · Statewide Florida
             </p>
             <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter leading-[0.95] mb-6">
-              Join the MyFloridaNemt.com network.
+              Join the FloridaNEMT network.
             </h1>
             <p className="text-lg lg:text-xl text-primary-foreground/80 max-w-2xl">
               Whether you're a brand-new NEMT entrepreneur or an established fleet, MyFloridaNemt.com
