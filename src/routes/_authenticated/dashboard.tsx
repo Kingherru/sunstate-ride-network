@@ -245,6 +245,30 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     },
   });
 
+  // Provider onboarding — counts of vehicles/drivers drive soft-access unlock.
+  const vehiclesQ = useQuery({
+    queryKey: ["onboarding-vehicles", userId],
+    enabled: !!userId && (portalOverride ?? "provider") === "provider",
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("vehicles").select("id", { count: "exact", head: true })
+        .eq("owner_id", userId!);
+      return count ?? 0;
+    },
+  });
+  const driversQ = useQuery({
+    queryKey: ["onboarding-drivers", userId],
+    enabled: !!userId && (portalOverride ?? "provider") === "provider",
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("drivers").select("id", { count: "exact", head: true })
+        .eq("owner_id", userId!);
+      return count ?? 0;
+    },
+  });
+
+
+
   const realProfile = profileQ.data as (Profile & { membership_tier?: string }) | null;
   // Admin previewing a portal: synthesize a profile + sample trips so the UI is visible without onboarding.
   const profile: (Profile & { membership_tier?: string }) | null =
