@@ -102,12 +102,7 @@ export const rideRequestSchema = z.object({
       message: "Select a Black Tie vehicle type.",
     });
   }
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["billingContact"],
-      message: "Billing contact is required.",
-    });
-  }
+
   if (data.tripType === "round_trip" && !data.returnPickupTime) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
