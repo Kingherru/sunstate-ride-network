@@ -97,7 +97,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
                   <td className="py-2 font-mono text-xs">{t.id.slice(0, 8)}</td>
                   <td>{t.pickup_date}</td>
                   <td className="text-right">{formatUsd((t.cost_total ?? 0) * 100)}</td>
-                  <td className="text-right text-muted-foreground">−{formatUsd(t.platform_fee_cents ?? platformFeeCents(Math.round((t.cost_total ?? 0) * 100)))}</td>
+                  <td className="text-right text-muted-foreground">−{formatUsd(t.platform_fee_cents ?? Math.round((t.cost_total ?? 0) * 100 * feePct))}</td>
                   <td className="text-right font-bold">{formatUsd(computePayout(t))}</td>
                   <td className="pl-3"><PayoutBadge status={t.payout_status} releasedAt={t.payout_released_at} /></td>
                 </tr>
