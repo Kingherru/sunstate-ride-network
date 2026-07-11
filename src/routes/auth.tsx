@@ -86,18 +86,18 @@ function AuthPage() {
 
 
   return (
-    <section className="min-h-screen grid place-items-center px-6 py-20">
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8">
+    <section className="min-h-screen flex-1 grid place-items-center px-6 py-20 bg-[#1D3557] text-white">
+      <div className="w-full max-w-md rounded-2xl p-8 bg-white/5 border border-white/10 backdrop-blur">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 mb-6"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white mb-6"
         >
           <ArrowLeft className="h-4 w-4" /> Back to home
         </Link>
-        <p className="font-mono text-xs font-bold text-primary uppercase tracking-widest mb-3">
+        <p className="font-mono text-xs font-bold text-white/70 uppercase tracking-widest mb-3">
           Admin & Staff
         </p>
-        <h1 className="text-3xl font-extrabold tracking-tighter mb-6">
+        <h1 className="text-3xl font-extrabold tracking-tighter mb-6 text-white">
           {mode === "signin" ? "Sign in" : "Create account"}
         </h1>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -107,7 +107,7 @@ function AuthPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-background border border-input rounded-sm px-4 py-3 text-sm"
+            className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-sm px-4 py-3 text-sm"
           />
           <input
             type="password"
@@ -116,12 +116,12 @@ function AuthPage() {
             placeholder="Password (min 8 chars)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-background border border-input rounded-sm px-4 py-3 text-sm"
+            className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-sm px-4 py-3 text-sm"
           />
           <button
             type="submit"
             disabled={busy}
-            className="w-full px-6 py-3 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition disabled:opacity-60"
+            className="w-full px-6 py-3 bg-white text-[#1D3557] font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-white/90 transition disabled:opacity-60"
           >
             {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
           </button>
@@ -130,7 +130,7 @@ function AuthPage() {
           <button
             type="button"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="text-xs text-muted hover:text-foreground underline underline-offset-4 text-left"
+            className="text-xs text-white/70 hover:text-white underline underline-offset-4 text-left"
           >
             {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
           </button>
@@ -139,13 +139,13 @@ function AuthPage() {
               type="button"
               onClick={onForgot}
               disabled={busy}
-              className="text-xs text-muted hover:text-foreground underline underline-offset-4 text-left"
+              className="text-xs text-white/70 hover:text-white underline underline-offset-4 text-left"
             >
               Forgot password?
             </button>
           )}
         </div>
-        <p className="mt-6 text-xs text-muted leading-relaxed">
+        <p className="mt-6 text-xs text-white/60 leading-relaxed">
           New accounts have no admin permissions until granted by the project owner.
         </p>
       </div>
