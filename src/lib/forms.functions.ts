@@ -328,7 +328,7 @@ export const submitProviderApplication = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => providerApplicationSchema.parse(input))
   .handler(async ({ data }) => {
     const contactName = `${data.firstName} ${data.lastName}`.trim();
-    const { error } = await supabaseAdmin.from("provider_applications").insert({
+    const row = {
       company_name: data.companyName,
       contact_name: contactName,
       first_name: data.firstName,
@@ -350,9 +350,54 @@ export const submitProviderApplication = createServerFn({ method: "POST" })
       insurance_policy_number: data.insurancePolicyNumber || null,
       notes: data.notes || null,
       documents: data.documents,
-    });
+    };
+
+    // Dedupe: check for an existing application on this email so re-submits
+    // don't pile up duplicate rows in provider_applications.
+    const { data: existing, error: lookupErr } = await supabaseAdmin
+      .from("provider_applications")
+      .select("id, status")
+      .eq("email", data.email)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lookupErr) {
+      console.error("submitProviderApplication lookup error", lookupErr);
+      return { ok: false as const, error: "Could not submit your application. Please try again." };
+    }
+
+    if (existing) {
+      const status = String(existing.status ?? "pending").toLowerCase();
+      if (status === "approved") {
+        return {
+          ok: false as const,
+          error:
+            "An approved provider account already exists for this email. Please sign in instead of re-submitting.",
+        };
+      }
+      if (status === "denied") {
+        return {
+          ok: false as const,
+          error:
+            "A previous application for this email was denied. Please contact support before re-applying.",
+        };
+      }
+      // pending / under_review → update in place instead of inserting a duplicate
+      const { error: updateErr } = await supabaseAdmin
+        .from("provider_applications")
+        .update(row)
+        .eq("id", existing.id);
+      if (updateErr) {
+        console.error("submitProviderApplication update error", updateErr);
+        return { ok: false as const, error: "Could not update your application. Please try again." };
+      }
+      return { ok: true as const, updated: true as const };
+    }
+
+    const { error } = await supabaseAdmin.from("provider_applications").insert(row);
     if (error) {
-      console.error("submitProviderApplication error", error);
+      console.error("submitProviderApplication insert error", error);
       return { ok: false as const, error: "Could not submit your application. Please try again." };
     }
     return { ok: true as const };
