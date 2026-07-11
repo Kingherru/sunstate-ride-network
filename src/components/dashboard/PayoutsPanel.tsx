@@ -74,6 +74,8 @@ export function PayoutsPanel({ userId }: { userId: string }) {
 
       <BillingExplainer feePct={feePct} />
 
+      <MonthlyPayoutReport scope="provider" providerUserId={userId} title="Monthly billing & payout report" />
+
       <section className="bg-card border border-border rounded-sm p-5">
         <h3 className="text-lg font-extrabold tracking-tight mb-3">Trip releases</h3>
         {tripsQ.isLoading ? (
