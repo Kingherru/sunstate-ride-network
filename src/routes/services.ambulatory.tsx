@@ -6,9 +6,9 @@ const ORANGE = "#e07a1f";
 const MINT = "#FFF3E4";
 const CREAM = "#FFF8EE";
 
-const TITLE = "Ambulatory Transportation in Florida | My Florida NEMT";
+const TITLE = "Ambulatory Transportation Services in Florida | Safe Medical Transportation";
 const DESCRIPTION =
-  "Safe, reliable ambulatory non-emergency medical transportation across all 67 Florida counties. Book Medicaid-covered rides to doctor visits, dialysis, and hospital discharges.";
+  "Reliable ambulatory transportation throughout Florida for patients who can walk independently or need minimal assistance. Our NEMT providers offer safe, professional transportation to medical appointments, healthcare facilities, and treatment centers.";
 const URL = "https://myfloridanemt.com/services/ambulatory";
 
 export const Route = createFileRoute("/services/ambulatory")({
@@ -49,12 +49,12 @@ function AmbulatoryPage() {
     <ServiceLayout
       eyebrow="Curb-to-curb & door-to-door"
       title="Ambulatory Transportation"
-      lede="Ambulatory transport is non-emergency medical transportation for patients who can walk on their own or with minor assistance. It's the most common ride we book — routine doctor visits, chemotherapy, hospital admissions, and same-day discharges."
+      lede="Ambulatory transportation provides safe and reliable non-emergency medical transportation for passengers who can walk independently or need minimal assistance. Florida NEMT providers help patients travel comfortably to doctor appointments, dialysis, therapy, hospitals, and other healthcare services while receiving professional and dependable support."
       icon={<PersonStanding size={28} />}
       bullets={[
-        "Reduced stress and anxiety with a safe, reliable ride to every appointment",
-        "Better appointment compliance — patients arrive on time, every time",
-        "Lower costs by preventing missed care that ends in ER visits",
+        "Safe, reliable rides for passengers who walk independently or need minimal assistance",
+        "Professional, courteous drivers trained in patient assistance and HIPAA compliance",
+        "On-time pickups for doctor visits, dialysis, therapy, and hospital appointments",
         "Statewide coverage across all 67 Florida counties, 24/7 dispatch",
       ]}
       useCases={[
@@ -66,6 +66,7 @@ function AmbulatoryPage() {
     />
   );
 }
+
 
 // --- shared layout used by all three service pages ---
 export function ServiceLayout({

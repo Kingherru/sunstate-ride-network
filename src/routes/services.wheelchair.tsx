@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Accessibility } from "lucide-react";
 import { ServiceLayout } from "./services.ambulatory";
 
-const TITLE = "Wheelchair Transportation in Florida | My Florida NEMT";
+const TITLE = "Wheelchair Transportation Services in Florida | NEMT Wheelchair Rides";
 const DESCRIPTION =
-  "ADA-compliant wheelchair transportation across Florida. Hydraulic lifts, secured tie-downs, and certified drivers for safe manual & power chair transport, including bariatric and dialysis rides.";
+  "Professional wheelchair transportation services across Florida for passengers who require wheelchair assistance. Our NEMT network connects patients with trained providers offering safe, comfortable, and dependable medical transportation.";
 const URL = "https://myfloridanemt.com/services/wheelchair";
 
 export const Route = createFileRoute("/services/wheelchair")({
@@ -45,13 +45,13 @@ function WheelchairPage() {
     <ServiceLayout
       eyebrow="ADA-compliant · Lift-equipped"
       title="Wheelchair Transportation"
-      lede="Wheelchair NEMT is a vital service for patients with mobility limitations. Our lift- and ramp-equipped vans, certified drivers, and 4-point tie-down systems make sure every rider — manual chair, power chair, or bariatric — gets to their appointment safely and with dignity."
+      lede="Wheelchair transportation provides safe non-emergency medical transportation for passengers who remain in their wheelchair during travel. Florida NEMT providers offer secure wheelchair transport for medical appointments, healthcare facilities, therapy visits, and other essential destinations while prioritizing passenger safety and comfort."
       icon={<Accessibility size={28} />}
       bullets={[
-        "Independence — get to appointments without relying on family or friends",
-        "Increased mobility for work, school, dialysis, and social outings",
-        "Improved quality of life through consistent access to care",
-        "ADA-compliant vehicles with 4-point tie-downs and trained attendants",
+        "Passengers stay seated in their own wheelchair for the entire ride",
+        "ADA-compliant vehicles with hydraulic lifts, ramps, and 4-point tie-downs",
+        "Trained providers focused on passenger safety, comfort, and dignity",
+        "Dependable rides to medical appointments, therapy, dialysis, and healthcare facilities",
       ]}
       useCases={[
         { h: "Manual & power chairs", p: "Hydraulic lifts and low-floor ramps for every chair type." },
@@ -62,3 +62,4 @@ function WheelchairPage() {
     />
   );
 }
+
