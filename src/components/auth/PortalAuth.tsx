@@ -343,7 +343,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
             <button
               type="submit"
               disabled={busy}
-              className="portal-btn-primary w-full py-3"
+              className="w-full py-3 rounded-sm bg-white text-[#1D3557] font-bold text-sm tracking-widest uppercase hover:bg-white/90 transition disabled:opacity-60"
             >
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
@@ -352,7 +352,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
             <button
               type="button"
               onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-sm text-white/70 hover:text-white"
             >
               {mode === "signin"
                 ? "Don't have an account? Sign up"
@@ -363,7 +363,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                 type="button"
                 onClick={onForgot}
                 disabled={busy}
-                className="text-sm text-muted-foreground hover:text-foreground"
+                className="text-sm text-white/70 hover:text-white"
               >
                 Forgot password?
               </button>
