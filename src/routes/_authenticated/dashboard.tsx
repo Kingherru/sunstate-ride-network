@@ -1678,51 +1678,84 @@ function TripDetailView({
                   <span className="font-semibold">{t.payer ?? "—"}</span>
                 )}
               </div>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-muted-foreground">Estimated price</div>
-                  <div className="text-[0.65rem] text-muted-foreground italic">Final amount may change</div>
-                </div>
-                <span className="font-semibold">{fmtMoney(t.estimated_miles && t.cost_total == null ? null : t.cost_total)}</span>
-              </div>
-
-              {/* Provider Quote — highlighted */}
-              <div className={`rounded-md border-2 px-3 py-3 ${needsQuote ? "border-amber-300 bg-amber-50" : "border-primary/30 bg-primary/5"}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-bold uppercase tracking-wide text-foreground">Provider quote</span>
-                  {editing && canEditProviderFields ? (
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm font-bold text-foreground">$</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={form.cost_total}
-                        onChange={(e) => setField("cost_total", e.target.value)}
-                        placeholder="0.00"
-                        className="w-28 border-2 border-primary/40 rounded-md px-2 py-1.5 text-base font-bold bg-background text-right focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      />
+              {(() => {
+                const estCents = (t.estimated_cost_cents as number | null) ??
+                  (t.cost_total != null ? Math.round(Number(t.cost_total) * 100) : null);
+                const estDollars = estCents != null ? estCents / 100 : null;
+                const miles = Number(t.actual_miles ?? t.estimated_miles ?? 0);
+                const isShort = miles > 0 && miles < 50;
+                const capDollars = estDollars != null && isShort ? estDollars * 1.5 : null;
+                const enteredDollars = Number(form.cost_total) || 0;
+                const overCap = capDollars != null && enteredDollars > capDollars;
+                const softWarn = estDollars != null && enteredDollars > estDollars * 1.2;
+                return (
+                  <>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="text-muted-foreground">Estimated price {miles > 0 ? `· ${miles.toFixed(1)} mi` : ""}</div>
+                        <div className="text-[0.65rem] text-muted-foreground italic">
+                          Auto-calculated. Patients &amp; facilities cannot edit this.
+                        </div>
+                      </div>
+                      <span className="font-semibold">{fmtMoney(estDollars)}</span>
                     </div>
-                  ) : (
-                    <span className="text-lg font-extrabold text-foreground">{fmtMoney(quoteDollars)}</span>
-                  )}
-                </div>
-                {needsQuote && (
-                  <p className="mt-2 text-xs text-amber-800">
-                    {canEditProviderFields
-                      ? "Quote required — enter your quote above and save."
-                      : "Awaiting manual quote from provider."}
-                  </p>
-                )}
-                {canEditProviderFields && !editing && (
-                  <button
-                    onClick={() => setEditing(true)}
-                    className="w-full mt-3 text-sm font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-md hover:bg-primary/90 shadow-sm"
-                  >
-                    {needsQuote ? "Create quote" : "Update quote"}
-                  </button>
-                )}
-              </div>
+
+                    {/* Provider Quote — highlighted */}
+                    <div className={`rounded-md border-2 px-3 py-3 ${needsQuote ? "border-amber-300 bg-amber-50" : "border-primary/30 bg-primary/5"}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs font-bold uppercase tracking-wide text-foreground">Provider quote</span>
+                        {editing && canEditProviderFields ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm font-bold text-foreground">$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={form.cost_total}
+                              onChange={(e) => setField("cost_total", e.target.value)}
+                              placeholder="0.00"
+                              className="w-28 border-2 border-primary/40 rounded-md px-2 py-1.5 text-base font-bold bg-background text-right focus:outline-none focus:ring-2 focus:ring-primary/40"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-lg font-extrabold text-foreground">{fmtMoney(quoteDollars)}</span>
+                        )}
+                      </div>
+                      {canEditProviderFields && editing && capDollars != null && (
+                        <p className={`mt-2 text-xs ${overCap ? "text-red-700 font-semibold" : "text-muted-foreground"}`}>
+                          Trips under 50 mi are capped at {fmtMoney(capDollars)} (150% of the estimate).
+                          {overCap ? " Quote exceeds the cap and will require dispatch approval." : ""}
+                        </p>
+                      )}
+                      {canEditProviderFields && editing && !overCap && softWarn && (
+                        <p className="mt-2 text-xs text-amber-800">
+                          This quote is significantly above the average estimate and may not be accepted.
+                        </p>
+                      )}
+                      {needsQuote && (
+                        <p className="mt-2 text-xs text-amber-800">
+                          {canEditProviderFields
+                            ? "Quote required — enter your quote above and save."
+                            : "Awaiting manual quote from provider."}
+                        </p>
+                      )}
+                      {!canEditProviderFields && !needsQuote && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Only the assigned provider can submit or adjust the quote.
+                        </p>
+                      )}
+                      {canEditProviderFields && !editing && (
+                        <button
+                          onClick={() => setEditing(true)}
+                          className="w-full mt-3 text-sm font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-md hover:bg-primary/90 shadow-sm"
+                        >
+                          {needsQuote ? "Create quote" : "Update quote"}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
 
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Amount paid</span>
