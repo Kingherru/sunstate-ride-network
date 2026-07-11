@@ -707,7 +707,7 @@ function LockedTabOverlay({
   );
 }
 
-
+function PaidOnly() {
   return (
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
