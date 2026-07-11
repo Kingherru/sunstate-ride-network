@@ -1569,22 +1569,32 @@ function TripDetailView({
 
           <section>
             <H>Trip status timeline</H>
-            <ol className="relative border-l-2 border-border ml-2 space-y-4">
-              {steps.map((s) => {
-                const dot =
-                  s.state === "done"
-                    ? "bg-emerald-500 border-emerald-500"
-                    : s.state === "current"
-                    ? "bg-amber-500 border-amber-500"
-                    : "bg-background border-border";
+            <ol className="space-y-3">
+              {steps.map((s, idx) => {
+                const isDone = s.state === "done";
+                const isCurrent = s.state === "current";
+                const dot = isDone
+                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  : isCurrent
+                  ? "bg-amber-500 border-amber-500 text-white ring-4 ring-amber-500/20"
+                  : "bg-background border-border text-muted-foreground";
+                const rowBg = isCurrent
+                  ? "bg-amber-50 border-amber-200"
+                  : isDone
+                  ? "bg-emerald-50/40 border-emerald-100"
+                  : "bg-muted/30 border-border";
                 return (
-                  <li key={s.key} className="pl-6 relative">
-                    <span className={`absolute -left-[9px] top-1 inline-block w-4 h-4 rounded-full border-2 ${dot}`} />
-                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
-                      <div className="text-sm font-semibold text-foreground">{s.label}</div>
-                      <div className="text-xs text-muted-foreground">{fmtDateTime(s.at ?? null)}</div>
+                  <li key={s.key} className={`flex items-start gap-3 rounded-md border px-3 py-2.5 ${rowBg}`}>
+                    <span className={`shrink-0 mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 text-[0.7rem] font-bold ${dot}`}>
+                      {isDone ? "✓" : idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                        <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                        <div className="text-xs text-muted-foreground">{fmtDateTime(s.at ?? null)}</div>
+                      </div>
+                      {s.note && <div className="text-xs text-muted-foreground mt-0.5">{s.note}</div>}
                     </div>
-                    {s.note && <div className="text-xs text-muted-foreground mt-0.5">{s.note}</div>}
                   </li>
                 );
               })}
