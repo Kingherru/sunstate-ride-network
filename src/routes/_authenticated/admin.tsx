@@ -38,6 +38,7 @@ import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel"
 import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
+import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
