@@ -16,13 +16,13 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
-              <Link
-                to="/"
-                className="font-extrabold text-xl tracking-tighter uppercase block mb-3"
-              >
-                MyFloridaNemt.com
+              <Link to="/" className="block mb-3" aria-label="My Florida NEMT — home">
+                <span className="font-extrabold text-xl tracking-tighter uppercase">
+                  My Florida <span className="text-accent">NEMT</span>
+                </span>
               </Link>
               <p className="text-xs opacity-70 leading-relaxed max-w-xs">
+
                 Florida's statewide Medicaid transportation network.
               </p>
             </div>
