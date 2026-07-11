@@ -2617,7 +2617,7 @@ function BusinessInfoCard({ profile, userId, portal }: { profile: Profile; userI
       }
       if (!isPatient) patch.preferred_zip_codes = zips;
 
-      const { error } = await supabase.from("member_profiles").update(patch).eq("user_id", userId);
+      const { error } = await supabase.from("member_profiles").update(patch as any).eq("user_id", userId);
       if (error) throw error;
       toast.success(isFacility ? "Facility information saved" : isPatient ? "Contact information saved" : "Business information saved");
       qc.invalidateQueries({ queryKey: ["member-profile"] });
