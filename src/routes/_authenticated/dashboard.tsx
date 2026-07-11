@@ -121,6 +121,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "schedule") return "Schedule";
   if (t === "messages") return "Messages";
   if (t === "changelog") return "Changelog";
+  if (t === "onboarding") return "Onboarding";
   return "Account";
 }
 
