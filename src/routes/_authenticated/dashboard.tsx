@@ -14,7 +14,7 @@ import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { SavedPatientsPanel } from "@/components/dashboard/SavedPatientsPanel";
 import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProviderContactsPanel";
-import { BusinessInfoPanel } from "@/components/dashboard/BusinessInfoPanel";
+
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
@@ -153,6 +153,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const meta = PORTAL_META[portal];
 
   const [tab, setTab] = useState<Tab>(allowedTabs[0]);
+  const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
+  function startDuplicate(t: Trip) { setDuplicateSource(t); handleTab("new"); }
   useEffect(() => { if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]); }, [allowedTabs, tab]);
 
   const [userId, setUserId] = useState<string | null>(null);
@@ -427,7 +429,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     </div>
                     {flNemt.length === 0
                       ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No MyFloridaNemt.com referrals right now.</div>
-                      : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} />}
+                      : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} onDuplicate={startDuplicate} />}
                   </section>
                   <section>
                     <div className="mb-3">
@@ -436,13 +438,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     </div>
                     {subProv.length === 0
                       ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No partner submissions yet.</div>
-                      : <TripList trips={subProv} userId={userId!} role="recipient" onChanged={onChanged} />}
+                      : <TripList trips={subProv} userId={userId!} role="recipient" onChanged={onChanged} onDuplicate={startDuplicate} />}
                   </section>
                 </div>
               );
             })()}
-            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
-            {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
+            {tab === "new" && (canSend ? <NewTripForm initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
             {tab === "schedule" && <ScheduleCalendarPanel />}
@@ -722,21 +724,44 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated }: { onCreated: () => void }) {
+function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initialTrip?: any }) {
+  const seed = initialTrip ?? {};
   const [form, setForm] = useState<any>({
-    patient_first_name: "", patient_last_name: "", patient_phone: "",
-    patient_date_of_birth: "", medicaid_number: "", medicaid_plan: "",
-    authorization_number: "", diagnosis_code: "",
-    emergency_contact_name: "", emergency_contact_phone: "",
-    pickup_address: "", pickup_address_details: "", pickup_city: "", pickup_zip: "", pickup_date: "", pickup_time: "",
+    patient_first_name: seed.patient_first_name ?? "",
+    patient_last_name: seed.patient_last_name ?? "",
+    patient_phone: seed.patient_phone ?? "",
+    patient_date_of_birth: seed.patient_date_of_birth ?? "",
+    medicaid_number: seed.medicaid_number ?? "",
+    medicaid_plan: seed.medicaid_plan ?? "",
+    authorization_number: seed.authorization_number ?? "",
+    diagnosis_code: seed.diagnosis_code ?? "",
+    emergency_contact_name: seed.emergency_contact_name ?? "",
+    emergency_contact_phone: seed.emergency_contact_phone ?? "",
+    pickup_address: seed.pickup_address ?? "",
+    pickup_address_details: seed.pickup_address_details ?? "",
+    pickup_city: seed.pickup_city ?? "",
+    pickup_zip: seed.pickup_zip ?? "",
+    // Date/time intentionally blank so user picks a new schedule.
+    pickup_date: "",
+    pickup_time: "",
     appointment_time: "",
-    dropoff_address: "", dropoff_city: "", dropoff_zip: "",
-    transport_type: "ambulatory", round_trip: false,
-    return_pickup_time: "", return_dropoff_time: "",
-    service_level: "curb_to_curb",
-    needs_wheelchair: false, has_passenger: false, needs_assistance_to_vehicle: false,
-    needs_surgery_signin: false, needs_surgery_signout: false,
-    mobility_notes: "", special_instructions: "", payer: "", trip_number: "",
+    dropoff_address: seed.dropoff_address ?? "",
+    dropoff_city: seed.dropoff_city ?? "",
+    dropoff_zip: seed.dropoff_zip ?? "",
+    transport_type: seed.transport_type ?? "ambulatory",
+    round_trip: !!seed.round_trip,
+    return_pickup_time: "",
+    return_dropoff_time: "",
+    service_level: seed.service_level ?? "curb_to_curb",
+    needs_wheelchair: !!seed.needs_wheelchair,
+    has_passenger: !!seed.has_passenger,
+    needs_assistance_to_vehicle: !!seed.needs_assistance_to_vehicle,
+    needs_surgery_signin: !!seed.needs_surgery_signin,
+    needs_surgery_signout: !!seed.needs_surgery_signout,
+    mobility_notes: seed.mobility_notes ?? "",
+    special_instructions: seed.special_instructions ?? "",
+    payer: seed.payer ?? "",
+    trip_number: "",
   });
   const [hipaaOk, setHipaaOk] = useState(false);
   const m = useMutation({
@@ -760,7 +785,12 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="max-w-3xl bg-card border border-border rounded-sm p-6 grid grid-cols-2 gap-4">
-      <h2 className="col-span-2 text-xl font-extrabold tracking-tight">New trip</h2>
+      <h2 className="col-span-2 text-xl font-extrabold tracking-tight">{initialTrip ? "Duplicate trip" : "New trip"}</h2>
+      {initialTrip && (
+        <div className="col-span-2 -mt-2 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Duplicated from trip {initialTrip.display_id ?? initialTrip.id}. Set a new <strong>pickup date and time</strong>, review the details, and save to create a brand-new trip. The original trip will not be changed.
+        </div>
+      )}
       <Field label="Patient first name" v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
       <Field label="Patient last name" v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
       <Field label="Patient phone" v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
@@ -950,7 +980,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
 }
 
 /* -------- Trip List + Send/Assign -------- */
-function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void }) {
+function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void; onDuplicate?: (t: Trip) => void }) {
   const [assigning, setAssigning] = useState<Trip | null>(null);
   const [viewing, setViewing] = useState<Trip | null>(null);
   const [rating, setRating] = useState<Trip | null>(null);
@@ -988,6 +1018,7 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
         portal={portal}
         onBack={() => setViewing(null)}
         onChanged={onChanged}
+        onDuplicate={onDuplicate}
       />
     );
   }
@@ -1049,6 +1080,9 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
                 <td className="px-3 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <button onClick={() => setViewing(t)} className="text-xs font-bold text-primary hover:underline mr-3">View</button>
                   <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-muted-foreground hover:underline mr-3">PDF</button>
+                  {onDuplicate && (
+                    <button onClick={() => onDuplicate(t)} className="text-xs font-bold text-primary hover:underline mr-3" title="Create a new trip prefilled from this one">Duplicate</button>
+                  )}
                   {role === "sender" && t.status === "open" && (
                     <button onClick={() => setAssigning(t)} className="text-xs font-bold text-accent hover:underline mr-3">Send</button>
                   )}
@@ -1172,6 +1206,7 @@ function TripDetailView({
   portal,
   onBack,
   onChanged,
+  onDuplicate,
 }: {
   trip: Trip;
   userId: string;
@@ -1179,6 +1214,7 @@ function TripDetailView({
   portal?: PortalKind;
   onBack: () => void;
   onChanged: () => void;
+  onDuplicate?: (t: Trip) => void;
 }) {
   const t: any = trip;
   const [editing, setEditing] = useState(false);
@@ -1458,6 +1494,15 @@ function TripDetailView({
             >
               Download PDF
             </button>
+            {onDuplicate && !editing && (
+              <button
+                onClick={() => onDuplicate(trip)}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold border-2 border-border bg-background text-foreground px-4 py-2.5 rounded-md hover:bg-muted hover:border-foreground/40 transition-colors"
+                title="Create a new trip prefilled from this one"
+              >
+                Duplicate trip
+              </button>
+            )}
             {canEdit && !editing && (
               <button
                 onClick={() => setEditing(true)}
@@ -2043,9 +2088,13 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
 
   const isProvider = portal === "provider";
   const isFacility = portal === "facility";
+  const isPatient = portal === "patient";
+  const profileTabLabel =
+    isProvider ? "Business Information"
+    : isFacility ? "Facility Information"
+    : "Your Information";
   const tabs: Array<[AccountTab, string]> = [
-    ["profile", isProvider ? "Business Information" : "Profile"],
-    ...(isFacility ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ["profile", profileTabLabel],
     ...(isProvider ? ([
       ["pricing", "Pricing"],
       ["compliance", "Compliance Certificates"],
@@ -2088,22 +2137,8 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
 
       {subTab === "profile" && (
         <div className="space-y-6">
-          {isProvider ? (
-            <ProviderBusinessInfoCard profile={profile} userId={userId} />
-          ) : (
-            <div className="bg-card border border-border rounded-sm p-6 space-y-3">
-              <h3 className="text-lg font-extrabold tracking-tight">Profile</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Name</span><div className="font-bold">{profile.first_name} {profile.last_name}</div></div>
-                <div><span className="text-muted-foreground">Company</span><div className="font-bold">{profile.company_name}</div></div>
-                <div><span className="text-muted-foreground">City</span><div className="font-bold">{profile.city}</div></div>
-                <div><span className="text-muted-foreground">Region</span><div className="font-bold">{profile.region ?? "—"}</div></div>
-                <div><span className="text-muted-foreground">Phone</span><div className="font-bold">{profile.phone}</div></div>
-                <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
-              </div>
-            </div>
-          )}
-          {portal === "patient" && (
+          <BusinessInfoCard profile={profile} userId={userId} portal={portal} />
+          {isPatient && (
             <PatientRelationshipCard profile={profile} userId={userId} />
           )}
           {isProvider && (
@@ -2117,9 +2152,6 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         </div>
       )}
 
-      {subTab === "business" && isFacility && (
-        <BusinessInfoPanel />
-      )}
 
       {subTab === "pricing" && isProvider && <PricingPanel />}
       {subTab === "compliance" && isProvider && (
@@ -2564,52 +2596,75 @@ function MembershipsTab({ profile }: { profile: Profile }) {
   );
 }
 
-// ───────────────────────── Provider Business Info (editable, single source of truth) ─────────────────────────
+// ───────────────────────── Business Info (editable, single source of truth for all portals) ─────────────────────────
 
-function ProviderBusinessInfoCard({ profile, userId }: { profile: Profile; userId: string }) {
+function BusinessInfoCard({ profile, userId, portal }: { profile: Profile; userId: string; portal: PortalKind }) {
   const qc = useQueryClient();
   const p = profile as any;
+  const isProvider = portal === "provider";
+  const isFacility = portal === "facility";
+  const isPatient = portal === "patient";
+
   const [form, setForm] = useState({
     company_name: p.company_name ?? "",
+    first_name: p.first_name ?? "",
+    last_name: p.last_name ?? "",
     phone: p.phone ?? "",
     dispatch_email: p.dispatch_email ?? "",
     business_address: p.business_address ?? "",
     city: p.city ?? "",
-    region: p.region ?? "",
+    region: p.region ?? "FL",
     postal_code: p.postal_code ?? "",
     preferred_zip_codes: (Array.isArray(p.preferred_zip_codes) ? p.preferred_zip_codes : []).join(", "),
   });
   const [busy, setBusy] = useState(false);
 
+  const nameLabel = isFacility ? "Facility name *" : isProvider ? "Company name *" : "Full name *";
+  const emailLabel = isProvider ? "Dispatch email *" : "Business email *";
+  const title = isFacility ? "Facility Information" : isProvider ? "Business Information" : "Your Information";
+  const subtitle = isPatient
+    ? "Providers you're connected with can use this to contact you about your rides."
+    : "Single source of truth for your business. Providers you're connected with can use this to reach you.";
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.company_name.trim()) return toast.error("Company name is required");
+    const nameVal = isPatient
+      ? `${form.first_name.trim()} ${form.last_name.trim()}`.trim()
+      : form.company_name.trim();
+    if (!nameVal) return toast.error(isPatient ? "Name is required" : isFacility ? "Facility name is required" : "Company name is required");
     if (!form.phone.trim()) return toast.error("Phone is required");
-    if (!form.dispatch_email.trim()) return toast.error("Dispatch email is required");
+    if (!form.dispatch_email.trim()) return toast.error("Email is required");
     setBusy(true);
     try {
       const zips = form.preferred_zip_codes
         .split(/[\s,]+/).map((s: string) => s.trim()).filter(Boolean);
-      // Auto-resolve dispatch zone from ZIP
       let dispatch_zone_id: string | null = null;
       if (form.postal_code.trim()) {
         const { data: zoneMatch } = await supabase
           .from("dispatch_zone_zips").select("zone_id").eq("zip", form.postal_code.trim()).maybeSingle();
         dispatch_zone_id = (zoneMatch?.zone_id as string | null) ?? null;
       }
-      const { error } = await supabase.from("member_profiles").update({
-        company_name: form.company_name.trim(),
+      const patch: Record<string, any> = {
         phone: form.phone.trim(),
         dispatch_email: form.dispatch_email.trim(),
         business_address: form.business_address.trim() || null,
         city: form.city.trim() || null,
-        region: form.region.trim() || null,
+        region: (form.region.trim() || "FL"),
         postal_code: form.postal_code.trim() || null,
-        preferred_zip_codes: zips,
         dispatch_zone_id,
-      } as any).eq("user_id", userId);
+      };
+      if (isPatient) {
+        patch.first_name = form.first_name.trim() || null;
+        patch.last_name = form.last_name.trim() || null;
+        patch.company_name = nameVal;
+      } else {
+        patch.company_name = nameVal;
+      }
+      if (!isPatient) patch.preferred_zip_codes = zips;
+
+      const { error } = await supabase.from("member_profiles").update(patch as any).eq("user_id", userId);
       if (error) throw error;
-      toast.success("Business information saved");
+      toast.success(isFacility ? "Facility information saved" : isPatient ? "Contact information saved" : "Business information saved");
       qc.invalidateQueries({ queryKey: ["member-profile"] });
       qc.invalidateQueries({ queryKey: ["my-provider-onboarding"] });
     } catch (err: any) {
@@ -2623,41 +2678,53 @@ function ProviderBusinessInfoCard({ profile, userId }: { profile: Profile; userI
   return (
     <form onSubmit={save} className="bg-card border border-border rounded-sm p-6 space-y-4">
       <div>
-        <h3 className="text-lg font-extrabold tracking-tight">Business Information</h3>
-        <p className="text-sm text-muted-foreground">
-          Single source of truth for your business. Onboarding pulls from here — no duplicate entry needed.
-        </p>
+        <h3 className="text-lg font-extrabold tracking-tight">{title}</h3>
+        <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
-        <label className="sm:col-span-2"><span className={labelCls}>Company name *</span>
-          <input className={inputCls} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} required />
-        </label>
+        {isPatient ? (
+          <>
+            <label><span className={labelCls}>First name *</span>
+              <input className={inputCls} value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required />
+            </label>
+            <label><span className={labelCls}>Last name *</span>
+              <input className={inputCls} value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required />
+            </label>
+          </>
+        ) : (
+          <label className="sm:col-span-2"><span className={labelCls}>{nameLabel}</span>
+            <input className={inputCls} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} required />
+          </label>
+        )}
         <label><span className={labelCls}>Phone *</span>
           <input className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
         </label>
-        <label><span className={labelCls}>Dispatch email *</span>
+        <label><span className={labelCls}>{emailLabel}</span>
           <input type="email" className={inputCls} value={form.dispatch_email} onChange={(e) => setForm({ ...form, dispatch_email: e.target.value })} required />
         </label>
-        <label className="sm:col-span-2"><span className={labelCls}>Business address</span>
+        <label className="sm:col-span-2"><span className={labelCls}>{isPatient ? "Address" : "Business address"}</span>
           <input className={inputCls} value={form.business_address} onChange={(e) => setForm({ ...form, business_address: e.target.value })} placeholder="123 Main St, Suite 200" />
         </label>
         <label><span className={labelCls}>City</span>
           <input className={inputCls} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
         </label>
-        <label><span className={labelCls}>Region / County</span>
-          <input className={inputCls} value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} />
+        <label><span className={labelCls}>State</span>
+          <input className={inputCls} value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} placeholder="FL" />
         </label>
-        <label><span className={labelCls}>Business ZIP code</span>
+        <label><span className={labelCls}>ZIP code</span>
           <input className={inputCls} value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="e.g. 33101" />
         </label>
-        <label><span className={labelCls}>Service ZIP codes (comma or space separated)</span>
-          <input className={inputCls} value={form.preferred_zip_codes} onChange={(e) => setForm({ ...form, preferred_zip_codes: e.target.value })} placeholder="33101, 33102, 33103" />
-        </label>
+        {!isPatient && (
+          <label><span className={labelCls}>Service ZIP codes (comma or space separated)</span>
+            <input className={inputCls} value={form.preferred_zip_codes} onChange={(e) => setForm({ ...form, preferred_zip_codes: e.target.value })} placeholder="33101, 33102, 33103" />
+          </label>
+        )}
       </div>
       <button type="submit" disabled={busy} className="portal-btn-primary px-5 py-2">
-        {busy ? "Saving…" : "Save business information"}
+        {busy ? "Saving…" : isFacility ? "Save facility information" : isPatient ? "Save contact information" : "Save business information"}
       </button>
     </form>
   );
 }
+
 
