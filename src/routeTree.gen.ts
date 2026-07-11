@@ -30,6 +30,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
@@ -158,6 +159,11 @@ const ServiceAreasIndexRoute = ServiceAreasIndexRouteImport.update({
 const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   id: '/resources/',
   path: '/resources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyTokenRoute = VerifyTokenRouteImport.update({
+  id: '/verify/$token',
+  path: '/verify/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffLoginRoute = StaffLoginRouteImport.update({
@@ -329,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/shop/': typeof ShopIndexRoute
@@ -374,6 +381,7 @@ export interface FileRoutesByTo {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/resources': typeof ResourcesIndexRoute
   '/service-areas': typeof ServiceAreasIndexRoute
   '/shop': typeof ShopIndexRoute
@@ -423,6 +431,7 @@ export interface FileRoutesById {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/shop/': typeof ShopIndexRoute
@@ -472,6 +481,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/staff/login'
+    | '/verify/$token'
     | '/resources/'
     | '/service-areas/'
     | '/shop/'
@@ -517,6 +527,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/staff/login'
+    | '/verify/$token'
     | '/resources'
     | '/service-areas'
     | '/shop'
@@ -565,6 +576,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/staff/login'
+    | '/verify/$token'
     | '/resources/'
     | '/service-areas/'
     | '/shop/'
@@ -609,6 +621,7 @@ export interface RootRouteChildren {
   ProviderLoginRoute: typeof ProviderLoginRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   StaffLoginRoute: typeof StaffLoginRoute
+  VerifyTokenRoute: typeof VerifyTokenRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
@@ -764,6 +777,13 @@ declare module '@tanstack/react-router' {
       path: '/resources'
       fullPath: '/resources/'
       preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify/$token': {
+      id: '/verify/$token'
+      path: '/verify/$token'
+      fullPath: '/verify/$token'
+      preLoaderRoute: typeof VerifyTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/login': {
@@ -1028,6 +1048,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProviderLoginRoute: ProviderLoginRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   StaffLoginRoute: StaffLoginRoute,
+  VerifyTokenRoute: VerifyTokenRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
