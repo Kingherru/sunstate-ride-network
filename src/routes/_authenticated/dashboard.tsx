@@ -1873,6 +1873,79 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
   );
 }
 
+/* -------- Account Security (change password + sign-out-everywhere) -------- */
+function AccountSecurityPanel() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [busySignOut, setBusySignOut] = useState(false);
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (pw.length < 8) return toast.error("Password must be at least 8 characters.");
+    if (pw !== pw2) return toast.error("Passwords do not match.");
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) throw error;
+      toast.success("Password updated.");
+      setPw(""); setPw2("");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not update password.");
+    } finally { setBusy(false); }
+  }
+
+  async function signOutEverywhere() {
+    setBusySignOut(true);
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "global" });
+      if (error) throw error;
+      toast.success("Signed out on all devices.");
+      window.location.href = "/auth";
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not sign out everywhere.");
+      setBusySignOut(false);
+    }
+  }
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <form onSubmit={changePassword} className="bg-card border border-border rounded-sm p-6 space-y-4">
+        <div>
+          <h3 className="text-lg font-extrabold tracking-tight">Change password</h3>
+          <p className="text-sm text-muted-foreground">Use at least 8 characters.</p>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold block">New password</label>
+          <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} required minLength={8}
+            className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold block">Confirm new password</label>
+          <input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} required minLength={8}
+            className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background" />
+        </div>
+        <button type="submit" disabled={busy} className="portal-btn-primary px-5 py-2">
+          {busy ? "Updating…" : "Update password"}
+        </button>
+      </form>
+
+      <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+        <div>
+          <h3 className="text-lg font-extrabold tracking-tight">Sign out everywhere</h3>
+          <p className="text-sm text-muted-foreground">
+            Ends every active session on every device. You'll need to sign in again on this device too.
+          </p>
+        </div>
+        <button onClick={signOutEverywhere} disabled={busySignOut}
+          className="portal-btn-secondary px-5 py-2">
+          {busySignOut ? "Signing out…" : "Sign out on all devices"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* -------- Account (tabbed) -------- */
 type AccountTab = "profile" | "business" | "pricing" | "rules" | "integrations" | "payouts" | "membership" | "security";
 
@@ -1892,11 +1965,14 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
     } finally { setBusy(false); }
   }
 
-  const showBusiness = portal === "provider" || portal === "facility";
   const isProvider = portal === "provider";
+  const isFacility = portal === "facility";
+  // Providers get a single consolidated "Business Information" tab that
+  // includes profile fields + credentials + compliance + documents.
+  // Facilities keep a separate Business Information tab. Patients see Profile only.
   const tabs: Array<[AccountTab, string]> = [
-    ["profile", "Profile"],
-    ...(showBusiness ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ["profile", isProvider ? "Business Information" : "Profile"],
+    ...(isFacility ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
     ...(isProvider ? ([
       ["pricing", "Pricing"],
       ["rules", "Rules"],
@@ -1966,7 +2042,11 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         </div>
       )}
 
-      {subTab === "business" && showBusiness && (
+      {subTab === "profile" && isProvider && (
+        <BusinessInfoPanel />
+      )}
+
+      {subTab === "business" && isFacility && (
         <BusinessInfoPanel />
       )}
 
@@ -1985,15 +2065,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
 
       {subTab === "security" && (
-        <div className="bg-card border border-border rounded-sm p-6 space-y-4 max-w-2xl">
-          <h3 className="text-lg font-extrabold tracking-tight">Security & Billing</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage your billing details, payment methods, and subscription in the secure billing portal.
-          </p>
-          <button onClick={openPortal} disabled={busy} className="portal-btn-primary px-5 py-2">
-            {busy ? "Opening…" : "Manage billing"}
-          </button>
-        </div>
+        <AccountSecurityPanel />
       )}
     </div>
   );
