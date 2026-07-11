@@ -555,7 +555,9 @@ function ProfileSetup({ userId, userEmail, portal, onSaved }: { userId: string; 
           form.patient_relationship === "Other" ? form.patient_relationship_other.trim() : null;
       }
       if (form.date_of_birth) payload.date_of_birth = form.date_of_birth;
-      const { error } = await supabase.from("member_profiles").insert(payload);
+      const { error } = await supabase
+        .from("member_profiles")
+        .upsert(payload, { onConflict: "user_id" });
       if (error) throw error;
       toast.success("Profile created");
       onSaved();
