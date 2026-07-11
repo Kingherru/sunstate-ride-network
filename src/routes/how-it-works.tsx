@@ -181,6 +181,35 @@ function HowItWorksPage() {
         </div>
       </section>
 
+      <section className="py-20 lg:py-28 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
+            Patient FAQs
+          </p>
+          <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-10">
+            Coverage, cost & eligibility.
+          </h2>
+          <div className="divide-y divide-border border-y border-border">
+            {faqs.map((f) => (
+              <details key={f.q} className="group py-6">
+                <summary className="cursor-pointer list-none flex justify-between items-start gap-6 text-left">
+                  <h3 className="text-lg lg:text-xl font-bold tracking-tight text-foreground">
+                    {f.q}
+                  </h3>
+                  <span
+                    aria-hidden
+                    className="mt-1 shrink-0 font-mono text-2xl leading-none text-accent transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-4 text-muted-foreground leading-relaxed">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-6">
@@ -198,6 +227,7 @@ function HowItWorksPage() {
           </Link>
         </div>
       </section>
+
     </>
   );
 }
