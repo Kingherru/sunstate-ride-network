@@ -341,12 +341,16 @@ function PacketDetail({ id, onBack }: { id: string; onBack: () => void }) {
     if (err) { toast.error(err); return; }
     setUploading(true);
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Not signed in");
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-      const uid = crypto.randomUUID();
-      const path = `packets/${id}/${uid}.${ext}`;
+      const docId = crypto.randomUUID();
+      const path = `packets/${uid}/${id}/${docId}.${ext}`;
       const { error } = await supabase.storage.from("provider-docs").upload(path, file, { contentType: file.type || undefined });
       if (error) throw error;
       await addMut.mutateAsync({ kind, doc_path: path, label: file.name, meta: { size: file.size, mime: file.type } });
+      toast.success(`${file.name} uploaded and attached`);
     } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
     finally { setUploading(false); }
   }
@@ -544,8 +548,11 @@ function MedicaidProfileTab() {
     if (err) { toast.error(err); return; }
     setUploading(true);
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Not signed in");
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-      const path = `medicaid-certs/${crypto.randomUUID()}.${ext}`;
+      const path = `medicaid-certs/${uid}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("provider-docs").upload(path, file, { contentType: file.type || undefined });
       if (error) throw error;
       setForm((f: any) => ({ ...f, medicaid_cert_doc_path: path }));

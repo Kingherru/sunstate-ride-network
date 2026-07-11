@@ -65,15 +65,25 @@ export function ProviderCredentialsPanel() {
   });
 
   async function uploadDoc(file: File): Promise<string | null> {
+    const MAX = 15 * 1024 * 1024;
+    const OK_EXT = [".pdf", ".jpg", ".jpeg", ".png"];
+    if (file.size > MAX) { toast.error("File is larger than 15 MB."); return null; }
+    if (!OK_EXT.some((e) => file.name.toLowerCase().endsWith(e))) {
+      toast.error("Only PDF, JPG, or PNG files are allowed."); return null;
+    }
     setUploading(true);
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Not signed in");
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
       const id = crypto.randomUUID();
-      const path = `credentials/${new Date().toISOString().slice(0, 10)}/${id}.${ext}`;
+      const path = `credentials/${uid}/${new Date().toISOString().slice(0, 10)}/${id}.${ext}`;
       const { error } = await supabase.storage.from("provider-docs").upload(path, file, {
         contentType: file.type || undefined,
       });
       if (error) throw error;
+      toast.success("Document uploaded");
       return path;
     } catch (e: any) {
       toast.error(e.message ?? "Upload failed");
