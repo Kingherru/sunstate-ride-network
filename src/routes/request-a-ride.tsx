@@ -124,6 +124,10 @@ function RequestRidePage() {
   const [customBilling, setCustomBilling] = useState<BillingContact>({
     firstName: "", lastName: "", email: "", phone: "",
   });
+  // Autocomplete-derived location metadata used for live price estimate.
+  const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string }>({ zip: "", state: "" });
+  const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string }>({ zip: "", state: "" });
+  const [estimatedMiles, setEstimatedMiles] = useState<number>(0);
 
   useEffect(() => {
     let cancelled = false;
