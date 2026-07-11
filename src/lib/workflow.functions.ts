@@ -19,7 +19,7 @@ export const declineTrip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.rpc("decline_trip", {
       _trip_id: data.trip_id,
-      _reason: data.reason ?? null,
+      _reason: data.reason ?? undefined,
     });
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
@@ -39,7 +39,7 @@ export const submitTripQuote = createServerFn({ method: "POST" })
     const { data: quoteId, error } = await context.supabase.rpc("submit_trip_quote", {
       _trip_id: data.trip_id,
       _amount_cents: data.amount_cents,
-      _note: data.note ?? null,
+      _note: data.note ?? undefined,
     });
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const, quote_id: quoteId as string };
@@ -59,7 +59,7 @@ export const decideTripQuote = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("decide_trip_quote", {
       _quote_id: data.quote_id,
       _approve: data.approve,
-      _note: data.note ?? null,
+      _note: data.note ?? undefined,
     });
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
