@@ -980,7 +980,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
 }
 
 /* -------- Trip List + Send/Assign -------- */
-function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void }) {
+function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { trips: Trip[]; userId: string; role: "sender" | "recipient"; portal?: PortalKind; onChanged: () => void; onDuplicate?: (t: Trip) => void }) {
   const [assigning, setAssigning] = useState<Trip | null>(null);
   const [viewing, setViewing] = useState<Trip | null>(null);
   const [rating, setRating] = useState<Trip | null>(null);
