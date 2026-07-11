@@ -32,7 +32,7 @@ function ShopIndex() {
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center gap-3 mb-3"><ShoppingBag className="w-6 h-6" /><span className="uppercase tracking-wider text-sm">Training Shop</span></div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">HIPAA & NEMT Certification Courses</h1>
-            <p className="text-lg opacity-90 max-w-2xl">Online training for drivers, dispatchers, and NEMT staff. Purchase, complete the modules, pass the exam, and download your certificate.</p>
+            <p className="text-lg opacity-90 max-w-2xl">Online training for drivers, dispatchers, and NEMT staff. Purchase, complete the modules, pass the exam, and download your certificate. No account required to buy — creating one is recommended so your progress and certificate are saved.</p>
           </div>
         </section>
 
