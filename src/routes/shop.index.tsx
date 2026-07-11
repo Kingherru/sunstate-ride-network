@@ -3,7 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { listPublicCourses } from "@/lib/courses.functions";
 import { Award, Clock, ShoppingBag } from "lucide-react";
 
-const coursesQO = queryOptions({ queryKey: ["shop", "courses"], queryFn: () => listPublicCourses() });
+export const coursesQO = queryOptions({ queryKey: ["shop", "courses"], queryFn: () => listPublicCourses() });
 
 export const Route = createFileRoute("/shop/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(coursesQO),
