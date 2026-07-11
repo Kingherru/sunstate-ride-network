@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { createProviderWebhookEndpoint } from "@/lib/provider-webhooks.functions";
+import { createProviderWebhookEndpoint, testProviderWebhookEndpoint } from "@/lib/provider-webhooks.functions";
 
 const EVENT_OPTIONS = [
   { id: "trip.assigned", label: "Trip assigned to you" },
@@ -137,6 +137,8 @@ function NewEndpointForm({ onClose, onSaved }: { onClose: () => void; onSaved: (
 
 function EndpointCard({ row, onChange }: { row: Row; onChange: () => void }) {
   const [showSecret, setShowSecret] = useState(false);
+  const [testResult, setTestResult] = useState<null | { ok: boolean; status: number; durationMs: number; body: string }>(null);
+  const testFn = useServerFn(testProviderWebhookEndpoint);
   const toggle = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("provider_webhook_endpoints" as any).update({ enabled: !row.enabled }).eq("id", row.id);
@@ -163,6 +165,16 @@ function EndpointCard({ row, onChange }: { row: Row; onChange: () => void }) {
     onSuccess: () => { toast.success("Deleted"); onChange(); },
     onError: (e: any) => toast.error(e.message),
   });
+  const test = useMutation({
+    mutationFn: async () => testFn({ data: { id: row.id } }),
+    onSuccess: (res) => {
+      setTestResult(res);
+      if (res.ok) toast.success(`Delivered · HTTP ${res.status} · ${res.durationMs}ms`);
+      else toast.error(`Failed · ${res.status ? `HTTP ${res.status}` : "no response"} · ${res.durationMs}ms`);
+      onChange();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Test failed"),
+  });
 
   return (
     <div className="bg-card border border-border rounded-sm p-4">
@@ -182,6 +194,14 @@ function EndpointCard({ row, onChange }: { row: Row; onChange: () => void }) {
           </div>
         </div>
         <div className="flex flex-col gap-2 items-end">
+          <button
+            onClick={() => { setTestResult(null); test.mutate(); }}
+            disabled={test.isPending || !row.enabled}
+            className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1 rounded-sm disabled:opacity-50"
+            title={!row.enabled ? "Enable the endpoint to test" : "Send a sample webhook.test event"}
+          >
+            {test.isPending ? "Testing…" : "Test webhook"}
+          </button>
           <button onClick={() => toggle.mutate()} className="text-xs font-bold hover:underline">
             {row.enabled ? "Disable" : "Enable"}
           </button>
@@ -199,6 +219,20 @@ function EndpointCard({ row, onChange }: { row: Row; onChange: () => void }) {
         </button>
         <button onClick={() => { navigator.clipboard.writeText(row.signing_secret); toast.success("Copied"); }} className="font-bold hover:underline">Copy</button>
       </div>
+      {testResult && (
+        <div className={`mt-3 border rounded-sm p-3 text-xs ${testResult.ok ? "border-accent/40 bg-accent/5" : "border-destructive/40 bg-destructive/5"}`}>
+          <div className="flex items-center justify-between">
+            <span className="font-bold">
+              {testResult.ok ? "✓ Delivered" : "✗ Failed"} · {testResult.status ? `HTTP ${testResult.status}` : "no HTTP response"} · {testResult.durationMs}ms
+            </span>
+            <button onClick={() => setTestResult(null)} className="font-bold hover:underline">Dismiss</button>
+          </div>
+          {testResult.body && (
+            <pre className="mt-2 whitespace-pre-wrap break-all font-mono text-[11px] max-h-40 overflow-auto">{testResult.body}</pre>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+

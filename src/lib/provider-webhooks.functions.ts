@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createHmac } from "crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -109,4 +110,75 @@ export const createProviderWebhookEndpoint = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     return { id: (row as any).id };
+  });
+
+export const testProviderWebhookEndpoint = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: ep, error } = await supabase
+      .from("provider_webhook_endpoints" as any)
+      .select("id, url, signing_secret, enabled, provider_user_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!ep || (ep as any).provider_user_id !== userId) throw new Error("Endpoint not found");
+    if (!(ep as any).enabled) throw new Error("Endpoint is disabled");
+
+    const url = (ep as any).url as string;
+    const secret = (ep as any).signing_secret as string;
+    const body = JSON.stringify({
+      id: `test_${Date.now()}`,
+      event: "webhook.test",
+      created_at: new Date().toISOString(),
+      data: {
+        message: "This is a test event from MyFloridaNemt",
+        provider_user_id: userId,
+      },
+    });
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("hex");
+
+    const startedAt = Date.now();
+    try {
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-webhook-signature": `t=${timestamp},v1=${signature}`,
+          "x-webhook-event": "webhook.test",
+          "user-agent": "MyFloridaNemt-Webhook-Test/1.0",
+        },
+        body,
+        signal: AbortSignal.timeout(10000),
+      });
+      const text = (await resp.text()).slice(0, 1000);
+      const ms = Date.now() - startedAt;
+      const nowIso = new Date().toISOString();
+      await supabase
+        .from("provider_webhook_endpoints" as any)
+        .update(resp.ok ? { last_success_at: nowIso } : { last_failure_at: nowIso })
+        .eq("id", (ep as any).id);
+      return {
+        ok: resp.ok,
+        status: resp.status,
+        durationMs: ms,
+        body: text,
+      };
+    } catch (e: any) {
+      await supabase
+        .from("provider_webhook_endpoints" as any)
+        .update({ last_failure_at: new Date().toISOString() })
+        .eq("id", (ep as any).id);
+      const msg = e?.name === "TimeoutError" || e?.name === "AbortError"
+        ? "Request timed out after 10s"
+        : String(e?.message ?? e);
+      return {
+        ok: false,
+        status: 0,
+        durationMs: Date.now() - startedAt,
+        body: msg,
+      };
+    }
   });
