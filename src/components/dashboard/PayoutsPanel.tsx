@@ -68,10 +68,10 @@ export function PayoutsPanel({ userId }: { userId: string }) {
       <div className="grid sm:grid-cols-3 gap-3">
         <Stat label="Held funds" value={formatUsd(held)} hint="Pending completion" />
         <Stat label="Released to you" value={formatUsd(released)} hint={`${releasedCount} trip${releasedCount === 1 ? "" : "s"}`} tone="success" />
-        <Stat label="Platform fee" value={`${(PLATFORM_FEE_PCT * 100).toFixed(0)}%`} hint="Per processed payment" />
+        <Stat label="Platform fee" value={`${(feePct * 100).toFixed(2).replace(/\.00$/, "")}%`} hint="Per processed payment · set by admin" />
       </div>
 
-      <BillingExplainer />
+      <BillingExplainer feePct={feePct} />
 
       <section className="bg-card border border-border rounded-sm p-5">
         <h3 className="text-lg font-extrabold tracking-tight mb-3">Trip releases</h3>
