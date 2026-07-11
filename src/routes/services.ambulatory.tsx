@@ -188,6 +188,73 @@ export function ServiceLayout({
         </div>
       </section>
 
+      {/* Related services + internal links */}
+      <section className="px-6 py-20 lg:py-24" style={{ background: MINT }}>
+        <div className="max-w-5xl mx-auto">
+          <p
+            className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3"
+            style={{ color: ORANGE }}
+          >
+            Related Services
+          </p>
+          <h2 className="font-display font-bold text-3xl lg:text-4xl mb-10" style={{ color: NAVY }}>
+            Not the right level of care?
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Link
+              to="/services/wheelchair"
+              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+              style={{ borderColor: `${NAVY}1f` }}
+            >
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                Wheelchair Transportation
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                ADA-compliant lift-equipped vans for passengers who remain in their wheelchair during travel.
+              </p>
+            </Link>
+            <Link
+              to="/services/stretcher"
+              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+              style={{ borderColor: `${NAVY}1f` }}
+            >
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                Gurney & Stretcher Transportation
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                Bed-to-bed non-emergency transport for patients who cannot travel seated.
+              </p>
+            </Link>
+          </div>
+          <div className="mt-12 grid md:grid-cols-2 gap-6">
+            <Link
+              to="/join-our-network"
+              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+              style={{ borderColor: `${NAVY}1f` }}
+            >
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                Join Our Provider Network
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                Are you a Florida NEMT provider? Get verified, gain leads, and grow with us.
+              </p>
+            </Link>
+            <Link
+              to="/training"
+              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+              style={{ borderColor: `${NAVY}1f` }}
+            >
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                My Florida NEMT Training Academy
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                Certify your drivers and dispatchers with HIPAA and NEMT safety courses.
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Bottom CTA */}
       <section className="px-6 py-20" style={{ background: NAVY, color: "#fff" }}>
         <div className="max-w-4xl mx-auto text-center">
