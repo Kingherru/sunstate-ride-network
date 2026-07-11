@@ -204,7 +204,7 @@ export const setUserPrimaryRole = createServerFn({ method: "POST" })
       if (delErr) throw delErr;
       const { error: insErr } = await supabaseAdmin
         .from("user_roles")
-        .insert({ user_id: data.user_id, role: data.role });
+        .insert({ user_id: data.user_id, role: data.role as "dispatcher" | "zone_manager" | "app_manager" | "admin" });
       if (insErr) throw insErr;
     }
 
