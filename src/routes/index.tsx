@@ -251,7 +251,7 @@ function HomePage() {
       </section>
 
       {/* ============ TRAINING & CERTIFICATION ============ */}
-      <section className="px-6 py-20 lg:py-24 bg-white" style={{ borderTop: `0.5px solid ${NAVY}12` }}>
+      <section className="px-6 py-20 lg:py-28 bg-white" style={{ borderTop: `0.5px solid ${NAVY}12` }}>
         <div className="max-w-7xl mx-auto">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
