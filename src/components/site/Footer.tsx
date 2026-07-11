@@ -114,6 +114,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
           <div className="flex items-center gap-5">
             <Link to="/staff/login" className="hover:text-primary">Staff Login</Link>
             <Link to="/contact" className="hover:text-primary">Terms of Service</Link>
+            <span className="text-muted/70">v1.5</span>
           </div>
         </div>
       </div>
