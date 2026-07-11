@@ -2,8 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPublicCourse } from "@/lib/courses.functions";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,14 +39,10 @@ function CourseDetail() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 max-w-3xl mx-auto px-4 py-16">
-          <h1 className="text-2xl font-bold mb-2">Course not found</h1>
-          <Link to="/shop" className="text-primary underline">Back to shop</Link>
-        </main>
-        <Footer />
-      </div>
+      <main className="flex-1 max-w-3xl mx-auto px-4 py-16">
+        <h1 className="text-2xl font-bold mb-2">Course not found</h1>
+        <Link to="/shop" className="text-primary underline">Back to shop</Link>
+      </main>
     );
   }
   const { course, modules, question_count } = data;
@@ -57,9 +51,8 @@ function CourseDetail() {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <>
       <PaymentTestModeBanner />
-      <Header />
       <main className="flex-1 max-w-5xl mx-auto px-4 py-10 w-full">
         <Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"><ArrowLeft className="w-4 h-4" />Back to shop</Link>
         <div className="grid md:grid-cols-3 gap-8">
@@ -116,7 +109,6 @@ function CourseDetail() {
           </div>
         )}
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

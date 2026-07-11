@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { listPublicCourses } from "@/lib/courses.functions";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
 import { Award, Clock, ShoppingBag } from "lucide-react";
 
 const coursesQO = queryOptions({ queryKey: ["shop", "courses"], queryFn: () => listPublicCourses() });
@@ -25,9 +23,7 @@ export const Route = createFileRoute("/shop/")({
 function ShopIndex() {
   const { data: courses } = useSuspenseQuery(coursesQO);
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      <main className="flex-1">
+    <main className="flex-1">
         <section className="bg-primary text-primary-foreground py-14">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center gap-3 mb-3"><ShoppingBag className="w-6 h-6" /><span className="uppercase tracking-wider text-sm">Training Shop</span></div>
@@ -62,7 +58,5 @@ function ShopIndex() {
           <p className="mt-6 text-xs text-muted-foreground italic">Pricing is subject to change at any time.</p>
         </section>
       </main>
-      <Footer />
-    </div>
   );
 }
