@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BedDouble } from "lucide-react";
 import { ServiceLayout } from "./services.ambulatory";
 
-const TITLE = "Stretcher & Gurney Transportation in Florida | My Florida NEMT";
+const TITLE = "Gurney and Stretcher Transportation Services in Florida | NEMT";
 const DESCRIPTION =
-  "Non-emergency stretcher and gurney transportation across Florida. Safe, comfortable bed-to-bed transport for hospital discharges, dialysis, and rehab — 24/7 dispatch, insurance-friendly.";
+  "Specialized gurney and stretcher transportation services throughout Florida for patients who require additional mobility support. Connect with professional NEMT providers trained to provide safe and dependable medical transportation.";
 const URL = "https://myfloridanemt.com/services/stretcher";
 
 export const Route = createFileRoute("/services/stretcher")({
@@ -44,14 +44,14 @@ function StretcherPage() {
   return (
     <ServiceLayout
       eyebrow="Bed-to-bed · Non-emergency"
-      title="Stretcher & Gurney Transportation"
-      lede="Stretcher NEMT is for patients who can't safely sit up during transport. It's the right service for hospital discharges, inter-facility transfers, and rehab admissions — a lower-cost, more flexible alternative to an ambulance when the patient is stable but bed-confined."
+      title="Gurney & Stretcher Transportation"
+      lede="Gurney and stretcher transportation provides specialized non-emergency medical transportation for passengers who cannot safely travel in a standard seated position. Florida NEMT providers offer trained assistance and specialized vehicles designed to transport patients safely to medical appointments, facilities, and healthcare services."
       icon={<BedDouble size={28} />}
       bullets={[
+        "Specialized vehicles built for safe transport of bed-confined patients",
         "Trained two-person crews for safe lift-and-transfer at both ends",
-        "More affordable and flexibly scheduled than ambulance service",
-        "Covered by most Medicaid, MCO, and private insurance plans",
-        "24/7 dispatch — same-day discharge, standing recurring transports",
+        "Dependable transport to medical appointments, facilities, and healthcare services",
+        "24/7 dispatch — same-day hospital discharge and recurring standing rides",
       ]}
       useCases={[
         { h: "Hospital discharge", p: "Bed-to-bed transport home or to a skilled nursing facility." },
@@ -62,3 +62,4 @@ function StretcherPage() {
     />
   );
 }
+
