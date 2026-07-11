@@ -387,7 +387,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               <div className="bg-[oklch(0.96_0.05_55)] border-l-4 border-[oklch(0.70_0.18_45)] p-4 text-sm">
                 <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Free plan</p>
                 <p className="text-[oklch(0.30_0.08_45)]">
-                  Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($5/year) to send trips, bulk upload, and use API integrations.{" "}
+                  Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($10/mo or $100/yr) to send trips, bulk upload, and use API integrations.{" "}
                   <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
                 </p>
               </div>
@@ -458,7 +458,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
-            {tab === "business_info" && <BusinessInfoPanel />}
+            {/* business_info tab removed — merged into Account > Profile for providers */}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "training" && <TrainingPanel />}
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
@@ -661,12 +661,13 @@ function Field({ label, v, on, required, type = "text", placeholder, className =
 function MembershipGate() {
   return (
     <div className="max-w-2xl mx-auto bg-card border border-border rounded-sm p-10 text-center">
-      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your $5/year membership</h2>
+      <h2 className="text-3xl font-extrabold tracking-tight mb-2">Activate your membership</h2>
       <p className="text-muted-foreground mb-6">
         Membership unlocks trip dispatch, CSV upload, and regional provider directory.
+        Choose $10/mo or $100/yr (save $20).
       </p>
       <Link to="/membership" className="portal-btn-primary px-6 py-3">
-        Subscribe — $5/year
+        Subscribe — $10/mo or $100/yr
       </Link>
     </div>
   );
@@ -713,9 +714,9 @@ function PaidOnly() {
   return (
     <div className="max-w-2xl bg-card border border-border rounded-sm p-8 text-center">
       <h3 className="text-xl font-extrabold tracking-tight mb-2">Paid membership required</h3>
-      <p className="text-muted-foreground mb-4">This feature is available on the $5/year paid plan.</p>
+      <p className="text-muted-foreground mb-4">This feature is available on the paid plan — $10/mo or $100/yr.</p>
       <Link to="/membership" className="portal-btn-primary px-5 py-2.5">
-        Upgrade — $5/year
+        Upgrade — $10/mo or $100/yr
       </Link>
     </div>
   );
