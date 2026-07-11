@@ -1,0 +1,1 @@
+ALTER VIEW public.zone_pricing_averages SET (security_invoker = true);

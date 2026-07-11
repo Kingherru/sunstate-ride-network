@@ -355,6 +355,13 @@ export type Database = {
             referencedRelation: "dispatch_zones"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "dispatch_zone_zips_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_pricing_averages"
+            referencedColumns: ["zone_id"]
+          },
         ]
       }
       dispatch_zones: {
@@ -2748,6 +2755,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "trips_dispatch_zone_id_fkey"
+            columns: ["dispatch_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_pricing_averages"
+            referencedColumns: ["zone_id"]
+          },
+          {
             foreignKeyName: "trips_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
@@ -2893,6 +2907,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "dispatch_zones"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_manager_assignments_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_pricing_averages"
+            referencedColumns: ["zone_id"]
           },
         ]
       }
@@ -3053,6 +3074,22 @@ export type Database = {
           },
         ]
       }
+      zone_pricing_averages: {
+        Row: {
+          avg_base_pickup: number | null
+          avg_minimum_fare: number | null
+          avg_per_mile: number | null
+          avg_stretcher_addon: number | null
+          avg_wait_per_min: number | null
+          avg_wheelchair_addon: number | null
+          last_updated_at: string | null
+          provider_count: number | null
+          zone_code: string | null
+          zone_id: string | null
+          zone_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_grant_free_membership: {
@@ -3195,6 +3232,7 @@ export type Database = {
           vehicle_score: number
         }[]
       }
+      zone_id_for_zip: { Args: { _zip: string }; Returns: string }
     }
     Enums: {
       app_role:

@@ -23,6 +23,7 @@ import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as BlackTieRouteImport } from './routes/black-tie'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -128,6 +129,11 @@ const ContactRoute = ContactRouteImport.update({
 const ChangelogRoute = ChangelogRouteImport.update({
   id: '/changelog',
   path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlackTieRoute = BlackTieRouteImport.update({
+  id: '/black-tie',
+  path: '/black-tie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -326,6 +332,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/black-tie': typeof BlackTieRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -377,6 +384,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/black-tie': typeof BlackTieRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -427,6 +435,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/black-tie': typeof BlackTieRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -480,6 +489,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/black-tie'
     | '/changelog'
     | '/contact'
     | '/how-it-works'
@@ -531,6 +541,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/black-tie'
     | '/changelog'
     | '/contact'
     | '/how-it-works'
@@ -580,6 +591,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/auth'
+    | '/black-tie'
     | '/changelog'
     | '/contact'
     | '/how-it-works'
@@ -633,6 +645,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  BlackTieRoute: typeof BlackTieRoute
   ChangelogRoute: typeof ChangelogRoute
   ContactRoute: typeof ContactRoute
   HowItWorksRoute: typeof HowItWorksRoute
@@ -762,6 +775,13 @@ declare module '@tanstack/react-router' {
       path: '/changelog'
       fullPath: '/changelog'
       preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/black-tie': {
+      id: '/black-tie'
+      path: '/black-tie'
+      fullPath: '/black-tie'
+      preLoaderRoute: typeof BlackTieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1095,6 +1115,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  BlackTieRoute: BlackTieRoute,
   ChangelogRoute: ChangelogRoute,
   ContactRoute: ContactRoute,
   HowItWorksRoute: HowItWorksRoute,

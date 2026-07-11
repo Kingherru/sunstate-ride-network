@@ -13,6 +13,8 @@ import {
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
+import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
+import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -96,6 +98,16 @@ function Field({
 const inputCls =
   "w-full bg-card border border-input rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all";
 
+function haversineMiles(lat1: number | null, lng1: number | null, lat2: number | null, lng2: number | null): number {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return 0;
+  const R = 3958.8;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
 function RequestRidePage() {
   const router = useRouter();
   const { copyFrom } = Route.useSearch();
@@ -122,6 +134,10 @@ function RequestRidePage() {
   const [customBilling, setCustomBilling] = useState<BillingContact>({
     firstName: "", lastName: "", email: "", phone: "",
   });
+  // Autocomplete-derived location metadata used for live price estimate.
+  const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
+  const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
+  const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
 
   useEffect(() => {
     let cancelled = false;
@@ -425,7 +441,17 @@ function RequestRidePage() {
               Pickup
             </legend>
             <Field label="Pickup address" required error={errors.pickupAddress}>
-              <input className={inputCls} value={form.pickupAddress} onChange={(e) => upd("pickupAddress", e.target.value)} placeholder="Street, suite/unit" />
+              <AddressAutocomplete
+                value={form.pickupAddress}
+                onChange={(v) => upd("pickupAddress", v)}
+                onSelect={(sel: AddressSelection) => {
+                  upd("pickupAddress", sel.address);
+                  if (sel.city) upd("pickupCity", sel.city);
+                  setPickupMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
+                }}
+                placeholder="Street, suite/unit"
+                className={inputCls}
+              />
             </Field>
             <Field label="Building / Doctor's office / Suite (optional)" error={errors.pickupAddressDetails}>
               <input
@@ -466,11 +492,25 @@ function RequestRidePage() {
               Drop-off
             </legend>
             <Field label="Drop-off address" required error={errors.dropoffAddress}>
-              <input className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} />
+              <AddressAutocomplete
+                value={form.dropoffAddress}
+                onChange={(v) => upd("dropoffAddress", v)}
+                onSelect={(sel: AddressSelection) => {
+                  upd("dropoffAddress", sel.address);
+                  if (sel.city) upd("dropoffCity", sel.city);
+                  setDropoffMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
+                }}
+                className={inputCls}
+              />
             </Field>
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
+            <PriceEstimate
+              pickupZip={pickupMeta.zip}
+              miles={estimatedMiles}
+              transportType={form.transportType}
+            />
           </fieldset>
 
           {/* Trip type */}
