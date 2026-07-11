@@ -185,7 +185,7 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         trip_type: data.tripType,
         is_black_tie: data.blackTie ?? false,
         black_tie_vehicle: data.blackTie ? data.blackTieVehicle ?? null : null,
-        black_tie_quote_status: data.blackTie ? "awaiting_quote" : "awaiting_quote",
+        black_tie_quote_status: data.blackTie ? "awaiting_quote" : "awaiting_quote" as const,
         round_trip: data.tripType === "round_trip" || data.roundTrip,
         return_pickup_time: data.returnPickupTime || null,
         return_dropoff_time: data.returnDropoffTime || null,
