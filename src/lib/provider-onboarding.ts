@@ -105,6 +105,10 @@ export const SOFT_ACCESS_TABS = [
   "schedule",
   "messages",
   "account",
+  // Required onboarding destinations — must stay unlocked so providers can
+  // actually complete the checklist (add vehicles/drivers, upload Medicaid cert).
+  "vehicles",
+  "medicaid",
 ] as const;
 
 export type SoftAccessTab = (typeof SOFT_ACCESS_TABS)[number];

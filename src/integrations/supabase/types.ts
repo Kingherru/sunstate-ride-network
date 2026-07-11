@@ -1987,6 +1987,7 @@ export type Database = {
           dropoff_city: string
           dropoff_lat: number | null
           dropoff_lng: number | null
+          dropoff_zip: string | null
           embed_provider_id: string | null
           embed_token: string | null
           estimated_cost_cents: number | null
@@ -2068,6 +2069,7 @@ export type Database = {
           dropoff_city: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          dropoff_zip?: string | null
           embed_provider_id?: string | null
           embed_token?: string | null
           estimated_cost_cents?: number | null
@@ -2149,6 +2151,7 @@ export type Database = {
           dropoff_city?: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          dropoff_zip?: string | null
           embed_provider_id?: string | null
           embed_token?: string | null
           estimated_cost_cents?: number | null
