@@ -1969,7 +1969,11 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
         </div>
       )}
 
-      {subTab === "business" && showBusiness && (
+      {subTab === "profile" && isProvider && (
+        <BusinessInfoPanel />
+      )}
+
+      {subTab === "business" && isFacility && (
         <BusinessInfoPanel />
       )}
 
@@ -1988,15 +1992,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
 
       {subTab === "security" && (
-        <div className="bg-card border border-border rounded-sm p-6 space-y-4 max-w-2xl">
-          <h3 className="text-lg font-extrabold tracking-tight">Security & Billing</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage your billing details, payment methods, and subscription in the secure billing portal.
-          </p>
-          <button onClick={openPortal} disabled={busy} className="portal-btn-primary px-5 py-2">
-            {busy ? "Opening…" : "Manage billing"}
-          </button>
-        </div>
+        <AccountSecurityPanel />
       )}
     </div>
   );
