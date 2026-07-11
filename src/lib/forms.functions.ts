@@ -9,6 +9,39 @@ export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
 export const TRIP_TYPE_OPTIONS = ["one_way", "round_trip", "multi_trip"] as const;
 export type TripTypeOption = (typeof TRIP_TYPE_OPTIONS)[number];
 
+export const BLACK_TIE_VEHICLE_OPTIONS = [
+  "black_suv",
+  "executive_sedan",
+  "luxury_sprinter_van",
+  "executive_shuttle_van",
+  "party_bus",
+  "mini_coach",
+  "motor_coach",
+  "charter_bus",
+  "limousine",
+] as const;
+export type BlackTieVehicleOption = (typeof BLACK_TIE_VEHICLE_OPTIONS)[number];
+
+export const BLACK_TIE_VEHICLE_LABELS: Record<BlackTieVehicleOption, string> = {
+  black_suv: "Black SUV",
+  executive_sedan: "Executive Sedan",
+  luxury_sprinter_van: "Luxury Sprinter Van",
+  executive_shuttle_van: "Executive Shuttle Van",
+  party_bus: "Party Bus",
+  mini_coach: "Mini Coach",
+  motor_coach: "Motor Coach",
+  charter_bus: "Charter Bus",
+  limousine: "Limousine",
+};
+
+export const BLACK_TIE_QUOTE_STATUSES = [
+  "awaiting_quote",
+  "quote_sent",
+  "quote_accepted",
+  "quote_declined",
+] as const;
+export type BlackTieQuoteStatus = (typeof BLACK_TIE_QUOTE_STATUSES)[number];
+
 export const additionalStopSchema = z.object({
   address: z.string().trim().min(3).max(300),
   city: z.string().trim().min(1).max(100),
