@@ -7,7 +7,7 @@ const NAVY = "#1D3557";
 const PEACH = "#F9CB9F";
 const MINT = "#FFE9A8";
 const CORAL = "#E63946";
-const CREAM = "#F1FAEE";
+const CREAM = "#FFF8E7";
 
 export const Route = createFileRoute("/")({
   head: () => ({
