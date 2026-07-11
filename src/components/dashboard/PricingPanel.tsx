@@ -37,11 +37,20 @@ export function PricingPanel() {
   });
 
   const sampleMiles = tripKind === "round_trip" ? 17 : 8.5;
-  const sample = useMemo(() => calculateTripCost(
-    { status: "completed", miles: sampleMiles, wait_minutes: 10, transport_type: "wheelchair", additional_passengers: 1, pickup_date: "", pickup_time: "20:30" },
-    form,
-  ), [form, sampleMiles]);
-  const patientTotal = sample.total * (1 + (platformFeePct / 100));
+  const sample = useMemo(() => {
+    const base = calculateTripCost(
+      { status: "completed", miles: sampleMiles, wait_minutes: 10, transport_type: "wheelchair", additional_passengers: 1, pickup_date: "", pickup_time: "20:30" },
+      form,
+    );
+    // Round trip has two pickups — charge the base pickup fee for the second leg.
+    if (tripKind === "round_trip" && form.base_pickup > 0) {
+      const lines = [...base.lines, { label: "Base pickup (return leg)", amount: form.base_pickup }];
+      return { lines, total: +(base.total + form.base_pickup).toFixed(2) };
+    }
+    return base;
+  }, [form, sampleMiles, tripKind]);
+  const patientTotal = +(sample.total * (1 + platformFeePct)).toFixed(2);
+
 
   const setNum = (k: keyof PricingRates) => (v: string) =>
     setForm({ ...form, [k]: Number(v) || 0 } as PricingRates);
@@ -135,8 +144,9 @@ export function PricingPanel() {
           <span>You receive</span><span className="font-mono">${sample.total.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Platform fee ({platformFeePct}%)</span>
+          <span>Platform fee ({(platformFeePct * 100).toFixed(2).replace(/\.00$/, "")}%)</span>
           <span className="font-mono">${(patientTotal - sample.total).toFixed(2)}</span>
+
         </div>
         <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
           <span>Patient pays</span><span className="font-mono">${patientTotal.toFixed(2)}</span>
