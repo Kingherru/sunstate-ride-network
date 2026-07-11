@@ -17,6 +17,12 @@ const EMPTY = {
   medicaid_id: "", mobility: "", notes: "",
   default_pickup_address: "", default_pickup_city: "",
   default_dropoff_address: "", default_dropoff_city: "",
+  // CMS/Medicaid billing
+  payer: "", medicaid_number: "", medicaid_plan: "",
+  diagnosis_code: "", authorization_number: "",
+  // Demographics
+  gender: "", address_line1: "", address_line2: "",
+  city: "", state: "", zip: "",
 };
 
 export function SavedPatientsPanel() {
