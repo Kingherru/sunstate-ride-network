@@ -2037,39 +2037,24 @@ function AccountSecurityPanel() {
 }
 
 /* -------- Account (tabbed) -------- */
-type AccountTab = "profile" | "business" | "pricing" | "rules" | "integrations" | "payouts" | "membership" | "security";
+type AccountTab = "profile" | "business" | "pricing" | "compliance" | "rules" | "integrations" | "payouts" | "membership" | "security";
 
 function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: PortalKind; userId: string }) {
-  const [busy, setBusy] = useState(false);
   const [subTab, setSubTab] = useState<AccountTab>("profile");
-  async function openPortal() {
-    setBusy(true);
-    try {
-      const res = await createPortalSession({
-        data: { environment: getStripeEnvironment(), returnUrl: `${window.location.origin}/dashboard` },
-      });
-      if ("error" in res) throw new Error(res.error);
-      window.open(res.url, "_blank");
-    } catch (e: any) {
-      toast.error(e.message ?? "Could not open billing portal");
-    } finally { setBusy(false); }
-  }
 
   const isProvider = portal === "provider";
   const isFacility = portal === "facility";
-  // Providers get a single consolidated "Business Information" tab that
-  // includes profile fields + credentials + compliance + documents.
-  // Facilities keep a separate Business Information tab. Patients see Profile only.
   const tabs: Array<[AccountTab, string]> = [
     ["profile", isProvider ? "Business Information" : "Profile"],
     ...(isFacility ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
     ...(isProvider ? ([
       ["pricing", "Pricing"],
+      ["compliance", "Compliance Certificates"],
       ["rules", "Rules"],
       ["integrations", "Integrations"],
       ["payouts", "Payouts"],
     ] as Array<[AccountTab, string]>) : []),
-    ...(portal === "provider" ? ([["membership", "Membership"]] as Array<[AccountTab, string]>) : []),
+    ...(isProvider ? ([["membership", "Membership"]] as Array<[AccountTab, string]>) : []),
     ["security", "Security"],
   ];
 
@@ -2103,8 +2088,10 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       </div>
 
       {subTab === "profile" && (
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6">
+          {isProvider ? (
+            <ProviderBusinessInfoCard profile={profile} userId={userId} />
+          ) : (
             <div className="bg-card border border-border rounded-sm p-6 space-y-3">
               <h3 className="text-lg font-extrabold tracking-tight">Profile</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -2116,24 +2103,19 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
                 <div><span className="text-muted-foreground">Dispatch email</span><div className="font-bold">{profile.dispatch_email}</div></div>
               </div>
             </div>
-            {portal === "patient" && (
-              <PatientRelationshipCard profile={profile} userId={userId} />
-            )}
-            {portal === "provider" && (
-              <>
-                <WeeklyWorkHoursCard />
-                <ProviderCredentialsPanel />
-                <div className="bg-card border border-border rounded-sm p-6">
-                  <NetworkPanel userId={userId} />
-                </div>
-              </>
-            )}
-          </div>
+          )}
+          {portal === "patient" && (
+            <PatientRelationshipCard profile={profile} userId={userId} />
+          )}
+          {isProvider && (
+            <>
+              <WeeklyWorkHoursCard />
+              <div className="bg-card border border-border rounded-sm p-6">
+                <NetworkPanel userId={userId} />
+              </div>
+            </>
+          )}
         </div>
-      )}
-
-      {subTab === "profile" && isProvider && (
-        <BusinessInfoPanel />
       )}
 
       {subTab === "business" && isFacility && (
@@ -2141,17 +2123,25 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
 
       {subTab === "pricing" && isProvider && <PricingPanel />}
+      {subTab === "compliance" && isProvider && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-extrabold tracking-tight">Compliance Certificates</h3>
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              Business License, insurance, background checks, and other credentials with expiration tracking.
+              Medicaid is intentionally not listed here — providers only need to enter a Medicaid Provider Number
+              under the Medicaid section, no certificate upload is required.
+            </p>
+          </div>
+          <ProviderCredentialsPanel />
+        </div>
+      )}
       {subTab === "rules" && isProvider && <RulesPanel />}
       {subTab === "integrations" && isProvider && <IntegrationsPanel />}
       {subTab === "payouts" && isProvider && <PayoutsPanel userId={userId} />}
 
-      {subTab === "membership" && (
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="hidden lg:block lg:col-span-1" />
-          <div className="lg:col-span-2">
-            <MembershipsTab profile={profile} />
-          </div>
-        </div>
+      {subTab === "membership" && isProvider && (
+        <MembershipsTab profile={profile} />
       )}
 
       {subTab === "security" && (
