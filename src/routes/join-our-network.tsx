@@ -111,7 +111,7 @@ function JoinNetworkPage() {
       <section className="py-20 lg:py-28 px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-12 max-w-3xl">
-            Why providers partner with MyFloridaNemt.com.
+            Why providers partner with My FloridaNEMT.
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {benefits.map((b) => (
