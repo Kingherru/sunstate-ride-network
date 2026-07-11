@@ -4,10 +4,16 @@ import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
 import logoHorizontal from "@/assets/logo-horizontal.png";
 
 const primaryLinks = [
-  { to: "/services", label: "Services" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/service-areas", label: "Service Areas" },
   { to: "/join-our-network", label: "For Providers" },
+] as const;
+
+const servicesLinks = [
+  { to: "/services", label: "All Services", desc: "Overview of our NEMT fleet" },
+  { to: "/services/ambulatory", label: "Ambulatory", desc: "Walk-on rides with minimal assistance" },
+  { to: "/services/wheelchair", label: "Wheelchair", desc: "ADA-compliant lift-equipped vans" },
+  { to: "/services/stretcher", label: "Gurney & Stretcher", desc: "Bed-to-bed non-emergency transport" },
 ] as const;
 
 const moreLinks = [
@@ -17,7 +23,8 @@ const moreLinks = [
   { to: "/about", label: "About" },
 ] as const;
 
-const allLinks = [...primaryLinks, ...moreLinks] as const;
+const allLinks = [...servicesLinks, ...primaryLinks, ...moreLinks] as const;
+
 
 const portals = [
   { to: "/patient/login", label: "Patient Portal", desc: "Patients, families, caregivers", icon: User },
@@ -46,10 +53,14 @@ export function Header() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
+  const [servicesOpen, setServicesOpen] = useState(false);
+
   const signInRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
+  const servicesRef = useRef<HTMLDivElement>(null);
   useDismiss(signInOpen, () => setSignInOpen(false), signInRef);
   useDismiss(moreOpen, () => setMoreOpen(false), moreRef);
+  useDismiss(servicesOpen, () => setServicesOpen(false), servicesRef);
 
   // Close menus on route change
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -57,9 +68,12 @@ export function Header() {
     setMobileOpen(false);
     setSignInOpen(false);
     setMoreOpen(false);
+    setServicesOpen(false);
   }, [pathname]);
 
   const moreActive = moreLinks.some((l) => pathname.startsWith(l.to));
+  const servicesActive = pathname === "/services" || pathname.startsWith("/services/");
+
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
@@ -76,6 +90,32 @@ export function Header() {
           </Link>
 
           <div className="hidden xl:flex items-center gap-6">
+            <div className="relative" ref={servicesRef}>
+              <button
+                type="button"
+                onClick={() => setServicesOpen((v) => !v)}
+                aria-expanded={servicesOpen}
+                className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${servicesActive ? "text-accent" : "text-foreground hover:text-accent"}`}
+              >
+                Services <ChevronDown className={`size-3.5 transition-transform ${servicesOpen ? "rotate-180" : ""}`} />
+              </button>
+              {servicesOpen && (
+                <div className="absolute left-0 top-full mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden py-1">
+                  {servicesLinks.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className="block px-4 py-3 hover:bg-secondary transition-colors"
+                      activeOptions={{ exact: true }}
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground">{l.label}</div>
+                      <div className="text-[11px] text-muted mt-0.5 normal-case tracking-normal">{l.desc}</div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {primaryLinks.map((l) => (
               <Link
                 key={l.to}
