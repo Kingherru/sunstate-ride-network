@@ -144,8 +144,9 @@ export function PricingPanel() {
           <span>You receive</span><span className="font-mono">${sample.total.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Platform fee ({platformFeePct}%)</span>
+          <span>Platform fee ({(platformFeePct * 100).toFixed(2).replace(/\.00$/, "")}%)</span>
           <span className="font-mono">${(patientTotal - sample.total).toFixed(2)}</span>
+
         </div>
         <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
           <span>Patient pays</span><span className="font-mono">${patientTotal.toFixed(2)}</span>
