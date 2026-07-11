@@ -3794,6 +3794,17 @@ export type Database = {
           vehicle_score: number
         }[]
       }
+      verify_course_certificate: {
+        Args: { _token: string }
+        Returns: {
+          cert_number: string
+          course_title: string
+          expires_at: string
+          holder_name: string
+          issued_at: string
+          valid: boolean
+        }[]
+      }
       zone_id_for_zip: { Args: { _zip: string }; Returns: string }
     }
     Enums: {
