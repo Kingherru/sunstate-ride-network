@@ -99,89 +99,86 @@ function HomePage() {
         ))}
       </section>
 
-      {/* ============ PORTALS — full-bleed colorful band ============ */}
+      {/* ============ MERGED: PORTALS + SERVICES — one header, two subheaders ============ */}
       <section className="px-6 py-20 lg:py-28" style={{ background: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto">
-          <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CORAL }}>
-                Three Portals
-              </p>
-              <h2 className="font-display font-bold text-4xl lg:text-5xl tracking-tight" style={{ color: NAVY }}>
-                Built for every side of the trip.
-              </h2>
+          <div className="mb-14 max-w-3xl">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CORAL }}>
+              The Platform
+            </p>
+            <h2 className="font-display font-bold text-4xl lg:text-5xl tracking-tight" style={{ color: NAVY }}>
+              Built for every side of the trip — and every level of mobility.
+            </h2>
+          </div>
+
+          {/* Sub-section 1: Portals */}
+          <div className="mb-16">
+            <h3 className="font-display font-bold text-2xl lg:text-3xl mb-8" style={{ color: NAVY }}>
+              Three portals, one network.
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { n: "01", label: "For Patients", desc: "Book scheduled medical appointments and track your driver.", cta: "Patient Portal", to: "/patient/login" as const, color: MINT },
+                { n: "02", label: "For Facilities", desc: "Manage discharges and recurring trips for an entire resident population.", cta: "Facility Dashboard", to: "/facility/login" as const, color: PEACH },
+                { n: "03", label: "For Providers", desc: "Access the trip marketplace, manage your fleet, and streamline billing.", cta: "Provider Network", to: "/provider/login" as const, color: CORAL },
+              ].map((p) => (
+                <Link
+                  key={p.label}
+                  to={p.to}
+                  className="group p-8 rounded-[1rem] bg-white transition-all hover:-translate-y-1 hover:shadow-xl border"
+                  style={{ borderColor: `${NAVY}1f` }}
+                >
+                  <div
+                    className="w-14 h-14 rounded-full mb-6 flex items-center justify-center font-bold font-display text-lg"
+                    style={{ background: p.color, color: NAVY }}
+                  >
+                    {p.n}
+                  </div>
+                  <h4 className="text-2xl font-bold font-display mb-3" style={{ color: NAVY }}>{p.label}</h4>
+                  <p className="mb-6 text-sm" style={{ color: `${NAVY}b3` }}>{p.desc}</p>
+                  <span className="font-bold inline-flex items-center gap-2 group-hover:gap-3 transition-all" style={{ color: NAVY }}>
+                    {p.cta} <ArrowRight size={16} />
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { n: "01", label: "For Patients", desc: "Book scheduled medical appointments and track your driver.", cta: "Patient Portal", to: "/patient/login" as const, color: MINT },
-              { n: "02", label: "For Facilities", desc: "Manage discharges and recurring trips for an entire resident population.", cta: "Facility Dashboard", to: "/facility/login" as const, color: PEACH },
-              { n: "03", label: "For Providers", desc: "Access the trip marketplace, manage your fleet, and streamline billing.", cta: "Provider Network", to: "/provider/login" as const, color: CORAL },
-            ].map((p) => (
-              <Link
-                key={p.label}
-                to={p.to}
-                className="group p-8 rounded-[1rem] bg-white transition-all hover:-translate-y-1 hover:shadow-xl border"
-                style={{ borderColor: `${NAVY}1f` }}
-              >
-                <div
-                  className="w-14 h-14 rounded-full mb-6 flex items-center justify-center font-bold font-display text-lg"
-                  style={{ background: p.color, color: NAVY }}
+
+          {/* Sub-section 2: Specialized fleet */}
+          <div>
+            <h3 className="font-display font-bold text-2xl lg:text-3xl mb-8" style={{ color: NAVY }}>
+              Specialized fleet for every mobility level.
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Learn more", to: "/services/ambulatory" as const, color: MINT },
+                { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "Learn more", to: "/services/wheelchair" as const, color: PEACH },
+                { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "Learn more", to: "/services/stretcher" as const, color: CORAL },
+              ].map((svc) => (
+                <Link
+                  key={svc.label}
+                  to={svc.to}
+                  className="group p-8 rounded-[1rem] bg-white transition-all hover:-translate-y-1 hover:shadow-xl border"
+                  style={{ borderColor: `${NAVY}1f` }}
                 >
-                  {p.n}
-                </div>
-                <h3 className="text-2xl font-bold font-display mb-3" style={{ color: NAVY }}>{p.label}</h3>
-                <p className="mb-6 text-sm" style={{ color: `${NAVY}b3` }}>{p.desc}</p>
-                <span className="font-bold inline-flex items-center gap-2 group-hover:gap-3 transition-all" style={{ color: NAVY }}>
-                  {p.cta} <ArrowRight size={16} />
-                </span>
-              </Link>
-            ))}
+                  <div
+                    className="w-14 h-14 rounded-full mb-6 flex items-center justify-center font-bold font-display text-lg"
+                    style={{ background: svc.color, color: NAVY }}
+                  >
+                    {svc.n}
+                  </div>
+                  <h4 className="text-2xl font-bold font-display mb-3" style={{ color: NAVY }}>{svc.label}</h4>
+                  <p className="mb-6 text-sm" style={{ color: `${NAVY}b3` }}>{svc.desc}</p>
+                  <span className="font-bold inline-flex items-center gap-2 group-hover:gap-3 transition-all" style={{ color: NAVY }}>
+                    {svc.cta} <ArrowRight size={16} />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ============ SERVICES — merged into Portals-style block ============ */}
-      <section className="px-6 py-20 lg:py-28" style={{ background: "#FFFFFF" }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CORAL }}>
-                Specialized Fleet
-              </p>
-              <h2 className="font-display font-bold text-4xl lg:text-5xl tracking-tight" style={{ color: NAVY }}>
-                Tailored transport for every mobility level.
-              </h2>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Request a ride", to: "/request-a-ride" as const, color: MINT },
-              { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "Request a ride", to: "/request-a-ride" as const, color: PEACH },
-              { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "Request a ride", to: "/request-a-ride" as const, color: CORAL },
-            ].map((svc) => (
-              <Link
-                key={svc.label}
-                to={svc.to}
-                className="group p-8 rounded-[1rem] bg-white transition-all hover:-translate-y-1 hover:shadow-xl border"
-                style={{ borderColor: `${NAVY}1f` }}
-              >
-                <div
-                  className="w-14 h-14 rounded-full mb-6 flex items-center justify-center font-bold font-display text-lg"
-                  style={{ background: svc.color, color: NAVY }}
-                >
-                  {svc.n}
-                </div>
-                <h3 className="text-2xl font-bold font-display mb-3" style={{ color: NAVY }}>{svc.label}</h3>
-                <p className="mb-6 text-sm" style={{ color: `${NAVY}b3` }}>{svc.desc}</p>
-                <span className="font-bold inline-flex items-center gap-2 group-hover:gap-3 transition-all" style={{ color: NAVY }}>
-                  {svc.cta} <ArrowRight size={16} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ============ LOCATION BLOCKS — service-areas style ============ */}
       <section className="px-6 py-20 lg:py-28" style={{ background: NAVY, color: "#fff" }}>
