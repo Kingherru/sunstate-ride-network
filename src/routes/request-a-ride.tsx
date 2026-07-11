@@ -125,9 +125,9 @@ function RequestRidePage() {
     firstName: "", lastName: "", email: "", phone: "",
   });
   // Autocomplete-derived location metadata used for live price estimate.
-  const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string }>({ zip: "", state: "" });
-  const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string }>({ zip: "", state: "" });
-  const [estimatedMiles, setEstimatedMiles] = useState<number>(0);
+  const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
+  const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
+  const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
 
   useEffect(() => {
     let cancelled = false;
