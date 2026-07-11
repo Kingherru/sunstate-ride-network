@@ -308,7 +308,7 @@ function HomePage() {
       </section>
 
       {/* ============ CTA ============ */}
-      <section className="px-6 py-24 text-center" style={{ background: CREAM }}>
+      <section className="px-6 py-20 lg:py-28 text-center" style={{ background: CREAM }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="font-display font-bold text-4xl lg:text-6xl tracking-tight mb-6" style={{ color: NAVY }}>
             Ready to coordinate your next trip?
