@@ -79,13 +79,9 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
         <div className="flex items-center gap-8 min-w-0">
           <Link to="/" className="shrink-0 flex items-center" aria-label="My Florida NEMT — home">
-            <img
-              src={logoHorizontal}
-              alt="My Florida NEMT"
-              width={1600}
-              height={544}
-              className="h-9 sm:h-10 w-auto"
-            />
+            <span className="text-[1.05rem] sm:text-[1.15rem] font-black tracking-[0.04em] text-primary uppercase">
+              MYFLORIDANEMT
+            </span>
           </Link>
 
           <div className="hidden xl:flex items-center gap-6">
