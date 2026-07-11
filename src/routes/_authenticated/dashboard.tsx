@@ -1892,11 +1892,14 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
     } finally { setBusy(false); }
   }
 
-  const showBusiness = portal === "provider" || portal === "facility";
   const isProvider = portal === "provider";
+  const isFacility = portal === "facility";
+  // Providers get a single consolidated "Business Information" tab that
+  // includes profile fields + credentials + compliance + documents.
+  // Facilities keep a separate Business Information tab. Patients see Profile only.
   const tabs: Array<[AccountTab, string]> = [
-    ["profile", "Profile"],
-    ...(showBusiness ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
+    ["profile", isProvider ? "Business Information" : "Profile"],
+    ...(isFacility ? ([["business", "Business Information"]] as Array<[AccountTab, string]>) : []),
     ...(isProvider ? ([
       ["pricing", "Pricing"],
       ["rules", "Rules"],
