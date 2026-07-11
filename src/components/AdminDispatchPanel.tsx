@@ -452,3 +452,109 @@ function TripRow({
     </>
   );
 }
+
+function BulkZipImporter({ zones, onDone }: { zones: any[]; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [raw, setRaw] = useState("");
+  const [zoneId, setZoneId] = useState<string>("");
+  const [newZoneName, setNewZoneName] = useState("");
+  const [newZoneCode, setNewZoneCode] = useState("");
+  const [preview, setPreview] = useState<{ parsed: string[]; newZips: string[]; conflicts: { zip: string; zoneName: string }[] } | null>(null);
+  const [override, setOverride] = useState(false);
+
+  const previewMut = useMutation({
+    mutationFn: async () => {
+      const { previewImportZips } = await import("@/lib/zones.functions");
+      return previewImportZips({ data: { raw } });
+    },
+    onSuccess: (r) => setPreview(r),
+    onError: (e: any) => toast.error(e.message ?? "Preview failed"),
+  });
+  const importMut = useMutation({
+    mutationFn: async () => {
+      const { importZipsToZone } = await import("@/lib/zones.functions");
+      return importZipsToZone({
+        data: {
+          raw,
+          zoneId: zoneId || undefined,
+          newZone: zoneId ? undefined : { code: newZoneCode.trim(), name: newZoneName.trim() },
+          overrideConflicts: override,
+        },
+      });
+    },
+    onSuccess: (r) => {
+      toast.success(`Imported ${r.inserted} ZIPs (${r.skipped} skipped).`);
+      setOpen(false); setRaw(""); setPreview(null); setZoneId(""); setNewZoneName(""); setNewZoneCode(""); setOverride(false);
+      onDone();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Import failed"),
+  });
+
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} className="mt-4 text-sm font-bold border border-border rounded-sm px-3 py-2 hover:border-primary">
+        + Bulk import ZIPs
+      </button>
+    );
+  }
+  return (
+    <div className="mt-4 border border-primary/40 rounded-md p-4 bg-primary/5 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-extrabold">Bulk import ZIPs into a dispatch zone</h3>
+        <button onClick={() => setOpen(false)} className="text-xs text-muted-foreground">Close</button>
+      </div>
+      <div className="grid md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Existing zone</label>
+          <select value={zoneId} onChange={(e) => setZoneId(e.target.value)} className="w-full bg-background border border-border rounded-sm px-2 py-2 text-sm">
+            <option value="">— Create new zone —</option>
+            {zones.map((z: any) => <option key={z.id} value={z.id}>{z.name}</option>)}
+          </select>
+        </div>
+        {!zoneId && (
+          <div className="grid grid-cols-2 gap-2">
+            <input placeholder="New zone name" value={newZoneName} onChange={(e) => setNewZoneName(e.target.value)} className="bg-background border border-border rounded-sm px-2 py-2 text-sm" />
+            <input placeholder="code (fl-xyz)" value={newZoneCode} onChange={(e) => setNewZoneCode(e.target.value)} className="bg-background border border-border rounded-sm px-2 py-2 text-sm" />
+          </div>
+        )}
+      </div>
+      <textarea
+        rows={5}
+        placeholder="Paste ZIPs (comma, space, or newline separated). FL ZIPs only (32000–34999)."
+        value={raw}
+        onChange={(e) => { setRaw(e.target.value); setPreview(null); }}
+        className="w-full bg-background border border-border rounded-sm px-2 py-2 text-sm font-mono"
+      />
+      <div className="flex gap-2">
+        <button onClick={() => previewMut.mutate()} disabled={!raw.trim() || previewMut.isPending} className="text-sm border border-border rounded-sm px-3 py-2">
+          {previewMut.isPending ? "Parsing…" : "Preview"}
+        </button>
+        <button
+          onClick={() => importMut.mutate()}
+          disabled={!preview || importMut.isPending || (!zoneId && (!newZoneName.trim() || !newZoneCode.trim()))}
+          className="bg-primary text-primary-foreground text-sm font-bold px-4 py-2 rounded-sm"
+        >
+          {importMut.isPending ? "Importing…" : `Import ${preview?.newZips.length ?? 0} ZIPs`}
+        </button>
+      </div>
+      {preview && (
+        <div className="text-xs space-y-1">
+          <p>Parsed: <b>{preview.parsed.length}</b> · New: <b className="text-primary">{preview.newZips.length}</b> · Conflicts: <b className={preview.conflicts.length ? "text-amber-600" : ""}>{preview.conflicts.length}</b></p>
+          {preview.conflicts.length > 0 && (
+            <>
+              <details><summary className="cursor-pointer">Show conflicts ({preview.conflicts.length})</summary>
+                <div className="max-h-40 overflow-y-auto font-mono">
+                  {preview.conflicts.map((c) => <div key={c.zip}>{c.zip} → already in {c.zoneName}</div>)}
+                </div>
+              </details>
+              <label className="flex items-center gap-2 text-xs mt-1">
+                <input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} />
+                Move conflicting ZIPs to this zone (reassigns them)
+              </label>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
