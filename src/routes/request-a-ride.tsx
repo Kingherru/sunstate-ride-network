@@ -437,11 +437,7 @@ function RequestRidePage() {
                 onSelect={(sel: AddressSelection) => {
                   upd("pickupAddress", sel.address);
                   if (sel.city) upd("pickupCity", sel.city);
-                  setPickupMeta({ zip: sel.zip, state: sel.state });
-                  if (sel.lat != null && sel.lng != null && dropoffMeta.zip) {
-                    // rough straight-line miles until server enrich runs
-                    updateEstimatedMiles(sel.lat, sel.lng);
-                  }
+                  setPickupMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
                 }}
                 placeholder="Street, suite/unit"
                 className={inputCls}
