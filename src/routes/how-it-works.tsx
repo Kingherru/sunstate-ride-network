@@ -21,46 +21,61 @@ export const Route = createFileRoute("/how-it-works")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: [
-            {
-              "@type": "Question",
-              name: "Does Florida Medicaid cover non-emergency medical transportation?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Yes. Most Florida Medicaid managed care plans cover NEMT at no cost to eligible members for medically necessary appointments such as dialysis, oncology, therapy, and follow-up visits.",
-              },
-            },
-            {
-              "@type": "Question",
-              name: "How do I book a ride through MyFloridaNemt.com?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Request a ride on our website and we route it to a vetted local NEMT provider in your county. You'll get pickup details and can reach the driver directly.",
-              },
-            },
-            {
-              "@type": "Question",
-              name: "What types of transport are available?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Ambulatory, wheelchair, and stretcher (gurney) transport are available statewide with ADA-equipped vehicles and trained crews.",
-              },
-            },
-            {
-              "@type": "Question",
-              name: "What if I'm not on Medicaid?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Private-pay rides are supported. We match you with a provider that fits your budget — use our trip calculator for an estimate.",
-              },
-            },
-          ],
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
         }),
       },
     ],
   }),
   component: HowItWorksPage,
 });
+
+const faqs = [
+  {
+    q: "What is non-emergency medical transportation (NEMT)?",
+    a: "NEMT is scheduled, non-ambulance transportation to and from medical appointments for people who can't safely drive or use public transit. It covers ambulatory rides, wheelchair-accessible vans, and stretcher (gurney) transport for visits like dialysis, oncology, therapy, and specialist follow-ups.",
+  },
+  {
+    q: "Does Florida Medicaid cover non-emergency medical transportation?",
+    a: "Yes. Most Florida Medicaid managed care plans cover NEMT at no cost to eligible members when the trip is to a medically necessary, covered service. Coverage is arranged through your plan's transportation broker — MyFloridaNemt.com works with vetted local providers who accept these trips.",
+  },
+  {
+    q: "Does Medicare cover medical transportation?",
+    a: "Original Medicare (Parts A and B) generally does not cover non-emergency medical transportation. Some Medicare Advantage (Part C) plans include a limited NEMT benefit — check your plan's Evidence of Coverage. Medicare only covers ambulance transport when it's medically necessary and other transport would endanger your health.",
+  },
+  {
+    q: "Does Medicare cover transportation to medical appointments?",
+    a: "Routine trips to medical appointments are not covered by Original Medicare. Medicare Advantage plans may offer a set number of one-way rides per year as a supplemental benefit. For everyday appointment transportation, most Florida patients rely on Medicaid NEMT, private pay, or a plan-specific benefit.",
+  },
+  {
+    q: "Does Medicare cover non-emergency medical transportation?",
+    a: "Not through Original Medicare in most cases. Coverage is limited to medically necessary ambulance transport. Some Medicare Advantage plans add NEMT as a supplemental benefit — confirm details with your plan before booking.",
+  },
+  {
+    q: "Who pays for non-emergency medical transportation?",
+    a: "Depending on the patient, NEMT is paid by Florida Medicaid (through the plan's transportation broker), a Medicare Advantage supplemental benefit, Workers' Compensation, private insurance, a hospital or facility discharge program, or the patient out of pocket. MyFloridaNemt.com helps you identify which of these applies before you book.",
+  },
+  {
+    q: "How much does Medicaid pay for non-emergency transportation?",
+    a: "Medicaid pays the contracted rate directly to the transportation provider — patients typically pay $0 out of pocket for covered trips. Rates vary by state, level of service (ambulatory, wheelchair, stretcher), mileage, and any wait time. In Florida, trips are coordinated through the Medicaid plan's transportation broker.",
+  },
+  {
+    q: "How much does non-emergency medical transport cost if I pay privately?",
+    a: "Private-pay NEMT in Florida typically runs $25–$60 for a short ambulatory trip, $50–$125 for wheelchair transport, and $150+ for stretcher transport, plus per-mile charges on longer routes. Use our trip calculator on the request-a-ride page for an instant estimate.",
+  },
+  {
+    q: "How much does long-distance medical transport cost?",
+    a: "Long-distance NEMT is billed at a base rate plus a per-mile charge (commonly $2–$5 per loaded mile, higher for stretcher service). A cross-Florida wheelchair transport can range from a few hundred to over a thousand dollars depending on distance, level of service, and whether an attendant is required.",
+  },
+  {
+    q: "Does Medicaid provide transportation to any appointment?",
+    a: "Medicaid covers rides to medically necessary services covered by your plan — primary care, specialists, dialysis, behavioral health, dental, pharmacy pickups in some cases, and hospital discharge. Trips to non-covered services (like gym visits) generally aren't eligible.",
+  },
+];
+
 
 const steps = [
   {
@@ -166,6 +181,35 @@ function HowItWorksPage() {
         </div>
       </section>
 
+      <section className="py-20 lg:py-28 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
+            Patient FAQs
+          </p>
+          <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-10">
+            Coverage, cost & eligibility.
+          </h2>
+          <div className="divide-y divide-border border-y border-border">
+            {faqs.map((f) => (
+              <details key={f.q} className="group py-6">
+                <summary className="cursor-pointer list-none flex justify-between items-start gap-6 text-left">
+                  <h3 className="text-lg lg:text-xl font-bold tracking-tight text-foreground">
+                    {f.q}
+                  </h3>
+                  <span
+                    aria-hidden
+                    className="mt-1 shrink-0 font-mono text-2xl leading-none text-accent transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-4 text-muted-foreground leading-relaxed">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-6">
@@ -183,6 +227,7 @@ function HowItWorksPage() {
           </Link>
         </div>
       </section>
+
     </>
   );
 }
