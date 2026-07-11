@@ -85,8 +85,23 @@ export const rideRequestSchema = z.object({
   billingSource: z.enum(["account", "saved", "custom"]).default("account"),
   billingContact: billingContactSchema.optional(),
   createAccount: z.boolean().optional().default(false),
+  blackTie: z.boolean().default(false),
+  blackTieVehicle: z.enum(BLACK_TIE_VEHICLE_OPTIONS).optional(),
 }).superRefine((data, ctx) => {
   if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["billingContact"],
+      message: "Billing contact is required.",
+    });
+  }
+  if (data.blackTie && !data.blackTieVehicle) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["blackTieVehicle"],
+      message: "Select a Black Tie vehicle type.",
+    });
+  }
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["billingContact"],
