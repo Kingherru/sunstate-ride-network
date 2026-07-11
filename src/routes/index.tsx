@@ -4,7 +4,7 @@ import { ArrowRight, Phone, Clock, Shield, MapPin } from "lucide-react";
 import { CITY_LIST } from "@/lib/cities";
 
 const NAVY = "#1D3557";
-const PEACH = "#F9CB9F";
+const PEACH = "#3B82F6";
 const MINT = "#FFE9A8";
 const CORAL = "#E63946";
 const CREAM = "#FFF8E7";
