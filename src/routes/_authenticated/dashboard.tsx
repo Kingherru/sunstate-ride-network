@@ -985,6 +985,7 @@ function TripList({ trips, userId, role, portal, onChanged }: { trips: Trip[]; u
         trip={viewing}
         userId={userId}
         role={role}
+        portal={portal}
         onBack={() => setViewing(null)}
         onChanged={onChanged}
       />
