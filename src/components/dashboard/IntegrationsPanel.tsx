@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listIntegrations, upsertIntegration, deleteIntegration } from "@/lib/integrations.functions";
 import { EmbedCodePanel } from "./EmbedCodePanel";
+import { ProviderWebhooksPanel } from "./ProviderWebhooksPanel";
 
 type Vendor = "hibambi" | "routegenie" | "duetride";
 
@@ -50,6 +51,9 @@ export function IntegrationsPanel() {
         <p>Inbound RouteGenie: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/routegenie/webhook</code></p>
       </div>
       <EmbedCodePanel />
+      <div className="border-t border-border pt-6">
+        <ProviderWebhooksPanel />
+      </div>
     </div>
   );
 }

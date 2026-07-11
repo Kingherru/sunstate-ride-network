@@ -1187,6 +1187,45 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_webhook_endpoints: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enabled: boolean
+          events: string[]
+          id: string
+          label: string
+          signing_secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          events?: string[]
+          id?: string
+          label: string
+          signing_secret?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          events?: string[]
+          id?: string
+          label?: string
+          signing_secret?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       provider_applications: {
         Row: {
           city: string
@@ -1757,6 +1796,48 @@ export type Database = {
           round_trip?: boolean
           updated_at?: string
           week_start?: string
+        }
+        Relationships: []
+      }
+      provider_webhook_endpoints: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          events: string[]
+          id: string
+          label: string
+          last_failure_at: string | null
+          last_success_at: string | null
+          provider_user_id: string
+          signing_secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          events?: string[]
+          id?: string
+          label: string
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider_user_id: string
+          signing_secret?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          events?: string[]
+          id?: string
+          label?: string
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider_user_id?: string
+          signing_secret?: string
+          updated_at?: string
+          url?: string
         }
         Relationships: []
       }
@@ -3058,6 +3139,72 @@ export type Database = {
           },
         ]
       }
+      webhook_deliveries: {
+        Row: {
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          event_type: string
+          id: string
+          last_attempted_at: string | null
+          last_response_body: string | null
+          last_response_status: number | null
+          payload: Json
+          platform_endpoint_id: string | null
+          provider_endpoint_id: string | null
+          provider_user_id: string | null
+          scope: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type: string
+          id?: string
+          last_attempted_at?: string | null
+          last_response_body?: string | null
+          last_response_status?: number | null
+          payload?: Json
+          platform_endpoint_id?: string | null
+          provider_endpoint_id?: string | null
+          provider_user_id?: string | null
+          scope: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type?: string
+          id?: string
+          last_attempted_at?: string | null
+          last_response_body?: string | null
+          last_response_status?: number | null
+          payload?: Json
+          platform_endpoint_id?: string | null
+          provider_endpoint_id?: string | null
+          provider_user_id?: string | null
+          scope?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_platform_endpoint_id_fkey"
+            columns: ["platform_endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "platform_webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_deliveries_provider_endpoint_id_fkey"
+            columns: ["provider_endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "provider_webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zone_manager_assignments: {
         Row: {
           created_at: string
@@ -3275,7 +3422,20 @@ export type Database = {
       }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      enqueue_platform_webhook_event: {
+        Args: { _event_type: string; _payload?: Json }
+        Returns: number
+      }
+      enqueue_provider_webhook_event: {
+        Args: {
+          _event_type: string
+          _payload?: Json
+          _provider_user_id: string
+        }
+        Returns: number
+      }
       ensure_member_display_id: { Args: never; Returns: string }
+      gen_webhook_secret: { Args: never; Returns: string }
       get_trips_admin_metadata: {
         Args: never
         Returns: {
