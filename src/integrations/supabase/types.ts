@@ -1195,18 +1195,24 @@ export type Database = {
       platform_settings: {
         Row: {
           id: boolean
+          market_pricing: Json
+          medicaid_pricing: Json
           platform_fee_pct: number
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           id?: boolean
+          market_pricing?: Json
+          medicaid_pricing?: Json
           platform_fee_pct?: number
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           id?: boolean
+          market_pricing?: Json
+          medicaid_pricing?: Json
           platform_fee_pct?: number
           updated_at?: string
           updated_by?: string | null
