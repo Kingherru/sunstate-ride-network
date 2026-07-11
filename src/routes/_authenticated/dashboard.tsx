@@ -46,6 +46,9 @@ import {
   formatPatientType,
   formatPatientRelationship,
 } from "@/lib/patient-relationships";
+import { computeProviderOnboarding, SOFT_ACCESS_TABS } from "@/lib/provider-onboarding";
+import { ProviderOnboardingChecklist } from "@/components/onboarding/ProviderOnboardingChecklist";
+import { Lock } from "lucide-react";
 
 function PaymentsTab({ portal }: { portal: PortalKind }) {
   const isFacility = portal === "facility";
@@ -79,13 +82,14 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "medicaid", "training", "messages", "account"],
+  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "medicaid", "training", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "messages", "payments", "account"],
 };
+
 
 
 const PORTAL_META: Record<PortalKind, { label: string; heroText: string }> = {
@@ -120,6 +124,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "schedule") return "Schedule";
   if (t === "messages") return "Messages";
   if (t === "changelog") return "Changelog";
+  if (t === "onboarding") return "Onboarding";
   return "Account";
 }
 
@@ -240,12 +245,50 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     },
   });
 
+  // Provider onboarding — counts of vehicles/drivers drive soft-access unlock.
+  const vehiclesQ = useQuery({
+    queryKey: ["onboarding-vehicles", userId],
+    enabled: !!userId && (portalOverride ?? "provider") === "provider",
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("vehicles").select("id", { count: "exact", head: true })
+        .eq("owner_id", userId!);
+      return count ?? 0;
+    },
+  });
+  const driversQ = useQuery({
+    queryKey: ["onboarding-drivers", userId],
+    enabled: !!userId && (portalOverride ?? "provider") === "provider",
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("drivers").select("id", { count: "exact", head: true })
+        .eq("owner_id", userId!);
+      return count ?? 0;
+    },
+  });
+
+
+
   const realProfile = profileQ.data as (Profile & { membership_tier?: string }) | null;
   // Admin previewing a portal: synthesize a profile + sample trips so the UI is visible without onboarding.
   const profile: (Profile & { membership_tier?: string }) | null =
     realProfile ?? (isAdmin && userId && userEmail ? (demoProfile(portal, userId, userEmail) as any) : null);
   const isDemo = isAdmin && !realProfile;
   const isActive = profile?.membership_status === "active";
+
+  // Provider soft-access: portal starts locked until business profile is complete.
+  const onboarding = useMemo(
+    () => computeProviderOnboarding({
+      profile: realProfile,
+      vehiclesCount: vehiclesQ.data ?? 0,
+      driversCount: driversQ.data ?? 0,
+    }),
+    [realProfile, vehiclesQ.data, driversQ.data],
+  );
+  const isSoftAccess = portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete;
+  const isTabLocked = (t: Tab) =>
+    isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
+
   // Patients & facilities can always send (book); providers still require paid membership.
   const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
   const realTrips = tripsQ.data ?? [];
@@ -356,6 +399,18 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 <h2 className="font-display text-lg font-bold tracking-tight text-brand">{tabLabel(tab, portal, { received: received.length, sent: sent.length })}</h2>
               </div>
               <div className="p-6">
+            {isTabLocked(tab) ? (
+              <LockedTabOverlay
+                onboarding={onboarding}
+                onGoToOnboarding={() => handleTab("onboarding")}
+              />
+            ) : (<>
+            {tab === "onboarding" && portal === "provider" && (
+              <ProviderOnboardingChecklist
+                onboarding={onboarding}
+                onGoToStep={(t) => handleTab(t as Tab)}
+              />
+            )}
             {tab === "received" && (() => {
               const isFlNemt = (s: string | null | undefined) => {
                 const v = (s ?? "").toLowerCase();
@@ -409,6 +464,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
             {tab === "changelog" && <ChangelogPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
+            </>)}
               </div>
             </section>
           </>
@@ -610,6 +666,43 @@ function MembershipGate() {
       <Link to="/membership" className="portal-btn-primary px-6 py-3">
         Subscribe — $5/year
       </Link>
+    </div>
+  );
+}
+
+function LockedTabOverlay({
+  onboarding,
+  onGoToOnboarding,
+}: {
+  onboarding: ReturnType<typeof computeProviderOnboarding>;
+  onGoToOnboarding: () => void;
+}) {
+  return (
+    <div className="max-w-2xl mx-auto bg-card border border-border p-10 text-center">
+      <div className="mx-auto h-12 w-12 grid place-items-center bg-primary/10 text-primary mb-4">
+        <Lock className="h-6 w-6" />
+      </div>
+      <h3 className="font-display text-2xl font-bold tracking-tight mb-2">
+        Locked while your account is in Soft Access
+      </h3>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        Finish your business profile to unlock this tab. You've completed{" "}
+        <strong>{onboarding.doneCount} of {onboarding.total}</strong> steps —
+        {onboarding.remaining} to go.
+      </p>
+      <div className="mt-4 h-2 w-full max-w-xs mx-auto bg-muted overflow-hidden">
+        <div className="h-full bg-accent transition-all" style={{ width: `${onboarding.percent}%` }} />
+      </div>
+      <button
+        type="button"
+        onClick={onGoToOnboarding}
+        className="mt-6 inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 text-sm font-bold uppercase tracking-wider hover:bg-primary/90"
+      >
+        Continue onboarding →
+      </button>
+      <p className="text-xs text-muted-foreground mt-4">
+        Available now: <strong>New Trip</strong> · <strong>Reservations</strong> · <strong>Schedule</strong>
+      </p>
     </div>
   );
 }
