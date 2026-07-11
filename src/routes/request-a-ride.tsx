@@ -9,6 +9,8 @@ import {
   type RideRequestInput,
   type BillingContact,
   RECURRENCE_OPTIONS,
+  BLACK_TIE_VEHICLE_OPTIONS,
+  BLACK_TIE_VEHICLE_LABELS,
 } from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { getMyRequest } from "@/lib/requests.functions";
