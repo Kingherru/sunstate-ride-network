@@ -59,9 +59,9 @@ export function MedicaidSubmissionCenter({ userId: _userId }: { userId: string }
       {profile && !profile.medicaid_verified && (
         <div className="border border-orange-300 bg-orange-50 text-orange-800 rounded-sm px-4 py-3 text-sm">
           <span className="font-extrabold uppercase text-xs tracking-wide">Medicaid credentials required · </span>
-          Your Medicaid Provider Number, NPI, and unexpired certification are missing or expired.
-          Medicaid-funded trips are temporarily unavailable to you. Private-pay and non-Medicaid trips are unaffected.
-          <button className="ml-2 underline font-bold" onClick={() => setTab("profile")}>Submit / update documentation →</button>
+          Your Medicaid Provider Number or NPI is missing. Medicaid-funded trips are temporarily unavailable to
+          you. Private-pay and non-Medicaid trips are unaffected.
+          <button className="ml-2 underline font-bold" onClick={() => setTab("profile")}>Enter Medicaid Provider # →</button>
         </div>
       )}
 
@@ -529,7 +529,6 @@ function MedicaidProfileTab() {
   const q = useQuery({ queryKey: ["my-medicaid-profile"], queryFn: () => get() });
   const p: any = q.data ?? {};
   const [form, setForm] = useState<any>({});
-  const [uploading, setUploading] = useState(false);
 
   const merged = { ...p, ...form };
 
@@ -543,27 +542,6 @@ function MedicaidProfileTab() {
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
-  async function handleUpload(file: File) {
-    const err = validateFile(file);
-    if (err) { toast.error(err); return; }
-    setUploading(true);
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
-      if (!uid) throw new Error("Not signed in");
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-      const path = `medicaid-certs/${uid}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("provider-docs").upload(path, file, { contentType: file.type || undefined });
-      if (error) throw error;
-      setForm((f: any) => ({ ...f, medicaid_cert_doc_path: path }));
-      toast.success("Certification uploaded — remember to Save.");
-    } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
-    finally { setUploading(false); }
-  }
-
-  const expDate = merged.medicaid_cert_expires_at ? new Date(merged.medicaid_cert_expires_at) : null;
-  const expired = expDate && expDate.getTime() < Date.now();
-
   return (
     <div className="space-y-4">
       <div className={`bg-card border rounded-sm p-6 space-y-4 ${merged.medicaid_verified ? "border-emerald-300" : "border-orange-300"}`}>
@@ -572,7 +550,8 @@ function MedicaidProfileTab() {
             <h3 className="text-lg font-extrabold tracking-tight">Medicaid profile</h3>
             <p className="text-xs text-muted-foreground">
               Providers can register without a Medicaid Provider Number, but Medicaid-funded trips will not be
-              assigned until your credentials are verified. Private-pay assignments are unaffected.
+              assigned until your Medicaid Provider Number and NPI are on file. Private-pay assignments are
+              unaffected. Medicaid does not issue a tracked certification document — no upload required.
             </p>
           </div>
           <span className={`text-xs font-extrabold uppercase px-3 py-1 rounded-sm ${
@@ -581,22 +560,9 @@ function MedicaidProfileTab() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-3">
-          <Field label="Medicaid Provider Number" v={merged.medicaid_number ?? ""} on={(v) => setForm({ ...form, medicaid_number: v })} placeholder="Optional at signup" />
-          <Field label="NPI Number (10 digits)" v={merged.npi ?? ""} on={(v) => setForm({ ...form, npi: v })} placeholder="Optional at signup" />
+          <Field label="Medicaid Provider Number" v={merged.medicaid_number ?? ""} on={(v) => setForm({ ...form, medicaid_number: v })} placeholder="Required for Medicaid-funded trips" />
+          <Field label="NPI Number (10 digits)" v={merged.npi ?? ""} on={(v) => setForm({ ...form, npi: v })} placeholder="Required for Medicaid-funded trips" />
           <Field label="Medicaid plan (e.g. Sunshine Health)" v={merged.medicaid_plan ?? ""} on={(v) => setForm({ ...form, medicaid_plan: v })} />
-          <Field label="Certification expiration date" type="date" v={merged.medicaid_cert_expires_at ?? ""} on={(v) => setForm({ ...form, medicaid_cert_expires_at: v })} />
-        </div>
-
-        <div className="border border-border rounded-sm p-3 bg-background">
-          <label className="portal-label">Medicaid certification document (PDF / JPG / PNG · max 15 MB)</label>
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png" disabled={uploading}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
-          {merged.medicaid_cert_doc_path && (
-            <div className="text-xs text-muted-foreground mt-2">
-              📎 {merged.medicaid_cert_doc_path.split("/").pop()}
-              {expired && <span className="ml-2 text-red-600 font-bold">EXPIRED</span>}
-            </div>
-          )}
         </div>
 
         <label className="flex items-start gap-2 text-sm border-t border-border pt-3">

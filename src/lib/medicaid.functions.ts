@@ -307,20 +307,14 @@ export const saveMyMedicaidProfile = createServerFn({ method: "POST" })
   .inputValidator((input: {
     medicaid_number?: string | null;
     npi?: string | null;
-    medicaid_cert_expires_at?: string | null;
-    medicaid_cert_doc_path?: string | null;
     allow_live_medicaid_verification?: boolean;
     medicaid_plan?: string | null;
   }) => {
-    // Server-side validation
     if (input.medicaid_number && !/^[A-Za-z0-9-]{4,32}$/.test(input.medicaid_number)) {
       throw new Error("Medicaid Provider Number must be 4–32 letters, numbers, or dashes.");
     }
     if (input.npi && !/^\d{10}$/.test(input.npi)) {
       throw new Error("NPI must be exactly 10 digits.");
-    }
-    if (input.medicaid_cert_expires_at && isNaN(Date.parse(input.medicaid_cert_expires_at))) {
-      throw new Error("Invalid expiration date.");
     }
     return input;
   })
@@ -328,24 +322,25 @@ export const saveMyMedicaidProfile = createServerFn({ method: "POST" })
     const patch: any = {};
     if (data.medicaid_number !== undefined) patch.medicaid_number = data.medicaid_number || null;
     if (data.npi !== undefined) patch.npi = data.npi || null;
-    if (data.medicaid_cert_expires_at !== undefined) patch.medicaid_cert_expires_at = data.medicaid_cert_expires_at || null;
-    if (data.medicaid_cert_doc_path !== undefined) patch.medicaid_cert_doc_path = data.medicaid_cert_doc_path || null;
     if (data.allow_live_medicaid_verification !== undefined) patch.allow_live_medicaid_verification = !!data.allow_live_medicaid_verification;
     if (data.medicaid_plan !== undefined) patch.medicaid_plan = data.medicaid_plan || null;
 
-    // Auto-set verified when required fields + non-expired cert are present
+    // Medicaid does not issue a tracked certification document. Verified
+    // simply means the provider has supplied a Medicaid Provider Number
+    // and NPI so we can match them to state records.
     const nowIso = new Date().toISOString();
     const hasNum = (patch.medicaid_number ?? undefined) || undefined;
     const hasNpi = (patch.npi ?? undefined) || undefined;
-    const exp = patch.medicaid_cert_expires_at;
-    const notExpired = exp ? new Date(exp).getTime() > Date.now() : false;
-    if (hasNum && hasNpi && patch.medicaid_cert_doc_path && notExpired) {
+    if (hasNum && hasNpi) {
       patch.medicaid_verified = true;
       patch.medicaid_verified_at = nowIso;
     } else {
       patch.medicaid_verified = false;
       patch.medicaid_verified_at = null;
     }
+    // Clear any legacy cert fields so old uploads/expirations don't linger.
+    patch.medicaid_cert_doc_path = null;
+    patch.medicaid_cert_expires_at = null;
 
     const { error } = await context.supabase
       .from("member_profiles").update(patch).eq("user_id", context.userId);

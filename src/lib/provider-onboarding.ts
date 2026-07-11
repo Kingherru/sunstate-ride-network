@@ -43,16 +43,25 @@ export function computeProviderOnboarding(input: {
   const steps: OnboardingStep[] = [
     {
       id: "company",
-      label: "Company name & phone",
+      label: "Company name, phone & dispatch email",
       description: "Basic business identity used on trip sheets and referrals.",
-      done: Boolean((p.company_name ?? "").toString().trim() && (p.phone ?? "").toString().trim()),
+      done: Boolean(
+        (p.company_name ?? "").toString().trim() &&
+        (p.phone ?? "").toString().trim() &&
+        (p.dispatch_email ?? "").toString().trim(),
+      ),
       targetTab: "account",
     },
     {
       id: "location",
-      label: "Home base — city & region",
-      description: "Where your dispatch is based.",
-      done: Boolean((p.city ?? "").toString().trim() && (p.region ?? "").toString().trim()),
+      label: "Business address, city, region & ZIP",
+      description: "Where your dispatch is based — used for regional matching.",
+      done: Boolean(
+        (p.business_address ?? "").toString().trim() &&
+        (p.city ?? "").toString().trim() &&
+        (p.region ?? "").toString().trim() &&
+        (p.postal_code ?? "").toString().trim(),
+      ),
       targetTab: "account",
     },
     {
@@ -78,9 +87,9 @@ export function computeProviderOnboarding(input: {
     },
     {
       id: "medicaid",
-      label: "Upload Medicaid certificate",
-      description: "Required to run Medicaid-funded trips.",
-      done: Boolean(p.medicaid_cert_doc_path),
+      label: "Enter your Medicaid Provider Number",
+      description: "Required to run Medicaid-funded trips. No certificate upload needed.",
+      done: Boolean((p.medicaid_number ?? "").toString().trim()),
       targetTab: "medicaid",
     },
   ];
@@ -106,7 +115,7 @@ export const SOFT_ACCESS_TABS = [
   "messages",
   "account",
   // Required onboarding destinations — must stay unlocked so providers can
-  // actually complete the checklist (add vehicles/drivers, upload Medicaid cert).
+  // actually complete the checklist (add vehicles/drivers, enter Medicaid #).
   "vehicles",
   "medicaid",
 ] as const;
