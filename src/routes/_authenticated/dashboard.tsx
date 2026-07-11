@@ -347,7 +347,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         {isAdmin && (
           <div className="flex items-center justify-between gap-3 bg-[oklch(0.18_0.05_257)] text-white px-4 py-2.5 text-sm border-l-4 border-[oklch(0.872_0.078_65.2)]">
             <span className="font-bold uppercase tracking-wider text-xs">
-              Admin preview · {portal} dashboard{isDemo ? " · demo data" : ""}
+              Admin preview · {portal} dashboard
             </span>
             <Link to="/admin" className="font-bold text-[oklch(0.92_0.07_65)] hover:underline text-xs uppercase tracking-wider">
               ← Back to admin
@@ -355,11 +355,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
           </div>
         )}
 
-        {isDemo && (
-          <div className="bg-amber-50 border-l-4 border-amber-400 px-4 py-2.5 text-xs text-amber-900">
-            <strong>Demo data shown.</strong> Items marked “(DEMO)” are placeholders so you can see the layout — nothing is saved.
-          </div>
-        )}
+
 
         {!profileQ.isLoading && !profile && userId && userEmail && (
           <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
