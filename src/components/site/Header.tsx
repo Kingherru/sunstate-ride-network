@@ -4,10 +4,16 @@ import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
 import logoHorizontal from "@/assets/logo-horizontal.png";
 
 const primaryLinks = [
-  { to: "/services", label: "Services" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/service-areas", label: "Service Areas" },
   { to: "/join-our-network", label: "For Providers" },
+] as const;
+
+const servicesLinks = [
+  { to: "/services", label: "All Services", desc: "Overview of our NEMT fleet" },
+  { to: "/services/ambulatory", label: "Ambulatory", desc: "Walk-on rides with minimal assistance" },
+  { to: "/services/wheelchair", label: "Wheelchair", desc: "ADA-compliant lift-equipped vans" },
+  { to: "/services/stretcher", label: "Gurney & Stretcher", desc: "Bed-to-bed non-emergency transport" },
 ] as const;
 
 const moreLinks = [
@@ -17,7 +23,8 @@ const moreLinks = [
   { to: "/about", label: "About" },
 ] as const;
 
-const allLinks = [...primaryLinks, ...moreLinks] as const;
+const allLinks = [...servicesLinks, ...primaryLinks, ...moreLinks] as const;
+
 
 const portals = [
   { to: "/patient/login", label: "Patient Portal", desc: "Patients, families, caregivers", icon: User },
