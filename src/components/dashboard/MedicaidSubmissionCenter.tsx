@@ -548,8 +548,11 @@ function MedicaidProfileTab() {
     if (err) { toast.error(err); return; }
     setUploading(true);
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Not signed in");
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-      const path = `medicaid-certs/${crypto.randomUUID()}.${ext}`;
+      const path = `medicaid-certs/${uid}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("provider-docs").upload(path, file, { contentType: file.type || undefined });
       if (error) throw error;
       setForm((f: any) => ({ ...f, medicaid_cert_doc_path: path }));
