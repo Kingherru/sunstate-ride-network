@@ -275,6 +275,20 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     realProfile ?? (isAdmin && userId && userEmail ? (demoProfile(portal, userId, userEmail) as any) : null);
   const isDemo = isAdmin && !realProfile;
   const isActive = profile?.membership_status === "active";
+
+  // Provider soft-access: portal starts locked until business profile is complete.
+  const onboarding = useMemo(
+    () => computeProviderOnboarding({
+      profile: realProfile,
+      vehiclesCount: vehiclesQ.data ?? 0,
+      driversCount: driversQ.data ?? 0,
+    }),
+    [realProfile, vehiclesQ.data, driversQ.data],
+  );
+  const isSoftAccess = portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete;
+  const isTabLocked = (t: Tab) =>
+    isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
+
   // Patients & facilities can always send (book); providers still require paid membership.
   const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
   const realTrips = tripsQ.data ?? [];
