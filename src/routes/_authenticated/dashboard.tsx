@@ -1619,7 +1619,7 @@ function TripDetailView({
 
           <div className="border-t border-border" />
 
-          <section>
+          <section className="rounded-lg border-2 border-border bg-card p-4 shadow-sm">
             <H>Pricing &amp; billing</H>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
@@ -1650,22 +1650,45 @@ function TripDetailView({
                 <span className="text-muted-foreground">Estimated price</span>
                 <span className="font-semibold">{fmtMoney(t.estimated_miles && t.cost_total == null ? null : t.cost_total)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Provider quote</span>
-                {editing && canEditProviderFields ? (
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.cost_total}
-                    onChange={(e) => setField("cost_total", e.target.value)}
-                    placeholder="0.00"
-                    className="w-28 border border-border rounded-sm px-2 py-1 text-sm bg-background text-right"
-                  />
-                ) : (
-                  <span className="font-semibold">{fmtMoney(quoteDollars)}</span>
+
+              {/* Provider Quote — highlighted */}
+              <div className={`rounded-md border-2 px-3 py-3 ${needsQuote ? "border-amber-300 bg-amber-50" : "border-primary/30 bg-primary/5"}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-foreground">Provider quote</span>
+                  {editing && canEditProviderFields ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold text-foreground">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={form.cost_total}
+                        onChange={(e) => setField("cost_total", e.target.value)}
+                        placeholder="0.00"
+                        className="w-28 border-2 border-primary/40 rounded-md px-2 py-1.5 text-base font-bold bg-background text-right focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-lg font-extrabold text-foreground">{fmtMoney(quoteDollars)}</span>
+                  )}
+                </div>
+                {needsQuote && (
+                  <p className="mt-2 text-xs text-amber-800">
+                    {canEditProviderFields
+                      ? "Quote required — enter your quote above and save."
+                      : "Awaiting manual quote from provider."}
+                  </p>
+                )}
+                {canEditProviderFields && !editing && (
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="w-full mt-3 text-sm font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-md hover:bg-primary/90 shadow-sm"
+                  >
+                    {needsQuote ? "Create quote" : "Update quote"}
+                  </button>
                 )}
               </div>
+
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Amount paid</span>
                 <span className="font-semibold">{fmtMoney(paidDollars)}</span>
@@ -1684,22 +1707,6 @@ function TripDetailView({
                 <span className="text-muted-foreground">Payment method</span>
                 <span className="font-semibold">{(paymentsQ.data ?? []).length ? "Card (Stripe)" : "—"}</span>
               </div>
-
-              {needsQuote && (
-                <div className="mt-2 rounded-sm bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
-                  {canEditProviderFields
-                    ? "Quote required — enter your quote above and save."
-                    : "Awaiting manual quote from provider."}
-                </div>
-              )}
-              {canEditProviderFields && !editing && (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="w-full mt-2 text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
-                >
-                  {needsQuote ? "Create quote" : "Update quote"}
-                </button>
-              )}
 
               {t.cost_breakdown?.lines?.length ? (
                 <div className="mt-3 pt-3 border-t border-border space-y-1">
