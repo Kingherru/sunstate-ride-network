@@ -129,10 +129,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: React.ReactNode }) {
+  // Apply the cached admin theme synchronously before React hydrates so
+  // colors don't flip from the CSS defaults to the DB theme on load.
+  const themePreload = `try{var c=localStorage.getItem('mfn.theme.css.v1');if(c){var s=document.createElement('style');s.id='mfn-theme-preload';s.textContent=c;document.head.appendChild(s);}}catch(e){}`;
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themePreload }} />
       </head>
       <body>
         {children}
@@ -141,6 +145,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
+
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
