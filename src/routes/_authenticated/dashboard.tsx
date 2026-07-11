@@ -2590,7 +2590,7 @@ function ProviderBusinessInfoCard({ profile, userId }: { profile: Profile; userI
     setBusy(true);
     try {
       const zips = form.preferred_zip_codes
-        .split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
+        .split(/[\s,]+/).map((s: string) => s.trim()).filter(Boolean);
       // Auto-resolve dispatch zone from ZIP
       let dispatch_zone_id: string | null = null;
       if (form.postal_code.trim()) {
