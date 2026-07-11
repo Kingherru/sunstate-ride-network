@@ -50,6 +50,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
     },
   });
 
+  const feePct = usePlatformFeePct();
   const trips = tripsQ.data ?? [];
 
   const held = trips
