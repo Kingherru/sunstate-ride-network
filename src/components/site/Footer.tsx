@@ -11,7 +11,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
 
   if (isAuthed) {
     return (
-      <footer className="mt-16 border-t border-border bg-sidebar text-sidebar-foreground">
+      <footer className="bg-sidebar text-sidebar-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
