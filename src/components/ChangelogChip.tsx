@@ -6,6 +6,17 @@
  */
 export const CHANGELOG: { version: string; date: string; notes: string[] }[] = [
   {
+    version: "0.9.2",
+    date: "2026-07-11",
+    notes: [
+      "Replaced header logo with a clean MYFLORIDANEMT bold uppercase wordmark.",
+      "Added dedicated service pages for Ambulatory, Wheelchair, and Gurney & Stretcher transportation.",
+      "Expanded SEO landing pages for major Florida cities: Jacksonville, Orlando, Tampa, Miami, Tallahassee, and Fort Lauderdale.",
+      "Implemented Service schema JSON-LD and breadcrumb navigation across service pages.",
+      "Updated XML sitemap to include all service and city landing pages.",
+    ],
+  },
+  {
     version: "0.9.1",
     date: "2026-06-29",
     notes: [
