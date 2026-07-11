@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BedDouble } from "lucide-react";
+import { buildServiceSchema } from "@/lib/schema";
 import { ServiceLayout } from "./services.ambulatory";
 
 const TITLE = "Gurney and Stretcher Transportation Services in Florida | NEMT";
@@ -22,18 +23,14 @@ export const Route = createFileRoute("/services/stretcher")({
     scripts: [
       {
         type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Service",
-          serviceType: "Stretcher & Gurney Non-Emergency Medical Transportation",
-          provider: {
-            "@type": "Organization",
-            name: "My Florida NEMT",
-            url: "https://myfloridanemt.com",
-          },
-          areaServed: { "@type": "State", name: "Florida" },
-          description: DESCRIPTION,
-        }),
+        children: JSON.stringify(
+          buildServiceSchema({
+            name: "Gurney and Stretcher Transportation Services",
+            serviceType: "Stretcher & Gurney Non-Emergency Medical Transportation",
+            description: DESCRIPTION,
+            url: URL,
+          })
+        ),
       },
     ],
   }),

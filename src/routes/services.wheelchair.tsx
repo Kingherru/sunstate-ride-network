@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Accessibility } from "lucide-react";
+import { buildServiceSchema } from "@/lib/schema";
 import { ServiceLayout } from "./services.ambulatory";
 
 const TITLE = "Wheelchair Transportation Services in Florida | NEMT Wheelchair Rides";
@@ -22,18 +23,14 @@ export const Route = createFileRoute("/services/wheelchair")({
     scripts: [
       {
         type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Service",
-          serviceType: "Wheelchair Non-Emergency Medical Transportation",
-          provider: {
-            "@type": "Organization",
-            name: "My Florida NEMT",
-            url: "https://myfloridanemt.com",
-          },
-          areaServed: { "@type": "State", name: "Florida" },
-          description: DESCRIPTION,
-        }),
+        children: JSON.stringify(
+          buildServiceSchema({
+            name: "Wheelchair Transportation Services",
+            serviceType: "Wheelchair Non-Emergency Medical Transportation",
+            description: DESCRIPTION,
+            url: URL,
+          })
+        ),
       },
     ],
   }),

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, PersonStanding } from "lucide-react";
+import { buildServiceSchema } from "@/lib/schema";
 
 const NAVY = "#13335a";
 const ORANGE = "#e07a1f";
@@ -26,18 +27,14 @@ export const Route = createFileRoute("/services/ambulatory")({
     scripts: [
       {
         type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Service",
-          serviceType: "Ambulatory Non-Emergency Medical Transportation",
-          provider: {
-            "@type": "Organization",
-            name: "My Florida NEMT",
-            url: "https://myfloridanemt.com",
-          },
-          areaServed: { "@type": "State", name: "Florida" },
-          description: DESCRIPTION,
-        }),
+        children: JSON.stringify(
+          buildServiceSchema({
+            name: "Ambulatory Transportation Services",
+            serviceType: "Ambulatory Non-Emergency Medical Transportation",
+            description: DESCRIPTION,
+            url: URL,
+          })
+        ),
       },
     ],
   }),
