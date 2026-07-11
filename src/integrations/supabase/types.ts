@@ -1748,6 +1748,10 @@ export type Database = {
           assigned_driver_id: string | null
           assigned_provider_id: string | null
           authorization_number: string | null
+          black_tie_quote_cents: number | null
+          black_tie_quote_notes: string | null
+          black_tie_quote_status: string
+          black_tie_vehicle: string | null
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
@@ -1767,6 +1771,7 @@ export type Database = {
           hipaa_ack_id: string | null
           id: string
           ip_address: string | null
+          is_black_tie: boolean
           last_updated_at: string
           medicaid_number: string | null
           medicaid_plan: string | null
@@ -1823,6 +1828,10 @@ export type Database = {
           assigned_driver_id?: string | null
           assigned_provider_id?: string | null
           authorization_number?: string | null
+          black_tie_quote_cents?: number | null
+          black_tie_quote_notes?: string | null
+          black_tie_quote_status?: string
+          black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
@@ -1842,6 +1851,7 @@ export type Database = {
           hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
+          is_black_tie?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
@@ -1898,6 +1908,10 @@ export type Database = {
           assigned_driver_id?: string | null
           assigned_provider_id?: string | null
           authorization_number?: string | null
+          black_tie_quote_cents?: number | null
+          black_tie_quote_notes?: string | null
+          black_tie_quote_status?: string
+          black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
@@ -1917,6 +1931,7 @@ export type Database = {
           hipaa_ack_id?: string | null
           id?: string
           ip_address?: string | null
+          is_black_tie?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
