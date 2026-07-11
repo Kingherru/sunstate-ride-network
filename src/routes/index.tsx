@@ -243,7 +243,7 @@ function HomePage() {
               { n: "02", title: "Match", desc: "We route the trip to the closest vetted provider in the patient's county." },
               { n: "03", title: "Ride", desc: "Driver arrives, ride is logged, and payment flows automatically through the platform." },
             ].map((step) => (
-              <div key={step.n} className="p-8 rounded-[1rem] bg-white">
+              <div key={step.n} className="p-8 rounded-[1rem] bg-white" style={{ background: NAVY, color: "#fff" }}>
                 <div className="font-mono font-bold text-sm tracking-[0.22em] mb-4" style={{ color: CORAL }}>
                   {step.n}
                 </div>
