@@ -53,10 +53,14 @@ export function Header() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
+  const [servicesOpen, setServicesOpen] = useState(false);
+
   const signInRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
+  const servicesRef = useRef<HTMLDivElement>(null);
   useDismiss(signInOpen, () => setSignInOpen(false), signInRef);
   useDismiss(moreOpen, () => setMoreOpen(false), moreRef);
+  useDismiss(servicesOpen, () => setServicesOpen(false), servicesRef);
 
   // Close menus on route change
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -64,9 +68,12 @@ export function Header() {
     setMobileOpen(false);
     setSignInOpen(false);
     setMoreOpen(false);
+    setServicesOpen(false);
   }, [pathname]);
 
   const moreActive = moreLinks.some((l) => pathname.startsWith(l.to));
+  const servicesActive = pathname === "/services" || pathname.startsWith("/services/");
+
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
