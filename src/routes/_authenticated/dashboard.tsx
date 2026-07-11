@@ -38,7 +38,7 @@ import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 
-import { demoProfile, demoTrips } from "@/lib/demo-data";
+
 import {
   PATIENT_TYPE_OPTIONS,
   PATIENT_RELATIONSHIP_OPTIONS,
@@ -271,10 +271,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
 
   const realProfile = profileQ.data as (Profile & { membership_tier?: string }) | null;
-  // Admin previewing a portal: synthesize a profile + sample trips so the UI is visible without onboarding.
-  const profile: (Profile & { membership_tier?: string }) | null =
-    realProfile ?? (isAdmin && userId && userEmail ? (demoProfile(portal, userId, userEmail) as any) : null);
-  const isDemo = isAdmin && !realProfile;
+  const profile: (Profile & { membership_tier?: string }) | null = realProfile;
   const isActive = profile?.membership_status === "active";
 
   // Provider soft-access: portal starts locked until business profile is complete.
@@ -293,9 +290,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // Patients & facilities can always send (book); providers still require paid membership.
   const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
   const realTrips = tripsQ.data ?? [];
-  const demo = isAdmin && userId ? demoTrips(portal, userId) : { sent: [], received: [] };
-  const sent = [...realTrips.filter((t) => t.created_by === userId), ...(isAdmin ? demo.sent : [])];
-  const received = [...realTrips.filter((t) => t.assigned_to === userId), ...(isAdmin ? demo.received : [])];
+  const sent = realTrips.filter((t) => t.created_by === userId);
+  const received = realTrips.filter((t) => t.assigned_to === userId);
+
 
   const upcoming = sent.filter((t) => ["scheduled","assigned","in_progress"].includes((t.status ?? "").toLowerCase())).length;
   const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
@@ -350,7 +347,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
         {isAdmin && (
           <div className="flex items-center justify-between gap-3 bg-[oklch(0.18_0.05_257)] text-white px-4 py-2.5 text-sm border-l-4 border-[oklch(0.872_0.078_65.2)]">
             <span className="font-bold uppercase tracking-wider text-xs">
-              Admin preview · {portal} dashboard{isDemo ? " · demo data" : ""}
+              Admin preview · {portal} dashboard
             </span>
             <Link to="/admin" className="font-bold text-[oklch(0.92_0.07_65)] hover:underline text-xs uppercase tracking-wider">
               ← Back to admin
@@ -358,11 +355,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
           </div>
         )}
 
-        {isDemo && (
-          <div className="bg-amber-50 border-l-4 border-amber-400 px-4 py-2.5 text-xs text-amber-900">
-            <strong>Demo data shown.</strong> Items marked “(DEMO)” are placeholders so you can see the layout — nothing is saved.
-          </div>
-        )}
+
 
         {!profileQ.isLoading && !profile && userId && userEmail && (
           <ProfileSetup userId={userId} userEmail={userEmail} portal={portal} onSaved={() => qc.invalidateQueries({ queryKey: ["member-profile"] })} />
