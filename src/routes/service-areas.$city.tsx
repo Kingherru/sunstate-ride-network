@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CITIES, type CitySlug } from "@/lib/cities";
+import { CITIES, type CitySlug, type CityInfo } from "@/lib/cities";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 
 const NAVY = "#13335a";
