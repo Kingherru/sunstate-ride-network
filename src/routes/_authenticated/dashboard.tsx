@@ -429,7 +429,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     </div>
                     {flNemt.length === 0
                       ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No MyFloridaNemt.com referrals right now.</div>
-                      : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} />}
+                      : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} onDuplicate={startDuplicate} />}
                   </section>
                   <section>
                     <div className="mb-3">
@@ -438,13 +438,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     </div>
                     {subProv.length === 0
                       ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No partner submissions yet.</div>
-                      : <TripList trips={subProv} userId={userId!} role="recipient" onChanged={onChanged} />}
+                      : <TripList trips={subProv} userId={userId!} role="recipient" onChanged={onChanged} onDuplicate={startDuplicate} />}
                   </section>
                 </div>
               );
             })()}
-            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} />}
-            {tab === "new" && (canSend ? <NewTripForm onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
+            {tab === "new" && (canSend ? <NewTripForm initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
             {tab === "schedule" && <ScheduleCalendarPanel />}
