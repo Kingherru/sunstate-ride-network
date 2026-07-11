@@ -7,6 +7,9 @@ const BASE_URL = "https://myfloridanemt.com";
 const staticPaths = [
   "/",
   "/services",
+  "/services/ambulatory",
+  "/services/wheelchair",
+  "/services/stretcher",
   "/service-areas",
   "/service-areas/jacksonville",
   "/service-areas/orlando",

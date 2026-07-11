@@ -1,0 +1,206 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Check, PersonStanding } from "lucide-react";
+
+const NAVY = "#13335a";
+const ORANGE = "#e07a1f";
+const MINT = "#FFF3E4";
+const CREAM = "#FFF8EE";
+
+const TITLE = "Ambulatory Transportation in Florida | My Florida NEMT";
+const DESCRIPTION =
+  "Safe, reliable ambulatory non-emergency medical transportation across all 67 Florida counties. Book Medicaid-covered rides to doctor visits, dialysis, and hospital discharges.";
+const URL = "https://myfloridanemt.com/services/ambulatory";
+
+export const Route = createFileRoute("/services/ambulatory")({
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: URL },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          serviceType: "Ambulatory Non-Emergency Medical Transportation",
+          provider: {
+            "@type": "Organization",
+            name: "My Florida NEMT",
+            url: "https://myfloridanemt.com",
+          },
+          areaServed: { "@type": "State", name: "Florida" },
+          description: DESCRIPTION,
+        }),
+      },
+    ],
+  }),
+  component: AmbulatoryPage,
+});
+
+function AmbulatoryPage() {
+  return (
+    <ServiceLayout
+      eyebrow="Curb-to-curb & door-to-door"
+      title="Ambulatory Transportation"
+      lede="Ambulatory transport is non-emergency medical transportation for patients who can walk on their own or with minor assistance. It's the most common ride we book — routine doctor visits, chemotherapy, hospital admissions, and same-day discharges."
+      icon={<PersonStanding size={28} />}
+      bullets={[
+        "Reduced stress and anxiety with a safe, reliable ride to every appointment",
+        "Better appointment compliance — patients arrive on time, every time",
+        "Lower costs by preventing missed care that ends in ER visits",
+        "Statewide coverage across all 67 Florida counties, 24/7 dispatch",
+      ]}
+      useCases={[
+        { h: "Doctor visits", p: "Routine primary care, specialist consults, and follow-ups." },
+        { h: "Dialysis rounds", p: "Recurring 3x-weekly transports coordinated as a standing schedule." },
+        { h: "Hospital discharge", p: "Same-day pickups when a bed is needed." },
+        { h: "Rehab & therapy", p: "Physical therapy, behavioral health, and pain management." },
+      ]}
+    />
+  );
+}
+
+// --- shared layout used by all three service pages ---
+export function ServiceLayout({
+  eyebrow,
+  title,
+  lede,
+  icon,
+  bullets,
+  useCases,
+}: {
+  eyebrow: string;
+  title: string;
+  lede: string;
+  icon: React.ReactNode;
+  bullets: string[];
+  useCases: { h: string; p: string }[];
+}) {
+  return (
+    <div className="bg-white" style={{ color: NAVY }}>
+      {/* Hero */}
+      <section
+        className="px-6 py-20 lg:py-28"
+        style={{ background: CREAM, borderBottom: `1px solid ${NAVY}` }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <div
+            className="w-16 h-16 rounded-2xl mb-8 flex items-center justify-center"
+            style={{ background: ORANGE, color: NAVY }}
+          >
+            {icon}
+          </div>
+          <p
+            className="font-mono text-xs font-bold uppercase tracking-[0.28em] mb-4"
+            style={{ color: ORANGE }}
+          >
+            {eyebrow}
+          </p>
+          <h1
+            className="font-display text-5xl lg:text-6xl font-bold leading-[1.05] mb-6"
+            style={{ color: NAVY }}
+          >
+            {title}
+          </h1>
+          <p className="text-lg max-w-2xl leading-relaxed" style={{ color: `${NAVY}cc` }}>
+            {lede}
+          </p>
+          <div className="flex flex-wrap gap-4 mt-10">
+            <Link
+              to="/request-a-ride"
+              className="font-bold px-8 py-4 rounded-[0.875rem] border-2 inline-flex items-center gap-2"
+              style={{ background: ORANGE, borderColor: ORANGE, color: NAVY }}
+            >
+              Request a Ride <ArrowRight size={18} />
+            </Link>
+            <Link
+              to="/contact"
+              className="font-bold px-8 py-4 rounded-[0.875rem] border-2 inline-flex items-center gap-2"
+              style={{ borderColor: NAVY, color: NAVY }}
+            >
+              Talk to Dispatch
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits */}
+      <section className="px-6 py-20 lg:py-24">
+        <div className="max-w-5xl mx-auto">
+          <p
+            className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3"
+            style={{ color: ORANGE }}
+          >
+            Benefits
+          </p>
+          <h2 className="font-display font-bold text-3xl lg:text-4xl mb-10" style={{ color: NAVY }}>
+            Why patients and providers choose My Florida NEMT.
+          </h2>
+          <ul className="grid md:grid-cols-2 gap-6">
+            {bullets.map((b) => (
+              <li key={b} className="flex gap-4 p-6 rounded-[1rem]" style={{ background: MINT }}>
+                <Check size={24} style={{ color: ORANGE }} className="shrink-0 mt-0.5" />
+                <span className="text-base" style={{ color: NAVY }}>
+                  {b}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Use cases */}
+      <section className="px-6 py-20 lg:py-24" style={{ background: CREAM }}>
+        <div className="max-w-5xl mx-auto">
+          <p
+            className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3"
+            style={{ color: ORANGE }}
+          >
+            Common Trip Types
+          </p>
+          <h2 className="font-display font-bold text-3xl lg:text-4xl mb-10" style={{ color: NAVY }}>
+            What we book, every day.
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {useCases.map((u) => (
+              <div key={u.h} className="p-8 rounded-[1rem] bg-white border" style={{ borderColor: `${NAVY}1f` }}>
+                <h3 className="font-display font-bold text-xl mb-3" style={{ color: NAVY }}>
+                  {u.h}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                  {u.p}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="px-6 py-20" style={{ background: NAVY, color: "#fff" }}>
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="font-display font-bold text-3xl lg:text-4xl mb-6">
+            Ready to book your ride?
+          </h2>
+          <p className="text-white/75 mb-8 max-w-xl mx-auto">
+            Statewide dispatch, Medicaid billing handled, on-time pickup guaranteed.
+          </p>
+          <Link
+            to="/request-a-ride"
+            className="font-bold px-8 py-4 rounded-[0.875rem] inline-flex items-center gap-2"
+            style={{ background: ORANGE, color: NAVY }}
+          >
+            Request a Ride <ArrowRight size={18} />
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}

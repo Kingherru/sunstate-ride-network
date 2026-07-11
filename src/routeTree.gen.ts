@@ -35,6 +35,9 @@ import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as ServicesWheelchairRouteImport } from './routes/services.wheelchair'
+import { Route as ServicesStretcherRouteImport } from './routes/services.stretcher'
+import { Route as ServicesAmbulatoryRouteImport } from './routes/services.ambulatory'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProviderLoginRouteImport } from './routes/provider.login'
@@ -193,6 +196,21 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => ShopRoute,
+} as any)
+const ServicesWheelchairRoute = ServicesWheelchairRouteImport.update({
+  id: '/wheelchair',
+  path: '/wheelchair',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesStretcherRoute = ServicesStretcherRouteImport.update({
+  id: '/stretcher',
+  path: '/stretcher',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesAmbulatoryRoute = ServicesAmbulatoryRouteImport.update({
+  id: '/ambulatory',
+  path: '/ambulatory',
+  getParentRoute: () => ServicesRoute,
 } as any)
 const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   id: '/$city',
@@ -369,7 +387,7 @@ export interface FileRoutesByFullPath {
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
-  '/services': typeof ServicesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
@@ -384,6 +402,9 @@ export interface FileRoutesByFullPath {
   '/provider/login': typeof ProviderLoginRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/services/ambulatory': typeof ServicesAmbulatoryRoute
+  '/services/stretcher': typeof ServicesStretcherRoute
+  '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
@@ -424,7 +445,7 @@ export interface FileRoutesByTo {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/services': typeof ServicesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -437,6 +458,9 @@ export interface FileRoutesByTo {
   '/provider/login': typeof ProviderLoginRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/services/ambulatory': typeof ServicesAmbulatoryRoute
+  '/services/stretcher': typeof ServicesStretcherRoute
+  '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
@@ -480,7 +504,7 @@ export interface FileRoutesById {
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
-  '/services': typeof ServicesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
@@ -495,6 +519,9 @@ export interface FileRoutesById {
   '/provider/login': typeof ProviderLoginRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/services/ambulatory': typeof ServicesAmbulatoryRoute
+  '/services/stretcher': typeof ServicesStretcherRoute
+  '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
@@ -553,6 +580,9 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/resources/$slug'
     | '/service-areas/$city'
+    | '/services/ambulatory'
+    | '/services/stretcher'
+    | '/services/wheelchair'
     | '/shop/$slug'
     | '/shop/return'
     | '/staff/login'
@@ -606,6 +636,9 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/resources/$slug'
     | '/service-areas/$city'
+    | '/services/ambulatory'
+    | '/services/stretcher'
+    | '/services/wheelchair'
     | '/shop/$slug'
     | '/shop/return'
     | '/staff/login'
@@ -663,6 +696,9 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/resources/$slug'
     | '/service-areas/$city'
+    | '/services/ambulatory'
+    | '/services/stretcher'
+    | '/services/wheelchair'
     | '/shop/$slug'
     | '/shop/return'
     | '/staff/login'
@@ -706,7 +742,7 @@ export interface RootRouteChildren {
   RequestARideRoute: typeof RequestARideRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
-  ServicesRoute: typeof ServicesRoute
+  ServicesRoute: typeof ServicesRouteWithChildren
   ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrainingRoute: typeof TrainingRoute
@@ -914,6 +950,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/shop/$slug'
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof ShopRoute
+    }
+    '/services/wheelchair': {
+      id: '/services/wheelchair'
+      path: '/wheelchair'
+      fullPath: '/services/wheelchair'
+      preLoaderRoute: typeof ServicesWheelchairRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/stretcher': {
+      id: '/services/stretcher'
+      path: '/stretcher'
+      fullPath: '/services/stretcher'
+      preLoaderRoute: typeof ServicesStretcherRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/ambulatory': {
+      id: '/services/ambulatory'
+      path: '/ambulatory'
+      fullPath: '/services/ambulatory'
+      preLoaderRoute: typeof ServicesAmbulatoryRouteImport
+      parentRoute: typeof ServicesRoute
     }
     '/service-areas/$city': {
       id: '/service-areas/$city'
@@ -1178,6 +1235,22 @@ const ServiceAreasRouteWithChildren = ServiceAreasRoute._addFileChildren(
   ServiceAreasRouteChildren,
 )
 
+interface ServicesRouteChildren {
+  ServicesAmbulatoryRoute: typeof ServicesAmbulatoryRoute
+  ServicesStretcherRoute: typeof ServicesStretcherRoute
+  ServicesWheelchairRoute: typeof ServicesWheelchairRoute
+}
+
+const ServicesRouteChildren: ServicesRouteChildren = {
+  ServicesAmbulatoryRoute: ServicesAmbulatoryRoute,
+  ServicesStretcherRoute: ServicesStretcherRoute,
+  ServicesWheelchairRoute: ServicesWheelchairRoute,
+}
+
+const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
+  ServicesRouteChildren,
+)
+
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   ShopReturnRoute: typeof ShopReturnRoute
@@ -1208,7 +1281,7 @@ const rootRouteChildren: RootRouteChildren = {
   RequestARideRoute: RequestARideRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
-  ServicesRoute: ServicesRoute,
+  ServicesRoute: ServicesRouteWithChildren,
   ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrainingRoute: TrainingRoute,
