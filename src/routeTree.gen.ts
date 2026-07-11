@@ -29,6 +29,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
@@ -166,6 +167,11 @@ const ShopIndexRoute = ShopIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ShopRoute,
+} as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ServicesRoute,
 } as any)
 const ServiceAreasIndexRoute = ServiceAreasIndexRouteImport.update({
   id: '/',
@@ -411,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/verify/$token': typeof VerifyTokenRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
@@ -445,7 +452,6 @@ export interface FileRoutesByTo {
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -467,6 +473,7 @@ export interface FileRoutesByTo {
   '/verify/$token': typeof VerifyTokenRoute
   '/resources': typeof ResourcesIndexRoute
   '/service-areas': typeof ServiceAreasIndexRoute
+  '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
@@ -528,6 +535,7 @@ export interface FileRoutesById {
   '/verify/$token': typeof VerifyTokenRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
@@ -589,6 +597,7 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/resources/'
     | '/service-areas/'
+    | '/services/'
     | '/shop/'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
@@ -623,7 +632,6 @@ export interface FileRouteTypes {
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
-    | '/services'
     | '/sitemap.xml'
     | '/training'
     | '/.mcp/list-tools'
@@ -645,6 +653,7 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/resources'
     | '/service-areas'
+    | '/services'
     | '/shop'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
@@ -705,6 +714,7 @@ export interface FileRouteTypes {
     | '/verify/$token'
     | '/resources/'
     | '/service-areas/'
+    | '/services/'
     | '/shop/'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/facility/dashboard'
@@ -908,6 +918,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shop/'
       preLoaderRoute: typeof ShopIndexRouteImport
       parentRoute: typeof ShopRoute
+    }
+    '/services/': {
+      id: '/services/'
+      path: '/'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof ServicesRoute
     }
     '/service-areas/': {
       id: '/service-areas/'
@@ -1239,12 +1256,14 @@ interface ServicesRouteChildren {
   ServicesAmbulatoryRoute: typeof ServicesAmbulatoryRoute
   ServicesStretcherRoute: typeof ServicesStretcherRoute
   ServicesWheelchairRoute: typeof ServicesWheelchairRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
 }
 
 const ServicesRouteChildren: ServicesRouteChildren = {
   ServicesAmbulatoryRoute: ServicesAmbulatoryRoute,
   ServicesStretcherRoute: ServicesStretcherRoute,
   ServicesWheelchairRoute: ServicesWheelchairRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
 }
 
 const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
