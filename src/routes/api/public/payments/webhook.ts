@@ -144,6 +144,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               break;
             default:
               console.log("Unhandled event:", event.type);
+          }
           return Response.json({ received: true });
         } catch (e) {
           console.error("Webhook error:", e);
