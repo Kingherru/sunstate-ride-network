@@ -3,11 +3,14 @@ import heroVan from "@/assets/hero-van.jpg";
 import { ArrowRight, Phone, Clock, Shield, MapPin } from "lucide-react";
 import { CITY_LIST } from "@/lib/cities";
 
-const NAVY = "#1D3557";
-const PEACH = "#F9CB9F";
-const MINT = "#FFE9A8";
-const CORAL = "#E63946";
-const CREAM = "#FFF8E7";
+// Brand palette — matches the admin platform_theme (navy + orange).
+// Do NOT swap these for off-brand pastels; the whole page reads from them.
+const NAVY = "#13335a";      // primary
+const ORANGE = "#e07a1f";    // accent
+const PEACH = ORANGE;        // legacy alias — keeps all downstream styles on-brand
+const MINT = "#FFF3E4";      // soft orange-tinted neutral for card variety
+const CORAL = ORANGE;        // legacy alias
+const CREAM = "#FFF8EE";     // warm cream neutral
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -248,7 +251,7 @@ function HomePage() {
       </section>
 
       {/* ============ TRAINING & CERTIFICATION ============ */}
-      <section className="px-6 py-20 lg:py-24 bg-white" style={{ borderTop: `0.5px solid ${NAVY}12` }}>
+      <section className="px-6 py-20 lg:py-28 bg-white" style={{ borderTop: `0.5px solid ${NAVY}12` }}>
         <div className="max-w-7xl mx-auto">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -305,7 +308,7 @@ function HomePage() {
       </section>
 
       {/* ============ CTA ============ */}
-      <section className="px-6 py-24 text-center" style={{ background: CREAM }}>
+      <section className="px-6 py-20 lg:py-28 text-center" style={{ background: CREAM }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="font-display font-bold text-4xl lg:text-6xl tracking-tight mb-6" style={{ color: NAVY }}>
             Ready to coordinate your next trip?
