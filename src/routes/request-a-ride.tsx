@@ -510,14 +510,25 @@ function RequestRidePage() {
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
-            <PriceEstimate
-              pickupZip={pickupMeta.zip}
-              miles={estimatedMiles}
-              transportType={form.transportType}
-            />
+            {!form.blackTie && (
+              <PriceEstimate
+                pickupZip={pickupMeta.zip}
+                miles={estimatedMiles}
+                transportType={form.transportType}
+              />
+            )}
+            {form.blackTie && (
+              <div className="mt-2 rounded-sm border border-accent/40 bg-accent/5 p-4 text-sm">
+                <p className="font-bold uppercase tracking-widest text-accent text-xs mb-1">Manual quote</p>
+                <p className="text-muted">
+                  All Black Tie Transportation requests are quoted manually. Our team will review your
+                  request and reply with a custom price before your reservation is confirmed.
+                </p>
+              </div>
+            )}
           </fieldset>
 
-          {/* Trip type */}
+          {/* Transport details */}
           <fieldset className="space-y-6">
             <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
               Transport details
