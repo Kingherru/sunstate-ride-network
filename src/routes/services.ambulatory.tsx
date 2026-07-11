@@ -27,18 +27,14 @@ export const Route = createFileRoute("/services/ambulatory")({
     scripts: [
       {
         type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Service",
-          serviceType: "Ambulatory Non-Emergency Medical Transportation",
-          provider: {
-            "@type": "Organization",
-            name: "My Florida NEMT",
-            url: "https://myfloridanemt.com",
-          },
-          areaServed: { "@type": "State", name: "Florida" },
-          description: DESCRIPTION,
-        }),
+        children: JSON.stringify(
+          buildServiceSchema({
+            name: "Ambulatory Transportation Services",
+            serviceType: "Ambulatory Non-Emergency Medical Transportation",
+            description: DESCRIPTION,
+            url: URL,
+          })
+        ),
       },
     ],
   }),
