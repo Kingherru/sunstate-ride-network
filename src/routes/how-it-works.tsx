@@ -12,9 +12,52 @@ export const Route = createFileRoute("/how-it-works")({
       },
       { property: "og:title", content: "How MyFloridaNemt.com Works" },
       { property: "og:description", content: "Coverage check, booking, and door-to-door pickup across Florida." },
-      { property: "og:url", content: "/how-it-works" },
+      { property: "og:url", content: "https://myfloridanemt.com/how-it-works" },
     ],
-    links: [{ rel: "canonical", href: "/how-it-works" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/how-it-works" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: "Does Florida Medicaid cover non-emergency medical transportation?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Yes. Most Florida Medicaid managed care plans cover NEMT at no cost to eligible members for medically necessary appointments such as dialysis, oncology, therapy, and follow-up visits.",
+              },
+            },
+            {
+              "@type": "Question",
+              name: "How do I book a ride through MyFloridaNemt.com?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Request a ride on our website and we route it to a vetted local NEMT provider in your county. You'll get pickup details and can reach the driver directly.",
+              },
+            },
+            {
+              "@type": "Question",
+              name: "What types of transport are available?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Ambulatory, wheelchair, and stretcher (gurney) transport are available statewide with ADA-equipped vehicles and trained crews.",
+              },
+            },
+            {
+              "@type": "Question",
+              name: "What if I'm not on Medicaid?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Private-pay rides are supported. We match you with a provider that fits your budget — use our trip calculator for an estimate.",
+              },
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: HowItWorksPage,
 });
