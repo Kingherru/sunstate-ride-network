@@ -186,7 +186,7 @@ function RequestRidePage() {
           createAccount: false,
         });
         setCopiedFromId(copyFrom);
-        toast.success("Trip copied. Set a new pickup date to continue.");
+        toast.success("Trip copied. Set new pickup/drop-off dates and times to continue.");
       } catch {
         toast.error("Could not load that trip to copy.");
       }
