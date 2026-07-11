@@ -86,9 +86,15 @@ function AuthPage() {
 
 
   return (
-    <section className="min-h-[80vh] grid place-items-center px-6 py-20">
+    <section className="min-h-screen grid place-items-center px-6 py-20">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8">
-        <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-3">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to home
+        </Link>
+        <p className="font-mono text-xs font-bold text-primary uppercase tracking-widest mb-3">
           Admin & Staff
         </p>
         <h1 className="text-3xl font-extrabold tracking-tighter mb-6">
