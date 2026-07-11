@@ -124,7 +124,6 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "trips", label: "Trips", icon: Car, visible: (c) => c.isOps },
       { id: "reservations", label: "Reservations", icon: CalendarClock, visible: (c) => c.isOps },
       { id: "dispatch", label: "Dispatch", icon: Radar, visible: (c) => c.canDispatch },
-      { id: "credentials", label: "Expiring credentials", icon: ShieldAlert, visible: (c) => c.canDispatch },
     ],
   },
   {
