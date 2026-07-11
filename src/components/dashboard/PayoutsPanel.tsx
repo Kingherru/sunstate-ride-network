@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatUsd, providerPayoutCents } from "@/lib/payouts";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 import { createConnectOnboardingLink, refreshPayoutAccount } from "@/lib/payouts.functions";
+import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 
 type Trip = {
   id: string;
