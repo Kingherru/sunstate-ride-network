@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Award, BookOpen, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/learn/")({
-  head: () => ({ meta: [{ title: "My Courses | MyFloridaNemt.com" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "My Courses | My Florida NEMT" }, { name: "robots", content: "noindex" }] }),
   component: LearnIndex,
 });
 

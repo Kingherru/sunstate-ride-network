@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "MyFloridaNemt.com"
+const SITE_NAME = "My Florida NEMT"
 const SENDER_DOMAIN = "notify.myfloridanemt.com"
 const ROOT_DOMAIN = "myfloridanemt.com"
 const FROM_DOMAIN = "myfloridanemt.com"

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/shop/return")({
     session_id: typeof s.session_id === "string" ? s.session_id : undefined,
     course: typeof s.course === "string" ? s.course : undefined,
   }),
-  head: () => ({ meta: [{ title: "Purchase Complete | MyFloridaNemt.com" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Purchase Complete | My Florida NEMT" }, { name: "robots", content: "noindex" }] }),
   component: Return,
 });
 

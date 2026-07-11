@@ -25,13 +25,13 @@ export const Route = createFileRoute("/request-a-ride")({
     z.object({ copyFrom: z.string().uuid().optional() }).parse(s),
   head: () => ({
     meta: [
-      { title: "Request a Ride — MyFloridaNemt.com" },
+      { title: "Request a Ride — My Florida NEMT" },
       {
         name: "description",
         content:
           "Book non-emergency medical transportation anywhere in Florida. Ambulatory, wheelchair, and gurney transport with on-time pickup.",
       },
-      { property: "og:title", content: "Request a Ride — MyFloridaNemt.com" },
+      { property: "og:title", content: "Request a Ride — My Florida NEMT" },
       { property: "og:description", content: "Book NEMT transport across Florida." },
       { property: "og:url", content: "/request-a-ride" },
     ],

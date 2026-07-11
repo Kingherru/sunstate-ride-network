@@ -7,7 +7,7 @@ import { Award, ArrowLeft, ArrowRight, CheckCircle2, XCircle, Download } from "l
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/learn/$slug")({
-  head: () => ({ meta: [{ title: "Course Player | MyFloridaNemt.com" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Course Player | My Florida NEMT" }, { name: "robots", content: "noindex" }] }),
   component: Player,
 });
 

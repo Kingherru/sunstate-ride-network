@@ -9,7 +9,7 @@ export const Route = createFileRoute("/shop/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(coursesQO),
   head: () => ({
     meta: [
-      { title: "Training Shop — HIPAA & NEMT Certification | MyFloridaNemt.com" },
+      { title: "Training Shop — HIPAA & NEMT Certification | My Florida NEMT" },
       { name: "description", content: "Buy online HIPAA training and NEMT certification courses. Complete the exam and get a printable certificate." },
       { property: "og:title", content: "Training Shop — HIPAA & NEMT Certification" },
       { property: "og:description", content: "Certification courses for NEMT drivers, dispatchers, and staff." },

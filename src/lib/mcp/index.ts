@@ -4,9 +4,9 @@ import getContactInfoTool from "./tools/get-contact-info";
 
 export default defineMcp({
   name: "floridanemt-mcp",
-  title: "MyFloridaNemt.com MCP",
+  title: "My Florida NEMT MCP",
   version: "0.1.0",
   instructions:
-    "Tools for MyFloridaNemt.com — a Florida-wide non-emergency medical transportation network. Use `list_service_areas` to see supported cities and `get_contact_info` for booking contact details.",
+    "Tools for My Florida NEMT — a Florida-wide non-emergency medical transportation network. Use `list_service_areas` to see supported cities and `get_contact_info` for booking contact details.",
   tools: [listServiceAreasTool, getContactInfoTool],
 });

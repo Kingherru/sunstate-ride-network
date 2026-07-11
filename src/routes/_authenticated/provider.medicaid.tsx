@@ -6,7 +6,7 @@ import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmiss
 export const Route = createFileRoute("/_authenticated/provider/medicaid")({
   head: () => ({
     meta: [
-      { title: "Medicaid Submission Center — MyFloridaNemt.com" },
+      { title: "Medicaid Submission Center — My Florida NEMT" },
       { name: "description", content: "Prepare Medicaid packets, save billing contacts, upload trip logs, and track submissions." },
       { name: "robots", content: "noindex" },
     ],

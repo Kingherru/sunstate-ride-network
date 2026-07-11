@@ -63,7 +63,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
           </div>
 
           <div className="pt-6 mt-8 border-t border-sidebar-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs opacity-60">
-            <p>© {new Date().getFullYear()} MyFloridaNemt.com. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} My Florida NEMT. All rights reserved.</p>
             <p>Florida's statewide Medicaid transportation network.</p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
         </div>
 
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-muted">
-          <p>© {new Date().getFullYear()} MyFloridaNemt.com. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} My Florida NEMT. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link to="/staff/login" className="hover:text-primary">Staff Login</Link>
             <Link to="/contact" className="hover:text-primary">Terms of Service</Link>

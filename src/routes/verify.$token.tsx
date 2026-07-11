@@ -11,8 +11,8 @@ export const Route = createFileRoute("/verify/$token")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(qo(params.token)),
   head: () => ({
     meta: [
-      { title: "Verify Certificate | MyFloridaNemt.com" },
-      { name: "description", content: "Verify a MyFloridaNemt.com training certificate." },
+      { title: "Verify Certificate | My Florida NEMT" },
+      { name: "description", content: "Verify a My Florida NEMT training certificate." },
       { name: "robots", content: "noindex" },
     ],
   }),

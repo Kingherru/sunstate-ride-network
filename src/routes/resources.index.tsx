@@ -6,13 +6,13 @@ import { CATEGORIES, getAllPosts, type Category, type Post } from "@/content/blo
 export const Route = createFileRoute("/resources/")({
   head: () => ({
     meta: [
-      { title: "Blog & Resources — MyFloridaNemt.com" },
+      { title: "Blog & Resources — My Florida NEMT" },
       {
         name: "description",
         content:
-          "The MyFloridaNemt.com blog: guides, playbooks, and reference articles for patients, caregivers, providers, and dispatchers across Florida's non-emergency medical transportation industry.",
+          "The My Florida NEMT blog: guides, playbooks, and reference articles for patients, caregivers, providers, and dispatchers across Florida's non-emergency medical transportation industry.",
       },
-      { property: "og:title", content: "MyFloridaNemt.com Blog & Resources" },
+      { property: "og:title", content: "My Florida NEMT Blog & Resources" },
       { property: "og:description", content: "Search NEMT guides for patients, providers, caregivers, and Florida transportation planners." },
       { property: "og:url", content: "/resources" },
       { property: "og:type", content: "website" },
@@ -61,7 +61,7 @@ function ResourcesPage() {
             Blog & Resources
           </p>
           <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tighter leading-[0.95] mb-6 max-w-4xl">
-            The MyFloridaNemt.com blog.
+            The My Florida NEMT blog.
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
             Search plain-English guides on Medicaid transportation, provider credentialing,
@@ -214,7 +214,7 @@ function ResourcesPage() {
       <section className="py-20 px-6 bg-secondary/40 border-t border-border">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tighter mb-4">
-            Need help finding a MyFloridaNemt.com provider?
+            Need help finding a My Florida NEMT provider?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
             Skip the search. Request a ride and we'll match you with a verified provider in your county.

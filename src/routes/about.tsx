@@ -3,13 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — MyFloridaNemt.com" },
+      { title: "About — My Florida NEMT" },
       {
         name: "description",
         content:
-          "MyFloridaNemt.com is a statewide gateway connecting patients with vetted non-emergency medical transport providers and the training that keeps them compliant.",
+          "My Florida NEMT is a statewide gateway connecting patients with vetted non-emergency medical transport providers and the training that keeps them compliant.",
       },
-      { property: "og:title", content: "About MyFloridaNemt.com" },
+      { property: "og:title", content: "About My Florida NEMT" },
       { property: "og:description", content: "Statewide medical transport gateway and training academy." },
       { property: "og:url", content: "/about" },
     ],
@@ -30,7 +30,7 @@ function AboutPage() {
         </h1>
         <div className="prose prose-lg max-w-none text-muted space-y-6 text-base leading-relaxed">
           <p>
-            MyFloridaNemt.com is a statewide gateway connecting patients, providers, and brokers
+            My Florida NEMT is a statewide gateway connecting patients, providers, and brokers
             in non-emergency medical transportation. We coordinate trips across every major Florida
             hub and run the training academy that keeps drivers compliant.
           </p>

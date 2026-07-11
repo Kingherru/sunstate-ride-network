@@ -17,7 +17,7 @@ export const Route = createFileRoute("/shop/$slug")({
     const c = loaderData?.course;
     return {
       meta: [
-        { title: c ? `${c.title} — Training Shop | MyFloridaNemt.com` : "Course — Training Shop" },
+        { title: c ? `${c.title} — Training Shop | My Florida NEMT` : "Course — Training Shop" },
         { name: "description", content: c?.summary ?? "NEMT certification training course." },
         { property: "og:title", content: c?.title ?? "Training Course" },
         { property: "og:description", content: c?.summary ?? "" },
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/shop/$slug")({
                 description: c.summary,
                 provider: {
                   "@type": "Organization",
-                  name: "MyFloridaNemt.com",
+                  name: "My Florida NEMT",
                   sameAs: "https://myfloridanemt.com",
                 },
                 offers: {

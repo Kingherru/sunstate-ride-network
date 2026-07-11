@@ -7,13 +7,13 @@ import { submitContact, contactSchema, type ContactInput } from "@/lib/forms.fun
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — MyFloridaNemt.com" },
+      { title: "Contact — My Florida NEMT" },
       {
         name: "description",
         content:
-          "Get in touch with MyFloridaNemt.com. Call (800) 555-0199 or send a message to our dispatch and provider teams.",
+          "Get in touch with My Florida NEMT. Call (800) 555-0199 or send a message to our dispatch and provider teams.",
       },
-      { property: "og:title", content: "Contact MyFloridaNemt.com" },
+      { property: "og:title", content: "Contact My Florida NEMT" },
       { property: "og:description", content: "Talk to our dispatch and provider teams." },
       { property: "og:url", content: "/contact" },
     ],

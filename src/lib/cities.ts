@@ -110,7 +110,7 @@ export const CITIES: Record<CitySlug, CityInfo> = {
     code: "GNV-07",
     region: "North Central Florida",
     blurb:
-      "North Central MyFloridaNemt.com centered on UF Health Shands and the VA Medical Center, serving Alachua, Marion, and surrounding counties with long-distance specialty transfers.",
+      "North Central My Florida NEMT centered on UF Health Shands and the VA Medical Center, serving Alachua, Marion, and surrounding counties with long-distance specialty transfers.",
     highlights: [
       "UF Health Shands transfers",
       "Malcom Randall VA Medical Center",

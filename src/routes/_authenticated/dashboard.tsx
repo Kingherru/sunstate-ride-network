@@ -70,7 +70,7 @@ function PaymentsTab({ portal }: { portal: PortalKind }) {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — MyFloridaNemt.com" },
+      { title: "Dashboard — My Florida NEMT" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -366,7 +366,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {/* Hero header */}
             <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end pb-2 border-b border-border">
               <div>
-                <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.04_220)] mb-2">MyFloridaNemt.com · {portal}</div>
+                <div className="text-xs font-mono uppercase tracking-[0.22em] text-[oklch(0.78_0.04_220)] mb-2">My Florida NEMT · {portal}</div>
                 <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight text-brand">{meta.label}</h1>
                 <p className="text-sm text-muted-foreground mt-2 max-w-xl">{meta.heroText}</p>
               </div>
@@ -417,11 +417,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 <div className="space-y-8">
                   <section>
                     <div className="mb-3">
-                      <h3 className="font-display text-base font-bold tracking-tight">MyFloridaNemt.com Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h3>
-                      <p className="text-sm text-muted-foreground">Auto-routed referrals from MyFloridaNemt.com based on your service area.</p>
+                      <h3 className="font-display text-base font-bold tracking-tight">My Florida NEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h3>
+                      <p className="text-sm text-muted-foreground">Auto-routed referrals from My Florida NEMT based on your service area.</p>
                     </div>
                     {flNemt.length === 0
-                      ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No MyFloridaNemt.com referrals right now.</div>
+                      ? <div className="bg-secondary border border-border p-6 text-sm text-muted-foreground">No My Florida NEMT referrals right now.</div>
                       : <TripList trips={flNemt} userId={userId!} role="recipient" onChanged={onChanged} onDuplicate={startDuplicate} />}
                   </section>
                   <section>
@@ -865,7 +865,7 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
       </label>
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
         <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
-        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. MyFloridaNemt.com does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
+        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. My Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
       </label>
       <button disabled={m.isPending || !hipaaOk} className="portal-btn-primary col-span-2 py-3">
         {m.isPending ? "Creating…" : "Create trip"}
@@ -957,7 +957,7 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
           </div>
           <label className="flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3 mb-3">
             <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" />
-            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. MyFloridaNemt.com does not access PHI included in trip details.</span>
+            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. My Florida NEMT does not access PHI included in trip details.</span>
           </label>
           <button
             disabled={busy || missing.length > 0 || !hipaaOk}
@@ -2424,7 +2424,7 @@ function PortalSidebar(props: {
       <div className="px-5 py-6 border-b border-white/10">
         <Link to="/" className="flex items-center gap-2 mb-5">
           <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
-          <span className="font-display font-bold text-base tracking-tight uppercase">MyFloridaNemt.com</span>
+          <span className="font-display font-bold text-base tracking-tight uppercase">My Florida NEMT</span>
         </Link>
         {editing ? (
           <div className="space-y-2">
