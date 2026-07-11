@@ -463,6 +463,57 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_submissions: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          portal: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          subject: string
+          submitter_display_id: string | null
+          submitter_email: string | null
+          submitter_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          message: string
+          portal: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject: string
+          submitter_display_id?: string | null
+          submitter_email?: string | null
+          submitter_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          portal?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject?: string
+          submitter_display_id?: string | null
+          submitter_email?: string | null
+          submitter_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hipaa_acknowledgments: {
         Row: {
           acknowledged_at: string
@@ -862,6 +913,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      membership_opportunity_email_log: {
+        Row: {
+          batch_period_start: string
+          estimated_revenue_cents: number
+          id: string
+          provider_user_id: string
+          sent_at: string
+          trip_count: number
+        }
+        Insert: {
+          batch_period_start: string
+          estimated_revenue_cents?: number
+          id?: string
+          provider_user_id: string
+          sent_at?: string
+          trip_count?: number
+        }
+        Update: {
+          batch_period_start?: string
+          estimated_revenue_cents?: number
+          id?: string
+          provider_user_id?: string
+          sent_at?: string
+          trip_count?: number
+        }
+        Relationships: []
       }
       message_threads: {
         Row: {
@@ -1741,12 +1819,57 @@ export type Database = {
           },
         ]
       }
+      ride_request_revisions: {
+        Row: {
+          change_summary: string | null
+          changed_by: string | null
+          changed_by_email: string | null
+          changed_by_role: string | null
+          created_at: string
+          id: string
+          revision_number: number
+          ride_request_id: string
+          snapshot: Json
+        }
+        Insert: {
+          change_summary?: string | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          changed_by_role?: string | null
+          created_at?: string
+          id?: string
+          revision_number: number
+          ride_request_id: string
+          snapshot: Json
+        }
+        Update: {
+          change_summary?: string | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          changed_by_role?: string | null
+          created_at?: string
+          id?: string
+          revision_number?: number
+          ride_request_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_request_revisions_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_requests: {
         Row: {
           additional_stops: Json
           appointment_time: string | null
           assigned_driver_id: string | null
           assigned_provider_id: string | null
+          assigned_vehicle_id: string | null
           authorization_number: string | null
           black_tie_quote_cents: number | null
           black_tie_quote_notes: string | null
@@ -1827,6 +1950,7 @@ export type Database = {
           appointment_time?: string | null
           assigned_driver_id?: string | null
           assigned_provider_id?: string | null
+          assigned_vehicle_id?: string | null
           authorization_number?: string | null
           black_tie_quote_cents?: number | null
           black_tie_quote_notes?: string | null
@@ -1907,6 +2031,7 @@ export type Database = {
           appointment_time?: string | null
           assigned_driver_id?: string | null
           assigned_provider_id?: string | null
+          assigned_vehicle_id?: string | null
           authorization_number?: string | null
           black_tie_quote_cents?: number | null
           black_tie_quote_notes?: string | null
@@ -1988,6 +2113,13 @@ export type Database = {
             columns: ["assigned_driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_assigned_vehicle_id_fkey"
+            columns: ["assigned_vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
             referencedColumns: ["id"]
           },
           {
@@ -2493,6 +2625,9 @@ export type Database = {
           assigned_to: string | null
           authorization_number: string | null
           cancel_reason: string | null
+          completed_at: string | null
+          completed_by: string | null
+          completion_source: string | null
           contact_id: string | null
           cost_breakdown: Json | null
           cost_total: number | null
@@ -2583,6 +2718,9 @@ export type Database = {
           assigned_to?: string | null
           authorization_number?: string | null
           cancel_reason?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_source?: string | null
           contact_id?: string | null
           cost_breakdown?: Json | null
           cost_total?: number | null
@@ -2673,6 +2811,9 @@ export type Database = {
           assigned_to?: string | null
           authorization_number?: string | null
           cancel_reason?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_source?: string | null
           contact_id?: string | null
           cost_breakdown?: Json | null
           cost_total?: number | null
