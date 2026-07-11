@@ -1,5 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
+
+export const MANAGEABLE_ROLES = [
+  "patient",
+  "provider",
+  "facility",
+  "dispatcher",
+  "zone_manager",
+  "app_manager",
+  "admin",
+] as const;
+export type ManageableRole = (typeof MANAGEABLE_ROLES)[number];
+
+export const ROLE_LABELS: Record<ManageableRole, string> = {
+  patient: "Patient",
+  provider: "Provider",
+  facility: "Facility",
+  dispatcher: "Dispatcher",
+  zone_manager: "Dispatch Zone Manager",
+  app_manager: "App Manager",
+  admin: "Administrator",
+};
+
+const PORTAL_ROLES: ManageableRole[] = ["patient", "provider", "facility"];
+const STAFF_ROLES: ManageableRole[] = ["dispatcher", "zone_manager", "app_manager", "admin"];
 
 type AdminUser = {
   id: string;
