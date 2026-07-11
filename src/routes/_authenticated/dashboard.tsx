@@ -1234,7 +1234,11 @@ function TripDetailView({
       (Object.keys(form) as (keyof EditableFields)[]).forEach((k) => {
         const orig = original[k];
         if (form[k] === orig) return;
-        if (!canEditAll && !(k === "provider_notes" || k === "cost_total")) return;
+        // Provider recipients may only edit provider_notes and cost_total (their quote).
+        if (!canEditAll && !((k === "provider_notes" || k === "cost_total") && canEditQuote)) return;
+        // Requesters (patients / facilities) never edit cost_total — pricing is auto-estimated
+        // and finalized by the provider quote workflow.
+        if (k === "cost_total" && !canEditQuote) return;
         if (k === "cost_total") {
           const n = form[k] === "" ? null : Number(form[k]);
           patch[k] = n == null || isNaN(n) ? null : n;
