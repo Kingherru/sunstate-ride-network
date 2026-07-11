@@ -2,8 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPublicCourse } from "@/lib/courses.functions";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,14 +39,10 @@ function CourseDetail() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 max-w-3xl mx-auto px-4 py-16">
-          <h1 className="text-2xl font-bold mb-2">Course not found</h1>
-          <Link to="/shop" className="text-primary underline">Back to shop</Link>
-        </main>
-        <Footer />
-      </div>
+      <main className="flex-1 max-w-3xl mx-auto px-4 py-16">
+        <h1 className="text-2xl font-bold mb-2">Course not found</h1>
+        <Link to="/shop" className="text-primary underline">Back to shop</Link>
+      </main>
     );
   }
   const { course, modules, question_count } = data;
