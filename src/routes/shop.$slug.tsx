@@ -22,6 +22,30 @@ export const Route = createFileRoute("/shop/$slug")({
         { property: "og:title", content: c?.title ?? "Training Course" },
         { property: "og:description", content: c?.summary ?? "" },
       ],
+      scripts: c
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Course",
+                name: c.title,
+                description: c.summary,
+                provider: {
+                  "@type": "Organization",
+                  name: "MyFloridaNemt.com",
+                  sameAs: "https://myfloridanemt.com",
+                },
+                offers: {
+                  "@type": "Offer",
+                  price: (c.price_cents / 100).toFixed(2),
+                  priceCurrency: "USD",
+                  category: "Paid",
+                },
+              }),
+            },
+          ]
+        : [],
     };
   },
   component: CourseDetail,
