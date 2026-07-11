@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getMyPricing, saveMyPricing } from "@/lib/pricing.functions";
 import { calculateTripCost, DEFAULT_RATES, type PricingRates } from "@/lib/pricing";
+import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 
 const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: string }> = [
   { key: "base_pickup", label: "Base pickup fee" },
@@ -22,6 +23,8 @@ export function PricingPanel() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["pricing"], queryFn: () => getMyPricing() });
   const [form, setForm] = useState<PricingRates>(DEFAULT_RATES);
+  const [tripKind, setTripKind] = useState<"one_way" | "round_trip">("one_way");
+  const platformFeePct = usePlatformFeePct();
 
   useEffect(() => {
     if (q.data) setForm({ ...DEFAULT_RATES, ...(q.data as any) });
@@ -33,10 +36,12 @@ export function PricingPanel() {
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
+  const sampleMiles = tripKind === "round_trip" ? 17 : 8.5;
   const sample = useMemo(() => calculateTripCost(
-    { status: "completed", miles: 8.5, wait_minutes: 10, transport_type: "wheelchair", additional_passengers: 1, pickup_date: "", pickup_time: "20:30" },
+    { status: "completed", miles: sampleMiles, wait_minutes: 10, transport_type: "wheelchair", additional_passengers: 1, pickup_date: "", pickup_time: "20:30" },
     form,
-  ), [form]);
+  ), [form, sampleMiles]);
+  const patientTotal = sample.total * (1 + (platformFeePct / 100));
 
   const setNum = (k: keyof PricingRates) => (v: string) =>
     setForm({ ...form, [k]: Number(v) || 0 } as PricingRates);
@@ -106,14 +111,35 @@ export function PricingPanel() {
 
       <aside className="bg-card border border-border rounded-sm p-6 space-y-3 h-fit sticky top-4">
         <h3 className="font-extrabold tracking-tight">Sample quote</h3>
-        <p className="text-xs text-muted-foreground">Completed wheelchair trip, 8.5 miles, 10 min wait, 1 extra passenger, 8:30pm pickup.</p>
+        <div className="grid grid-cols-2 gap-1 text-xs font-bold uppercase tracking-wide">
+          <button type="button"
+            onClick={() => setTripKind("one_way")}
+            className={`py-1.5 rounded-sm border ${tripKind === "one_way" ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground"}`}>
+            One-way
+          </button>
+          <button type="button"
+            onClick={() => setTripKind("round_trip")}
+            className={`py-1.5 rounded-sm border ${tripKind === "round_trip" ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground"}`}>
+            Round trip
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Completed wheelchair trip, {sampleMiles} miles{tripKind === "round_trip" ? " (round trip)" : ""}, 10 min wait, 1 extra passenger, 8:30pm pickup.
+        </p>
         <ul className="text-sm space-y-1">
           {sample.lines.map((l, i) => (
             <li key={i} className="flex justify-between"><span className="text-muted-foreground">{l.label}</span><span className="font-mono">${l.amount.toFixed(2)}</span></li>
           ))}
         </ul>
         <div className="border-t border-border pt-2 flex justify-between font-extrabold">
-          <span>Total</span><span className="font-mono">${sample.total.toFixed(2)}</span>
+          <span>You receive</span><span className="font-mono">${sample.total.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Platform fee ({platformFeePct}%)</span>
+          <span className="font-mono">${(patientTotal - sample.total).toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
+          <span>Patient pays</span><span className="font-mono">${patientTotal.toFixed(2)}</span>
         </div>
       </aside>
     </div>
