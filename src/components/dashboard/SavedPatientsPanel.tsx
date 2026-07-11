@@ -64,6 +64,17 @@ export function SavedPatientsPanel() {
       default_pickup_city: p.default_pickup_city ?? "",
       default_dropoff_address: p.default_dropoff_address ?? "",
       default_dropoff_city: p.default_dropoff_city ?? "",
+      payer: (p as any).payer ?? "",
+      medicaid_number: (p as any).medicaid_number ?? "",
+      medicaid_plan: (p as any).medicaid_plan ?? "",
+      diagnosis_code: (p as any).diagnosis_code ?? "",
+      authorization_number: (p as any).authorization_number ?? "",
+      gender: (p as any).gender ?? "",
+      address_line1: (p as any).address_line1 ?? "",
+      address_line2: (p as any).address_line2 ?? "",
+      city: (p as any).city ?? "",
+      state: (p as any).state ?? "",
+      zip: (p as any).zip ?? "",
     });
   }
 
