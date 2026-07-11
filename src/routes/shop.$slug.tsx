@@ -104,7 +104,7 @@ function CourseDetail() {
           </aside>
         </div>
 
-        {checkout && userId && returnUrl && (
+        {checkout && returnUrl && (
           <div className="mt-10 border border-border rounded-lg p-4 bg-background">
             <StripeEmbeddedCheckout
               priceId={course.price_id!}
