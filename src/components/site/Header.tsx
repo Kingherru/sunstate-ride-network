@@ -1,17 +1,22 @@
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
 
-const navLinks = [
+const primaryLinks = [
   { to: "/services", label: "Services" },
-  { to: "/black-tie", label: "Black Tie" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/service-areas", label: "Service Areas" },
-  { to: "/shop", label: "Training Shop" },
   { to: "/join-our-network", label: "For Providers" },
+] as const;
+
+const moreLinks = [
+  { to: "/black-tie", label: "Black Tie" },
+  { to: "/shop", label: "Training Shop" },
   { to: "/resources", label: "Resources" },
   { to: "/about", label: "About" },
 ] as const;
+
+const allLinks = [...primaryLinks, ...moreLinks] as const;
 
 const portals = [
   { to: "/patient/login", label: "Patient Portal", desc: "Patients, families, caregivers", icon: User },
@@ -19,9 +24,41 @@ const portals = [
   { to: "/facility/login", label: "Facility Portal", desc: "Hospitals, SNFs, case managers", icon: Building2 },
 ] as const;
 
+function useDismiss(open: boolean, close: () => void, ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) close();
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, close, ref]);
+}
+
 export function Header() {
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const signInRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
+  useDismiss(signInOpen, () => setSignInOpen(false), signInRef);
+  useDismiss(moreOpen, () => setMoreOpen(false), moreRef);
+
+  // Close menus on route change
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    setMobileOpen(false);
+    setSignInOpen(false);
+    setMoreOpen(false);
+  }, [pathname]);
+
+  const moreActive = moreLinks.some((l) => pathname.startsWith(l.to));
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
@@ -30,29 +67,53 @@ export function Header() {
           <Link to="/" className="font-extrabold text-lg sm:text-xl tracking-tighter text-primary uppercase shrink-0">
             MyFloridaNemt.com
           </Link>
-          <div className="hidden lg:flex items-center gap-6">
-            {navLinks.map((l) => (
+          <div className="hidden xl:flex items-center gap-6">
+            {primaryLinks.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
-                className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground hover:text-accent transition-colors"
-                activeProps={{ className: "text-xs font-semibold uppercase tracking-[0.14em] text-accent" }}
+                className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground hover:text-accent transition-colors whitespace-nowrap"
+                activeProps={{ className: "text-xs font-semibold uppercase tracking-[0.14em] text-accent whitespace-nowrap" }}
               >
                 {l.label}
               </Link>
             ))}
+            <div className="relative" ref={moreRef}>
+              <button
+                type="button"
+                onClick={() => setMoreOpen((v) => !v)}
+                aria-expanded={moreOpen}
+                className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${moreActive ? "text-accent" : "text-foreground hover:text-accent"}`}
+              >
+                More <ChevronDown className={`size-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} />
+              </button>
+              {moreOpen && (
+                <div className="absolute left-0 top-full mt-2 w-56 bg-popover border border-border rounded-lg shadow-lg overflow-hidden py-1">
+                  {moreLinks.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className="block px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground hover:bg-secondary hover:text-accent transition-colors"
+                      activeProps={{ className: "block px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-accent bg-secondary" }}
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="relative hidden md:block">
+          <div className="relative hidden md:block" ref={signInRef}>
             <button
               type="button"
               onClick={() => setSignInOpen((v) => !v)}
-              onBlur={() => setTimeout(() => setSignInOpen(false), 150)}
+              aria-expanded={signInOpen}
               className="flex items-center gap-1 text-sm font-bold text-primary border border-primary/30 px-4 py-2 rounded-md hover:bg-primary/5 transition-all"
             >
-              Sign In <ChevronDown className="size-4" />
+              Sign In <ChevronDown className={`size-4 transition-transform ${signInOpen ? "rotate-180" : ""}`} />
             </button>
             {signInOpen && (
               <div className="absolute right-0 top-full mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">
@@ -60,8 +121,6 @@ export function Header() {
                   <Link
                     key={p.to}
                     to={p.to}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => setSignInOpen(false)}
                     className="flex items-start gap-3 p-3 hover:bg-secondary transition-colors"
                   >
                     <p.icon className="size-5 text-accent mt-0.5 shrink-0" />
@@ -76,30 +135,31 @@ export function Header() {
           </div>
           <Link
             to="/request-a-ride"
-            className="hidden sm:inline-block text-sm font-bold text-primary-foreground bg-primary px-4 sm:px-5 py-2 rounded-md hover:bg-primary/90 transition-all"
+            className="hidden sm:inline-block text-sm font-bold text-primary-foreground bg-primary px-4 sm:px-5 py-2 rounded-md hover:bg-primary/90 transition-all whitespace-nowrap"
           >
             Request a Ride
           </Link>
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="lg:hidden p-2 -mr-2 text-foreground"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="xl:hidden p-2 -mr-2 text-foreground"
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
       </div>
 
-      {open && (
-        <div className="lg:hidden border-t border-border bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-2">
-            {navLinks.map((l) => (
+      {mobileOpen && (
+        <div className="xl:hidden border-t border-border bg-background max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-1">
+            {allLinks.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
-                onClick={() => setOpen(false)}
-                className="text-xs font-semibold uppercase tracking-[0.14em] py-2 hover:text-accent transition-colors"
+                className="text-xs font-semibold uppercase tracking-[0.14em] py-2.5 hover:text-accent transition-colors"
+                activeProps={{ className: "text-xs font-semibold uppercase tracking-[0.14em] py-2.5 text-accent" }}
               >
                 {l.label}
               </Link>
@@ -109,14 +169,9 @@ export function Header() {
                 Sign in to your portal
               </p>
               {portals.map((p) => (
-                <Link
-                  key={p.to}
-                  to={p.to}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 py-3"
-                >
-                  <p.icon className="size-5 text-accent" />
-                  <div>
+                <Link key={p.to} to={p.to} className="flex items-center gap-3 py-3">
+                  <p.icon className="size-5 text-accent shrink-0" />
+                  <div className="min-w-0">
                     <div className="text-sm font-bold">{p.label}</div>
                     <div className="text-xs text-muted">{p.desc}</div>
                   </div>
@@ -125,7 +180,6 @@ export function Header() {
             </div>
             <Link
               to="/request-a-ride"
-              onClick={() => setOpen(false)}
               className="mt-3 text-sm font-bold text-primary-foreground bg-primary px-5 py-3 rounded-md text-center"
             >
               Request a Ride
