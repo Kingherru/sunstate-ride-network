@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { PLATFORM_FEE_PCT, formatUsd, platformFeeCents, providerPayoutCents } from "@/lib/payouts";
+import { formatUsd, providerPayoutCents } from "@/lib/payouts";
+import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 import { createConnectOnboardingLink, refreshPayoutAccount } from "@/lib/payouts.functions";
 
 type Trip = {
