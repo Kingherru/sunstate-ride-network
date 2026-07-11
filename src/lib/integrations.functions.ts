@@ -29,16 +29,16 @@ export const upsertIntegration = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    // NOTE: api_key is stored "encrypted at rest" via Postgres' built-in
-    // disk encryption only — wrap with pgp_sym_encrypt + a server-only key
-    // before production use.
+    // AES-256-GCM encrypt secrets in the trusted server runtime before they
+    // ever hit the database. Only ciphertext (v1:<iv>:<tag>:<ct>) is stored.
+    const { encryptSecret } = await import("./integrations-crypto.server");
     const { error } = await supabase
       .from("provider_integrations")
       .upsert({
         provider_id: userId,
         vendor: data.vendor,
-        api_key_encrypted: data.api_key,
-        webhook_secret: data.webhook_secret ?? null,
+        api_key_encrypted: encryptSecret(data.api_key),
+        webhook_secret: data.webhook_secret ? encryptSecret(data.webhook_secret) : null,
         enabled: data.enabled ?? false,
         config: (data.config ?? {}) as any,
       }, { onConflict: "provider_id,vendor" });

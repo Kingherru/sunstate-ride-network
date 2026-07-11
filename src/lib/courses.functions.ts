@@ -282,19 +282,22 @@ export const downloadMyCertificate = createServerFn({ method: "POST" })
 export const verifyCertificate = createServerFn({ method: "GET" })
   .inputValidator((d: { token: string }) => d)
   .handler(async ({ data }) => {
+    // Anonymous SELECT on course_certificates is disabled. We call a scoped
+    // SECURITY DEFINER RPC that only returns the single row matching the
+    // exact verify token supplied by the caller.
     const sb = publicClient();
-    const { data: cert } = await sb
-      .from("course_certificates")
-      .select("cert_number,holder_name,issued_at,expires_at,courses!inner(title,slug)")
-      .eq("verify_token", data.token)
-      .maybeSingle();
+    const { data: rows, error } = await sb.rpc("verify_course_certificate" as any, {
+      _token: data.token,
+    });
+    if (error) throw error;
+    const cert = Array.isArray(rows) ? rows[0] : rows;
     if (!cert) return null;
     return {
-      cert_number: cert.cert_number,
-      holder_name: cert.holder_name,
-      issued_at: cert.issued_at,
-      expires_at: cert.expires_at,
-      course_title: (cert.courses as { title: string }).title,
-      valid: !cert.expires_at || new Date(cert.expires_at) > new Date(),
+      cert_number: cert.cert_number as string,
+      holder_name: cert.holder_name as string,
+      issued_at: cert.issued_at as string,
+      expires_at: (cert.expires_at as string | null) ?? null,
+      course_title: cert.course_title as string,
+      valid: Boolean(cert.valid),
     };
   });
