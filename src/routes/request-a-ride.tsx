@@ -431,7 +431,21 @@ function RequestRidePage() {
               Pickup
             </legend>
             <Field label="Pickup address" required error={errors.pickupAddress}>
-              <input className={inputCls} value={form.pickupAddress} onChange={(e) => upd("pickupAddress", e.target.value)} placeholder="Street, suite/unit" />
+              <AddressAutocomplete
+                value={form.pickupAddress}
+                onChange={(v) => upd("pickupAddress", v)}
+                onSelect={(sel: AddressSelection) => {
+                  upd("pickupAddress", sel.address);
+                  if (sel.city) upd("pickupCity", sel.city);
+                  setPickupMeta({ zip: sel.zip, state: sel.state });
+                  if (sel.lat != null && sel.lng != null && dropoffMeta.zip) {
+                    // rough straight-line miles until server enrich runs
+                    updateEstimatedMiles(sel.lat, sel.lng);
+                  }
+                }}
+                placeholder="Street, suite/unit"
+                className={inputCls}
+              />
             </Field>
             <Field label="Building / Doctor's office / Suite (optional)" error={errors.pickupAddressDetails}>
               <input
