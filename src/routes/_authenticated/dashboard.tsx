@@ -38,7 +38,7 @@ import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 
-import { demoProfile, demoTrips } from "@/lib/demo-data";
+
 import {
   PATIENT_TYPE_OPTIONS,
   PATIENT_RELATIONSHIP_OPTIONS,
