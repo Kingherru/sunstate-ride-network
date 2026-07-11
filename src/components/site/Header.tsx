@@ -6,6 +6,7 @@ const navLinks = [
   { to: "/services", label: "Services" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/service-areas", label: "Service Areas" },
+  { to: "/shop", label: "Training Shop" },
   { to: "/join-our-network", label: "For Providers" },
   { to: "/resources", label: "Resources" },
   { to: "/about", label: "About" },

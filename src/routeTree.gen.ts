@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -26,25 +27,32 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as StaffLoginRouteImport } from './routes/staff.login'
+import { Route as ShopReturnRouteImport } from './routes/shop.return'
+import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ProviderLoginRouteImport } from './routes/provider.login'
 import { Route as PatientLoginRouteImport } from './routes/patient.login'
 import { Route as FacilityLoginRouteImport } from './routes/facility.login'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
+import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
+import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as EmbedRequestARideTokenRouteImport } from './routes/embed.request-a-ride.$token'
 import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
 import { Route as AuthenticatedProviderMedicaidRouteImport } from './routes/_authenticated/provider.medicaid'
 import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
+import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -60,6 +68,11 @@ const TrainingRoute = TrainingRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -136,6 +149,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopIndexRoute = ShopIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopRoute,
+} as any)
 const ServiceAreasIndexRoute = ServiceAreasIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -146,10 +164,25 @@ const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
   path: '/resources/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyTokenRoute = VerifyTokenRouteImport.update({
+  id: '/verify/$token',
+  path: '/verify/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffLoginRoute = StaffLoginRouteImport.update({
   id: '/staff/login',
   path: '/staff/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ShopReturnRoute = ShopReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => ShopRoute,
+} as any)
+const ShopSlugRoute = ShopSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ShopRoute,
 } as any)
 const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
   id: '/$city',
@@ -181,6 +214,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -209,6 +247,11 @@ const AuthenticatedRequestsIndexRoute =
     path: '/requests/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedLearnRoute,
+} as any)
 const EmbedRequestARideTokenRoute = EmbedRequestARideTokenRouteImport.update({
   id: '/embed/request-a-ride/$token',
   path: '/embed/request-a-ride/$token',
@@ -237,6 +280,11 @@ const AuthenticatedPatientDashboardRoute =
     path: '/patient/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AuthenticatedLearnRoute,
+} as any)
 const AuthenticatedFacilityDashboardRoute =
   AuthenticatedFacilityDashboardRouteImport.update({
     id: '/facility/dashboard',
@@ -289,28 +337,36 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
+  '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/shop/$slug': typeof ShopSlugRoute
+  '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
+  '/learn/': typeof AuthenticatedLearnIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -343,16 +399,22 @@ export interface FileRoutesByTo {
   '/provider/login': typeof ProviderLoginRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/shop/$slug': typeof ShopSlugRoute
+  '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/resources': typeof ResourcesIndexRoute
   '/service-areas': typeof ServiceAreasIndexRoute
+  '/shop': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
+  '/learn': typeof AuthenticatedLearnIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -376,28 +438,36 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/service-areas': typeof ServiceAreasRouteWithChildren
   '/services': typeof ServicesRoute
+  '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
   '/provider/login': typeof ProviderLoginRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
+  '/shop/$slug': typeof ShopSlugRoute
+  '/shop/return': typeof ShopReturnRoute
   '/staff/login': typeof StaffLoginRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/resources/': typeof ResourcesIndexRoute
   '/service-areas/': typeof ServiceAreasIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
+  '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
   '/_authenticated/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
   '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
   '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
+  '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -421,28 +491,36 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/service-areas'
     | '/services'
+    | '/shop'
     | '/sitemap.xml'
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
+    | '/learn'
     | '/checkout/return'
     | '/facility/login'
     | '/patient/login'
     | '/provider/login'
     | '/resources/$slug'
     | '/service-areas/$city'
+    | '/shop/$slug'
+    | '/shop/return'
     | '/staff/login'
+    | '/verify/$token'
     | '/resources/'
     | '/service-areas/'
+    | '/shop/'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
+    | '/learn/$slug'
     | '/patient/dashboard'
     | '/provider/dashboard'
     | '/provider/medicaid'
     | '/requests/$id'
     | '/embed/request-a-ride/$token'
+    | '/learn/'
     | '/requests/'
     | '/reservations/$id/review'
     | '/api/public/payments/webhook'
@@ -475,16 +553,22 @@ export interface FileRouteTypes {
     | '/provider/login'
     | '/resources/$slug'
     | '/service-areas/$city'
+    | '/shop/$slug'
+    | '/shop/return'
     | '/staff/login'
+    | '/verify/$token'
     | '/resources'
     | '/service-areas'
+    | '/shop'
     | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
+    | '/learn/$slug'
     | '/patient/dashboard'
     | '/provider/dashboard'
     | '/provider/medicaid'
     | '/requests/$id'
     | '/embed/request-a-ride/$token'
+    | '/learn'
     | '/requests'
     | '/reservations/$id/review'
     | '/api/public/payments/webhook'
@@ -507,28 +591,36 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/service-areas'
     | '/services'
+    | '/shop'
     | '/sitemap.xml'
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/learn'
     | '/checkout/return'
     | '/facility/login'
     | '/patient/login'
     | '/provider/login'
     | '/resources/$slug'
     | '/service-areas/$city'
+    | '/shop/$slug'
+    | '/shop/return'
     | '/staff/login'
+    | '/verify/$token'
     | '/resources/'
     | '/service-areas/'
+    | '/shop/'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/facility/dashboard'
+    | '/_authenticated/learn/$slug'
     | '/_authenticated/patient/dashboard'
     | '/_authenticated/provider/dashboard'
     | '/_authenticated/provider/medicaid'
     | '/_authenticated/requests/$id'
     | '/embed/request-a-ride/$token'
+    | '/_authenticated/learn/'
     | '/_authenticated/requests/'
     | '/_authenticated/reservations/$id/review'
     | '/api/public/payments/webhook'
@@ -552,6 +644,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
   ServicesRoute: typeof ServicesRoute
+  ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrainingRoute: typeof TrainingRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -562,6 +655,7 @@ export interface RootRouteChildren {
   ProviderLoginRoute: typeof ProviderLoginRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   StaffLoginRoute: typeof StaffLoginRoute
+  VerifyTokenRoute: typeof VerifyTokenRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
@@ -584,6 +678,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -691,6 +792,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/': {
+      id: '/shop/'
+      path: '/'
+      fullPath: '/shop/'
+      preLoaderRoute: typeof ShopIndexRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/service-areas/': {
       id: '/service-areas/'
       path: '/'
@@ -705,12 +813,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify/$token': {
+      id: '/verify/$token'
+      path: '/verify/$token'
+      fullPath: '/verify/$token'
+      preLoaderRoute: typeof VerifyTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/login': {
       id: '/staff/login'
       path: '/staff/login'
       fullPath: '/staff/login'
       preLoaderRoute: typeof StaffLoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/shop/return': {
+      id: '/shop/return'
+      path: '/return'
+      fullPath: '/shop/return'
+      preLoaderRoute: typeof ShopReturnRouteImport
+      parentRoute: typeof ShopRoute
+    }
+    '/shop/$slug': {
+      id: '/shop/$slug'
+      path: '/$slug'
+      fullPath: '/shop/$slug'
+      preLoaderRoute: typeof ShopSlugRouteImport
+      parentRoute: typeof ShopRoute
     }
     '/service-areas/$city': {
       id: '/service-areas/$city'
@@ -754,6 +883,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/learn': {
+      id: '/_authenticated/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof AuthenticatedLearnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -789,6 +925,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/learn/': {
+      id: '/_authenticated/learn/'
+      path: '/'
+      fullPath: '/learn/'
+      preLoaderRoute: typeof AuthenticatedLearnIndexRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
     '/embed/request-a-ride/$token': {
       id: '/embed/request-a-ride/$token'
       path: '/embed/request-a-ride/$token'
@@ -823,6 +966,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/patient/dashboard'
       preLoaderRoute: typeof AuthenticatedPatientDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/learn/$slug': {
+      id: '/_authenticated/learn/$slug'
+      path: '/$slug'
+      fullPath: '/learn/$slug'
+      preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
     }
     '/_authenticated/facility/dashboard': {
       id: '/_authenticated/facility/dashboard'
@@ -869,9 +1019,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedLearnRouteChildren {
+  AuthenticatedLearnSlugRoute: typeof AuthenticatedLearnSlugRoute
+  AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
+}
+
+const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
+  AuthenticatedLearnSlugRoute: AuthenticatedLearnSlugRoute,
+  AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
+}
+
+const AuthenticatedLearnRouteWithChildren =
+  AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
   AuthenticatedFacilityDashboardRoute: typeof AuthenticatedFacilityDashboardRoute
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
   AuthenticatedProviderDashboardRoute: typeof AuthenticatedProviderDashboardRoute
@@ -884,6 +1048,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
   AuthenticatedFacilityDashboardRoute: AuthenticatedFacilityDashboardRoute,
   AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
   AuthenticatedProviderDashboardRoute: AuthenticatedProviderDashboardRoute,
@@ -911,6 +1076,20 @@ const ServiceAreasRouteWithChildren = ServiceAreasRoute._addFileChildren(
   ServiceAreasRouteChildren,
 )
 
+interface ShopRouteChildren {
+  ShopSlugRoute: typeof ShopSlugRoute
+  ShopReturnRoute: typeof ShopReturnRoute
+  ShopIndexRoute: typeof ShopIndexRoute
+}
+
+const ShopRouteChildren: ShopRouteChildren = {
+  ShopSlugRoute: ShopSlugRoute,
+  ShopReturnRoute: ShopReturnRoute,
+  ShopIndexRoute: ShopIndexRoute,
+}
+
+const ShopRouteWithChildren = ShopRoute._addFileChildren(ShopRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -927,6 +1106,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ServiceAreasRoute: ServiceAreasRouteWithChildren,
   ServicesRoute: ServicesRoute,
+  ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrainingRoute: TrainingRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
@@ -938,6 +1118,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProviderLoginRoute: ProviderLoginRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   StaffLoginRoute: StaffLoginRoute,
+  VerifyTokenRoute: VerifyTokenRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,

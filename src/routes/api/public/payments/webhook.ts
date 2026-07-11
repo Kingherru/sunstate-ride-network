@@ -95,6 +95,20 @@ async function handleTransferUpdated(tr: any) {
     .update({ status: tr.reversed ? "failed" : "paid", updated_at: new Date().toISOString() })
     .eq("stripe_transfer_id", tr.id);
 }
+async function handleCheckoutSessionCompleted(sess: any) {
+  const meta = sess?.metadata ?? {};
+  const userId = meta.userId;
+  const courseSlug = meta.course_slug;
+  if (!userId || !courseSlug) return;
+  const sb = getSupabase();
+  const { data: course } = await sb.from("courses").select("id").eq("slug", courseSlug).maybeSingle();
+  if (!course) return;
+  await sb.from("course_enrollments").upsert(
+    { user_id: userId, course_id: course.id, stripe_session_id: sess.id, status: "active" },
+    { onConflict: "user_id,course_id" },
+  );
+}
+
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
@@ -124,6 +138,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "transfer.updated":
             case "transfer.reversed":
               await handleTransferUpdated(event.data.object);
+              break;
+            case "checkout.session.completed":
+              await handleCheckoutSessionCompleted(event.data.object);
               break;
             default:
               console.log("Unhandled event:", event.type);

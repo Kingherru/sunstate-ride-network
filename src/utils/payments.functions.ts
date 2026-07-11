@@ -41,6 +41,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     userId?: string;
     returnUrl: string;
     environment: StripeEnv;
+    metadata?: Record<string, string>;
   }) => {
     if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
     return data;
@@ -57,16 +58,27 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         ? await resolveOrCreateCustomer(stripe, { email: data.customerEmail, userId: data.userId })
         : undefined;
 
+      const metadata: Record<string, string> = { ...(data.metadata ?? {}) };
+      if (data.userId) metadata.userId = data.userId;
+
+      let productDescription: string | undefined;
+      if (!isRecurring) {
+        const pid = typeof stripePrice.product === "string" ? stripePrice.product : stripePrice.product.id;
+        try {
+          const product = await stripe.products.retrieve(pid);
+          productDescription = product.name;
+        } catch { /* ignore */ }
+      }
+
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: stripePrice.id, quantity: 1 }],
         mode: isRecurring ? "subscription" : "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         ...(customerId && { customer: customerId }),
-        ...(data.userId && {
-          metadata: { userId: data.userId },
-          ...(isRecurring && { subscription_data: { metadata: { userId: data.userId } } }),
-        }),
+        ...(Object.keys(metadata).length && { metadata }),
+        ...(isRecurring && data.userId && { subscription_data: { metadata: { userId: data.userId } } }),
+        ...(!isRecurring && productDescription && { payment_intent_data: { description: productDescription } }),
         managed_payments: { enabled: true },
       } as any);
 
