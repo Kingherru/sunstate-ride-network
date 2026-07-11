@@ -59,6 +59,7 @@ function ShopIndex() {
               ))}
             </div>
           )}
+          <p className="mt-6 text-xs text-muted-foreground italic">Pricing is subject to change at any time.</p>
         </section>
       </main>
       <Footer />
