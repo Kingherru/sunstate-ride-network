@@ -51,9 +51,8 @@ function CourseDetail() {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <>
       <PaymentTestModeBanner />
-      <Header />
       <main className="flex-1 max-w-5xl mx-auto px-4 py-10 w-full">
         <Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"><ArrowLeft className="w-4 h-4" />Back to shop</Link>
         <div className="grid md:grid-cols-3 gap-8">
@@ -110,7 +109,6 @@ function CourseDetail() {
           </div>
         )}
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }
