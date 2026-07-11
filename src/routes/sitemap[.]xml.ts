@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { getAllSlugs } from "@/content/blog";
 
-const BASE_URL = "";
+const BASE_URL = "https://myfloridanemt.com";
 
 const staticPaths = [
   "/",
@@ -19,6 +19,8 @@ const staticPaths = [
   "/how-it-works",
   "/resources",
   "/training",
+  "/membership",
+  "/changelog",
   "/about",
   "/contact",
   "/request-a-ride",
