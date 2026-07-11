@@ -1,64 +1,68 @@
-# Portal Updates — Items 49–57
+## #64 — FL Dispatch Zones: seed + admin importer
 
-This is a large batch touching sidebar nav, portals, account structure, and one new feature (embed code). Below is a scoped plan grouped by area so you can approve or trim before I start.
+**Data**
+- Seed one preset `dispatch_zone` per FL county (67 rows) with `is_preset=true`, `state='FL'`, `name='<County> County, FL'`.
+- Populate `dispatch_zone_zips` from a bundled JSON dataset (`src/data/fl-county-zips.json`) covering all Florida ZIPs grouped by county (compiled from public USPS/ZCTA data — cannot live-scrape unitedstateszipcodes.org, they block bots).
+- Add `is_preset boolean default false` to `dispatch_zones` if missing.
 
-## 1. Sidebar & Page Consolidation (items 49, 54, 55)
+**Admin importer UI** (`/admin` → Zones tab)
+- New "Import ZIPs" dialog: pick target zone (or create new), paste a list of ZIPs (whitespace/comma/newline separated), preview parsed/valid FL ZIPs, dedupe against existing, insert on confirm.
+- Server fn `importZipsToZone({ zoneId, zips[] })` with admin/dispatcher role check + FL ZIP validation (32xxx–34xxx).
 
-- **49. Remove Weekly Schedule tab.** Delete the sidebar entry. On the Schedule/Reservation page, render a driver list showing today's/this week's assignments. Clicking a driver's name opens a small dialog: "Send weekly schedule to {driver}?" → triggers a server function that renders the driver's next-7-days assignments and emails them via Lovable Emails (new template `driver-weekly-schedule.tsx`).
-- **54. Merge New Trip + Reservations into one page.** New route `/dashboard?tab=trips-and-reservations` (replacing the two existing tabs). Two-column layout: left = New Trip form (existing component), right = Reservations list (existing component). Old tabs redirect to the merged tab.
-- **55. Merge Saved Contacts + Saved Patients.** One combined "Saved People" section with a type toggle (Patient / Contact) and unified table. Existing `saved_patients` table stays; add a `kind` column (`patient` | `contact`) via migration, plus optional contact-only fields. Migrate existing rows to `kind='patient'`.
+## #66 — Public Shop + Certification (full Phase 1)
 
-## 2. Account Page Restructure (items 56, 57)
+**Schema (new tables)**
+- `courses` — slug, title, summary, description, price_cents, price_id (Stripe lookup_key), duration_min, passing_score, cert_validity_months, cover_image, is_published.
+- `course_modules` — course_id, ord, title, body_markdown, video_url.
+- `course_questions` — course_id, ord, prompt, choices jsonb, correct_index, explanation.
+- `course_enrollments` — user_id, course_id, purchased_at, stripe_session_id, status (active/completed/expired), progress jsonb.
+- `course_attempts` — enrollment_id, started_at, submitted_at, score, passed, answers jsonb.
+- `course_certificates` — enrollment_id, cert_number (unique), issued_at, expires_at, holder_name, pdf_storage_path, verify_token.
+- Public verify view: `GET /verify/$token` reads cert by token (RLS allows anon SELECT by token only).
 
-- Convert Account page into tabs: **Profile · Business Information · Membership · Security**.
-- **56.** Move Membership block into the Membership tab; on desktop it sits on the right side of the Account layout.
-- **57.** Move Business Information into its own tab (currently a separate page). Delete the standalone Business Information sidebar link.
+**Stripe**
+- Create Stripe product `nemt_courses` and one price per course via `create_price` (lookup keys `course_hipaa`, `course_nemt_payment_test`).
+- Use existing `createCheckoutSession` server fn with `managed_payments: true`, `return_url=/shop/return?session_id={CHECKOUT_SESSION_ID}&course=<slug>`.
+- Webhook (`/api/public/payments/webhook`) on `checkout.session.completed` for `mode=payment` with `metadata.course_slug` → insert `course_enrollments` row.
 
-## 3. Rules Page (item 51)
+**Frontend routes**
+- `/shop` — public catalog grid (cards, price, "Enroll" button → embedded Stripe checkout).
+- `/shop/$slug` — public course detail (outline, duration, cert info, buy).
+- `/shop/return` — post-payment success, links to "Start course".
+- `/_authenticated/learn` — my enrollments list.
+- `/_authenticated/learn/$slug` — course player: module stepper → "Take exam" gate → quiz form → results.
+- `/_authenticated/learn/$slug/certificate` — view/download issued PDF.
+- `/verify/$token` — public certificate verification page.
 
-- Two-column desktop layout: **Rules of the Road** (left) · **Provider Trip Assignment Transparency Rules** (right). Stack on mobile.
-- Remove **Rule T7** from the Transparency list.
+**Quiz + certificate flow**
+- Server fn `submitAttempt({ enrollmentId, answers })` scores server-side, marks enrollment completed on pass, generates certificate:
+  - Render PDF with `pdf-lib` (Worker-compatible), upload to `certificates` storage bucket (private), store path + a random `verify_token`.
+  - Return signed URL for download.
+- Failed attempt: allow retake (configurable cooldown, default none for Phase 1).
 
-## 4. Facility Auto-Upgrade (item 52)
+**Seed courses**
+1. `hipaa` — HIPAA Training for NEMT ($49, 60 min, 20 questions, 80% pass, 12-mo validity).
+2. `nemt_payment_test` — "NEMT Payment Test" ($1 test transaction, 3 questions, 100% pass) — treating the user's "project nemt payment test" note as a sandbox/QA course to verify the end-to-end pay→course→cert pipeline in preview. Will remove or rename once real second course is defined.
 
-- DB trigger on `saved_patients` (or wherever patients are counted): when a `patient` portal account exceeds 3 patients, update `member_profiles.portal = 'facility'`.
-- Show a one-time in-app banner: "Your account was upgraded to a Facility Portal because you manage 3+ patients. Pricing is unchanged — it's based on provider availability in your area."
+**Nav**
+- Add "Shop" link to public site header.
+- Add "My Courses" link to authenticated user dropdown.
 
-## 5. Manual Trip Completion (item 53)
+## Technical notes
+- No new secrets required — Stripe is already enabled.
+- Certificates bucket: private, signed URLs only; holder can read own via server fn; public `/verify/$token` re-signs by token match.
+- All new public tables get narrow `TO anon` policies only where required (shop catalog, verify-by-token); enrollments/attempts/certificates are `TO authenticated` scoped to `auth.uid()`.
+- Content authoring UI for courses/modules/questions is admin-only (`/admin/courses`) — simple CRUD, sufficient for launch.
 
-- On the Trip Details page (provider view), add **Mark Completed** / **Mark Uncompleted** buttons.
-- Marking completed opens a required **Trip Summary Log** form (pickup arrival time, dropoff arrival time, mileage, notes, any incidents). Saves to a new `trip_summary_logs` table linked to `trips`.
-- Extend `updateTripDetails` server fn to accept the status change + summary log payload atomically.
+## Delivery order (single pass)
+1. Migration: dispatch zones preset flag + all shop tables + RLS/GRANTs + verify view.
+2. Seed data insert (counties+zips, HIPAA + NEMT payment test course content).
+3. Stripe products/prices.
+4. Server fns (importZipsToZone, enrollment lookups, submitAttempt, issueCertificate, verifyCertificate).
+5. Webhook handler update for course purchases.
+6. Public routes (/shop, /shop/$slug, /shop/return, /verify/$token) + head() SEO.
+7. Authenticated routes (/learn, /learn/$slug, /learn/$slug/certificate).
+8. Admin: Zones importer dialog + Courses CRUD tab.
+9. Nav links.
 
-## 6. Provider Embed Code (item 50) — new feature
-
-- Add `provider_embed_tokens` table: `id, provider_user_id, token (unique), created_at, revoked_at`.
-- New public route `/embed/request-a-ride/$token` — renders the Request-a-Ride form in an iframe-friendly layout (no header/footer), and pre-assigns submissions to that provider.
-- Provider Portal → new **Embed Code** section under Business Information tab: shows a snippet like:
-  ```html
-  <iframe src="https://…/embed/request-a-ride/{token}" width="100%" height="800" frameborder="0"></iframe>
-  ```
-  With Copy and Regenerate buttons. Regenerate revokes the old token.
-- Token validated server-side on submit; invalid/revoked tokens return 404.
-
-## Technical Notes
-
-- Migrations: `saved_patients.kind`, `trip_summary_logs`, `provider_embed_tokens`, facility-upgrade trigger.
-- New route files: `/embed/request-a-ride/$token.tsx`.
-- Email template: `driver-weekly-schedule.tsx` + trigger from schedule page.
-- Account page becomes tab-based (`shadcn/ui Tabs`).
-- Rules page becomes 2-col grid (`md:grid-cols-2`).
-- All work stays inside the portal shell (no website header/footer on embed route either).
-
-## Suggested Order
-
-1. Schema migrations (saved_patients.kind, trip_summary_logs, provider_embed_tokens, facility-upgrade trigger)
-2. Sidebar cleanup + merged Trips/Reservations + merged Saved People (49 partial, 54, 55)
-3. Account tabs + move Membership + Business Info (56, 57)
-4. Rules page layout + T7 removal (51)
-5. Manual trip completion + summary log (53)
-6. Weekly driver schedule email flow (49 completion)
-7. Facility auto-upgrade banner (52)
-8. Provider embed code end-to-end (50)
-
-Approve as-is, or tell me which items to drop/reorder and I'll start.
+Confirm to proceed.
