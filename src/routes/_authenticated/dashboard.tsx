@@ -1494,6 +1494,15 @@ function TripDetailView({
             >
               Download PDF
             </button>
+            {onDuplicate && !editing && (
+              <button
+                onClick={() => onDuplicate(trip)}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold border-2 border-border bg-background text-foreground px-4 py-2.5 rounded-md hover:bg-muted hover:border-foreground/40 transition-colors"
+                title="Create a new trip prefilled from this one"
+              >
+                Duplicate trip
+              </button>
+            )}
             {canEdit && !editing && (
               <button
                 onClick={() => setEditing(true)}
