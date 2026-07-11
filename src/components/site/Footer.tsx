@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import logoHorizontal from "@/assets/logo-horizontal.png";
 
 export type FooterPortal = "public" | "patient" | "provider" | "facility" | "admin";
 
@@ -15,13 +16,13 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
-              <Link
-                to="/"
-                className="font-extrabold text-xl tracking-tighter uppercase block mb-3"
-              >
-                MyFloridaNemt.com
+              <Link to="/" className="block mb-3" aria-label="My Florida NEMT — home">
+                <span className="font-extrabold text-xl tracking-tighter uppercase">
+                  My Florida <span className="text-accent">NEMT</span>
+                </span>
               </Link>
               <p className="text-xs opacity-70 leading-relaxed max-w-xs">
+
                 Florida's statewide Medicaid transportation network.
               </p>
             </div>
@@ -78,12 +79,17 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           <div className="col-span-2 lg:col-span-2">
-            <Link
-              to="/"
-              className="font-extrabold text-2xl tracking-tighter text-primary uppercase block mb-5"
-            >
-              MyFloridaNemt.com
+            <Link to="/" className="block mb-5" aria-label="My Florida NEMT — home">
+              <img
+                src={logoHorizontal}
+                alt="My Florida NEMT"
+                width={1600}
+                height={544}
+                loading="lazy"
+                className="h-11 w-auto"
+              />
             </Link>
+
             <p className="text-sm text-muted leading-relaxed max-w-sm">
               Florida's statewide non-emergency medical transportation network — connecting
               patients, facilities, and vetted providers.

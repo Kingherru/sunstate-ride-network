@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
+import logoHorizontal from "@/assets/logo-horizontal.png";
 
 const primaryLinks = [
   { to: "/services", label: "Services" },
@@ -64,9 +65,16 @@ export function Header() {
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
         <div className="flex items-center gap-8 min-w-0">
-          <Link to="/" className="font-extrabold text-lg sm:text-xl tracking-tighter text-primary uppercase shrink-0">
-            MyFloridaNemt.com
+          <Link to="/" className="shrink-0 flex items-center" aria-label="My Florida NEMT — home">
+            <img
+              src={logoHorizontal}
+              alt="My Florida NEMT"
+              width={1600}
+              height={544}
+              className="h-9 sm:h-10 w-auto"
+            />
           </Link>
+
           <div className="hidden xl:flex items-center gap-6">
             {primaryLinks.map((l) => (
               <Link
