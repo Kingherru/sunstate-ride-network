@@ -141,7 +141,13 @@ export function AddressAutocomplete({
           }));
         setSuggestions(rows);
         setHighlight(0);
-      } catch (err) {
+      } catch (err: any) {
+        const msg = String(err?.message ?? err ?? "");
+        if (/Places API \(New\) has not been used|SERVICE_DISABLED/i.test(msg)) setLoadError("places_api_disabled");
+        else if (/referer|referrer/i.test(msg)) setLoadError("referrer_blocked");
+        else if (/REQUEST_DENIED|API key not valid|InvalidKey/i.test(msg)) setLoadError("request_denied");
+        else if (/OverQuota|OVER_QUERY_LIMIT/i.test(msg)) setLoadError("quota");
+        else setLoadError("unknown");
         console.error("autocomplete_fetch_failed", err);
         setSuggestions([]);
       }
