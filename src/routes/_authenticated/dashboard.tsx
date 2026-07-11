@@ -1388,72 +1388,76 @@ function TripDetailView({
   return (
     <div className="bg-background">
       {/* Header */}
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-border">
-        <div className="space-y-1.5 min-w-0">
-          <button
-            onClick={() => tryLeave(onBack)}
-            className="text-xs font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-          >
-            ← Back to trips
-          </button>
-          <div className="flex items-center gap-2 flex-wrap">
-            <TripStatusBadge s={t.status} />
-            <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>
-              {paymentLabel}
-            </span>
-            {t.display_id && (
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                {t.display_id}
+      {/* Back link — full-width, prominent */}
+      <button
+        onClick={() => tryLeave(onBack)}
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+      >
+        <span aria-hidden="true">←</span> Back to trips
+      </button>
+
+      <header className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <TripStatusBadge s={t.status} />
+              <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>
+                {paymentLabel}
               </span>
+              {t.display_id && (
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  {t.display_id}
+                </span>
+              )}
+              {t.payer && String(t.payer).toLowerCase().includes("medicaid") && (
+                <span className="text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-orange-100 text-orange-700 border border-orange-200">
+                  Medicaid
+                </span>
+              )}
+            </div>
+            <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground truncate">
+              {t.patient_first_name} {t.patient_last_name}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {t.pickup_date}
+              {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
+              {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 lg:justify-end lg:shrink-0">
+            <button
+              onClick={() => downloadTripPdf(trip as TripPdfInput)}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold border-2 border-border bg-background text-foreground px-4 py-2.5 rounded-md hover:bg-muted hover:border-foreground/40 transition-colors"
+            >
+              Download PDF
+            </button>
+            {canEdit && !editing && (
+              <button
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-4 py-2.5 rounded-md hover:bg-primary/90 shadow-sm transition-colors"
+              >
+                Edit trip
+              </button>
             )}
-            {t.payer && String(t.payer).toLowerCase().includes("medicaid") && (
-              <span className="text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-orange-100 text-orange-700 border border-orange-200">
-                Medicaid
-              </span>
+            {editing && (
+              <>
+                <button
+                  onClick={() => tryLeave(() => { setForm(original); setEditing(false); })}
+                  disabled={saving}
+                  className="text-sm font-semibold border-2 border-border bg-background text-foreground px-4 py-2.5 rounded-md hover:bg-muted disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => save()}
+                  disabled={saving || !dirty}
+                  className="text-sm font-semibold bg-emerald-600 text-white px-5 py-2.5 rounded-md hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              </>
             )}
           </div>
-          <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
-            {t.patient_first_name} {t.patient_last_name}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {t.pickup_date}
-            {t.pickup_time ? ` · Pickup ${t.pickup_time}` : ""}
-            {t.appointment_time ? ` · Appt ${t.appointment_time}` : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => downloadTripPdf(trip as TripPdfInput)}
-            className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
-          >
-            Download PDF
-          </button>
-          {canEdit && !editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
-            >
-              Edit trip
-            </button>
-          )}
-          {editing && (
-            <>
-              <button
-                onClick={() => tryLeave(() => { setForm(original); setEditing(false); })}
-                disabled={saving}
-                className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => save()}
-                disabled={saving || !dirty}
-                className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
-              >
-                {saving ? "Saving…" : "Save changes"}
-              </button>
-            </>
-          )}
         </div>
       </header>
 
