@@ -8,7 +8,7 @@ const MINT = "#FFF3E4";
 const CREAM = "#FFF8EE";
 
 export const Route = createFileRoute("/service-areas/$city")({
-  loader: ({ params }) => {
+  loader: ({ params }): { city: CityInfo } => {
     const city = CITIES[params.city as CitySlug];
     if (!city) throw notFound();
     return { city };
