@@ -271,10 +271,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
 
   const realProfile = profileQ.data as (Profile & { membership_tier?: string }) | null;
-  // Admin previewing a portal: synthesize a profile + sample trips so the UI is visible without onboarding.
-  const profile: (Profile & { membership_tier?: string }) | null =
-    realProfile ?? (isAdmin && userId && userEmail ? (demoProfile(portal, userId, userEmail) as any) : null);
-  const isDemo = isAdmin && !realProfile;
+  const profile: (Profile & { membership_tier?: string }) | null = realProfile;
   const isActive = profile?.membership_status === "active";
 
   // Provider soft-access: portal starts locked until business profile is complete.
@@ -293,9 +290,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // Patients & facilities can always send (book); providers still require paid membership.
   const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
   const realTrips = tripsQ.data ?? [];
-  const demo = isAdmin && userId ? demoTrips(portal, userId) : { sent: [], received: [] };
-  const sent = [...realTrips.filter((t) => t.created_by === userId), ...(isAdmin ? demo.sent : [])];
-  const received = [...realTrips.filter((t) => t.assigned_to === userId), ...(isAdmin ? demo.received : [])];
+  const sent = realTrips.filter((t) => t.created_by === userId);
+  const received = realTrips.filter((t) => t.assigned_to === userId);
+
 
   const upcoming = sent.filter((t) => ["scheduled","assigned","in_progress"].includes((t.status ?? "").toLowerCase())).length;
   const completed = sent.filter((t) => (t.status ?? "").toLowerCase() === "completed").length;
