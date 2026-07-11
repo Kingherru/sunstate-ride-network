@@ -195,6 +195,9 @@ function BlackTiePage() {
           <p className="mt-6 text-white/70 max-w-xl mx-auto">
             Quotes returned within one business hour. Peak-season events (weddings, holidays, F1, Ultra) should be booked 3–6 weeks in advance.
           </p>
+          <p className="mt-3 text-xs font-mono uppercase tracking-widest text-[#c8a24a]/80">
+            All vehicles and reservations are subject to availability.
+          </p>
           <div className="mt-10 flex justify-center flex-wrap gap-3">
             <Link
               to="/contact"
