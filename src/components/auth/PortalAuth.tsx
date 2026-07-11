@@ -166,44 +166,44 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   }
 
   return (
-    <section className="portal-scope min-h-screen grid md:grid-cols-2 gap-0">
-      <div className="hidden md:flex flex-col justify-between bg-card border-r border-border p-12">
+    <section className="min-h-screen flex-1 grid md:grid-cols-2 gap-0 bg-[#1D3557] text-white">
+      <div className="hidden md:flex flex-col justify-between p-12 bg-[#1D3557]">
         <div>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 mb-8"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white mb-8"
           >
             <ArrowLeft className="h-4 w-4" /> Back to home
           </Link>
-          <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary mb-3">
+          <p className="font-mono text-xs font-bold uppercase tracking-widest text-white/70 mb-3">
             {copy.eyebrow}
           </p>
-          <h1 className="text-4xl font-extrabold tracking-tighter mb-4">{copy.title}</h1>
-          <p className="text-base text-muted-foreground max-w-md">{copy.blurb}</p>
+          <h1 className="text-4xl font-extrabold tracking-tighter mb-4 text-white">{copy.title}</h1>
+          <p className="text-base text-white/80 max-w-md">{copy.blurb}</p>
         </div>
-        <ul className="space-y-3 text-sm">
+        <ul className="space-y-3 text-sm text-white/90">
           {copy.bullets.map((b) => (
             <li key={b} className="flex items-start gap-2">
-              <span className="text-primary">●</span> {b}
+              <span className="text-white">●</span> {b}
             </li>
           ))}
         </ul>
       </div>
-      <div className="grid place-items-center px-6 py-12 bg-background">
-        <div className="w-full max-w-md portal-panel p-8">
+      <div className="grid place-items-center px-6 py-12 bg-[#1D3557]">
+        <div className="w-full max-w-md rounded-2xl p-8 bg-white/5 border border-white/10 backdrop-blur">
           <Link
             to="/"
-            className="md:hidden inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 mb-4"
+            className="md:hidden inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white mb-4"
           >
             <ArrowLeft className="h-4 w-4" /> Back to home
           </Link>
-          <p className="md:hidden font-mono text-xs font-bold text-primary uppercase tracking-widest mb-3">
+          <p className="md:hidden font-mono text-xs font-bold text-white/70 uppercase tracking-widest mb-3">
             {copy.eyebrow}
           </p>
-          <h2 className="text-2xl font-extrabold tracking-tighter mb-1">
+          <h2 className="text-2xl font-extrabold tracking-tighter mb-1 text-white">
             {mode === "signin" ? "Sign in" : "Create your account"}
           </h2>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-white/70 mb-6">
             {mode === "signin" ? "Welcome back." : "It takes less than a minute."}
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
