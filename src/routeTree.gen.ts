@@ -56,6 +56,7 @@ import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_aut
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhooksDispatchRouteImport } from './routes/api/public/webhooks/dispatch'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AuthenticatedReservationsIdReviewRouteImport } from './routes/_authenticated/reservations.$id.review'
@@ -304,6 +305,12 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksDispatchRoute =
   ApiPublicWebhooksDispatchRouteImport.update({
     id: '/api/public/webhooks/dispatch',
@@ -385,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
@@ -435,6 +443,7 @@ export interface FileRoutesByTo {
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
@@ -490,6 +499,7 @@ export interface FileRoutesById {
   '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
@@ -545,6 +555,7 @@ export interface FileRouteTypes {
     | '/reservations/$id/review'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
+    | '/lovable/email/queue/process'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -595,6 +606,7 @@ export interface FileRouteTypes {
     | '/reservations/$id/review'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
+    | '/lovable/email/queue/process'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
   id:
@@ -649,6 +661,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reservations/$id/review'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
+    | '/lovable/email/queue/process'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
   fileRoutesById: FileRoutesById
@@ -687,6 +700,7 @@ export interface RootRouteChildren {
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicWebhooksDispatchRoute: typeof ApiPublicWebhooksDispatchRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
 }
@@ -1022,6 +1036,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/dispatch': {
       id: '/api/public/webhooks/dispatch'
       path: '/api/public/webhooks/dispatch'
@@ -1166,6 +1187,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicWebhooksDispatchRoute: ApiPublicWebhooksDispatchRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,
   ApiPublicIntegrationsRoutegenieWebhookRoute:
