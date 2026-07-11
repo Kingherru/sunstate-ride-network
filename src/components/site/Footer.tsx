@@ -79,12 +79,17 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           <div className="col-span-2 lg:col-span-2">
-            <Link
-              to="/"
-              className="font-extrabold text-2xl tracking-tighter text-primary uppercase block mb-5"
-            >
-              MyFloridaNemt.com
+            <Link to="/" className="block mb-5" aria-label="My Florida NEMT — home">
+              <img
+                src={logoHorizontal}
+                alt="My Florida NEMT"
+                width={1600}
+                height={544}
+                loading="lazy"
+                className="h-11 w-auto"
+              />
             </Link>
+
             <p className="text-sm text-muted leading-relaxed max-w-sm">
               Florida's statewide non-emergency medical transportation network — connecting
               patients, facilities, and vetted providers.
