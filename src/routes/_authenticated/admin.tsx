@@ -37,6 +37,7 @@ import { AuditLogPanel } from "@/components/AuditLogPanel";
 import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel";
 import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
+import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
@@ -322,7 +323,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "reservations": return <ComingSoon title="Reservations" description="Global view of scheduled and recurring rides awaiting a provider." />;
     case "pricing": return <ComingSoon title="Pricing" description="Configure statewide base fares, per-mile rates, and surge windows." />;
     case "integrations": return <ComingSoon title="Integrations" description="Manage Stripe, HIPAA-compliant messaging, and third-party dispatch webhooks." />;
-    case "payouts": return <ComingSoon title="Payouts" description="Track provider disbursements, refunds, and reconciliation reports." />;
+    case "payouts": return caps.isAdmin ? <MonthlyPayoutReport scope="admin" title="Monthly billing & payout report — all providers" /> : <NoAccess />;
     case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
     case "seo": return <ComingSoon title="SEO settings" description="Site-wide meta defaults, robots directives, and sitemap controls." />;
     case "blog": return <ComingSoon title="Blog / Resources" description="Author, edit, and publish resource articles. Direct link: /resources." />;
