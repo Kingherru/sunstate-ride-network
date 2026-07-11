@@ -40,6 +40,7 @@ import { Route as ProviderLoginRouteImport } from './routes/provider.login'
 import { Route as PatientLoginRouteImport } from './routes/patient.login'
 import { Route as FacilityLoginRouteImport } from './routes/facility.login'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
+import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -212,6 +213,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -241,9 +247,9 @@ const AuthenticatedRequestsIndexRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
-  id: '/learn/',
-  path: '/learn/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedLearnRoute,
 } as any)
 const EmbedRequestARideTokenRoute = EmbedRequestARideTokenRouteImport.update({
   id: '/embed/request-a-ride/$token',
@@ -332,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
@@ -430,6 +437,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/facility/login': typeof FacilityLoginRoute
   '/patient/login': typeof PatientLoginRoute
@@ -481,6 +489,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
+    | '/learn'
     | '/checkout/return'
     | '/facility/login'
     | '/patient/login'
@@ -578,6 +587,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/learn'
     | '/checkout/return'
     | '/facility/login'
     | '/patient/login'
@@ -861,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/learn': {
+      id: '/_authenticated/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof AuthenticatedLearnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -898,10 +915,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/learn/': {
       id: '/_authenticated/learn/'
-      path: '/learn'
+      path: '/'
       fullPath: '/learn/'
       preLoaderRoute: typeof AuthenticatedLearnIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedLearnRoute
     }
     '/embed/request-a-ride/$token': {
       id: '/embed/request-a-ride/$token'
@@ -983,15 +1000,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedLearnRouteChildren {
+  AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
+}
+
+const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
+  AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
+}
+
+const AuthenticatedLearnRouteWithChildren =
+  AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
   AuthenticatedFacilityDashboardRoute: typeof AuthenticatedFacilityDashboardRoute
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
   AuthenticatedProviderDashboardRoute: typeof AuthenticatedProviderDashboardRoute
   AuthenticatedProviderMedicaidRoute: typeof AuthenticatedProviderMedicaidRoute
   AuthenticatedRequestsIdRoute: typeof AuthenticatedRequestsIdRoute
-  AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
   AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
   AuthenticatedReservationsIdReviewRoute: typeof AuthenticatedReservationsIdReviewRoute
 }
@@ -999,12 +1027,12 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
   AuthenticatedFacilityDashboardRoute: AuthenticatedFacilityDashboardRoute,
   AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
   AuthenticatedProviderDashboardRoute: AuthenticatedProviderDashboardRoute,
   AuthenticatedProviderMedicaidRoute: AuthenticatedProviderMedicaidRoute,
   AuthenticatedRequestsIdRoute: AuthenticatedRequestsIdRoute,
-  AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
   AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
   AuthenticatedReservationsIdReviewRoute:
     AuthenticatedReservationsIdReviewRoute,
