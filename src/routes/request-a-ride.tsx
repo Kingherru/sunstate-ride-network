@@ -492,11 +492,25 @@ function RequestRidePage() {
               Drop-off
             </legend>
             <Field label="Drop-off address" required error={errors.dropoffAddress}>
-              <input className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} />
+              <AddressAutocomplete
+                value={form.dropoffAddress}
+                onChange={(v) => upd("dropoffAddress", v)}
+                onSelect={(sel: AddressSelection) => {
+                  upd("dropoffAddress", sel.address);
+                  if (sel.city) upd("dropoffCity", sel.city);
+                  setDropoffMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
+                }}
+                className={inputCls}
+              />
             </Field>
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
+            <PriceEstimate
+              pickupZip={pickupMeta.zip}
+              miles={estimatedMiles}
+              transportType={form.transportType}
+            />
           </fieldset>
 
           {/* Trip type */}
