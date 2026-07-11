@@ -176,6 +176,9 @@ export function AdminDispatchPanel() {
           })}
         </div>
 
+        {caps.canManageZones && <BulkZipImporter zones={zones} onDone={() => qc.invalidateQueries()} />}
+
+
         {activeZoneId && (
           <div className="space-y-3">
             {caps.canManageZones ? (
