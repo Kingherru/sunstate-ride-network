@@ -337,6 +337,42 @@ function NoAccess() {
   );
 }
 
+type SecuritySubTab = "staff" | "audit" | "credentials";
+function SecurityTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
+  const available: Array<{ id: SecuritySubTab; label: string; enabled: boolean }> = [
+    { id: "staff", label: "Staff permissions", enabled: caps.canManageStaff },
+    { id: "audit", label: "Audit log", enabled: caps.canViewAuditLog },
+    { id: "credentials", label: "Expiring credentials", enabled: caps.canDispatch },
+  ].filter((t) => t.enabled);
+  const [sub, setSub] = useState<SecuritySubTab>(available[0]?.id ?? "staff");
+  if (available.length === 0) return <NoAccess />;
+  return (
+    <div className="space-y-4">
+      <div className="border-b border-border overflow-x-auto scrollbar-none">
+        <div className="flex flex-nowrap gap-1 min-w-max">
+          {available.map((t) => {
+            const active = sub === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setSub(t.id)}
+                className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                  active ? "border-primary text-foreground" : "border-transparent text-muted hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {sub === "staff" && caps.canManageStaff && <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} />}
+      {sub === "audit" && caps.canViewAuditLog && <AuditLogPanel />}
+      {sub === "credentials" && caps.canDispatch && <ExpiringCredentialsPanel />}
+    </div>
+  );
+}
+
 function ComingSoon({ title, description }: { title: string; description: string }) {
   return (
     <div className="bg-card border border-border rounded-2xl p-8">
