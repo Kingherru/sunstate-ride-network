@@ -320,7 +320,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "audit": return caps.canViewAuditLog ? <AuditLogPanel /> : <NoAccess />;
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
-    case "facilities": return <ComingSoon title="Facilities" description="Manage facility accounts, saved patients, and provider relationships." />;
+    case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
     case "trips": return <ComingSoon title="Trips" description="Search, review, and export completed and in-progress trips across all providers." />;
     case "reservations": return <ComingSoon title="Reservations" description="Global view of scheduled and recurring rides awaiting a provider." />;
     case "pricing": return <ComingSoon title="Pricing" description="Configure statewide base fares, per-mile rates, and surge windows." />;
