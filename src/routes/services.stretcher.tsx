@@ -40,6 +40,10 @@ export const Route = createFileRoute("/services/stretcher")({
 function StretcherPage() {
   return (
     <ServiceLayout
+      breadcrumbs={[
+        { label: "Services", to: "/services" },
+        { label: "Gurney & Stretcher Transportation" },
+      ]}
       eyebrow="Bed-to-bed · Non-emergency"
       title="Gurney & Stretcher Transportation"
       lede="Gurney and stretcher transportation provides specialized non-emergency medical transportation for passengers who cannot safely travel in a standard seated position. Florida NEMT providers offer trained assistance and specialized vehicles designed to transport patients safely to medical appointments, facilities, and healthcare services."
@@ -49,6 +53,10 @@ function StretcherPage() {
         "Trained two-person crews for safe lift-and-transfer at both ends",
         "Dependable transport to medical appointments, facilities, and healthcare services",
         "24/7 dispatch — same-day hospital discharge and recurring standing rides",
+      ]}
+      relatedLinks={[
+        { to: "/services/ambulatory", label: "Ambulatory Transportation", desc: "For passengers who can walk independently or with minimal assistance." },
+        { to: "/services/wheelchair", label: "Wheelchair Transportation", desc: "ADA-compliant lift-equipped vans for wheelchair passengers." },
       ]}
       useCases={[
         { h: "Hospital discharge", p: "Bed-to-bed transport home or to a skilled nursing facility." },

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, PersonStanding } from "lucide-react";
 import { buildServiceSchema } from "@/lib/schema";
+import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 
 const NAVY = "#13335a";
 const ORANGE = "#e07a1f";
@@ -44,6 +45,10 @@ export const Route = createFileRoute("/services/ambulatory")({
 function AmbulatoryPage() {
   return (
     <ServiceLayout
+      breadcrumbs={[
+        { label: "Services", to: "/services" },
+        { label: "Ambulatory Transportation" },
+      ]}
       eyebrow="Curb-to-curb & door-to-door"
       title="Ambulatory Transportation"
       lede="Ambulatory transportation provides safe and reliable non-emergency medical transportation for passengers who can walk independently or need minimal assistance. Florida NEMT providers help patients travel comfortably to doctor appointments, dialysis, therapy, hospitals, and other healthcare services while receiving professional and dependable support."
@@ -53,6 +58,10 @@ function AmbulatoryPage() {
         "Professional, courteous drivers trained in patient assistance and HIPAA compliance",
         "On-time pickups for doctor visits, dialysis, therapy, and hospital appointments",
         "Statewide coverage across all 67 Florida counties, 24/7 dispatch",
+      ]}
+      relatedLinks={[
+        { to: "/services/wheelchair", label: "Wheelchair Transportation", desc: "ADA-compliant lift-equipped vans for wheelchair passengers." },
+        { to: "/services/stretcher", label: "Gurney & Stretcher Transportation", desc: "Bed-to-bed transport for patients who cannot travel seated." },
       ]}
       useCases={[
         { h: "Doctor visits", p: "Routine primary care, specialist consults, and follow-ups." },
@@ -67,18 +76,22 @@ function AmbulatoryPage() {
 
 // --- shared layout used by all three service pages ---
 export function ServiceLayout({
+  breadcrumbs,
   eyebrow,
   title,
   lede,
   icon,
   bullets,
+  relatedLinks,
   useCases,
 }: {
+  breadcrumbs: { label: string; to?: string }[];
   eyebrow: string;
   title: string;
   lede: string;
   icon: React.ReactNode;
   bullets: string[];
+  relatedLinks?: { to: string; label: string; desc: string }[];
   useCases: { h: string; p: string }[];
 }) {
   return (
@@ -89,8 +102,9 @@ export function ServiceLayout({
         style={{ background: CREAM, borderBottom: `1px solid ${NAVY}` }}
       >
         <div className="max-w-5xl mx-auto">
+          <Breadcrumbs items={breadcrumbs} />
           <div
-            className="w-16 h-16 rounded-2xl mb-8 flex items-center justify-center"
+            className="w-16 h-16 rounded-2xl mt-8 mb-8 flex items-center justify-center"
             style={{ background: ORANGE, color: NAVY }}
           >
             {icon}
@@ -177,6 +191,64 @@ export function ServiceLayout({
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Related services + internal links */}
+      <section className="px-6 py-20 lg:py-24" style={{ background: MINT }}>
+        <div className="max-w-5xl mx-auto">
+          <p
+            className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3"
+            style={{ color: ORANGE }}
+          >
+            Related Services
+          </p>
+          <h2 className="font-display font-bold text-3xl lg:text-4xl mb-10" style={{ color: NAVY }}>
+            Not the right level of care?
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {relatedLinks?.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+                style={{ borderColor: `${NAVY}1f` }}
+              >
+                <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                  {l.label}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                  {l.desc}
+                </p>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-12 grid md:grid-cols-2 gap-6">
+            <Link
+              to="/join-our-network"
+              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+              style={{ borderColor: `${NAVY}1f` }}
+            >
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                Join Our Provider Network
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                Are you a Florida NEMT provider? Get verified, gain leads, and grow with us.
+              </p>
+            </Link>
+            <Link
+              to="/training"
+              className="p-8 rounded-[1rem] bg-white border hover:border-accent transition-colors"
+              style={{ borderColor: `${NAVY}1f` }}
+            >
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: NAVY }}>
+                My Florida NEMT Training Academy
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: `${NAVY}b3` }}>
+                Certify your drivers and dispatchers with HIPAA and NEMT safety courses.
+              </p>
+            </Link>
           </div>
         </div>
       </section>
