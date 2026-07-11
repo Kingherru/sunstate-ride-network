@@ -35,6 +35,7 @@ import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
+import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { ChangelogChip } from "@/components/ChangelogChip";
 
@@ -78,11 +79,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "messages" | "changelog" | "account";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "medicaid", "messages", "account"],
+  provider: ["reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "medicaid", "training", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "messages", "payments", "account"],
 };
 
@@ -115,6 +116,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "saved_patients") return "Contacts";
   if (t === "business_info") return "Business Info";
   if (t === "medicaid") return "Medicaid Submission";
+  if (t === "training") return "Training & Tests";
   if (t === "schedule") return "Schedule";
   if (t === "messages") return "Messages";
   if (t === "changelog") return "Changelog";
@@ -403,6 +405,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {tab === "business_info" && <BusinessInfoPanel />}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
+            {tab === "training" && <TrainingPanel />}
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
             {tab === "changelog" && <ChangelogPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
