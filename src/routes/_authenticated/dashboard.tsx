@@ -783,7 +783,12 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="max-w-3xl bg-card border border-border rounded-sm p-6 grid grid-cols-2 gap-4">
-      <h2 className="col-span-2 text-xl font-extrabold tracking-tight">New trip</h2>
+      <h2 className="col-span-2 text-xl font-extrabold tracking-tight">{initialTrip ? "Duplicate trip" : "New trip"}</h2>
+      {initialTrip && (
+        <div className="col-span-2 -mt-2 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Duplicated from trip {initialTrip.display_id ?? initialTrip.id}. Set a new <strong>pickup date and time</strong>, review the details, and save to create a brand-new trip. The original trip will not be changed.
+        </div>
+      )}
       <Field label="Patient first name" v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
       <Field label="Patient last name" v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
       <Field label="Patient phone" v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
