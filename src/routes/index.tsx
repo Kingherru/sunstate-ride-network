@@ -12,17 +12,9 @@ const CREAM = "#FFF8E7";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MyFloridaNemt.com — Statewide Medical Transportation" },
-      {
-        name: "description",
-        content:
-          "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network.",
-      },
-      { property: "og:title", content: "MyFloridaNemt.com — Statewide Medical Transportation" },
-      { property: "og:description", content: "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network." },
-      { property: "og:url", content: "/" },
+      { property: "og:url", content: "https://myfloridanemt.com/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/" }],
   }),
   component: HomePage,
 });

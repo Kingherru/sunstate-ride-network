@@ -84,15 +84,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network.",
+          "Medicaid non-emergency medical transportation across all 67 Florida counties — ambulatory, wheelchair, and stretcher rides.",
       },
       { property: "og:title", content: "MyFloridaNemt.com — Statewide Medical Transportation" },
-      { property: "og:description", content: "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network." },
+      { property: "og:description", content: "Medicaid NEMT across all 67 Florida counties — ambulatory, wheelchair, and stretcher rides." },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "MyFloridaNemt.com" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "MyFloridaNemt.com — Statewide Medical Transportation" },
-      { name: "twitter:description", content: "Reliable Medicaid non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher transport with a vetted statewide provider network." },
+      { name: "twitter:description", content: "Medicaid NEMT across all 67 Florida counties — ambulatory, wheelchair, and stretcher rides." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f0c8d69-b0e8-461e-b592-5b56d770711e/id-preview-cba6512f--5cb17cca-6c98-4dc3-adf4-9afbd3550794.lovable.app-1783724515308.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7f0c8d69-b0e8-461e-b592-5b56d770711e/id-preview-cba6512f--5cb17cca-6c98-4dc3-adf4-9afbd3550794.lovable.app-1783724515308.png" },
     ],
