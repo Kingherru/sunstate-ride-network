@@ -141,35 +141,43 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ============ SERVICES — alternating colored tiles ============ */}
-      <section className="px-6 py-20 lg:py-28">
+      {/* ============ SERVICES — merged into Portals-style block ============ */}
+      <section className="px-6 py-20 lg:py-28" style={{ background: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto">
-          <div className="mb-12">
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CORAL }}>
-              Specialized Fleet
-            </p>
-            <h2 className="font-display font-bold text-4xl lg:text-5xl tracking-tight max-w-2xl" style={{ color: NAVY }}>
-              Tailored transport for every mobility level.
-            </h2>
+          <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: CORAL }}>
+                Specialized Fleet
+              </p>
+              <h2 className="font-display font-bold text-4xl lg:text-5xl tracking-tight" style={{ color: NAVY }}>
+                Tailored transport for every mobility level.
+              </h2>
+            </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-0 rounded-[1rem] overflow-hidden" style={{ border: `2px solid ${NAVY}` }}>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", bg: "#fff" },
-              { title: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", bg: PEACH },
-              { title: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", bg: MINT },
-            ].map((svc, i, arr) => (
-              <div
-                key={svc.title}
-                className="p-10"
-                style={{
-                  background: svc.bg,
-                  borderRight: i < arr.length - 1 ? `2px solid ${NAVY}` : "none",
-                  color: NAVY,
-                }}
+              { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Request a ride", to: "/request-a-ride" as const, color: MINT },
+              { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "Request a ride", to: "/request-a-ride" as const, color: PEACH },
+              { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "Request a ride", to: "/request-a-ride" as const, color: CORAL },
+            ].map((svc) => (
+              <Link
+                key={svc.label}
+                to={svc.to}
+                className="group p-8 rounded-[1rem] bg-white transition-all hover:-translate-y-1 hover:shadow-xl border"
+                style={{ borderColor: `${NAVY}1f` }}
               >
-                <h4 className="font-bold text-2xl font-display mb-3">{svc.title}</h4>
-                <p className="text-sm" style={{ color: `${NAVY}cc` }}>{svc.desc}</p>
-              </div>
+                <div
+                  className="w-14 h-14 rounded-full mb-6 flex items-center justify-center font-bold font-display text-lg"
+                  style={{ background: svc.color, color: NAVY }}
+                >
+                  {svc.n}
+                </div>
+                <h3 className="text-2xl font-bold font-display mb-3" style={{ color: NAVY }}>{svc.label}</h3>
+                <p className="mb-6 text-sm" style={{ color: `${NAVY}b3` }}>{svc.desc}</p>
+                <span className="font-bold inline-flex items-center gap-2 group-hover:gap-3 transition-all" style={{ color: NAVY }}>
+                  {svc.cta} <ArrowRight size={16} />
+                </span>
+              </Link>
             ))}
           </div>
         </div>
