@@ -1080,6 +1080,9 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
                 <td className="px-3 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <button onClick={() => setViewing(t)} className="text-xs font-bold text-primary hover:underline mr-3">View</button>
                   <button onClick={() => downloadTripPdf(t as TripPdfInput)} className="text-xs font-bold text-muted-foreground hover:underline mr-3">PDF</button>
+                  {onDuplicate && (
+                    <button onClick={() => onDuplicate(t)} className="text-xs font-bold text-primary hover:underline mr-3" title="Create a new trip prefilled from this one">Duplicate</button>
+                  )}
                   {role === "sender" && t.status === "open" && (
                     <button onClick={() => setAssigning(t)} className="text-xs font-bold text-accent hover:underline mr-3">Send</button>
                   )}
