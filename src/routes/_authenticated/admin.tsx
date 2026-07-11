@@ -83,7 +83,7 @@ type TabId =
   | "trips"
   | "reservations"
   | "dispatch"
-  | "credentials"
+  | "security"
   | "pricing"
   | "integrations"
   | "payouts"
@@ -91,8 +91,6 @@ type TabId =
   | "seo"
   | "blog"
   | "theme"
-  | "staff"
-  | "audit"
   | "changelog"
   | "system";
 
@@ -126,7 +124,6 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "trips", label: "Trips", icon: Car, visible: (c) => c.isOps },
       { id: "reservations", label: "Reservations", icon: CalendarClock, visible: (c) => c.isOps },
       { id: "dispatch", label: "Dispatch", icon: Radar, visible: (c) => c.canDispatch },
-      { id: "credentials", label: "Expiring credentials", icon: ShieldAlert, visible: (c) => c.canDispatch },
     ],
   },
   {
@@ -149,8 +146,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { id: "theme", label: "Theme & branding", icon: Palette, visible: (c) => c.canConfigurePricing },
-      { id: "staff", label: "Staff permissions", icon: ShieldCheck, visible: (c) => c.canManageStaff },
-      { id: "audit", label: "Audit log", icon: ClipboardList, visible: (c) => c.canViewAuditLog },
+      { id: "security", label: "Security", icon: ShieldCheck, visible: (c) => c.canManageStaff || c.canViewAuditLog || c.canDispatch },
       { id: "changelog", label: "Changelog", icon: History, visible: (c) => c.isOps },
       { id: "system", label: "System settings", icon: Settings, visible: (c) => c.isAdmin },
     ],
@@ -316,9 +312,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
     case "providers": return <ProvidersTab caps={caps} />;
     case "dispatch": return caps.canDispatch ? <AdminDispatchPanel /> : <NoAccess />;
-    case "credentials": return caps.canDispatch ? <ExpiringCredentialsPanel /> : <NoAccess />;
-    case "staff": return caps.canManageStaff ? <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} /> : <NoAccess />;
-    case "audit": return caps.canViewAuditLog ? <AuditLogPanel /> : <NoAccess />;
+    case "security": return <SecurityTab caps={caps} />;
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
     case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
@@ -339,6 +333,43 @@ function NoAccess() {
   return (
     <div className="bg-card border border-border rounded-2xl p-6 text-sm text-muted">
       You don't have permission to view this section.
+    </div>
+  );
+}
+
+type SecuritySubTab = "staff" | "audit" | "credentials";
+function SecurityTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
+  const all: Array<{ id: SecuritySubTab; label: string; enabled: boolean }> = [
+    { id: "staff", label: "Staff permissions", enabled: caps.canManageStaff },
+    { id: "audit", label: "Audit log", enabled: caps.canViewAuditLog },
+    { id: "credentials", label: "Expiring credentials", enabled: caps.canDispatch },
+  ];
+  const available = all.filter((t) => t.enabled);
+  const [sub, setSub] = useState<SecuritySubTab>(available[0]?.id ?? "staff");
+  if (available.length === 0) return <NoAccess />;
+  return (
+    <div className="space-y-4">
+      <div className="border-b border-border overflow-x-auto scrollbar-none">
+        <div className="flex flex-nowrap gap-1 min-w-max">
+          {available.map((t) => {
+            const active = sub === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setSub(t.id)}
+                className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                  active ? "border-primary text-foreground" : "border-transparent text-muted hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {sub === "staff" && caps.canManageStaff && <StaffPermissionsPanel callerIsAdmin={caps.isAdmin} />}
+      {sub === "audit" && caps.canViewAuditLog && <AuditLogPanel />}
+      {sub === "credentials" && caps.canDispatch && <ExpiringCredentialsPanel />}
     </div>
   );
 }

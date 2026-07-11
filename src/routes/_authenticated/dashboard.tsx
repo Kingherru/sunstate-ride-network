@@ -2025,7 +2025,7 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       ["integrations", "Integrations"],
       ["payouts", "Payouts"],
     ] as Array<[AccountTab, string]>) : []),
-    ...(portal !== "patient" ? ([["membership", "Membership"]] as Array<[AccountTab, string]>) : []),
+    ...(portal === "provider" ? ([["membership", "Membership"]] as Array<[AccountTab, string]>) : []),
     ["security", "Security"],
   ];
 
