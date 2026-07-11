@@ -149,13 +149,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     (pathname.startsWith("/patient") ? "patient"
       : pathname.startsWith("/facility") ? "facility"
       : "provider");
-  const allowedTabs = PORTAL_TABS[portal];
+  const baseAllowedTabs = PORTAL_TABS[portal];
   const meta = PORTAL_META[portal];
 
-  const [tab, setTab] = useState<Tab>(allowedTabs[0]);
+  const [tab, setTab] = useState<Tab>(baseAllowedTabs[0]);
   const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
   function startDuplicate(t: Trip) { setDuplicateSource(t); handleTab("new"); }
-  useEffect(() => { if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]); }, [allowedTabs, tab]);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -283,9 +282,24 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     }),
     [realProfile, vehiclesQ.data, driversQ.data],
   );
-  const isSoftAccess = portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete;
+  // A provider whose application has been approved (linked via
+  // provider_application_id on their profile) skips the onboarding wall
+  // entirely — they get the normal provider experience immediately.
+  const isApprovedProvider =
+    portal === "provider" && !!realProfile && !!(realProfile as any).provider_application_id;
+  const isSoftAccess =
+    portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete && !isApprovedProvider;
   const isTabLocked = (t: Tab) =>
     isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
+
+  // Hide the Onboarding tab once the provider is approved.
+  const allowedTabs = useMemo<Tab[]>(
+    () => (isApprovedProvider ? baseAllowedTabs.filter((t) => t !== "onboarding") : baseAllowedTabs),
+    [baseAllowedTabs, isApprovedProvider],
+  );
+  useEffect(() => {
+    if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
+  }, [allowedTabs, tab]);
 
   // Patients & facilities can always send (book); providers still require paid membership.
   const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;

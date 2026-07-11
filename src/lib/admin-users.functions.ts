@@ -35,8 +35,19 @@ type AdminUser = {
   company_name: string | null;
   city: string | null;
   region: string | null;
+  state: string | null;
+  postal_code: string | null;
+  phone: string | null;
+  dispatch_email: string | null;
+  dispatch_zone_id: string | null;
+  dispatch_zone_name: string | null;
+  dispatch_zone_code: string | null;
+  provider_application_id: string | null;
+  application_status: string | null;
   membership_status: string | null;
   membership_tier: string | null;
+  vehicles_count: number;
+  drivers_count: number;
 };
 
 /**
@@ -58,10 +69,39 @@ export const listNonPatientUsers = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Pull profile rows (source of portal + company info)
+    // Pull profile rows joined with dispatch zone for the Admin overview.
     const { data: profiles } = await supabaseAdmin
       .from("member_profiles")
-      .select("user_id, company_name, city, region, membership_status, membership_tier");
+      .select(
+        "user_id, company_name, city, region, postal_code, phone, dispatch_email, dispatch_zone_id, provider_application_id, membership_status, membership_tier, dispatch_zones:dispatch_zone_id(name, code)",
+      );
+
+    // Pull application status keyed by id
+    const appIds = (profiles ?? [])
+      .map((p: any) => p.provider_application_id)
+      .filter(Boolean);
+    const appStatusMap = new Map<string, string>();
+    if (appIds.length) {
+      const { data: apps } = await supabaseAdmin
+        .from("provider_applications")
+        .select("id, status")
+        .in("id", appIds);
+      (apps ?? []).forEach((a: any) => appStatusMap.set(a.id, a.status));
+    }
+
+    // Vehicle & driver totals per owner (single query each, aggregated in JS)
+    const { data: vehicleRows } = await supabaseAdmin
+      .from("vehicles").select("owner_id");
+    const { data: driverRows } = await supabaseAdmin
+      .from("drivers").select("owner_id");
+    const vehicleCounts = new Map<string, number>();
+    (vehicleRows ?? []).forEach((v: any) => {
+      vehicleCounts.set(v.owner_id, (vehicleCounts.get(v.owner_id) ?? 0) + 1);
+    });
+    const driverCounts = new Map<string, number>();
+    (driverRows ?? []).forEach((d: any) => {
+      driverCounts.set(d.owner_id, (driverCounts.get(d.owner_id) ?? 0) + 1);
+    });
 
     // Pull auth users (paged)
     const users: any[] = [];
@@ -86,6 +126,7 @@ export const listNonPatientUsers = createServerFn({ method: "GET" })
           rawPortal === "provider" || rawPortal === "facility" || rawPortal === "patient"
             ? rawPortal
             : "unknown";
+        const zone = p?.dispatch_zones ?? null;
         return {
           id: u.id,
           email: u.email ?? null,
@@ -95,8 +136,21 @@ export const listNonPatientUsers = createServerFn({ method: "GET" })
           company_name: p?.company_name ?? null,
           city: p?.city ?? null,
           region: p?.region ?? null,
+          state: "FL",
+          postal_code: p?.postal_code ?? null,
+          phone: p?.phone ?? null,
+          dispatch_email: p?.dispatch_email ?? null,
+          dispatch_zone_id: p?.dispatch_zone_id ?? null,
+          dispatch_zone_name: zone?.name ?? null,
+          dispatch_zone_code: zone?.code ?? null,
+          provider_application_id: p?.provider_application_id ?? null,
+          application_status: p?.provider_application_id
+            ? appStatusMap.get(p.provider_application_id) ?? null
+            : null,
           membership_status: p?.membership_status ?? null,
           membership_tier: p?.membership_tier ?? null,
+          vehicles_count: vehicleCounts.get(u.id) ?? 0,
+          drivers_count: driverCounts.get(u.id) ?? 0,
         };
       })
       // EXCLUDE patients — confidential, providers/facilities only
