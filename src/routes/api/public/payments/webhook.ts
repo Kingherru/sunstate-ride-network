@@ -139,9 +139,11 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case "transfer.reversed":
               await handleTransferUpdated(event.data.object);
               break;
+            case "checkout.session.completed":
+              await handleCheckoutSessionCompleted(event.data.object);
+              break;
             default:
               console.log("Unhandled event:", event.type);
-          }
           return Response.json({ received: true });
         } catch (e) {
           console.error("Webhook error:", e);
