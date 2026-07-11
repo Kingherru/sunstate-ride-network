@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
 
 const navLinks = [
   { to: "/services", label: "Services" },
+  { to: "/black-tie", label: "Black Tie" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/service-areas", label: "Service Areas" },
   { to: "/shop", label: "Training Shop" },
