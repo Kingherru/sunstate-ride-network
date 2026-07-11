@@ -5,7 +5,7 @@ import { CITY_LIST } from "@/lib/cities";
 
 const NAVY = "#1D3557";
 const PEACH = "#F9CB9F";
-const MINT = "#A8DADC";
+const MINT = "#FFE9A8";
 const CORAL = "#E63946";
 const CREAM = "#F1FAEE";
 
