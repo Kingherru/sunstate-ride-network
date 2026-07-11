@@ -549,6 +549,55 @@ function RequestRidePage() {
                 </button>
               ))}
             </div>
+
+            {/* Black Tie premium service */}
+            <div className="rounded-sm border border-border p-4 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 accent-accent"
+                  checked={!!form.blackTie}
+                  onChange={(e) => {
+                    upd("blackTie", e.target.checked);
+                    if (!e.target.checked) upd("blackTieVehicle", undefined);
+                  }}
+                />
+                <span>
+                  <span className="block text-sm font-bold uppercase tracking-widest">
+                    Black Tie Transportation
+                  </span>
+                  <span className="block text-xs text-muted mt-1">
+                    Premium chauffeured service for airports, weddings, corporate events, and special occasions.
+                    Manually quoted — no automatic pricing.
+                  </span>
+                </span>
+              </label>
+              {form.blackTie && (
+                <Field
+                  label="Vehicle type"
+                  required
+                  error={errors.blackTieVehicle}
+                >
+                  <select
+                    className={inputCls}
+                    value={form.blackTieVehicle ?? ""}
+                    onChange={(e) =>
+                      upd(
+                        "blackTieVehicle",
+                        (e.target.value || undefined) as RideRequestInput["blackTieVehicle"],
+                      )
+                    }
+                  >
+                    <option value="">Select a vehicle…</option>
+                    {BLACK_TIE_VEHICLE_OPTIONS.map((v) => (
+                      <option key={v} value={v}>
+                        {BLACK_TIE_VEHICLE_LABELS[v]}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+            </div>
             <div>
               <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
                 Trip type <span className="text-accent">*</span>
