@@ -191,6 +191,24 @@ function ProvidersPage() {
               </li>
             ))}
           </ul>
+          <div className="bg-primary/5 border border-primary/20 rounded-sm p-5 mb-10">
+            <p className="font-mono text-xs font-bold text-accent uppercase tracking-widest mb-2">
+              Membership
+            </p>
+            <p className="text-sm text-muted-foreground mb-3">
+              Want to send and receive trips across the network? Subscribe for{" "}
+              <span className="text-foreground font-semibold">$10/mo</span> or{" "}
+              <span className="text-foreground font-semibold">$100/yr</span> and unlock
+              the full dispatch dashboard.
+            </p>
+            <Link
+              to="/membership"
+              className="text-sm font-bold text-primary underline underline-offset-4 hover:text-accent"
+            >
+              View membership →
+            </Link>
+          </div>
+
           <Link
             to="/training"
             className="font-bold text-primary underline underline-offset-8 hover:text-accent"
