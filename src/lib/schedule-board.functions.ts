@@ -86,6 +86,27 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
     return rows ?? [];
   });
 
+/** List an entire week (7 days starting from week_start ISO date) */
+export const listReservationsForWeek = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { week_start: string }) => input)
+  .handler(async ({ data, context }) => {
+    const start = new Date(data.week_start + "T00:00:00");
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const endIso = end.toISOString().slice(0, 10);
+    const { data: rows, error } = await context.supabase
+      .from("ride_requests")
+      .select("id, pickup_date, pickup_time, appointment_time, scheduled_start_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, assigned_driver_id, status")
+      .eq("assigned_provider_id", context.userId)
+      .gte("pickup_date", data.week_start)
+      .lte("pickup_date", endIso)
+      .order("pickup_date")
+      .order("pickup_time");
+    if (error) throw error;
+    return rows ?? [];
+  });
+
 /** Assign or clear a driver + scheduled time for a reservation */
 export const assignDriverSlot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
