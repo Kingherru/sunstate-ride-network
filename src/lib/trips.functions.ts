@@ -116,6 +116,7 @@ const tripBaseSchema = z.object({
   mobility_notes: z.string().trim().max(500).optional().nullable(),
   special_instructions: z.string().trim().max(1000).optional().nullable(),
   payer: z.string().trim().max(120).optional().nullable(),
+  payer_id: z.string().uuid().optional().nullable(),
   trip_number: z.string().trim().max(64).optional().nullable(),
   patient_date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable().or(z.literal("")),
   medicaid_number: z.string().trim().max(64).optional().nullable(),
