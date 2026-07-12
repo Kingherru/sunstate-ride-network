@@ -155,6 +155,7 @@ export const createTrip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureCanSendTrip(supabase, userId);
+    await assertPayerOwned(supabase, userId, data.payer_id ?? null);
     const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "send_trip");
     const region = regionFor(data.pickup_city);
     const { hipaa_ack_id: _ignore, ...rest } = data;
