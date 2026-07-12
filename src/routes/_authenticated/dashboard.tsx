@@ -138,6 +138,8 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "integrations") return "Integrations";
   if (t === "payments") return "Payments";
   if (t === "payers") return "Payers";
+  if (t === "reviews") return "Reviews";
+  if (t === "feedback") return "Send Feedback";
 
   if (t === "saved_patients") return "Contacts";
   if (t === "business_info") return "Business Info";
