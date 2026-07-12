@@ -115,7 +115,11 @@ export function AdminReservationsPanel() {
               <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No reservations found.</td></tr>
             )}
             {q.data?.map((r: any) => (
-              <tr key={r.id} className="border-t border-border">
+              <tr
+                key={r.id}
+                onClick={() => setOpenId(r.id)}
+                className="border-t border-border cursor-pointer hover:bg-secondary/30"
+              >
                 <td className="p-3">{r.pickup_date} {r.pickup_time?.slice(0,5)}</td>
                 <td className="p-3">{r.patient_first_name} {r.patient_last_name}</td>
                 <td className="p-3">{r.pickup_city} {r.pickup_zip}</td>
@@ -128,6 +132,11 @@ export function AdminReservationsPanel() {
           </tbody>
         </table>
       </div>
+
+      {openId && (
+        <AdminReservationDetailModal reservationId={openId} onClose={() => setOpenId(null)} />
+      )}
     </div>
   );
 }
+
