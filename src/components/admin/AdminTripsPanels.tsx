@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listAllTripsAdmin, listAllReservationsAdmin } from "@/lib/admin-trips.functions";
+import { AdminReservationDetailModal } from "./AdminReservationDetailModal";
+
 
 const STATUS_OPTIONS = ["all", "pending", "assigned", "in_progress", "completed", "canceled", "no_show"];
 
@@ -75,10 +77,12 @@ export function AdminTripsPanel() {
 export function AdminReservationsPanel() {
   const fetch = useServerFn(listAllReservationsAdmin);
   const [status, setStatus] = useState("all");
+  const [openId, setOpenId] = useState<string | null>(null);
   const q = useQuery({
     queryKey: ["admin-reservations", status],
     queryFn: () => fetch({ data: { status } }),
   });
+
 
   return (
     <div className="space-y-4">
@@ -111,7 +115,11 @@ export function AdminReservationsPanel() {
               <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No reservations found.</td></tr>
             )}
             {q.data?.map((r: any) => (
-              <tr key={r.id} className="border-t border-border">
+              <tr
+                key={r.id}
+                onClick={() => setOpenId(r.id)}
+                className="border-t border-border cursor-pointer hover:bg-secondary/30"
+              >
                 <td className="p-3">{r.pickup_date} {r.pickup_time?.slice(0,5)}</td>
                 <td className="p-3">{r.patient_first_name} {r.patient_last_name}</td>
                 <td className="p-3">{r.pickup_city} {r.pickup_zip}</td>
@@ -124,6 +132,11 @@ export function AdminReservationsPanel() {
           </tbody>
         </table>
       </div>
+
+      {openId && (
+        <AdminReservationDetailModal reservationId={openId} onClose={() => setOpenId(null)} />
+      )}
     </div>
   );
 }
+
