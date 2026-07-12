@@ -485,6 +485,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
+            {tab === "payers" && <PayersTab />}
+
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {/* business_info tab removed — merged into Account > Profile for providers */}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
