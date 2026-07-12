@@ -855,8 +855,8 @@ function NewTripForm({ onCreated, initialTrip, portal }: { onCreated: () => void
         <span className="portal-label">Pickup address</span>
         <AddressAutocomplete
           value={form.pickup_address}
-          onChange={(v) => setForm((f: any) => ({ ...f, pickup_address: v }))}
-          onSelect={(sel) => {
+          onChange={(v: string) => setForm((f: any) => ({ ...f, pickup_address: v }))}
+          onSelect={(sel: AddressSelection) => {
             setForm((f: any) => ({
               ...f,
               pickup_address: sel.address,
@@ -880,8 +880,8 @@ function NewTripForm({ onCreated, initialTrip, portal }: { onCreated: () => void
         <span className="portal-label">Dropoff address</span>
         <AddressAutocomplete
           value={form.dropoff_address}
-          onChange={(v) => setForm((f: any) => ({ ...f, dropoff_address: v }))}
-          onSelect={(sel) => {
+          onChange={(v: string) => setForm((f: any) => ({ ...f, dropoff_address: v }))}
+          onSelect={(sel: AddressSelection) => {
             setForm((f: any) => ({
               ...f,
               dropoff_address: sel.address,
