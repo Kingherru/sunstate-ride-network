@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listAllTripsAdmin, listAllReservationsAdmin } from "@/lib/admin-trips.functions";
+import { AdminReservationDetailModal } from "./AdminReservationDetailModal";
+
 
 const STATUS_OPTIONS = ["all", "pending", "assigned", "in_progress", "completed", "canceled", "no_show"];
 
