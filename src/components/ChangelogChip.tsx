@@ -6,6 +6,16 @@
  */
 export const CHANGELOG: { version: string; date: string; notes: string[] }[] = [
   {
+    version: "0.9.3",
+    date: "2026-07-12",
+    notes: [
+      "Patients and facilities can create trips without a paid membership.",
+      "New Trip form now uses Google Places autofill for pickup and drop-off with a live mileage-based quote.",
+      "Added a Payer picker to the New Trip form (facilities and providers).",
+      "Trip checkout now enforces that the card used matches the trip's assigned payer.",
+    ],
+  },
+  {
     version: "0.9.2",
     date: "2026-07-11",
     notes: [
