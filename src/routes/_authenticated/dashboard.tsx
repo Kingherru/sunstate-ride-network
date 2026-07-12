@@ -37,6 +37,8 @@ import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmiss
 import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { PayersPanel } from "@/components/dashboard/PayersPanel";
+import { ProviderReviewsPanel } from "@/components/dashboard/ProviderReviewsPanel";
+import { SendFeedbackPanel } from "@/components/dashboard/SendFeedbackPanel";
 import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
