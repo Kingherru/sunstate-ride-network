@@ -68,6 +68,21 @@ function PaymentsTab({ portal }: { portal: PortalKind }) {
   );
 }
 
+function PayersTab() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight">Payers</h2>
+        <p className="text-sm text-muted-foreground">
+          Third parties who pay for trips. Each saved card is scoped to a single payer and can only be charged when that payer is assigned to a trip.
+        </p>
+      </div>
+      <PayersPanel />
+    </div>
+  );
+}
+
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
