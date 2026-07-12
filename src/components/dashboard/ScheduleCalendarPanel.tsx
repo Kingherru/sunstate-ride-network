@@ -172,7 +172,7 @@ export function ScheduleCalendarPanel() {
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">Schedule board</h2>
         <p className="text-sm text-muted-foreground">
-          Drag a reservation onto a driver + time slot to schedule or reschedule it. The driver is notified automatically.
+          Drag a reservation into a driver column at the right time to schedule or reschedule it. The driver is notified automatically.
           Times outside your posted work hours are shaded so after-hours trips stand out.
         </p>
       </div>
@@ -326,8 +326,8 @@ export function ScheduleCalendarPanel() {
         )}
       </div>
 
-      {/* Desktop calendar grid — drivers on Y, hours (12h) on X */}
-      <div className="hidden lg:block bg-card border border-border rounded-2xl overflow-auto">
+      {/* Calendar grid — time on Y, drivers on X */}
+      <div className="bg-card border border-border rounded-2xl overflow-auto">
         {driversQ.isLoading ? (
           <div className="p-8 text-center text-sm text-muted-foreground">Loading drivers…</div>
         ) : drivers.length === 0 ? (
@@ -343,32 +343,19 @@ export function ScheduleCalendarPanel() {
             <thead className="bg-background/60">
               <tr>
                 <th className="sticky left-0 z-10 bg-background/80 border-r border-border text-left text-xs uppercase tracking-wider text-muted-foreground font-bold px-3 py-2 w-44">
-                  Driver
+                  Time
                 </th>
-                {hours.map((h) => {
-                  const after = isAfterHours(h);
+                {drivers.map((d: any) => {
+                  const dTripCount = reservations.filter((r: any) => r.assigned_driver_id === d.id).length;
                   return (
                     <th
-                      key={h}
-                      className={`border-r border-border text-xs font-bold px-2 py-2 w-28 ${after ? "bg-accent/15 text-foreground" : "text-muted-foreground"}`}
-                      title={after ? "Outside posted work hours" : undefined}
+                      key={d.id}
+                      className="border-r border-border text-left px-3 py-2 min-w-44"
                     >
-                      {fmt12h(h)}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {drivers.map((d: any) => {
-                const dTripCount = reservations.filter((r: any) => r.assigned_driver_id === d.id).length;
-                return (
-                  <tr key={d.id} className="border-t border-border">
-                    <td className="sticky left-0 z-10 bg-card border-r border-border px-3 py-2 font-bold whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setOpenDriverId(d.id)}
-                        className="text-left hover:text-accent hover:underline decoration-dotted underline-offset-2"
+                        className="text-left text-xs font-bold hover:text-accent hover:underline decoration-dotted underline-offset-2"
                         title="View schedule & email driver"
                       >
                         {d.first_name} {d.last_name}
@@ -376,14 +363,31 @@ export function ScheduleCalendarPanel() {
                       <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
                         {d.status} · {dTripCount} trip{dTripCount === 1 ? "" : "s"}
                       </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {hours.map((h) => {
+                const after = isAfterHours(h);
+                return (
+                  <tr key={h} className="border-t border-border">
+                    <td
+                      className={`sticky left-0 z-10 border-r border-border px-3 py-2 font-bold whitespace-nowrap ${after ? "bg-accent/15" : "bg-card"}`}
+                      title={after ? "Outside posted work hours" : undefined}
+                    >
+                      <span className="font-mono text-xs text-primary">{fmt12h(h)}</span>
+                      <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                        {after ? "After hours" : "Work hours"}
+                      </div>
                     </td>
-                    {hours.map((h) => {
+                    {drivers.map((d: any) => {
                       const key = `${d.id}__${h}`;
                       const cell = cellMap.get(key) ?? [];
-                      const after = isAfterHours(h);
                       return (
                         <td
-                          key={h}
+                          key={d.id}
                           className={`border-r border-border align-top p-1 min-h-[60px] ${after ? "bg-accent/15" : "hover:bg-primary/5"}`}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => onDrop(e, d.id, h)}
@@ -404,127 +408,6 @@ export function ScheduleCalendarPanel() {
           </table>
         )}
       </div>
-
-      {/* Mobile / tablet — per-driver cards */}
-      {drivers.length > 0 && (
-        <div className="lg:hidden space-y-3">
-          {drivers.map((d: any) => {
-            const dTrips = reservations
-              .filter((r: any) => r.assigned_driver_id === d.id)
-              .sort((a: any, b: any) =>
-                ((a.scheduled_start_time ?? a.pickup_time ?? "") + "")
-                  .localeCompare((b.scheduled_start_time ?? b.pickup_time ?? "") + ""),
-              );
-            return (
-              <div key={d.id} className="bg-card border border-border rounded-2xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setOpenDriverId(d.id)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-background/60 hover:bg-muted/40 text-left"
-                >
-                  <div>
-                    <div className="font-bold">{d.first_name} {d.last_name}</div>
-                    <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{d.status}</div>
-                  </div>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-sm ${
-                    dTrips.length === 0
-                      ? "bg-slate-100 text-slate-600"
-                      : "bg-emerald-100 text-emerald-800"
-                  }`}>
-                    {dTrips.length} trip{dTrips.length === 1 ? "" : "s"}
-                  </span>
-                </button>
-                {dTrips.length > 0 && (
-                  <ul className="divide-y divide-border">
-                    {dTrips.map((r: any) => {
-                      const t = (r.scheduled_start_time ?? r.pickup_time ?? "").toString().slice(0, 5);
-                      const after = isAfterHours(t);
-                      return (
-                        <li key={r.id} className={`px-4 py-2 flex items-start gap-3 ${after ? "bg-accent/15" : ""}`}>
-                          <span className="font-mono text-xs font-bold text-primary shrink-0 pt-0.5 w-20">
-                            {fmtTime12(t)}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold truncate">
-                              {r.patient_first_name} {r.patient_last_name}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground truncate">
-                              {r.pickup_city} → {r.dropoff_city}
-                            </div>
-                          </div>
-                          <select
-                            value={r.assigned_driver_id ?? ""}
-                            onChange={(e) =>
-                              mAssign.mutate({
-                                reservation_id: r.id,
-                                driver_id: e.target.value || null,
-                                scheduled_start_time: t || (hours[0] ?? "00:00"),
-                              })
-                            }
-                            className="text-[11px] bg-background border border-input rounded px-1.5 py-1"
-                            aria-label="Reassign driver"
-                          >
-                            <option value="">Unassign</option>
-                            {allDrivers.map((dd: any) => (
-                              <option key={dd.id} value={dd.id}>{dd.first_name} {dd.last_name}</option>
-                            ))}
-                          </select>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
-
-          {unassigned.length > 0 && (
-            <div className="bg-card border border-dashed border-border rounded-2xl p-4">
-              <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2">
-                Assign unassigned trips ({unassigned.length})
-              </div>
-              <ul className="divide-y divide-border">
-                {unassigned.map((r: any) => {
-                  const t = (r.scheduled_start_time ?? r.pickup_time ?? "").toString().slice(0, 5);
-                  return (
-                    <li key={r.id} className="py-2 flex items-start gap-3">
-                      <span className="font-mono text-xs font-bold text-primary shrink-0 pt-0.5 w-20">
-                        {fmtTime12(t)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold truncate">
-                          {r.patient_first_name} {r.patient_last_name}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground truncate">
-                          {r.pickup_city} → {r.dropoff_city}
-                        </div>
-                      </div>
-                      <select
-                        defaultValue=""
-                        onChange={(e) =>
-                          e.target.value &&
-                          mAssign.mutate({
-                            reservation_id: r.id,
-                            driver_id: e.target.value,
-                            scheduled_start_time: t || (hours[0] ?? "00:00"),
-                          })
-                        }
-                        className="text-[11px] bg-background border border-input rounded px-1.5 py-1"
-                        aria-label="Assign driver"
-                      >
-                        <option value="">Assign…</option>
-                        {allDrivers.map((dd: any) => (
-                          <option key={dd.id} value={dd.id}>{dd.first_name} {dd.last_name}</option>
-                        ))}
-                      </select>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
 
       {openDriverId && (
         <DriverDetailModal driverId={openDriverId} onClose={() => setOpenDriverId(null)} />

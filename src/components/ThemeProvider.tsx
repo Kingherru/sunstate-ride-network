@@ -121,12 +121,12 @@ function readCachedCss(): string {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize synchronously from cache so repeat visits render with the
-  // correct colors on the first paint — no visible flip from defaults.
-  const [css, setCss] = useState<string>(readCachedCss);
+  const [css, setCss] = useState<string>("");
 
   useEffect(() => {
     let alive = true;
+    const cached = readCachedCss();
+    if (cached) setCss(cached);
     (async () => {
       try {
         const { data } = await (supabase as any)
