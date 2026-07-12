@@ -33,18 +33,24 @@ async function ensureActiveMember(supabase: any, userId: string) {
     .select("membership_status, membership_tier, region")
     .eq("user_id", userId)
     .maybeSingle();
-  if (!data || data.membership_status !== "active") {
-    throw new Error("Active membership required");
-  }
-  return data;
+  return data ?? { membership_status: null, membership_tier: null, region: null };
 }
 
-async function ensurePaidSender(supabase: any, userId: string) {
-  const m = await ensureActiveMember(supabase, userId);
-  if (m.membership_tier !== "paid") {
-    throw new Error("Sending trips requires a paid membership. Upgrade at /membership.");
-  }
-  return m;
+// Historically required a paid membership. Anyone signed in can now create trips —
+// membership only affects who can *receive* referrals, not who can *send* them.
+async function ensureCanSendTrip(supabase: any, userId: string) {
+  return ensureActiveMember(supabase, userId);
+}
+
+async function assertPayerOwned(supabase: any, userId: string, payerId: string | null | undefined) {
+  if (!payerId) return;
+  const { data } = await supabase
+    .from("payers")
+    .select("id")
+    .eq("id", payerId)
+    .eq("owner_user_id", userId)
+    .maybeSingle();
+  if (!data) throw new Error("Payer not found for this account");
 }
 
 async function requireHipaaAck(
@@ -110,6 +116,7 @@ const tripBaseSchema = z.object({
   mobility_notes: z.string().trim().max(500).optional().nullable(),
   special_instructions: z.string().trim().max(1000).optional().nullable(),
   payer: z.string().trim().max(120).optional().nullable(),
+  payer_id: z.string().uuid().optional().nullable(),
   trip_number: z.string().trim().max(64).optional().nullable(),
   patient_date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable().or(z.literal("")),
   medicaid_number: z.string().trim().max(64).optional().nullable(),
@@ -147,7 +154,8 @@ export const createTrip = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => createTripSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await ensurePaidSender(supabase, userId);
+    await ensureCanSendTrip(supabase, userId);
+    await assertPayerOwned(supabase, userId, data.payer_id ?? null);
     const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "send_trip");
     const region = regionFor(data.pickup_city);
     const { hipaa_ack_id: _ignore, ...rest } = data;
@@ -178,7 +186,7 @@ export const createTripsBulk = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => bulkTripsSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await ensurePaidSender(supabase, userId);
+    await ensureCanSendTrip(supabase, userId);
     const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "bulk_upload");
     const rows = data.trips.map((t) => ({
       patient_first_name: t.patient_first_name,

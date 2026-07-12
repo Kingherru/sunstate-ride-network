@@ -3110,6 +3110,7 @@ export type Database = {
           patient_last_name: string
           patient_phone: string | null
           payer: string | null
+          payer_id: string | null
           payment_status: string
           payout_released_at: string | null
           payout_status: Database["public"]["Enums"]["trip_payout_status"]
@@ -3205,6 +3206,7 @@ export type Database = {
           patient_last_name: string
           patient_phone?: string | null
           payer?: string | null
+          payer_id?: string | null
           payment_status?: string
           payout_released_at?: string | null
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
@@ -3300,6 +3302,7 @@ export type Database = {
           patient_last_name?: string
           patient_phone?: string | null
           payer?: string | null
+          payer_id?: string | null
           payment_status?: string
           payout_released_at?: string | null
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
@@ -3380,6 +3383,13 @@ export type Database = {
             columns: ["hipaa_ack_id"]
             isOneToOne: false
             referencedRelation: "hipaa_acknowledgments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
             referencedColumns: ["id"]
           },
           {

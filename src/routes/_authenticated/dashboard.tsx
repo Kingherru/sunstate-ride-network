@@ -37,6 +37,9 @@ import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmiss
 import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { PayersPanel } from "@/components/dashboard/PayersPanel";
+import { listMyPayers } from "@/lib/payers.functions";
+import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
+import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 
 import { ChangelogChip } from "@/components/ChangelogChip";
 
@@ -471,7 +474,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               );
             })()}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
-            {tab === "new" && (canSend ? <NewTripForm initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
             {tab === "schedule" && <ScheduleCalendarPanel />}
@@ -753,7 +756,7 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initialTrip?: any }) {
+function NewTripForm({ onCreated, initialTrip, portal }: { onCreated: () => void; initialTrip?: any; portal: PortalKind }) {
   const seed = initialTrip ?? {};
   const [form, setForm] = useState<any>({
     patient_first_name: seed.patient_first_name ?? "",
@@ -790,9 +793,22 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
     mobility_notes: seed.mobility_notes ?? "",
     special_instructions: seed.special_instructions ?? "",
     payer: seed.payer ?? "",
+    payer_id: seed.payer_id ?? "",
     trip_number: "",
   });
   const [hipaaOk, setHipaaOk] = useState(false);
+  // Location metadata from Google Places for live mileage/quote.
+  const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
+  const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.dropoff_zip ?? "", lat: null, lng: null });
+  const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
+  const canPickPayer = portal === "facility" || portal === "provider";
+  const payersQ = useQuery({
+    queryKey: ["my-payers-picker"],
+    queryFn: () => listMyPayers(),
+    enabled: canPickPayer,
+    staleTime: 60_000,
+  });
+
   const m = useMutation({
     mutationFn: async () => {
       if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
@@ -801,11 +817,11 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
       }
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
       const payload = { ...form };
-      // Don't send empty date string (zod regex would reject)
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
       if (!payload.appointment_time) delete payload.appointment_time;
+      if (!payload.payer_id) delete payload.payer_id;
       return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
     },
     onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
@@ -834,14 +850,50 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
         <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
         <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
       </fieldset>
-      <Field label="Pickup address" v={form.pickup_address} on={(v) => setForm({ ...form, pickup_address: v })} required className="col-span-2" />
+
+      <label className="flex flex-col gap-1 text-sm col-span-2">
+        <span className="portal-label">Pickup address</span>
+        <AddressAutocomplete
+          value={form.pickup_address}
+          onChange={(v: string) => setForm((f: any) => ({ ...f, pickup_address: v }))}
+          onSelect={(sel: AddressSelection) => {
+            setForm((f: any) => ({
+              ...f,
+              pickup_address: sel.address,
+              pickup_city: sel.city || f.pickup_city,
+              pickup_zip: sel.zip || f.pickup_zip,
+            }));
+            setPickupMeta({ zip: sel.zip, lat: sel.lat, lng: sel.lng });
+          }}
+          className="portal-select"
+          required
+        />
+      </label>
       <Field label="Building / Doctor's office / Suite" v={form.pickup_address_details} on={(v) => setForm({ ...form, pickup_address_details: v })} className="col-span-2" placeholder="e.g. Dr. Smith — Suite 210" />
       <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
       <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
       <Field label="Pickup date" v={form.pickup_date} on={(v) => setForm({ ...form, pickup_date: v })} required type="date" />
       <Field label="Pickup time" v={form.pickup_time} on={(v) => setForm({ ...form, pickup_time: v })} required type="time" />
       <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
-      <Field label="Dropoff address" v={form.dropoff_address} on={(v) => setForm({ ...form, dropoff_address: v })} required className="col-span-2" />
+
+      <label className="flex flex-col gap-1 text-sm col-span-2">
+        <span className="portal-label">Dropoff address</span>
+        <AddressAutocomplete
+          value={form.dropoff_address}
+          onChange={(v: string) => setForm((f: any) => ({ ...f, dropoff_address: v }))}
+          onSelect={(sel: AddressSelection) => {
+            setForm((f: any) => ({
+              ...f,
+              dropoff_address: sel.address,
+              dropoff_city: sel.city || f.dropoff_city,
+              dropoff_zip: sel.zip || f.dropoff_zip,
+            }));
+            setDropoffMeta({ zip: sel.zip, lat: sel.lat, lng: sel.lng });
+          }}
+          className="portal-select"
+          required
+        />
+      </label>
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       <label className="flex flex-col gap-1 text-sm">
@@ -888,7 +940,29 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
           </label>
         ))}
       </fieldset>
-      <Field label="Payer" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+
+      {canPickPayer && (
+        <label className="flex flex-col gap-1 text-sm col-span-2">
+          <span className="portal-label">Payer (who pays for this trip)</span>
+          <select
+            value={form.payer_id || ""}
+            onChange={(e) => setForm({ ...form, payer_id: e.target.value })}
+            className="portal-select"
+          >
+            <option value="">Self-pay / bill later</option>
+            {(payersQ.data ?? []).map((p: any) => (
+              <option key={p.id} value={p.id}>{p.name}{p.email ? ` — ${p.email}` : ""}</option>
+            ))}
+          </select>
+          <span className="text-[11px] text-muted-foreground">
+            Only cards saved to the selected payer will be usable when this trip is charged.
+            {" "}
+            <Link to="/dashboard" search={{ tab: "payers" } as any} className="underline">Manage payers</Link>.
+          </span>
+        </label>
+      )}
+
+      <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
       <label className="flex flex-col gap-1 text-sm col-span-2">
         <span className="portal-label">Mobility notes</span>
         <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
@@ -899,6 +973,15 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
                   className="portal-select" rows={2} />
       </label>
+
+      <div className="col-span-2">
+        <PriceEstimate
+          pickupZip={pickupMeta.zip || form.pickup_zip || ""}
+          miles={estimatedMiles}
+          transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
+        />
+      </div>
+
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
         <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
         <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. My Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
@@ -909,6 +992,17 @@ function NewTripForm({ onCreated, initialTrip }: { onCreated: () => void; initia
     </form>
   );
 }
+
+function haversineMiles(lat1: number | null, lng1: number | null, lat2: number | null, lng2: number | null): number {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return 0;
+  const R = 3958.7613;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return +(2 * R * Math.asin(Math.sqrt(a))).toFixed(2);
+}
+
 
 /* -------- CSV Upload -------- */
 const REQUIRED_COLS = [
