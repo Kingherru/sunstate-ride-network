@@ -37,6 +37,8 @@ import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmiss
 import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
 import { PayersPanel } from "@/components/dashboard/PayersPanel";
+import { ProviderReviewsPanel } from "@/components/dashboard/ProviderReviewsPanel";
+import { SendFeedbackPanel } from "@/components/dashboard/SendFeedbackPanel";
 import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
@@ -101,12 +103,12 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "payers", "medicaid", "training", "messages", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "payers", "messages", "payments", "account"],
+  patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
+  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "payers", "messages", "payments", "account"],
 };
 
 
@@ -138,6 +140,8 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "integrations") return "Integrations";
   if (t === "payments") return "Payments";
   if (t === "payers") return "Payers";
+  if (t === "reviews") return "Reviews";
+  if (t === "feedback") return "Send Feedback";
 
   if (t === "saved_patients") return "Contacts";
   if (t === "business_info") return "Business Info";
@@ -489,6 +493,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "payers" && <PayersTab />}
+            {tab === "reviews" && <ProviderReviewsPanel />}
+            {tab === "feedback" && <SendFeedbackPanel />}
 
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {/* business_info tab removed — merged into Account > Profile for providers */}
@@ -2018,11 +2024,15 @@ function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: ()
         .select("id")
         .eq("trip_id", trip.id)
         .maybeSingle();
+      const { data: userData } = await supabase.auth.getUser();
+      const raterId = userData.user?.id;
+      if (!raterId) throw new Error("Not signed in");
       const payload: any = {
         provider_id: providerId,
         trip_id: trip.id,
-        stars,
-        feedback: comment || null,
+        rater_id: raterId,
+        overall: stars,
+        comment: comment || null,
       };
       const q = existing
         ? supabase.from("provider_ratings").update(payload).eq("id", existing.id)
