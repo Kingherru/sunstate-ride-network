@@ -165,7 +165,7 @@ export const payForConfirmedTrip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true; payment_intent_id: string } | { error: string; requires_action?: { client_secret: string } }> => {
     const { data: req, error: reqErr } = await context.supabase
       .from("ride_requests")
-      .select("id, requester_user_id, assigned_provider_id, estimated_cost_cents, status, payment_status")
+      .select("id, requester_user_id, assigned_provider_id, estimated_cost_cents, status, payment_status, payer_id")
       .eq("id", data.ride_request_id).maybeSingle();
     if (reqErr || !req) return { error: "Trip not found" };
     if (req.requester_user_id !== context.userId) return { error: "Not your trip" };
@@ -179,31 +179,67 @@ export const payForConfirmedTrip = createServerFn({ method: "POST" })
       const env = data.environment as StripeEnv;
       const stripe = createStripeClient(env);
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: cust } = await supabaseAdmin
-        .from("stripe_customers").select("stripe_customer_id")
-        .eq("user_id", context.userId).eq("environment", env).maybeSingle();
-      if (!cust?.stripe_customer_id) return { error: "No payment profile" };
 
+      let customerId: string | null = null;
       let pmId = data.payment_method_id;
-      if (!pmId) {
-        const { data: def } = await supabaseAdmin
-          .from("saved_payment_methods").select("stripe_payment_method_id")
-          .eq("user_id", context.userId).eq("environment", env).eq("is_default", true).maybeSingle();
-        pmId = (def?.stripe_payment_method_id as string | undefined);
+
+      if (req.payer_id) {
+        // Payer-scoped charge: customer + PM MUST belong to this payer.
+        const { data: payerCust } = await supabaseAdmin
+          .from("payer_stripe_customers").select("stripe_customer_id")
+          .eq("payer_id", req.payer_id).eq("environment", env).maybeSingle();
+        if (!payerCust?.stripe_customer_id) return { error: "Payer has no payment profile" };
+        customerId = payerCust.stripe_customer_id as string;
+
+        if (pmId) {
+          const { data: match } = await supabaseAdmin
+            .from("payer_payment_methods").select("stripe_payment_method_id")
+            .eq("payer_id", req.payer_id).eq("environment", env)
+            .eq("stripe_payment_method_id", pmId).maybeSingle();
+          if (!match) return { error: "Selected card does not belong to this trip's payer" };
+        } else {
+          const { data: def } = await supabaseAdmin
+            .from("payer_payment_methods").select("stripe_payment_method_id")
+            .eq("payer_id", req.payer_id).eq("environment", env)
+            .eq("is_default", true).maybeSingle();
+          pmId = def?.stripe_payment_method_id as string | undefined;
+        }
+        if (!pmId) return { error: "This trip's payer has no card on file" };
+      } else {
+        // Self-pay: requester's own customer + saved cards only.
+        const { data: cust } = await supabaseAdmin
+          .from("stripe_customers").select("stripe_customer_id")
+          .eq("user_id", context.userId).eq("environment", env).maybeSingle();
+        if (!cust?.stripe_customer_id) return { error: "No payment profile" };
+        customerId = cust.stripe_customer_id as string;
+
+        if (pmId) {
+          const { data: match } = await supabaseAdmin
+            .from("saved_payment_methods").select("stripe_payment_method_id")
+            .eq("user_id", context.userId).eq("environment", env)
+            .eq("stripe_payment_method_id", pmId).maybeSingle();
+          if (!match) return { error: "Selected card is not on your account" };
+        } else {
+          const { data: def } = await supabaseAdmin
+            .from("saved_payment_methods").select("stripe_payment_method_id")
+            .eq("user_id", context.userId).eq("environment", env).eq("is_default", true).maybeSingle();
+          pmId = def?.stripe_payment_method_id as string | undefined;
+        }
+        if (!pmId) return { error: "Pick a card or save one first" };
       }
-      if (!pmId) return { error: "Pick a card or save one first" };
 
       const platformFee = Math.round(req.estimated_cost_cents * 0.04);
       const pi = await stripe.paymentIntents.create({
         amount: req.estimated_cost_cents,
         currency: "usd",
-        customer: cust.stripe_customer_id as string,
+        customer: customerId,
         payment_method: pmId,
         confirm: true,
         off_session: false,
         metadata: {
           userId: context.userId,
           ride_request_id: req.id,
+          payer_id: req.payer_id ?? "",
           platform_fee_cents: String(platformFee),
         },
         automatic_payment_methods: { enabled: true, allow_redirects: "never" },
