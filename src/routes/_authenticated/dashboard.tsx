@@ -36,6 +36,8 @@ import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusContro
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
+import { PayersPanel } from "@/components/dashboard/PayersPanel";
+
 import { ChangelogChip } from "@/components/ChangelogChip";
 
 
