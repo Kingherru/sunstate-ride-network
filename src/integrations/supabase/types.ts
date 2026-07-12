@@ -1192,6 +1192,121 @@ export type Database = {
           },
         ]
       }
+      payer_payment_methods: {
+        Row: {
+          brand: string | null
+          created_at: string
+          environment: string
+          exp_month: number | null
+          exp_year: number | null
+          id: string
+          is_default: boolean
+          label: string | null
+          last4: string | null
+          payer_id: string
+          stripe_payment_method_id: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          environment?: string
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          last4?: string | null
+          payer_id: string
+          stripe_payment_method_id: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          environment?: string
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          last4?: string | null
+          payer_id?: string
+          stripe_payment_method_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payer_payment_methods_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payer_stripe_customers: {
+        Row: {
+          created_at: string
+          environment: string
+          payer_id: string
+          stripe_customer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          payer_id: string
+          stripe_customer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          payer_id?: string
+          stripe_customer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payer_stripe_customers_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payers: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_user_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_user_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_user_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           id: boolean
@@ -2129,6 +2244,7 @@ export type Database = {
           patient_last_name: string
           patient_phone: string
           payer: string | null
+          payer_id: string | null
           payment_amount_cents: number | null
           payment_status: string
           pickup_address: string
@@ -2211,6 +2327,7 @@ export type Database = {
           patient_last_name: string
           patient_phone: string
           payer?: string | null
+          payer_id?: string | null
           payment_amount_cents?: number | null
           payment_status?: string
           pickup_address: string
@@ -2293,6 +2410,7 @@ export type Database = {
           patient_last_name?: string
           patient_phone?: string
           payer?: string | null
+          payer_id?: string | null
           payment_amount_cents?: number | null
           payment_status?: string
           pickup_address?: string
@@ -2348,6 +2466,13 @@ export type Database = {
             columns: ["hipaa_ack_id"]
             isOneToOne: false
             referencedRelation: "hipaa_acknowledgments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
             referencedColumns: ["id"]
           },
         ]
@@ -2417,6 +2542,7 @@ export type Database = {
           created_at: string
           default_dropoff_address: string | null
           default_dropoff_city: string | null
+          default_payer_id: string | null
           default_pickup_address: string | null
           default_pickup_city: string | null
           diagnosis_code: string | null
@@ -2447,6 +2573,7 @@ export type Database = {
           created_at?: string
           default_dropoff_address?: string | null
           default_dropoff_city?: string | null
+          default_payer_id?: string | null
           default_pickup_address?: string | null
           default_pickup_city?: string | null
           diagnosis_code?: string | null
@@ -2477,6 +2604,7 @@ export type Database = {
           created_at?: string
           default_dropoff_address?: string | null
           default_dropoff_city?: string | null
+          default_payer_id?: string | null
           default_pickup_address?: string | null
           default_pickup_city?: string | null
           diagnosis_code?: string | null
@@ -2499,7 +2627,15 @@ export type Database = {
           updated_at?: string
           zip?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saved_patients_default_payer_id_fkey"
+            columns: ["default_payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_payment_methods: {
         Row: {

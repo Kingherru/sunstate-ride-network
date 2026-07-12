@@ -36,6 +36,8 @@ import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusContro
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
+import { PayersPanel } from "@/components/dashboard/PayersPanel";
+
 import { ChangelogChip } from "@/components/ChangelogChip";
 
 
@@ -66,6 +68,21 @@ function PaymentsTab({ portal }: { portal: PortalKind }) {
   );
 }
 
+function PayersTab() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight">Payers</h2>
+        <p className="text-sm text-muted-foreground">
+          Third parties who pay for trips. Each saved card is scoped to a single payer and can only be charged when that payer is assigned to a trip.
+        </p>
+      </div>
+      <PayersPanel />
+    </div>
+  );
+}
+
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -81,13 +98,14 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "messages", "payments", "account"],
-  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "medicaid", "training", "messages", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "messages", "payments", "account"],
+  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "payers", "medicaid", "training", "messages", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "payers", "messages", "payments", "account"],
 };
+
 
 
 
@@ -116,6 +134,8 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "payouts") return "Payouts";
   if (t === "integrations") return "Integrations";
   if (t === "payments") return "Payments";
+  if (t === "payers") return "Payers";
+
   if (t === "saved_patients") return "Contacts";
   if (t === "business_info") return "Business Info";
   if (t === "medicaid") return "Medicaid Submission";
@@ -465,6 +485,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
+            {tab === "payers" && <PayersTab />}
+
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {/* business_info tab removed — merged into Account > Profile for providers */}
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
