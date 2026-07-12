@@ -17,7 +17,7 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
             <div>
               <Link to="/" className="block mb-3" aria-label="My Florida NEMT — home">
                 <span className="font-extrabold text-xl tracking-tighter uppercase">
-                  My Florida <span className="text-accent">NEMT</span>
+                  <span className="text-primary">My Florida</span> <span className="text-accent">NEMT</span>
                 </span>
               </Link>
               <p className="text-xs opacity-70 leading-relaxed max-w-xs">
