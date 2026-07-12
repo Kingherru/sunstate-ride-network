@@ -471,7 +471,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               );
             })()}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
-            {tab === "new" && (canSend ? <NewTripForm initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
             {tab === "schedule" && <ScheduleCalendarPanel />}
