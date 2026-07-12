@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import logoHorizontal from "@/assets/logo-horizontal.png";
 
 export type FooterPortal = "public" | "patient" | "provider" | "facility" | "admin";
 
