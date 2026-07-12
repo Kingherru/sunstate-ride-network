@@ -77,10 +77,12 @@ export function AdminTripsPanel() {
 export function AdminReservationsPanel() {
   const fetch = useServerFn(listAllReservationsAdmin);
   const [status, setStatus] = useState("all");
+  const [openId, setOpenId] = useState<string | null>(null);
   const q = useQuery({
     queryKey: ["admin-reservations", status],
     queryFn: () => fetch({ data: { status } }),
   });
+
 
   return (
     <div className="space-y-4">
