@@ -74,7 +74,7 @@ export function SendFeedbackPanel() {
       if (!userId) return;
       const { data, error } = await supabase
         .from("trips")
-        .select("id, status, assigned_to, created_at, pickup_address, dropoff_address, pickup_at")
+        .select("id, status, assigned_to, created_at, pickup_address, dropoff_address, pickup_date")
         .eq("created_by", userId)
         .in("status", ["completed", "accepted", "assigned"])
         .not("assigned_to", "is", null)
@@ -169,7 +169,7 @@ export function SendFeedbackPanel() {
             <option value="">Choose a trip…</option>
             {trips.map((t) => (
               <option key={t.id} value={t.id}>
-                {new Date(t.pickup_at ?? t.created_at).toLocaleDateString()} · {t.pickup_address ?? "Pickup"} → {t.dropoff_address ?? "Dropoff"}
+                {new Date(t.pickup_date ?? t.created_at).toLocaleDateString()} · {t.pickup_address ?? "Pickup"} → {t.dropoff_address ?? "Dropoff"}
                 {ratings[t.id] ? "  (rated)" : ""}
               </option>
             ))}
