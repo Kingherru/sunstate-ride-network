@@ -153,7 +153,7 @@ export const createTrip = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => createTripSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await ensurePaidSender(supabase, userId);
+    await ensureCanSendTrip(supabase, userId);
     const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "send_trip");
     const region = regionFor(data.pickup_city);
     const { hipaa_ack_id: _ignore, ...rest } = data;
@@ -184,7 +184,7 @@ export const createTripsBulk = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => bulkTripsSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await ensurePaidSender(supabase, userId);
+    await ensureCanSendTrip(supabase, userId);
     const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "bulk_upload");
     const rows = data.trips.map((t) => ({
       patient_first_name: t.patient_first_name,
