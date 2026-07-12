@@ -79,14 +79,9 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           <div className="col-span-2 lg:col-span-2">
             <Link to="/" className="block mb-5" aria-label="My Florida NEMT — home">
-              <img
-                src={logoHorizontal}
-                alt="My Florida NEMT"
-                width={1600}
-                height={544}
-                loading="lazy"
-                className="h-11 w-auto"
-              />
+              <span className="font-extrabold text-3xl tracking-tighter uppercase leading-none">
+                <span className="text-primary">My Florida</span> <span className="text-accent">NEMT</span>
+              </span>
             </Link>
 
             <p className="text-sm text-muted leading-relaxed max-w-sm">
