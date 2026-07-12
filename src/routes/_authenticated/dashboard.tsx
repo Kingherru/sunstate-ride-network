@@ -2024,11 +2024,15 @@ function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: ()
         .select("id")
         .eq("trip_id", trip.id)
         .maybeSingle();
+      const { data: userData } = await supabase.auth.getUser();
+      const raterId = userData.user?.id;
+      if (!raterId) throw new Error("Not signed in");
       const payload: any = {
         provider_id: providerId,
         trip_id: trip.id,
-        stars,
-        feedback: comment || null,
+        rater_id: raterId,
+        overall: stars,
+        comment: comment || null,
       };
       const q = existing
         ? supabase.from("provider_ratings").update(payload).eq("id", existing.id)
