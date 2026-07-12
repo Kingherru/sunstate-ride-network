@@ -493,6 +493,8 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "payers" && <PayersTab />}
+            {tab === "reviews" && <ProviderReviewsPanel />}
+            {tab === "feedback" && <SendFeedbackPanel />}
 
             {tab === "saved_patients" && (portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />)}
             {/* business_info tab removed — merged into Account > Profile for providers */}
