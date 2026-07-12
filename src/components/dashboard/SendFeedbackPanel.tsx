@@ -9,7 +9,7 @@ type Trip = {
   created_at: string;
   pickup_address: string | null;
   dropoff_address: string | null;
-  pickup_at: string | null;
+  pickup_date: string | null;
 };
 
 type ExistingRating = {
