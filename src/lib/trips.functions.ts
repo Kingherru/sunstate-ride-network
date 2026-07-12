@@ -33,18 +33,24 @@ async function ensureActiveMember(supabase: any, userId: string) {
     .select("membership_status, membership_tier, region")
     .eq("user_id", userId)
     .maybeSingle();
-  if (!data || data.membership_status !== "active") {
-    throw new Error("Active membership required");
-  }
-  return data;
+  return data ?? { membership_status: null, membership_tier: null, region: null };
 }
 
-async function ensurePaidSender(supabase: any, userId: string) {
-  const m = await ensureActiveMember(supabase, userId);
-  if (m.membership_tier !== "paid") {
-    throw new Error("Sending trips requires a paid membership. Upgrade at /membership.");
-  }
-  return m;
+// Historically required a paid membership. Anyone signed in can now create trips —
+// membership only affects who can *receive* referrals, not who can *send* them.
+async function ensureCanSendTrip(supabase: any, userId: string) {
+  return ensureActiveMember(supabase, userId);
+}
+
+async function assertPayerOwned(supabase: any, userId: string, payerId: string | null | undefined) {
+  if (!payerId) return;
+  const { data } = await supabase
+    .from("payers")
+    .select("id")
+    .eq("id", payerId)
+    .eq("owner_user_id", userId)
+    .maybeSingle();
+  if (!data) throw new Error("Payer not found for this account");
 }
 
 async function requireHipaaAck(
