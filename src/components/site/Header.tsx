@@ -79,8 +79,8 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between gap-3">
         <div className="flex items-center gap-8 min-w-0">
           <Link to="/" className="shrink-0 flex items-center" aria-label="My Florida NEMT — home">
-            <span className="text-[1.05rem] sm:text-[1.15rem] font-black tracking-[0.04em] text-primary uppercase">
-              MYFLORIDANEMT
+            <span className="text-[1.05rem] sm:text-[1.15rem] font-black tracking-[0.04em] uppercase leading-none">
+              <span className="text-primary">MY FLORIDA</span><span className="text-accent">NEMT</span>
             </span>
           </Link>
 
