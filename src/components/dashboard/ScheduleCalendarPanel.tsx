@@ -155,6 +155,28 @@ export function ScheduleCalendarPanel() {
     return closed || h < workStartH || h >= workEndH;
   }
 
+  function driverDayCfg(d: any) {
+    const a = d?.availability;
+    if (!a || typeof a !== "object") return { mode: "flexible" as const };
+    if (a.mode === "flexible") return { mode: "flexible" as const };
+    return { mode: "weekly" as const, day: a.days?.[dow] };
+  }
+  function driverAvailLabel(d: any) {
+    const cfg = driverDayCfg(d);
+    if (cfg.mode === "flexible") return "Flexible";
+    if (!cfg.day || cfg.day.off) return "Off today";
+    return `${(cfg.day.start ?? "09:00").slice(0,5)}–${(cfg.day.end ?? "17:00").slice(0,5)}`;
+  }
+  function isDriverUnavailable(d: any, hhmm: string) {
+    const cfg = driverDayCfg(d);
+    if (cfg.mode === "flexible") return false;
+    if (!cfg.day || cfg.day.off) return true;
+    const h = Number(hhmm.slice(0, 2));
+    const sh = Number((cfg.day.start ?? "09:00").slice(0, 2));
+    const eh = Number((cfg.day.end ?? "17:00").slice(0, 2));
+    return h < sh || h >= eh;
+  }
+
   function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
     e.preventDefault();
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
