@@ -82,6 +82,25 @@ const DAY_LABELS: [string, string][] = [
   ["5", "Fri"], ["6", "Sat"], ["0", "Sun"],
 ];
 
+function employmentLabel(v?: string | null) {
+  if (!v) return "Employment: not set";
+  const found = EMPLOYMENT_TYPES.find(t => t.value === v);
+  return found ? found.label : v;
+}
+
+function availabilitySummary(a: any): string {
+  if (!a || typeof a !== "object") return "Flexible availability";
+  if (a.mode === "flexible") return "Flexible / on-call";
+  const days = a.days ?? {};
+  const working = DAY_LABELS.filter(([k]) => !days[k]?.off);
+  if (working.length === 0) return "No working days set";
+  // Group by identical hours
+  const hours = working.map(([k, l]) => ({ l, s: days[k]?.start ?? "09:00", e: days[k]?.end ?? "17:00" }));
+  const allSame = hours.every(h => h.s === hours[0].s && h.e === hours[0].e);
+  const dayList = working.map(([, l]) => l).join(", ");
+  return allSame ? `${dayList} · ${hours[0].s}–${hours[0].e}` : `${dayList} (varies)`;
+}
+
 function defaultAvailability() {
   const days: Record<string, { off?: boolean; start?: string; end?: string }> = {};
   for (const [k] of DAY_LABELS) {
