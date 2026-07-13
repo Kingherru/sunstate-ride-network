@@ -410,13 +410,14 @@ export function ScheduleCalendarPanel() {
                     {drivers.map((d: any) => {
                       const key = `${d.id}__${h}`;
                       const cell = cellMap.get(key) ?? [];
+                      const unavail = isDriverUnavailable(d, h);
                       return (
                         <td
                           key={d.id}
-                          className={`border-r border-border align-top p-1 min-h-[60px] ${after ? "bg-accent/15" : "hover:bg-primary/5"}`}
+                          className={`border-r border-border align-top p-1 min-h-[60px] ${after ? "bg-accent/15" : unavail ? "bg-muted/40" : "hover:bg-primary/5"}`}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => onDrop(e, d.id, h)}
-                          title={after ? "Outside posted work hours" : undefined}
+                          title={unavail ? "Driver is off / outside their working hours" : after ? "Outside posted work hours" : undefined}
                         >
                           <div className="space-y-1 min-h-[54px]">
                             {cell.map((r: any) => (
