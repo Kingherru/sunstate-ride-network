@@ -329,3 +329,68 @@ export const discoverContacts = createServerFn({ method: "POST" })
     })).filter(matches);
     return { ok: true as const, contacts: sortContacts(contacts, sort) };
   });
+
+/** Open (or reuse) the Dispatch conversation for the current user. */
+export const openDispatchThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { zone_id?: string | null; initial_body?: string } = {}) => input)
+  .handler(async ({ data, context }) => {
+    const { data: threadId, error } = await context.supabase.rpc("open_dispatch_thread", {
+      _zone_id: data.zone_id ?? null,
+    });
+    if (error) return { ok: false as const, error: error.message };
+    const body = (data.initial_body ?? "").trim();
+    if (body) {
+      await context.supabase.from("messages").insert({
+        thread_id: threadId, sender_id: context.userId, body,
+      });
+    }
+    return { ok: true as const, thread_id: threadId as string };
+  });
+
+/** Open (or reuse) the Zone Manager conversation for a given zone. */
+export const openZoneManagerThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { zone_id: string; initial_body?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: threadId, error } = await context.supabase.rpc("open_zone_manager_thread", {
+      _zone_id: data.zone_id,
+    });
+    if (error) return { ok: false as const, error: error.message };
+    const body = (data.initial_body ?? "").trim();
+    if (body) {
+      await context.supabase.from("messages").insert({
+        thread_id: threadId, sender_id: context.userId, body,
+      });
+    }
+    return { ok: true as const, thread_id: threadId as string };
+  });
+
+/** Submit a Feedback message directly to the admin. */
+export const submitFeedbackMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { subject: string; body: string; category?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const subject = (data.subject ?? "").trim();
+    const body = (data.body ?? "").trim();
+    if (!subject) return { ok: false as const, error: "Subject required" };
+    if (!body) return { ok: false as const, error: "Message required" };
+    const { data: threadId, error } = await context.supabase.rpc("submit_feedback_message", {
+      _subject: subject, _body: body, _category: data.category ?? "general",
+    });
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const, thread_id: threadId as string };
+  });
+
+/** List dispatch zones (id + name) so users can pick a zone for zone-manager threads. */
+export const listDispatchZones = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("dispatch_zones")
+      .select("id, name, code")
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) return { ok: false as const, error: error.message, zones: [] };
+    return { ok: true as const, zones: (data ?? []) as { id: string; name: string; code: string | null }[] };
+  });
