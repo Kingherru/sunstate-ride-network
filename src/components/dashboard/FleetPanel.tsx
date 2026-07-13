@@ -45,7 +45,9 @@ function DriversCard() {
                   <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{d.status.replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
-              </div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  {employmentLabel(d.employment_type)} · {availabilitySummary(d.availability)}
+                </div>
               <div className="text-xs flex items-center gap-3">
                 {d.email && (
                   <button onClick={() => setScheduling(d)} className="font-bold text-primary hover:underline">Email week</button>
