@@ -394,6 +394,16 @@ function RequestRidePage() {
             You can review and edit the reservation from the trip details page until a dispatcher claims it.
           </p>
 
+          <CopyTripToDates
+            sourceId={done.id}
+            defaultPickupTime={form.pickupTime}
+            defaultAppointmentTime={form.appointmentTime}
+            defaultReturnPickupTime={form.returnPickupTime}
+            defaultReturnDropoffTime={form.returnDropoffTime}
+            isRoundTrip={form.tripType === "round_trip"}
+          />
+
+
         </div>
       </section>
     );
