@@ -166,8 +166,8 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   }
 
   return (
-    <section className="min-h-screen flex-1 grid md:grid-cols-2 gap-0 bg-[#1D3557] text-white">
-      <div className="hidden md:flex flex-col justify-between p-12 bg-[#1D3557]">
+    <section className="min-h-screen flex-1 grid md:grid-cols-2 gap-0">
+      <div className="hidden md:flex flex-col justify-between p-12 bg-[#1D3557] text-white">
         <div>
           <Link
             to="/"
@@ -189,21 +189,21 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
           ))}
         </ul>
       </div>
-      <div className="grid place-items-center px-6 py-12 bg-[#1D3557]">
-        <div className="w-full max-w-md rounded-2xl p-8 bg-white/5 border border-white/10 backdrop-blur">
+      <div className="grid place-items-center px-6 py-12 bg-white text-foreground">
+        <div className="w-full max-w-md rounded-2xl p-8 bg-white border border-border shadow-sm">
           <Link
             to="/"
-            className="md:hidden inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white mb-4"
+            className="md:hidden inline-flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-4 w-4" /> Back to home
           </Link>
-          <p className="md:hidden font-mono text-xs font-bold text-white/70 uppercase tracking-widest mb-3">
+          <p className="md:hidden font-mono text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
             {copy.eyebrow}
           </p>
-          <h2 className="text-2xl font-extrabold tracking-tighter mb-1 text-white">
+          <h2 className="text-2xl font-extrabold tracking-tighter mb-1 text-foreground">
             {mode === "signin" ? "Sign in" : "Create your account"}
           </h2>
-          <p className="text-sm text-white/70 mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             {mode === "signin" ? "Welcome back." : "It takes less than a minute."}
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -292,7 +292,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
 
                 <div className="pt-2 border-t border-border/60 mt-2">
                   <p className="portal-label mb-2">Billing information</p>
-                  <label className="flex items-start gap-2 text-sm">
+                  <label className="flex items-start gap-2 text-sm text-foreground">
                     <input
                       type="checkbox"
                       className="mt-1"
@@ -343,7 +343,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
             <button
               type="submit"
               disabled={busy}
-              className="w-full py-3 rounded-sm bg-white text-[#1D3557] font-bold text-sm tracking-widest uppercase hover:bg-white/90 transition disabled:opacity-60"
+              className="w-full py-3 rounded-sm bg-[#1D3557] text-white font-bold text-sm tracking-widest uppercase hover:bg-[#1D3557]/90 transition disabled:opacity-60"
             >
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
@@ -352,7 +352,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
             <button
               type="button"
               onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-              className="text-sm text-white/70 hover:text-white"
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
               {mode === "signin"
                 ? "Don't have an account? Sign up"
@@ -363,7 +363,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                 type="button"
                 onClick={onForgot}
                 disabled={busy}
-                className="text-sm text-white/70 hover:text-white"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
                 Forgot password?
               </button>
@@ -371,6 +371,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
           </div>
         </div>
       </div>
+
     </section>
   );
 }
