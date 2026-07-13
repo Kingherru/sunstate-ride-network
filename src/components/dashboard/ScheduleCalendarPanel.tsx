@@ -385,6 +385,9 @@ export function ScheduleCalendarPanel() {
                       <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
                         {d.status} · {dTripCount} trip{dTripCount === 1 ? "" : "s"}
                       </div>
+                      <div className="text-[10px] font-semibold text-primary" title="Driver availability today">
+                        {driverAvailLabel(d)}
+                      </div>
                     </th>
                   );
                 })}
