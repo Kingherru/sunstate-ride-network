@@ -48,6 +48,7 @@ function DriversCard() {
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   {employmentLabel(d.employment_type)} · {availabilitySummary(d.availability)}
                 </div>
+              </div>
               <div className="text-xs flex items-center gap-3">
                 {d.email && (
                   <button onClick={() => setScheduling(d)} className="font-bold text-primary hover:underline">Email week</button>
