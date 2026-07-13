@@ -19,6 +19,8 @@ import { AddressAutocomplete, type AddressSelection } from "@/components/forms/A
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
+import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
+
 
 export const Route = createFileRoute("/request-a-ride")({
   validateSearch: (s: Record<string, unknown>) =>
@@ -391,6 +393,16 @@ function RequestRidePage() {
           <p className="mt-4 text-xs text-muted">
             You can review and edit the reservation from the trip details page until a dispatcher claims it.
           </p>
+
+          <CopyTripToDates
+            sourceId={done.id}
+            defaultPickupTime={form.pickupTime}
+            defaultAppointmentTime={form.appointmentTime}
+            defaultReturnPickupTime={form.returnPickupTime}
+            defaultReturnDropoffTime={form.returnDropoffTime}
+            isRoundTrip={form.tripType === "round_trip"}
+          />
+
 
         </div>
       </section>
