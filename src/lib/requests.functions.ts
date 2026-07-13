@@ -294,4 +294,104 @@ export const listRequestHistory = createServerFn({ method: "GET" })
     return { ok: true as const, rows: rows ?? [] };
   });
 
+// ---------- Copy trip to multiple dates ----------
+
+const copyDateEntrySchema = z.object({
+  pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  pickupTime: z.string().regex(/^\d{2}:\d{2}$/),
+  appointmentTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+});
+
+const copyToDatesSchema = z.object({
+  sourceId: z.string().uuid(),
+  dates: z.array(copyDateEntrySchema).min(1).max(60),
+});
+
+// Fields to copy from the source trip. Everything trip-shape-related is duplicated;
+// per-occurrence status, assignment, payment, timing, and audit fields are reset.
+const COPY_FIELDS = [
+  "patient_first_name",
+  "patient_last_name",
+  "patient_phone",
+  "patient_email",
+  "pickup_address",
+  "pickup_address_details",
+  "pickup_city",
+  "pickup_zip",
+  "dropoff_address",
+  "dropoff_city",
+  "dropoff_zip",
+  "transport_type",
+  "trip_type",
+  "round_trip",
+  "additional_stops",
+  "mobility_notes",
+  "special_instructions",
+  "is_black_tie",
+  "black_tie_vehicle",
+  "trip_billing_source",
+  "trip_billing_first_name",
+  "trip_billing_last_name",
+  "trip_billing_email",
+  "trip_billing_phone",
+  "payer",
+  "medicaid_number",
+  "medicaid_plan",
+  "service_level",
+  "needs_wheelchair",
+  "embed_provider_id",
+  "embed_token",
+] as const;
+
+export const copyRequestToDates = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => copyToDatesSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const cols = COPY_FIELDS.join(", ");
+    const { data: source, error: readErr } = await supabase
+      .from("ride_requests")
+      .select(cols)
+      .eq("id", data.sourceId)
+      .eq("requester_user_id", userId)
+      .maybeSingle();
+    if (readErr || !source) {
+      return { ok: false as const, error: "Original trip not found." };
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const rows = data.dates.map((d) => {
+      const base: Record<string, unknown> = {};
+      for (const f of COPY_FIELDS) base[f] = (source as any)[f] ?? null;
+      base.requester_user_id = userId;
+      base.pickup_date = d.pickupDate;
+      base.pickup_time = d.pickupTime;
+      base.appointment_time = d.appointmentTime || null;
+      base.return_pickup_time = d.returnPickupTime || null;
+      base.return_dropoff_time = d.returnDropoffTime || null;
+      base.status = "pending";
+      // Each copy is an independent one-off trip (never a recurring series).
+      base.recurrence_rule = null;
+      base.recurrence_end_date = null;
+      base.recurrence_exceptions = [];
+      base.black_tie_quote_status = (source as any).is_black_tie ? "awaiting_quote" : "awaiting_quote";
+      return base;
+    });
+
+    const { data: inserted, error: insErr } = await (supabaseAdmin as any)
+      .from("ride_requests")
+      .insert(rows)
+      .select("id, pickup_date, pickup_time");
+    if (insErr) {
+      console.error("copyRequestToDates error", insErr);
+      return { ok: false as const, error: "Could not copy the trip. Please try again." };
+    }
+    return { ok: true as const, rows: inserted ?? [] };
+  });
+
+
 
