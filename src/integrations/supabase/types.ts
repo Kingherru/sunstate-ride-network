@@ -1061,25 +1061,56 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          feedback_id: string | null
           id: string
+          kind: string
           last_message_at: string
           subject: string | null
+          zone_id: string | null
         }
         Insert: {
           created_at?: string
           created_by: string
+          feedback_id?: string | null
           id?: string
+          kind?: string
           last_message_at?: string
           subject?: string | null
+          zone_id?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string
+          feedback_id?: string | null
           id?: string
+          kind?: string
           last_message_at?: string
           subject?: string | null
+          zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "message_threads_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_pricing_averages"
+            referencedColumns: ["zone_id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -3786,6 +3817,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      admin_user_ids: { Args: never; Returns: string[] }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
       decide_trip_quote: {
@@ -3918,6 +3950,8 @@ export type Database = {
         Args: { _provider_user_id: string; _trip_id: string }
         Returns: undefined
       }
+      open_dispatch_thread: { Args: { _zone_id?: string }; Returns: string }
+      open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
       promote_ride_request_to_trip: {
         Args: { _ride_request_id: string }
         Returns: string
@@ -3956,6 +3990,10 @@ export type Database = {
       }
       start_direct_thread: { Args: { _recipient: string }; Returns: string }
       start_staff_thread: { Args: never; Returns: string }
+      submit_feedback_message: {
+        Args: { _body: string; _category?: string; _subject: string }
+        Returns: string
+      }
       submit_trip_quote:
         | {
             Args: { _amount_cents: number; _note?: string; _trip_id: string }
