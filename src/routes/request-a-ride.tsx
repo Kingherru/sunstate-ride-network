@@ -19,6 +19,8 @@ import { AddressAutocomplete, type AddressSelection } from "@/components/forms/A
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
+import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
+
 
 export const Route = createFileRoute("/request-a-ride")({
   validateSearch: (s: Record<string, unknown>) =>
