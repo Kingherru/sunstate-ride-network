@@ -23,10 +23,24 @@ export const upsertDriver = createServerFn({ method: "POST" })
     license_expiry?: string | null;
     status?: "active" | "inactive" | "on_leave";
     notes?: string;
+    employment_type?:
+      | "independent_contractor"
+      | "employee_w2"
+      | "part_time"
+      | "full_time"
+      | "temporary"
+      | "seasonal"
+      | null;
+    availability?: {
+      mode: "weekly" | "flexible";
+      days: Record<string, { off?: boolean; start?: string; end?: string }>;
+    } | null;
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const row = { ...data, owner_id: userId, status: data.status ?? "active" };
+    const row: any = { ...data, owner_id: userId, status: data.status ?? "active" };
+    if (data.employment_type === undefined) delete row.employment_type;
+    if (data.availability === undefined) delete row.availability;
     const q = data.id
       ? supabase.from("drivers").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
       : supabase.from("drivers").insert(row).select().single();
