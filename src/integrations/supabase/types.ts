@@ -396,8 +396,10 @@ export type Database = {
       }
       drivers: {
         Row: {
+          availability: Json
           created_at: string
           email: string | null
+          employment_type: string | null
           first_name: string
           id: string
           last_name: string
@@ -410,8 +412,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          availability?: Json
           created_at?: string
           email?: string | null
+          employment_type?: string | null
           first_name: string
           id?: string
           last_name: string
@@ -424,8 +428,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          availability?: Json
           created_at?: string
           email?: string | null
+          employment_type?: string | null
           first_name?: string
           id?: string
           last_name?: string

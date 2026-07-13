@@ -45,6 +45,9 @@ function DriversCard() {
                   <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{d.status.replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  {employmentLabel(d.employment_type)} · {availabilitySummary(d.availability)}
+                </div>
               </div>
               <div className="text-xs flex items-center gap-3">
                 {d.email && (
@@ -64,22 +67,77 @@ function DriversCard() {
   );
 }
 
+const EMPLOYMENT_TYPES: { value: string; label: string }[] = [
+  { value: "", label: "— Not set —" },
+  { value: "independent_contractor", label: "Independent Contractor (1099)" },
+  { value: "employee_w2", label: "Employee (W-2)" },
+  { value: "full_time", label: "Full-Time" },
+  { value: "part_time", label: "Part-Time" },
+  { value: "temporary", label: "Temporary" },
+  { value: "seasonal", label: "Seasonal" },
+];
+
+const DAY_LABELS: [string, string][] = [
+  ["1", "Mon"], ["2", "Tue"], ["3", "Wed"], ["4", "Thu"],
+  ["5", "Fri"], ["6", "Sat"], ["0", "Sun"],
+];
+
+function employmentLabel(v?: string | null) {
+  if (!v) return "Employment: not set";
+  const found = EMPLOYMENT_TYPES.find(t => t.value === v);
+  return found ? found.label : v;
+}
+
+function availabilitySummary(a: any): string {
+  if (!a || typeof a !== "object") return "Flexible availability";
+  if (a.mode === "flexible") return "Flexible / on-call";
+  const days = a.days ?? {};
+  const working = DAY_LABELS.filter(([k]) => !days[k]?.off);
+  if (working.length === 0) return "No working days set";
+  // Group by identical hours
+  const hours = working.map(([k, l]) => ({ l, s: days[k]?.start ?? "09:00", e: days[k]?.end ?? "17:00" }));
+  const allSame = hours.every(h => h.s === hours[0].s && h.e === hours[0].e);
+  const dayList = working.map(([, l]) => l).join(", ");
+  return allSame ? `${dayList} · ${hours[0].s}–${hours[0].e}` : `${dayList} (varies)`;
+}
+
+function defaultAvailability() {
+  const days: Record<string, { off?: boolean; start?: string; end?: string }> = {};
+  for (const [k] of DAY_LABELS) {
+    const weekend = k === "0" || k === "6";
+    days[k] = weekend ? { off: true } : { start: "09:00", end: "17:00" };
+  }
+  return { mode: "weekly" as const, days };
+}
+
 function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; onSaved: () => void }) {
+  const initialAvail = d.availability && typeof d.availability === "object"
+    ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
+    : defaultAvailability();
   const [f, set] = useState({
     first_name: d.first_name ?? "", last_name: d.last_name ?? "",
     phone: d.phone ?? "", email: d.email ?? "",
     license_number: d.license_number ?? "", license_expiry: d.license_expiry ?? "",
     status: d.status ?? "active", notes: d.notes ?? "",
+    employment_type: d.employment_type ?? "",
+    availability: initialAvail,
   });
+  const setDay = (k: string, patch: Partial<{ off: boolean; start: string; end: string }>) =>
+    set({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [k]: { ...(f.availability.days[k] ?? {}), ...patch } } } });
   const m = useMutation({
-    mutationFn: () => upsertDriver({ data: { ...f, id: d.id, license_expiry: f.license_expiry || null } as any }),
+    mutationFn: () => upsertDriver({ data: {
+      ...f, id: d.id,
+      license_expiry: f.license_expiry || null,
+      employment_type: (f.employment_type || null) as any,
+      availability: f.availability,
+    } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3">
+            className="bg-card rounded-sm max-w-2xl w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
         <h3 className="col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
@@ -87,13 +145,76 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
         <I l="Email" v={f.email} on={(v) => set({ ...f, email: v })} type="email" />
         <I l="License #" v={f.license_number} on={(v) => set({ ...f, license_number: v })} />
         <I l="License expiry" v={f.license_expiry} on={(v) => set({ ...f, license_expiry: v })} type="date" />
-        <label className="col-span-2 flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold">Status</span>
           <select value={f.status} onChange={(e) => set({ ...f, status: e.target.value as any })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="on_leave">On leave</option>
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-bold">Employment type</span>
+          <select value={f.employment_type} onChange={(e) => set({ ...f, employment_type: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background">
+            {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        </label>
+
+        <div className="col-span-2 border border-border rounded-sm p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-bold text-sm">Weekly availability</span>
+            <label className="flex items-center gap-2 text-xs">
+              <span className="font-bold">Mode</span>
+              <select value={f.availability.mode}
+                      onChange={(e) => set({ ...f, availability: { ...f.availability, mode: e.target.value as any } })}
+                      className="border border-border rounded-sm px-2 py-1 bg-background">
+                <option value="weekly">Set weekly hours</option>
+                <option value="flexible">Flexible / on-call</option>
+              </select>
+            </label>
+          </div>
+          {f.availability.mode === "flexible" ? (
+            <p className="text-xs text-muted-foreground">Driver is treated as available at any hour on the schedule board.</p>
+          ) : (
+            <div className="grid gap-1.5">
+              {DAY_LABELS.map(([k, label]) => {
+                const day = f.availability.days[k] ?? {};
+                const off = !!day.off;
+                return (
+                  <div key={k} className="flex items-center gap-2 text-xs">
+                    <span className="w-10 font-bold">{label}</span>
+                    <label className="flex items-center gap-1">
+                      <input type="checkbox" checked={off} onChange={(e) => setDay(k, { off: e.target.checked })} />
+                      <span>Off</span>
+                    </label>
+                    <input type="time" disabled={off} value={day.start ?? "09:00"}
+                           onChange={(e) => setDay(k, { start: e.target.value })}
+                           className="border border-border rounded-sm px-2 py-1 bg-background disabled:opacity-40" />
+                    <span>–</span>
+                    <input type="time" disabled={off} value={day.end ?? "17:00"}
+                           onChange={(e) => setDay(k, { end: e.target.value })}
+                           className="border border-border rounded-sm px-2 py-1 bg-background disabled:opacity-40" />
+                  </div>
+                );
+              })}
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button type="button" className="text-[11px] font-bold text-primary hover:underline"
+                        onClick={() => set({ ...f, availability: defaultAvailability() })}>
+                  Preset: Mon–Fri 9–5
+                </button>
+                <button type="button" className="text-[11px] font-bold text-primary hover:underline"
+                        onClick={() => {
+                          const days: any = {};
+                          for (const [k] of DAY_LABELS) days[k] = { start: "00:00", end: "23:59" };
+                          set({ ...f, availability: { mode: "weekly", days } });
+                        }}>
+                  Preset: 24/7
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="col-span-2 flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">

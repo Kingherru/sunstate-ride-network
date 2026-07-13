@@ -155,6 +155,28 @@ export function ScheduleCalendarPanel() {
     return closed || h < workStartH || h >= workEndH;
   }
 
+  function driverDayCfg(d: any) {
+    const a = d?.availability;
+    if (!a || typeof a !== "object") return { mode: "flexible" as const };
+    if (a.mode === "flexible") return { mode: "flexible" as const };
+    return { mode: "weekly" as const, day: a.days?.[dow] };
+  }
+  function driverAvailLabel(d: any) {
+    const cfg = driverDayCfg(d);
+    if (cfg.mode === "flexible") return "Flexible";
+    if (!cfg.day || cfg.day.off) return "Off today";
+    return `${(cfg.day.start ?? "09:00").slice(0,5)}–${(cfg.day.end ?? "17:00").slice(0,5)}`;
+  }
+  function isDriverUnavailable(d: any, hhmm: string) {
+    const cfg = driverDayCfg(d);
+    if (cfg.mode === "flexible") return false;
+    if (!cfg.day || cfg.day.off) return true;
+    const h = Number(hhmm.slice(0, 2));
+    const sh = Number((cfg.day.start ?? "09:00").slice(0, 2));
+    const eh = Number((cfg.day.end ?? "17:00").slice(0, 2));
+    return h < sh || h >= eh;
+  }
+
   function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
     e.preventDefault();
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
@@ -363,6 +385,9 @@ export function ScheduleCalendarPanel() {
                       <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
                         {d.status} · {dTripCount} trip{dTripCount === 1 ? "" : "s"}
                       </div>
+                      <div className="text-[10px] font-semibold text-primary" title="Driver availability today">
+                        {driverAvailLabel(d)}
+                      </div>
                     </th>
                   );
                 })}
@@ -385,13 +410,14 @@ export function ScheduleCalendarPanel() {
                     {drivers.map((d: any) => {
                       const key = `${d.id}__${h}`;
                       const cell = cellMap.get(key) ?? [];
+                      const unavail = isDriverUnavailable(d, h);
                       return (
                         <td
                           key={d.id}
-                          className={`border-r border-border align-top p-1 min-h-[60px] ${after ? "bg-accent/15" : "hover:bg-primary/5"}`}
+                          className={`border-r border-border align-top p-1 min-h-[60px] ${after ? "bg-accent/15" : unavail ? "bg-muted/40" : "hover:bg-primary/5"}`}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => onDrop(e, d.id, h)}
-                          title={after ? "Outside posted work hours" : undefined}
+                          title={unavail ? "Driver is off / outside their working hours" : after ? "Outside posted work hours" : undefined}
                         >
                           <div className="space-y-1 min-h-[54px]">
                             {cell.map((r: any) => (
