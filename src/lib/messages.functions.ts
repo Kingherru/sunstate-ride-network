@@ -336,7 +336,7 @@ export const openDispatchThread = createServerFn({ method: "POST" })
   .inputValidator((input: { zone_id?: string | null; initial_body?: string } = {}) => input)
   .handler(async ({ data, context }) => {
     const { data: threadId, error } = await context.supabase.rpc("open_dispatch_thread", {
-      _zone_id: data.zone_id ?? null,
+      _zone_id: data.zone_id ?? undefined,
     });
     if (error) return { ok: false as const, error: error.message };
     const body = (data.initial_body ?? "").trim();
