@@ -38,7 +38,7 @@ export const listThreads = createServerFn({ method: "GET" })
 
     const { data: threads } = await supabase
       .from("message_threads")
-      .select("id, subject, created_by, last_message_at, created_at")
+      .select("id, subject, created_by, last_message_at, created_at, kind, zone_id, feedback_id")
       .in("id", threadIds)
       .order("last_message_at", { ascending: false });
 
