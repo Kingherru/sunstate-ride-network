@@ -3070,7 +3070,7 @@ export type Database = {
           cost_breakdown: Json | null
           cost_total: number | null
           created_at: string
-          created_by: string
+          created_by: string | null
           diagnosis_code: string | null
           dispatch_zone_id: string | null
           display_id: string | null
@@ -3166,7 +3166,7 @@ export type Database = {
           cost_breakdown?: Json | null
           cost_total?: number | null
           created_at?: string
-          created_by: string
+          created_by?: string | null
           diagnosis_code?: string | null
           dispatch_zone_id?: string | null
           display_id?: string | null
@@ -3262,7 +3262,7 @@ export type Database = {
           cost_breakdown?: Json | null
           cost_total?: number | null
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           diagnosis_code?: string | null
           dispatch_zone_id?: string | null
           display_id?: string | null
