@@ -121,12 +121,17 @@ export const listThreads = createServerFn({ method: "GET" })
           };
         });
       let rel: Relationship = "unknown";
-      const otherId = others[0]?.user_id;
-      if (otherId) {
-        if (staffSet.has(otherId) || iAmStaff) rel = "staff";
-        else if (priorTripSet.has(otherId)) rel = "prior_trip";
-        else if (paidProviderSet.has(otherId)) rel = "provider_network";
-        else rel = "subscription";
+      if (t.kind === "dispatch") rel = "dispatch";
+      else if (t.kind === "zone_manager") rel = "zone_manager";
+      else if (t.kind === "feedback_admin") rel = "feedback_admin";
+      else {
+        const otherId = others[0]?.user_id;
+        if (otherId) {
+          if (staffSet.has(otherId) || iAmStaff) rel = "staff";
+          else if (priorTripSet.has(otherId)) rel = "prior_trip";
+          else if (paidProviderSet.has(otherId)) rel = "provider_network";
+          else rel = "subscription";
+        }
       }
       return {
         ...t,
