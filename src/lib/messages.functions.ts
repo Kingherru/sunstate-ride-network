@@ -1,10 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type Relationship = "staff" | "provider_network" | "prior_trip" | "subscription" | "unknown";
+export type Relationship =
+  | "staff"
+  | "dispatch"
+  | "zone_manager"
+  | "feedback_admin"
+  | "provider_network"
+  | "prior_trip"
+  | "subscription"
+  | "unknown";
 
 function relationshipLabel(r: Relationship): string {
   if (r === "staff") return "Staff";
+  if (r === "dispatch") return "Dispatch";
+  if (r === "zone_manager") return "Zone Manager";
+  if (r === "feedback_admin") return "Feedback · Admin";
   if (r === "provider_network") return "Provider Network";
   if (r === "prior_trip") return "Prior Trip";
   if (r === "subscription") return "Subscription";
