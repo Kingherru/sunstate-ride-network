@@ -1,10 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type Relationship = "staff" | "provider_network" | "prior_trip" | "subscription" | "unknown";
+export type Relationship =
+  | "staff"
+  | "dispatch"
+  | "zone_manager"
+  | "feedback_admin"
+  | "provider_network"
+  | "prior_trip"
+  | "subscription"
+  | "unknown";
 
 function relationshipLabel(r: Relationship): string {
   if (r === "staff") return "Staff";
+  if (r === "dispatch") return "Dispatch";
+  if (r === "zone_manager") return "Zone Manager";
+  if (r === "feedback_admin") return "Feedback · Admin";
   if (r === "provider_network") return "Provider Network";
   if (r === "prior_trip") return "Prior Trip";
   if (r === "subscription") return "Subscription";
@@ -27,7 +38,7 @@ export const listThreads = createServerFn({ method: "GET" })
 
     const { data: threads } = await supabase
       .from("message_threads")
-      .select("id, subject, created_by, last_message_at, created_at")
+      .select("id, subject, created_by, last_message_at, created_at, kind, zone_id, feedback_id")
       .in("id", threadIds)
       .order("last_message_at", { ascending: false });
 
@@ -110,12 +121,17 @@ export const listThreads = createServerFn({ method: "GET" })
           };
         });
       let rel: Relationship = "unknown";
-      const otherId = others[0]?.user_id;
-      if (otherId) {
-        if (staffSet.has(otherId) || iAmStaff) rel = "staff";
-        else if (priorTripSet.has(otherId)) rel = "prior_trip";
-        else if (paidProviderSet.has(otherId)) rel = "provider_network";
-        else rel = "subscription";
+      if (t.kind === "dispatch") rel = "dispatch";
+      else if (t.kind === "zone_manager") rel = "zone_manager";
+      else if (t.kind === "feedback_admin") rel = "feedback_admin";
+      else {
+        const otherId = others[0]?.user_id;
+        if (otherId) {
+          if (staffSet.has(otherId) || iAmStaff) rel = "staff";
+          else if (priorTripSet.has(otherId)) rel = "prior_trip";
+          else if (paidProviderSet.has(otherId)) rel = "provider_network";
+          else rel = "subscription";
+        }
       }
       return {
         ...t,
@@ -312,4 +328,69 @@ export const discoverContacts = createServerFn({ method: "POST" })
       relationship_label: "Prior Trip",
     })).filter(matches);
     return { ok: true as const, contacts: sortContacts(contacts, sort) };
+  });
+
+/** Open (or reuse) the Dispatch conversation for the current user. */
+export const openDispatchThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { zone_id?: string | null; initial_body?: string } = {}) => input)
+  .handler(async ({ data, context }) => {
+    const { data: threadId, error } = await context.supabase.rpc("open_dispatch_thread", {
+      _zone_id: data.zone_id ?? undefined,
+    });
+    if (error) return { ok: false as const, error: error.message };
+    const body = (data.initial_body ?? "").trim();
+    if (body) {
+      await context.supabase.from("messages").insert({
+        thread_id: threadId, sender_id: context.userId, body,
+      });
+    }
+    return { ok: true as const, thread_id: threadId as string };
+  });
+
+/** Open (or reuse) the Zone Manager conversation for a given zone. */
+export const openZoneManagerThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { zone_id: string; initial_body?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: threadId, error } = await context.supabase.rpc("open_zone_manager_thread", {
+      _zone_id: data.zone_id,
+    });
+    if (error) return { ok: false as const, error: error.message };
+    const body = (data.initial_body ?? "").trim();
+    if (body) {
+      await context.supabase.from("messages").insert({
+        thread_id: threadId, sender_id: context.userId, body,
+      });
+    }
+    return { ok: true as const, thread_id: threadId as string };
+  });
+
+/** Submit a Feedback message directly to the admin. */
+export const submitFeedbackMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { subject: string; body: string; category?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const subject = (data.subject ?? "").trim();
+    const body = (data.body ?? "").trim();
+    if (!subject) return { ok: false as const, error: "Subject required" };
+    if (!body) return { ok: false as const, error: "Message required" };
+    const { data: threadId, error } = await context.supabase.rpc("submit_feedback_message", {
+      _subject: subject, _body: body, _category: data.category ?? "general",
+    });
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const, thread_id: threadId as string };
+  });
+
+/** List dispatch zones (id + name) so users can pick a zone for zone-manager threads. */
+export const listDispatchZones = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("dispatch_zones")
+      .select("id, name, code")
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) return { ok: false as const, error: error.message, zones: [] };
+    return { ok: true as const, zones: (data ?? []) as { id: string; name: string; code: string | null }[] };
   });
