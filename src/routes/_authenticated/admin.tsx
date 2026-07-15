@@ -754,6 +754,7 @@ function ReviewDrawer({
   onClose,
   onApprove,
   onDeny,
+  onCompliance,
   readOnly = false,
   readOnlyReason,
 }: {
