@@ -108,7 +108,7 @@ type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" 
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
-  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "driver_earnings", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
+  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "payers", "messages", "payments", "account"],
 };
 
@@ -488,8 +488,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "contacts" && <ContactsPanel />}
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
             {tab === "saved_providers" && <FacilityProvidersPanel initialMode="saved" />}
-            {tab === "vehicles" && <FleetPanel />}
-            {tab === "driver_earnings" && <DriverEarningsPanel />}
+            {tab === "vehicles" && (
+              <div className="space-y-8">
+                <FleetPanel />
+                <DriverEarningsPanel />
+              </div>
+            )}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
