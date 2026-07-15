@@ -424,7 +424,12 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
     name: v.name ?? "", plate: v.plate ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
     capacity: v.capacity ?? 4, status: v.status ?? "active", notes: v.notes ?? "",
+    service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
   });
+  const toggleCap = (val: "ambulatory" | "wheelchair" | "stretcher") =>
+    set({ ...f, service_capabilities: f.service_capabilities.includes(val)
+      ? f.service_capabilities.filter(x => x !== val)
+      : [...f.service_capabilities, val] });
   const m = useMutation({
     mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity) } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
@@ -433,8 +438,9 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3">
+            className="bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
         <h3 className="col-span-2 text-lg font-extrabold">{v.id ? "Edit vehicle" : "New vehicle"}</h3>
+
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
         <I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} />
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />
