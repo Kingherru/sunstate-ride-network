@@ -47,7 +47,7 @@ import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
-import { reviewProviderApplication } from "@/lib/staff.functions";
+import { reviewProviderApplication, updateProviderCompliance } from "@/lib/staff.functions";
 import {
   Sidebar,
   SidebarContent,
@@ -75,7 +75,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Application = Database["public"]["Tables"]["provider_applications"]["Row"];
 type DocEntry = { kind: string; path: string; filename: string; size: number };
-type StatusFilter = "all" | "new" | "approved" | "denied";
+type StatusFilter = "all" | "new" | "approved" | "caution" | "review" | "denied";
+type ComplianceStatus = "approved" | "caution" | "review" | "denied";
 
 type TabId =
   | "overview"
@@ -420,7 +421,8 @@ function OverviewTab() {
 function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
   const qc = useQueryClient();
   const reviewFn = useServerFn(reviewProviderApplication);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("new");
+  const complianceFn = useServerFn(updateProviderCompliance);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -446,8 +448,17 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
     [apps],
   );
 
+  const complianceOf = (a: Application): ComplianceStatus =>
+    ((a as any).compliance_status as ComplianceStatus) ?? "approved";
+
   const filtered = apps.filter((a) => {
-    if (statusFilter !== "all" && a.status !== statusFilter) return false;
+    if (statusFilter !== "all") {
+      if (statusFilter === "new" && a.status !== "new" && a.status !== "pending") return false;
+      if (statusFilter === "denied" && complianceOf(a) !== "denied") return false;
+      if (statusFilter === "approved" && !(a.status === "approved" && complianceOf(a) === "approved")) return false;
+      if (statusFilter === "caution" && complianceOf(a) !== "caution") return false;
+      if (statusFilter === "review" && complianceOf(a) !== "review") return false;
+    }
     if (cityFilter !== "all" && a.city !== cityFilter) return false;
     if (regionFilter !== "all" && a.region !== regionFilter) return false;
     if (search) {
@@ -470,9 +481,11 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
   const counts = {
     total: apps.length,
-    new: apps.filter((a) => a.status === "new").length,
-    approved: apps.filter((a) => a.status === "approved").length,
-    denied: apps.filter((a) => a.status === "denied").length,
+    new: apps.filter((a) => a.status === "new" || a.status === "pending").length,
+    approved: apps.filter((a) => a.status === "approved" && complianceOf(a) === "approved").length,
+    caution: apps.filter((a) => complianceOf(a) === "caution").length,
+    review: apps.filter((a) => complianceOf(a) === "review").length,
+    denied: apps.filter((a) => complianceOf(a) === "denied").length,
   };
 
   async function updateStatus(id: string, status: "approved" | "denied", notes?: string) {
@@ -490,18 +503,36 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
     }
   }
 
+  async function updateCompliance(id: string, compliance_status: ComplianceStatus, notes?: string) {
+    if (!caps.canReviewProviders) {
+      toast.error(permissionMessage("canReviewProviders"));
+      return;
+    }
+    try {
+      await complianceFn({ data: { id, compliance_status, notes } });
+      toast.success(`Compliance set to ${compliance_status}`);
+      qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+      qc.invalidateQueries({ queryKey: ["audit-log"] });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Update failed");
+    }
+  }
+
   const selected = selectedId ? apps.find((a) => a.id === selectedId) ?? null : null;
 
   return (
     <div className="space-y-6">
       <RegisteredMembersList portal="provider" title="Registered providers" />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Stat label="Total" value={counts.total} />
-        <Stat label="New" value={counts.new} tone="accent" />
+        <Stat label="Needs Review" value={counts.new} tone="accent" />
         <Stat label="Approved" value={counts.approved} tone="success" />
+        <Stat label="Caution" value={counts.caution} tone="warning" />
+        <Stat label="In Review (48h)" value={counts.review} tone="warning" />
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
+
 
       <div className="bg-card border border-border rounded-2xl p-5">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">By region</h2>
@@ -527,10 +558,12 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
       <div className="flex flex-wrap gap-3">
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
-          <option value="new">New ({counts.new})</option>
-          <option value="approved">Approved ({counts.approved})</option>
-          <option value="denied">Denied ({counts.denied})</option>
           <option value="all">All ({counts.total})</option>
+          <option value="new">Needs manual review ({counts.new})</option>
+          <option value="approved">Approved · Green ({counts.approved})</option>
+          <option value="caution">Caution · Yellow ({counts.caution})</option>
+          <option value="review">In Review (48h) ({counts.review})</option>
+          <option value="denied">Denied · Red ({counts.denied})</option>
         </select>
         <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
           <option value="all">All cities</option>
@@ -588,7 +621,14 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
                     <td className="px-4 py-3">{a.region ?? "—"}</td>
                     <td className="px-4 py-3 text-xs">{(a.service_types ?? []).join(", ")}</td>
                     <td className="px-4 py-3 text-xs">{docs.length}</td>
-                    <td className="px-4 py-3"><StatusBadge status={a.status} /></td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <ComplianceBadge status={complianceOf(a)} />
+                        {a.status !== "approved" && a.status !== "denied" && (
+                          <StatusBadge status={a.status} />
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-xs text-muted">
                       {new Date(a.created_at).toLocaleDateString()}
                     </td>
@@ -613,6 +653,7 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
           onClose={() => setSelectedId(null)}
           onApprove={(notes) => updateStatus(selected.id, "approved", notes)}
           onDeny={(notes) => updateStatus(selected.id, "denied", notes)}
+          onCompliance={(status, notes) => updateCompliance(selected.id, status, notes)}
         />
       )}
     </div>
@@ -664,10 +705,11 @@ function PortalTestCard({
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone?: "accent" | "success" | "danger" }) {
+function Stat({ label, value, tone }: { label: string; value: number; tone?: "accent" | "success" | "danger" | "warning" }) {
   const color =
     tone === "accent" ? "text-accent" :
     tone === "success" ? "text-emerald-600" :
+    tone === "warning" ? "text-amber-600" :
     tone === "danger" ? "text-red-600" : "text-foreground";
   return (
     <div className="bg-card border border-border rounded-xl p-4">
@@ -677,9 +719,25 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: "ac
   );
 }
 
+function ComplianceBadge({ status }: { status: ComplianceStatus | string }) {
+  const map: Record<string, { cls: string; label: string }> = {
+    approved: { cls: "bg-emerald-100 text-emerald-700 border-emerald-300", label: "Approved" },
+    caution: { cls: "bg-amber-100 text-amber-800 border-amber-300", label: "Caution" },
+    review: { cls: "bg-amber-100 text-amber-800 border-amber-400", label: "In Review" },
+    denied: { cls: "bg-red-100 text-red-700 border-red-300", label: "Denied" },
+  };
+  const m = map[status] ?? { cls: "bg-muted/20 text-muted-foreground border-border", label: status };
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${m.cls}`}>
+      ● {m.label}
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     new: "bg-accent/15 text-accent",
+    pending: "bg-accent/15 text-accent",
     approved: "bg-emerald-100 text-emerald-700",
     denied: "bg-red-100 text-red-700",
   };
@@ -696,6 +754,7 @@ function ReviewDrawer({
   onClose,
   onApprove,
   onDeny,
+  onCompliance,
   readOnly = false,
   readOnlyReason,
 }: {
@@ -703,10 +762,15 @@ function ReviewDrawer({
   onClose: () => void;
   onApprove: (notes?: string) => void;
   onDeny: (notes: string) => void;
+  onCompliance: (status: ComplianceStatus, notes?: string) => void;
   readOnly?: boolean;
   readOnlyReason?: string;
 }) {
   const [notes, setNotes] = useState(app.review_notes ?? "");
+  const compliance = ((app as any).compliance_status as ComplianceStatus) ?? "approved";
+  const [complianceNotes, setComplianceNotes] = useState<string>(
+    (app as any).compliance_notes ?? "",
+  );
   const docs = ((app.documents as unknown) as DocEntry[]) ?? [];
 
   async function openDoc(path: string) {
@@ -797,18 +861,61 @@ function ReviewDrawer({
             </Section>
           )}
 
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-muted">Compliance status</h3>
+              <ComplianceBadge status={compliance} />
+            </div>
+            <p className="text-xs text-muted mb-3">
+              Approved (green) = full access. Caution (yellow) = active with follow-up.
+              In Review (48h) = compliance countdown started, admins notified until resolved.
+              Denied (red) = access revoked.
+            </p>
+            <textarea
+              value={complianceNotes}
+              onChange={(e) => setComplianceNotes(e.target.value)}
+              rows={3}
+              className="mb-3 w-full bg-card border border-border rounded-sm px-3 py-2 text-sm"
+              placeholder="Internal compliance notes (why this status?)"
+            />
+            {!readOnly && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                <button
+                  onClick={() => { onCompliance("approved", complianceNotes.trim() || undefined); onClose(); }}
+                  className="px-3 py-2 border border-emerald-600 text-emerald-700 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-emerald-50"
+                >Approved</button>
+                <button
+                  onClick={() => { onCompliance("caution", complianceNotes.trim() || undefined); onClose(); }}
+                  className="px-3 py-2 border border-amber-500 text-amber-700 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-amber-50"
+                >Caution</button>
+                <button
+                  onClick={() => { onCompliance("review", complianceNotes.trim() || undefined); onClose(); }}
+                  className="px-3 py-2 border border-amber-600 text-amber-800 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-amber-50"
+                >Start 48h Review</button>
+                <button
+                  onClick={() => {
+                    if (complianceNotes.trim().length < 3) { toast.error("Please add a note explaining the denial."); return; }
+                    onCompliance("denied", complianceNotes.trim()); onClose();
+                  }}
+                  className="px-3 py-2 border border-red-600 text-red-700 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-red-50"
+                >Deny</button>
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="text-xs font-bold uppercase tracking-widest text-muted">
-              Review notes (visible to staff)
+              Application review notes (initial approval)
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              rows={2}
               className="mt-2 w-full bg-card border border-border rounded-sm px-3 py-2 text-sm"
-              placeholder="Reason for approval / denial…"
+              placeholder="Notes for the application record…"
             />
           </div>
+
 
           {readOnly ? (
             <div className="pt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">

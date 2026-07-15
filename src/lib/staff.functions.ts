@@ -257,6 +257,49 @@ export const reviewProviderApplication = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Update a provider's compliance status (Approved / Caution / Review / Denied). */
+export const updateProviderCompliance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    id: string;
+    compliance_status: "approved" | "caution" | "review" | "denied";
+    notes?: string;
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const roles = await getCallerRoles(context);
+    const allowed = ["admin", "app_manager", "zone_manager"] as StaffRole[];
+    if (!roles.some((r) => allowed.includes(r))) {
+      throw new Error("Permission denied: manager role required to change compliance status.");
+    }
+    const patch: Record<string, unknown> = {
+      compliance_status: data.compliance_status,
+      compliance_notes: data.notes ?? null,
+      compliance_updated_at: new Date().toISOString(),
+      compliance_updated_by: context.userId,
+    };
+    if (data.compliance_status === "review") {
+      patch.compliance_review_started_at = new Date().toISOString();
+      patch.compliance_last_escalated_at = null;
+    }
+    if (data.compliance_status === "denied") {
+      patch.status = "denied";
+    } else {
+      // approved / caution / review keep the application approved so the
+      // provider retains platform access.
+      patch.status = "approved";
+    }
+    const { error } = await context.supabase
+      .from("provider_applications")
+      .update(patch as never)
+      .eq("id", data.id);
+    if (error) throw error;
+    await logAction(context, "provider_compliance_update", "provider_application", data.id, {
+      compliance_status: data.compliance_status,
+      notes: data.notes ?? null,
+    });
+    return { ok: true };
+  });
+
 /** Recent audit log entries (admin & app_manager only). */
 export const listAuditLog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

@@ -1680,6 +1680,12 @@ export type Database = {
         Row: {
           city: string
           company_name: string
+          compliance_last_escalated_at: string | null
+          compliance_notes: string | null
+          compliance_review_started_at: string | null
+          compliance_status: string
+          compliance_updated_at: string | null
+          compliance_updated_by: string | null
           contact_name: string | null
           county: string | null
           created_at: string
@@ -1710,6 +1716,12 @@ export type Database = {
         Insert: {
           city: string
           company_name: string
+          compliance_last_escalated_at?: string | null
+          compliance_notes?: string | null
+          compliance_review_started_at?: string | null
+          compliance_status?: string
+          compliance_updated_at?: string | null
+          compliance_updated_by?: string | null
           contact_name?: string | null
           county?: string | null
           created_at?: string
@@ -1740,6 +1752,12 @@ export type Database = {
         Update: {
           city?: string
           company_name?: string
+          compliance_last_escalated_at?: string | null
+          compliance_notes?: string | null
+          compliance_review_started_at?: string | null
+          compliance_status?: string
+          compliance_updated_at?: string | null
+          compliance_updated_by?: string | null
           contact_name?: string | null
           county?: string | null
           created_at?: string
@@ -4035,6 +4053,7 @@ export type Database = {
         Returns: number
       }
       ensure_member_display_id: { Args: never; Returns: string }
+      escalate_overdue_compliance_reviews: { Args: never; Returns: undefined }
       gen_webhook_secret: { Args: never; Returns: string }
       get_trips_admin_metadata: {
         Args: never
