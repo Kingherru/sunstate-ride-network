@@ -218,6 +218,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
       pay_type: (f.pay_type || null) as any,
       availability: f.availability,
       service_capabilities: f.service_capabilities,
+      primary_vehicle_id: f.primary_vehicle_id || null,
       contractor_pricing: (isHourly || isDaily || isContractor) ? {
         hourly_rate_cents: isHourly ? dollarsToCents(f.pricing.hourly_rate) : null,
         daily_rate_cents: isDaily ? dollarsToCents(f.pricing.daily_rate) : null,
