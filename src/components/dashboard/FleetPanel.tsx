@@ -48,6 +48,16 @@ function DriversCard() {
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   {employmentLabel(d.employment_type)} · {availabilitySummary(d.availability)}
                 </div>
+                {(d.service_capabilities?.length ?? 0) > 0 && (
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    Services: {(d.service_capabilities as string[]).map(capLabel).join(", ")}
+                  </div>
+                )}
+                {d.employment_type === "independent_contractor" && pricingSummary(d.contractor_pricing) && (
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    Pricing: {pricingSummary(d.contractor_pricing)}
+                  </div>
+                )}
               </div>
               <div className="text-xs flex items-center gap-3">
                 {d.email && (
@@ -57,6 +67,7 @@ function DriversCard() {
                 <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
+
           ))}
         </ul>
       )}
