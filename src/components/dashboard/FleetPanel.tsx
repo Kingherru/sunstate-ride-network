@@ -48,6 +48,16 @@ function DriversCard() {
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   {employmentLabel(d.employment_type)} · {availabilitySummary(d.availability)}
                 </div>
+                {(d.service_capabilities?.length ?? 0) > 0 && (
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    Services: {(d.service_capabilities as string[]).map(capLabel).join(", ")}
+                  </div>
+                )}
+                {d.employment_type === "independent_contractor" && pricingSummary(d.contractor_pricing) && (
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    Pricing: {pricingSummary(d.contractor_pricing)}
+                  </div>
+                )}
               </div>
               <div className="text-xs flex items-center gap-3">
                 {d.email && (
@@ -57,6 +67,7 @@ function DriversCard() {
                 <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
+
           ))}
         </ul>
       )}
@@ -77,10 +88,41 @@ const EMPLOYMENT_TYPES: { value: string; label: string }[] = [
   { value: "seasonal", label: "Seasonal" },
 ];
 
+const SERVICE_CAPABILITIES: { value: "ambulatory" | "wheelchair" | "stretcher"; label: string }[] = [
+  { value: "ambulatory", label: "Ambulatory" },
+  { value: "wheelchair", label: "Wheelchair" },
+  { value: "stretcher", label: "Gurney / Stretcher" },
+];
+
 const DAY_LABELS: [string, string][] = [
   ["1", "Mon"], ["2", "Tue"], ["3", "Wed"], ["4", "Thu"],
   ["5", "Fri"], ["6", "Sat"], ["0", "Sun"],
 ];
+
+function capLabel(v: string): string {
+  return SERVICE_CAPABILITIES.find(c => c.value === v)?.label ?? v;
+}
+
+function centsToDollars(c?: number | null): string {
+  if (c == null || Number.isNaN(c)) return "";
+  return (c / 100).toFixed(2);
+}
+function dollarsToCents(s: string): number | null {
+  const n = parseFloat(s);
+  if (Number.isNaN(n) || n < 0) return null;
+  return Math.round(n * 100);
+}
+
+function pricingSummary(p: any): string {
+  if (!p || typeof p !== "object") return "";
+  const parts: string[] = [];
+  if (p.per_pickup_leg_cents) parts.push(`$${centsToDollars(p.per_pickup_leg_cents)}/leg`);
+  if (p.per_trip_cents) parts.push(`$${centsToDollars(p.per_trip_cents)}/trip`);
+  if (p.per_mile_cents) parts.push(`$${centsToDollars(p.per_mile_cents)}/mi`);
+  if (p.wait_time_per_hour_cents) parts.push(`$${centsToDollars(p.wait_time_per_hour_cents)}/hr wait`);
+  if (p.cancellation_fee_cents) parts.push(`$${centsToDollars(p.cancellation_fee_cents)} cancel`);
+  return parts.join(" · ");
+}
 
 function employmentLabel(v?: string | null) {
   if (!v) return "Employment: not set";
@@ -89,6 +131,7 @@ function employmentLabel(v?: string | null) {
 }
 
 function availabilitySummary(a: any): string {
+
   if (!a || typeof a !== "object") return "Flexible availability";
   if (a.mode === "flexible") return "Flexible / on-call";
   const days = a.days ?? {};
@@ -114,6 +157,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
   const initialAvail = d.availability && typeof d.availability === "object"
     ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
     : defaultAvailability();
+  const initialPricing = d.contractor_pricing && typeof d.contractor_pricing === "object" ? d.contractor_pricing : {};
   const [f, set] = useState({
     first_name: d.first_name ?? "", last_name: d.last_name ?? "",
     phone: d.phone ?? "", email: d.email ?? "",
@@ -121,19 +165,43 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     status: d.status ?? "active", notes: d.notes ?? "",
     employment_type: d.employment_type ?? "",
     availability: initialAvail,
+    service_capabilities: (d.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
+    pricing: {
+      per_pickup_leg: centsToDollars(initialPricing.per_pickup_leg_cents),
+      per_trip: centsToDollars(initialPricing.per_trip_cents),
+      per_mile: centsToDollars(initialPricing.per_mile_cents),
+      wait_time_per_hour: centsToDollars(initialPricing.wait_time_per_hour_cents),
+      cancellation_fee: centsToDollars(initialPricing.cancellation_fee_cents),
+      notes: initialPricing.notes ?? "",
+    },
   });
   const setDay = (k: string, patch: Partial<{ off: boolean; start: string; end: string }>) =>
     set({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [k]: { ...(f.availability.days[k] ?? {}), ...patch } } } });
+  const toggleCap = (v: "ambulatory" | "wheelchair" | "stretcher") =>
+    set({ ...f, service_capabilities: f.service_capabilities.includes(v)
+      ? f.service_capabilities.filter(x => x !== v)
+      : [...f.service_capabilities, v] });
+  const isContractor = f.employment_type === "independent_contractor";
   const m = useMutation({
     mutationFn: () => upsertDriver({ data: {
       ...f, id: d.id,
       license_expiry: f.license_expiry || null,
       employment_type: (f.employment_type || null) as any,
       availability: f.availability,
+      service_capabilities: f.service_capabilities,
+      contractor_pricing: isContractor ? {
+        per_pickup_leg_cents: dollarsToCents(f.pricing.per_pickup_leg),
+        per_trip_cents: dollarsToCents(f.pricing.per_trip),
+        per_mile_cents: dollarsToCents(f.pricing.per_mile),
+        wait_time_per_hour_cents: dollarsToCents(f.pricing.wait_time_per_hour),
+        cancellation_fee_cents: dollarsToCents(f.pricing.cancellation_fee),
+        notes: f.pricing.notes || null,
+      } : {},
     } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
@@ -159,6 +227,50 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
             {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </label>
+
+        <div className="col-span-2 border border-border rounded-sm p-3">
+          <div className="font-bold text-sm mb-2">Service capabilities</div>
+          <div className="flex flex-wrap gap-3 text-xs">
+            {SERVICE_CAPABILITIES.map(c => (
+              <label key={c.value} className="flex items-center gap-1.5">
+                <input type="checkbox" checked={f.service_capabilities.includes(c.value)}
+                       onChange={() => toggleCap(c.value)} />
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            What this driver — and the vehicle they operate — can transport. Used by scheduling and dispatch.
+          </p>
+        </div>
+
+        {isContractor && (
+          <div className="col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Contractor pricing</div>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Fill in any that apply — leave blank for fees you don't charge. Amounts are in US dollars.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Per pickup leg" v={f.pricing.per_pickup_leg}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, per_pickup_leg: v } })} />
+              <MoneyI l="Per trip" v={f.pricing.per_trip}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, per_trip: v } })} />
+              <MoneyI l="Per mile" v={f.pricing.per_mile}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, per_mile: v } })} />
+              <MoneyI l="Wait time (per hour)" v={f.pricing.wait_time_per_hour}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, wait_time_per_hour: v } })} />
+              <MoneyI l="Cancellation fee" v={f.pricing.cancellation_fee}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, cancellation_fee: v } })} />
+              <label className="flex flex-col gap-1 text-xs col-span-2">
+                <span className="font-bold">Pricing notes</span>
+                <textarea rows={2} value={f.pricing.notes}
+                          onChange={(e) => set({ ...f, pricing: { ...f.pricing, notes: e.target.value } })}
+                          className="border border-border rounded-sm px-2 py-1 bg-background" />
+              </label>
+            </div>
+          </div>
+        )}
+
 
         <div className="col-span-2 border border-border rounded-sm p-3">
           <div className="flex items-center justify-between mb-2">
@@ -286,12 +398,18 @@ function VehiclesCard() {
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{v.vehicle_type.replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{v.plate ?? "no plate"} · cap {v.capacity} · {v.status}</div>
+                {(v.service_capabilities?.length ?? 0) > 0 && (
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    Services: {(v.service_capabilities as string[]).map(capLabel).join(", ")}
+                  </div>
+                )}
               </div>
               <div className="text-xs">
                 <button onClick={() => setEditing(v)} className="font-bold text-primary hover:underline mr-3">Edit</button>
                 <button onClick={() => confirm("Remove vehicle?") && del.mutate(v.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
+
           ))}
         </ul>
       )}
@@ -306,7 +424,12 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
     name: v.name ?? "", plate: v.plate ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
     capacity: v.capacity ?? 4, status: v.status ?? "active", notes: v.notes ?? "",
+    service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
   });
+  const toggleCap = (val: "ambulatory" | "wheelchair" | "stretcher") =>
+    set({ ...f, service_capabilities: f.service_capabilities.includes(val)
+      ? f.service_capabilities.filter(x => x !== val)
+      : [...f.service_capabilities, val] });
   const m = useMutation({
     mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity) } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
@@ -315,8 +438,9 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3">
+            className="bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
         <h3 className="col-span-2 text-lg font-extrabold">{v.id ? "Edit vehicle" : "New vehicle"}</h3>
+
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
         <I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} />
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />
@@ -336,7 +460,23 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
         </label>
+        <div className="col-span-2 border border-border rounded-sm p-3">
+          <div className="font-bold text-sm mb-2">Service capabilities</div>
+          <div className="flex flex-wrap gap-3 text-xs">
+            {SERVICE_CAPABILITIES.map(c => (
+              <label key={c.value} className="flex items-center gap-1.5">
+                <input type="checkbox" checked={f.service_capabilities.includes(c.value)}
+                       onChange={() => toggleCap(c.value)} />
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            What this vehicle can transport. Combine as needed (e.g. wheelchair-accessible van that also handles ambulatory riders).
+          </p>
+        </div>
         <div className="col-span-2 flex justify-end gap-2 pt-2">
+
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
             {m.isPending ? "Saving…" : "Save"}
@@ -356,3 +496,18 @@ function I({ l, v, on, type = "text", req, cs }: { l: string; v: string; on: (v:
     </label>
   );
 }
+
+function MoneyI({ l, v, on }: { l: string; v: string; on: (v: string) => void }) {
+  return (
+    <label className="flex flex-col gap-1 text-xs">
+      <span className="font-bold">{l}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-muted-foreground">$</span>
+        <input type="number" min={0} step="0.01" value={v} onChange={(e) => on(e.target.value)}
+               placeholder="0.00"
+               className="w-full border border-border rounded-sm px-2 py-1 bg-background" />
+      </div>
+    </label>
+  );
+}
+

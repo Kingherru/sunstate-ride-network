@@ -35,12 +35,27 @@ export const upsertDriver = createServerFn({ method: "POST" })
       mode: "weekly" | "flexible";
       days: Record<string, { off?: boolean; start?: string; end?: string }>;
     } | null;
+    service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
+    contractor_pricing?: {
+      per_pickup_leg_cents?: number | null;
+      per_trip_cents?: number | null;
+      per_mile_cents?: number | null;
+      wait_time_per_hour_cents?: number | null;
+      cancellation_fee_cents?: number | null;
+      notes?: string | null;
+    } | null;
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, status: data.status ?? "active" };
     if (data.employment_type === undefined) delete row.employment_type;
     if (data.availability === undefined) delete row.availability;
+    if (data.service_capabilities === undefined) delete row.service_capabilities;
+    if (data.contractor_pricing === undefined) delete row.contractor_pricing;
+    // Only independent contractors carry pricing — clear if employment type changed away.
+    if (data.employment_type && data.employment_type !== "independent_contractor") {
+      row.contractor_pricing = {};
+    }
     const q = data.id
       ? supabase.from("drivers").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
       : supabase.from("drivers").insert(row).select().single();
@@ -48,6 +63,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
     if (error) throw error;
     return out;
   });
+
 
 export const deleteDriver = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -79,10 +95,14 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     capacity?: number;
     status?: "active" | "inactive" | "maintenance";
     notes?: string;
+    assigned_driver_id?: string | null;
+    service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const row = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    if (data.service_capabilities === undefined) delete row.service_capabilities;
+    if (data.assigned_driver_id === undefined) delete row.assigned_driver_id;
     const q = data.id
       ? supabase.from("vehicles").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
       : supabase.from("vehicles").insert(row).select().single();
@@ -90,6 +110,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     if (error) throw error;
     return out;
   });
+
 
 export const deleteVehicle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
