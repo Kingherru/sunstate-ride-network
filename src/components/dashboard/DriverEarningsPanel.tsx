@@ -209,6 +209,17 @@ export function DriverEarningsPanel() {
             onChanged={invalidate}
           />
 
+          <EmailReportCard
+            driver={drivers.find((d) => d.id === effectiveDriverId)}
+            range={range}
+            report={report.data}
+            onSent={() => {
+              qc.invalidateQueries({ queryKey: ["driver-earnings-reports", effectiveDriverId] });
+            }}
+          />
+
+          <EmailedReportsHistoryCard driverId={effectiveDriverId} />
+
           <PaymentHistoryCard
             payments={history.data ?? []}
             loading={history.isLoading}
