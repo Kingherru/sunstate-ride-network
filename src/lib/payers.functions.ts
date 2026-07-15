@@ -77,7 +77,7 @@ export const createPayer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ ok: true; id: string } | { error: string }> => {
     try {
-      requireFacilityOrProvider(context);
+      await requireFacilityOrProvider(context);
     } catch (e: any) {
       return { error: e.message };
     }
