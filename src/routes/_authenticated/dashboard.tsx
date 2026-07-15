@@ -488,6 +488,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
             {tab === "saved_providers" && <FacilityProvidersPanel initialMode="saved" />}
             {tab === "vehicles" && <FleetPanel />}
+            {tab === "driver_earnings" && <DriverEarningsPanel />}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
