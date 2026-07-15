@@ -861,18 +861,61 @@ function ReviewDrawer({
             </Section>
           )}
 
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-muted">Compliance status</h3>
+              <ComplianceBadge status={compliance} />
+            </div>
+            <p className="text-xs text-muted mb-3">
+              Approved (green) = full access. Caution (yellow) = active with follow-up.
+              In Review (48h) = compliance countdown started, admins notified until resolved.
+              Denied (red) = access revoked.
+            </p>
+            <textarea
+              value={complianceNotes}
+              onChange={(e) => setComplianceNotes(e.target.value)}
+              rows={3}
+              className="mb-3 w-full bg-card border border-border rounded-sm px-3 py-2 text-sm"
+              placeholder="Internal compliance notes (why this status?)"
+            />
+            {!readOnly && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                <button
+                  onClick={() => { onCompliance("approved", complianceNotes.trim() || undefined); onClose(); }}
+                  className="px-3 py-2 border border-emerald-600 text-emerald-700 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-emerald-50"
+                >Approved</button>
+                <button
+                  onClick={() => { onCompliance("caution", complianceNotes.trim() || undefined); onClose(); }}
+                  className="px-3 py-2 border border-amber-500 text-amber-700 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-amber-50"
+                >Caution</button>
+                <button
+                  onClick={() => { onCompliance("review", complianceNotes.trim() || undefined); onClose(); }}
+                  className="px-3 py-2 border border-amber-600 text-amber-800 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-amber-50"
+                >Start 48h Review</button>
+                <button
+                  onClick={() => {
+                    if (complianceNotes.trim().length < 3) { toast.error("Please add a note explaining the denial."); return; }
+                    onCompliance("denied", complianceNotes.trim()); onClose();
+                  }}
+                  className="px-3 py-2 border border-red-600 text-red-700 text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-red-50"
+                >Deny</button>
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="text-xs font-bold uppercase tracking-widest text-muted">
-              Review notes (visible to staff)
+              Application review notes (initial approval)
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              rows={2}
               className="mt-2 w-full bg-card border border-border rounded-sm px-3 py-2 text-sm"
-              placeholder="Reason for approval / denial…"
+              placeholder="Notes for the application record…"
             />
           </div>
+
 
           {readOnly ? (
             <div className="pt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
