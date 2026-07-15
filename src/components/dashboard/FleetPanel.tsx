@@ -398,12 +398,18 @@ function VehiclesCard() {
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{v.vehicle_type.replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{v.plate ?? "no plate"} · cap {v.capacity} · {v.status}</div>
+                {(v.service_capabilities?.length ?? 0) > 0 && (
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    Services: {(v.service_capabilities as string[]).map(capLabel).join(", ")}
+                  </div>
+                )}
               </div>
               <div className="text-xs">
                 <button onClick={() => setEditing(v)} className="font-bold text-primary hover:underline mr-3">Edit</button>
                 <button onClick={() => confirm("Remove vehicle?") && del.mutate(v.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
+
           ))}
         </ul>
       )}
