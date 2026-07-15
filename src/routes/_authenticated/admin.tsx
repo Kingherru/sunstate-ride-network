@@ -558,10 +558,12 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
       <div className="flex flex-wrap gap-3">
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
-          <option value="new">New ({counts.new})</option>
-          <option value="approved">Approved ({counts.approved})</option>
-          <option value="denied">Denied ({counts.denied})</option>
           <option value="all">All ({counts.total})</option>
+          <option value="new">Needs manual review ({counts.new})</option>
+          <option value="approved">Approved · Green ({counts.approved})</option>
+          <option value="caution">Caution · Yellow ({counts.caution})</option>
+          <option value="review">In Review (48h) ({counts.review})</option>
+          <option value="denied">Denied · Red ({counts.denied})</option>
         </select>
         <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
           <option value="all">All cities</option>
