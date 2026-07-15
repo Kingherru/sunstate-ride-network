@@ -4105,6 +4105,7 @@ export type Database = {
         Returns: number
       }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
+      is_facility_or_provider: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
       is_thread_participant: {
         Args: { _thread_id: string; _user_id: string }
