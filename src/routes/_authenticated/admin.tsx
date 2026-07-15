@@ -761,10 +761,15 @@ function ReviewDrawer({
   onClose: () => void;
   onApprove: (notes?: string) => void;
   onDeny: (notes: string) => void;
+  onCompliance: (status: ComplianceStatus, notes?: string) => void;
   readOnly?: boolean;
   readOnlyReason?: string;
 }) {
   const [notes, setNotes] = useState(app.review_notes ?? "");
+  const compliance = ((app as any).compliance_status as ComplianceStatus) ?? "approved";
+  const [complianceNotes, setComplianceNotes] = useState<string>(
+    (app as any).compliance_notes ?? "",
+  );
   const docs = ((app.documents as unknown) as DocEntry[]) ?? [];
 
   async function openDoc(path: string) {
