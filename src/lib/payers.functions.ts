@@ -3,18 +3,19 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
-/** Only facilities and providers can manage payers; patients pay for themselves. */
-function getPortal(context: any): "patient" | "facility" | "provider" | "unknown" {
-  const claims = context.claims ?? {};
-  const meta = (claims.user_metadata ?? claims.raw_user_meta_data ?? {}) as any;
-  const p = String(meta.portal ?? "").toLowerCase();
-  if (p === "patient" || p === "facility" || p === "provider") return p;
-  return "unknown";
-}
-
-function requireFacilityOrProvider(context: any) {
-  const portal = getPortal(context);
-  if (portal !== "facility" && portal !== "provider") {
+/**
+ * Only facilities and providers can manage payers; patients pay for themselves.
+ * Authorization is resolved server-side via the `is_facility_or_provider` SECURITY DEFINER
+ * function (backed by provider_applications, member_profiles.auto_upgraded_to_facility_at,
+ * and user_roles). Never trust `user_metadata.portal` — signed-in users can edit it via the
+ * Supabase client and self-escalate their portal role.
+ */
+async function requireFacilityOrProvider(context: any) {
+  const { data, error } = await context.supabase.rpc("is_facility_or_provider", {
+    _user_id: context.userId,
+  });
+  if (error) throw new Error(error.message);
+  if (data !== true) {
     throw new Error("Only facilities and providers can manage payers.");
   }
 }
