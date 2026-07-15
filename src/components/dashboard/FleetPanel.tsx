@@ -116,11 +116,8 @@ function dollarsToCents(s: string): number | null {
 const PAY_TYPES: { value: string; label: string }[] = [
   { value: "", label: "— Not set —" },
   { value: "hourly", label: "Hourly" },
-  { value: "daily_salary", label: "Daily salary" },
-  { value: "per_trip", label: "Per trip" },
-  { value: "per_pickup_leg", label: "Per pickup leg" },
-  { value: "per_mile", label: "Per mile" },
-  { value: "hybrid", label: "Hybrid (multiple)" },
+  { value: "daily_salary", label: "Daily Salary" },
+  { value: "independent_contractor", label: "Independent Contractor (1099)" },
 ];
 
 function pricingSummary(p: any): string {
