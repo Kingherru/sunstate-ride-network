@@ -140,12 +140,8 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
 
     const grossCents = Math.round(Number(trip.cost_total ?? 0) * 100);
     if (grossCents <= 0) return { ok: false as const, error: "Trip has no fare" };
-    const { data: settings } = await supabase
-      .from("platform_settings")
-      .select("platform_fee_pct")
-      .eq("id", true)
-      .maybeSingle();
-    const feePct = Number(settings?.platform_fee_pct);
+    const { data: feePctData } = await supabase.rpc("get_platform_fee_pct");
+    const feePct = Number(feePctData);
     const effectivePct = Number.isFinite(feePct) ? feePct : PLATFORM_FEE_PCT;
     const feeCents = Math.round(grossCents * effectivePct);
     const netCents = grossCents - feeCents;
