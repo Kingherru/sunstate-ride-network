@@ -436,3 +436,241 @@ function PaymentHistoryCard({ payments, loading, onChanged }:
     </section>
   );
 }
+
+/* -------- Email earnings report (preview + send) -------- */
+function EmailReportCard({
+  driver, range, report, onSent,
+}: {
+  driver: any;
+  range: { start: string; end: string };
+  report: any;
+  onSent: () => void;
+}) {
+  const [recipient, setRecipient] = useState<string>("");
+  const [note, setNote] = useState<string>("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRecipient(driver?.email || "");
+  }, [driver?.id, driver?.email]);
+
+  const periodLabel = `${range.start} → ${range.end}`;
+  const driverName = driver ? `${driver.first_name ?? ""} ${driver.last_name ?? ""}`.trim() || "Driver" : "Driver";
+
+  const pdfInput = useMemo<DriverEarningsPdfInput | null>(() => {
+    if (!report) return null;
+    return {
+      driverName,
+      driverEmail: recipient || driver?.email || null,
+      periodLabel,
+      senderNote: note || null,
+      trips: report.trips,
+      lines: report.lines,
+      gross_cents: report.gross_cents,
+      adjustments_cents: report.adjustments_cents,
+      amount_paid_cents: report.amount_paid_cents,
+      outstanding_cents: report.outstanding_cents,
+    };
+  }, [report, recipient, note, periodLabel, driverName, driver?.email]);
+
+  const openPreview = () => {
+    if (!pdfInput) return;
+    const url = driverEarningsPdfBlobUrl(pdfInput);
+    setPreviewUrl(url);
+    setPreviewOpen(true);
+  };
+  const closePreview = () => {
+    setPreviewOpen(false);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+  };
+
+  const send = useMutation({
+    mutationFn: () => sendDriverEarningsReport({ data: {
+      driver_id: driver.id,
+      period_start: range.start,
+      period_end: range.end,
+      period_label: periodLabel,
+      recipient_email: recipient.trim(),
+      sender_note: note.trim() || null,
+    } }),
+    onSuccess: () => {
+      toast.success(`Emailed earnings statement to ${recipient}`);
+      setNote("");
+      onSent();
+      closePreview();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to send"),
+  });
+
+  const canSend = !!driver && !!report && /.+@.+\..+/.test(recipient);
+
+  return (
+    <section className="bg-card border border-border rounded-sm p-5">
+      <div className="flex items-start justify-between mb-3 gap-3">
+        <div>
+          <div className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+            Email earnings report to driver
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Preview a PDF statement for {periodLabel} and email it directly to the driver.
+          </p>
+        </div>
+        <button
+          onClick={() => pdfInput && downloadDriverEarningsPdf(pdfInput,
+            `earnings-${driverName.replace(/\s+/g, "-")}-${range.start}-to-${range.end}.pdf`)}
+          disabled={!pdfInput}
+          className="text-xs font-bold border border-border px-3 py-1.5 rounded-sm hover:bg-muted disabled:opacity-50"
+        >
+          Download PDF
+        </button>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-2 text-xs">
+        <label className="flex flex-col gap-1">
+          <span className="font-bold">Driver email</span>
+          <input
+            type="email"
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+            placeholder="driver@example.com"
+            className="border border-border rounded-sm px-2 py-1.5 bg-background"
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="font-bold">Optional note (included in email + PDF)</span>
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Great work this pay period — check attached statement."
+            className="border border-border rounded-sm px-2 py-1.5 bg-background"
+          />
+        </label>
+      </div>
+      <div className="flex items-center justify-end gap-2 mt-3">
+        <button
+          onClick={openPreview}
+          disabled={!pdfInput}
+          className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted disabled:opacity-50"
+        >
+          Preview PDF
+        </button>
+        <button
+          onClick={() => send.mutate()}
+          disabled={!canSend || send.isPending}
+          className="bg-primary text-primary-foreground font-bold px-4 py-2 rounded-sm text-xs disabled:opacity-50"
+        >
+          {send.isPending ? "Sending…" : "Email report to driver"}
+        </button>
+      </div>
+
+      {previewOpen && previewUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+             onClick={closePreview}>
+          <div className="bg-card border border-border rounded-sm w-full max-w-4xl h-[85vh] flex flex-col"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-3 border-b border-border">
+              <div className="text-sm font-bold">PDF preview — {driverName} · {periodLabel}</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => send.mutate()}
+                  disabled={!canSend || send.isPending}
+                  className="bg-primary text-primary-foreground font-bold px-3 py-1.5 rounded-sm text-xs disabled:opacity-50"
+                >
+                  {send.isPending ? "Sending…" : `Send to ${recipient || "driver"}`}
+                </button>
+                <button onClick={closePreview}
+                        className="text-xs font-bold border border-border px-3 py-1.5 rounded-sm hover:bg-muted">
+                  Close
+                </button>
+              </div>
+            </div>
+            <iframe title="Earnings PDF preview" src={previewUrl} className="flex-1 w-full bg-white" />
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* -------- Emailed reports history -------- */
+function EmailedReportsHistoryCard({ driverId }: { driverId: string }) {
+  const q = useQuery({
+    enabled: !!driverId,
+    queryKey: ["driver-earnings-reports", driverId],
+    queryFn: () => listDriverEarningsReports({ data: { driver_id: driverId } }),
+  });
+  const reports = (q.data ?? []) as any[];
+
+  const openSnapshot = (r: any) => {
+    const snap = r.snapshot || {};
+    const trips = snap.trips || {};
+    const input: DriverEarningsPdfInput = {
+      driverName: "Driver",
+      driverEmail: r.recipient_email,
+      periodLabel: snap.period_label || `${r.period_start} → ${r.period_end}`,
+      senderNote: r.notes || null,
+      trips: {
+        completed_count: trips.completed_count ?? 0,
+        canceled_count: trips.canceled_count ?? 0,
+        total_miles: trips.total_miles ?? 0,
+        pickup_legs: trips.pickup_legs ?? 0,
+        wait_minutes: trips.wait_minutes ?? 0,
+        worked_hours: trips.worked_hours ?? 0,
+        worked_days: trips.worked_days ?? 0,
+      },
+      lines: snap.lines ?? [],
+      gross_cents: snap.gross_cents ?? 0,
+      adjustments_cents: snap.adjustments_cents ?? 0,
+      amount_paid_cents: snap.amount_paid_cents ?? 0,
+      outstanding_cents: snap.outstanding_cents ?? 0,
+    };
+    downloadDriverEarningsPdf(input, `earnings-${r.period_start}-to-${r.period_end}.pdf`);
+  };
+
+  return (
+    <section className="bg-card border border-border rounded-sm p-5">
+      <div className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-3">
+        Emailed earnings reports
+      </div>
+      {q.isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      ) : reports.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No earnings reports have been emailed to this driver yet.
+        </p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="text-left py-1">Sent</th>
+              <th className="text-left">Period</th>
+              <th className="text-left">Recipient</th>
+              <th className="text-right">Gross</th>
+              <th className="text-right">Balance</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {reports.map((r) => (
+              <tr key={r.id}>
+                <td className="py-1.5">{new Date(r.sent_at).toLocaleString()}</td>
+                <td>{r.period_start} → {r.period_end}</td>
+                <td>{r.recipient_email}</td>
+                <td className="text-right">{usd(r.snapshot?.gross_cents ?? 0)}</td>
+                <td className="text-right font-bold">{usd(r.snapshot?.outstanding_cents ?? 0)}</td>
+                <td className="text-right">
+                  <button onClick={() => openSnapshot(r)}
+                          className="text-xs font-bold text-primary hover:underline">
+                    Re-download PDF
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
