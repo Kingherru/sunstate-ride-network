@@ -460,7 +460,23 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
         </label>
+        <div className="col-span-2 border border-border rounded-sm p-3">
+          <div className="font-bold text-sm mb-2">Service capabilities</div>
+          <div className="flex flex-wrap gap-3 text-xs">
+            {SERVICE_CAPABILITIES.map(c => (
+              <label key={c.value} className="flex items-center gap-1.5">
+                <input type="checkbox" checked={f.service_capabilities.includes(c.value)}
+                       onChange={() => toggleCap(c.value)} />
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            What this vehicle can transport. Combine as needed (e.g. wheelchair-accessible van that also handles ambulatory riders).
+          </p>
+        </div>
         <div className="col-span-2 flex justify-end gap-2 pt-2">
+
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
             {m.isPending ? "Saving…" : "Save"}
