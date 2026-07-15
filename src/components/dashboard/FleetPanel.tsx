@@ -454,10 +454,11 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
 function VehiclesCard() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
+  const dq = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const [editing, setEditing] = useState<any>(null);
   const del = useMutation({
     mutationFn: (id: string) => deleteVehicle({ data: { id } }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); },
+    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); },
   });
   return (
     <section className="bg-card border border-border rounded-sm p-5">
@@ -470,8 +471,10 @@ function VehiclesCard() {
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No vehicles yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-          {q.data!.map((v: any) => (
-            <li key={v.id} className="py-2 flex items-center justify-between">
+          {q.data!.map((v: any) => {
+            const drv = (dq.data ?? []).find((d: any) => d.id === v.assigned_driver_id);
+            return (
+            <li key={v.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="font-bold">{v.name}
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{v.vehicle_type.replace("_"," ")}</span>
@@ -482,18 +485,21 @@ function VehiclesCard() {
                     Services: {(v.service_capabilities as string[]).map(capLabel).join(", ")}
                   </div>
                 )}
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  Driver: {drv ? `${drv.first_name} ${drv.last_name}` : "unassigned"}
+                </div>
               </div>
               <div className="text-xs">
                 <button onClick={() => setEditing(v)} className="font-bold text-primary hover:underline mr-3">Edit</button>
                 <button onClick={() => confirm("Remove vehicle?") && del.mutate(v.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
-
-          ))}
+            );
+          })}
         </ul>
       )}
-      {editing && <VehicleDialog v={editing} onClose={() => setEditing(null)}
-                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["vehicles"] }); }} />}
+      {editing && <VehicleDialog v={editing} drivers={dq.data ?? []} onClose={() => setEditing(null)}
+                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
     </section>
   );
 }
