@@ -229,6 +229,50 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
         </label>
 
         <div className="col-span-2 border border-border rounded-sm p-3">
+          <div className="font-bold text-sm mb-2">Service capabilities</div>
+          <div className="flex flex-wrap gap-3 text-xs">
+            {SERVICE_CAPABILITIES.map(c => (
+              <label key={c.value} className="flex items-center gap-1.5">
+                <input type="checkbox" checked={f.service_capabilities.includes(c.value)}
+                       onChange={() => toggleCap(c.value)} />
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            What this driver — and the vehicle they operate — can transport. Used by scheduling and dispatch.
+          </p>
+        </div>
+
+        {isContractor && (
+          <div className="col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Contractor pricing</div>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Fill in any that apply — leave blank for fees you don't charge. Amounts are in US dollars.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Per pickup leg" v={f.pricing.per_pickup_leg}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, per_pickup_leg: v } })} />
+              <MoneyI l="Per trip" v={f.pricing.per_trip}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, per_trip: v } })} />
+              <MoneyI l="Per mile" v={f.pricing.per_mile}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, per_mile: v } })} />
+              <MoneyI l="Wait time (per hour)" v={f.pricing.wait_time_per_hour}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, wait_time_per_hour: v } })} />
+              <MoneyI l="Cancellation fee" v={f.pricing.cancellation_fee}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, cancellation_fee: v } })} />
+              <label className="flex flex-col gap-1 text-xs col-span-2">
+                <span className="font-bold">Pricing notes</span>
+                <textarea rows={2} value={f.pricing.notes}
+                          onChange={(e) => set({ ...f, pricing: { ...f.pricing, notes: e.target.value } })}
+                          className="border border-border rounded-sm px-2 py-1 bg-background" />
+              </label>
+            </div>
+          </div>
+        )}
+
+
+        <div className="col-span-2 border border-border rounded-sm p-3">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-sm">Weekly availability</span>
             <label className="flex items-center gap-2 text-xs">
