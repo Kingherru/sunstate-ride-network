@@ -421,7 +421,8 @@ function OverviewTab() {
 function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
   const qc = useQueryClient();
   const reviewFn = useServerFn(reviewProviderApplication);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("new");
+  const complianceFn = useServerFn(updateProviderCompliance);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -447,8 +448,17 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
     [apps],
   );
 
+  const complianceOf = (a: Application): ComplianceStatus =>
+    ((a as any).compliance_status as ComplianceStatus) ?? "approved";
+
   const filtered = apps.filter((a) => {
-    if (statusFilter !== "all" && a.status !== statusFilter) return false;
+    if (statusFilter !== "all") {
+      if (statusFilter === "new" && a.status !== "new" && a.status !== "pending") return false;
+      if (statusFilter === "denied" && complianceOf(a) !== "denied") return false;
+      if (statusFilter === "approved" && !(a.status === "approved" && complianceOf(a) === "approved")) return false;
+      if (statusFilter === "caution" && complianceOf(a) !== "caution") return false;
+      if (statusFilter === "review" && complianceOf(a) !== "review") return false;
+    }
     if (cityFilter !== "all" && a.city !== cityFilter) return false;
     if (regionFilter !== "all" && a.region !== regionFilter) return false;
     if (search) {
@@ -471,9 +481,11 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
   const counts = {
     total: apps.length,
-    new: apps.filter((a) => a.status === "new").length,
-    approved: apps.filter((a) => a.status === "approved").length,
-    denied: apps.filter((a) => a.status === "denied").length,
+    new: apps.filter((a) => a.status === "new" || a.status === "pending").length,
+    approved: apps.filter((a) => a.status === "approved" && complianceOf(a) === "approved").length,
+    caution: apps.filter((a) => complianceOf(a) === "caution").length,
+    review: apps.filter((a) => complianceOf(a) === "review").length,
+    denied: apps.filter((a) => complianceOf(a) === "denied").length,
   };
 
   async function updateStatus(id: string, status: "approved" | "denied", notes?: string) {
@@ -491,18 +503,36 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
     }
   }
 
+  async function updateCompliance(id: string, compliance_status: ComplianceStatus, notes?: string) {
+    if (!caps.canReviewProviders) {
+      toast.error(permissionMessage("canReviewProviders"));
+      return;
+    }
+    try {
+      await complianceFn({ data: { id, compliance_status, notes } });
+      toast.success(`Compliance set to ${compliance_status}`);
+      qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+      qc.invalidateQueries({ queryKey: ["audit-log"] });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Update failed");
+    }
+  }
+
   const selected = selectedId ? apps.find((a) => a.id === selectedId) ?? null : null;
 
   return (
     <div className="space-y-6">
       <RegisteredMembersList portal="provider" title="Registered providers" />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Stat label="Total" value={counts.total} />
-        <Stat label="New" value={counts.new} tone="accent" />
+        <Stat label="Needs Review" value={counts.new} tone="accent" />
         <Stat label="Approved" value={counts.approved} tone="success" />
+        <Stat label="Caution" value={counts.caution} tone="warning" />
+        <Stat label="In Review (48h)" value={counts.review} tone="warning" />
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
+
 
       <div className="bg-card border border-border rounded-2xl p-5">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">By region</h2>
