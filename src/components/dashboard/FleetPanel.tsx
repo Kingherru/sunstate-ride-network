@@ -88,10 +88,41 @@ const EMPLOYMENT_TYPES: { value: string; label: string }[] = [
   { value: "seasonal", label: "Seasonal" },
 ];
 
+const SERVICE_CAPABILITIES: { value: "ambulatory" | "wheelchair" | "stretcher"; label: string }[] = [
+  { value: "ambulatory", label: "Ambulatory" },
+  { value: "wheelchair", label: "Wheelchair" },
+  { value: "stretcher", label: "Gurney / Stretcher" },
+];
+
 const DAY_LABELS: [string, string][] = [
   ["1", "Mon"], ["2", "Tue"], ["3", "Wed"], ["4", "Thu"],
   ["5", "Fri"], ["6", "Sat"], ["0", "Sun"],
 ];
+
+function capLabel(v: string): string {
+  return SERVICE_CAPABILITIES.find(c => c.value === v)?.label ?? v;
+}
+
+function centsToDollars(c?: number | null): string {
+  if (c == null || Number.isNaN(c)) return "";
+  return (c / 100).toFixed(2);
+}
+function dollarsToCents(s: string): number | null {
+  const n = parseFloat(s);
+  if (Number.isNaN(n) || n < 0) return null;
+  return Math.round(n * 100);
+}
+
+function pricingSummary(p: any): string {
+  if (!p || typeof p !== "object") return "";
+  const parts: string[] = [];
+  if (p.per_pickup_leg_cents) parts.push(`$${centsToDollars(p.per_pickup_leg_cents)}/leg`);
+  if (p.per_trip_cents) parts.push(`$${centsToDollars(p.per_trip_cents)}/trip`);
+  if (p.per_mile_cents) parts.push(`$${centsToDollars(p.per_mile_cents)}/mi`);
+  if (p.wait_time_per_hour_cents) parts.push(`$${centsToDollars(p.wait_time_per_hour_cents)}/hr wait`);
+  if (p.cancellation_fee_cents) parts.push(`$${centsToDollars(p.cancellation_fee_cents)} cancel`);
+  return parts.join(" · ");
+}
 
 function employmentLabel(v?: string | null) {
   if (!v) return "Employment: not set";
@@ -100,6 +131,7 @@ function employmentLabel(v?: string | null) {
 }
 
 function availabilitySummary(a: any): string {
+
   if (!a || typeof a !== "object") return "Flexible availability";
   if (a.mode === "flexible") return "Flexible / on-call";
   const days = a.days ?? {};
