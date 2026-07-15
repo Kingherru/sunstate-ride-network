@@ -157,6 +157,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
   const initialAvail = d.availability && typeof d.availability === "object"
     ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
     : defaultAvailability();
+  const initialPricing = d.contractor_pricing && typeof d.contractor_pricing === "object" ? d.contractor_pricing : {};
   const [f, set] = useState({
     first_name: d.first_name ?? "", last_name: d.last_name ?? "",
     phone: d.phone ?? "", email: d.email ?? "",
@@ -164,19 +165,43 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     status: d.status ?? "active", notes: d.notes ?? "",
     employment_type: d.employment_type ?? "",
     availability: initialAvail,
+    service_capabilities: (d.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
+    pricing: {
+      per_pickup_leg: centsToDollars(initialPricing.per_pickup_leg_cents),
+      per_trip: centsToDollars(initialPricing.per_trip_cents),
+      per_mile: centsToDollars(initialPricing.per_mile_cents),
+      wait_time_per_hour: centsToDollars(initialPricing.wait_time_per_hour_cents),
+      cancellation_fee: centsToDollars(initialPricing.cancellation_fee_cents),
+      notes: initialPricing.notes ?? "",
+    },
   });
   const setDay = (k: string, patch: Partial<{ off: boolean; start: string; end: string }>) =>
     set({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [k]: { ...(f.availability.days[k] ?? {}), ...patch } } } });
+  const toggleCap = (v: "ambulatory" | "wheelchair" | "stretcher") =>
+    set({ ...f, service_capabilities: f.service_capabilities.includes(v)
+      ? f.service_capabilities.filter(x => x !== v)
+      : [...f.service_capabilities, v] });
+  const isContractor = f.employment_type === "independent_contractor";
   const m = useMutation({
     mutationFn: () => upsertDriver({ data: {
       ...f, id: d.id,
       license_expiry: f.license_expiry || null,
       employment_type: (f.employment_type || null) as any,
       availability: f.availability,
+      service_capabilities: f.service_capabilities,
+      contractor_pricing: isContractor ? {
+        per_pickup_leg_cents: dollarsToCents(f.pricing.per_pickup_leg),
+        per_trip_cents: dollarsToCents(f.pricing.per_trip),
+        per_mile_cents: dollarsToCents(f.pricing.per_mile),
+        wait_time_per_hour_cents: dollarsToCents(f.pricing.wait_time_per_hour),
+        cancellation_fee_cents: dollarsToCents(f.pricing.cancellation_fee),
+        notes: f.pricing.notes || null,
+      } : {},
     } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
