@@ -438,6 +438,59 @@ export type Database = {
           },
         ]
       }
+      driver_earnings_reports: {
+        Row: {
+          created_at: string
+          driver_id: string
+          id: string
+          notes: string | null
+          owner_id: string
+          period_end: string
+          period_start: string
+          recipient_email: string
+          sent_at: string
+          sent_by: string | null
+          snapshot: Json
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          period_end: string
+          period_start: string
+          recipient_email: string
+          sent_at?: string
+          sent_by?: string | null
+          snapshot?: Json
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          period_end?: string
+          period_start?: string
+          recipient_email?: string
+          sent_at?: string
+          sent_by?: string | null
+          snapshot?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_earnings_reports_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_payments: {
         Row: {
           amount_paid_cents: number

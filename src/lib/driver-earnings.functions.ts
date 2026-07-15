@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /* ------------ Types ------------ */
@@ -286,6 +287,130 @@ export const listDriverPaymentHistory = createServerFn({ method: "GET" })
       .select("*")
       .eq("driver_id", data.driver_id)
       .order("created_at", { ascending: false });
+    if (error) throw error;
+    return rows ?? [];
+  });
+
+/* ------------ Emailed earnings reports ------------ */
+
+function usdStr(cents: number | null | undefined): string {
+  return (Number(cents ?? 0) / 100).toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+}
+
+export const sendDriverEarningsReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    driver_id: string;
+    period_start: string;
+    period_end: string;
+    period_label: string;
+    recipient_email: string;
+    sender_name?: string | null;
+    sender_note?: string | null;
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    // Verify caller owns this driver
+    const { data: driver, error: dErr } = await supabase
+      .from("drivers").select("*").eq("id", data.driver_id).maybeSingle();
+    if (dErr) throw dErr;
+    if (!driver || (driver as any).owner_id !== userId) throw new Error("Forbidden");
+
+    // Recompute the report server-side so the emailed numbers are trustworthy
+    const report = await (getDriverEarnings as any)({
+      data: {
+        driver_id: data.driver_id,
+        start: data.period_start,
+        end: data.period_end,
+      },
+    });
+
+    const driverName = `${(driver as any).first_name ?? ""} ${(driver as any).last_name ?? ""}`.trim() || "Driver";
+
+    // Fire the transactional email via the internal send route.
+    const req = getRequest();
+    const authHeader = req?.headers.get("authorization");
+    if (!authHeader) throw new Error("Missing authorization header");
+    const origin = req ? new URL(req.url).origin : "";
+    if (!origin) throw new Error("Could not resolve app origin");
+
+    const sendRes = await fetch(`${origin}/lovable/email/transactional/send`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: authHeader,
+      },
+      body: JSON.stringify({
+        templateName: "driver-earnings-report",
+        recipientEmail: data.recipient_email,
+        idempotencyKey: `driver-earnings-${data.driver_id}-${data.period_start}-${data.period_end}-${Date.now()}`,
+        templateData: {
+          driverName,
+          periodLabel: data.period_label,
+          senderName: data.sender_name ?? null,
+          senderNote: data.sender_note ?? null,
+          completedTrips: report.trips.completed_count,
+          pickupLegs: report.trips.pickup_legs,
+          totalMiles: report.trips.total_miles,
+          waitMinutes: report.trips.wait_minutes,
+          cancellations: report.trips.canceled_count,
+          workedHours: report.trips.worked_hours,
+          workedDays: report.trips.worked_days,
+          grossUsd: usdStr(report.gross_cents),
+          adjustmentsUsd: usdStr(report.adjustments_cents),
+          amountPaidUsd: usdStr(report.amount_paid_cents),
+          outstandingUsd: usdStr(report.outstanding_cents),
+        },
+      }),
+    });
+
+    const sendJson = await sendRes.json().catch(() => ({}));
+    if (!sendRes.ok || sendJson?.success === false) {
+      throw new Error(sendJson?.error || sendJson?.reason || `Email failed (${sendRes.status})`);
+    }
+
+    // Log to history
+    const { data: row, error: insErr } = await (supabase as any)
+      .from("driver_earnings_reports")
+      .insert({
+        owner_id: userId,
+        driver_id: data.driver_id,
+        period_start: data.period_start,
+        period_end: data.period_end,
+        recipient_email: data.recipient_email,
+        sent_by: userId,
+        status: "sent",
+        notes: data.sender_note || null,
+        snapshot: {
+          period_label: data.period_label,
+          trips: report.trips,
+          lines: report.lines,
+          gross_cents: report.gross_cents,
+          adjustments_cents: report.adjustments_cents,
+          amount_paid_cents: report.amount_paid_cents,
+          outstanding_cents: report.outstanding_cents,
+          pay_type: report.pay_type,
+        },
+      })
+      .select()
+      .single();
+    if (insErr) throw insErr;
+    return row;
+  });
+
+export const listDriverEarningsReports = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { driver_id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await (context.supabase as any)
+      .from("driver_earnings_reports")
+      .select("*")
+      .eq("driver_id", data.driver_id)
+      .order("sent_at", { ascending: false });
     if (error) throw error;
     return rows ?? [];
   });
