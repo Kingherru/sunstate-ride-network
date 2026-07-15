@@ -220,10 +220,10 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
   });
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-2 sm:p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-2xl w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
-        <h3 className="col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
+            className="bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <h3 className="sm:col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
         <I l="Phone" v={f.phone} on={(v) => set({ ...f, phone: v })} />
@@ -245,7 +245,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
           </select>
         </label>
 
-        <div className="col-span-2 border border-border rounded-sm p-3">
+        <div className="sm:col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
           <div className="flex flex-wrap gap-3 text-xs">
             {SERVICE_CAPABILITIES.map(c => (
@@ -261,28 +261,44 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
           </p>
         </div>
 
-        <label className="flex flex-col gap-1 text-sm col-span-2">
-          <span className="font-bold">Pay structure</span>
+        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+          <span className="font-bold">Driver pay type</span>
           <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             {PAY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <span className="text-[11px] text-muted-foreground">
-            Determines how the Driver Earnings report calculates gross pay. Independent contractors will always see pricing options.
+            Choose one: Hourly, Daily Salary, or Independent Contractor (1099). Only the fields for the selected pay type are shown.
           </span>
         </label>
 
-        {showPricing && (
-          <div className="col-span-2 border border-border rounded-sm p-3">
-            <div className="font-bold text-sm mb-2">Pay rates</div>
+        {isHourly && (
+          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Hourly pay</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Hourly rate ($ / hour)" v={f.pricing.hourly_rate}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, hourly_rate: v } })} />
+            </div>
+          </div>
+        )}
+
+        {isDaily && (
+          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Daily salary</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Daily pay ($ / day)" v={f.pricing.daily_rate}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, daily_rate: v } })} />
+            </div>
+          </div>
+        )}
+
+        {isContractor && !isHourly && !isDaily && (
+          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Independent contractor (1099) pricing</div>
             <p className="text-[11px] text-muted-foreground mb-2">
               Fill in any that apply — leave blank for fees you don't use. Amounts are in US dollars.
             </p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <MoneyI l="Hourly rate" v={f.pricing.hourly_rate}
-                      on={(v) => set({ ...f, pricing: { ...f.pricing, hourly_rate: v } })} />
-              <MoneyI l="Daily salary" v={f.pricing.daily_rate}
-                      on={(v) => set({ ...f, pricing: { ...f.pricing, daily_rate: v } })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <MoneyI l="Per pickup leg" v={f.pricing.per_pickup_leg}
                       on={(v) => set({ ...f, pricing: { ...f.pricing, per_pickup_leg: v } })} />
               <MoneyI l="Per trip" v={f.pricing.per_trip}
@@ -293,7 +309,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
                       on={(v) => set({ ...f, pricing: { ...f.pricing, wait_time_per_hour: v } })} />
               <MoneyI l="Cancellation fee" v={f.pricing.cancellation_fee}
                       on={(v) => set({ ...f, pricing: { ...f.pricing, cancellation_fee: v } })} />
-              <label className="flex flex-col gap-1 text-xs col-span-2">
+              <label className="flex flex-col gap-1 text-xs sm:col-span-2">
                 <span className="font-bold">Pricing notes</span>
                 <textarea rows={2} value={f.pricing.notes}
                           onChange={(e) => set({ ...f, pricing: { ...f.pricing, notes: e.target.value } })}
@@ -302,6 +318,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
             </div>
           </div>
         )}
+
 
 
         <div className="col-span-2 border border-border rounded-sm p-3">
