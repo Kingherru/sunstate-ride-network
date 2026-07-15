@@ -569,6 +569,7 @@ export type Database = {
           owner_id: string
           pay_type: string | null
           phone: string | null
+          primary_vehicle_id: string | null
           service_capabilities: string[]
           status: string
           updated_at: string
@@ -589,6 +590,7 @@ export type Database = {
           owner_id: string
           pay_type?: string | null
           phone?: string | null
+          primary_vehicle_id?: string | null
           service_capabilities?: string[]
           status?: string
           updated_at?: string
@@ -609,12 +611,21 @@ export type Database = {
           owner_id?: string
           pay_type?: string | null
           phone?: string | null
+          primary_vehicle_id?: string | null
           service_capabilities?: string[]
           status?: string
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "drivers_primary_vehicle_id_fkey"
+            columns: ["primary_vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_send_log: {
         Row: {

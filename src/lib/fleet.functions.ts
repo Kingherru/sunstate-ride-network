@@ -37,6 +37,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
       days: Record<string, { off?: boolean; start?: string; end?: string }>;
     } | null;
     service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
+    primary_vehicle_id?: string | null;
     contractor_pricing?: {
       hourly_rate_cents?: number | null;
       daily_rate_cents?: number | null;
@@ -56,7 +57,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
     if (data.availability === undefined) delete row.availability;
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.contractor_pricing === undefined) delete row.contractor_pricing;
-    // Only independent contractors carry pricing — clear if employment type changed away.
+    if (data.primary_vehicle_id === undefined) delete row.primary_vehicle_id;
     if (data.employment_type && data.employment_type !== "independent_contractor") {
       row.contractor_pricing = {};
     }
@@ -65,6 +66,23 @@ export const upsertDriver = createServerFn({ method: "POST" })
       : supabase.from("drivers").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
+
+    if (out && data.primary_vehicle_id !== undefined) {
+      const driverId = (out as any).id as string;
+      const vehId = data.primary_vehicle_id;
+      if (vehId) {
+        await supabase.from("vehicles")
+          .update({ assigned_driver_id: null })
+          .eq("owner_id", userId).eq("assigned_driver_id", driverId).neq("id", vehId);
+        await supabase.from("vehicles")
+          .update({ assigned_driver_id: driverId })
+          .eq("id", vehId).eq("owner_id", userId);
+      } else {
+        await supabase.from("vehicles")
+          .update({ assigned_driver_id: null })
+          .eq("owner_id", userId).eq("assigned_driver_id", driverId);
+      }
+    }
     return out;
   });
 
@@ -112,6 +130,26 @@ export const upsertVehicle = createServerFn({ method: "POST" })
       : supabase.from("vehicles").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
+
+    if (out && data.assigned_driver_id !== undefined) {
+      const vehId = (out as any).id as string;
+      const driverId = data.assigned_driver_id;
+      if (driverId) {
+        // Clear this vehicle from any other driver's primary_vehicle_id.
+        await supabase.from("drivers")
+          .update({ primary_vehicle_id: null })
+          .eq("owner_id", userId).eq("primary_vehicle_id", vehId).neq("id", driverId);
+        // Set primary_vehicle_id on the assigned driver.
+        await supabase.from("drivers")
+          .update({ primary_vehicle_id: vehId })
+          .eq("id", driverId).eq("owner_id", userId);
+      } else {
+        // Cleared: unlink any driver that had this vehicle as primary.
+        await supabase.from("drivers")
+          .update({ primary_vehicle_id: null })
+          .eq("owner_id", userId).eq("primary_vehicle_id", vehId);
+      }
+    }
     return out;
   });
 

@@ -21,11 +21,12 @@ export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
 function DriversCard() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
+  const vq = useQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const [editing, setEditing] = useState<any>(null);
   const [scheduling, setScheduling] = useState<any>(null);
   const del = useMutation({
     mutationFn: (id: string) => deleteDriver({ data: { id } }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); },
+    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); },
   });
 
   return (
@@ -38,8 +39,10 @@ function DriversCard() {
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No drivers yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-          {q.data!.map((d: any) => (
-            <li key={d.id} className="py-2 flex items-center justify-between">
+          {q.data!.map((d: any) => {
+            const veh = (vq.data ?? []).find((v: any) => v.id === d.primary_vehicle_id);
+            return (
+            <li key={d.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="font-bold">{d.first_name} {d.last_name}
                   <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{d.status.replace("_"," ")}</span>
@@ -53,6 +56,9 @@ function DriversCard() {
                     Services: {(d.service_capabilities as string[]).map(capLabel).join(", ")}
                   </div>
                 )}
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  Vehicle: {veh ? `${veh.name}${veh.plate ? ` (${veh.plate})` : ""}` : "unassigned"}
+                </div>
                 {d.employment_type === "independent_contractor" && pricingSummary(d.contractor_pricing) && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
                     Pricing: {pricingSummary(d.contractor_pricing)}
@@ -67,12 +73,12 @@ function DriversCard() {
                 <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
-
-          ))}
+            );
+          })}
         </ul>
       )}
-      {editing && <DriverDialog d={editing} onClose={() => setEditing(null)}
-                                onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
+      {editing && <DriverDialog d={editing} vehicles={vq.data ?? []} onClose={() => setEditing(null)}
+                                onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); }} />}
       {scheduling && <WeekScheduleDialog d={scheduling} onClose={() => setScheduling(null)} />}
     </section>
   );
@@ -162,7 +168,7 @@ function defaultAvailability() {
   return { mode: "weekly" as const, days };
 }
 
-function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; onSaved: () => void }) {
+function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any[]; onClose: () => void; onSaved: () => void }) {
   const initialAvail = d.availability && typeof d.availability === "object"
     ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
     : defaultAvailability();
@@ -176,6 +182,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     pay_type: d.pay_type ?? "",
     availability: initialAvail,
     service_capabilities: (d.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
+    primary_vehicle_id: (d.primary_vehicle_id ?? "") as string,
     pricing: {
       hourly_rate: centsToDollars(initialPricing.hourly_rate_cents),
       daily_rate: centsToDollars(initialPricing.daily_rate_cents),
@@ -211,6 +218,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
       pay_type: (f.pay_type || null) as any,
       availability: f.availability,
       service_capabilities: f.service_capabilities,
+      primary_vehicle_id: f.primary_vehicle_id || null,
       contractor_pricing: (isHourly || isDaily || isContractor) ? {
         hourly_rate_cents: isHourly ? dollarsToCents(f.pricing.hourly_rate) : null,
         daily_rate_cents: isDaily ? dollarsToCents(f.pricing.daily_rate) : null,
@@ -251,6 +259,21 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
             {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </label>
+
+        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+          <span className="font-bold">Primary vehicle</span>
+          <select value={f.primary_vehicle_id} onChange={(e) => set({ ...f, primary_vehicle_id: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background">
+            <option value="">— None —</option>
+            {vehicles.filter((v: any) => v.status === "active" || v.id === f.primary_vehicle_id).map((v: any) => (
+              <option key={v.id} value={v.id}>{v.name}{v.plate ? ` (${v.plate})` : ""}</option>
+            ))}
+          </select>
+          <span className="text-[11px] text-muted-foreground">
+            Vehicle this driver primarily operates. Used across scheduling and dispatch. Saving will also update the vehicle's assigned driver.
+          </span>
+        </label>
+
 
         <div className="sm:col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
@@ -431,10 +454,11 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
 function VehiclesCard() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
+  const dq = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const [editing, setEditing] = useState<any>(null);
   const del = useMutation({
     mutationFn: (id: string) => deleteVehicle({ data: { id } }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); },
+    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); },
   });
   return (
     <section className="bg-card border border-border rounded-sm p-5">
@@ -447,8 +471,10 @@ function VehiclesCard() {
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No vehicles yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-          {q.data!.map((v: any) => (
-            <li key={v.id} className="py-2 flex items-center justify-between">
+          {q.data!.map((v: any) => {
+            const drv = (dq.data ?? []).find((d: any) => d.id === v.assigned_driver_id);
+            return (
+            <li key={v.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="font-bold">{v.name}
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{v.vehicle_type.replace("_"," ")}</span>
@@ -459,35 +485,39 @@ function VehiclesCard() {
                     Services: {(v.service_capabilities as string[]).map(capLabel).join(", ")}
                   </div>
                 )}
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  Driver: {drv ? `${drv.first_name} ${drv.last_name}` : "unassigned"}
+                </div>
               </div>
               <div className="text-xs">
                 <button onClick={() => setEditing(v)} className="font-bold text-primary hover:underline mr-3">Edit</button>
                 <button onClick={() => confirm("Remove vehicle?") && del.mutate(v.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
-
-          ))}
+            );
+          })}
         </ul>
       )}
-      {editing && <VehicleDialog v={editing} onClose={() => setEditing(null)}
-                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["vehicles"] }); }} />}
+      {editing && <VehicleDialog v={editing} drivers={dq.data ?? []} onClose={() => setEditing(null)}
+                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
     </section>
   );
 }
 
-function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; onSaved: () => void }) {
+function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[]; onClose: () => void; onSaved: () => void }) {
   const [f, set] = useState({
     name: v.name ?? "", plate: v.plate ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
     capacity: v.capacity ?? 4, status: v.status ?? "active", notes: v.notes ?? "",
     service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
+    assigned_driver_id: (v.assigned_driver_id ?? "") as string,
   });
   const toggleCap = (val: "ambulatory" | "wheelchair" | "stretcher") =>
     set({ ...f, service_capabilities: f.service_capabilities.includes(val)
       ? f.service_capabilities.filter(x => x !== val)
       : [...f.service_capabilities, val] });
   const m = useMutation({
-    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity) } as any }),
+    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity), assigned_driver_id: f.assigned_driver_id || null } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
@@ -515,6 +545,19 @@ function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; o
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm col-span-2">
+          <span className="font-bold">Primary driver</span>
+          <select value={f.assigned_driver_id} onChange={(e) => set({ ...f, assigned_driver_id: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background">
+            <option value="">— None —</option>
+            {drivers.filter((d: any) => d.status === "active" || d.id === f.assigned_driver_id).map((d: any) => (
+              <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
+            ))}
+          </select>
+          <span className="text-[11px] text-muted-foreground">
+            Driver primarily assigned to this vehicle. Used across scheduling and dispatch. Saving will also update the driver's primary vehicle.
+          </span>
         </label>
         <div className="col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
