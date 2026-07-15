@@ -695,10 +695,11 @@ function PortalTestCard({
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone?: "accent" | "success" | "danger" }) {
+function Stat({ label, value, tone }: { label: string; value: number; tone?: "accent" | "success" | "danger" | "warning" }) {
   const color =
     tone === "accent" ? "text-accent" :
     tone === "success" ? "text-emerald-600" :
+    tone === "warning" ? "text-amber-600" :
     tone === "danger" ? "text-red-600" : "text-foreground";
   return (
     <div className="bg-card border border-border rounded-xl p-4">
@@ -708,9 +709,25 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: "ac
   );
 }
 
+function ComplianceBadge({ status }: { status: ComplianceStatus | string }) {
+  const map: Record<string, { cls: string; label: string }> = {
+    approved: { cls: "bg-emerald-100 text-emerald-700 border-emerald-300", label: "Approved" },
+    caution: { cls: "bg-amber-100 text-amber-800 border-amber-300", label: "Caution" },
+    review: { cls: "bg-amber-100 text-amber-800 border-amber-400", label: "In Review" },
+    denied: { cls: "bg-red-100 text-red-700 border-red-300", label: "Denied" },
+  };
+  const m = map[status] ?? { cls: "bg-muted/20 text-muted-foreground border-border", label: status };
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${m.cls}`}>
+      ● {m.label}
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     new: "bg-accent/15 text-accent",
+    pending: "bg-accent/15 text-accent",
     approved: "bg-emerald-100 text-emerald-700",
     denied: "bg-red-100 text-red-700",
   };
