@@ -290,7 +290,7 @@ export const updateProviderCompliance = createServerFn({ method: "POST" })
     }
     const { error } = await context.supabase
       .from("provider_applications")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.id);
     if (error) throw error;
     await logAction(context, "provider_compliance_update", "provider_application", data.id, {
