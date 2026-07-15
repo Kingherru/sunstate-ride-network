@@ -21,11 +21,12 @@ export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
 function DriversCard() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
+  const vq = useQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const [editing, setEditing] = useState<any>(null);
   const [scheduling, setScheduling] = useState<any>(null);
   const del = useMutation({
     mutationFn: (id: string) => deleteDriver({ data: { id } }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); },
+    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); },
   });
 
   return (
