@@ -182,6 +182,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
     pay_type: d.pay_type ?? "",
     availability: initialAvail,
     service_capabilities: (d.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
+    primary_vehicle_id: (d.primary_vehicle_id ?? "") as string,
     pricing: {
       hourly_rate: centsToDollars(initialPricing.hourly_rate_cents),
       daily_rate: centsToDollars(initialPricing.daily_rate_cents),
