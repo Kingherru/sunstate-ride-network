@@ -11,6 +11,7 @@ import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/tr
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
+import { DriverEarningsPanel } from "@/components/dashboard/DriverEarningsPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { SavedPatientsPanel } from "@/components/dashboard/SavedPatientsPanel";
 import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProviderContactsPanel";
