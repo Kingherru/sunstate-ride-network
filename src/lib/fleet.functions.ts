@@ -95,10 +95,14 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     capacity?: number;
     status?: "active" | "inactive" | "maintenance";
     notes?: string;
+    assigned_driver_id?: string | null;
+    service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const row = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    if (data.service_capabilities === undefined) delete row.service_capabilities;
+    if (data.assigned_driver_id === undefined) delete row.assigned_driver_id;
     const q = data.id
       ? supabase.from("vehicles").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
       : supabase.from("vehicles").insert(row).select().single();
@@ -106,6 +110,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     if (error) throw error;
     return out;
   });
+
 
 export const deleteVehicle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
