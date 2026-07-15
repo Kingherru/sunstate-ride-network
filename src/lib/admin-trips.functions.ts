@@ -76,7 +76,8 @@ export const suggestProvidersForReservation = createServerFn({ method: "GET" })
     // Match providers whose service ZIPs contain pickup_zip, or same city as fallback
     const { data: providers, error: pErr } = await context.supabase
       .from("member_profiles")
-      .select("user_id, display_id, company_name, city, state, phone, preferred_zip_codes, membership_status")
+      .select("user_id, display_id, company_name, city, region, phone, preferred_zip_codes, membership_status")
+
       .eq("membership_status", "active")
       .limit(200);
     if (pErr) throw pErr;

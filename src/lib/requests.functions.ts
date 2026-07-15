@@ -316,6 +316,8 @@ const COPY_FIELDS = [
   "patient_last_name",
   "patient_phone",
   "patient_email",
+  "patient_date_of_birth",
+  "patient_gender",
   "pickup_address",
   "pickup_address_details",
   "pickup_city",
@@ -339,11 +341,21 @@ const COPY_FIELDS = [
   "payer",
   "medicaid_number",
   "medicaid_plan",
+  "authorization_number",
+  "diagnosis_code",
   "service_level",
   "needs_wheelchair",
+  "has_passenger",
+  "needs_assistance_to_vehicle",
+  "needs_surgery_signin",
+  "needs_surgery_signout",
+  "hipaa_ack_id",
+  "requester_email",
+  "requester_phone",
   "embed_provider_id",
   "embed_token",
 ] as const;
+
 
 export const copyRequestToDates = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
