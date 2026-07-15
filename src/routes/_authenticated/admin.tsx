@@ -653,6 +653,7 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
           onClose={() => setSelectedId(null)}
           onApprove={(notes) => updateStatus(selected.id, "approved", notes)}
           onDeny={(notes) => updateStatus(selected.id, "denied", notes)}
+          onCompliance={(status, notes) => updateCompliance(selected.id, status, notes)}
         />
       )}
     </div>
