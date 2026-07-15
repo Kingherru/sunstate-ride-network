@@ -193,7 +193,9 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     set({ ...f, service_capabilities: f.service_capabilities.includes(v)
       ? f.service_capabilities.filter(x => x !== v)
       : [...f.service_capabilities, v] });
-  const showPricing = !!f.pay_type || f.employment_type === "independent_contractor";
+  const isHourly = f.pay_type === "hourly";
+  const isDaily = f.pay_type === "daily_salary";
+  const isContractor = f.pay_type === "independent_contractor" || f.employment_type === "independent_contractor";
   const m = useMutation({
     mutationFn: () => upsertDriver({ data: {
       ...f, id: d.id,
