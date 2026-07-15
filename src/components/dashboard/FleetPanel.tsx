@@ -198,8 +198,15 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
   const isContractor = f.pay_type === "independent_contractor" || f.employment_type === "independent_contractor";
   const m = useMutation({
     mutationFn: () => upsertDriver({ data: {
-      ...f, id: d.id,
+      id: d.id,
+      first_name: f.first_name,
+      last_name: f.last_name,
+      phone: f.phone,
+      email: f.email,
+      license_number: f.license_number,
       license_expiry: f.license_expiry || null,
+      status: f.status,
+      notes: f.notes,
       employment_type: (f.employment_type || null) as any,
       pay_type: (f.pay_type || null) as any,
       availability: f.availability,
