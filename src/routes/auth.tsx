@@ -77,10 +77,13 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
+        const target = redirectTarget
+          ? `${window.location.origin}${redirectTarget}`
+          : `${window.location.origin}/admin`;
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
+          options: { emailRedirectTo: target },
         });
         if (error) throw error;
         toast.success("Account created. You can now sign in.");
