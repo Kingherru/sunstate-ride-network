@@ -7,12 +7,8 @@ export function usePlatformFeePct(): number {
     queryKey: ["platform-fee-pct"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("platform_settings")
-        .select("platform_fee_pct")
-        .eq("id", true)
-        .maybeSingle();
-      const n = Number(data?.platform_fee_pct);
+      const { data } = await supabase.rpc("get_platform_fee_pct");
+      const n = Number(data);
       return Number.isFinite(n) ? n : DEFAULT_PCT;
     },
   });

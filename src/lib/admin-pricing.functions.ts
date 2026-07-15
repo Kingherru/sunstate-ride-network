@@ -35,6 +35,16 @@ export const FL_MEDICAID_DEFAULTS: MarketPricing = {
 export const getPlatformPricingDefaults = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    const { data: isAppMgr } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "app_manager",
+    });
+    if (!isAdmin && !isAppMgr) {
+      // Non-admin callers only receive the built-in defaults.
+      return { market: FL_MARKET_DEFAULTS, medicaid: FL_MEDICAID_DEFAULTS };
+    }
     const { data, error } = await context.supabase
       .from("platform_settings")
       .select("market_pricing, medicaid_pricing")
