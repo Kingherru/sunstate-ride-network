@@ -496,3 +496,17 @@ function I({ l, v, on, type = "text", req, cs }: { l: string; v: string; on: (v:
     </label>
   );
 }
+
+function MoneyI({ l, v, on }: { l: string; v: string; on: (v: string) => void }) {
+  return (
+    <label className="flex flex-col gap-1 text-xs">
+      <span className="font-bold">{l}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-muted-foreground">$</span>
+        <input type="number" min={0} step="0.01" value={v} onChange={(e) => on(e.target.value)}
+               placeholder="0.00"
+               className="w-full border border-border rounded-sm px-2 py-1 bg-background" />
+      </div>
+    </label>
+
+}
