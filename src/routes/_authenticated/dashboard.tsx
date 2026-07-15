@@ -445,6 +445,33 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               </div>
             )}
 
+            {portal === "provider" && complianceQ.data && complianceQ.data.compliance_status && complianceQ.data.compliance_status !== "approved" && (() => {
+              const s = complianceQ.data.compliance_status as string;
+              const notes = complianceQ.data.compliance_notes as string | null;
+              const startedAt = complianceQ.data.compliance_review_started_at as string | null;
+              const isDenied = s === "denied";
+              const tone = isDenied
+                ? "bg-red-50 border-red-500 text-red-800"
+                : "bg-amber-50 border-amber-500 text-amber-800";
+              const label = s === "caution" ? "Compliance · Caution" : s === "review" ? "Compliance · 48-Hour Review" : "Compliance · Denied";
+              return (
+                <div className={`border-l-4 p-4 text-sm ${tone}`}>
+                  <p className="font-bold uppercase tracking-wide text-xs mb-1">{label}</p>
+                  <p>
+                    {isDenied
+                      ? "Your account has been denied. Please contact your Dispatch Zone Manager or Admin."
+                      : "Your account is active with a compliance flag. Medicaid trips are paused until your status returns to Approved. Please work with your Dispatch Zone Manager to resolve the items below."}
+                  </p>
+                  {notes && <p className="mt-2 whitespace-pre-wrap"><strong>Notes:</strong> {notes}</p>}
+                  {s === "review" && startedAt && (
+                    <p className="mt-2 text-xs opacity-80">Review started {new Date(startedAt).toLocaleString()}.</p>
+                  )}
+                </div>
+              );
+            })()}
+
+
+
             {/* Active panel */}
             <section className="bg-card border border-border shadow-card">
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
