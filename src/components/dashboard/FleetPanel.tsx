@@ -546,6 +546,19 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-sm col-span-2">
+          <span className="font-bold">Primary driver</span>
+          <select value={f.assigned_driver_id} onChange={(e) => set({ ...f, assigned_driver_id: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background">
+            <option value="">— None —</option>
+            {drivers.filter((d: any) => d.status === "active" || d.id === f.assigned_driver_id).map((d: any) => (
+              <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
+            ))}
+          </select>
+          <span className="text-[11px] text-muted-foreground">
+            Driver primarily assigned to this vehicle. Used across scheduling and dispatch. Saving will also update the driver's primary vehicle.
+          </span>
+        </label>
         <div className="col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
           <div className="flex flex-wrap gap-3 text-xs">
