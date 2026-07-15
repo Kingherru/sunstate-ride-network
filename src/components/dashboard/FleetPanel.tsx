@@ -508,5 +508,6 @@ function MoneyI({ l, v, on }: { l: string; v: string; on: (v: string) => void })
                className="w-full border border-border rounded-sm px-2 py-1 bg-background" />
       </div>
     </label>
-
+  );
 }
+
