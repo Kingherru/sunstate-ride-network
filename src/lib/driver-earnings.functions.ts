@@ -332,11 +332,10 @@ export const sendDriverEarningsReport = createServerFn({ method: "POST" })
     const driverName = `${(driver as any).first_name ?? ""} ${(driver as any).last_name ?? ""}`.trim() || "Driver";
 
     // Fire the transactional email via the internal send route.
-    const authHeader = getRequestHeader("authorization") || getRequestHeader("Authorization");
+    const req = getRequest();
+    const authHeader = req?.headers.get("authorization");
     if (!authHeader) throw new Error("Missing authorization header");
-
-    const req = (context as any).request as Request | undefined;
-    const origin = req ? new URL(req.url).origin : (process.env.APP_ORIGIN || "");
+    const origin = req ? new URL(req.url).origin : "";
     if (!origin) throw new Error("Could not resolve app origin");
 
     const sendRes = await fetch(`${origin}/lovable/email/transactional/send`, {
