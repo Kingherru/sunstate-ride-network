@@ -39,8 +39,11 @@ function DriversCard() {
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No drivers yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-          {q.data!.map((d: any) => (
-            <li key={d.id} className="py-2 flex items-center justify-between">
+        <ul className="divide-y divide-border text-sm">
+          {q.data!.map((d: any) => {
+            const veh = (vq.data ?? []).find((v: any) => v.id === d.primary_vehicle_id);
+            return (
+            <li key={d.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="font-bold">{d.first_name} {d.last_name}
                   <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{d.status.replace("_"," ")}</span>
@@ -54,6 +57,9 @@ function DriversCard() {
                     Services: {(d.service_capabilities as string[]).map(capLabel).join(", ")}
                   </div>
                 )}
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  Vehicle: {veh ? `${veh.name}${veh.plate ? ` (${veh.plate})` : ""}` : "unassigned"}
+                </div>
                 {d.employment_type === "independent_contractor" && pricingSummary(d.contractor_pricing) && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
                     Pricing: {pricingSummary(d.contractor_pricing)}
@@ -68,12 +74,12 @@ function DriversCard() {
                 <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
               </div>
             </li>
-
-          ))}
+            );
+          })}
         </ul>
       )}
-      {editing && <DriverDialog d={editing} onClose={() => setEditing(null)}
-                                onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
+      {editing && <DriverDialog d={editing} vehicles={vq.data ?? []} onClose={() => setEditing(null)}
+                                onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); }} />}
       {scheduling && <WeekScheduleDialog d={scheduling} onClose={() => setScheduling(null)} />}
     </section>
   );
