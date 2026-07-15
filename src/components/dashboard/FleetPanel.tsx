@@ -168,7 +168,7 @@ function defaultAvailability() {
   return { mode: "weekly" as const, days };
 }
 
-function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; onSaved: () => void }) {
+function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any[]; onClose: () => void; onSaved: () => void }) {
   const initialAvail = d.availability && typeof d.availability === "object"
     ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
     : defaultAvailability();
