@@ -47,7 +47,7 @@ import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
-import { reviewProviderApplication } from "@/lib/staff.functions";
+import { reviewProviderApplication, updateProviderCompliance } from "@/lib/staff.functions";
 import {
   Sidebar,
   SidebarContent,
