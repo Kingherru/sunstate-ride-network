@@ -130,6 +130,26 @@ export const upsertVehicle = createServerFn({ method: "POST" })
       : supabase.from("vehicles").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
+
+    if (out && data.assigned_driver_id !== undefined) {
+      const vehId = (out as any).id as string;
+      const driverId = data.assigned_driver_id;
+      if (driverId) {
+        // Clear this vehicle from any other driver's primary_vehicle_id.
+        await supabase.from("drivers")
+          .update({ primary_vehicle_id: null })
+          .eq("owner_id", userId).eq("primary_vehicle_id", vehId).neq("id", driverId);
+        // Set primary_vehicle_id on the assigned driver.
+        await supabase.from("drivers")
+          .update({ primary_vehicle_id: vehId })
+          .eq("id", driverId).eq("owner_id", userId);
+      } else {
+        // Cleared: unlink any driver that had this vehicle as primary.
+        await supabase.from("drivers")
+          .update({ primary_vehicle_id: null })
+          .eq("owner_id", userId).eq("primary_vehicle_id", vehId);
+      }
+    }
     return out;
   });
 
