@@ -90,7 +90,7 @@ function Consent() {
         </div>
         {scopes.length > 0 && (
           <ul className="text-sm space-y-1 border-t border-border pt-3">
-            {scopes.map((s) => (
+            {scopes.map((s: string) => (
               <li key={s} className="text-muted-foreground">
                 {s === "openid" || s === "profile" ? "Share your basic profile"
                   : s === "email" ? "Share your email address"
