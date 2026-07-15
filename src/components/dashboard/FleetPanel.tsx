@@ -504,19 +504,20 @@ function VehiclesCard() {
   );
 }
 
-function VehicleDialog({ v, onClose, onSaved }: { v: any; onClose: () => void; onSaved: () => void }) {
+function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[]; onClose: () => void; onSaved: () => void }) {
   const [f, set] = useState({
     name: v.name ?? "", plate: v.plate ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
     capacity: v.capacity ?? 4, status: v.status ?? "active", notes: v.notes ?? "",
     service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
+    assigned_driver_id: (v.assigned_driver_id ?? "") as string,
   });
   const toggleCap = (val: "ambulatory" | "wheelchair" | "stretcher") =>
     set({ ...f, service_capabilities: f.service_capabilities.includes(val)
       ? f.service_capabilities.filter(x => x !== val)
       : [...f.service_capabilities, val] });
   const m = useMutation({
-    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity) } as any }),
+    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity), assigned_driver_id: f.assigned_driver_id || null } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
