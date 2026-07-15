@@ -4025,7 +4025,6 @@ export type Database = {
       }
       ensure_member_display_id: { Args: never; Returns: string }
       gen_webhook_secret: { Args: never; Returns: string }
-      get_platform_fee_pct: { Args: never; Returns: number }
       get_trips_admin_metadata: {
         Args: never
         Returns: {
