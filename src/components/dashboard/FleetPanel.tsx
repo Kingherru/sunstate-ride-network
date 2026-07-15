@@ -39,7 +39,6 @@ function DriversCard() {
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No drivers yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-        <ul className="divide-y divide-border text-sm">
           {q.data!.map((d: any) => {
             const veh = (vq.data ?? []).find((v: any) => v.id === d.primary_vehicle_id);
             return (
