@@ -11,12 +11,23 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : "",
+  }),
   component: AuthPage,
 });
+
+// Only allow same-origin relative paths so `next` can't redirect off-site.
+function safeNext(next: string): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
 
 function AuthPage() {
   const navigate = useNavigate();
   const router = useRouter();
+  const { next } = Route.useSearch();
+  const redirectTarget = safeNext(next);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,6 +50,10 @@ function AuthPage() {
   }
 
   async function routeAfterAuth(userId: string) {
+    if (redirectTarget) {
+      window.location.href = redirectTarget;
+      return;
+    }
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
@@ -55,6 +70,7 @@ function AuthPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
