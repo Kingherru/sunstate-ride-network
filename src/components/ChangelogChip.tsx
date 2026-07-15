@@ -6,6 +6,17 @@
  */
 export const CHANGELOG: { version: string; date: string; notes: string[] }[] = [
   {
+    version: "0.10.0",
+    date: "2026-07-15",
+    notes: [
+      "Simplified Driver Pay setup to three clear types: Hourly, Daily Salary, or Independent Contractor (1099).",
+      "Only the pay fields that apply to the selected pay type are shown — hourly shows a single hourly rate, daily salary shows a single daily amount, and 1099 contractors show per-pickup-leg, per-trip, per-mile, wait time, and cancellation fee.",
+      "Improved: Driver edit dialog is now fully responsive and mobile-friendly, ready for the upcoming Driver mobile app.",
+      "Added Driver Earnings & Payment History inside the Vehicles & Drivers tab, with PDF earnings statements you can preview and email to drivers.",
+      "Expanded Driver & Vehicle Management to support employee and contractor drivers, service capabilities (Ambulatory, Wheelchair, Gurney/Stretcher), and contractor pricing tied to each driver.",
+    ],
+  },
+  {
     version: "0.9.3",
     date: "2026-07-12",
     notes: [

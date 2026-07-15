@@ -116,11 +116,8 @@ function dollarsToCents(s: string): number | null {
 const PAY_TYPES: { value: string; label: string }[] = [
   { value: "", label: "— Not set —" },
   { value: "hourly", label: "Hourly" },
-  { value: "daily_salary", label: "Daily salary" },
-  { value: "per_trip", label: "Per trip" },
-  { value: "per_pickup_leg", label: "Per pickup leg" },
-  { value: "per_mile", label: "Per mile" },
-  { value: "hybrid", label: "Hybrid (multiple)" },
+  { value: "daily_salary", label: "Daily Salary" },
+  { value: "independent_contractor", label: "Independent Contractor (1099)" },
 ];
 
 function pricingSummary(p: any): string {
@@ -196,7 +193,9 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     set({ ...f, service_capabilities: f.service_capabilities.includes(v)
       ? f.service_capabilities.filter(x => x !== v)
       : [...f.service_capabilities, v] });
-  const showPricing = !!f.pay_type || f.employment_type === "independent_contractor";
+  const isHourly = f.pay_type === "hourly";
+  const isDaily = f.pay_type === "daily_salary";
+  const isContractor = f.pay_type === "independent_contractor" || f.employment_type === "independent_contractor";
   const m = useMutation({
     mutationFn: () => upsertDriver({ data: {
       ...f, id: d.id,
@@ -205,14 +204,14 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
       pay_type: (f.pay_type || null) as any,
       availability: f.availability,
       service_capabilities: f.service_capabilities,
-      contractor_pricing: showPricing ? {
-        hourly_rate_cents: dollarsToCents(f.pricing.hourly_rate),
-        daily_rate_cents: dollarsToCents(f.pricing.daily_rate),
-        per_pickup_leg_cents: dollarsToCents(f.pricing.per_pickup_leg),
-        per_trip_cents: dollarsToCents(f.pricing.per_trip),
-        per_mile_cents: dollarsToCents(f.pricing.per_mile),
-        wait_time_per_hour_cents: dollarsToCents(f.pricing.wait_time_per_hour),
-        cancellation_fee_cents: dollarsToCents(f.pricing.cancellation_fee),
+      contractor_pricing: (isHourly || isDaily || isContractor) ? {
+        hourly_rate_cents: isHourly ? dollarsToCents(f.pricing.hourly_rate) : null,
+        daily_rate_cents: isDaily ? dollarsToCents(f.pricing.daily_rate) : null,
+        per_pickup_leg_cents: isContractor ? dollarsToCents(f.pricing.per_pickup_leg) : null,
+        per_trip_cents: isContractor ? dollarsToCents(f.pricing.per_trip) : null,
+        per_mile_cents: isContractor ? dollarsToCents(f.pricing.per_mile) : null,
+        wait_time_per_hour_cents: isContractor ? dollarsToCents(f.pricing.wait_time_per_hour) : null,
+        cancellation_fee_cents: isContractor ? dollarsToCents(f.pricing.cancellation_fee) : null,
         notes: f.pricing.notes || null,
       } : {},
     } as any }),
@@ -221,10 +220,10 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
   });
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-2 sm:p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-2xl w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
-        <h3 className="col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
+            className="bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <h3 className="sm:col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
         <I l="Phone" v={f.phone} on={(v) => set({ ...f, phone: v })} />
@@ -246,7 +245,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
           </select>
         </label>
 
-        <div className="col-span-2 border border-border rounded-sm p-3">
+        <div className="sm:col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
           <div className="flex flex-wrap gap-3 text-xs">
             {SERVICE_CAPABILITIES.map(c => (
@@ -262,28 +261,44 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
           </p>
         </div>
 
-        <label className="flex flex-col gap-1 text-sm col-span-2">
-          <span className="font-bold">Pay structure</span>
+        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+          <span className="font-bold">Driver pay type</span>
           <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             {PAY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <span className="text-[11px] text-muted-foreground">
-            Determines how the Driver Earnings report calculates gross pay. Independent contractors will always see pricing options.
+            Choose one: Hourly, Daily Salary, or Independent Contractor (1099). Only the fields for the selected pay type are shown.
           </span>
         </label>
 
-        {showPricing && (
-          <div className="col-span-2 border border-border rounded-sm p-3">
-            <div className="font-bold text-sm mb-2">Pay rates</div>
+        {isHourly && (
+          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Hourly pay</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Hourly rate ($ / hour)" v={f.pricing.hourly_rate}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, hourly_rate: v } })} />
+            </div>
+          </div>
+        )}
+
+        {isDaily && (
+          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Daily salary</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Daily pay ($ / day)" v={f.pricing.daily_rate}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, daily_rate: v } })} />
+            </div>
+          </div>
+        )}
+
+        {isContractor && !isHourly && !isDaily && (
+          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+            <div className="font-bold text-sm mb-2">Independent contractor (1099) pricing</div>
             <p className="text-[11px] text-muted-foreground mb-2">
               Fill in any that apply — leave blank for fees you don't use. Amounts are in US dollars.
             </p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <MoneyI l="Hourly rate" v={f.pricing.hourly_rate}
-                      on={(v) => set({ ...f, pricing: { ...f.pricing, hourly_rate: v } })} />
-              <MoneyI l="Daily salary" v={f.pricing.daily_rate}
-                      on={(v) => set({ ...f, pricing: { ...f.pricing, daily_rate: v } })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <MoneyI l="Per pickup leg" v={f.pricing.per_pickup_leg}
                       on={(v) => set({ ...f, pricing: { ...f.pricing, per_pickup_leg: v } })} />
               <MoneyI l="Per trip" v={f.pricing.per_trip}
@@ -294,7 +309,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
                       on={(v) => set({ ...f, pricing: { ...f.pricing, wait_time_per_hour: v } })} />
               <MoneyI l="Cancellation fee" v={f.pricing.cancellation_fee}
                       on={(v) => set({ ...f, pricing: { ...f.pricing, cancellation_fee: v } })} />
-              <label className="flex flex-col gap-1 text-xs col-span-2">
+              <label className="flex flex-col gap-1 text-xs sm:col-span-2">
                 <span className="font-bold">Pricing notes</span>
                 <textarea rows={2} value={f.pricing.notes}
                           onChange={(e) => set({ ...f, pricing: { ...f.pricing, notes: e.target.value } })}
@@ -303,6 +318,7 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
             </div>
           </div>
         )}
+
 
 
         <div className="col-span-2 border border-border rounded-sm p-3">
