@@ -394,6 +394,112 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_earning_adjustments: {
+        Row: {
+          amount_cents: number
+          applied_on: string
+          created_at: string
+          created_by: string | null
+          driver_id: string
+          id: string
+          owner_id: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          applied_on?: string
+          created_at?: string
+          created_by?: string | null
+          driver_id: string
+          id?: string
+          owner_id: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          applied_on?: string
+          created_at?: string
+          created_by?: string | null
+          driver_id?: string
+          id?: string
+          owner_id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_earning_adjustments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_payments: {
+        Row: {
+          amount_paid_cents: number
+          created_at: string
+          created_by: string | null
+          driver_id: string
+          gross_cents: number
+          id: string
+          method: string | null
+          notes: string | null
+          owner_id: string
+          paid_at: string | null
+          period_end: string | null
+          period_start: string | null
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_paid_cents?: number
+          created_at?: string
+          created_by?: string | null
+          driver_id: string
+          gross_cents?: number
+          id?: string
+          method?: string | null
+          notes?: string | null
+          owner_id: string
+          paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_paid_cents?: number
+          created_at?: string
+          created_by?: string | null
+          driver_id?: string
+          gross_cents?: number
+          id?: string
+          method?: string | null
+          notes?: string | null
+          owner_id?: string
+          paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_payments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           availability: Json
@@ -408,10 +514,12 @@ export type Database = {
           license_number: string | null
           notes: string | null
           owner_id: string
+          pay_type: string | null
           phone: string | null
           service_capabilities: string[]
           status: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           availability?: Json
@@ -426,10 +534,12 @@ export type Database = {
           license_number?: string | null
           notes?: string | null
           owner_id: string
+          pay_type?: string | null
           phone?: string | null
           service_capabilities?: string[]
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           availability?: Json
@@ -444,10 +554,12 @@ export type Database = {
           license_number?: string | null
           notes?: string | null
           owner_id?: string
+          pay_type?: string | null
           phone?: string | null
           service_capabilities?: string[]
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

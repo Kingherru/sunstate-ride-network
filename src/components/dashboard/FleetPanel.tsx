@@ -113,9 +113,21 @@ function dollarsToCents(s: string): number | null {
   return Math.round(n * 100);
 }
 
+const PAY_TYPES: { value: string; label: string }[] = [
+  { value: "", label: "— Not set —" },
+  { value: "hourly", label: "Hourly" },
+  { value: "daily_salary", label: "Daily salary" },
+  { value: "per_trip", label: "Per trip" },
+  { value: "per_pickup_leg", label: "Per pickup leg" },
+  { value: "per_mile", label: "Per mile" },
+  { value: "hybrid", label: "Hybrid (multiple)" },
+];
+
 function pricingSummary(p: any): string {
   if (!p || typeof p !== "object") return "";
   const parts: string[] = [];
+  if (p.hourly_rate_cents) parts.push(`$${centsToDollars(p.hourly_rate_cents)}/hr`);
+  if (p.daily_rate_cents) parts.push(`$${centsToDollars(p.daily_rate_cents)}/day`);
   if (p.per_pickup_leg_cents) parts.push(`$${centsToDollars(p.per_pickup_leg_cents)}/leg`);
   if (p.per_trip_cents) parts.push(`$${centsToDollars(p.per_trip_cents)}/trip`);
   if (p.per_mile_cents) parts.push(`$${centsToDollars(p.per_mile_cents)}/mi`);
@@ -164,9 +176,12 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     license_number: d.license_number ?? "", license_expiry: d.license_expiry ?? "",
     status: d.status ?? "active", notes: d.notes ?? "",
     employment_type: d.employment_type ?? "",
+    pay_type: d.pay_type ?? "",
     availability: initialAvail,
     service_capabilities: (d.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
     pricing: {
+      hourly_rate: centsToDollars(initialPricing.hourly_rate_cents),
+      daily_rate: centsToDollars(initialPricing.daily_rate_cents),
       per_pickup_leg: centsToDollars(initialPricing.per_pickup_leg_cents),
       per_trip: centsToDollars(initialPricing.per_trip_cents),
       per_mile: centsToDollars(initialPricing.per_mile_cents),
@@ -181,15 +196,18 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
     set({ ...f, service_capabilities: f.service_capabilities.includes(v)
       ? f.service_capabilities.filter(x => x !== v)
       : [...f.service_capabilities, v] });
-  const isContractor = f.employment_type === "independent_contractor";
+  const showPricing = !!f.pay_type || f.employment_type === "independent_contractor";
   const m = useMutation({
     mutationFn: () => upsertDriver({ data: {
       ...f, id: d.id,
       license_expiry: f.license_expiry || null,
       employment_type: (f.employment_type || null) as any,
+      pay_type: (f.pay_type || null) as any,
       availability: f.availability,
       service_capabilities: f.service_capabilities,
-      contractor_pricing: isContractor ? {
+      contractor_pricing: showPricing ? {
+        hourly_rate_cents: dollarsToCents(f.pricing.hourly_rate),
+        daily_rate_cents: dollarsToCents(f.pricing.daily_rate),
         per_pickup_leg_cents: dollarsToCents(f.pricing.per_pickup_leg),
         per_trip_cents: dollarsToCents(f.pricing.per_trip),
         per_mile_cents: dollarsToCents(f.pricing.per_mile),
@@ -244,13 +262,28 @@ function DriverDialog({ d, onClose, onSaved }: { d: any; onClose: () => void; on
           </p>
         </div>
 
-        {isContractor && (
+        <label className="flex flex-col gap-1 text-sm col-span-2">
+          <span className="font-bold">Pay structure</span>
+          <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}
+                  className="border border-border rounded-sm px-3 py-2 bg-background">
+            {PAY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <span className="text-[11px] text-muted-foreground">
+            Determines how the Driver Earnings report calculates gross pay. Independent contractors will always see pricing options.
+          </span>
+        </label>
+
+        {showPricing && (
           <div className="col-span-2 border border-border rounded-sm p-3">
-            <div className="font-bold text-sm mb-2">Contractor pricing</div>
+            <div className="font-bold text-sm mb-2">Pay rates</div>
             <p className="text-[11px] text-muted-foreground mb-2">
-              Fill in any that apply — leave blank for fees you don't charge. Amounts are in US dollars.
+              Fill in any that apply — leave blank for fees you don't use. Amounts are in US dollars.
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
+              <MoneyI l="Hourly rate" v={f.pricing.hourly_rate}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, hourly_rate: v } })} />
+              <MoneyI l="Daily salary" v={f.pricing.daily_rate}
+                      on={(v) => set({ ...f, pricing: { ...f.pricing, daily_rate: v } })} />
               <MoneyI l="Per pickup leg" v={f.pricing.per_pickup_leg}
                       on={(v) => set({ ...f, pricing: { ...f.pricing, per_pickup_leg: v } })} />
               <MoneyI l="Per trip" v={f.pricing.per_trip}

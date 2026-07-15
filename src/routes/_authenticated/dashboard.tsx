@@ -11,6 +11,7 @@ import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/tr
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
+import { DriverEarningsPanel } from "@/components/dashboard/DriverEarningsPanel";
 import { PricingPanel } from "@/components/dashboard/PricingPanel";
 import { SavedPatientsPanel } from "@/components/dashboard/SavedPatientsPanel";
 import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProviderContactsPanel";
@@ -103,11 +104,11 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
-  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
+  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "driver_earnings", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "payers", "messages", "payments", "account"],
 };
 
@@ -134,6 +135,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "saved_providers") return "Saved Providers";
   if (t === "vehicles") return "Vehicles & Drivers";
   if (t === "drivers") return "Drivers";
+  if (t === "driver_earnings") return "Driver Earnings";
   if (t === "pricing") return "Pricing";
   if (t === "memberships") return "Membership";
   if (t === "payouts") return "Payouts";
@@ -487,6 +489,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "providers" && <FacilityProvidersPanel initialMode="lookup" />}
             {tab === "saved_providers" && <FacilityProvidersPanel initialMode="saved" />}
             {tab === "vehicles" && <FleetPanel />}
+            {tab === "driver_earnings" && <DriverEarningsPanel />}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}

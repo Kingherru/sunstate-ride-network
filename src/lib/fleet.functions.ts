@@ -31,12 +31,15 @@ export const upsertDriver = createServerFn({ method: "POST" })
       | "temporary"
       | "seasonal"
       | null;
+    pay_type?: "hourly" | "daily_salary" | "per_trip" | "per_pickup_leg" | "per_mile" | "hybrid" | null;
     availability?: {
       mode: "weekly" | "flexible";
       days: Record<string, { off?: boolean; start?: string; end?: string }>;
     } | null;
     service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
     contractor_pricing?: {
+      hourly_rate_cents?: number | null;
+      daily_rate_cents?: number | null;
       per_pickup_leg_cents?: number | null;
       per_trip_cents?: number | null;
       per_mile_cents?: number | null;
@@ -49,6 +52,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, status: data.status ?? "active" };
     if (data.employment_type === undefined) delete row.employment_type;
+    if (data.pay_type === undefined) delete row.pay_type;
     if (data.availability === undefined) delete row.availability;
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.contractor_pricing === undefined) delete row.contractor_pricing;
