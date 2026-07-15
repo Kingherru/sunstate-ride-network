@@ -296,6 +296,21 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     },
   });
 
+  // Provider compliance status (Approved / Caution / Review / Denied).
+  const providerAppId = (profileQ.data as any)?.provider_application_id ?? null;
+  const complianceQ = useQuery({
+    queryKey: ["provider-compliance", providerAppId],
+    enabled: !!providerAppId && (portalOverride ?? "provider") === "provider",
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("provider_applications")
+        .select("compliance_status, compliance_notes, compliance_review_started_at")
+        .eq("id", providerAppId!)
+        .maybeSingle();
+      return (data as any) ?? null;
+    },
+  });
+
 
 
   const realProfile = profileQ.data as (Profile & { membership_tier?: string }) | null;
