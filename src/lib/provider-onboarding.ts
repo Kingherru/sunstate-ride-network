@@ -2,9 +2,25 @@
  * Pure client-side helper that decides what a provider still owes before
  * their Provider Portal fully unlocks.
  *
- * Soft-access allows: New Trip, Reservations, Schedule (plus Onboarding,
- * Messages, and Account so they can actually finish setup / sign out).
- * Everything else is locked until every step below is done.
+ * Soft Access (provider is signed in, but not yet an approved / full-
+ * membership provider) allows:
+ *   • Create new trips
+ *   • View their own registration / profile information
+ *   • Manage Vehicles & Drivers
+ *   • Access the Account tabs and update required information
+ *   • Enter their Medicaid Provider Number (onboarding step)
+ *   • Onboarding checklist, Messages, Trip History (their own sent trips),
+ *     and Schedule (their own scheduled trips)
+ *
+ * Soft Access explicitly BLOCKS:
+ *   • Receiving or viewing referrals (Received / dispatch queue)
+ *   • Provider Network + saved / collected contacts
+ *   • Medicaid-funded trip acceptance (server-enforced by
+ *     is_approved_provider on accept_trip / assignment triggers)
+ *   • Any feature that requires full membership or approved-provider status
+ *
+ * These UI gates mirror the server-side rules — restricted features are
+ * also blocked at the RLS / RPC layer, not just here.
  */
 
 export type OnboardingStepId =
