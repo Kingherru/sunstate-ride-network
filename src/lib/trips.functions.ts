@@ -299,7 +299,10 @@ const editableFieldsSchema = z.object({
   mobility_notes: z.string().trim().max(1000).nullable().optional(),
   special_instructions: z.string().trim().max(2000).nullable().optional(),
   provider_notes: z.string().trim().max(2000).nullable().optional(),
-  cost_total: z.union([z.number(), z.null()]).optional(),
+  // NOTE: cost_total is intentionally NOT editable via this endpoint.
+  // Fare/quote amounts must go through submit_trip_quote / decide_trip_quote,
+  // which enforces caps and requires ops approval.
+
   payer: z.string().trim().max(120).nullable().optional(),
 });
 
