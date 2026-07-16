@@ -665,17 +665,13 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
                         {a.zip_code ?? "—"}{a.county ? ` · ${a.county}` : ""}
                       </div>
                     </td>
-                    <td className="px-4 py-3">{a.region ?? "—"}</td>
+                    <td className="px-4 py-3">{regionFor(a)}</td>
                     <td className="px-4 py-3 text-xs">{(a.service_types ?? []).join(", ")}</td>
                     <td className="px-4 py-3 text-xs">{docs.length}</td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
-                        <ComplianceBadge status={complianceOf(a)} />
-                        {a.status !== "approved" && a.status !== "denied" && (
-                          <StatusBadge status={a.status} />
-                        )}
-                      </div>
+                      <ComplianceBadge status={derivedStatus(a)} />
                     </td>
+
                     <td className="px-4 py-3 text-xs text-muted">
                       {new Date(a.created_at).toLocaleDateString()}
                     </td>
