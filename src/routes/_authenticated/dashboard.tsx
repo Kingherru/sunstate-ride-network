@@ -564,7 +564,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     )}
                   </button>
                 </div>
-                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
+                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
                 {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} />}
               </div>
             )}
