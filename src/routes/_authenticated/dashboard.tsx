@@ -1338,6 +1338,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
         <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
       )}
       {rating && <RateProviderModal trip={rating} onClose={() => setRating(null)} onSaved={() => { setRating(null); onChanged(); }} />}
+      {reviewing && <ReferralReviewModal trip={reviewing} onClose={() => setReviewing(null)} onDone={() => { setReviewing(null); onChanged(); }} />}
     </>
   );
 }
