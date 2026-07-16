@@ -343,15 +343,19 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // entirely — they get the normal provider experience immediately.
   const isApprovedProvider =
     portal === "provider" && !!realProfile && !!(realProfile as any).provider_application_id;
+  // Soft-access only applies while onboarding is still in progress.
+  // Once onboarding is complete, membership rules alone gate paid features.
   const isSoftAccess =
     portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete && !isApprovedProvider;
   const isTabLocked = (t: Tab) =>
     isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
 
-  // Hide the Onboarding tab once the provider is approved.
+  // Hide the Onboarding tab once the provider has either completed onboarding
+  // or been approved — regardless of membership status.
+  const onboardingDone = isApprovedProvider || onboarding.complete;
   const allowedTabs = useMemo<Tab[]>(
-    () => (isApprovedProvider ? baseAllowedTabs.filter((t) => t !== "onboarding") : baseAllowedTabs),
-    [baseAllowedTabs, isApprovedProvider],
+    () => (onboardingDone ? baseAllowedTabs.filter((t) => t !== "onboarding") : baseAllowedTabs),
+    [baseAllowedTabs, onboardingDone],
   );
   useEffect(() => {
     if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
