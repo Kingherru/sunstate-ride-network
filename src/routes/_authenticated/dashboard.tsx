@@ -2953,4 +2953,132 @@ function BusinessInfoCard({ profile, userId, portal }: { profile: Profile; userI
   );
 }
 
+function ReferralFeeCard({ profile, userId }: { profile: Profile; userId: string }) {
+  const qc = useQueryClient();
+  const p = profile as any;
+  const [feeType, setFeeType] = useState<"flat" | "percent" | "">(
+    p.referral_fee_type === "flat" || p.referral_fee_type === "percent" ? p.referral_fee_type : ""
+  );
+  const [amount, setAmount] = useState<string>(
+    p.referral_fee_amount != null ? String(p.referral_fee_amount) : ""
+  );
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    setBusy(true);
+    try {
+      const hasFee = feeType && amount.trim() !== "";
+      const numeric = hasFee ? Number(amount) : null;
+      if (hasFee && (!Number.isFinite(numeric!) || numeric! < 0)) {
+        toast.error("Enter a valid non-negative amount");
+        return;
+      }
+      if (hasFee && feeType === "percent" && numeric! > 100) {
+        toast.error("Percentage cannot exceed 100");
+        return;
+      }
+      const { error } = await supabase.from("member_profiles").update({
+        referral_fee_type: hasFee ? feeType : null,
+        referral_fee_amount: hasFee ? numeric : null,
+      } as any).eq("user_id", userId);
+      if (error) throw error;
+      toast.success("Referral fee saved");
+      qc.invalidateQueries({ queryKey: ["member-profile"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    } finally { setBusy(false); }
+  }
+
+  async function clearFee() {
+    setFeeType("");
+    setAmount("");
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("member_profiles").update({
+        referral_fee_type: null, referral_fee_amount: null,
+      } as any).eq("user_id", userId);
+      if (error) throw error;
+      toast.success("Referral fee cleared");
+      qc.invalidateQueries({ queryKey: ["member-profile"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to clear");
+    } finally { setBusy(false); }
+  }
+
+  const inputCls = "w-full h-10 px-3 border border-border bg-background text-sm rounded-sm";
+  return (
+    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div>
+        <h3 className="text-lg font-extrabold tracking-tight">Referral Fee Settings</h3>
+        <p className="text-sm text-muted-foreground max-w-2xl mt-1">
+          Optional. Set a default referral fee you'd like to receive when you send a trip through
+          My Florida NEMT or refer it to another connected transportation provider. Leave blank if
+          you don't want to charge a referral fee. You can update this at any time.
+        </p>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1">Fee type</label>
+          <select
+            className={inputCls}
+            value={feeType}
+            onChange={(e) => setFeeType(e.target.value as "flat" | "percent" | "")}
+          >
+            <option value="">No referral fee</option>
+            <option value="flat">Flat dollar amount ($)</option>
+            <option value="percent">Percentage of trip (%)</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1">
+            {feeType === "percent" ? "Percentage" : "Amount"}
+          </label>
+          <div className="relative">
+            {feeType === "flat" && (
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+            )}
+            <input
+              type="number"
+              min="0"
+              step={feeType === "percent" ? "0.1" : "0.01"}
+              max={feeType === "percent" ? 100 : undefined}
+              disabled={!feeType}
+              className={`${inputCls} ${feeType === "flat" ? "pl-7" : ""} ${feeType === "percent" ? "pr-8" : ""}`}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder={feeType === "percent" ? "e.g. 10" : feeType === "flat" ? "e.g. 25.00" : "Select a fee type first"}
+            />
+            {feeType === "percent" && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={save}
+          disabled={busy}
+          className="portal-btn-primary px-5 py-2"
+        >
+          {busy ? "Saving…" : "Save referral fee"}
+        </button>
+        {(p.referral_fee_type || p.referral_fee_amount != null) && (
+          <button
+            type="button"
+            onClick={clearFee}
+            disabled={busy}
+            className="portal-btn-secondary px-5 py-2"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 
