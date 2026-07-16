@@ -13,6 +13,7 @@ const servicesLinks = [
   { to: "/services/ambulatory", label: "Ambulatory", desc: "Walk-on rides with minimal assistance" },
   { to: "/services/wheelchair", label: "Wheelchair", desc: "ADA-compliant lift-equipped vans" },
   { to: "/services/stretcher", label: "Gurney & Stretcher", desc: "Bed-to-bed non-emergency transport" },
+  { to: "/services/medical-deliveries", label: "Medical Deliveries", desc: "Prescriptions, samples, supplies, DME" },
 ] as const;
 
 const moreLinks = [
