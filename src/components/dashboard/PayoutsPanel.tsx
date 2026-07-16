@@ -212,23 +212,27 @@ function BillingExplainer({ feePct }: { feePct: number }) {
   const pctLabel = `${(feePct * 100).toFixed(2).replace(/\.00$/, "")}%`;
   return (
     <section className="bg-primary/5 border border-primary/20 rounded-sm p-5">
-      <h3 className="text-lg font-extrabold tracking-tight mb-2">How billing works</h3>
+      <h3 className="text-lg font-extrabold tracking-tight mb-2">How payouts work</h3>
       <ol className="text-sm text-foreground/90 space-y-2 list-decimal pl-5">
-        <li><strong>Patient pays at booking.</strong> The fare is charged to the patient and held by My Florida NEMT in escrow.</li>
-        <li><strong>You complete the trip.</strong> Mark the trip <em>Completed</em> in your dashboard — this queues the payout automatically.</li>
-        <li><strong>We deduct a {pctLabel} platform fee.</strong> Covers payment processing, dispatch, and HIPAA-compliant infrastructure.</li>
-        <li><strong>Funds release to your bank.</strong> The remainder transfers to your connected account within <strong>1–2 business days</strong>.</li>
-        <li><strong>Provider-to-provider payouts.</strong> If you dispatch a trip to another provider, their "pay" rate from <em>Pricing</em> is transferred to them on completion, minus the same {pctLabel} fee.</li>
+        <li><strong>Patient or facility pays at booking.</strong> The fare is charged and held by My Florida NEMT.</li>
+        <li><strong>You complete the trip.</strong> Marking a trip <em>Completed</em> queues the payout — it does <strong>not</strong> release funds.</li>
+        <li><strong>48-hour validation hold (standard trips).</strong> Before any payout is released, MFN verifies the trip was actually completed, the correct provider was assigned, payment was captured, and the payout amount is accurate.</li>
+        <li><strong>Net-15 hold (Medicaid trips).</strong> Medicaid does not pay MFN immediately. Medicaid-funded trip payouts are released <strong>15 days after completion</strong>, once state funds have posted.</li>
+        <li><strong>Admin release only.</strong> Providers cannot self-trigger transfers or edit payout amounts. An MFN administrator releases the payout after validation.</li>
+        <li><strong>Platform fee.</strong> A {pctLabel} platform fee is deducted at release (payment processing, dispatch, HIPAA infrastructure).</li>
+        <li><strong>Funds arrive.</strong> After admin release, funds reach your bank in 1–2 business days via your connected account.</li>
       </ol>
 
       <div className="mt-4 grid sm:grid-cols-4 gap-3 bg-card border border-border rounded-sm p-4">
         <ExampleRow label="Gross fare" value={formatUsd(example)} />
         <ExampleRow label={`Platform fee (${pctLabel})`} value={`−${formatUsd(fee)}`} muted />
         <ExampleRow label="Your payout" value={formatUsd(net)} accent />
-        <ExampleRow label="In your bank" value="1–2 business days" small />
+        <ExampleRow label="Standard release" value="48 hrs after completion" small />
       </div>
       <p className="text-xs text-muted-foreground mt-3">
-        Typical timeline: trip completed today → released to Stripe instantly → deposited to your bank in 1–2 business days (Mon–Fri, excluding US bank holidays). First payout after onboarding can take 5–7 days.
+        <strong>Medicaid trips follow Net-15:</strong> released ~15 days after completion because MFN receives Medicaid
+        funds on a delayed schedule. If any validation fails (trip not completed, payment not captured, amount mismatch,
+        duplicate transfer risk), the payout is placed on hold for admin review instead of being sent.
       </p>
     </section>
   );
