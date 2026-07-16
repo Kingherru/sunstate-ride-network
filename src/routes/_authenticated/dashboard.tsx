@@ -537,6 +537,33 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
+            {tab === "trips" && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 border-b border-border">
+                  <button
+                    type="button"
+                    onClick={() => setTripsSubtab("new")}
+                    className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "new" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {portal === "patient" ? "Request a ride" : "New trip"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setTripsSubtab("reservations"); const key = tabKeyFor("trips"); if (key) markViewed(key); }}
+                    className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "reservations" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Reservations
+                    {(unread as any)[TAB_KEYS.providerReservations] > 0 && tripsSubtab !== "reservations" && (
+                      <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                        {(unread as any)[TAB_KEYS.providerReservations]}
+                      </span>
+                    )}
+                  </button>
+                </div>
+                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
+                {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} />}
+              </div>
+            )}
             {tab === "schedule" && <ScheduleCalendarPanel />}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
