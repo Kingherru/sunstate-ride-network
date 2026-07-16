@@ -234,7 +234,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     const key = tabKeyFor(tab);
     if (key && (unread as any)[key] > 0) markViewed(key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, (unread as any)[tabKeyFor(tab) ?? ""]]);
+  }, [tab, tripsSubtab, (unread as any)[tabKeyFor(tab) ?? ""]]);
 
 
 
