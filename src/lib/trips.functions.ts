@@ -343,9 +343,9 @@ export const updateTripDetails = createServerFn({ method: "POST" })
       throw new Error("You do not have permission to edit this trip");
     }
 
-    // Providers (recipients) may edit provider_notes and their quote (cost_total); senders/admins may edit all fields.
-    const patch: Record<string, unknown> = {};
-    const providerOnlyKeys = new Set(["provider_notes", "cost_total"]);
+    // Providers (recipients) may edit provider_notes only; senders/admins may edit all fields.
+    // cost_total is deliberately excluded from this endpoint — use the trip quote RPC flow.
+    const providerOnlyKeys = new Set(["provider_notes"]);
     for (const [k, v] of Object.entries(data.patch)) {
       if (v === undefined) continue;
       if (isRecipient && !isSender && !isAdmin && !providerOnlyKeys.has(k)) continue;
