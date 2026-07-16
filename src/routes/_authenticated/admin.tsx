@@ -24,7 +24,9 @@ import {
   History,
   ShieldAlert,
   Radar,
+  MessageSquare,
   LogOut,
+
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
