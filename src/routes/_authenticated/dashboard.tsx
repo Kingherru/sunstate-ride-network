@@ -216,6 +216,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // Map portal + tab → tab_key we track for unread counts
   function tabKeyFor(t: Tab): TabKey | null {
     if (portal === "provider" && t === "reservations") return TAB_KEYS.providerReservations;
+    if (portal === "provider" && t === "trips" && tripsSubtab === "reservations") return TAB_KEYS.providerReservations;
     if (portal === "provider" && t === "received") return TAB_KEYS.providerReferrals;
     if (portal === "facility" && t === "sent") return TAB_KEYS.facilitySent;
     if (portal === "patient" && t === "sent") return TAB_KEYS.patientSent;
