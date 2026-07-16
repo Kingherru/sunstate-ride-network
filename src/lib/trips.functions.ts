@@ -280,7 +280,7 @@ export const updateTripStatus = createServerFn({ method: "POST" })
   .inputValidator((input: { trip_id: string; status: "accepted" | "declined" | "completed" | "canceled" }) => input)
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const patch: Record<string, unknown> = { status: data.status };
+    const patch: { status: typeof data.status; completed_at?: string } = { status: data.status };
     if (data.status === "completed") {
       patch.completed_at = new Date().toISOString();
     }
