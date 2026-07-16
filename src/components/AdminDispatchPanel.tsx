@@ -570,3 +570,11 @@ function BulkZipImporter({ zones, onDone }: { zones: any[]; onDone: () => void }
     </div>
   );
 }
+
+function fmtCents(v: number | null | undefined): string {
+  if (v == null) return "—";
+  const n = Number(v) / 100;
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+}
+
