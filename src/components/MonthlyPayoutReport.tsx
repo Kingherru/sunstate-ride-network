@@ -15,6 +15,8 @@ type Row = {
   status: string;
   failure_reason: string | null;
   created_at: string;
+  referral_fee_cents?: number | null;
+  referral_fee_source_user_id?: string | null;
 };
 
 function ymOptions(): { value: string; label: string }[] {
