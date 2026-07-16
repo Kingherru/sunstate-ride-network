@@ -345,6 +345,7 @@ export const updateTripDetails = createServerFn({ method: "POST" })
 
     // Providers (recipients) may edit provider_notes only; senders/admins may edit all fields.
     // cost_total is deliberately excluded from this endpoint — use the trip quote RPC flow.
+    const patch: Record<string, unknown> = {};
     const providerOnlyKeys = new Set(["provider_notes"]);
     for (const [k, v] of Object.entries(data.patch)) {
       if (v === undefined) continue;
