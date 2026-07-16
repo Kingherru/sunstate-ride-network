@@ -104,11 +104,12 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "trips" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
+type TripsSubtab = "new" | "reservations";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
-  provider: ["onboarding", "reservations", "schedule", "received", "sent", "new", "vehicles", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
+  provider: ["onboarding", "trips", "schedule", "received", "sent", "vehicles", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "payers", "messages", "payments", "account"],
 };
 
@@ -128,6 +129,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "upload") return "Upload CSV";
   if (t === "requests") return "Requests";
   if (t === "reservations") return "Reservations";
+  if (t === "trips") return "Trips";
   if (t === "network") return "Provider Network";
   if (t === "rules") return "Rules";
   if (t === "contacts") return portal === "facility" ? "Patients" : portal === "provider" ? "Saved Contacts" : "Contacts";
@@ -182,8 +184,17 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const meta = PORTAL_META[portal];
 
   const [tab, setTab] = useState<Tab>(baseAllowedTabs[0]);
+  const [tripsSubtab, setTripsSubtab] = useState<TripsSubtab>("new");
   const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
-  function startDuplicate(t: Trip) { setDuplicateSource(t); handleTab("new"); }
+  function startDuplicate(t: Trip) {
+    setDuplicateSource(t);
+    if (portal === "provider") {
+      setTripsSubtab("new");
+      handleTab("trips");
+    } else {
+      handleTab("new");
+    }
+  }
 
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -205,6 +216,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // Map portal + tab → tab_key we track for unread counts
   function tabKeyFor(t: Tab): TabKey | null {
     if (portal === "provider" && t === "reservations") return TAB_KEYS.providerReservations;
+    if (portal === "provider" && t === "trips" && tripsSubtab === "reservations") return TAB_KEYS.providerReservations;
     if (portal === "provider" && t === "received") return TAB_KEYS.providerReferrals;
     if (portal === "facility" && t === "sent") return TAB_KEYS.facilitySent;
     if (portal === "patient" && t === "sent") return TAB_KEYS.patientSent;
@@ -222,7 +234,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     const key = tabKeyFor(tab);
     if (key && (unread as any)[key] > 0) markViewed(key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, (unread as any)[tabKeyFor(tab) ?? ""]]);
+  }, [tab, tripsSubtab, (unread as any)[tabKeyFor(tab) ?? ""]]);
 
 
 
@@ -525,6 +537,33 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
+            {tab === "trips" && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 border-b border-border">
+                  <button
+                    type="button"
+                    onClick={() => setTripsSubtab("new")}
+                    className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "new" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {portal === "patient" ? "Request a ride" : "New trip"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setTripsSubtab("reservations"); const key = tabKeyFor("trips"); if (key) markViewed(key); }}
+                    className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "reservations" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Reservations
+                    {(unread as any)[TAB_KEYS.providerReservations] > 0 && tripsSubtab !== "reservations" && (
+                      <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                        {(unread as any)[TAB_KEYS.providerReservations]}
+                      </span>
+                    )}
+                  </button>
+                </div>
+                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
+                {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} />}
+              </div>
+            )}
             {tab === "schedule" && <ScheduleCalendarPanel />}
             {tab === "rules" && <RulesPanel />}
             {tab === "contacts" && <ContactsPanel />}
