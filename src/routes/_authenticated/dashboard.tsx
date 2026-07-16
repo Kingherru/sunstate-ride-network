@@ -44,6 +44,7 @@ import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
+import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
 import { ChangelogChip } from "@/components/ChangelogChip";
 
@@ -1214,6 +1215,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
   const [assigning, setAssigning] = useState<Trip | null>(null);
   const [viewing, setViewing] = useState<Trip | null>(null);
   const [rating, setRating] = useState<Trip | null>(null);
+  const [reviewing, setReviewing] = useState<Trip | null>(null);
   const qc = useQueryClient();
   const showSavedBadge = portal === "facility" && role === "sender";
   const canRate = portal === "facility" && role === "sender";
@@ -1320,30 +1322,12 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
                     <button onClick={() => setRating(t)} className="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-sm hover:bg-amber-600 mr-2">★ Rate</button>
                   )}
                   {role === "recipient" && ["assigned","open","pending","offered"].includes((t.status ?? "").toLowerCase()) && (
-                    <>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await updateTripStatus({ data: { trip_id: t.id, status: "accepted" } });
-                            toast.success("Accepted");
-                            onChanged();
-                          } catch (e: any) {
-                            toast.error(e?.message ?? "Could not accept trip");
-                          }
-                        }}
-                        className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700 mr-2">✓ Accept</button>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await updateTripStatus({ data: { trip_id: t.id, status: "declined" } });
-                            toast.success("Declined");
-                            onChanged();
-                          } catch (e: any) {
-                            toast.error(e?.message ?? "Could not decline trip");
-                          }
-                        }}
-                        className="text-xs font-bold bg-red-600 text-white px-3 py-1.5 rounded-sm hover:bg-red-700">✕ Decline</button>
-                    </>
+                    <button
+                      onClick={() => setReviewing(t)}
+                      className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700"
+                    >
+                      Review &amp; respond
+                    </button>
                   )}
                 </td>
               </tr>
@@ -1355,6 +1339,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
         <AssignDialog trip={assigning} onClose={() => setAssigning(null)} onAssigned={() => { setAssigning(null); onChanged(); }} />
       )}
       {rating && <RateProviderModal trip={rating} onClose={() => setRating(null)} onSaved={() => { setRating(null); onChanged(); }} />}
+      {reviewing && <ReferralReviewModal trip={reviewing} onClose={() => setReviewing(null)} onDone={() => { setReviewing(null); onChanged(); }} />}
     </>
   );
 }
