@@ -111,11 +111,34 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [threadSearch, setThreadSearch] = useState("");
+  const [kindFilter, setKindFilter] = useState<"all" | ParticipantKind | "dispatch" | "zone_manager" | "feedback">("all");
+  const [zoneFilter, setZoneFilter] = useState<string>("all");
   const [draft, setDraft] = useState("");
   const [initialBody, setInitialBody] = useState("");
   const [feedbackSubject, setFeedbackSubject] = useState("");
   const [feedbackCategory, setFeedbackCategory] = useState("general");
   const [zoneId, setZoneId] = useState<string>("");
+
+  const deleteMsgFn = useServerFn(deleteMessage);
+  const deleteThreadFn = useServerFn(deleteOrLeaveThread);
+
+  const deleteMsg = useMutation({
+    mutationFn: (message_id: string) => deleteMsgFn({ data: { message_id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["msg-thread", activeThread] });
+      qc.invalidateQueries({ queryKey: ["msg-threads"] });
+    },
+  });
+
+  const deleteThread = useMutation({
+    mutationFn: (thread_id: string) => deleteThreadFn({ data: { thread_id } }),
+    onSuccess: () => {
+      setActiveThread(null);
+      qc.invalidateQueries({ queryKey: ["msg-threads"] });
+      qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
+    },
+  });
+
 
   const threadsQ = useQuery({
     queryKey: ["msg-threads"],
