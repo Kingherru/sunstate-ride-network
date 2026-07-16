@@ -291,7 +291,10 @@ function AdminPage() {
                   <SidebarMenu>
                     {group.items.map((item) => {
                       const tk = adminTabKeyFor(item.id);
-                      const badge = tk ? ((unread as any)[tk] ?? 0) : 0;
+                      const tkBadge = tk ? ((unread as any)[tk] ?? 0) : 0;
+                      const msgBadge = item.id === "messaging" ? (unreadMsgsQ.data ?? 0) : 0;
+                      const badge = tkBadge + msgBadge;
+
                       return (
                         <SidebarMenuItem key={item.id}>
                           <SidebarMenuButton
