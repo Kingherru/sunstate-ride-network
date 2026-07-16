@@ -240,41 +240,60 @@ export const createTripsBulk = createServerFn({ method: "POST" })
     return { count: inserted?.length ?? 0 };
   });
 
-/** Assign an existing trip to a provider (by their auth user_id). */
+/** Assign an existing trip to a provider (by their auth user_id).
+ *  Providers may NEVER self-assign — the assignee must not be the caller,
+ *  and must be an approved provider distinct from the trip creator. */
 export const assignTrip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { trip_id: string; assigned_to: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureActiveMember(supabase, userId);
+
+    if (!data.assigned_to || data.assigned_to === userId) {
+      throw new Error("You cannot assign a trip to yourself.");
+    }
+    const { data: isApproved } = await supabase.rpc("is_approved_provider", { _user_id: data.assigned_to });
+    if (!isApproved) throw new Error("Assignee is not an approved provider.");
+
+    // Load the trip and confirm the caller is the creator or an admin/dispatcher.
+    const { data: trip } = await supabase
+      .from("trips").select("id, created_by").eq("id", data.trip_id).maybeSingle();
+    if (!trip) throw new Error("Trip not found.");
+    const { data: isStaff } = await supabase.rpc("is_ops_staff", { _user_id: userId });
+    if (trip.created_by !== userId && !isStaff) throw new Error("Forbidden.");
+    if (data.assigned_to === trip.created_by) throw new Error("Provider cannot be the trip creator.");
+
     const { error } = await supabase
       .from("trips")
       .update({ assigned_to: data.assigned_to, status: "assigned" })
-      .eq("id", data.trip_id)
-      .eq("created_by", userId);
+      .eq("id", data.trip_id);
     if (error) throw error;
     return { ok: true };
   });
 
-/** Update trip status (accept/decline/complete) — caller must be sender or recipient. */
+/** Update trip status (accept/decline/complete). Marking `completed` queues
+ *  the payout for validation (48h standard, Net-15 Medicaid) but never
+ *  sends funds — an admin must release from the Admin Portal. */
 export const updateTripStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { trip_id: string; status: "accepted" | "declined" | "completed" | "canceled" }) => input)
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const { error } = await supabase
-      .from("trips")
-      .update({ status: data.status })
-      .eq("id", data.trip_id);
+    const patch: { status: typeof data.status; completed_at?: string } = { status: data.status };
+    if (data.status === "completed") {
+      patch.completed_at = new Date().toISOString();
+    }
+    const { error } = await supabase.from("trips").update(patch).eq("id", data.trip_id);
     if (error) throw error;
 
-    // Auto-release payout when marking completed. Best-effort: errors don't block status update.
     if (data.status === "completed") {
       try {
         const { releaseTripPayout } = await import("@/lib/payouts.functions");
+        // This ONLY queues + validates; the transfer requires an admin action.
         await releaseTripPayout({ data: { trip_id: data.trip_id } });
       } catch (e) {
-        console.error("Auto release payout failed:", e);
+        console.error("Queue payout failed:", e);
       }
     }
     return { ok: true };

@@ -3349,9 +3349,15 @@ export type Database = {
           payer: string | null
           payer_id: string | null
           payment_status: string
+          payout_eligible_at: string | null
+          payout_hold_reasons: string[]
+          payout_is_medicaid: boolean
           payout_released_at: string | null
+          payout_released_by: string | null
           payout_status: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id: string | null
+          payout_validated_at: string | null
+          payout_validated_by: string | null
           pickup_address: string
           pickup_address_details: string | null
           pickup_city: string
@@ -3445,9 +3451,15 @@ export type Database = {
           payer?: string | null
           payer_id?: string | null
           payment_status?: string
+          payout_eligible_at?: string | null
+          payout_hold_reasons?: string[]
+          payout_is_medicaid?: boolean
           payout_released_at?: string | null
+          payout_released_by?: string | null
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id?: string | null
+          payout_validated_at?: string | null
+          payout_validated_by?: string | null
           pickup_address: string
           pickup_address_details?: string | null
           pickup_city: string
@@ -3541,9 +3553,15 @@ export type Database = {
           payer?: string | null
           payer_id?: string | null
           payment_status?: string
+          payout_eligible_at?: string | null
+          payout_hold_reasons?: string[]
+          payout_is_medicaid?: boolean
           payout_released_at?: string | null
+          payout_released_by?: string | null
           payout_status?: Database["public"]["Enums"]["trip_payout_status"]
           payout_transfer_id?: string | null
+          payout_validated_at?: string | null
+          payout_validated_by?: string | null
           pickup_address?: string
           pickup_address_details?: string | null
           pickup_city?: string
