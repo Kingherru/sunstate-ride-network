@@ -1012,6 +1012,22 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
       if (!payload.appointment_time) delete payload.appointment_time;
       if (!payload.payer_id) delete payload.payer_id;
+      // Delivery-only fields: strip when not a delivery, and coerce weight.
+      if (payload.trip_kind !== "medical_delivery") {
+        delete payload.delivery_item_type;
+        delete payload.delivery_item_description;
+        delete payload.delivery_weight_lbs;
+        delete payload.delivery_temperature_sensitive;
+        delete payload.delivery_hazmat;
+        delete payload.delivery_signature_required;
+        delete payload.delivery_rush;
+        delete payload.delivery_recipient_name;
+        delete payload.delivery_recipient_phone;
+      } else {
+        if (payload.delivery_weight_lbs === "" || payload.delivery_weight_lbs === null) {
+          delete payload.delivery_weight_lbs;
+        }
+      }
       return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
     },
     onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
