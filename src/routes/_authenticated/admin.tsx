@@ -385,7 +385,12 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
     case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
-    case "payouts": return caps.isAdmin ? <MonthlyPayoutReport scope="admin" title="Monthly billing & payout report — all providers" /> : <NoAccess />;
+    case "payouts": return caps.isAdmin ? (
+      <div className="space-y-6">
+        <AdminPayoutQueue />
+        <MonthlyPayoutReport scope="admin" title="Monthly billing & payout report — all providers" />
+      </div>
+    ) : <NoAccess />;
     case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
     case "seo": return <ComingSoon title="SEO settings" description="Site-wide meta defaults, robots directives, and sitemap controls." />;
     case "blog": return <ComingSoon title="Blog / Resources" description="Author, edit, and publish resource articles. Direct link: /resources." />;
