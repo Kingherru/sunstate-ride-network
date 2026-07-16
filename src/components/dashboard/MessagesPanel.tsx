@@ -218,8 +218,8 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
       const r = await zonesFn();
       return r.ok ? r.zones : [];
     },
-    enabled: composeOpen && composeKind === "zone_manager",
   });
+
 
   const startWith = useMutation({
     mutationFn: async (uid: string) => {
