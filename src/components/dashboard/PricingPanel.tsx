@@ -163,9 +163,10 @@ export function PricingPanel() {
             </div>
           )}
         </div>
-
+      </form>
 
       <aside className="bg-card border border-border rounded-sm p-6 space-y-3 h-fit sticky top-4">
+
         <h3 className="font-extrabold tracking-tight">Sample quote</h3>
         <div className="grid grid-cols-2 gap-1 text-xs font-bold uppercase tracking-wide">
           <button type="button"
