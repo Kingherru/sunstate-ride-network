@@ -12,7 +12,10 @@ import {
   openZoneManagerThread,
   submitFeedbackMessage,
   listDispatchZones,
+  deleteMessage,
+  deleteOrLeaveThread,
 } from "@/lib/messages.functions";
+
 import type { PortalKind } from "@/routes/_authenticated/dashboard";
 import { useCapabilities } from "@/lib/permissions";
 
