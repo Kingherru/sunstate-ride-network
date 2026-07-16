@@ -95,10 +95,10 @@ function PayersTab() {
  * second. Payers only appears for portals that already had payers access
  * (provider, facility) — patients don't manage payers and see Contacts only.
  */
-function ContactsAndPayersPanel({ portal }: { portal: PortalKind }) {
+function ContactsAndPayersPanel({ portal, initialSubTab = "contacts" }: { portal: PortalKind; initialSubTab?: "contacts" | "payers" }) {
   const showPayers = portal === "provider" || portal === "facility";
   type Sub = "contacts" | "payers";
-  const [subTab, setSubTab] = useState<Sub>("contacts");
+  const [subTab, setSubTab] = useState<Sub>(initialSubTab === "payers" && showPayers ? "payers" : "contacts");
   const subs: Array<[Sub, string]> = [
     ["contacts", "Contacts"],
     ...(showPayers ? ([["payers", "Payers"]] as Array<[Sub, string]>) : []),
