@@ -363,8 +363,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
   }, [allowedTabs, tab]);
 
-  // Patients & facilities can always send (book); providers still require paid membership.
-  const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
+  // All signed-in users (including soft-access providers) can create trips.
+  // Referral acceptance / assignment is what requires approved-provider
+  // status, and that's enforced server-side by is_approved_provider.
+  const canSend = !!profile;
+
   const realTrips = tripsQ.data ?? [];
   const sent = realTrips.filter((t) => t.created_by === userId);
   const received = realTrips.filter((t) => t.assigned_to === userId);
