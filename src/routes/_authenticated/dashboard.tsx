@@ -343,15 +343,19 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   // entirely — they get the normal provider experience immediately.
   const isApprovedProvider =
     portal === "provider" && !!realProfile && !!(realProfile as any).provider_application_id;
+  // Soft-access only applies while onboarding is still in progress.
+  // Once onboarding is complete, membership rules alone gate paid features.
   const isSoftAccess =
     portal === "provider" && !isAdmin && !!realProfile && !onboarding.complete && !isApprovedProvider;
   const isTabLocked = (t: Tab) =>
     isSoftAccess && !(SOFT_ACCESS_TABS as readonly string[]).includes(t);
 
-  // Hide the Onboarding tab once the provider is approved.
+  // Hide the Onboarding tab once the provider has either completed onboarding
+  // or been approved — regardless of membership status.
+  const onboardingDone = isApprovedProvider || onboarding.complete;
   const allowedTabs = useMemo<Tab[]>(
-    () => (isApprovedProvider ? baseAllowedTabs.filter((t) => t !== "onboarding") : baseAllowedTabs),
-    [baseAllowedTabs, isApprovedProvider],
+    () => (onboardingDone ? baseAllowedTabs.filter((t) => t !== "onboarding") : baseAllowedTabs),
+    [baseAllowedTabs, onboardingDone],
   );
   useEffect(() => {
     if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
@@ -449,9 +453,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
             {portal === "provider" && !canSend && (
               <div className="bg-[oklch(0.96_0.05_55)] border-l-4 border-[oklch(0.70_0.18_45)] p-4 text-sm">
-                <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Free plan</p>
+                <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Soft Access</p>
                 <p className="text-[oklch(0.30_0.08_45)]">
-                  Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($10/mo or $100/yr) to send trips, bulk upload, and use API integrations.{" "}
+                  You have limited access to the platform. Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($10/mo or $100/yr) to send trips, bulk upload, and use API integrations.{" "}
                   <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
                 </p>
               </div>
