@@ -18,14 +18,37 @@ export const listAllTripsAdmin = createServerFn({ method: "GET" })
     await requireOps(context);
     let q = context.supabase
       .from("trips")
-      .select("id, display_id, status, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, transport_type, cost_total, created_by, assigned_to, created_at")
+      .select("id, display_id, status, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, transport_type, cost_total, provider_payout_cents, platform_fee_cents, referral_fee_cents, referral_fee_source_user_id, payment_status, payout_status, source, created_by, assigned_to, created_at")
       .order("pickup_date", { ascending: false })
       .order("pickup_time", { ascending: false })
       .limit(Math.min(data.limit ?? 200, 500));
     if (data.status && data.status !== "all") q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw error;
-    return rows ?? [];
+    if (!rows || rows.length === 0) return [] as any[];
+
+    // Attach original + assigned provider display names.
+    const userIds = Array.from(new Set(
+      rows.flatMap((r: any) => [r.created_by, r.assigned_to, r.referral_fee_source_user_id].filter(Boolean))
+    )) as string[];
+    let profiles: Record<string, { name: string; company: string | null }> = {};
+    if (userIds.length > 0) {
+      const { data: prof } = await context.supabase
+        .from("member_profiles")
+        .select("user_id, first_name, last_name, company_name")
+        .in("user_id", userIds);
+      for (const p of (prof ?? []) as any[]) {
+        profiles[p.user_id] = {
+          name: [p.first_name, p.last_name].filter(Boolean).join(" ") || p.company_name || p.user_id.slice(0, 8),
+          company: p.company_name ?? null,
+        };
+      }
+    }
+    return rows.map((r: any) => ({
+      ...r,
+      original_provider_name: r.created_by ? (profiles[r.created_by]?.company ?? profiles[r.created_by]?.name ?? null) : null,
+      assigned_provider_name: r.assigned_to ? (profiles[r.assigned_to]?.company ?? profiles[r.assigned_to]?.name ?? null) : null,
+    }));
   });
 
 export const listAllReservationsAdmin = createServerFn({ method: "GET" })

@@ -301,7 +301,13 @@ function ZoneDispatcher({
             <th className="py-2 pr-3">Trip ID</th>
             <th className="py-2 pr-3">Patient</th>
             <th className="py-2 pr-3">Pickup</th>
+            <th className="py-2 pr-3">Original</th>
+            <th className="py-2 pr-3">Source</th>
             <th className="py-2 pr-3">Status</th>
+            <th className="py-2 pr-3">Payment</th>
+            <th className="py-2 pr-3 text-right">Referral</th>
+            <th className="py-2 pr-3 text-right">Platform</th>
+            <th className="py-2 pr-3 text-right">Provider net</th>
             <th className="py-2 pr-3">Assign to provider</th>
             <th className="py-2 pr-3"></th>
           </tr>
@@ -354,7 +360,13 @@ function TripRow({
         <td className="py-2 pr-3 font-mono font-bold">{t.display_id}</td>
         <td className="py-2 pr-3">{t.patient_first_name} {t.patient_last_name}</td>
         <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
+        <td className="py-2 pr-3 text-xs">{t.original_provider_name ?? "—"}</td>
+        <td className="py-2 pr-3 text-xs capitalize">{t.source ?? "—"}</td>
         <td className="py-2 pr-3 text-xs">{t.status}</td>
+        <td className="py-2 pr-3 text-xs">{t.payment_status ?? "—"}</td>
+        <td className="py-2 pr-3 text-xs text-right font-mono">{fmtCents(t.referral_fee_cents)}</td>
+        <td className="py-2 pr-3 text-xs text-right font-mono">{fmtCents(t.platform_fee_cents)}</td>
+        <td className="py-2 pr-3 text-xs text-right font-mono font-bold">{fmtCents(t.provider_payout_cents)}</td>
         <td className="py-2 pr-3">
           <select
             defaultValue={t.assigned_to ?? ""}
@@ -382,7 +394,7 @@ function TripRow({
       </tr>
       {open && (
         <tr className="bg-background/40">
-          <td colSpan={6} className="p-3">
+          <td colSpan={13} className="p-3">
             <div className="text-xs uppercase font-bold text-muted-foreground mb-2">
               Fair Assignment Engine — ranked providers
             </div>
@@ -558,3 +570,11 @@ function BulkZipImporter({ zones, onDone }: { zones: any[]; onDone: () => void }
     </div>
   );
 }
+
+function fmtCents(v: number | null | undefined): string {
+  if (v == null) return "—";
+  const n = Number(v) / 100;
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+}
+

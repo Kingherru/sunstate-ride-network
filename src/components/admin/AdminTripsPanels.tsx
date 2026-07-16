@@ -42,29 +42,42 @@ export function AdminTripsPanel() {
               <th className="text-left p-3">Trip ID</th>
               <th className="text-left p-3">Date / Time</th>
               <th className="text-left p-3">Patient</th>
-              <th className="text-left p-3">Pickup</th>
-              <th className="text-left p-3">Dropoff</th>
-              <th className="text-left p-3">Type</th>
+              <th className="text-left p-3">Route</th>
+              <th className="text-left p-3">Original provider</th>
+              <th className="text-left p-3">Assigned provider</th>
+              <th className="text-left p-3">Source</th>
               <th className="text-left p-3">Status</th>
-              <th className="text-right p-3">Cost</th>
+              <th className="text-left p-3">Payment</th>
+              <th className="text-right p-3">Charge</th>
+              <th className="text-right p-3">Referral fee</th>
+              <th className="text-right p-3">Platform fee</th>
+              <th className="text-right p-3">Provider net</th>
             </tr>
           </thead>
           <tbody>
-            {q.isLoading && <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Loading trips…</td></tr>}
-            {q.error && <tr><td colSpan={8} className="p-6 text-center text-destructive">{(q.error as Error).message}</td></tr>}
+            {q.isLoading && <tr><td colSpan={13} className="p-6 text-center text-muted-foreground">Loading trips…</td></tr>}
+            {q.error && <tr><td colSpan={13} className="p-6 text-center text-destructive">{(q.error as Error).message}</td></tr>}
             {!q.isLoading && (q.data?.length ?? 0) === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No trips found.</td></tr>
+              <tr><td colSpan={13} className="p-8 text-center text-muted-foreground">No trips found.</td></tr>
             )}
             {q.data?.map((t: any) => (
               <tr key={t.id} className="border-t border-border">
                 <td className="p-3 font-mono text-xs">{t.display_id ?? t.id.slice(0, 8)}</td>
-                <td className="p-3">{t.pickup_date} {t.pickup_time?.slice(0,5)}</td>
+                <td className="p-3 whitespace-nowrap">{t.pickup_date} {t.pickup_time?.slice(0,5)}</td>
                 <td className="p-3">{t.patient_first_name} {t.patient_last_name}</td>
-                <td className="p-3">{t.pickup_city} {t.pickup_zip}</td>
-                <td className="p-3">{t.dropoff_city} {t.dropoff_zip ?? ""}</td>
-                <td className="p-3 capitalize">{t.transport_type ?? "—"}</td>
+                <td className="p-3 text-xs">
+                  <div>{t.pickup_city} {t.pickup_zip ?? ""}</div>
+                  <div className="text-muted-foreground">↓ {t.dropoff_city} {t.dropoff_zip ?? ""}</div>
+                </td>
+                <td className="p-3 text-xs">{t.original_provider_name ?? "—"}</td>
+                <td className="p-3 text-xs">{t.assigned_provider_name ?? <span className="text-muted-foreground">Unassigned</span>}</td>
+                <td className="p-3 text-xs capitalize">{t.source ?? "—"}</td>
                 <td className="p-3"><StatusBadge status={t.status} /></td>
-                <td className="p-3 text-right font-mono">{t.cost_total != null ? `$${Number(t.cost_total).toFixed(2)}` : "—"}</td>
+                <td className="p-3"><StatusBadge status={t.payment_status} /></td>
+                <td className="p-3 text-right font-mono">{fmtUsd(t.cost_total, false)}</td>
+                <td className="p-3 text-right font-mono">{fmtUsd(t.referral_fee_cents, true)}</td>
+                <td className="p-3 text-right font-mono">{fmtUsd(t.platform_fee_cents, true)}</td>
+                <td className="p-3 text-right font-mono font-bold">{fmtUsd(t.provider_payout_cents, true)}</td>
               </tr>
             ))}
           </tbody>
@@ -73,6 +86,14 @@ export function AdminTripsPanel() {
     </div>
   );
 }
+
+function fmtUsd(v: number | null | undefined, isCents: boolean): string {
+  if (v == null) return "—";
+  const n = isCents ? Number(v) / 100 : Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+}
+
 
 export function AdminReservationsPanel() {
   const fetch = useServerFn(listAllReservationsAdmin);

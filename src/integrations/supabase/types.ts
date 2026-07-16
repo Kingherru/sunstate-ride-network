@@ -3379,6 +3379,8 @@ export type Database = {
           priority_offer_provider_id: string | null
           priority_offer_refused_at: string | null
           provider_payout_cents: number | null
+          referral_fee_cents: number
+          referral_fee_source_user_id: string | null
           region: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
@@ -3481,6 +3483,8 @@ export type Database = {
           priority_offer_provider_id?: string | null
           priority_offer_refused_at?: string | null
           provider_payout_cents?: number | null
+          referral_fee_cents?: number
+          referral_fee_source_user_id?: string | null
           region?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -3583,6 +3587,8 @@ export type Database = {
           priority_offer_provider_id?: string | null
           priority_offer_refused_at?: string | null
           provider_payout_cents?: number | null
+          referral_fee_cents?: number
+          referral_fee_source_user_id?: string | null
           region?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null

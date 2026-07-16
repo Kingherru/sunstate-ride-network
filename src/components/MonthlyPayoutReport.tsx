@@ -15,6 +15,8 @@ type Row = {
   status: string;
   failure_reason: string | null;
   created_at: string;
+  referral_fee_cents?: number | null;
+  referral_fee_source_user_id?: string | null;
 };
 
 function ymOptions(): { value: string; label: string }[] {
@@ -51,6 +53,8 @@ function toCsv(rows: Row[]): string {
     "stripe_transfer_id",
     "gross_usd",
     "platform_fee_usd",
+    "referral_fee_usd",
+    "referral_fee_source_user_id",
     "net_payout_usd",
     "status",
     "failure_reason",
@@ -66,6 +70,8 @@ function toCsv(rows: Row[]): string {
         r.stripe_transfer_id ?? "",
         (r.gross_cents / 100).toFixed(2),
         (r.fee_cents / 100).toFixed(2),
+        ((r.referral_fee_cents ?? 0) / 100).toFixed(2),
+        r.referral_fee_source_user_id ?? "",
         (r.net_cents / 100).toFixed(2),
         r.status,
         r.failure_reason ?? "",
@@ -102,7 +108,27 @@ export function MonthlyPayoutReport({
     }
     const { data, error } = await q;
     if (error) throw error;
-    return (data ?? []) as Row[];
+    const rows = (data ?? []) as Row[];
+    const tripIds = Array.from(new Set(rows.map((r) => r.trip_id).filter(Boolean))) as string[];
+    if (tripIds.length > 0) {
+      const { data: trips } = await supabase
+        .from("trips")
+        .select("id, referral_fee_cents, referral_fee_source_user_id")
+        .in("id", tripIds);
+      const tripMap = new Map<string, { referral_fee_cents: number | null; referral_fee_source_user_id: string | null }>();
+      for (const t of (trips ?? []) as any[]) {
+        tripMap.set(t.id, {
+          referral_fee_cents: t.referral_fee_cents ?? 0,
+          referral_fee_source_user_id: t.referral_fee_source_user_id ?? null,
+        });
+      }
+      for (const r of rows) {
+        const t = r.trip_id ? tripMap.get(r.trip_id) : null;
+        r.referral_fee_cents = t?.referral_fee_cents ?? 0;
+        r.referral_fee_source_user_id = t?.referral_fee_source_user_id ?? null;
+      }
+    }
+    return rows;
   }
 
   async function handlePreview() {

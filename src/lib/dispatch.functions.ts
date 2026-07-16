@@ -95,12 +95,31 @@ export const listTripsByZone = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let query = context.supabase
       .from("trips")
-      .select("id, display_id, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_city, pickup_zip, dropoff_city, status, dispatch_zone_id")
+      .select("id, display_id, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_city, pickup_zip, dropoff_city, status, dispatch_zone_id, cost_total, referral_fee_cents, platform_fee_cents, provider_payout_cents, payment_status, payout_status, source, created_by, assigned_to")
       .order("pickup_date", { ascending: false })
       .limit(200);
     if (data.zone_id) query = query.eq("dispatch_zone_id", data.zone_id);
     else if (data.zone_id === null) query = query.is("dispatch_zone_id", null);
     const { data: rows, error } = await query;
     if (error) throw error;
-    return rows ?? [];
+    if (!rows || rows.length === 0) return [] as any[];
+
+    const userIds = Array.from(new Set(
+      rows.flatMap((r: any) => [r.created_by, r.assigned_to].filter(Boolean))
+    )) as string[];
+    const nameMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: prof } = await context.supabase
+        .from("member_profiles")
+        .select("user_id, first_name, last_name, company_name")
+        .in("user_id", userIds);
+      for (const p of (prof ?? []) as any[]) {
+        nameMap[p.user_id] = p.company_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.user_id.slice(0, 8);
+      }
+    }
+    return rows.map((r: any) => ({
+      ...r,
+      original_provider_name: r.created_by ? (nameMap[r.created_by] ?? null) : null,
+      assigned_provider_name: r.assigned_to ? (nameMap[r.assigned_to] ?? null) : null,
+    }));
   });
