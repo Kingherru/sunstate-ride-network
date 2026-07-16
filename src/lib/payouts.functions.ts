@@ -156,11 +156,11 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
 
     const { data: trip, error: tErr } = await supabase
       .from("trips")
-      .select("id, status, cost_total, assigned_to, created_by, payout_status, payment_status, provider_payout_cents, platform_fee_cents, payer, medicaid_number, medicaid_plan, completed_at")
+      .select("id, status, cost_total, assigned_to, created_by, payout_status, payment_status, provider_payout_cents, platform_fee_cents, referral_fee_cents, payer, medicaid_number, medicaid_plan, completed_at")
       .eq("id", data.trip_id)
       .maybeSingle();
     if (tErr || !trip) return { ok: false as const, error: "Trip not found" };
-    const t = trip as unknown as TripRow;
+    const t = trip as unknown as TripRow & { referral_fee_cents?: number | null };
 
     // Only the trip creator (sender) or an admin/dispatcher may queue a payout.
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -174,7 +174,8 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
     const feePct = Number(feeRow?.platform_fee_pct);
     const effectivePct = Number.isFinite(feePct) ? feePct : PLATFORM_FEE_PCT;
     const feeCents = Math.max(0, Math.round(grossCents * effectivePct));
-    const netCents = Math.max(0, grossCents - feeCents);
+    const referralCents = Math.max(0, Math.min(grossCents - feeCents, Number(t.referral_fee_cents ?? 0)));
+    const netCents = Math.max(0, grossCents - feeCents - referralCents);
 
     const medicaid = isMedicaidTrip(t);
     const holdHours = medicaid ? PAYOUT_MEDICAID_NET_DAYS * 24 : PAYOUT_STANDARD_HOLD_HOURS;
