@@ -1214,6 +1214,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
   const [assigning, setAssigning] = useState<Trip | null>(null);
   const [viewing, setViewing] = useState<Trip | null>(null);
   const [rating, setRating] = useState<Trip | null>(null);
+  const [reviewing, setReviewing] = useState<Trip | null>(null);
   const qc = useQueryClient();
   const showSavedBadge = portal === "facility" && role === "sender";
   const canRate = portal === "facility" && role === "sender";
