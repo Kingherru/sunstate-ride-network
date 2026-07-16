@@ -42,6 +42,7 @@ import { ExpiringCredentialsPanel } from "@/components/ExpiringCredentialsPanel"
 import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
+import { AdminPayoutQueue } from "@/components/admin/AdminPayoutQueue";
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
