@@ -115,12 +115,21 @@ export const listThreads = createServerFn({ method: "GET" })
         .map((p: any) => {
           const prof = profByUser.get(p.user_id) ?? {};
           const name = [prof.first_name, prof.last_name].filter(Boolean).join(" ") || prof.company_name || prof.display_id || "Member";
+          let kind: "provider" | "facility" | "staff" | "patient" | "other" = "other";
+          if (staffSet.has(p.user_id)) kind = "staff";
+          else if (prof.provider_application_id) kind = "provider";
+          else if (prof.company_name) kind = "facility";
+          else if (prof.first_name || prof.last_name) kind = "patient";
           return {
             user_id: p.user_id,
             name,
             company: prof.company_name ?? null,
             display_id: prof.display_id ?? null,
             city: prof.city ?? null,
+            kind,
+            dispatch_zone_id: prof.dispatch_zone_id ?? null,
+            dispatch_zone_name: prof.dispatch_zones?.name ?? null,
+            dispatch_zone_code: prof.dispatch_zones?.code ?? null,
           };
         });
       let rel: Relationship = "unknown";
@@ -148,6 +157,7 @@ export const listThreads = createServerFn({ method: "GET" })
     const totalUnread = enriched.reduce((s, t) => s + t.unread_count, 0);
     return { ok: true as const, threads: enriched, total_unread: totalUnread };
   });
+
 
 /** Get messages for a thread + mark as read. */
 export const getThreadMessages = createServerFn({ method: "POST" })
