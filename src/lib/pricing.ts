@@ -114,3 +114,85 @@ export const DEFAULT_RATES: PricingRates = {
   after_hours_start: "19:00", after_hours_end: "07:00", holidays: [],
 };
 
+/* ================================================================
+ * Medical Deliveries pricing
+ * ================================================================
+ * Non-emergency medical item delivery (prescriptions, lab samples,
+ * DME, supplies, equipment). Shares the same status/quote/payout
+ * pipeline as passenger trips but uses its own rate book so
+ * providers can price delivery work independently.
+ */
+
+export interface DeliveryPricingRates {
+  enabled: boolean;
+  base: number;                  // flat pickup fee
+  per_mile: number;              // per mile rate
+  wait_per_unit: number;         // wait time rate, billed in wait_unit
+  wait_unit: WaitUnit;           // reuses passenger wait_unit setting
+  min_fee: number;               // minimum total
+  cold_chain_surcharge: number;  // temperature-sensitive add-on
+  signature_surcharge: number;   // signature-required add-on
+  rush_surcharge: number;        // rush / same-hour add-on
+}
+
+export interface DeliveryCostInput {
+  status?: string | null;
+  miles?: number | null;
+  wait_minutes?: number | null;
+  temperature_sensitive?: boolean | null;
+  signature_required?: boolean | null;
+  rush?: boolean | null;
+}
+
+export function calculateDeliveryCost(
+  trip: DeliveryCostInput,
+  rates: DeliveryPricingRates,
+): CostBreakdown {
+  const lines: CostLine[] = [];
+  if (trip.status === "canceled") {
+    return { lines, total: 0 };
+  }
+  if (rates.base > 0) lines.push({ label: "Base pickup", amount: rates.base });
+  const miles = Number(trip.miles ?? 0);
+  if (miles > 0 && rates.per_mile > 0) {
+    lines.push({
+      label: `Mileage (${miles.toFixed(1)} mi × $${rates.per_mile.toFixed(2)})`,
+      amount: +(miles * rates.per_mile).toFixed(2),
+    });
+  }
+  const wait = Number(trip.wait_minutes ?? 0);
+  if (wait > 0 && rates.wait_per_unit > 0) {
+    const unit = rates.wait_unit ?? "hour";
+    const unitMinutes = unit === "hour" ? 60 : unit === "half_hour" ? 30 : 1;
+    const units = unit === "minute" ? wait : Math.ceil(wait / unitMinutes);
+    const unitLabel = unit === "hour" ? "hr" : unit === "half_hour" ? "½hr" : "min";
+    lines.push({
+      label: `Wait time (${units} ${unitLabel} × $${rates.wait_per_unit.toFixed(2)})`,
+      amount: +(units * rates.wait_per_unit).toFixed(2),
+    });
+  }
+  if (trip.temperature_sensitive && rates.cold_chain_surcharge > 0) {
+    lines.push({ label: "Cold-chain / temperature-controlled handling", amount: rates.cold_chain_surcharge });
+  }
+  if (trip.signature_required && rates.signature_surcharge > 0) {
+    lines.push({ label: "Signature required at delivery", amount: rates.signature_surcharge });
+  }
+  if (trip.rush && rates.rush_surcharge > 0) {
+    lines.push({ label: "Rush / priority delivery", amount: rates.rush_surcharge });
+  }
+  let total = sum(lines);
+  if (total < rates.min_fee) {
+    lines.push({ label: "Minimum delivery fee adjustment", amount: +(rates.min_fee - total).toFixed(2) });
+    total = rates.min_fee;
+  }
+  return { lines, total: +total.toFixed(2) };
+}
+
+export const DEFAULT_DELIVERY_RATES: DeliveryPricingRates = {
+  enabled: false,
+  base: 0, per_mile: 0, wait_per_unit: 0, wait_unit: "hour",
+  min_fee: 0,
+  cold_chain_surcharge: 0, signature_surcharge: 0, rush_surcharge: 0,
+};
+
+
