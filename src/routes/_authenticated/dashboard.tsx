@@ -44,6 +44,7 @@ import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
+import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
 import { ChangelogChip } from "@/components/ChangelogChip";
 
