@@ -48,11 +48,11 @@ export async function attemptTripPayoutRelease(opts: {
 
   const { data: trip } = await supabaseAdmin
     .from("trips")
-    .select("id, status, cost_total, assigned_to, created_by, payout_status, payment_status, payer, medicaid_number, medicaid_plan, payout_eligible_at")
+    .select("id, status, cost_total, assigned_to, created_by, payout_status, payment_status, payer, medicaid_number, medicaid_plan, payout_eligible_at, referral_fee_cents")
     .eq("id", tripId)
     .maybeSingle();
   if (!trip) return { ok: false, tripId, status: "skipped", reason: "not_found" };
-  const t = trip as unknown as TripRow;
+  const t = trip as unknown as TripRow & { referral_fee_cents?: number | null };
 
   if (t.payout_status === "released") return { ok: true, tripId, status: "skipped", reason: "already_released" };
 
@@ -75,7 +75,8 @@ export async function attemptTripPayoutRelease(opts: {
   const feePct = Number(feeRow?.platform_fee_pct);
   const effectivePct = Number.isFinite(feePct) ? feePct : PLATFORM_FEE_PCT;
   const feeCents = Math.max(0, Math.round(grossCents * effectivePct));
-  const netCents = Math.max(0, grossCents - feeCents);
+  const referralCents = Math.max(0, Math.min(grossCents - feeCents, Number(t.referral_fee_cents ?? 0)));
+  const netCents = Math.max(0, grossCents - feeCents - referralCents);
 
   const gateReasons = validatePayoutGates(t, netCents);
   if (gateReasons.length > 0) {
