@@ -43,6 +43,7 @@ import { SendFeedbackPanel } from "@/components/dashboard/SendFeedbackPanel";
 import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
+import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
 
 import { ChangelogChip } from "@/components/ChangelogChip";
 
@@ -538,7 +539,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               );
             })()}
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
-            {tab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
+            {tab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "reservations" && <ReservationsPanel userId={userId!} />}
             {tab === "trips" && (
@@ -564,7 +565,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     )}
                   </button>
                 </div>
-                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
+                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
                 {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} />}
               </div>
             )}
@@ -854,7 +855,7 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated, initialTrip, portal }: { onCreated: () => void; initialTrip?: any; portal: PortalKind }) {
+function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: () => void; initialTrip?: any; portal: PortalKind; userId?: string | null }) {
   const seed = initialTrip ?? {};
   const [form, setForm] = useState<any>({
     patient_first_name: seed.patient_first_name ?? "",
@@ -1072,12 +1073,20 @@ function NewTripForm({ onCreated, initialTrip, portal }: { onCreated: () => void
                   className="portal-select" rows={2} />
       </label>
 
-      <div className="col-span-2">
+      <div className="col-span-2 space-y-3">
         <PriceEstimate
           pickupZip={pickupMeta.zip || form.pickup_zip || ""}
           miles={estimatedMiles}
           transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
         />
+        {portal === "provider" && (
+          <TripFinancialBreakdown
+            pickupZip={pickupMeta.zip || form.pickup_zip || ""}
+            miles={estimatedMiles}
+            transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
+            senderUserId={userId ?? undefined}
+          />
+        )}
       </div>
 
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
