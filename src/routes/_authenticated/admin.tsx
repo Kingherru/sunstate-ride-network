@@ -97,6 +97,7 @@ type TabId =
   | "users"
   | "providers"
   | "facilities"
+  | "messaging"
   | "trips"
   | "reservations"
   | "dispatch"
@@ -110,6 +111,7 @@ type TabId =
   | "theme"
   | "changelog"
   | "system";
+
 
 type NavItem = {
   id: TabId;
