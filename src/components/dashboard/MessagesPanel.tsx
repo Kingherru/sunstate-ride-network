@@ -273,17 +273,38 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   const threads = threadsQ.data?.threads ?? [];
   const filteredThreads = useMemo(() => {
     const q = threadSearch.trim().toLowerCase();
-    if (!q) return threads;
     return threads.filter((t) => {
+      // Kind filter
+      if (kindFilter !== "all") {
+        if (kindFilter === "dispatch" && t.kind !== "dispatch") return false;
+        else if (kindFilter === "zone_manager" && t.kind !== "zone_manager") return false;
+        else if (kindFilter === "feedback" && t.kind !== "feedback_admin") return false;
+        else if (
+          kindFilter === "provider" ||
+          kindFilter === "facility" ||
+          kindFilter === "staff" ||
+          kindFilter === "patient" ||
+          kindFilter === "other"
+        ) {
+          if (!t.participants.some((p) => p.kind === kindFilter)) return false;
+        }
+      }
+      // Zone filter
+      if (zoneFilter !== "all") {
+        const inZone = t.participants.some((p) => p.dispatch_zone_id === zoneFilter);
+        if (!inZone) return false;
+      }
+      if (!q) return true;
       const hay = [
-        ...t.participants.flatMap((p) => [p.name, p.company ?? "", p.city ?? ""]),
+        ...t.participants.flatMap((p) => [p.name, p.company ?? "", p.city ?? "", p.dispatch_zone_name ?? ""]),
         t.last_message?.body ?? "",
         t.relationship_label,
         t.subject ?? "",
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [threads, threadSearch]);
+  }, [threads, threadSearch, kindFilter, zoneFilter]);
+
   const active = useMemo(() => threads.find((t) => t.id === activeThread) ?? null, [threads, activeThread]);
   const messages = messagesQ.data ?? [];
 
