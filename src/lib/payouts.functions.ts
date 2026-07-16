@@ -126,7 +126,7 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
 
     const { data: trip, error: tErr } = await supabase
       .from("trips")
-      .select("id, status, cost_total, assigned_to, created_by, payout_status, provider_payout_cents, platform_fee_cents")
+      .select("id, status, cost_total, assigned_to, created_by, payout_status, payment_status, provider_payout_cents, platform_fee_cents")
       .eq("id", data.trip_id)
       .maybeSingle();
     if (tErr || !trip) return { ok: false as const, error: "Trip not found" };
@@ -137,6 +137,16 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (trip.created_by !== userId && !isAdmin) return { ok: false as const, error: "Forbidden" };
     if (!trip.assigned_to) return { ok: false as const, error: "Trip has no provider" };
+    // Never pay out to the trip creator (defense-in-depth against self-assigned trips).
+    if (trip.assigned_to === trip.created_by) {
+      return { ok: false as const, error: "Provider cannot be the trip creator" };
+    }
+    // Require a real captured payment before releasing funds. Payouts must
+    // reflect money actually collected — not just a cost_total value written
+    // to the trip row.
+    if (trip.payment_status !== "paid") {
+      return { ok: false as const, error: "Trip has no captured payment; cannot release payout" };
+    }
 
     const grossCents = Math.round(Number(trip.cost_total ?? 0) * 100);
     if (grossCents <= 0) return { ok: false as const, error: "Trip has no fare" };

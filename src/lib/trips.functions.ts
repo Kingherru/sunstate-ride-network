@@ -157,6 +157,29 @@ export const createTrip = createServerFn({ method: "POST" })
     await ensureCanSendTrip(supabase, userId);
     await assertPayerOwned(supabase, userId, data.payer_id ?? null);
     const ackId = await requireHipaaAck(supabase, userId, data.hipaa_ack_id, "send_trip");
+
+    // Prevent self-assignment: a caller must not create a trip assigned to
+    // themselves — that would let them later mark it completed and trigger a
+    // Stripe payout to their own connected account. Only staff may assign,
+    // and even then, never to the creator.
+    if (data.assigned_to) {
+      if (data.assigned_to === userId) {
+        throw new Error("You cannot assign a trip to yourself.");
+      }
+      const { data: staffRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .in("role", ["admin", "app_manager", "zone_manager", "dispatcher", "staff"])
+        .maybeSingle();
+      if (!staffRow) {
+        throw new Error("Only staff may pre-assign a provider to a trip.");
+      }
+      // Ensure the target is an approved provider
+      const { data: isProvider } = await supabase.rpc("is_approved_provider", { _user_id: data.assigned_to });
+      if (!isProvider) throw new Error("Assigned user is not an approved provider.");
+    }
+
     const region = regionFor(data.pickup_city);
     const { hipaa_ack_id: _ignore, ...rest } = data;
     const { data: row, error } = await supabase
@@ -276,7 +299,10 @@ const editableFieldsSchema = z.object({
   mobility_notes: z.string().trim().max(1000).nullable().optional(),
   special_instructions: z.string().trim().max(2000).nullable().optional(),
   provider_notes: z.string().trim().max(2000).nullable().optional(),
-  cost_total: z.union([z.number(), z.null()]).optional(),
+  // NOTE: cost_total is intentionally NOT editable via this endpoint.
+  // Fare/quote amounts must go through submit_trip_quote / decide_trip_quote,
+  // which enforces caps and requires ops approval.
+
   payer: z.string().trim().max(120).nullable().optional(),
 });
 
@@ -317,9 +343,10 @@ export const updateTripDetails = createServerFn({ method: "POST" })
       throw new Error("You do not have permission to edit this trip");
     }
 
-    // Providers (recipients) may edit provider_notes and their quote (cost_total); senders/admins may edit all fields.
+    // Providers (recipients) may edit provider_notes only; senders/admins may edit all fields.
+    // cost_total is deliberately excluded from this endpoint — use the trip quote RPC flow.
     const patch: Record<string, unknown> = {};
-    const providerOnlyKeys = new Set(["provider_notes", "cost_total"]);
+    const providerOnlyKeys = new Set(["provider_notes"]);
     for (const [k, v] of Object.entries(data.patch)) {
       if (v === undefined) continue;
       if (isRecipient && !isSender && !isAdmin && !providerOnlyKeys.has(k)) continue;
