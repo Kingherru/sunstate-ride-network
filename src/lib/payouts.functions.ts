@@ -207,122 +207,44 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
   });
 
 /**
- * ADMIN-ONLY: Actually move funds. Re-runs every validation gate at release
- * time (defense-in-depth), enforces the 48h / Net-15 wait, forbids the trip
- * creator from being the provider, and requires payment_status = "paid".
- * Idempotent: refuses to double-pay a trip whose payout is already released.
+ * ADMIN-ONLY: Actually move funds. Delegates to the server-only
+ * `attemptTripPayoutRelease` helper which re-runs all validation gates,
+ * enforces the hold window, and uses a Stripe idempotency key.
  */
 export const adminReleaseTripPayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { trip_id: string; override_wait?: boolean }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const env = pickEnv();
-
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) return { ok: false as const, error: "Admin only" };
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: trip } = await supabaseAdmin
-      .from("trips")
-      .select("id, status, cost_total, assigned_to, created_by, payout_status, payment_status, provider_payout_cents, platform_fee_cents, payer, medicaid_number, medicaid_plan, completed_at, payout_eligible_at, payout_transfer_id")
-      .eq("id", data.trip_id)
-      .maybeSingle();
-    if (!trip) return { ok: false as const, error: "Trip not found" };
-    const t = trip as any as TripRow & { payout_eligible_at: string | null; payout_transfer_id: string | null };
-
-    if (t.payout_status === "released") return { ok: true as const, alreadyReleased: true };
-
-    // Double-payment guard — refuse if any prior "paid" transfer exists for this trip.
-    const { data: priorPaid } = await supabaseAdmin
-      .from("provider_payout_transfers")
-      .select("id")
-      .eq("trip_id", t.id).eq("status", "paid").limit(1);
-    if (priorPaid && priorPaid.length > 0) {
-      return { ok: false as const, error: "A completed payout transfer already exists for this trip." };
-    }
-
-    // Recompute amounts from settings — never trust stored provider_payout_cents.
-    const grossCents = Math.round(Number(t.cost_total ?? 0) * 100);
-    const { data: feeRow } = await supabaseAdmin
-      .from("platform_settings").select("platform_fee_pct").eq("id", true).maybeSingle();
-    const feePct = Number(feeRow?.platform_fee_pct);
-    const effectivePct = Number.isFinite(feePct) ? feePct : PLATFORM_FEE_PCT;
-    const feeCents = Math.max(0, Math.round(grossCents * effectivePct));
-    const netCents = Math.max(0, grossCents - feeCents);
-
-    const gateReasons = validatePayoutGates(t, grossCents, netCents, netCents);
-    if (gateReasons.length > 0) {
-      await supabaseAdmin.from("trips").update({
-        payout_status: "held", payout_hold_reasons: gateReasons,
-      }).eq("id", t.id);
-      return { ok: false as const, error: `Held: ${gateReasons.join(", ")}` };
-    }
-
-    // Enforce hold window unless admin explicitly overrides.
-    if (!data.override_wait) {
-      const eligibleMs = t.payout_eligible_at ? Date.parse(t.payout_eligible_at) : Date.now();
-      if (Number.isFinite(eligibleMs) && eligibleMs > Date.now()) {
-        return { ok: false as const, error: "Payout is still inside the validation hold window." };
-      }
-    }
-
-    const { data: acct } = await supabaseAdmin
-      .from("provider_payout_accounts")
-      .select("stripe_account_id, payouts_enabled")
-      .eq("user_id", t.assigned_to!)
-      .maybeSingle();
-
-    if (!acct?.stripe_account_id || !acct.payouts_enabled) {
-      await supabaseAdmin.from("trips").update({
-        payout_status: "held",
-        payout_hold_reasons: ["provider_payout_account_not_active"],
-      }).eq("id", t.id);
-      return { ok: false as const, error: "Provider has no active payout account." };
-    }
-
-    const { createStripeClient, getStripeErrorMessage } = await import("@/lib/stripe.server");
-    const stripe = createStripeClient(env);
-    let transferId: string | null = null;
-    let transferStatus: "paid" | "failed" = "failed";
-    let failureReason: string | null = null;
-    try {
-      const tr = await stripe.transfers.create({
-        amount: netCents,
-        currency: "usd",
-        destination: acct.stripe_account_id,
-        transfer_group: `trip_${t.id}`,
-        // Stripe-side idempotency guard prevents duplicate transfers if we retry.
-        metadata: { trip_id: t.id, provider_user_id: t.assigned_to!, released_by: userId },
-      }, { idempotencyKey: `trip_payout_${t.id}` });
-      transferId = tr.id;
-      transferStatus = "paid";
-    } catch (e) {
-      failureReason = getStripeErrorMessage(e);
-    }
-
-    await supabaseAdmin.from("provider_payout_transfers").insert({
-      trip_id: t.id,
-      provider_user_id: t.assigned_to!,
-      stripe_account_id: acct.stripe_account_id,
-      stripe_transfer_id: transferId,
-      gross_cents: grossCents,
-      fee_cents: feeCents,
-      net_cents: netCents,
-      status: transferStatus,
-      failure_reason: failureReason,
+    const { attemptTripPayoutRelease } = await import("@/lib/payouts.server");
+    const res = await attemptTripPayoutRelease({
+      tripId: data.trip_id,
+      actorUserId: userId,
+      overrideWait: !!data.override_wait,
     });
+    return res.ok
+      ? { ok: true as const, status: res.status, transferId: res.transferId, netCents: res.netCents, feeCents: res.feeCents }
+      : { ok: false as const, error: res.reason ?? res.status };
+  });
 
-    await supabaseAdmin.from("trips").update({
-      provider_payout_cents: netCents,
-      platform_fee_cents: feeCents,
-      payout_status: transferStatus === "paid" ? "released" : "held",
-      payout_released_at: transferStatus === "paid" ? new Date().toISOString() : null,
-      payout_released_by: transferStatus === "paid" ? userId : null,
-      payout_transfer_id: transferId,
-      payout_hold_reasons: transferStatus === "paid" ? [] : ["transfer_failed"],
-    }).eq("id", t.id);
-
-    return { ok: transferStatus === "paid", status: transferStatus, transferId, netCents, feeCents, error: failureReason ?? undefined };
+/**
+ * ADMIN-ONLY: List trips awaiting payout (pending or held) with computed
+ * eligibility timing so the Admin Portal can show a review queue.
+ */
+export const listAdminPayoutQueue = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) return { ok: false as const, error: "Admin only", rows: [] as any[] };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("trips")
+      .select("id, display_id, pickup_date, status, payment_status, payout_status, cost_total, provider_payout_cents, platform_fee_cents, assigned_to, created_by, payout_eligible_at, payout_hold_reasons, payout_is_medicaid, completed_at, payer")
+      .in("payout_status", ["pending", "held"])
+      .order("payout_eligible_at", { ascending: true, nullsFirst: true })
+      .limit(500);
+    return { ok: true as const, rows: data ?? [] };
   });
