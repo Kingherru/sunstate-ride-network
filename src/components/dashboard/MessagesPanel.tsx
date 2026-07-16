@@ -29,6 +29,19 @@ type Relationship =
   | "subscription"
   | "unknown";
 
+type ParticipantKind = "provider" | "facility" | "staff" | "patient" | "other";
+type Participant = {
+  user_id: string;
+  name: string;
+  company: string | null;
+  display_id: string | null;
+  city: string | null;
+  kind?: ParticipantKind;
+  dispatch_zone_id?: string | null;
+  dispatch_zone_name?: string | null;
+  dispatch_zone_code?: string | null;
+};
+
 type Thread = {
   id: string;
   subject: string | null;
@@ -37,9 +50,10 @@ type Thread = {
   kind: string;
   relationship: Relationship;
   relationship_label: string;
-  participants: { user_id: string; name: string; company: string | null; display_id: string | null; city: string | null }[];
+  participants: Participant[];
   last_message: { body: string; created_at: string; sender_id: string } | null;
 };
+
 
 type Contact = {
   user_id: string;
