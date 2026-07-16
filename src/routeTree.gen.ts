@@ -38,6 +38,7 @@ import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ServicesWheelchairRouteImport } from './routes/services.wheelchair'
 import { Route as ServicesStretcherRouteImport } from './routes/services.stretcher'
+import { Route as ServicesMedicalDeliveriesRouteImport } from './routes/services.medical-deliveries'
 import { Route as ServicesAmbulatoryRouteImport } from './routes/services.ambulatory'
 import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
@@ -219,6 +220,12 @@ const ServicesStretcherRoute = ServicesStretcherRouteImport.update({
   path: '/stretcher',
   getParentRoute: () => ServicesRoute,
 } as any)
+const ServicesMedicalDeliveriesRoute =
+  ServicesMedicalDeliveriesRouteImport.update({
+    id: '/medical-deliveries',
+    path: '/medical-deliveries',
+    getParentRoute: () => ServicesRoute,
+  } as any)
 const ServicesAmbulatoryRoute = ServicesAmbulatoryRouteImport.update({
   id: '/ambulatory',
   path: '/ambulatory',
@@ -449,6 +456,7 @@ export interface FileRoutesByFullPath {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/services/ambulatory': typeof ServicesAmbulatoryRoute
+  '/services/medical-deliveries': typeof ServicesMedicalDeliveriesRoute
   '/services/stretcher': typeof ServicesStretcherRoute
   '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -511,6 +519,7 @@ export interface FileRoutesByTo {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/services/ambulatory': typeof ServicesAmbulatoryRoute
+  '/services/medical-deliveries': typeof ServicesMedicalDeliveriesRoute
   '/services/stretcher': typeof ServicesStretcherRoute
   '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -579,6 +588,7 @@ export interface FileRoutesById {
   '/resources/$slug': typeof ResourcesSlugRoute
   '/service-areas/$city': typeof ServiceAreasCityRoute
   '/services/ambulatory': typeof ServicesAmbulatoryRoute
+  '/services/medical-deliveries': typeof ServicesMedicalDeliveriesRoute
   '/services/stretcher': typeof ServicesStretcherRoute
   '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -647,6 +657,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/services/ambulatory'
+    | '/services/medical-deliveries'
     | '/services/stretcher'
     | '/services/wheelchair'
     | '/shop/$slug'
@@ -709,6 +720,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/services/ambulatory'
+    | '/services/medical-deliveries'
     | '/services/stretcher'
     | '/services/wheelchair'
     | '/shop/$slug'
@@ -776,6 +788,7 @@ export interface FileRouteTypes {
     | '/resources/$slug'
     | '/service-areas/$city'
     | '/services/ambulatory'
+    | '/services/medical-deliveries'
     | '/services/stretcher'
     | '/services/wheelchair'
     | '/shop/$slug'
@@ -1061,6 +1074,13 @@ declare module '@tanstack/react-router' {
       path: '/stretcher'
       fullPath: '/services/stretcher'
       preLoaderRoute: typeof ServicesStretcherRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/medical-deliveries': {
+      id: '/services/medical-deliveries'
+      path: '/medical-deliveries'
+      fullPath: '/services/medical-deliveries'
+      preLoaderRoute: typeof ServicesMedicalDeliveriesRouteImport
       parentRoute: typeof ServicesRoute
     }
     '/services/ambulatory': {
@@ -1377,6 +1397,7 @@ const ServiceAreasRouteWithChildren = ServiceAreasRoute._addFileChildren(
 
 interface ServicesRouteChildren {
   ServicesAmbulatoryRoute: typeof ServicesAmbulatoryRoute
+  ServicesMedicalDeliveriesRoute: typeof ServicesMedicalDeliveriesRoute
   ServicesStretcherRoute: typeof ServicesStretcherRoute
   ServicesWheelchairRoute: typeof ServicesWheelchairRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
@@ -1384,6 +1405,7 @@ interface ServicesRouteChildren {
 
 const ServicesRouteChildren: ServicesRouteChildren = {
   ServicesAmbulatoryRoute: ServicesAmbulatoryRoute,
+  ServicesMedicalDeliveriesRoute: ServicesMedicalDeliveriesRoute,
   ServicesStretcherRoute: ServicesStretcherRoute,
   ServicesWheelchairRoute: ServicesWheelchairRoute,
   ServicesIndexRoute: ServicesIndexRoute,
