@@ -12,7 +12,10 @@ import {
   openZoneManagerThread,
   submitFeedbackMessage,
   listDispatchZones,
+  deleteMessage,
+  deleteOrLeaveThread,
 } from "@/lib/messages.functions";
+
 import type { PortalKind } from "@/routes/_authenticated/dashboard";
 import { useCapabilities } from "@/lib/permissions";
 
@@ -26,6 +29,19 @@ type Relationship =
   | "subscription"
   | "unknown";
 
+type ParticipantKind = "provider" | "facility" | "staff" | "patient" | "other";
+type Participant = {
+  user_id: string;
+  name: string;
+  company: string | null;
+  display_id: string | null;
+  city: string | null;
+  kind?: ParticipantKind;
+  dispatch_zone_id?: string | null;
+  dispatch_zone_name?: string | null;
+  dispatch_zone_code?: string | null;
+};
+
 type Thread = {
   id: string;
   subject: string | null;
@@ -34,9 +50,10 @@ type Thread = {
   kind: string;
   relationship: Relationship;
   relationship_label: string;
-  participants: { user_id: string; name: string; company: string | null; display_id: string | null; city: string | null }[];
+  participants: Participant[];
   last_message: { body: string; created_at: string; sender_id: string } | null;
 };
+
 
 type Contact = {
   user_id: string;
@@ -94,11 +111,34 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [threadSearch, setThreadSearch] = useState("");
+  const [kindFilter, setKindFilter] = useState<"all" | ParticipantKind | "dispatch" | "zone_manager" | "feedback">("all");
+  const [zoneFilter, setZoneFilter] = useState<string>("all");
   const [draft, setDraft] = useState("");
   const [initialBody, setInitialBody] = useState("");
   const [feedbackSubject, setFeedbackSubject] = useState("");
   const [feedbackCategory, setFeedbackCategory] = useState("general");
   const [zoneId, setZoneId] = useState<string>("");
+
+  const deleteMsgFn = useServerFn(deleteMessage);
+  const deleteThreadFn = useServerFn(deleteOrLeaveThread);
+
+  const deleteMsg = useMutation({
+    mutationFn: (message_id: string) => deleteMsgFn({ data: { message_id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["msg-thread", activeThread] });
+      qc.invalidateQueries({ queryKey: ["msg-threads"] });
+    },
+  });
+
+  const deleteThread = useMutation({
+    mutationFn: (thread_id: string) => deleteThreadFn({ data: { thread_id } }),
+    onSuccess: () => {
+      setActiveThread(null);
+      qc.invalidateQueries({ queryKey: ["msg-threads"] });
+      qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
+    },
+  });
+
 
   const threadsQ = useQuery({
     queryKey: ["msg-threads"],
@@ -178,8 +218,8 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
       const r = await zonesFn();
       return r.ok ? r.zones : [];
     },
-    enabled: composeOpen && composeKind === "zone_manager",
   });
+
 
   const startWith = useMutation({
     mutationFn: async (uid: string) => {
@@ -233,17 +273,38 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   const threads = threadsQ.data?.threads ?? [];
   const filteredThreads = useMemo(() => {
     const q = threadSearch.trim().toLowerCase();
-    if (!q) return threads;
     return threads.filter((t) => {
+      // Kind filter
+      if (kindFilter !== "all") {
+        if (kindFilter === "dispatch" && t.kind !== "dispatch") return false;
+        else if (kindFilter === "zone_manager" && t.kind !== "zone_manager") return false;
+        else if (kindFilter === "feedback" && t.kind !== "feedback_admin") return false;
+        else if (
+          kindFilter === "provider" ||
+          kindFilter === "facility" ||
+          kindFilter === "staff" ||
+          kindFilter === "patient" ||
+          kindFilter === "other"
+        ) {
+          if (!t.participants.some((p) => p.kind === kindFilter)) return false;
+        }
+      }
+      // Zone filter
+      if (zoneFilter !== "all") {
+        const inZone = t.participants.some((p) => p.dispatch_zone_id === zoneFilter);
+        if (!inZone) return false;
+      }
+      if (!q) return true;
       const hay = [
-        ...t.participants.flatMap((p) => [p.name, p.company ?? "", p.city ?? ""]),
+        ...t.participants.flatMap((p) => [p.name, p.company ?? "", p.city ?? "", p.dispatch_zone_name ?? ""]),
         t.last_message?.body ?? "",
         t.relationship_label,
         t.subject ?? "",
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [threads, threadSearch]);
+  }, [threads, threadSearch, kindFilter, zoneFilter]);
+
   const active = useMemo(() => threads.find((t) => t.id === activeThread) ?? null, [threads, activeThread]);
   const messages = messagesQ.data ?? [];
 
@@ -275,14 +336,50 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
             {composeOpen ? "Close" : "New message"}
           </button>
         </div>
-        <div className="p-2 border-b border-border">
+        <div className="p-2 border-b border-border space-y-2">
           <input
             value={threadSearch}
             onChange={(e) => setThreadSearch(e.target.value)}
-            placeholder="Search conversations…"
+            placeholder="Search by name, company, city, message…"
             className="w-full rounded border border-border bg-background px-2.5 py-1.5 text-xs"
           />
+          <div className="flex gap-1.5">
+            <select
+              value={kindFilter}
+              onChange={(e) => setKindFilter(e.target.value as typeof kindFilter)}
+              className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs"
+            >
+              <option value="all">All conversations</option>
+              <option value="provider">Providers</option>
+              <option value="facility">Facilities</option>
+              <option value="staff">Staff</option>
+              <option value="dispatch">Dispatch</option>
+              <option value="zone_manager">Zone Manager</option>
+              <option value="feedback">Feedback</option>
+            </select>
+            <select
+              value={zoneFilter}
+              onChange={(e) => setZoneFilter(e.target.value)}
+              className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs"
+            >
+              <option value="all">All zones</option>
+              {(zonesQ.data ?? []).map((z: any) => (
+                <option key={z.id} value={z.id}>
+                  {z.name}{z.code ? ` (${z.code})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          {(kindFilter !== "all" || zoneFilter !== "all" || threadSearch) && (
+            <button
+              onClick={() => { setKindFilter("all"); setZoneFilter("all"); setThreadSearch(""); }}
+              className="text-[10px] font-semibold text-muted-foreground hover:text-foreground uppercase tracking-wider"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
+
         <ul className="flex-1 max-h-[520px] overflow-y-auto divide-y divide-border">
           {threadsQ.isLoading && <li className="p-4 text-sm text-muted-foreground">Loading…</li>}
           {!threadsQ.isLoading && filteredThreads.length === 0 && (
@@ -510,33 +607,68 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
           </div>
         ) : active ? (
           <div className="flex flex-col h-full">
-            <div className="p-3 border-b border-border">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-sm">{threadTitle(active)}</h3>
-                <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
-                  {active.relationship_label}
-                </span>
+            <div className="p-3 border-b border-border flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-sm">{threadTitle(active)}</h3>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
+                    {active.relationship_label}
+                  </span>
+                </div>
+                {(active.participants[0]?.company || active.participants[0]?.city || active.participants[0]?.dispatch_zone_name) && (
+                  <p className="text-xs text-muted-foreground">
+                    {[
+                      active.participants[0]?.company,
+                      active.participants[0]?.city,
+                      active.participants[0]?.dispatch_zone_name,
+                    ].filter(Boolean).join(" · ")}
+                  </p>
+                )}
               </div>
-              {(active.participants[0]?.company || active.participants[0]?.city) && (
-                <p className="text-xs text-muted-foreground">
-                  {[active.participants[0]?.company, active.participants[0]?.city].filter(Boolean).join(" · ")}
-                </p>
-              )}
+              <button
+                onClick={() => {
+                  const isStaff = caps.isOps;
+                  const msg = isStaff
+                    ? "Delete this entire conversation for everyone? This cannot be undone."
+                    : "Remove this conversation from your inbox?";
+                  if (window.confirm(msg)) deleteThread.mutate(active.id);
+                }}
+                disabled={deleteThread.isPending}
+                className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                title={caps.isOps ? "Delete conversation" : "Leave conversation"}
+              >
+                {caps.isOps ? "Delete" : "Leave"}
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messagesQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
               {messages.map((m: any) => {
                 const mine = m.sender_id === userId;
+                const canDelete = mine || caps.isOps;
                 return (
-                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                  <div key={m.id} className={`group flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm relative ${mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className="mt-1 text-[10px] opacity-70">{new Date(m.created_at).toLocaleString()}</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="text-[10px] opacity-70">{new Date(m.created_at).toLocaleString()}</p>
+                        {canDelete && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm("Delete this message?")) deleteMsg.mutate(m.id);
+                            }}
+                            disabled={deleteMsg.isPending}
+                            className="text-[10px] opacity-0 group-hover:opacity-80 hover:opacity-100 underline"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+
             <form
               onSubmit={(e) => { e.preventDefault(); if (draft.trim()) send.mutate(); }}
               className="border-t border-border p-3 flex gap-2"
