@@ -187,12 +187,40 @@ function AdminPage() {
 
   const unread = useUnreadCounts(caps.userId ?? null);
   const markViewed = useMarkTabViewed(caps.userId ?? null);
+
+  const unreadMsgsFn = useServerFn(getUnreadMessageCount);
+  const unreadMsgsQ = useQuery({
+    queryKey: ["msg-unread-total"],
+    queryFn: async () => {
+      const r = await unreadMsgsFn();
+      return r.ok ? r.count : 0;
+    },
+    enabled: !!caps.userId && caps.isOps,
+    refetchInterval: 30_000,
+  });
+
+  // Live invalidate on new messages so the sidebar badge is instant
+  useEffect(() => {
+    if (!caps.userId || !caps.isOps) return;
+    const channel = supabase
+      .channel(`admin-msg-badge-${caps.userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+        qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "thread_participants" }, () => {
+        qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [caps.userId, caps.isOps, qc]);
+
   const adminTabKeyFor = (id: TabId): TabKey | null => {
     if (id === "reservations") return TAB_KEYS.adminReservations;
     if (id === "dispatch") return TAB_KEYS.adminDispatch;
     if (id === "trips") return TAB_KEYS.adminTrips;
     return null;
   };
+
   const handleAdminTab = (id: TabId) => {
     setTab(id);
     const key = adminTabKeyFor(id);
