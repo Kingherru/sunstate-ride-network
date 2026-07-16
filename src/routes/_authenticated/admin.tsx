@@ -75,8 +75,22 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Application = Database["public"]["Tables"]["provider_applications"]["Row"];
 type DocEntry = { kind: string; path: string; filename: string; size: number };
-type StatusFilter = "all" | "new" | "approved" | "caution" | "review" | "denied";
+type StatusFilter = "all" | "approved" | "caution" | "review" | "denied";
 type ComplianceStatus = "approved" | "caution" | "review" | "denied";
+
+/**
+ * Every provider falls into exactly one bucket. Denied wins, then Caution,
+ * then Needs Review (compliance=review OR application still pending/new),
+ * then Approved.
+ */
+function derivedStatus(a: Application): ComplianceStatus {
+  const compliance = ((a as any).compliance_status as ComplianceStatus | null) ?? null;
+  if (compliance === "denied" || a.status === "denied") return "denied";
+  if (compliance === "caution") return "caution";
+  if (compliance === "review" || a.status === "new" || a.status === "pending") return "review";
+  return "approved";
+}
+
 
 type TabId =
   | "overview"
@@ -443,24 +457,59 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
 
   const apps = appsQ.data ?? [];
 
+  // Real-time sync with Provider Portal
+  useEffect(() => {
+    if (!caps.isOps) return;
+    const channel = supabase
+      .channel("admin-provider-applications")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "provider_applications" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["admin", "provider_applications"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [caps.isOps, qc]);
+
+  // ZIP → dispatch zone map, so Region auto-populates from business ZIP.
+  const zonesQ = useQuery({
+    queryKey: ["admin", "dispatch_zone_zips"],
+    enabled: caps.isOps,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dispatch_zone_zips")
+        .select("zip, dispatch_zones!inner(code,name)");
+      if (error) throw error;
+      const map = new Map<string, { code: string; name: string }>();
+      (data ?? []).forEach((r: any) => {
+        const dz = r.dispatch_zones;
+        if (dz) map.set(r.zip, { code: dz.code, name: dz.name });
+      });
+      return map;
+    },
+  });
+  const zipToZone = zonesQ.data ?? new Map<string, { code: string; name: string }>();
+
+  const regionFor = (a: Application): string => {
+    const z = a.zip_code ? zipToZone.get(a.zip_code) : undefined;
+    if (z) return `${z.name}${z.code ? ` (${z.code})` : ""}`;
+    return a.region ?? "Unassigned";
+  };
+
   const cities = useMemo(
     () => Array.from(new Set(apps.map((a) => a.city).filter(Boolean))).sort(),
     [apps],
   );
 
-  const complianceOf = (a: Application): ComplianceStatus =>
-    ((a as any).compliance_status as ComplianceStatus) ?? "approved";
-
   const filtered = apps.filter((a) => {
-    if (statusFilter !== "all") {
-      if (statusFilter === "new" && a.status !== "new" && a.status !== "pending") return false;
-      if (statusFilter === "denied" && complianceOf(a) !== "denied") return false;
-      if (statusFilter === "approved" && !(a.status === "approved" && complianceOf(a) === "approved")) return false;
-      if (statusFilter === "caution" && complianceOf(a) !== "caution") return false;
-      if (statusFilter === "review" && complianceOf(a) !== "review") return false;
-    }
+    const bucket = derivedStatus(a);
+    if (statusFilter !== "all" && bucket !== statusFilter) return false;
     if (cityFilter !== "all" && a.city !== cityFilter) return false;
-    if (regionFilter !== "all" && a.region !== regionFilter) return false;
+    if (regionFilter !== "all" && regionFor(a) !== regionFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       const blob = `${a.company_name} ${a.first_name ?? ""} ${a.last_name ?? ""} ${a.email} ${a.phone} ${a.zip_code ?? ""} ${a.county ?? ""}`.toLowerCase();
@@ -472,20 +521,19 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
   const byRegion = useMemo(() => {
     const map = new Map<string, Application[]>();
     apps.forEach((a) => {
-      const k = a.region ?? "Statewide Florida";
+      const k = regionFor(a);
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(a);
     });
     return map;
-  }, [apps]);
+  }, [apps, zipToZone]);
 
   const counts = {
     total: apps.length,
-    new: apps.filter((a) => a.status === "new" || a.status === "pending").length,
-    approved: apps.filter((a) => a.status === "approved" && complianceOf(a) === "approved").length,
-    caution: apps.filter((a) => complianceOf(a) === "caution").length,
-    review: apps.filter((a) => complianceOf(a) === "review").length,
-    denied: apps.filter((a) => complianceOf(a) === "denied").length,
+    approved: apps.filter((a) => derivedStatus(a) === "approved").length,
+    caution: apps.filter((a) => derivedStatus(a) === "caution").length,
+    review: apps.filter((a) => derivedStatus(a) === "review").length,
+    denied: apps.filter((a) => derivedStatus(a) === "denied").length,
   };
 
   async function updateStatus(id: string, status: "approved" | "denied", notes?: string) {
@@ -524,18 +572,17 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
     <div className="space-y-6">
       <RegisteredMembersList portal="provider" title="Registered providers" />
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Stat label="Total" value={counts.total} />
-        <Stat label="Needs Review" value={counts.new} tone="accent" />
         <Stat label="Approved" value={counts.approved} tone="success" />
         <Stat label="Caution" value={counts.caution} tone="warning" />
-        <Stat label="In Review (48h)" value={counts.review} tone="warning" />
+        <Stat label="Needs Review" value={counts.review} tone="accent" />
         <Stat label="Denied" value={counts.denied} tone="danger" />
       </div>
 
 
       <div className="bg-card border border-border rounded-2xl p-5">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">By region</h2>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-3">By dispatch zone / region</h2>
         <div className="flex flex-wrap gap-2">
           {Array.from(byRegion.entries()).map(([region, list]) => (
             <button
@@ -559,12 +606,12 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
       <div className="flex flex-wrap gap-3">
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
           <option value="all">All ({counts.total})</option>
-          <option value="new">Needs manual review ({counts.new})</option>
           <option value="approved">Approved · Green ({counts.approved})</option>
           <option value="caution">Caution · Yellow ({counts.caution})</option>
-          <option value="review">In Review (48h) ({counts.review})</option>
+          <option value="review">Needs Review ({counts.review})</option>
           <option value="denied">Denied · Red ({counts.denied})</option>
         </select>
+
         <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="bg-card border border-border rounded-sm px-3 py-2 text-sm">
           <option value="all">All cities</option>
           {cities.map((c) => (<option key={c} value={c}>{c}</option>))}
@@ -618,17 +665,13 @@ function ProvidersTab({ caps }: { caps: ReturnType<typeof useCapabilities> }) {
                         {a.zip_code ?? "—"}{a.county ? ` · ${a.county}` : ""}
                       </div>
                     </td>
-                    <td className="px-4 py-3">{a.region ?? "—"}</td>
+                    <td className="px-4 py-3">{regionFor(a)}</td>
                     <td className="px-4 py-3 text-xs">{(a.service_types ?? []).join(", ")}</td>
                     <td className="px-4 py-3 text-xs">{docs.length}</td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
-                        <ComplianceBadge status={complianceOf(a)} />
-                        {a.status !== "approved" && a.status !== "denied" && (
-                          <StatusBadge status={a.status} />
-                        )}
-                      </div>
+                      <ComplianceBadge status={derivedStatus(a)} />
                     </td>
+
                     <td className="px-4 py-3 text-xs text-muted">
                       {new Date(a.created_at).toLocaleDateString()}
                     </td>
@@ -723,7 +766,7 @@ function ComplianceBadge({ status }: { status: ComplianceStatus | string }) {
   const map: Record<string, { cls: string; label: string }> = {
     approved: { cls: "bg-emerald-100 text-emerald-700 border-emerald-300", label: "Approved" },
     caution: { cls: "bg-amber-100 text-amber-800 border-amber-300", label: "Caution" },
-    review: { cls: "bg-amber-100 text-amber-800 border-amber-400", label: "In Review" },
+    review: { cls: "bg-amber-100 text-amber-800 border-amber-400", label: "Needs Review" },
     denied: { cls: "bg-red-100 text-red-700 border-red-300", label: "Denied" },
   };
   const m = map[status] ?? { cls: "bg-muted/20 text-muted-foreground border-border", label: status };
