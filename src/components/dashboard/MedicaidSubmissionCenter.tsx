@@ -56,6 +56,15 @@ export function MedicaidSubmissionCenter({ userId: _userId }: { userId: string }
         </p>
       </header>
 
+      <div className="border border-primary/30 bg-primary/5 rounded-sm px-4 py-3 text-sm">
+        <span className="font-extrabold uppercase text-xs tracking-wide text-primary">Medicaid payout policy · Net 15 · </span>
+        Medicaid-funded trip payouts release on a <strong>Net-15 schedule</strong> (approximately 15 days after trip
+        completion). My Florida NEMT does not receive Medicaid funds immediately from the state, so provider payouts
+        for Medicaid trips are held until the corresponding Medicaid remittance has posted. All payouts are validated
+        for trip completion, correct provider assignment, and payment accuracy before release. Private-pay and
+        commercial trips follow the standard 48-hour validation hold.
+      </div>
+
       {profile && !profile.medicaid_verified && (
         <div className="border border-orange-300 bg-orange-50 text-orange-800 rounded-sm px-4 py-3 text-sm">
           <span className="font-extrabold uppercase text-xs tracking-wide">Medicaid credentials required · </span>
