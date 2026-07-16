@@ -664,7 +664,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "payouts" && <PayoutsPanel userId={userId!} />}
             {tab === "integrations" && (canSend ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
-            {tab === "payers" && <ContactsAndPayersPanel portal={portal} />}
+            {tab === "payers" && <ContactsAndPayersPanel portal={portal} initialSubTab="payers" />}
             {tab === "reviews" && <ProviderReviewsPanel />}
             {tab === "feedback" && <SendFeedbackPanel />}
 
