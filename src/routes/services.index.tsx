@@ -102,7 +102,40 @@ function ServicesIndex() {
         </div>
       </section>
 
+      <section className="pb-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <article className="bg-card border border-accent/40 rounded-2xl p-10 lg:p-14 grid lg:grid-cols-[1fr_2fr] gap-10">
+            <div>
+              <span className="font-mono text-xs text-accent font-bold tracking-widest">S-04 · NEW</span>
+              <h2 className="text-3xl font-extrabold tracking-tighter mt-2">Medical Deliveries</h2>
+            </div>
+            <div>
+              <p className="text-muted text-base leading-relaxed mb-6">
+                Non-emergency medical delivery across Florida — prescriptions, lab and specimen samples, medical supplies, DME, and equipment. Vetted providers, transparent pricing, HIPAA-aware handoffs.
+              </p>
+              <ul className="space-y-3 mb-6">
+                {[
+                  "Prescriptions, lab specimens, DME, and supplies",
+                  "Cold-chain, signature-required, and rush options",
+                  "Proof of delivery captured for every request",
+                  "Statewide Florida provider network",
+                ].map((b) => (
+                  <li key={b} className="flex gap-3 text-sm">
+                    <span className="mt-1.5 size-1.5 rounded-full bg-accent shrink-0" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/services/medical-deliveries" className="inline-flex items-center gap-2 font-bold text-accent hover:underline text-sm">
+                Start sending medical deliveries →
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section className="py-20 px-6">
+
         <div className="max-w-7xl mx-auto bg-primary text-primary-foreground rounded-3xl p-12 lg:p-20 text-center">
           <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tighter mb-6">
             Ready to book a ride?
