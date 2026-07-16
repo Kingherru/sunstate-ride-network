@@ -209,6 +209,75 @@ export const sendMessage = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/** Delete a single message (RLS: sender or staff). */
+export const deleteMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { message_id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("messages")
+      .delete()
+      .eq("id", data.message_id);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+/**
+ * Delete or leave a conversation.
+ * Staff/admins delete the whole thread (RLS on message_threads).
+ * Non-staff simply remove themselves from thread_participants so the
+ * conversation disappears from their inbox.
+ */
+export const deleteOrLeaveThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { thread_id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isStaff } = await supabase.rpc("is_ops_staff", { _user_id: userId });
+    if (isStaff) {
+      // Cascade removes messages + participants
+      const { error } = await supabase
+        .from("message_threads")
+        .delete()
+        .eq("id", data.thread_id);
+      if (error) return { ok: false as const, error: error.message };
+      return { ok: true as const, deleted: true };
+    }
+    const { error } = await supabase
+      .from("thread_participants")
+      .delete()
+      .eq("thread_id", data.thread_id)
+      .eq("user_id", userId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const, deleted: false };
+  });
+
+/** Lightweight unread count across all conversations (for tab badges). */
+export const getUnreadMessageCount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: parts } = await supabase
+      .from("thread_participants")
+      .select("thread_id, last_read_at")
+      .eq("user_id", userId);
+    const threadIds = (parts ?? []).map((p: any) => p.thread_id);
+    if (threadIds.length === 0) return { ok: true as const, count: 0 };
+    const readMap = new Map((parts ?? []).map((p: any) => [p.thread_id, p.last_read_at]));
+    const { data: msgs } = await supabase
+      .from("messages")
+      .select("thread_id, sender_id, created_at")
+      .in("thread_id", threadIds);
+    let count = 0;
+    for (const m of (msgs ?? []) as any[]) {
+      if (m.sender_id === userId) continue;
+      const lr = readMap.get(m.thread_id);
+      if (!lr || new Date(m.created_at) > new Date(lr as string)) count += 1;
+    }
+    return { ok: true as const, count };
+  });
+
+
 /** Start or open a 1:1 thread with another user (permission-checked). */
 export const startDirectThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
