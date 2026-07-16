@@ -57,7 +57,9 @@ export const listThreads = createServerFn({ method: "GET" })
       const [{ data: profs }, { data: roles }, { data: trips }, { data: reqs }] = await Promise.all([
         supabase
           .from("member_profiles")
-          .select("user_id, first_name, last_name, display_id, company_name, city, membership_status, membership_tier")
+          .select(
+            "user_id, first_name, last_name, display_id, company_name, city, membership_status, membership_tier, provider_application_id, dispatch_zone_id, dispatch_zones:dispatch_zone_id(name, code)",
+          )
           .in("user_id", otherIds),
         supabase
           .from("user_roles")
@@ -87,6 +89,7 @@ export const listThreads = createServerFn({ method: "GET" })
         if (r.assigned_provider_id === userId && r.requester_user_id) priorTripSet.add(r.requester_user_id);
       });
     }
+
 
     const { data: msgs } = await supabase
       .from("messages")
