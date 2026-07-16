@@ -360,7 +360,13 @@ function TripRow({
         <td className="py-2 pr-3 font-mono font-bold">{t.display_id}</td>
         <td className="py-2 pr-3">{t.patient_first_name} {t.patient_last_name}</td>
         <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
+        <td className="py-2 pr-3 text-xs">{t.original_provider_name ?? "—"}</td>
+        <td className="py-2 pr-3 text-xs capitalize">{t.source ?? "—"}</td>
         <td className="py-2 pr-3 text-xs">{t.status}</td>
+        <td className="py-2 pr-3 text-xs">{t.payment_status ?? "—"}</td>
+        <td className="py-2 pr-3 text-xs text-right font-mono">{fmtCents(t.referral_fee_cents)}</td>
+        <td className="py-2 pr-3 text-xs text-right font-mono">{fmtCents(t.platform_fee_cents)}</td>
+        <td className="py-2 pr-3 text-xs text-right font-mono font-bold">{fmtCents(t.provider_payout_cents)}</td>
         <td className="py-2 pr-3">
           <select
             defaultValue={t.assigned_to ?? ""}
@@ -388,7 +394,7 @@ function TripRow({
       </tr>
       {open && (
         <tr className="bg-background/40">
-          <td colSpan={6} className="p-3">
+          <td colSpan={13} className="p-3">
             <div className="text-xs uppercase font-bold text-muted-foreground mb-2">
               Fair Assignment Engine — ranked providers
             </div>
