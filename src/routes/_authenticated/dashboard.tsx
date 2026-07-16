@@ -854,7 +854,7 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated, initialTrip, portal }: { onCreated: () => void; initialTrip?: any; portal: PortalKind }) {
+function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: () => void; initialTrip?: any; portal: PortalKind; userId?: string | null }) {
   const seed = initialTrip ?? {};
   const [form, setForm] = useState<any>({
     patient_first_name: seed.patient_first_name ?? "",
