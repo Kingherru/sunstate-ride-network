@@ -47,10 +47,8 @@ export const recalcTripCost = createServerFn({ method: "POST" })
       },
       { ...DEFAULT_RATES, ...(rates ?? {}) } as PricingRates,
     );
-    const { error } = await supabase
-      .from("trips")
-      .update({ cost_breakdown: breakdown as any, cost_total: breakdown.total })
-      .eq("id", data.trip_id);
-    if (error) throw error;
-    return breakdown;
+    // Never write fare/payout amounts directly to trips from a provider action.
+    // Providers must submit a quote and staff/requester approval applies the fare
+    // through the controlled quote workflow.
+    return { ...breakdown, quote_required: true };
   });

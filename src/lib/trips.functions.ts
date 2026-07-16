@@ -181,20 +181,33 @@ export const createTrip = createServerFn({ method: "POST" })
     }
 
     const region = regionFor(data.pickup_city);
-    const { hipaa_ack_id: _ignore, ...rest } = data;
+    const { hipaa_ack_id: _ignore, assigned_to: assignedTo, ...rest } = data;
     const { data: row, error } = await supabase
       .from("trips")
       .insert({
         ...rest,
         created_by: userId,
         region,
-        status: data.assigned_to ? "assigned" : "open",
+        status: "open",
         source: data.source ?? "manual",
         hipaa_ack_id: ackId,
       })
       .select()
       .single();
     if (error) throw error;
+
+    if (assignedTo) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: assignedRow, error: assignErr } = await supabaseAdmin
+        .from("trips")
+        .update({ assigned_to: assignedTo, status: "assigned" })
+        .eq("id", row.id)
+        .select()
+        .single();
+      if (assignErr) throw assignErr;
+      return assignedRow;
+    }
+
     return row;
   });
 
@@ -264,7 +277,8 @@ export const assignTrip = createServerFn({ method: "POST" })
     if (trip.created_by !== userId && !isStaff) throw new Error("Forbidden.");
     if (data.assigned_to === trip.created_by) throw new Error("Provider cannot be the trip creator.");
 
-    const { error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("trips")
       .update({ assigned_to: data.assigned_to, status: "assigned" })
       .eq("id", data.trip_id);

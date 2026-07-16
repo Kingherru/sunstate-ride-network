@@ -72,12 +72,21 @@ export const adminAssignTrip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Look up the trip's zone for zone_manager gating
     const { data: trip } = await context.supabase
-      .from("trips").select("dispatch_zone_id").eq("id", data.trip_id).maybeSingle();
+      .from("trips").select("dispatch_zone_id, created_by").eq("id", data.trip_id).maybeSingle();
     await assertDispatchAllowed(context, trip?.dispatch_zone_id ?? null);
+
+    if (data.assigned_to) {
+      if (trip?.created_by === data.assigned_to) {
+        throw new Error("Provider cannot be the trip creator.");
+      }
+      const { data: isApproved } = await context.supabase.rpc("is_approved_provider", { _user_id: data.assigned_to });
+      if (!isApproved) throw new Error("Assignee is not an approved provider.");
+    }
 
     const patch: any = { assigned_to: data.assigned_to };
     patch.status = data.assigned_to ? "assigned" : "open";
-    const { error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("trips").update(patch).eq("id", data.trip_id);
     if (error) throw error;
     await context.supabase.rpc("log_staff_action", {
