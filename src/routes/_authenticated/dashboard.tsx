@@ -937,6 +937,7 @@ function PaidOnly() {
 function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: () => void; initialTrip?: any; portal: PortalKind; userId?: string | null }) {
   const seed = initialTrip ?? {};
   const [form, setForm] = useState<any>({
+    trip_kind: seed.trip_kind ?? "passenger",
     patient_first_name: seed.patient_first_name ?? "",
     patient_last_name: seed.patient_last_name ?? "",
     patient_phone: seed.patient_phone ?? "",
@@ -973,7 +974,18 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     payer: seed.payer ?? "",
     payer_id: seed.payer_id ?? "",
     trip_number: "",
+    // Medical Delivery fields (only used when trip_kind === 'medical_delivery')
+    delivery_item_type: seed.delivery_item_type ?? "prescription",
+    delivery_item_description: seed.delivery_item_description ?? "",
+    delivery_weight_lbs: seed.delivery_weight_lbs ?? "",
+    delivery_temperature_sensitive: !!seed.delivery_temperature_sensitive,
+    delivery_hazmat: !!seed.delivery_hazmat,
+    delivery_signature_required: !!seed.delivery_signature_required,
+    delivery_rush: !!seed.delivery_rush,
+    delivery_recipient_name: seed.delivery_recipient_name ?? "",
+    delivery_recipient_phone: seed.delivery_recipient_phone ?? "",
   });
+  const isDelivery = form.trip_kind === "medical_delivery";
   const [hipaaOk, setHipaaOk] = useState(false);
   // Location metadata from Google Places for live mileage/quote.
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
