@@ -336,14 +336,50 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
             {composeOpen ? "Close" : "New message"}
           </button>
         </div>
-        <div className="p-2 border-b border-border">
+        <div className="p-2 border-b border-border space-y-2">
           <input
             value={threadSearch}
             onChange={(e) => setThreadSearch(e.target.value)}
-            placeholder="Search conversations…"
+            placeholder="Search by name, company, city, message…"
             className="w-full rounded border border-border bg-background px-2.5 py-1.5 text-xs"
           />
+          <div className="flex gap-1.5">
+            <select
+              value={kindFilter}
+              onChange={(e) => setKindFilter(e.target.value as typeof kindFilter)}
+              className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs"
+            >
+              <option value="all">All conversations</option>
+              <option value="provider">Providers</option>
+              <option value="facility">Facilities</option>
+              <option value="staff">Staff</option>
+              <option value="dispatch">Dispatch</option>
+              <option value="zone_manager">Zone Manager</option>
+              <option value="feedback">Feedback</option>
+            </select>
+            <select
+              value={zoneFilter}
+              onChange={(e) => setZoneFilter(e.target.value)}
+              className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs"
+            >
+              <option value="all">All zones</option>
+              {(zonesQ.data ?? []).map((z: any) => (
+                <option key={z.id} value={z.id}>
+                  {z.name}{z.code ? ` (${z.code})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          {(kindFilter !== "all" || zoneFilter !== "all" || threadSearch) && (
+            <button
+              onClick={() => { setKindFilter("all"); setZoneFilter("all"); setThreadSearch(""); }}
+              className="text-[10px] font-semibold text-muted-foreground hover:text-foreground uppercase tracking-wider"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
+
         <ul className="flex-1 max-h-[520px] overflow-y-auto divide-y divide-border">
           {threadsQ.isLoading && <li className="p-4 text-sm text-muted-foreground">Loading…</li>}
           {!threadsQ.isLoading && filteredThreads.length === 0 && (
