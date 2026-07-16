@@ -1073,12 +1073,20 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
                   className="portal-select" rows={2} />
       </label>
 
-      <div className="col-span-2">
+      <div className="col-span-2 space-y-3">
         <PriceEstimate
           pickupZip={pickupMeta.zip || form.pickup_zip || ""}
           miles={estimatedMiles}
           transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
         />
+        {portal === "provider" && (
+          <TripFinancialBreakdown
+            pickupZip={pickupMeta.zip || form.pickup_zip || ""}
+            miles={estimatedMiles}
+            transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
+            senderUserId={userId ?? undefined}
+          />
+        )}
       </div>
 
       <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
