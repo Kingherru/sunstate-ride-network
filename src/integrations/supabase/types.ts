@@ -1082,6 +1082,8 @@ export type Database = {
           postal_code: string | null
           preferred_zip_codes: string[]
           provider_application_id: string | null
+          referral_fee_amount: number | null
+          referral_fee_type: string | null
           region: string | null
           service_radius_miles: number
           stripe_customer_id: string | null
@@ -1130,6 +1132,8 @@ export type Database = {
           postal_code?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
+          referral_fee_amount?: number | null
+          referral_fee_type?: string | null
           region?: string | null
           service_radius_miles?: number
           stripe_customer_id?: string | null
@@ -1178,6 +1182,8 @@ export type Database = {
           postal_code?: string | null
           preferred_zip_codes?: string[]
           provider_application_id?: string | null
+          referral_fee_amount?: number | null
+          referral_fee_type?: string | null
           region?: string | null
           service_radius_miles?: number
           stripe_customer_id?: string | null
