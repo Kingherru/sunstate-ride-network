@@ -70,6 +70,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicWebhooksDispatchRouteImport } from './routes/api/public/webhooks/dispatch'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksReleaseEligiblePayoutsRouteImport } from './routes/api/public/hooks/release-eligible-payouts'
 import { Route as AuthenticatedReservationsIdReviewRouteImport } from './routes/_authenticated/reservations.$id.review'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
@@ -391,6 +392,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksReleaseEligiblePayoutsRoute =
+  ApiPublicHooksReleaseEligiblePayoutsRouteImport.update({
+    id: '/api/public/hooks/release-eligible-payouts',
+    path: '/api/public/hooks/release-eligible-payouts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedReservationsIdReviewRoute =
   AuthenticatedReservationsIdReviewRouteImport.update({
     id: '/reservations/$id/review',
@@ -465,6 +472,7 @@ export interface FileRoutesByFullPath {
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
+  '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -526,6 +534,7 @@ export interface FileRoutesByTo {
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
+  '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -593,6 +602,7 @@ export interface FileRoutesById {
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
+  '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -660,6 +670,7 @@ export interface FileRouteTypes {
     | '/learn/'
     | '/requests/'
     | '/reservations/$id/review'
+    | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
     | '/lovable/email/auth/preview'
@@ -721,6 +732,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/requests'
     | '/reservations/$id/review'
+    | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
     | '/lovable/email/auth/preview'
@@ -787,6 +799,7 @@ export interface FileRouteTypes {
     | '/_authenticated/learn/'
     | '/_authenticated/requests/'
     | '/_authenticated/reservations/$id/review'
+    | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
     | '/lovable/email/auth/preview'
@@ -833,6 +846,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksReleaseEligiblePayoutsRoute: typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicWebhooksDispatchRoute: typeof ApiPublicWebhooksDispatchRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1273,6 +1287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/release-eligible-payouts': {
+      id: '/api/public/hooks/release-eligible-payouts'
+      path: '/api/public/hooks/release-eligible-payouts'
+      fullPath: '/api/public/hooks/release-eligible-payouts'
+      preLoaderRoute: typeof ApiPublicHooksReleaseEligiblePayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/reservations/$id/review': {
       id: '/_authenticated/reservations/$id/review'
       path: '/reservations/$id/review'
@@ -1422,6 +1443,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksReleaseEligiblePayoutsRoute:
+    ApiPublicHooksReleaseEligiblePayoutsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicWebhooksDispatchRoute: ApiPublicWebhooksDispatchRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
