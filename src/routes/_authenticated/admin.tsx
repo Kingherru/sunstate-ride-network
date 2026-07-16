@@ -341,6 +341,10 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
     case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
+    case "messaging": return caps.isOps && caps.userId
+      ? <MessagesPanel userId={caps.userId} portal="facility" />
+      : <NoAccess />;
+
     case "trips": return caps.isOps ? <AdminTripsPanel /> : <NoAccess />;
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
