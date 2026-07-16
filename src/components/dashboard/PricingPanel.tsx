@@ -116,7 +116,54 @@ export function PricingPanel() {
                 className="bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
           {m.isPending ? "Saving…" : "Save pricing"}
         </button>
-      </form>
+
+        {/* --- Medical Deliveries rate book --- */}
+        <div className="border-t border-border pt-6 mt-6 space-y-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h3 className="text-lg font-extrabold tracking-tight">Medical Deliveries</h3>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Non-emergency medical item delivery — prescriptions, lab specimens, DME, medical supplies, equipment. Set your own rates. Turn on to start receiving delivery referrals from the network.
+              </p>
+            </div>
+            <label className="flex items-center gap-2 text-sm font-bold">
+              <input
+                type="checkbox"
+                checked={!!(form as any).delivery_enabled}
+                onChange={(e) => setForm({ ...form, delivery_enabled: e.target.checked } as any)}
+              />
+              Offer Medical Deliveries
+            </label>
+          </div>
+
+          {(form as any).delivery_enabled && (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                { key: "delivery_base", label: "Delivery base fee" },
+                { key: "delivery_per_mile", label: "Delivery per mile" },
+                { key: "delivery_wait_per_unit", label: "Delivery wait rate (per selected unit)" },
+                { key: "delivery_min_fee", label: "Minimum delivery fee" },
+                { key: "delivery_cold_chain_surcharge", label: "Cold-chain surcharge" },
+                { key: "delivery_signature_surcharge", label: "Signature-required surcharge" },
+                { key: "delivery_rush_surcharge", label: "Rush / priority surcharge" },
+              ].map((f) => (
+                <label key={f.key} className="flex flex-col gap-1 text-sm">
+                  <span className="font-bold">{f.label}</span>
+                  <div className="flex items-center border border-border rounded-sm bg-background overflow-hidden">
+                    <span className="px-3 text-muted-foreground">$</span>
+                    <input
+                      type="number" min="0" step="0.01"
+                      value={String((form as any)[f.key] ?? 0)}
+                      onChange={(e) => setForm({ ...form, [f.key]: Number(e.target.value) || 0 } as any)}
+                      className="flex-1 px-2 py-2 bg-transparent focus:outline-none"
+                    />
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
 
       <aside className="bg-card border border-border rounded-sm p-6 space-y-3 h-fit sticky top-4">
         <h3 className="font-extrabold tracking-tight">Sample quote</h3>
