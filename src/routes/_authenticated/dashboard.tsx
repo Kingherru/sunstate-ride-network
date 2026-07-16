@@ -363,8 +363,11 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
   }, [allowedTabs, tab]);
 
-  // Patients & facilities can always send (book); providers still require paid membership.
-  const canSend = portal === "provider" ? (isActive && profile?.membership_tier === "paid") : !!profile;
+  // All signed-in users (including soft-access providers) can create trips.
+  // Referral acceptance / assignment is what requires approved-provider
+  // status, and that's enforced server-side by is_approved_provider.
+  const canSend = !!profile;
+
   const realTrips = tripsQ.data ?? [];
   const sent = realTrips.filter((t) => t.created_by === userId);
   const received = realTrips.filter((t) => t.assigned_to === userId);
@@ -453,15 +456,39 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               </div>
             </div>
 
-            {portal === "provider" && !canSend && (
+            {portal === "provider" && isSoftAccess && (
               <div className="bg-[oklch(0.96_0.05_55)] border-l-4 border-[oklch(0.70_0.18_45)] p-4 text-sm">
                 <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Soft Access</p>
-                <p className="text-[oklch(0.30_0.08_45)]">
-                  You have limited access to the platform. Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($10/mo or $100/yr) to send trips, bulk upload, and use API integrations.{" "}
-                  <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
+                <p className="text-[oklch(0.30_0.08_45)] mb-2">
+                  Your account is on <strong>Soft Access</strong> while you finish onboarding and approval. You can use the platform to run your own business — full-network features unlock once you're an approved provider.
+                </p>
+                <div className="grid md:grid-cols-2 gap-3 text-[oklch(0.30_0.08_45)]">
+                  <div>
+                    <p className="font-semibold text-xs uppercase tracking-wide mb-1">You can</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>Create new trips for your own patients</li>
+                      <li>View your registration &amp; profile information</li>
+                      <li>Manage Vehicles &amp; Drivers</li>
+                      <li>Update Account tabs and required information</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-xs uppercase tracking-wide mb-1">Not until approved</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>Receive or view referrals from the network</li>
+                      <li>Access the Provider Network or collect contacts</li>
+                      <li>Accept Medicaid-funded trips</li>
+                      <li>Any feature that requires full-membership / approved-provider status</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="mt-2 text-xs">
+                  Finish the onboarding checklist to move to full access.{" "}
+                  <Link to="/membership" className="underline font-bold">Membership details →</Link>
                 </p>
               </div>
             )}
+
 
             {portal === "provider" && complianceQ.data && complianceQ.data.compliance_status && complianceQ.data.compliance_status !== "approved" && (() => {
               const s = complianceQ.data.compliance_status as string;

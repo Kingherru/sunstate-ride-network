@@ -2,9 +2,25 @@
  * Pure client-side helper that decides what a provider still owes before
  * their Provider Portal fully unlocks.
  *
- * Soft-access allows: New Trip, Reservations, Schedule (plus Onboarding,
- * Messages, and Account so they can actually finish setup / sign out).
- * Everything else is locked until every step below is done.
+ * Soft Access (provider is signed in, but not yet an approved / full-
+ * membership provider) allows:
+ *   • Create new trips
+ *   • View their own registration / profile information
+ *   • Manage Vehicles & Drivers
+ *   • Access the Account tabs and update required information
+ *   • Enter their Medicaid Provider Number (onboarding step)
+ *   • Onboarding checklist, Messages, Trip History (their own sent trips),
+ *     and Schedule (their own scheduled trips)
+ *
+ * Soft Access explicitly BLOCKS:
+ *   • Receiving or viewing referrals (Received / dispatch queue)
+ *   • Provider Network + saved / collected contacts
+ *   • Medicaid-funded trip acceptance (server-enforced by
+ *     is_approved_provider on accept_trip / assignment triggers)
+ *   • Any feature that requires full membership or approved-provider status
+ *
+ * These UI gates mirror the server-side rules — restricted features are
+ * also blocked at the RLS / RPC layer, not just here.
  */
 
 export type OnboardingStepId =
@@ -106,18 +122,26 @@ export function computeProviderOnboarding(input: {
   };
 }
 
-/** Tabs a soft-access provider can open. Everything else shows a lock overlay. */
+/**
+ * Tabs a soft-access provider can open. Everything else shows a lock overlay.
+ *
+ * Allowed: onboarding checklist, create-a-trip surfaces, own Trip History
+ * / Schedule, Vehicles & Drivers, Medicaid # entry, Messages, Account.
+ * Blocked: Received (referrals), Provider Network, Contacts, Payers,
+ * Reviews, Training, Payouts — anything that requires full membership or
+ * approved-provider status.
+ */
 export const SOFT_ACCESS_TABS = [
   "onboarding",
-  "new",
-  "reservations",
-  "schedule",
-  "messages",
-  "account",
-  // Required onboarding destinations — must stay unlocked so providers can
-  // actually complete the checklist (add vehicles/drivers, enter Medicaid #).
-  "vehicles",
-  "medicaid",
+  "trips",         // provider portal container for new-trip + reservations
+  "new",           // patient/facility create-a-trip (defensive)
+  "reservations",  // own scheduled trips
+  "sent",          // own trip history
+  "schedule",      // own schedule
+  "vehicles",      // manage vehicles & drivers
+  "medicaid",      // enter Medicaid provider number
+  "messages",      // messaging
+  "account",       // profile, business info, membership, security
 ] as const;
 
 export type SoftAccessTab = (typeof SOFT_ACCESS_TABS)[number];
