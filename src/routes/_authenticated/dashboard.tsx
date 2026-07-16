@@ -184,8 +184,17 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const meta = PORTAL_META[portal];
 
   const [tab, setTab] = useState<Tab>(baseAllowedTabs[0]);
+  const [tripsSubtab, setTripsSubtab] = useState<TripsSubtab>("new");
   const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
-  function startDuplicate(t: Trip) { setDuplicateSource(t); handleTab("new"); }
+  function startDuplicate(t: Trip) {
+    setDuplicateSource(t);
+    if (portal === "provider") {
+      setTripsSubtab("new");
+      handleTab("trips");
+    } else {
+      handleTab("new");
+    }
+  }
 
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
