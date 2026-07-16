@@ -607,33 +607,68 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
           </div>
         ) : active ? (
           <div className="flex flex-col h-full">
-            <div className="p-3 border-b border-border">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-sm">{threadTitle(active)}</h3>
-                <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
-                  {active.relationship_label}
-                </span>
+            <div className="p-3 border-b border-border flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-sm">{threadTitle(active)}</h3>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
+                    {active.relationship_label}
+                  </span>
+                </div>
+                {(active.participants[0]?.company || active.participants[0]?.city || active.participants[0]?.dispatch_zone_name) && (
+                  <p className="text-xs text-muted-foreground">
+                    {[
+                      active.participants[0]?.company,
+                      active.participants[0]?.city,
+                      active.participants[0]?.dispatch_zone_name,
+                    ].filter(Boolean).join(" · ")}
+                  </p>
+                )}
               </div>
-              {(active.participants[0]?.company || active.participants[0]?.city) && (
-                <p className="text-xs text-muted-foreground">
-                  {[active.participants[0]?.company, active.participants[0]?.city].filter(Boolean).join(" · ")}
-                </p>
-              )}
+              <button
+                onClick={() => {
+                  const isStaff = caps.isOps;
+                  const msg = isStaff
+                    ? "Delete this entire conversation for everyone? This cannot be undone."
+                    : "Remove this conversation from your inbox?";
+                  if (window.confirm(msg)) deleteThread.mutate(active.id);
+                }}
+                disabled={deleteThread.isPending}
+                className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                title={caps.isOps ? "Delete conversation" : "Leave conversation"}
+              >
+                {caps.isOps ? "Delete" : "Leave"}
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messagesQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
               {messages.map((m: any) => {
                 const mine = m.sender_id === userId;
+                const canDelete = mine || caps.isOps;
                 return (
-                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                  <div key={m.id} className={`group flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm relative ${mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className="mt-1 text-[10px] opacity-70">{new Date(m.created_at).toLocaleString()}</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="text-[10px] opacity-70">{new Date(m.created_at).toLocaleString()}</p>
+                        {canDelete && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm("Delete this message?")) deleteMsg.mutate(m.id);
+                            }}
+                            disabled={deleteMsg.isPending}
+                            className="text-[10px] opacity-0 group-hover:opacity-80 hover:opacity-100 underline"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+
             <form
               onSubmit={(e) => { e.preventDefault(); if (draft.trim()) send.mutate(); }}
               className="border-t border-border p-3 flex gap-2"
