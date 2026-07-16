@@ -75,8 +75,22 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Application = Database["public"]["Tables"]["provider_applications"]["Row"];
 type DocEntry = { kind: string; path: string; filename: string; size: number };
-type StatusFilter = "all" | "new" | "approved" | "caution" | "review" | "denied";
+type StatusFilter = "all" | "approved" | "caution" | "review" | "denied";
 type ComplianceStatus = "approved" | "caution" | "review" | "denied";
+
+/**
+ * Every provider falls into exactly one bucket. Denied wins, then Caution,
+ * then Needs Review (compliance=review OR application still pending/new),
+ * then Approved.
+ */
+function derivedStatus(a: Application): ComplianceStatus {
+  const compliance = ((a as any).compliance_status as ComplianceStatus | null) ?? null;
+  if (compliance === "denied" || a.status === "denied") return "denied";
+  if (compliance === "caution") return "caution";
+  if (compliance === "review" || a.status === "new" || a.status === "pending") return "review";
+  return "approved";
+}
+
 
 type TabId =
   | "overview"
