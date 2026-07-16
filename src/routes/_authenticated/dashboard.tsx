@@ -162,8 +162,8 @@ type TripsSubtab = "new" | "reservations";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
-  provider: ["onboarding", "trips", "schedule", "received", "sent", "vehicles", "saved_patients", "reviews", "payers", "medicaid", "training", "messages", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "payers", "messages", "payments", "account"],
+  provider: ["onboarding", "trips", "schedule", "received", "sent", "vehicles", "saved_patients", "reviews", "medicaid", "training", "messages", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "messages", "payments", "account"],
 };
 
 
