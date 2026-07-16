@@ -108,7 +108,27 @@ export function MonthlyPayoutReport({
     }
     const { data, error } = await q;
     if (error) throw error;
-    return (data ?? []) as Row[];
+    const rows = (data ?? []) as Row[];
+    const tripIds = Array.from(new Set(rows.map((r) => r.trip_id).filter(Boolean))) as string[];
+    if (tripIds.length > 0) {
+      const { data: trips } = await supabase
+        .from("trips")
+        .select("id, referral_fee_cents, referral_fee_source_user_id")
+        .in("id", tripIds);
+      const tripMap = new Map<string, { referral_fee_cents: number | null; referral_fee_source_user_id: string | null }>();
+      for (const t of (trips ?? []) as any[]) {
+        tripMap.set(t.id, {
+          referral_fee_cents: t.referral_fee_cents ?? 0,
+          referral_fee_source_user_id: t.referral_fee_source_user_id ?? null,
+        });
+      }
+      for (const r of rows) {
+        const t = r.trip_id ? tripMap.get(r.trip_id) : null;
+        r.referral_fee_cents = t?.referral_fee_cents ?? 0;
+        r.referral_fee_source_user_id = t?.referral_fee_source_user_id ?? null;
+      }
+    }
+    return rows;
   }
 
   async function handlePreview() {
