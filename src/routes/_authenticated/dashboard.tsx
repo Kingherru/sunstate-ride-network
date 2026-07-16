@@ -453,9 +453,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
             {portal === "provider" && !canSend && (
               <div className="bg-[oklch(0.96_0.05_55)] border-l-4 border-[oklch(0.70_0.18_45)] p-4 text-sm">
-                <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Free plan</p>
+                <p className="font-bold text-[oklch(0.35_0.12_45)] uppercase tracking-wide text-xs mb-1">Soft Access</p>
                 <p className="text-[oklch(0.30_0.08_45)]">
-                  Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($10/mo or $100/yr) to send trips, bulk upload, and use API integrations.{" "}
+                  You have limited access to the platform. Receive referrals, manage reservations, vehicles, drivers &amp; trip history. Upgrade to a paid membership ($10/mo or $100/yr) to send trips, bulk upload, and use API integrations.{" "}
                   <Link to="/membership" className="underline font-bold">Upgrade now →</Link>
                 </p>
               </div>
