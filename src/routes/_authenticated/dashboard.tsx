@@ -1026,20 +1026,87 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           Duplicated from trip {initialTrip.display_id ?? initialTrip.id}. Set a new <strong>pickup date and time</strong>, review the details, and save to create a brand-new trip. The original trip will not be changed.
         </div>
       )}
-      <Field label="Patient first name" v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
-      <Field label="Patient last name" v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
-      <Field label="Patient phone" v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
-      <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
-      <Field label="Trip number" v={form.trip_number} on={(v) => setForm({ ...form, trip_number: v })} />
-      <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
-        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Medicaid / CMS billing</legend>
-        <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
-        <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply, MMA" />
-        <Field label="Authorization #" v={form.authorization_number} on={(v) => setForm({ ...form, authorization_number: v })} />
-        <Field label="Diagnosis code" v={form.diagnosis_code} on={(v) => setForm({ ...form, diagnosis_code: v })} placeholder="ICD-10 (optional)" />
-        <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
-        <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
+
+      {/* Trip kind selector — passenger transport vs medical delivery */}
+      <fieldset className="col-span-2 grid grid-cols-2 gap-2 border border-border rounded-sm p-2">
+        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">What are you sending?</legend>
+        {[
+          { key: "passenger", label: "Patient / Passenger", sub: "Non-emergency medical transport" },
+          { key: "medical_delivery", label: "Medical Delivery", sub: "Prescriptions, samples, DME, supplies" },
+        ].map((opt) => {
+          const active = form.trip_kind === opt.key;
+          return (
+            <button
+              type="button"
+              key={opt.key}
+              onClick={() => setForm({ ...form, trip_kind: opt.key })}
+              className={`text-left rounded-sm border-2 px-3 py-2 transition-colors ${
+                active ? "border-accent bg-accent/10" : "border-border hover:border-accent/50"
+              }`}
+              aria-pressed={active}
+            >
+              <div className="text-sm font-bold">{opt.label}</div>
+              <div className="text-xs text-muted-foreground">{opt.sub}</div>
+            </button>
+          );
+        })}
       </fieldset>
+
+      <Field label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
+      <Field label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
+      <Field label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      {!isDelivery && (
+        <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
+      )}
+      <Field label={isDelivery ? "Reference #" : "Trip number"} v={form.trip_number} on={(v) => setForm({ ...form, trip_number: v })} />
+
+      {isDelivery ? (
+        <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
+          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Delivery details</legend>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="portal-label">Item type</span>
+            <select value={form.delivery_item_type} onChange={(e) => setForm({ ...form, delivery_item_type: e.target.value })} className="portal-select">
+              <option value="prescription">Prescription</option>
+              <option value="lab_sample">Lab / specimen sample</option>
+              <option value="medical_supplies">Medical supplies</option>
+              <option value="equipment">Equipment</option>
+              <option value="dme">Durable medical equipment (DME)</option>
+              <option value="other">Other healthcare item</option>
+            </select>
+          </label>
+          <Field label="Weight (lbs)" v={form.delivery_weight_lbs} on={(v) => setForm({ ...form, delivery_weight_lbs: v })} type="number" placeholder="Optional" />
+          <Field label="Item description" v={form.delivery_item_description} on={(v) => setForm({ ...form, delivery_item_description: v })} placeholder="e.g. 2 sealed lab specimens on ice" className="col-span-2" />
+          <Field label="Recipient name" v={form.delivery_recipient_name} on={(v) => setForm({ ...form, delivery_recipient_name: v })} placeholder="Who receives it at drop-off" />
+          <Field label="Recipient phone" v={form.delivery_recipient_phone} on={(v) => setForm({ ...form, delivery_recipient_phone: v })} />
+          <label className="flex items-center gap-2 text-sm font-bold">
+            <input type="checkbox" checked={form.delivery_temperature_sensitive} onChange={(e) => setForm({ ...form, delivery_temperature_sensitive: e.target.checked })} />
+            Temperature-sensitive / cold-chain
+          </label>
+          <label className="flex items-center gap-2 text-sm font-bold">
+            <input type="checkbox" checked={form.delivery_signature_required} onChange={(e) => setForm({ ...form, delivery_signature_required: e.target.checked })} />
+            Signature required at delivery
+          </label>
+          <label className="flex items-center gap-2 text-sm font-bold">
+            <input type="checkbox" checked={form.delivery_hazmat} onChange={(e) => setForm({ ...form, delivery_hazmat: e.target.checked })} />
+            Hazmat / biohazard
+          </label>
+          <label className="flex items-center gap-2 text-sm font-bold">
+            <input type="checkbox" checked={form.delivery_rush} onChange={(e) => setForm({ ...form, delivery_rush: e.target.checked })} />
+            Rush / priority
+          </label>
+        </fieldset>
+      ) : (
+        <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
+          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Medicaid / CMS billing</legend>
+          <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
+          <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply, MMA" />
+          <Field label="Authorization #" v={form.authorization_number} on={(v) => setForm({ ...form, authorization_number: v })} />
+          <Field label="Diagnosis code" v={form.diagnosis_code} on={(v) => setForm({ ...form, diagnosis_code: v })} placeholder="ICD-10 (optional)" />
+          <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
+          <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
+        </fieldset>
+      )}
+
 
       <label className="flex flex-col gap-1 text-sm col-span-2">
         <span className="portal-label">Pickup address</span>
