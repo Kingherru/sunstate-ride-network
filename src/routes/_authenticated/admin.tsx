@@ -225,7 +225,9 @@ function AdminPage() {
     setTab(id);
     const key = adminTabKeyFor(id);
     if (key) markViewed(key);
+    if (id === "messaging") qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
   };
+
   useEffect(() => {
     const key = adminTabKeyFor(tab);
     if (key && ((unread as any)[key] ?? 0) > 0) markViewed(key);
