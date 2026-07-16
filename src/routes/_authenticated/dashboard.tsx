@@ -90,6 +90,57 @@ function PayersTab() {
   );
 }
 
+/**
+ * Merged Contacts + Payers tab. Contacts is the first sub-tab, Payers the
+ * second. Payers only appears for portals that already had payers access
+ * (provider, facility) — patients don't manage payers and see Contacts only.
+ */
+function ContactsAndPayersPanel({ portal }: { portal: PortalKind }) {
+  const showPayers = portal === "provider" || portal === "facility";
+  type Sub = "contacts" | "payers";
+  const [subTab, setSubTab] = useState<Sub>("contacts");
+  const subs: Array<[Sub, string]> = [
+    ["contacts", "Contacts"],
+    ...(showPayers ? ([["payers", "Payers"]] as Array<[Sub, string]>) : []),
+  ];
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight">Contacts &amp; Payers</h2>
+        <p className="text-sm text-muted-foreground">
+          Manage saved contacts{showPayers ? " and the third parties who pay for trips" : ""}.
+        </p>
+      </div>
+      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none border-b border-border">
+        <div className="flex flex-nowrap gap-1 min-w-max">
+          {subs.map(([key, label]) => {
+            const active = subTab === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setSubTab(key)}
+                aria-current={active ? "page" : undefined}
+                className={`whitespace-nowrap px-4 py-2.5 text-sm font-bold border-b-2 -mb-px transition-colors ${
+                  active
+                    ? "border-accent text-accent bg-accent/10 sm:bg-transparent"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-foreground/5 sm:hover:bg-transparent"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {subTab === "contacts" && (
+        portal === "patient" ? <PatientProviderContactsPanel /> : <SavedPatientsPanel />
+      )}
+      {subTab === "payers" && showPayers && <PayersPanel />}
+    </div>
+  );
+}
+
+
 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
