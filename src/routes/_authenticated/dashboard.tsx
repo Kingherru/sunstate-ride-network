@@ -1865,6 +1865,12 @@ function TripDetailView({
                   Medicaid
                 </span>
               )}
+              {(t as any).trip_kind === "medical_delivery" && (
+                <span className="text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-sky-100 text-sky-800 border border-sky-200">
+                  Delivery
+                </span>
+              )}
+
             </div>
             <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground truncate">
               {t.patient_first_name} {t.patient_last_name}
