@@ -106,7 +106,7 @@ function MedicalDeliveriesPage() {
     <>
       <section className="pt-10 lg:pt-14 px-6">
         <div className="max-w-6xl mx-auto">
-          <Breadcrumbs items={[{ label: "Services", href: "/services" }, { label: "Medical Deliveries" }]} />
+          <Breadcrumbs items={[{ label: "Services", to: "/services" }, { label: "Medical Deliveries" }]} />
         </div>
       </section>
 
