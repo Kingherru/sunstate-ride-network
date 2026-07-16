@@ -19,6 +19,7 @@ export function RegisteredMembersList({
   title: string;
 }) {
   const fetchUsers = useServerFn(listNonPatientUsers);
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
 
   const usersQ = useQuery({
@@ -27,6 +28,23 @@ export function RegisteredMembersList({
     refetchInterval: 30_000,
     refetchOnWindowFocus: true,
   });
+
+  // Real-time sync: refetch when member profiles, roles, or provider apps change
+  useEffect(() => {
+    const channel = supabase
+      .channel(`admin-members-${portal}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "member_profiles" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin", "non-patient-users"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_applications" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin", "non-patient-users"] });
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [portal, qc]);
+
 
   const rows = useMemo(() => {
     const all = (usersQ.data ?? []).filter((u: any) => u.portal === portal);
