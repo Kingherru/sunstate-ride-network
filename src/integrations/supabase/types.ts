@@ -2070,6 +2070,14 @@ export type Database = {
           cancellation: number
           created_at: string
           currency: string
+          delivery_base: number
+          delivery_cold_chain_surcharge: number
+          delivery_enabled: boolean
+          delivery_min_fee: number
+          delivery_per_mile: number
+          delivery_rush_surcharge: number
+          delivery_signature_surcharge: number
+          delivery_wait_per_unit: number
           holiday_surcharge: number
           holidays: string[]
           minimum_fare: number
@@ -2102,6 +2110,14 @@ export type Database = {
           cancellation?: number
           created_at?: string
           currency?: string
+          delivery_base?: number
+          delivery_cold_chain_surcharge?: number
+          delivery_enabled?: boolean
+          delivery_min_fee?: number
+          delivery_per_mile?: number
+          delivery_rush_surcharge?: number
+          delivery_signature_surcharge?: number
+          delivery_wait_per_unit?: number
           holiday_surcharge?: number
           holidays?: string[]
           minimum_fare?: number
@@ -2134,6 +2150,14 @@ export type Database = {
           cancellation?: number
           created_at?: string
           currency?: string
+          delivery_base?: number
+          delivery_cold_chain_surcharge?: number
+          delivery_enabled?: boolean
+          delivery_min_fee?: number
+          delivery_per_mile?: number
+          delivery_rush_surcharge?: number
+          delivery_signature_surcharge?: number
+          delivery_wait_per_unit?: number
           holiday_surcharge?: number
           holidays?: string[]
           minimum_fare?: number
@@ -2454,6 +2478,17 @@ export type Database = {
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
+          delivery_hazmat: boolean
+          delivery_item_description: string | null
+          delivery_item_type:
+            | Database["public"]["Enums"]["delivery_item_type"]
+            | null
+          delivery_recipient_name: string | null
+          delivery_recipient_phone: string | null
+          delivery_rush: boolean
+          delivery_signature_required: boolean
+          delivery_temperature_sensitive: boolean
+          delivery_weight_lbs: number | null
           diagnosis_code: string | null
           dispatch_source: string
           distance_miles: number | null
@@ -2520,6 +2555,7 @@ export type Database = {
           trip_billing_last_name: string | null
           trip_billing_phone: string | null
           trip_billing_source: string | null
+          trip_kind: Database["public"]["Enums"]["trip_kind"]
           trip_type: string
           user_agent: string | null
         }
@@ -2537,6 +2573,17 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          delivery_hazmat?: boolean
+          delivery_item_description?: string | null
+          delivery_item_type?:
+            | Database["public"]["Enums"]["delivery_item_type"]
+            | null
+          delivery_recipient_name?: string | null
+          delivery_recipient_phone?: string | null
+          delivery_rush?: boolean
+          delivery_signature_required?: boolean
+          delivery_temperature_sensitive?: boolean
+          delivery_weight_lbs?: number | null
           diagnosis_code?: string | null
           dispatch_source?: string
           distance_miles?: number | null
@@ -2603,6 +2650,7 @@ export type Database = {
           trip_billing_last_name?: string | null
           trip_billing_phone?: string | null
           trip_billing_source?: string | null
+          trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_type?: string
           user_agent?: string | null
         }
@@ -2620,6 +2668,17 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          delivery_hazmat?: boolean
+          delivery_item_description?: string | null
+          delivery_item_type?:
+            | Database["public"]["Enums"]["delivery_item_type"]
+            | null
+          delivery_recipient_name?: string | null
+          delivery_recipient_phone?: string | null
+          delivery_rush?: boolean
+          delivery_signature_required?: boolean
+          delivery_temperature_sensitive?: boolean
+          delivery_weight_lbs?: number | null
           diagnosis_code?: string | null
           dispatch_source?: string
           distance_miles?: number | null
@@ -2686,6 +2745,7 @@ export type Database = {
           trip_billing_last_name?: string | null
           trip_billing_phone?: string | null
           trip_billing_source?: string | null
+          trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_type?: string
           user_agent?: string | null
         }
@@ -3314,6 +3374,18 @@ export type Database = {
           cost_total: number | null
           created_at: string
           created_by: string | null
+          delivery_hazmat: boolean
+          delivery_item_description: string | null
+          delivery_item_type:
+            | Database["public"]["Enums"]["delivery_item_type"]
+            | null
+          delivery_proof_url: string | null
+          delivery_recipient_name: string | null
+          delivery_recipient_phone: string | null
+          delivery_rush: boolean
+          delivery_signature_required: boolean
+          delivery_temperature_sensitive: boolean
+          delivery_weight_lbs: number | null
           diagnosis_code: string | null
           dispatch_zone_id: string | null
           display_id: string | null
@@ -3396,6 +3468,7 @@ export type Database = {
           special_instructions: string | null
           status: string
           transport_type: string | null
+          trip_kind: Database["public"]["Enums"]["trip_kind"]
           trip_number: string | null
           updated_at: string
           vehicle_id: string | null
@@ -3418,6 +3491,18 @@ export type Database = {
           cost_total?: number | null
           created_at?: string
           created_by?: string | null
+          delivery_hazmat?: boolean
+          delivery_item_description?: string | null
+          delivery_item_type?:
+            | Database["public"]["Enums"]["delivery_item_type"]
+            | null
+          delivery_proof_url?: string | null
+          delivery_recipient_name?: string | null
+          delivery_recipient_phone?: string | null
+          delivery_rush?: boolean
+          delivery_signature_required?: boolean
+          delivery_temperature_sensitive?: boolean
+          delivery_weight_lbs?: number | null
           diagnosis_code?: string | null
           dispatch_zone_id?: string | null
           display_id?: string | null
@@ -3500,6 +3585,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           transport_type?: string | null
+          trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_number?: string | null
           updated_at?: string
           vehicle_id?: string | null
@@ -3522,6 +3608,18 @@ export type Database = {
           cost_total?: number | null
           created_at?: string
           created_by?: string | null
+          delivery_hazmat?: boolean
+          delivery_item_description?: string | null
+          delivery_item_type?:
+            | Database["public"]["Enums"]["delivery_item_type"]
+            | null
+          delivery_proof_url?: string | null
+          delivery_recipient_name?: string | null
+          delivery_recipient_phone?: string | null
+          delivery_rush?: boolean
+          delivery_signature_required?: boolean
+          delivery_temperature_sensitive?: boolean
+          delivery_weight_lbs?: number | null
           diagnosis_code?: string | null
           dispatch_zone_id?: string | null
           display_id?: string | null
@@ -3604,6 +3702,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           transport_type?: string | null
+          trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_number?: string | null
           updated_at?: string
           vehicle_id?: string | null
@@ -4282,6 +4381,13 @@ export type Database = {
         | "app_manager"
         | "zone_manager"
         | "dispatcher"
+      delivery_item_type:
+        | "prescription"
+        | "lab_sample"
+        | "medical_supplies"
+        | "equipment"
+        | "dme"
+        | "other"
       membership_tier: "none" | "free" | "paid"
       payout_account_status:
         | "not_connected"
@@ -4293,6 +4399,7 @@ export type Database = {
         | "bed_to_bed"
         | "curb_to_curb"
         | "driveway_pickup"
+      trip_kind: "passenger" | "medical_delivery"
       trip_payment_status:
         | "not_confirmed"
         | "pending"
@@ -4434,6 +4541,14 @@ export const Constants = {
         "zone_manager",
         "dispatcher",
       ],
+      delivery_item_type: [
+        "prescription",
+        "lab_sample",
+        "medical_supplies",
+        "equipment",
+        "dme",
+        "other",
+      ],
       membership_tier: ["none", "free", "paid"],
       payout_account_status: [
         "not_connected",
@@ -4447,6 +4562,7 @@ export const Constants = {
         "curb_to_curb",
         "driveway_pickup",
       ],
+      trip_kind: ["passenger", "medical_delivery"],
       trip_payment_status: [
         "not_confirmed",
         "pending",
