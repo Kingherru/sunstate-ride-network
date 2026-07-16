@@ -301,7 +301,13 @@ function ZoneDispatcher({
             <th className="py-2 pr-3">Trip ID</th>
             <th className="py-2 pr-3">Patient</th>
             <th className="py-2 pr-3">Pickup</th>
+            <th className="py-2 pr-3">Original</th>
+            <th className="py-2 pr-3">Source</th>
             <th className="py-2 pr-3">Status</th>
+            <th className="py-2 pr-3">Payment</th>
+            <th className="py-2 pr-3 text-right">Referral</th>
+            <th className="py-2 pr-3 text-right">Platform</th>
+            <th className="py-2 pr-3 text-right">Provider net</th>
             <th className="py-2 pr-3">Assign to provider</th>
             <th className="py-2 pr-3"></th>
           </tr>
