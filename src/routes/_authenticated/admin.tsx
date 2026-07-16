@@ -24,7 +24,9 @@ import {
   History,
   ShieldAlert,
   Radar,
+  MessageSquare,
   LogOut,
+
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_LABEL } from "@/lib/provider-docs";
@@ -43,6 +45,8 @@ import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
+import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
+
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
@@ -97,6 +101,7 @@ type TabId =
   | "users"
   | "providers"
   | "facilities"
+  | "messaging"
   | "trips"
   | "reservations"
   | "dispatch"
@@ -110,6 +115,7 @@ type TabId =
   | "theme"
   | "changelog"
   | "system";
+
 
 type NavItem = {
   id: TabId;
@@ -138,11 +144,13 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operations",
     items: [
+      { id: "messaging", label: "Messaging", icon: MessageSquare, visible: (c) => c.isOps },
       { id: "trips", label: "Trips", icon: Car, visible: (c) => c.isOps },
       { id: "reservations", label: "Reservations", icon: CalendarClock, visible: (c) => c.isOps },
       { id: "dispatch", label: "Dispatch", icon: Radar, visible: (c) => c.canDispatch },
     ],
   },
+
   {
     label: "Finance",
     items: [
@@ -333,6 +341,10 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "theme": return caps.canConfigurePricing ? <AdminThemePanel /> : <NoAccess />;
     case "changelog": return <ChangelogPanel />;
     case "facilities": return caps.isOps ? <RegisteredMembersList portal="facility" title="Facilities" /> : <NoAccess />;
+    case "messaging": return caps.isOps && caps.userId
+      ? <MessagesPanel userId={caps.userId} portal="facility" />
+      : <NoAccess />;
+
     case "trips": return caps.isOps ? <AdminTripsPanel /> : <NoAccess />;
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
