@@ -125,6 +125,21 @@ const tripBaseSchema = z.object({
   diagnosis_code: z.string().trim().max(32).optional().nullable(),
   emergency_contact_name: z.string().trim().max(120).optional().nullable(),
   emergency_contact_phone: z.string().trim().max(32).optional().nullable(),
+
+  // Medical Deliveries — non-emergency medical item delivery.
+  trip_kind: z.enum(["passenger", "medical_delivery"]).optional(),
+  delivery_item_type: z
+    .enum(["prescription", "lab_sample", "medical_supplies", "equipment", "dme", "other"])
+    .optional()
+    .nullable(),
+  delivery_item_description: z.string().trim().max(500).optional().nullable(),
+  delivery_weight_lbs: z.coerce.number().nonnegative().max(10000).optional().nullable(),
+  delivery_temperature_sensitive: z.boolean().optional(),
+  delivery_hazmat: z.boolean().optional(),
+  delivery_signature_required: z.boolean().optional(),
+  delivery_rush: z.boolean().optional(),
+  delivery_recipient_name: z.string().trim().max(120).optional().nullable(),
+  delivery_recipient_phone: z.string().trim().max(32).optional().nullable(),
 });
 
 const createTripSchema = tripBaseSchema.extend({

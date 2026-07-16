@@ -10,6 +10,7 @@ const staticPaths = [
   "/services/ambulatory",
   "/services/wheelchair",
   "/services/stretcher",
+  "/services/medical-deliveries",
   "/service-areas",
   "/service-areas/jacksonville",
   "/service-areas/orlando",
