@@ -26,34 +26,30 @@ function AboutPage() {
           About
         </p>
         <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tighter mb-8">
-          Florida's NEMT gateway.
+          Simple Non Emergency Medical Transportation Technology Built Around People
         </h1>
         <div className="prose prose-lg max-w-none text-muted space-y-6 text-base leading-relaxed">
           <p>
-            My Florida NEMT is a statewide gateway connecting patients, providers, and brokers
-            in non-emergency medical transportation. We coordinate trips across every major Florida
-            hub and run the training academy that keeps drivers compliant.
+            At My Florida NEMT, our goal is to make non-emergency medical transportation easier for everyone involved. Transportation does not need to be complicated, and the software used to manage it should never become a burden.
           </p>
           <p>
-            We exist because patients deserve consistent, dignified transport regardless of which
-            corner of the state they live in. Patients shouldn't have to call ten different
-            companies to find a ride to dialysis — and providers shouldn't have to compete for every
-            individual trip. We're the layer that makes both sides work.
+            Many scheduling and dispatch systems are powerful but difficult to learn, requiring unnecessary steps and creating frustration for providers, facilities, and patients. We believe technology should simplify transportation, not make it harder.
           </p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-foreground !mt-12">What we do</h2>
-          <ul className="space-y-2 list-disc list-inside">
-            <li>Operate a statewide intake and dispatch network</li>
-            <li>Vet and onboard NEMT providers (vehicles, drivers, credentials)</li>
-            <li>Deliver certified NEMT and HIPAA training to professional drivers</li>
-            <li>Match patient trip requests with the right local provider</li>
-          </ul>
-          <h2 className="text-2xl font-extrabold tracking-tight text-foreground !mt-12">Our principles</h2>
-          <ul className="space-y-2 list-disc list-inside">
-            <li><strong>On-time, every time.</strong> Punctuality is the product.</li>
-            <li><strong>Dignified care.</strong> Every patient, every transport level.</li>
-            <li><strong>Compliance by default.</strong> HIPAA, ADA, AHCA — built in, not bolted on.</li>
-            <li><strong>Open to all providers.</strong> Small operators and large fleets both welcome.</li>
-          </ul>
+          <p>
+            Our platform is designed with a focus on simplicity, efficiency, and real-world workflows. Providers should be able to manage trips easily, facilities should be able to request transportation without confusion, and patients should have a clear and reliable experience from start to finish.
+          </p>
+          <p>
+            My Florida NEMT is built to support Florida’s growing need for reliable non-emergency medical transportation, including Medicaid transportation, healthcare facility transportation, broker coordination, and workers’ compensation transportation. Our platform helps connect transportation providers with hospitals, nursing homes, group homes, rehabilitation centers, and other healthcare organizations that need dependable transportation solutions.
+          </p>
+          <p>
+            We understand that every passenger has different needs, from routine medical appointments to specialized transportation for cancer treatments, dialysis appointments, therapy visits, and ongoing healthcare services. By creating a simple connection between patients, facilities, brokers, dispatch teams, and transportation providers, we help make the entire transportation process easier to manage.
+          </p>
+          <p>
+            Every feature we build is designed around one question: Does this make transportation easier?
+          </p>
+          <p>
+            By combining modern technology with an easy-to-use experience, My Florida NEMT helps connect patients, facilities, dispatch teams, Medicaid transportation providers, and healthcare organizations throughout Florida without adding unnecessary complexity.
+          </p>
         </div>
         <div className="mt-12 flex flex-wrap gap-4">
           <Link
