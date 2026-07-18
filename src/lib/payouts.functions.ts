@@ -133,7 +133,7 @@ function validatePayoutGates(t: TripRow, capturedCents: number, expectedNetCents
   if (t.status !== "completed") reasons.push("trip_not_completed");
   if (!t.assigned_to) reasons.push("no_provider_assigned");
   if (t.assigned_to && t.created_by && t.assigned_to === t.created_by) reasons.push("provider_is_trip_creator");
-  if (t.payment_status !== "confirmed") reasons.push("payment_not_captured");
+  if (!["paid","validated"].includes(t.payment_status)) reasons.push("payment_not_captured");
   const grossCents = Math.round(Number(t.cost_total ?? 0) * 100);
   if (grossCents <= 0) reasons.push("no_fare_amount");
   if (capturedCents > 0 && capturedCents < grossCents) reasons.push("captured_amount_less_than_fare");
@@ -182,7 +182,7 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
     const eligibleAt = new Date(Date.now() + holdHours * 3600 * 1000).toISOString();
 
     // Validation gates. If any fail, park the payout on hold instead of scheduling it.
-    const gateReasons = validatePayoutGates(t, /*captured*/ t.payment_status === "confirmed" ? grossCents : 0, netCents, netCents);
+    const gateReasons = validatePayoutGates(t, /*captured*/ ["paid","validated"].includes(t.payment_status) ? grossCents : 0, netCents, netCents);
 
     await supabaseAdmin
       .from("trips")
@@ -248,4 +248,58 @@ export const listAdminPayoutQueue = createServerFn({ method: "GET" })
       .order("payout_eligible_at", { ascending: true, nullsFirst: true })
       .limit(500);
     return { ok: true as const, rows: data ?? [] };
+  });
+
+/**
+ * ADMIN-ONLY: Mark that MFN has received the funds from the payer and the
+ * trip amount matches the fare. Moves payment_status from `paid` (received)
+ * to `validated`, which is required before payout can release.
+ * For Medicaid trips, this ALSO records `medicaid_remit_received_at` and
+ * starts the Net-15 clock.
+ */
+export const validateTripPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { trip_id: string; is_medicaid_remit?: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) return { ok: false as const, error: "Admin only" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: trip } = await supabaseAdmin
+      .from("trips")
+      .select("id, payment_status, payout_is_medicaid, medicaid_remit_received_at, cost_total")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    if (!trip) return { ok: false as const, error: "Trip not found" };
+
+    const update: Record<string, unknown> = {
+      payment_status: "validated",
+      payout_validated_at: new Date().toISOString(),
+      payout_validated_by: userId,
+    };
+    if (data.is_medicaid_remit || trip.payout_is_medicaid) {
+      update.medicaid_remit_received_at = new Date().toISOString();
+      update.payout_eligible_at = new Date(Date.now() + PAYOUT_MEDICAID_NET_DAYS * 24 * 3600 * 1000).toISOString();
+    }
+    const { error } = await supabaseAdmin.from("trips").update(update as any).eq("id", data.trip_id);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+/**
+ * ADMIN-ONLY: Read the trip financial ledger view. View already gates by
+ * `is_ops_staff` server-side.
+ */
+export const listTripFinancialLedger = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const { data, error } = await supabase
+      .from("trip_financial_ledger" as any)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) return { ok: false as const, error: error.message, rows: [] as any[] };
+    return { ok: true as const, rows: (data ?? []) as any[] };
   });
