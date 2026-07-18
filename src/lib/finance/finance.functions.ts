@@ -165,3 +165,139 @@ export const requestCashout = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { cashout_id: id as unknown as string };
   });
+
+// ---------- Admin: cron monitoring ----------
+export const getFinCronStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [status, recent] = await Promise.all([
+      supabaseAdmin.from("admin_fin_cron_status").select("*"),
+      supabaseAdmin.from("fin_cron_runs").select("id, job_name, started_at, ended_at, ok, processed, failed, error_text, triggered_by")
+        .order("started_at", { ascending: false }).limit(30),
+    ]);
+    return { status: status.data ?? [], recent: recent.data ?? [] };
+  });
+
+export const adminRunFinCron = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { job: "fin-release-tick" | "fin-cashout-tick" }) =>
+    z.object({ job: z.enum(["fin-release-tick", "fin-cashout-tick"]) }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    const base = process.env.SITE_URL ?? "https://myfloridanemt.com";
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+    if (!key) throw new Error("Missing publishable key");
+    const res = await fetch(`${base.replace(/\/$/, "")}/api/public/hooks/${data.job}?trigger=admin`, {
+      method: "POST", headers: { apikey: key, "content-type": "application/json" }, body: "{}",
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(text || `Run failed (${res.status})`);
+    return { ok: true, response: text };
+  });
+
+// ---------- Admin: fee adjust with audit trail ----------
+export const adminFeeAdjust = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: {
+    trip_id: string;
+    new_platform_cents?: number;
+    new_referral_cents?: number;
+    reason: string;
+  }) => z.object({
+    trip_id: z.string().uuid(),
+    new_platform_cents: z.number().int().min(0).max(1_000_000).optional(),
+    new_referral_cents: z.number().int().min(0).max(1_000_000).optional(),
+    reason: z.string().min(3).max(500),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("fin_admin_fee_adjust", {
+      _trip_id: data.trip_id,
+      _new_platform_cents: data.new_platform_cents ?? null,
+      _new_referral_cents: data.new_referral_cents ?? null,
+      _reason: data.reason,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const listAdminFinActions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { limit?: number } | undefined) =>
+    z.object({ limit: z.number().int().min(1).max(500).optional() }).parse(i ?? {}))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.rpc("fin_admin_recent_actions",
+      { _limit: data.limit ?? 100 } as never);
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as FinAdminAction[];
+  });
+
+export type FinAdminAction = {
+  id: string; admin_user_id: string | null; action: string; trip_id: string | null;
+  provider_user_id: string | null; amount_cents: number | null; reason: string | null;
+  metadata: Record<string, string | number | boolean | null> | null; created_at: string;
+};
+
+// ---------- Provider: detailed balance line items ----------
+export const getMyProviderBalanceDetailed = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const uid = context.userId;
+    const [balance, entries, cashouts] = await Promise.all([
+      context.supabase.from("provider_balances")
+        .select("available_cents, pending_cents, lifetime_paid_out_cents, updated_at")
+        .eq("provider_user_id", uid).maybeSingle(),
+      context.supabase.from("provider_balance_entries")
+        .select("id, kind, amount_cents, state, available_at, note, trip_id, created_at")
+        .eq("provider_user_id", uid).order("created_at", { ascending: false }).limit(200),
+      context.supabase.from("provider_cashouts")
+        .select("id, amount_cents, status, stripe_transfer_id, failure_reason, requested_at, completed_at")
+        .eq("provider_user_id", uid).order("requested_at", { ascending: false }).limit(50),
+    ]);
+
+    const rows = entries.data ?? [];
+    const tripIds = Array.from(new Set(rows.map(r => r.trip_id).filter(Boolean))) as string[];
+    let tripsById: Record<string, { pickup_time: string | null; fin_is_medicaid: boolean | null; fin_payout_hold_until: string | null }> = {};
+    if (tripIds.length) {
+      const { data: trips } = await context.supabase
+        .from("trips")
+        .select("id, pickup_time, fin_is_medicaid, fin_payout_hold_until")
+        .in("id", tripIds);
+      for (const t of trips ?? []) tripsById[t.id as string] = {
+        pickup_time: (t as any).pickup_time ?? null,
+        fin_is_medicaid: (t as any).fin_is_medicaid ?? null,
+        fin_payout_hold_until: (t as any).fin_payout_hold_until ?? null,
+      };
+    }
+
+    const detailedEntries = rows.map(r => {
+      const trip = r.trip_id ? tripsById[r.trip_id] : undefined;
+      let releaseReason: string | null = null;
+      if (r.state === "pending" && trip) {
+        releaseReason = trip.fin_is_medicaid
+          ? "Held until Medicaid funds arrive + Net 15 business days"
+          : "3-day validation hold";
+      } else if (r.state === "available" && r.kind === "release") {
+        releaseReason = "Hold period completed";
+      } else if (r.kind === "reversal") {
+        releaseReason = r.note ?? "Reversed";
+      } else if (r.kind === "adjustment") {
+        releaseReason = r.note ?? "Admin adjustment";
+      }
+      return {
+        ...r,
+        trip_pickup_time: trip?.pickup_time ?? null,
+        trip_is_medicaid: trip?.fin_is_medicaid ?? null,
+        release_reason: releaseReason,
+      };
+    });
+
+    return {
+      balance: balance.data ?? { available_cents: 0, pending_cents: 0, lifetime_paid_out_cents: 0, updated_at: null },
+      entries: detailedEntries,
+      cashouts: cashouts.data ?? [],
+    };
+  });

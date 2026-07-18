@@ -44,6 +44,7 @@ import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 import { AdminPayoutQueue } from "@/components/admin/AdminPayoutQueue";
 import { AdminFinanceConsole } from "@/components/admin/AdminFinanceConsole";
+import { AdminFinanceMonitoring } from "@/components/admin/AdminFinanceMonitoring";
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
@@ -388,7 +389,12 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
     case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
-    case "ledger": return caps.isOps ? <AdminFinanceConsole /> : <NoAccess />;
+    case "ledger": return caps.isOps ? (
+      <div className="space-y-8">
+        <AdminFinanceConsole />
+        <AdminFinanceMonitoring />
+      </div>
+    ) : <NoAccess />;
     case "payouts": return caps.isAdmin ? (
       <div className="space-y-6">
         <AdminPayoutQueue />

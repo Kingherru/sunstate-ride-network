@@ -1,5 +1,8 @@
 import type { ComponentType } from 'react'
 import { template as driverEarningsReport } from './driver-earnings-report'
+import { template as providerFundsAvailable } from './provider-funds-available'
+import { template as providerCashoutCompleted } from './provider-cashout-completed'
+import { template as providerCashoutFailed } from './provider-cashout-failed'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -16,4 +19,7 @@ export interface TemplateEntry {
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'driver-earnings-report': driverEarningsReport,
+  'provider-funds-available': providerFundsAvailable,
+  'provider-cashout-completed': providerCashoutCompleted,
+  'provider-cashout-failed': providerCashoutFailed,
 }

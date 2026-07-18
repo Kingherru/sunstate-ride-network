@@ -789,6 +789,42 @@ export type Database = {
         }
         Relationships: []
       }
+      fin_admin_actions: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          amount_cents: number | null
+          created_at: string
+          id: string
+          metadata: Json
+          provider_user_id: string | null
+          reason: string | null
+          trip_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          amount_cents?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          provider_user_id?: string | null
+          reason?: string | null
+          trip_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          amount_cents?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          provider_user_id?: string | null
+          reason?: string | null
+          trip_id?: string | null
+        }
+        Relationships: []
+      }
       fin_bank_holidays: {
         Row: {
           holiday_date: string
@@ -870,6 +906,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fin_cron_runs: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          error_text: string | null
+          failed: number
+          id: string
+          job_name: string
+          ok: boolean
+          processed: number
+          started_at: string
+          triggered_by: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          error_text?: string | null
+          failed?: number
+          id?: string
+          job_name: string
+          ok?: boolean
+          processed?: number
+          started_at?: string
+          triggered_by?: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          error_text?: string | null
+          failed?: number
+          id?: string
+          job_name?: string
+          ok?: boolean
+          processed?: number
+          started_at?: string
+          triggered_by?: string
+        }
+        Relationships: []
       }
       fin_payouts: {
         Row: {
@@ -4437,6 +4512,21 @@ export type Database = {
       }
     }
     Views: {
+      admin_fin_cron_status: {
+        Row: {
+          errors_24h: number | null
+          job_name: string | null
+          last_ended_at: string | null
+          last_error: string | null
+          last_failed: number | null
+          last_ok: boolean | null
+          last_processed: number | null
+          last_run_at: string | null
+          last_success_at: string | null
+          last_triggered_by: string | null
+        }
+        Relationships: []
+      }
       admin_fin_ledger: {
         Row: {
           created_at: string | null
@@ -4676,6 +4766,17 @@ export type Database = {
       }
     }
     Functions: {
+      _fin_log_admin: {
+        Args: {
+          _action: string
+          _amount_cents: number
+          _metadata?: Json
+          _provider: string
+          _reason: string
+          _trip_id: string
+        }
+        Returns: undefined
+      }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
       admin_grant_free_membership: {
         Args: { _user_id: string }
@@ -4719,9 +4820,37 @@ export type Database = {
         Args: { _amount_cents: number; _note: string; _provider: string }
         Returns: undefined
       }
-      fin_admin_force_release: {
-        Args: { _trip_id: string }
+      fin_admin_fee_adjust: {
+        Args: {
+          _new_platform_cents?: number
+          _new_referral_cents?: number
+          _reason?: string
+          _trip_id: string
+        }
         Returns: undefined
+      }
+      fin_admin_force_release:
+        | { Args: { _trip_id: string }; Returns: undefined }
+        | { Args: { _reason?: string; _trip_id: string }; Returns: undefined }
+      fin_admin_recent_actions: {
+        Args: { _limit?: number }
+        Returns: {
+          action: string
+          admin_user_id: string | null
+          amount_cents: number | null
+          created_at: string
+          id: string
+          metadata: Json
+          provider_user_id: string | null
+          reason: string | null
+          trip_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "fin_admin_actions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       fin_business_days_from: {
         Args: { _days: number; _start: string }
@@ -4762,6 +4891,18 @@ export type Database = {
             Returns: string
           }
         | { Args: { _source?: string; _trip_id: string }; Returns: undefined }
+      fin_record_cron_run: {
+        Args: {
+          _error?: string
+          _failed: number
+          _job: string
+          _ok: boolean
+          _processed: number
+          _started_at?: string
+          _triggered_by?: string
+        }
+        Returns: string
+      }
       fin_refund: {
         Args: { _reason?: string; _trip_id: string }
         Returns: undefined
