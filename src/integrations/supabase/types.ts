@@ -789,6 +789,21 @@ export type Database = {
         }
         Relationships: []
       }
+      fin_bank_holidays: {
+        Row: {
+          holiday_date: string
+          label: string
+        }
+        Insert: {
+          holiday_date: string
+          label: string
+        }
+        Update: {
+          holiday_date?: string
+          label?: string
+        }
+        Relationships: []
+      }
       fin_charges: {
         Row: {
           amount_cents: number
@@ -927,7 +942,9 @@ export type Database = {
         Row: {
           id: boolean
           medicaid_hold_days: number
+          medicaid_net_business_days: number
           platform_fee_bps: number
+          standard_hold_days: number
           standard_hold_hours: number
           updated_at: string
           updated_by: string | null
@@ -935,7 +952,9 @@ export type Database = {
         Insert: {
           id?: boolean
           medicaid_hold_days?: number
+          medicaid_net_business_days?: number
           platform_fee_bps?: number
+          standard_hold_days?: number
           standard_hold_hours?: number
           updated_at?: string
           updated_by?: string | null
@@ -943,7 +962,9 @@ export type Database = {
         Update: {
           id?: boolean
           medicaid_hold_days?: number
+          medicaid_net_business_days?: number
           platform_fee_bps?: number
+          standard_hold_days?: number
           standard_hold_hours?: number
           updated_at?: string
           updated_by?: string | null
@@ -1958,6 +1979,137 @@ export type Database = {
           service_types?: string[]
           status?: string
           zip_code?: string | null
+        }
+        Relationships: []
+      }
+      provider_balance_entries: {
+        Row: {
+          amount_cents: number
+          available_at: string | null
+          cashout_id: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["fin_ledger_kind"]
+          note: string | null
+          provider_user_id: string
+          state: Database["public"]["Enums"]["fin_ledger_state"]
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          available_at?: string | null
+          cashout_id?: string | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["fin_ledger_kind"]
+          note?: string | null
+          provider_user_id: string
+          state: Database["public"]["Enums"]["fin_ledger_state"]
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          available_at?: string | null
+          cashout_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["fin_ledger_kind"]
+          note?: string | null
+          provider_user_id?: string
+          state?: Database["public"]["Enums"]["fin_ledger_state"]
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_balance_entries_cashout_id_fkey"
+            columns: ["cashout_id"]
+            isOneToOne: false
+            referencedRelation: "provider_cashouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_balance_entries_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "provider_balance_entries_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_balance_entries_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_balances: {
+        Row: {
+          available_cents: number
+          lifetime_paid_out_cents: number
+          pending_cents: number
+          provider_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          available_cents?: number
+          lifetime_paid_out_cents?: number
+          pending_cents?: number
+          provider_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          available_cents?: number
+          lifetime_paid_out_cents?: number
+          pending_cents?: number
+          provider_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_cashouts: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          failure_reason: string | null
+          id: string
+          provider_user_id: string
+          requested_at: string
+          status: Database["public"]["Enums"]["fin_cashout_status"]
+          stripe_transfer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          provider_user_id: string
+          requested_at?: string
+          status?: Database["public"]["Enums"]["fin_cashout_status"]
+          stripe_transfer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          provider_user_id?: string
+          requested_at?: string
+          status?: Database["public"]["Enums"]["fin_cashout_status"]
+          stripe_transfer_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -4287,17 +4439,11 @@ export type Database = {
     Views: {
       admin_fin_ledger: {
         Row: {
-          assigned_to: string | null
           created_at: string | null
-          created_by: string | null
-          display_id: string | null
-          fin_completed_at: string | null
           fin_gross_cents: number | null
           fin_is_medicaid: boolean | null
-          fin_locked_at: string | null
           fin_medicaid_funds_received_at: string | null
           fin_payer_kind: Database["public"]["Enums"]["fin_payer_kind"] | null
-          fin_payer_user_id: string | null
           fin_payment_source: string | null
           fin_payment_state:
             | Database["public"]["Enums"]["fin_payment_state"]
@@ -4309,22 +4455,16 @@ export type Database = {
           fin_platform_fee_cents: number | null
           fin_provider_net_cents: number | null
           fin_referral_fee_cents: number | null
-          pickup_date: string | null
+          provider_user_id: string | null
           trip_id: string | null
           trip_status: string | null
         }
         Insert: {
-          assigned_to?: string | null
           created_at?: string | null
-          created_by?: string | null
-          display_id?: string | null
-          fin_completed_at?: string | null
           fin_gross_cents?: number | null
           fin_is_medicaid?: boolean | null
-          fin_locked_at?: string | null
           fin_medicaid_funds_received_at?: string | null
           fin_payer_kind?: Database["public"]["Enums"]["fin_payer_kind"] | null
-          fin_payer_user_id?: string | null
           fin_payment_source?: string | null
           fin_payment_state?:
             | Database["public"]["Enums"]["fin_payment_state"]
@@ -4336,22 +4476,16 @@ export type Database = {
           fin_platform_fee_cents?: number | null
           fin_provider_net_cents?: number | null
           fin_referral_fee_cents?: number | null
-          pickup_date?: string | null
+          provider_user_id?: string | null
           trip_id?: string | null
           trip_status?: string | null
         }
         Update: {
-          assigned_to?: string | null
           created_at?: string | null
-          created_by?: string | null
-          display_id?: string | null
-          fin_completed_at?: string | null
           fin_gross_cents?: number | null
           fin_is_medicaid?: boolean | null
-          fin_locked_at?: string | null
           fin_medicaid_funds_received_at?: string | null
           fin_payer_kind?: Database["public"]["Enums"]["fin_payer_kind"] | null
-          fin_payer_user_id?: string | null
           fin_payment_source?: string | null
           fin_payment_state?:
             | Database["public"]["Enums"]["fin_payment_state"]
@@ -4363,7 +4497,7 @@ export type Database = {
           fin_platform_fee_cents?: number | null
           fin_provider_net_cents?: number | null
           fin_referral_fee_cents?: number | null
-          pickup_date?: string | null
+          provider_user_id?: string | null
           trip_id?: string | null
           trip_status?: string | null
         }
@@ -4581,6 +4715,26 @@ export type Database = {
       }
       ensure_member_display_id: { Args: never; Returns: string }
       escalate_overdue_compliance_reviews: { Args: never; Returns: undefined }
+      fin_admin_adjust_balance: {
+        Args: { _amount_cents: number; _note: string; _provider: string }
+        Returns: undefined
+      }
+      fin_admin_force_release: {
+        Args: { _trip_id: string }
+        Returns: undefined
+      }
+      fin_business_days_from: {
+        Args: { _days: number; _start: string }
+        Returns: string
+      }
+      fin_complete_cashout: {
+        Args: { _cashout_id: string; _transfer_id: string }
+        Returns: undefined
+      }
+      fin_fail_cashout: {
+        Args: { _cashout_id: string; _reason: string }
+        Returns: undefined
+      }
       fin_get_settings: {
         Args: never
         Returns: {
@@ -4589,15 +4743,25 @@ export type Database = {
           standard_hold_hours: number
         }[]
       }
-      fin_mark_paid: {
-        Args: {
-          _amount_cents: number
-          _external_ref?: string
-          _source: string
-          _trip_id: string
-        }
-        Returns: string
+      fin_mark_cashout_processing: {
+        Args: { _cashout_id: string }
+        Returns: undefined
       }
+      fin_mark_medicaid_received: {
+        Args: { _received_at?: string; _trip_id: string }
+        Returns: undefined
+      }
+      fin_mark_paid:
+        | {
+            Args: {
+              _amount_cents: number
+              _external_ref?: string
+              _source: string
+              _trip_id: string
+            }
+            Returns: string
+          }
+        | { Args: { _source?: string; _trip_id: string }; Returns: undefined }
       fin_refund: {
         Args: { _reason?: string; _trip_id: string }
         Returns: undefined
@@ -4606,6 +4770,8 @@ export type Database = {
         Args: { _transfer_ref?: string; _trip_id: string }
         Returns: string
       }
+      fin_release_to_balance: { Args: { _trip_id: string }; Returns: undefined }
+      fin_request_cashout: { Args: { _amount_cents: number }; Returns: string }
       fin_set_amounts: {
         Args: {
           _gross_cents: number
@@ -4824,7 +4990,20 @@ export type Database = {
         | "equipment"
         | "dme"
         | "other"
+      fin_cashout_status:
+        | "requested"
+        | "processing"
+        | "paid"
+        | "failed"
+        | "cancelled"
       fin_charge_status: "pending" | "succeeded" | "failed" | "refunded"
+      fin_ledger_kind:
+        | "hold"
+        | "release"
+        | "cashout"
+        | "reversal"
+        | "adjustment"
+      fin_ledger_state: "pending" | "available" | "paid_out" | "reversed"
       fin_payer_kind:
         | "patient"
         | "facility"
@@ -4837,7 +5016,9 @@ export type Database = {
         | "none"
         | "holding"
         | "releasable"
+        | "released_to_balance"
         | "paid_out"
+        | "cashed_out"
         | "cancelled"
       fin_payout_status: "pending" | "released" | "failed" | "reversed"
       membership_tier: "none" | "free" | "paid"
@@ -5001,7 +5182,16 @@ export const Constants = {
         "dme",
         "other",
       ],
+      fin_cashout_status: [
+        "requested",
+        "processing",
+        "paid",
+        "failed",
+        "cancelled",
+      ],
       fin_charge_status: ["pending", "succeeded", "failed", "refunded"],
+      fin_ledger_kind: ["hold", "release", "cashout", "reversal", "adjustment"],
+      fin_ledger_state: ["pending", "available", "paid_out", "reversed"],
       fin_payer_kind: [
         "patient",
         "facility",
@@ -5015,7 +5205,9 @@ export const Constants = {
         "none",
         "holding",
         "releasable",
+        "released_to_balance",
         "paid_out",
+        "cashed_out",
         "cancelled",
       ],
       fin_payout_status: ["pending", "released", "failed", "reversed"],
