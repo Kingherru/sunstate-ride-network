@@ -112,6 +112,7 @@ type TabId =
   | "pricing"
   | "integrations"
   | "payouts"
+  | "ledger"
   | "content"
   | "seo"
   | "blog"
