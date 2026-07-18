@@ -415,10 +415,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     if (tab !== "changelog" && !allowedTabs.includes(tab)) setTab(allowedTabs[0]);
   }, [allowedTabs, tab]);
 
-  // All signed-in users (including soft-access providers) can create trips.
-  // Referral acceptance / assignment is what requires approved-provider
-  // status, and that's enforced server-side by is_approved_provider.
-  const canSend = !!profile;
+  // All signed-in users — including Free Plan providers — can create trips.
+  // Membership only gates premium tools (e.g. Integrations) and receiving
+  // referrals / opportunities. Referral acceptance / assignment is enforced
+  // server-side by is_approved_provider.
+  const canSend = !!userId;
+  const canUsePaidTools = profile?.membership_status === "active" && (profile as any)?.membership_tier === "paid";
+
 
   const realTrips = tripsQ.data ?? [];
   const sent = realTrips.filter((t) => t.created_by === userId);
