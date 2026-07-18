@@ -44,6 +44,7 @@ import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 import { AdminPayoutQueue } from "@/components/admin/AdminPayoutQueue";
 import { AdminFinanceConsole } from "@/components/admin/AdminFinanceConsole";
+import { AdminFinanceMonitoring } from "@/components/admin/AdminFinanceMonitoring";
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
