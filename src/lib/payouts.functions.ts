@@ -182,7 +182,7 @@ export const releaseTripPayout = createServerFn({ method: "POST" })
     const eligibleAt = new Date(Date.now() + holdHours * 3600 * 1000).toISOString();
 
     // Validation gates. If any fail, park the payout on hold instead of scheduling it.
-    const gateReasons = validatePayoutGates(t, /*captured*/ t.payment_status === "confirmed" ? grossCents : 0, netCents, netCents);
+    const gateReasons = validatePayoutGates(t, /*captured*/ ["paid","validated"].includes(t.payment_status) ? grossCents : 0, netCents, netCents);
 
     await supabaseAdmin
       .from("trips")
