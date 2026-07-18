@@ -388,6 +388,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
     case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
+    case "ledger": return caps.isOps ? <AdminFinancialLedger /> : <NoAccess />;
     case "payouts": return caps.isAdmin ? (
       <div className="space-y-6">
         <AdminPayoutQueue />
