@@ -73,6 +73,7 @@ import { Route as ApiPublicWebhooksDispatchRouteImport } from './routes/api/publ
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksReleaseEligiblePayoutsRouteImport } from './routes/api/public/hooks/release-eligible-payouts'
 import { Route as ApiPublicHooksFinReleaseTickRouteImport } from './routes/api/public/hooks/fin-release-tick'
+import { Route as ApiPublicHooksFinCashoutTickRouteImport } from './routes/api/public/hooks/fin-cashout-tick'
 import { Route as AuthenticatedReservationsIdReviewRouteImport } from './routes/_authenticated/reservations.$id.review'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
@@ -412,6 +413,12 @@ const ApiPublicHooksFinReleaseTickRoute =
     path: '/api/public/hooks/fin-release-tick',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksFinCashoutTickRoute =
+  ApiPublicHooksFinCashoutTickRouteImport.update({
+    id: '/api/public/hooks/fin-cashout-tick',
+    path: '/api/public/hooks/fin-cashout-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedReservationsIdReviewRoute =
   AuthenticatedReservationsIdReviewRouteImport.update({
     id: '/reservations/$id/review',
@@ -487,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
+  '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -551,6 +559,7 @@ export interface FileRoutesByTo {
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
+  '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -621,6 +630,7 @@ export interface FileRoutesById {
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
+  '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -691,6 +701,7 @@ export interface FileRouteTypes {
     | '/learn/'
     | '/requests/'
     | '/reservations/$id/review'
+    | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
@@ -755,6 +766,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/requests'
     | '/reservations/$id/review'
+    | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
@@ -824,6 +836,7 @@ export interface FileRouteTypes {
     | '/_authenticated/learn/'
     | '/_authenticated/requests/'
     | '/_authenticated/reservations/$id/review'
+    | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
@@ -872,6 +885,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
   ApiPublicHooksFinReleaseTickRoute: typeof ApiPublicHooksFinReleaseTickRoute
   ApiPublicHooksReleaseEligiblePayoutsRoute: typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -1335,6 +1349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksFinReleaseTickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/fin-cashout-tick': {
+      id: '/api/public/hooks/fin-cashout-tick'
+      path: '/api/public/hooks/fin-cashout-tick'
+      fullPath: '/api/public/hooks/fin-cashout-tick'
+      preLoaderRoute: typeof ApiPublicHooksFinCashoutTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/reservations/$id/review': {
       id: '/_authenticated/reservations/$id/review'
       path: '/reservations/$id/review'
@@ -1486,6 +1507,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
   ApiPublicHooksFinReleaseTickRoute: ApiPublicHooksFinReleaseTickRoute,
   ApiPublicHooksReleaseEligiblePayoutsRoute:
     ApiPublicHooksReleaseEligiblePayoutsRoute,

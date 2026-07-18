@@ -1,97 +1,106 @@
 
 ## Goal
 
-Delete the existing payment/payout code and rebuild it as one clean, secure, easy-to-follow system. The trip stays the single source of truth for money — but every rule, fee calculation, status, and workflow is replaced, not patched.
+Redesign the entire trip/delivery payment + payout system so **My Florida NEMT (MFN) collects and holds all money**, validates every trip, and releases provider earnings into a **Provider Balance** the provider can cash out on demand. Same workflow for every trip; only the hold timing changes for Medicaid.
 
-## Step 1 — Audit what exists today (so we know what to remove)
-
-Current payment/payout surface (from prior work in this project):
-
-**Database (trips table & related):**
-- Financial columns on `trips`: `cost_total`, `cost_breakdown`, `estimated_cost_cents`, `provider_payout_cents`, `platform_fee_cents`, `referral_fee_cents`, `referral_fee_source_user_id`, `payment_status`, `payout_status`, `payout_eligible_at`, `payout_released_at`, `payout_hold_reasons`, `payout_is_medicaid`, `payout_validated_at/by`, `payout_released_by`, `payer_kind`, `payer_user_id`, `payment_source`, `financial_locked_at`, `medicaid_remit_received_at`.
-- Related tables: `trip_payments`, `trip_quotes`, `provider_payout_accounts`, `provider_payout_transfers`, `provider_pricing`, `platform_settings` (platform_fee_pct), `subscriptions`, `stripe_customers`, `payer_stripe_customers`, `payer_payment_methods`, `saved_payment_methods`.
-- Triggers: `snapshot_trip_referral_fee`, `prevent_trip_financial_self_edit`, `lock_trip_financials_after_release`, `prevent_payout_transfer_client_write`, `prevent_trip_self_assignment`.
-- Views/RPCs: `trip_financial_ledger`, `set_trip_payment_status`, `attemptTripPayoutRelease`, cron job auto-releasing payouts every 15 min.
-
-**Server functions & routes:**
-- `src/lib/payouts.ts`, `payouts.functions.ts`, `payouts.server.ts` — platform fee %, payout math, release logic, validation.
-- `src/lib/platform-fee.functions.ts` — reads settings.
-- `src/utils/payments.functions.ts` — Stripe checkout session for memberships.
-- `src/lib/saved-payments.functions.ts` — `payForConfirmedTrip` (per-trip charge).
-- `src/routes/api/public/hooks/release-eligible-payouts.ts` — cron endpoint.
-- `src/routes/api/public/payments/webhook.ts` — Stripe webhook.
-- Referral fee snapshot + `TripFinancialBreakdown.tsx`, `ReferralReviewModal.tsx`.
-
-**UI:**
-- `PaymentStatusControl`, `PayTripButton`, `AdminPayoutQueue`, `AdminFinancialLedger`, `PayoutsPanel`, `TripFinancialBreakdown`, `ReferralFeeCard`, membership pricing UI.
-- Membership subscriptions (Stripe) are separate and stay — this rebuild is trip-money only.
-
-All of the above is being torn down (except memberships/Stripe Connect client scaffolding).
-
-## Step 2 — New architecture (clean rewrite)
-
-**Principle:** One trip = one money record. Money flows: **Payer → MFN → Provider**. Providers never pay each other directly.
-
-### Statuses (single lifecycle per trip)
+## Money-flow (one record per trip)
 
 ```text
-payment_state:  none → invoiced → paid → validated → refunded
-payout_state:   none → holding → releasable → paid_out → cancelled
+Payer (patient/facility/broker/self-pay/Medicaid)
+        │  charge
+        ▼
+   MFN platform account  ── platform fee + referral fee retained
+        │  after: trip completed + validated + hold expired
+        ▼
+   Provider Balance (on-platform ledger, per provider)
+        │  provider clicks "Cash out"
+        ▼
+   Provider bank via Stripe Connect transfer
 ```
 
-- `payment_state` is set by MFN when funds are received/verified.
-- `payout_state` moves independently once payment is `validated` AND hold window passes.
+- **Standard trips & medical deliveries:** funds move into Provider Balance **3 calendar days** after validation.
+- **Medicaid trips:** funds move into Provider Balance **Net 15 business days** (excludes weekends + US federal banking holidays) after `medicaid_funds_received_at` is stamped by admin.
+- Providers **never** trigger transfers to themselves outside "Cash Out from balance". Cash-out is the ONLY provider-facing money button.
 
-### Fees (recomputed on the server, never trusted from the client)
+## Statuses (single lifecycle)
 
-- `platform_fee_bps` (basis points) stored per trip, snapshotted from `platform_settings.platform_fee_bps` at trip creation.
-- `referral_fee_bps` snapshotted from sending provider's saved default at creation.
-- Both stored as `int` bps (not floats). Provider net = `gross - platform_fee - referral_fee`.
+- `payment_state`: `none → invoiced → paid → validated → refunded`
+- `payout_state`: `none → holding → released_to_balance → cashed_out → cancelled`
+- Provider Balance entries: `pending` (holding) → `available` (released_to_balance) → `paid_out` (cashed_out).
 
-### Hold windows
+## Deliverables
 
-- Standard trips: `payout_hold_hours = 48` after trip `completed_at`.
-- Medicaid trips: `payout_hold_days = 15` after `medicaid_funds_received_at` (Net 15).
-- Provider payout is only `releasable` once BOTH hold + `payment_state = validated` are satisfied.
+### 1. Database migration (single migration)
 
-### Security (non-negotiable, enforced in DB)
+Additive on top of the existing `fin_*` schema built last turn:
 
-- All financial columns: `REVOKE UPDATE ... FROM authenticated, anon`. Only `service_role` writes them.
-- Trigger blocks self-assignment (creator = provider).
-- Trigger locks all fields once `payout_state = paid_out`.
-- No client-side function can mutate fees, payouts, or trigger transfers.
+- `fin_settings`: add `standard_hold_days int default 3`, `medicaid_net_business_days int default 15`.
+- `trips`: add `fin_medicaid_funds_received_at timestamptz`, keep `fin_payout_hold_until`.
+- New `provider_balances` (one row per provider): `available_cents`, `pending_cents`, `lifetime_paid_out_cents`, `updated_at`.
+- New `provider_balance_entries` (ledger): `provider_user_id`, `trip_id nullable`, `cashout_id nullable`, `kind` (`hold`,`release`,`cashout`,`reversal`,`adjustment`), `amount_cents` (signed), `state` (`pending`/`available`/`paid_out`/`reversed`), `available_at`, `note`, timestamps.
+- New `provider_cashouts`: `provider_user_id`, `amount_cents`, `stripe_transfer_id`, `status` (`requested`/`processing`/`paid`/`failed`), `failure_reason`, `requested_at`, `completed_at`.
+- New SQL helpers (SECURITY DEFINER, service/admin only):
+  - `fin_business_days_from(_start timestamptz, _days int) returns timestamptz` — skips Sat/Sun + `fin_bank_holidays` table (seed with 2026-2028 US federal holidays).
+  - `fin_validate_payment(_trip_id)` — sets `payment_state='validated'`, computes `fin_payout_hold_until` using either standard days or Net-15 business days depending on `fin_is_medicaid`, inserts a `pending` ledger entry, bumps `pending_cents`.
+  - `fin_mark_medicaid_received(_trip_id, _received_at)` — admin only, recomputes hold for Medicaid trip.
+  - `fin_release_to_balance(_trip_id)` — moves ledger entry `pending→available`, decrements `pending_cents`, increments `available_cents`, sets `payout_state='released_to_balance'`. Called by cron.
+  - `fin_request_cashout(_amount_cents)` — provider RPC, atomic: checks `available_cents >= amount`, inserts `provider_cashouts` row, ledger `cashout` entry (`paid_out`, negative), decrements `available_cents`.
+  - `fin_complete_cashout(_cashout_id, _transfer_id)` / `fin_fail_cashout(_id,_reason)` — service only, called after Stripe transfer resolves.
+  - `fin_refund(_trip_id, _reason)` — reverses any ledger entry for that trip; if already `paid_out`, marks debt against provider balance.
+- RLS + GRANTs:
+  - `provider_balances`, `provider_balance_entries`, `provider_cashouts`: SELECT for `authenticated` where `provider_user_id = auth.uid()`; full access to `service_role`; admin SELECT via `has_role`. No direct INSERT/UPDATE from `authenticated` — all mutations through RPCs.
+  - Revoke `EXECUTE` on all `fin_*` RPCs from `anon`/`public`; grant only what providers need (`fin_request_cashout`).
+- Trigger: hard-lock `provider_cashouts` from client UPDATE; only service_role writes status.
 
-## Step 3 — Implementation order
+### 2. Cron
 
-1. **Migration A — Teardown**: drop old triggers, RPCs, columns, and the `trip_financial_ledger` view. Drop `trip_payments`, `trip_quotes`, `provider_payout_transfers` (data preserved via `_legacy` schema rename for audit).
-2. **Migration B — New schema**:
-   - `trip_finance` columns on `trips`: `gross_cents`, `platform_fee_bps`, `platform_fee_cents`, `referral_fee_bps`, `referral_fee_cents`, `provider_net_cents`, `payer_kind`, `payer_user_id`, `payment_source`, `payment_state`, `payout_state`, `payout_hold_until`, `is_medicaid`, `medicaid_funds_received_at`, `completed_at`, `finalized_at`.
-   - New tables: `trip_charges` (each inbound payment attempt), `provider_payouts` (each outbound transfer). Both audit-only from client.
-   - New RPCs (SECURITY DEFINER, admin/service only): `finance_snapshot_on_create`, `finance_mark_paid`, `finance_validate`, `finance_release_payout`, `finance_refund`.
-   - New view `admin_trip_finance` gated to admin.
-   - Full GRANT + RLS block.
-3. **Server code**:
-   - Delete `payouts.ts`, `payouts.functions.ts`, `payouts.server.ts`, `platform-fee.functions.ts`, `saved-payments.functions.ts` (payForConfirmedTrip only), old release-eligible-payouts cron.
-   - Add `src/lib/finance/` module: `constants.ts`, `math.ts`, `finance.functions.ts` (thin client-callable readers), `finance.server.ts` (privileged writers).
-   - New cron `api/public/hooks/finance-release-tick.ts` runs every 15 min, calls `finance_release_payout` for all eligible trips.
-   - Stripe webhook rewired to call `finance_mark_paid` only.
-4. **UI**:
-   - Delete `AdminPayoutQueue`, `AdminFinancialLedger`, `PaymentStatusControl`, `PayTripButton`, `TripFinancialBreakdown`, `ReferralReviewModal`, `PayoutsPanel`, `ReferralFeeCard`.
-   - Build fresh: `TripMoneyCard` (provider view — read-only breakdown + statuses), `AdminFinanceConsole` (single admin page: search, filter, one row per trip with all money data + admin actions), `ProviderPayoutsPanel` (list of `provider_payouts` with status).
-   - Update `NewTripForm` to show the new server-computed breakdown (call a `previewTripFinance` server fn instead of client math).
-5. **Docs**: Update `.lovable/plan.md` with the new money-flow diagram; update security memory to reflect the new locked-down surface.
+Replace `fin-release-tick` cron logic to call `fin_release_to_balance` for every trip where `fin_payment_state='validated'` and `fin_payout_hold_until <= now()` and `payout_state='holding'`. Keep the same `/api/public/hooks/fin-release-tick` route + token.
 
-## Technical details
+Add a new cron (every 5 min) hitting `/api/public/hooks/fin-cashout-tick` that iterates `provider_cashouts` in `requested` status, creates the Stripe transfer via `createStripeClient`, then calls `fin_complete_cashout`/`fin_fail_cashout`.
 
-- All money stored as `int cents`, all rates as `int bps`.
-- Every finance mutation goes through a SECURITY DEFINER RPC that logs to `staff_audit_log`.
-- Legacy data preserved in `_legacy_finance` schema for 90 days (read-only, admin-only).
-- Membership Stripe flow untouched.
+### 3. Server functions (`src/lib/finance/finance.functions.ts` — extend)
 
-## Out of scope for this rebuild
+- `getMyProviderBalance()` — auth'd read of the caller's `provider_balances` row + last 20 ledger entries + last 20 cashouts + expected payout dates (derived from `pending` ledger entries).
+- `requestCashout({ amount_cents })` — wraps `fin_request_cashout` RPC.
+- `adminMarkMedicaidFundsReceived({ trip_id, received_at })` — admin only.
+- `adminAdjustBalance({ provider_user_id, amount_cents, note })` — admin only, ledger `adjustment`.
+- Existing `setTripAmounts`, `validateTripPayment`, `refundTrip` stay; `releaseTripPayout` is removed (release is now automatic via cron; admin can call a new `adminForceRelease` for edge cases).
 
-- Membership subscriptions & pricing.
-- Stripe Connect onboarding UI (kept as-is; only the payout call surface changes).
-- Driver earnings reports.
+### 4. Stripe webhook
 
-Approve this and I'll execute Steps 1–5 in order.
+`/api/public/payments/webhook` `checkout.session.completed` / `payment_intent.succeeded` for a trip charge → call `fin_mark_paid` (existing). Admin still triggers `fin_validate_payment` after review; auto-validate for card-paid non-Medicaid trips can be added later.
+
+### 5. UI
+
+- **Provider Portal** → new **Balance** tab (`src/components/dashboard/ProviderBalancePanel.tsx`):
+  - Available / Pending / Lifetime paid-out cards.
+  - "Cash out" button → modal (amount, defaults to available), disabled when < $1.
+  - Expected payout dates table (from pending ledger).
+  - Cashout history + ledger.
+- **Admin Portal** → replace `AdminFinanceConsole.tsx`:
+  - Per-trip view with statuses, validate/refund actions.
+  - Per-provider balances view with adjust + force-release.
+  - Medicaid trips view with "Mark Medicaid funds received" action.
+- Delete `PaymentStatusControl`, `PayTripButton` self-serve payout paths, `AdminPayoutQueue`, `PayoutsPanel` (replaced by ProviderBalancePanel).
+- Update banner copy in dashboard: providers see "Earnings go to your Provider Balance after a 3-day hold (Net 15 business days for Medicaid). Cash out anytime."
+
+### 6. Housekeeping
+
+- Legacy `payouts.*` files: mark as deprecated, remove imports from active surfaces (they already read dormant columns).
+- Update `.lovable/plan.md` and `mem://` core rule to reference the Provider Balance model.
+
+## Out of scope
+
+- Membership subscriptions (untouched).
+- Stripe Connect onboarding UI (untouched — cash-out uses existing connected accounts).
+- Historic trip financial columns (`cost_total`, `provider_payout_cents`) stay as read-only history.
+
+## Order of execution
+
+1. Migration (schema + RPCs + RLS + seed holidays).
+2. Cron routes (`fin-release-tick` rewrite + new `fin-cashout-tick`) + pg_cron schedule.
+3. Server functions extension.
+4. `ProviderBalancePanel` + Admin console rewrite + dashboard wiring.
+5. Remove legacy payout UI surfaces.
+
+Approve and I'll execute in that order.

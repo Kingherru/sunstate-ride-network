@@ -19,6 +19,7 @@ import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProv
 
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
+import { ProviderBalancePanel } from "@/components/dashboard/ProviderBalancePanel";
 import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
@@ -665,7 +666,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             )}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
-            {tab === "payouts" && <PayoutsPanel userId={userId!} />}
+            {tab === "payouts" && (
+              <div className="space-y-8">
+                <ProviderBalancePanel />
+                <PayoutsPanel userId={userId!} />
+              </div>
+            )}
             {tab === "integrations" && (canUsePaidTools ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "payers" && <ContactsAndPayersPanel portal={portal} initialSubTab="payers" />}
@@ -2572,7 +2578,12 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
       {subTab === "rules" && isProvider && <RulesPanel />}
       {subTab === "integrations" && isProvider && <IntegrationsPanel />}
-      {subTab === "payouts" && isProvider && <PayoutsPanel userId={userId} />}
+      {subTab === "payouts" && isProvider && (
+        <div className="space-y-8">
+          <ProviderBalancePanel />
+          <PayoutsPanel userId={userId} />
+        </div>
+      )}
 
       {subTab === "membership" && isProvider && (
         <MembershipsTab profile={profile} />
