@@ -2578,7 +2578,12 @@ function AccountPanel({ profile, portal, userId }: { profile: Profile; portal: P
       )}
       {subTab === "rules" && isProvider && <RulesPanel />}
       {subTab === "integrations" && isProvider && <IntegrationsPanel />}
-      {subTab === "payouts" && isProvider && <PayoutsPanel userId={userId} />}
+      {subTab === "payouts" && isProvider && (
+        <div className="space-y-8">
+          <ProviderBalancePanel />
+          <PayoutsPanel userId={userId} />
+        </div>
+      )}
 
       {subTab === "membership" && isProvider && (
         <MembershipsTab profile={profile} />
