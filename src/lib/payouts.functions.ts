@@ -133,7 +133,7 @@ function validatePayoutGates(t: TripRow, capturedCents: number, expectedNetCents
   if (t.status !== "completed") reasons.push("trip_not_completed");
   if (!t.assigned_to) reasons.push("no_provider_assigned");
   if (t.assigned_to && t.created_by && t.assigned_to === t.created_by) reasons.push("provider_is_trip_creator");
-  if (t.payment_status !== "confirmed") reasons.push("payment_not_captured");
+  if (!["paid","validated"].includes(t.payment_status)) reasons.push("payment_not_captured");
   const grossCents = Math.round(Number(t.cost_total ?? 0) * 100);
   if (grossCents <= 0) reasons.push("no_fare_amount");
   if (capturedCents > 0 && capturedCents < grossCents) reasons.push("captured_amount_less_than_fare");
