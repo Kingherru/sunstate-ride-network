@@ -1,88 +1,132 @@
 
-# Medical Pickups & Deliveries
+# Payment & Payout System — Audit and Simplification Plan
 
-Treat "medical delivery" as a first-class trip category alongside patient transportation, wired end-to-end: schema → create forms (patient/facility/provider) → dispatch/admin/zone-manager → provider pricing → payouts → a new SEO landing page.
+## 1. Audit findings (how money moves today)
 
-## 1. Data model
+**Trip financial columns (already exist on `trips`)**
+- `cost_total`, `cost_breakdown`, `estimated_cost_cents`
+- `payment_status` (`unpaid | authorized | paid | refunded | failed`)
+- `provider_payout_cents`, `platform_fee_cents`, `referral_fee_cents`, `referral_fee_source_user_id`
+- `payout_status` (`pending | held | released | failed`), `payout_eligible_at`, `payout_hold_reasons[]`, `payout_is_medicaid`, `payout_validated_at/by`, `payout_released_at/by`, `payout_transfer_id`
 
-Add `trip_kind` to trips so delivery and passenger trips share one pipeline (status, assignment, quotes, payouts, RLS, referrals) but branch on kind where it matters.
+**Supporting tables**
+- `trip_payments` — inbound charges (Stripe payment intents from patient/facility/broker)
+- `provider_payout_transfers` — outbound Stripe transfers to providers
+- `trip_quotes` — provider-submitted price quotes requiring approval
+- `platform_settings.platform_fee_pct` — global platform fee %
+- `member_profiles.referral_fee_type/amount` — referral defaults per sender
 
-- `public.trip_kind` enum: `passenger` (default), `medical_delivery`.
-- `trips.trip_kind trip_kind not null default 'passenger'`.
-- Delivery-specific columns on `trips` (nullable, only used when `trip_kind='medical_delivery'`):
-  - `delivery_item_type` (`prescription | lab_sample | medical_supplies | equipment | dme | other`)
-  - `delivery_item_description text`
-  - `delivery_weight_lbs numeric`
-  - `delivery_temperature_sensitive boolean default false` (refrigerated/cold-chain)
-  - `delivery_hazmat boolean default false`
-  - `delivery_signature_required boolean default false`
-  - `delivery_recipient_name text`, `delivery_recipient_phone text`
-  - `delivery_proof_url text` (photo/signature uploaded on completion)
-- Mirror the same columns on `ride_requests` so public request forms and the promote-to-trip flow (`promote_ride_request_to_trip`) work without loss.
-- Extend `provider_pricing` with delivery rates:
-  - `delivery_enabled boolean default false`
-  - `delivery_base_cents integer`
-  - `delivery_per_mile_cents integer`
-  - `delivery_wait_cents integer`, `delivery_wait_unit` (reuse existing `wait_unit`)
-  - `delivery_min_fee_cents integer`
-  - `delivery_cold_chain_surcharge_cents integer`
-  - `delivery_signature_surcharge_cents integer`
-  - `delivery_rush_surcharge_cents integer`
-- Reuse existing status/quote/payout/RLS. Update `promote_ride_request_to_trip` and any triggers that copy fields between the two tables to carry the new columns and `trip_kind`.
+**Existing protections (good, keep)**
+- `prevent_trip_financial_self_edit` trigger — only service_role/admin can write financial columns
+- `prevent_trip_self_assignment` trigger + CHECK — creator ≠ assignee
+- `enforce_assigned_provider_is_approved` — no assignment to soft-access providers
+- `enforce_provider_credentials_on_assign` — expired credentials block
+- `prevent_payout_transfer_client_write` — only service can write transfers
+- `payouts.server.ts::attemptTripPayoutRelease` — idempotent, recomputes fees, honors hold window, double-payment guard
+- cron endpoint `/api/public/hooks/release-eligible-payouts` — auto-releases eligible non-Medicaid + Medicaid past Net-15
 
-## 2. Pricing engine
+**Problems observed**
+1. Payment scenarios (patient / facility / broker / Medicaid / referral) share `payment_status` values with no explicit *payer type* → admin can't see "who paid" at a glance.
+2. Medicaid vs standard trips share the same status field; Net-15 gating is implicit via `payout_eligible_at`.
+3. `payment_status = 'paid'` in DB vs `'confirmed'` used in `payouts.server.ts` gate — mismatch means Medicaid trips can never satisfy `payment_status !== 'confirmed'` check (bug: server checks `confirmed`, DB constraint only allows `paid`).
+4. No canonical `payer_kind` column; `payer` is free text.
+5. Admin financial view is scattered across `AdminPayoutQueue`, `AdminTripsPanels`, `MonthlyPayoutReport` — no single "one trip = one record" view.
+6. Referral fee is snapshotted only on INSERT — post-creation edits to sender's default don't reflect (correct, but not documented in UI).
+7. `PaymentStatusControl` allows manual toggling by non-admins in some contexts — needs role gate audit.
 
-Extend `src/lib/pricing.ts`:
+---
 
-- `DeliveryPricingRates` and `DEFAULT_DELIVERY_RATES` mirroring `PricingRates`.
-- `calculateDeliveryCost(trip, rates)`: base + mileage + wait + cold-chain + signature + rush, clamp to min fee.
-- `calculateTripCost` dispatches on `trip_kind`. Route the trip-review breakdown (`TripFinancialBreakdown`) through the same helper so client charge / referral fee / platform fee / net payout stay accurate for deliveries.
-- Server: `estimateTripPrice` and `submit_trip_quote` accept the new fields; server-side clamp (SoftAccess/security trigger from the earlier fix) keeps working.
+## 2. Target model — One Trip = One Financial Record
 
-## 3. Portal create flows
+Canonical lifecycle (single `payment_status` + `payout_status` pair per trip):
 
-Add a "What are you sending?" toggle at the top of the create form (Passenger / Medical Delivery). Selecting delivery swaps the passenger block for a delivery block; everything else (addresses, date/time, payer, HIPAA ack, referral fee breakdown) is shared.
+```text
+payment_status:  pending_invoice → invoiced → paid → validated → refunded/failed
+payout_status:   pending → held → approved → released → failed
+```
 
-- Patient portal (`request-a-ride` and dashboard "Request a ride"): expose delivery for prescriptions / DME the patient is arranging themselves.
-- Facility portal (`new` and CSV upload): full delivery fields, plus recipient contact.
-- Provider portal (dashboard "New trip"): delivery + the sender referral-fee/network breakdown already added.
-- Reuse existing components: `NewTripForm`, `PriceEstimate`, `TripFinancialBreakdown`, HIPAA ack, saved locations. Extend the Zod schema (`tripBaseSchema` in `src/lib/trips.functions.ts`) with the delivery fields and require them only when `trip_kind='medical_delivery'`.
+Unified flow:
 
-## 4. Admin / Dispatch / Zone Manager
+```text
+Trip created
+   ↓ (payer_kind determines path)
+Payment Required  →  Payment Received  →  Trip Completed
+   ↓                                          ↓
+Payment Validated (admin/auto)  →  Platform Fees Applied
+   ↓
+Provider Payout Approved  →  Provider Paid (Stripe transfer)
+```
 
-Same tables, one filter. No parallel workflow.
+Medicaid track diverges only at "Payment Received":
+```text
+Medicaid: Trip Completed → Awaiting Medicaid Remit → Funds Received → Net-15 Hold → Approved → Paid
+```
 
-- Trip lists (`AdminDispatchPanel`, dispatch queue, zone-manager assign screen) gain a "Kind" column with `Passenger` / `Delivery` badge and a filter.
-- Detail views render a delivery card (item type, weight, temperature, recipient) instead of the passenger card when `trip_kind='medical_delivery'`.
-- Referral-review modal, financial breakdown, payment collection, payouts, and monthly report already flow off `trips`; they only need the kind badge and the pricing branch.
-- Provider matching (`suggest_providers_for_trip`, ZIP coverage) works unchanged; add a soft preference: prefer providers with `delivery_enabled=true` when kind is delivery.
+---
 
-## 5. Provider settings
+## 3. Database changes (single migration)
 
-Under Account → Pricing, add a "Medical Deliveries" section: toggle `delivery_enabled`, set the delivery rate fields, plus a short explainer. Under Account → Business Information add a "Services offered" checkbox for Medical Deliveries so the provider-network directory can filter on it.
+Add to `trips`:
+- `payer_kind text` — enum-like: `patient | facility | broker | workers_comp | medicaid | provider_referral | provider_self`
+- `payer_user_id uuid` — who owes / paid (nullable for Medicaid)
+- `payment_source text` — `stripe_card | stripe_ach | medicaid_claim | broker_invoice | manual`
+- `financial_locked_at timestamptz` — set when payout released; blocks further edits even by admin without override flag
 
-## 6. Public SEO landing page
+Fix bug:
+- Update `attemptTripPayoutRelease` to check `payment_status IN ('paid','validated')` instead of `'confirmed'`.
 
-New route `src/routes/services.medical-deliveries.tsx` linked from the services index and main nav.
+Add derived view `trip_financial_ledger` (SECURITY INVOKER) with columns:
+`trip_id, display_id, payer_kind, payer_name, payment_source, gross_cents, platform_fee_cents, referral_fee_cents, provider_payout_cents, payment_status, payout_status, provider_name, referral_source_name, completed_at, paid_at, released_at, hold_reasons`
 
-- H1: "Start Sending Medical Deliveries in Florida".
-- Sections: what qualifies (prescriptions, lab & specimen samples, medical supplies, DME, equipment, other healthcare items), who it's for (pharmacies, labs, clinics, hospitals, DME suppliers, home-health), how it works (request → matched provider → tracked → proof of delivery), coverage map, pricing model, compliance (HIPAA-aware handoff), FAQ, dual CTAs ("Start sending deliveries" → facility signup, "Become a delivery provider" → provider signup).
-- SEO head: unique title (~55 chars), meta description (~150 chars), canonical + og:url self-referencing `https://myfloridanemt.com/services/medical-deliveries`, og:title/description, og:type `website`, og:image (hero). JSON-LD: `Service` schema with `provider` = Organization + `areaServed` = Florida, plus `FAQPage`.
-- Add to `services.index.tsx`, header nav, footer, and sitemap; add an internal link from the facility signup and provider onboarding pages.
+Trigger `lock_trip_financials_after_release` — once `payout_status='released'`, block updates to any financial column (service_role bypass with explicit `financial_override=true` GUC).
 
-## 7. Rollout order
+Simplify `payment_status` constraint to include: `pending_invoice, invoiced, paid, validated, refunded, failed` (migrate existing `unpaid→pending_invoice`, `authorized→invoiced`).
 
-1. Migration (enum, columns on `trips` / `ride_requests` / `provider_pricing`, updated `promote_ride_request_to_trip`).
-2. Pricing helpers + Zod schema + server fns.
-3. Create-flow UI on the three portals (shared component).
-4. Admin / Dispatch / Zone Manager list + detail branches.
-5. Provider pricing panel + services-offered toggle.
-6. Public SEO page + nav/sitemap.
+## 4. Server function changes
+
+- `src/lib/payouts.functions.ts` — add `validateTripPayment(tripId)` (admin) that moves `paid → validated` and sets `payout_status='approved'` for non-Medicaid, or schedules Net-15 for Medicaid.
+- `payouts.server.ts` — gate release on `payment_status='validated'` (not `confirmed`). Medicaid path requires `medicaid_remit_received_at` (new column) before Net-15 starts.
+- Remove any code path that lets a provider mutate `cost_total` outside `trip_quotes` approval flow (audit `pricing.functions.ts::recalcTripCost` — already safe, returns `quote_required:true`).
+
+## 5. Admin Financial View (new)
+
+New component `src/components/admin/AdminFinancialLedger.tsx` mounted under Admin → Finance tab:
+- Table over `trip_financial_ledger` view
+- Filters: payer_kind, payment_status, payout_status, date range, provider, Medicaid-only
+- Columns exactly matching user's request: Trip #, Amount, Who Paid, Source, Provider, Platform Fee, Referral Fee, Payout, Payment Status, Payout Status
+- Row actions (admin only): Validate Payment, Approve Payout, Release Now (override), Mark Medicaid Remit Received, View history
+- CSV export
+
+Consolidate `AdminPayoutQueue` into the same view as a filter preset ("Ready to release").
+
+## 6. Referral flow reinforcement
+
+- Provider A creates trip → single financial record with `payer_kind='provider_referral'`, `referral_fee_source_user_id=A`
+- Provider B reviews via `ReferralReviewModal` — must accept financial terms before `assigned_to` is set (already implemented; verify trigger prevents bypass)
+- Payment collected once from originating payer (or Provider A if they front it), platform + referral fee deducted, net to Provider B
+- No provider-to-provider Stripe transfers — platform is always the counterparty
+
+## 7. Permissions audit / hardening
+
+- Re-verify all financial columns are in the `prevent_trip_financial_self_edit` blocklist (add `payer_kind`, `payer_user_id`, `payment_source`, `financial_locked_at`)
+- Confirm `PaymentStatusControl` UI is admin-only (add `is_ops_staff` gate)
+- Confirm no server function accepts client-supplied payout amounts
+- Add DB unit check: `provider_payout_cents = gross - platform_fee - referral_fee` enforced by trigger
+
+## 8. UI copy / policy updates
+
+- Medicaid section: "Medicaid trips pay Net-15 after we receive remittance."
+- Payouts panel: show explicit stage (Pending → Held → Approved → Released) with hold reasons.
+- Referral review: show full 4-line breakdown (already done, verify).
+
+---
 
 ## Technical notes
 
-- Existing `is_approved_provider` + assignment trigger (soft-access) automatically apply to delivery trips.
-- Existing referral-fee snapshot columns and financial-breakdown lockdown apply unchanged.
-- Storage: reuse `provider-docs` bucket with `deliveries/{trip_id}/proof.jpg` for proof-of-delivery uploads; add narrow RLS matching trip participants.
-- No new pricing table — extending `provider_pricing` keeps one book per provider and one owner-manage policy.
-- All new public reads stay behind existing policies; no new anon grants.
+- Single migration: schema + view + trigger + data backfill for `payment_status` rename.
+- Update `types.ts` regenerates after migration approval.
+- Files touched: `payouts.server.ts`, `payouts.functions.ts`, `admin-trips.functions.ts`, new `AdminFinancialLedger.tsx`, wire into `admin.tsx`, minor edits to `PaymentStatusControl.tsx` and `AdminPayoutQueue.tsx` (deprecate in favor of ledger view).
+- No changes to Stripe webhook contract — only status-name mapping updated.
+- Backfill safe: no existing `payment_status='confirmed'` rows exist (verified against constraint).
+
+Once approved I'll open the migration first (needs your approval), then wire the server functions and admin view in a follow-up.
