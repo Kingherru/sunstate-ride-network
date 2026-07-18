@@ -158,6 +158,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Finance",
     items: [
       { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing },
+      { id: "ledger", label: "Financial ledger", icon: DollarSign, visible: (c) => c.isOps },
       { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps },
       { id: "integrations", label: "Integrations", icon: Plug, visible: (c) => c.isAdmin },
     ],
