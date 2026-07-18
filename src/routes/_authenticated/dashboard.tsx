@@ -666,7 +666,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             )}
             {tab === "pricing" && <PricingPanel />}
             {tab === "memberships" && <MembershipsTab profile={profile} />}
-            {tab === "payouts" && <PayoutsPanel userId={userId!} />}
+            {tab === "payouts" && (
+              <div className="space-y-8">
+                <ProviderBalancePanel />
+                <PayoutsPanel userId={userId!} />
+              </div>
+            )}
             {tab === "integrations" && (canUsePaidTools ? <IntegrationsPanel /> : <PaidOnly />)}
             {tab === "payments" && <PaymentsTab portal={portal} />}
             {tab === "payers" && <ContactsAndPayersPanel portal={portal} initialSubTab="payers" />}
