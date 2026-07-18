@@ -3053,6 +3053,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_cancellation_reasons: {
+        Row: {
+          canceled_at: string
+          comment: string | null
+          created_at: string
+          effective_at: string | null
+          environment: string | null
+          id: string
+          plan_tier: string | null
+          price_id: string | null
+          reason_code: string
+          reason_label: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          canceled_at?: string
+          comment?: string | null
+          created_at?: string
+          effective_at?: string | null
+          environment?: string | null
+          id?: string
+          plan_tier?: string | null
+          price_id?: string | null
+          reason_code: string
+          reason_label?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          canceled_at?: string
+          comment?: string | null
+          created_at?: string
+          effective_at?: string | null
+          environment?: string | null
+          id?: string
+          plan_tier?: string | null
+          price_id?: string | null
+          reason_code?: string
+          reason_label?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
