@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-// Stripe billing portal wiring removed — subscription management flows through /membership
+import { cancelMyMembership } from "@/utils/payments.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, updateTripDetails, recordHipaaAck } from "@/lib/trips.functions";
 import { ensureMyDisplayId } from "@/lib/system-ids.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
@@ -2929,10 +2930,21 @@ function PortalSidebar(props: {
 
 // ───────────────────────── Memberships tab ─────────────────────────
 
+const CANCEL_REASON_OPTIONS: Array<{ code: string; label: string }> = [
+  { code: "cost", label: "Too expensive" },
+  { code: "not_enough_trips", label: "Not receiving enough trips" },
+  { code: "no_longer_needed", label: "No longer need the service" },
+  { code: "technical_issues", label: "Technical issues" },
+  { code: "switching_services", label: "Switching to another service" },
+  { code: "other", label: "Other" },
+];
+
 function MembershipsTab({ profile }: { profile: Profile }) {
   const status = profile.membership_status ?? "inactive";
   const tier = (profile as any).membership_tier ?? "none";
   const isPaid = status === "active" && tier === "paid";
+  const periodEnd = (profile as any).current_period_end as string | null | undefined;
+  const [showCancel, setShowCancel] = useState(false);
 
   return (
     <div className="w-full space-y-6">
@@ -2950,11 +2962,28 @@ function MembershipsTab({ profile }: { profile: Profile }) {
             <div className="text-muted-foreground">Status</div>
             <div className="font-bold capitalize">{status}</div>
           </div>
+          {periodEnd && (
+            <div className="sm:col-span-2">
+              <div className="text-muted-foreground">Current period ends</div>
+              <div className="font-bold">{new Date(periodEnd).toLocaleDateString()}</div>
+            </div>
+          )}
         </div>
         {isPaid && (
-          <p className="text-sm text-muted-foreground pt-5 mt-5 border-t border-border">
-            You have full access to trip dispatch, CSV upload, and API integrations.
-          </p>
+          <>
+            <p className="text-sm text-muted-foreground pt-5 mt-5 border-t border-border">
+              You have full access to trip dispatch, CSV upload, and API integrations.
+            </p>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setShowCancel(true)}
+                className="text-sm font-bold text-destructive underline underline-offset-4 hover:no-underline"
+              >
+                Cancel membership
+              </button>
+            </div>
+          </>
         )}
       </div>
 
@@ -2991,9 +3020,196 @@ function MembershipsTab({ profile }: { profile: Profile }) {
           </Link>
         </div>
       )}
+
+      {showCancel && (
+        <CancelMembershipDialog
+          periodEnd={periodEnd ?? null}
+          onClose={() => setShowCancel(false)}
+        />
+      )}
     </div>
   );
 }
+
+function CancelMembershipDialog({
+  periodEnd,
+  onClose,
+}: {
+  periodEnd: string | null;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const cancelFn = useServerFn(cancelMyMembership);
+  const [step, setStep] = useState<"reason" | "confirm" | "done">("reason");
+  const [reason, setReason] = useState<string>("");
+  const [comment, setComment] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+  const [effectiveAt, setEffectiveAt] = useState<string | null>(periodEnd);
+
+  const endLabel = effectiveAt
+    ? new Date(effectiveAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+    : "the end of your current billing period";
+
+  async function submit() {
+    if (!reason) return;
+    setBusy(true);
+    try {
+      const res = await cancelFn({
+        data: {
+          environment: getStripeEnvironment(),
+          reason_code: reason,
+          comment: comment.trim() || undefined,
+        },
+      });
+      if ("error" in res) throw new Error(res.error);
+      setEffectiveAt(res.effective_at);
+      setStep("done");
+      qc.invalidateQueries({ queryKey: ["member-profile"] });
+    } catch (err: any) {
+      toast.error(err.message ?? "Could not cancel membership");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="bg-card w-full sm:max-w-lg rounded-t-lg sm:rounded-sm border border-border p-6 max-h-[90vh] overflow-y-auto">
+        {step === "reason" && (
+          <>
+            <h3 className="text-lg font-extrabold tracking-tight">Cancel your membership</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              We'd love to know why you're leaving. Your feedback helps us improve.
+            </p>
+            <fieldset className="mt-5 space-y-2">
+              <legend className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">
+                Reason for canceling *
+              </legend>
+              {CANCEL_REASON_OPTIONS.map((opt) => (
+                <label
+                  key={opt.code}
+                  className={`flex items-start gap-3 border rounded-sm p-3 cursor-pointer transition-colors ${
+                    reason === opt.code ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="cancel-reason"
+                    value={opt.code}
+                    checked={reason === opt.code}
+                    onChange={(e) => setReason(e.target.value)}
+                    className="mt-1"
+                  />
+                  <span className="text-sm font-medium">{opt.label}</span>
+                </label>
+              ))}
+            </fieldset>
+            <label className="block mt-4">
+              <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground block mb-1">
+                Additional comments (optional)
+              </span>
+              <textarea
+                className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background min-h-[80px]"
+                value={comment}
+                onChange={(e) => setComment(e.target.value.slice(0, 1000))}
+                placeholder="Tell us more about your experience…"
+                maxLength={1000}
+              />
+              <div className="text-[11px] text-muted-foreground mt-1">{comment.length}/1000</div>
+            </label>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-sm font-bold px-4 py-2.5 rounded-sm border border-border hover:bg-muted"
+              >
+                Keep membership
+              </button>
+              <button
+                type="button"
+                disabled={!reason}
+                onClick={() => setStep("confirm")}
+                className="text-sm font-bold px-4 py-2.5 rounded-sm bg-primary text-white disabled:opacity-40 hover:bg-primary/90"
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === "confirm" && (
+          <>
+            <h3 className="text-lg font-extrabold tracking-tight">Confirm cancellation</h3>
+            <div className="mt-4 border border-border rounded-sm p-4 bg-muted/40 text-sm space-y-3">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">You'll lose access to</div>
+                <ul className="mt-2 list-disc pl-5 space-y-1">
+                  <li>Receiving referrals from other providers and the MyFloridaNemt network</li>
+                  <li>Medicaid-funded trip assignments</li>
+                  <li>Bulk CSV upload and API integrations</li>
+                  <li>Provider network contacts</li>
+                </ul>
+              </div>
+              <div className="pt-3 border-t border-border">
+                <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">You'll keep</div>
+                <ul className="mt-2 list-disc pl-5 space-y-1">
+                  <li>Full access until <span className="font-bold">{endLabel}</span></li>
+                  <li>Your account, drivers, vehicles, and trip history</li>
+                  <li>The ability to resubscribe at any time</li>
+                </ul>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-4">
+              You will not be billed again. Your membership will remain active until {endLabel}.
+            </p>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setStep("reason")}
+                className="text-sm font-bold px-4 py-2.5 rounded-sm border border-border hover:bg-muted"
+                disabled={busy}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={busy}
+                className="text-sm font-bold px-4 py-2.5 rounded-sm bg-destructive text-white disabled:opacity-60 hover:bg-destructive/90"
+              >
+                {busy ? "Canceling…" : "Yes, cancel membership"}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === "done" && (
+          <>
+            <h3 className="text-lg font-extrabold tracking-tight">Membership canceled</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Your membership will end on <span className="font-bold text-foreground">{endLabel}</span>. You'll continue
+              to have full access until then. Thanks for the feedback — we hope to see you again.
+            </p>
+            <div className="flex justify-end mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-sm font-bold px-4 py-2.5 rounded-sm bg-primary text-white hover:bg-primary/90"
+              >
+                Done
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 // ───────────────────────── Business Info (editable, single source of truth for all portals) ─────────────────────────
 
