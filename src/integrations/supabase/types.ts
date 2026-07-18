@@ -981,6 +981,13 @@ export type Database = {
             foreignKeyName: "medicaid_packet_items_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_financial_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "medicaid_packet_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -2048,6 +2055,13 @@ export type Database = {
             foreignKeyName: "provider_payout_transfers_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_financial_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -2227,6 +2241,13 @@ export type Database = {
           trip_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "provider_ratings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_financial_ledger"
+            referencedColumns: ["trip_id"]
+          },
           {
             foreignKeyName: "provider_ratings_trip_id_fkey"
             columns: ["trip_id"]
@@ -3275,6 +3296,13 @@ export type Database = {
             foreignKeyName: "trip_payments_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_financial_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -3328,6 +3356,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_financial_ledger"
+            referencedColumns: ["trip_id"]
+          },
           {
             foreignKeyName: "trip_quotes_trip_id_fkey"
             columns: ["trip_id"]
@@ -3392,6 +3427,13 @@ export type Database = {
             foreignKeyName: "trip_summary_logs_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_financial_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_summary_logs_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -3452,6 +3494,7 @@ export type Database = {
           estimated_duration_traffic_seconds: number | null
           estimated_miles: number | null
           estimated_pickup_at: string | null
+          financial_locked_at: string | null
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
@@ -3459,6 +3502,7 @@ export type Database = {
           manually_completed_by: string | null
           medicaid_number: string | null
           medicaid_plan: string | null
+          medicaid_remit_received_at: string | null
           mileage: number | null
           mobility_notes: string | null
           needs_assistance_to_vehicle: boolean
@@ -3474,6 +3518,9 @@ export type Database = {
           patient_phone: string | null
           payer: string | null
           payer_id: string | null
+          payer_kind: string | null
+          payer_user_id: string | null
+          payment_source: string | null
           payment_status: string
           payout_eligible_at: string | null
           payout_hold_reasons: string[]
@@ -3569,6 +3616,7 @@ export type Database = {
           estimated_duration_traffic_seconds?: number | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
+          financial_locked_at?: string | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -3576,6 +3624,7 @@ export type Database = {
           manually_completed_by?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
+          medicaid_remit_received_at?: string | null
           mileage?: number | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
@@ -3591,6 +3640,9 @@ export type Database = {
           patient_phone?: string | null
           payer?: string | null
           payer_id?: string | null
+          payer_kind?: string | null
+          payer_user_id?: string | null
+          payment_source?: string | null
           payment_status?: string
           payout_eligible_at?: string | null
           payout_hold_reasons?: string[]
@@ -3686,6 +3738,7 @@ export type Database = {
           estimated_duration_traffic_seconds?: number | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
+          financial_locked_at?: string | null
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -3693,6 +3746,7 @@ export type Database = {
           manually_completed_by?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
+          medicaid_remit_received_at?: string | null
           mileage?: number | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
@@ -3708,6 +3762,9 @@ export type Database = {
           patient_phone?: string | null
           payer?: string | null
           payer_id?: string | null
+          payer_kind?: string | null
+          payer_user_id?: string | null
+          payment_source?: string | null
           payment_status?: string
           payout_eligible_at?: string | null
           payout_hold_reasons?: string[]
@@ -4094,6 +4151,36 @@ export type Database = {
           avg_professionalism: number | null
           provider_id: string | null
           ratings_count: number | null
+        }
+        Relationships: []
+      }
+      trip_financial_ledger: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          display_id: string | null
+          financial_locked_at: string | null
+          gross_cents: number | null
+          medicaid_remit_received_at: string | null
+          payer_kind: string | null
+          payer_label: string | null
+          payment_source: string | null
+          payment_status: string | null
+          payout_eligible_at: string | null
+          payout_hold_reasons: string[] | null
+          payout_is_medicaid: boolean | null
+          payout_released_at: string | null
+          payout_status:
+            | Database["public"]["Enums"]["trip_payout_status"]
+            | null
+          platform_fee_cents: number | null
+          provider_name: string | null
+          provider_payout_cents: number | null
+          provider_user_id: string | null
+          referral_fee_cents: number | null
+          referral_fee_source_user_id: string | null
+          referral_source_name: string | null
+          trip_id: string | null
         }
         Relationships: []
       }
