@@ -240,7 +240,6 @@ export type FinAdminAction = {
   provider_user_id: string | null; amount_cents: number | null; reason: string | null;
   metadata: Record<string, string | number | boolean | null> | null; created_at: string;
 };
-  });
 
 // ---------- Provider: detailed balance line items ----------
 export const getMyProviderBalanceDetailed = createServerFn({ method: "GET" })
