@@ -43,7 +43,7 @@ import { ChangelogPanel } from "@/components/dashboard/ChangelogPanel";
 import { SystemSettingsPanel } from "@/components/SystemSettingsPanel";
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 import { AdminPayoutQueue } from "@/components/admin/AdminPayoutQueue";
-import { AdminFinancialLedger } from "@/components/admin/AdminFinancialLedger";
+import { AdminFinanceConsole } from "@/components/admin/AdminFinanceConsole";
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
@@ -160,7 +160,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Finance",
     items: [
       { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing },
-      { id: "ledger", label: "Financial ledger", icon: DollarSign, visible: (c) => c.isOps },
+      { id: "ledger", label: "Finance console", icon: DollarSign, visible: (c) => c.isOps },
       { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps },
       { id: "integrations", label: "Integrations", icon: Plug, visible: (c) => c.isAdmin },
     ],
@@ -388,7 +388,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
     case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
-    case "ledger": return caps.isOps ? <AdminFinancialLedger /> : <NoAccess />;
+    case "ledger": return caps.isOps ? <AdminFinanceConsole /> : <NoAccess />;
     case "payouts": return caps.isAdmin ? (
       <div className="space-y-6">
         <AdminPayoutQueue />
