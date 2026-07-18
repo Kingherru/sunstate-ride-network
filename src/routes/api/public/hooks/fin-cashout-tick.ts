@@ -9,8 +9,9 @@ export const Route = createFileRoute("/api/public/hooks/fin-cashout-tick")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const token = request.headers.get("x-fin-release-token");
-        if (!process.env.FIN_RELEASE_TOKEN || token !== process.env.FIN_RELEASE_TOKEN) {
+        const apikey = request.headers.get("apikey");
+        const expected = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+        if (!expected || apikey !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
