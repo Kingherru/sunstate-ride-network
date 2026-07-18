@@ -249,3 +249,57 @@ export const listAdminPayoutQueue = createServerFn({ method: "GET" })
       .limit(500);
     return { ok: true as const, rows: data ?? [] };
   });
+
+/**
+ * ADMIN-ONLY: Mark that MFN has received the funds from the payer and the
+ * trip amount matches the fare. Moves payment_status from `paid` (received)
+ * to `validated`, which is required before payout can release.
+ * For Medicaid trips, this ALSO records `medicaid_remit_received_at` and
+ * starts the Net-15 clock.
+ */
+export const validateTripPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { trip_id: string; is_medicaid_remit?: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) return { ok: false as const, error: "Admin only" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: trip } = await supabaseAdmin
+      .from("trips")
+      .select("id, payment_status, payout_is_medicaid, medicaid_remit_received_at, cost_total")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    if (!trip) return { ok: false as const, error: "Trip not found" };
+
+    const update: Record<string, unknown> = {
+      payment_status: "validated",
+      payout_validated_at: new Date().toISOString(),
+      payout_validated_by: userId,
+    };
+    if (data.is_medicaid_remit || trip.payout_is_medicaid) {
+      update.medicaid_remit_received_at = new Date().toISOString();
+      update.payout_eligible_at = new Date(Date.now() + PAYOUT_MEDICAID_NET_DAYS * 24 * 3600 * 1000).toISOString();
+    }
+    const { error } = await supabaseAdmin.from("trips").update(update).eq("id", data.trip_id);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+/**
+ * ADMIN-ONLY: Read the trip financial ledger view. View already gates by
+ * `is_ops_staff` server-side.
+ */
+export const listTripFinancialLedger = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const { data, error } = await supabase
+      .from("trip_financial_ledger" as any)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) return { ok: false as const, error: error.message, rows: [] as any[] };
+    return { ok: true as const, rows: (data ?? []) as any[] };
+  });
