@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import {
   listFinLedger,
   validateTripPayment,
-  releaseTripPayout,
+  adminForceRelease,
   refundTrip,
+  adminMarkMedicaidFundsReceived,
   getFinSettings,
 } from "@/lib/finance/finance.functions";
 import {
@@ -19,44 +20,38 @@ import {
 
 type LedgerRow = {
   trip_id: string;
-  display_id: string | null;
   trip_status: string | null;
+  provider_user_id: string | null;
   fin_payer_kind: string | null;
   fin_payment_source: string | null;
-  fin_gross_cents: number;
-  fin_platform_fee_cents: number;
-  fin_referral_fee_cents: number;
-  fin_provider_net_cents: number;
-  fin_payment_state: string;
-  fin_payout_state: string;
-  fin_is_medicaid: boolean;
+  fin_gross_cents: number | null;
+  fin_platform_fee_cents: number | null;
+  fin_referral_fee_cents: number | null;
+  fin_provider_net_cents: number | null;
+  fin_payment_state: string | null;
+  fin_payout_state: string | null;
+  fin_is_medicaid: boolean | null;
   fin_payout_hold_until: string | null;
-  fin_locked_at: string | null;
-  created_at: string;
+  fin_medicaid_funds_received_at: string | null;
+  created_at: string | null;
 };
 
 /**
- * NEW: Central admin finance console — replaces the old ledger + payout queue.
- * One row per trip, showing the full money picture and enabling validate /
- * release / refund actions. Nothing here mutates trip finance directly; every
- * action goes through the `fin_*` server functions.
+ * Admin finance console. Every action goes through fin_* SECURITY DEFINER RPCs;
+ * providers can't call any of these.
  */
 export function AdminFinanceConsole() {
   const qc = useQueryClient();
   const list = useServerFn(listFinLedger);
   const validate = useServerFn(validateTripPayment);
-  const release = useServerFn(releaseTripPayout);
+  const forceRelease = useServerFn(adminForceRelease);
   const refund = useServerFn(refundTrip);
+  const markMcd = useServerFn(adminMarkMedicaidFundsReceived);
 
   const [filter, setFilter] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
-  const settingsQ = useQuery({
-    queryKey: ["fin-settings"],
-    queryFn: () => getFinSettings(),
-    staleTime: 60_000,
-  });
-
+  const settingsQ = useQuery({ queryKey: ["fin-settings"], queryFn: () => getFinSettings(), staleTime: 60_000 });
   const ledgerQ = useQuery({
     queryKey: ["admin-fin-ledger"],
     queryFn: () => list({ data: { limit: 200 } }),
@@ -64,15 +59,14 @@ export function AdminFinanceConsole() {
   });
 
   const rows = useMemo(() => {
-    const all = (ledgerQ.data ?? []) as LedgerRow[];
+    const all = (ledgerQ.data ?? []) as unknown as LedgerRow[];
     if (!filter.trim()) return all;
     const f = filter.toLowerCase();
     return all.filter((r) =>
-      (r.display_id ?? "").toLowerCase().includes(f)
+      r.trip_id.toLowerCase().includes(f)
       || (r.fin_payer_kind ?? "").toLowerCase().includes(f)
       || (r.fin_payment_state ?? "").toLowerCase().includes(f)
-      || (r.fin_payout_state ?? "").toLowerCase().includes(f),
-    );
+      || (r.fin_payout_state ?? "").toLowerCase().includes(f));
   }, [ledgerQ.data, filter]);
 
   async function withBusy(id: string, fn: () => Promise<unknown>, ok: string) {
@@ -81,8 +75,8 @@ export function AdminFinanceConsole() {
       await fn();
       toast.success(ok);
       await qc.invalidateQueries({ queryKey: ["admin-fin-ledger"] });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Action failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Action failed");
     } finally {
       setBusy(null);
     }
@@ -95,8 +89,8 @@ export function AdminFinanceConsole() {
           <h2 className="font-display text-2xl font-extrabold tracking-tight">Finance console</h2>
           <p className="text-sm text-muted-foreground">
             Platform fee: <strong>{bpsToPct(settingsQ.data?.platform_fee_bps ?? 200)}</strong>
-            {" · "}Standard hold: <strong>{settingsQ.data?.standard_hold_hours ?? 48}h</strong>
-            {" · "}Medicaid hold: <strong>{settingsQ.data?.medicaid_hold_days ?? 15}d (Net-15)</strong>
+            {" · "}Standard hold: <strong>{settingsQ.data?.standard_hold_days ?? 3} days</strong>
+            {" · "}Medicaid: <strong>Net {settingsQ.data?.medicaid_net_business_days ?? 15} business days</strong>
           </p>
         </div>
         <input
@@ -132,13 +126,16 @@ export function AdminFinanceConsole() {
             )}
             {rows.map((r) => {
               const hold = r.fin_payout_hold_until ? new Date(r.fin_payout_hold_until) : null;
-              const holdReady = hold && hold.getTime() <= Date.now();
-              const canValidate = r.fin_payment_state === "paid";
-              const canRelease = r.fin_payment_state === "validated" && r.fin_payout_state !== "paid_out" && holdReady;
-              const canRefund = r.fin_payment_state === "paid" || r.fin_payment_state === "validated";
+              const holdReady = hold ? hold.getTime() <= Date.now() : false;
+              const state = r.fin_payment_state ?? "none";
+              const payout = r.fin_payout_state ?? "none";
+              const canValidate = state === "paid";
+              const canRelease = state === "validated" && payout === "holding";
+              const canRefund = state === "paid" || state === "validated";
+              const canMcd = r.fin_is_medicaid && !r.fin_medicaid_funds_received_at;
               return (
                 <tr key={r.trip_id} className="hover:bg-muted/30">
-                  <td className="px-3 py-2 font-mono text-xs">{r.display_id ?? r.trip_id.slice(0, 8)}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{r.trip_id.slice(0, 8)}</td>
                   <td className="px-3 py-2 text-xs">
                     {PAYER_KIND_LABELS[r.fin_payer_kind ?? ""] ?? "—"}
                     {r.fin_is_medicaid && <span className="ml-1 text-[9px] font-bold text-amber-700">MCD</span>}
@@ -147,38 +144,37 @@ export function AdminFinanceConsole() {
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{formatCents(r.fin_platform_fee_cents)}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{formatCents(r.fin_referral_fee_cents)}</td>
                   <td className="px-3 py-2 text-right tabular-nums font-bold">{formatCents(r.fin_provider_net_cents)}</td>
-                  <td className="px-3 py-2 text-xs">{PAYMENT_STATE_LABELS[r.fin_payment_state] ?? r.fin_payment_state}</td>
-                  <td className="px-3 py-2 text-xs">{PAYOUT_STATE_LABELS[r.fin_payout_state] ?? r.fin_payout_state}</td>
+                  <td className="px-3 py-2 text-xs">{PAYMENT_STATE_LABELS[state] ?? state}</td>
+                  <td className="px-3 py-2 text-xs">{PAYOUT_STATE_LABELS[payout] ?? payout}</td>
                   <td className="px-3 py-2 text-[11px] text-muted-foreground">
                     {hold ? hold.toLocaleString() : "—"}
                     {hold && !holdReady && <div className="text-amber-700 font-semibold">Holding</div>}
-                    {hold && holdReady && r.fin_payout_state !== "paid_out" && <div className="text-emerald-700 font-semibold">Ready</div>}
+                    {hold && holdReady && payout === "holding" && <div className="text-emerald-700 font-semibold">Ready</div>}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-col gap-1 items-end">
                       {canValidate && (
-                        <button
-                          disabled={busy === r.trip_id}
+                        <button disabled={busy === r.trip_id}
                           onClick={() => withBusy(r.trip_id, () => validate({ data: { trip_id: r.trip_id } }), "Payment validated")}
-                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-primary text-primary-foreground disabled:opacity-50"
-                        >Validate</button>
+                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-primary text-primary-foreground disabled:opacity-50">Validate</button>
+                      )}
+                      {canMcd && (
+                        <button disabled={busy === r.trip_id}
+                          onClick={() => withBusy(r.trip_id, () => markMcd({ data: { trip_id: r.trip_id } }), "Medicaid funds recorded")}
+                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-amber-600 text-white disabled:opacity-50">Medicaid received</button>
                       )}
                       {canRelease && (
-                        <button
-                          disabled={busy === r.trip_id}
-                          onClick={() => withBusy(r.trip_id, () => release({ data: { trip_id: r.trip_id } }), "Payout released")}
-                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-emerald-600 text-white disabled:opacity-50"
-                        >Release payout</button>
+                        <button disabled={busy === r.trip_id}
+                          onClick={() => withBusy(r.trip_id, () => forceRelease({ data: { trip_id: r.trip_id } }), "Released to provider balance")}
+                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm bg-emerald-600 text-white disabled:opacity-50">Force release</button>
                       )}
                       {canRefund && (
-                        <button
-                          disabled={busy === r.trip_id}
+                        <button disabled={busy === r.trip_id}
                           onClick={() => {
                             const reason = window.prompt("Refund reason (optional)") ?? undefined;
                             withBusy(r.trip_id, () => refund({ data: { trip_id: r.trip_id, reason } }), "Trip refunded");
                           }}
-                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm border border-border text-muted-foreground disabled:opacity-50"
-                        >Refund</button>
+                          className="text-[10px] font-bold uppercase px-2 py-1 rounded-sm border border-border text-muted-foreground disabled:opacity-50">Refund</button>
                       )}
                     </div>
                   </td>
