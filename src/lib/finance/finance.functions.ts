@@ -232,11 +232,14 @@ export const listAdminFinActions = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase.rpc("fin_admin_recent_actions",
       { _limit: data.limit ?? 100 } as never);
     if (error) throw new Error(error.message);
-    return (rows ?? []) as Array<{
-      id: string; admin_user_id: string | null; action: string; trip_id: string | null;
-      provider_user_id: string | null; amount_cents: number | null; reason: string | null;
-      metadata: string; created_at: string;
-    }>;
+    return (rows ?? []) as FinAdminAction[];
+  });
+
+export type FinAdminAction = {
+  id: string; admin_user_id: string | null; action: string; trip_id: string | null;
+  provider_user_id: string | null; amount_cents: number | null; reason: string | null;
+  metadata: Record<string, string | number | boolean | null> | null; created_at: string;
+};
   });
 
 // ---------- Provider: detailed balance line items ----------
