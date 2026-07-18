@@ -19,6 +19,7 @@ import { PatientProviderContactsPanel } from "@/components/dashboard/PatientProv
 
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
+import { ProviderBalancePanel } from "@/components/dashboard/ProviderBalancePanel";
 import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
