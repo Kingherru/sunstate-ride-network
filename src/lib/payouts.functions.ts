@@ -282,7 +282,7 @@ export const validateTripPayment = createServerFn({ method: "POST" })
       update.medicaid_remit_received_at = new Date().toISOString();
       update.payout_eligible_at = new Date(Date.now() + PAYOUT_MEDICAID_NET_DAYS * 24 * 3600 * 1000).toISOString();
     }
-    const { error } = await supabaseAdmin.from("trips").update(update).eq("id", data.trip_id);
+    const { error } = await supabaseAdmin.from("trips").update(update as any).eq("id", data.trip_id);
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
   });
