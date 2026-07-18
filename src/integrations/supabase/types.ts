@@ -14,6 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
+      _legacy_provider_payout_transfers: {
+        Row: {
+          created_at: string
+          failure_reason: string | null
+          fee_cents: number
+          gross_cents: number
+          id: string
+          net_cents: number
+          provider_user_id: string
+          status: string
+          stripe_account_id: string
+          stripe_transfer_id: string | null
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failure_reason?: string | null
+          fee_cents: number
+          gross_cents: number
+          id?: string
+          net_cents: number
+          provider_user_id: string
+          status?: string
+          stripe_account_id: string
+          stripe_transfer_id?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failure_reason?: string | null
+          fee_cents?: number
+          gross_cents?: number
+          id?: string
+          net_cents?: number
+          provider_user_id?: string
+          status?: string
+          stripe_account_id?: string
+          stripe_transfer_id?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      _legacy_trip_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          environment: string
+          id: string
+          payer_user_id: string
+          platform_fee_cents: number
+          provider_user_id: string | null
+          ride_request_id: string | null
+          status: string
+          stripe_payment_intent_id: string
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          environment?: string
+          id?: string
+          payer_user_id: string
+          platform_fee_cents?: number
+          provider_user_id?: string | null
+          ride_request_id?: string | null
+          status?: string
+          stripe_payment_intent_id: string
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          environment?: string
+          id?: string
+          payer_user_id?: string
+          platform_fee_cents?: number
+          provider_user_id?: string | null
+          ride_request_id?: string | null
+          status?: string
+          stripe_payment_intent_id?: string
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_payments_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      _legacy_trip_quotes: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          note: string | null
+          provider_user_id: string
+          status: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          note?: string | null
+          provider_user_id: string
+          status?: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          note?: string | null
+          provider_user_id?: string
+          status?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -789,6 +994,167 @@ export type Database = {
         }
         Relationships: []
       }
+      fin_charges: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          external_ref: string | null
+          id: string
+          metadata: Json
+          payer_kind: Database["public"]["Enums"]["fin_payer_kind"]
+          payer_user_id: string | null
+          payment_source: string
+          processed_at: string | null
+          status: Database["public"]["Enums"]["fin_charge_status"]
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          metadata?: Json
+          payer_kind: Database["public"]["Enums"]["fin_payer_kind"]
+          payer_user_id?: string | null
+          payment_source: string
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["fin_charge_status"]
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          metadata?: Json
+          payer_kind?: Database["public"]["Enums"]["fin_payer_kind"]
+          payer_user_id?: string | null
+          payment_source?: string
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["fin_charge_status"]
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_charges_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "fin_charges_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_charges_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_payouts: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          failure_reason: string | null
+          id: string
+          metadata: Json
+          provider_user_id: string
+          released_at: string | null
+          released_by: string | null
+          status: Database["public"]["Enums"]["fin_payout_status"]
+          transfer_ref: string | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json
+          provider_user_id: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: Database["public"]["Enums"]["fin_payout_status"]
+          transfer_ref?: string | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json
+          provider_user_id?: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: Database["public"]["Enums"]["fin_payout_status"]
+          transfer_ref?: string | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_payouts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "fin_payouts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_payouts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_settings: {
+        Row: {
+          id: boolean
+          medicaid_hold_days: number
+          platform_fee_bps: number
+          standard_hold_hours: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: boolean
+          medicaid_hold_days?: number
+          platform_fee_bps?: number
+          standard_hold_hours?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: boolean
+          medicaid_hold_days?: number
+          platform_fee_bps?: number
+          standard_hold_hours?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       hipaa_acknowledgments: {
         Row: {
           acknowledged_at: string
@@ -981,7 +1347,7 @@ export type Database = {
             foreignKeyName: "medicaid_packet_items_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: "trip_financial_ledger"
+            referencedRelation: "admin_fin_ledger"
             referencedColumns: ["trip_id"]
           },
           {
@@ -2007,73 +2373,6 @@ export type Database = {
         }
         Relationships: []
       }
-      provider_payout_transfers: {
-        Row: {
-          created_at: string
-          failure_reason: string | null
-          fee_cents: number
-          gross_cents: number
-          id: string
-          net_cents: number
-          provider_user_id: string
-          status: string
-          stripe_account_id: string
-          stripe_transfer_id: string | null
-          trip_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          failure_reason?: string | null
-          fee_cents: number
-          gross_cents: number
-          id?: string
-          net_cents: number
-          provider_user_id: string
-          status?: string
-          stripe_account_id: string
-          stripe_transfer_id?: string | null
-          trip_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          failure_reason?: string | null
-          fee_cents?: number
-          gross_cents?: number
-          id?: string
-          net_cents?: number
-          provider_user_id?: string
-          status?: string
-          stripe_account_id?: string
-          stripe_transfer_id?: string | null
-          trip_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trip_financial_ledger"
-            referencedColumns: ["trip_id"]
-          },
-          {
-            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "provider_payout_transfers_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips_admin_metadata"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       provider_pricing: {
         Row: {
           additional_passenger: number
@@ -2245,7 +2544,7 @@ export type Database = {
             foreignKeyName: "provider_ratings_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: "trip_financial_ledger"
+            referencedRelation: "admin_fin_ledger"
             referencedColumns: ["trip_id"]
           },
           {
@@ -3241,144 +3540,6 @@ export type Database = {
           },
         ]
       }
-      trip_payments: {
-        Row: {
-          amount_cents: number
-          created_at: string
-          environment: string
-          id: string
-          payer_user_id: string
-          platform_fee_cents: number
-          provider_user_id: string | null
-          ride_request_id: string | null
-          status: string
-          stripe_payment_intent_id: string
-          trip_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          amount_cents: number
-          created_at?: string
-          environment?: string
-          id?: string
-          payer_user_id: string
-          platform_fee_cents?: number
-          provider_user_id?: string | null
-          ride_request_id?: string | null
-          status?: string
-          stripe_payment_intent_id: string
-          trip_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          amount_cents?: number
-          created_at?: string
-          environment?: string
-          id?: string
-          payer_user_id?: string
-          platform_fee_cents?: number
-          provider_user_id?: string | null
-          ride_request_id?: string | null
-          status?: string
-          stripe_payment_intent_id?: string
-          trip_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trip_payments_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
-            referencedRelation: "ride_requests"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trip_payments_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trip_financial_ledger"
-            referencedColumns: ["trip_id"]
-          },
-          {
-            foreignKeyName: "trip_payments_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trip_payments_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips_admin_metadata"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trip_quotes: {
-        Row: {
-          amount_cents: number
-          created_at: string
-          decided_at: string | null
-          decided_by: string | null
-          decision_note: string | null
-          id: string
-          note: string | null
-          provider_user_id: string
-          status: string
-          trip_id: string
-          updated_at: string
-        }
-        Insert: {
-          amount_cents: number
-          created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          decision_note?: string | null
-          id?: string
-          note?: string | null
-          provider_user_id: string
-          status?: string
-          trip_id: string
-          updated_at?: string
-        }
-        Update: {
-          amount_cents?: number
-          created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          decision_note?: string | null
-          id?: string
-          note?: string | null
-          provider_user_id?: string
-          status?: string
-          trip_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trip_quotes_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trip_financial_ledger"
-            referencedColumns: ["trip_id"]
-          },
-          {
-            foreignKeyName: "trip_quotes_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trip_quotes_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips_admin_metadata"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       trip_summary_logs: {
         Row: {
           created_at: string
@@ -3427,7 +3588,7 @@ export type Database = {
             foreignKeyName: "trip_summary_logs_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: "trip_financial_ledger"
+            referencedRelation: "admin_fin_ledger"
             referencedColumns: ["trip_id"]
           },
           {
@@ -3448,6 +3609,28 @@ export type Database = {
       }
       trips: {
         Row: {
+          _legacy_cost_breakdown: Json | null
+          _legacy_cost_total: number | null
+          _legacy_estimated_cost_cents: number | null
+          _legacy_financial_locked_at: string | null
+          _legacy_medicaid_remit_received_at: string | null
+          _legacy_payer_kind: string | null
+          _legacy_payer_user_id: string | null
+          _legacy_payment_source: string | null
+          _legacy_payment_status: string
+          _legacy_payout_eligible_at: string | null
+          _legacy_payout_hold_reasons: string[]
+          _legacy_payout_is_medicaid: boolean
+          _legacy_payout_released_at: string | null
+          _legacy_payout_released_by: string | null
+          _legacy_payout_status: Database["public"]["Enums"]["trip_payout_status"]
+          _legacy_payout_transfer_id: string | null
+          _legacy_payout_validated_at: string | null
+          _legacy_payout_validated_by: string | null
+          _legacy_platform_fee_cents: number | null
+          _legacy_provider_payout_cents: number | null
+          _legacy_referral_fee_cents: number
+          _legacy_referral_fee_source_user_id: string | null
           actual_dropoff_at: string | null
           actual_miles: number | null
           actual_pickup_at: string | null
@@ -3460,8 +3643,6 @@ export type Database = {
           completed_by: string | null
           completion_source: string | null
           contact_id: string | null
-          cost_breakdown: Json | null
-          cost_total: number | null
           created_at: string
           created_by: string | null
           delivery_hazmat: boolean
@@ -3488,13 +3669,27 @@ export type Database = {
           dropoff_zip: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
-          estimated_cost_cents: number | null
           estimated_dropoff_at: string | null
           estimated_duration_seconds: number | null
           estimated_duration_traffic_seconds: number | null
           estimated_miles: number | null
           estimated_pickup_at: string | null
-          financial_locked_at: string | null
+          fin_completed_at: string | null
+          fin_gross_cents: number
+          fin_is_medicaid: boolean
+          fin_locked_at: string | null
+          fin_medicaid_funds_received_at: string | null
+          fin_payer_kind: Database["public"]["Enums"]["fin_payer_kind"] | null
+          fin_payer_user_id: string | null
+          fin_payment_source: string | null
+          fin_payment_state: Database["public"]["Enums"]["fin_payment_state"]
+          fin_payout_hold_until: string | null
+          fin_payout_state: Database["public"]["Enums"]["fin_payout_state"]
+          fin_platform_fee_bps: number
+          fin_platform_fee_cents: number
+          fin_provider_net_cents: number
+          fin_referral_fee_bps: number
+          fin_referral_fee_cents: number
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
@@ -3502,7 +3697,6 @@ export type Database = {
           manually_completed_by: string | null
           medicaid_number: string | null
           medicaid_plan: string | null
-          medicaid_remit_received_at: string | null
           mileage: number | null
           mobility_notes: string | null
           needs_assistance_to_vehicle: boolean
@@ -3518,19 +3712,6 @@ export type Database = {
           patient_phone: string | null
           payer: string | null
           payer_id: string | null
-          payer_kind: string | null
-          payer_user_id: string | null
-          payment_source: string | null
-          payment_status: string
-          payout_eligible_at: string | null
-          payout_hold_reasons: string[]
-          payout_is_medicaid: boolean
-          payout_released_at: string | null
-          payout_released_by: string | null
-          payout_status: Database["public"]["Enums"]["trip_payout_status"]
-          payout_transfer_id: string | null
-          payout_validated_at: string | null
-          payout_validated_by: string | null
           pickup_address: string
           pickup_address_details: string | null
           pickup_city: string
@@ -3540,14 +3721,10 @@ export type Database = {
           pickup_location_id: string | null
           pickup_time: string
           pickup_zip: string | null
-          platform_fee_cents: number | null
           priority_offer_created_at: string | null
           priority_offer_expires_at: string | null
           priority_offer_provider_id: string | null
           priority_offer_refused_at: string | null
-          provider_payout_cents: number | null
-          referral_fee_cents: number
-          referral_fee_source_user_id: string | null
           region: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
@@ -3570,6 +3747,28 @@ export type Database = {
           wait_minutes: number | null
         }
         Insert: {
+          _legacy_cost_breakdown?: Json | null
+          _legacy_cost_total?: number | null
+          _legacy_estimated_cost_cents?: number | null
+          _legacy_financial_locked_at?: string | null
+          _legacy_medicaid_remit_received_at?: string | null
+          _legacy_payer_kind?: string | null
+          _legacy_payer_user_id?: string | null
+          _legacy_payment_source?: string | null
+          _legacy_payment_status?: string
+          _legacy_payout_eligible_at?: string | null
+          _legacy_payout_hold_reasons?: string[]
+          _legacy_payout_is_medicaid?: boolean
+          _legacy_payout_released_at?: string | null
+          _legacy_payout_released_by?: string | null
+          _legacy_payout_status?: Database["public"]["Enums"]["trip_payout_status"]
+          _legacy_payout_transfer_id?: string | null
+          _legacy_payout_validated_at?: string | null
+          _legacy_payout_validated_by?: string | null
+          _legacy_platform_fee_cents?: number | null
+          _legacy_provider_payout_cents?: number | null
+          _legacy_referral_fee_cents?: number
+          _legacy_referral_fee_source_user_id?: string | null
           actual_dropoff_at?: string | null
           actual_miles?: number | null
           actual_pickup_at?: string | null
@@ -3582,8 +3781,6 @@ export type Database = {
           completed_by?: string | null
           completion_source?: string | null
           contact_id?: string | null
-          cost_breakdown?: Json | null
-          cost_total?: number | null
           created_at?: string
           created_by?: string | null
           delivery_hazmat?: boolean
@@ -3610,13 +3807,27 @@ export type Database = {
           dropoff_zip?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
-          estimated_cost_cents?: number | null
           estimated_dropoff_at?: string | null
           estimated_duration_seconds?: number | null
           estimated_duration_traffic_seconds?: number | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
-          financial_locked_at?: string | null
+          fin_completed_at?: string | null
+          fin_gross_cents?: number
+          fin_is_medicaid?: boolean
+          fin_locked_at?: string | null
+          fin_medicaid_funds_received_at?: string | null
+          fin_payer_kind?: Database["public"]["Enums"]["fin_payer_kind"] | null
+          fin_payer_user_id?: string | null
+          fin_payment_source?: string | null
+          fin_payment_state?: Database["public"]["Enums"]["fin_payment_state"]
+          fin_payout_hold_until?: string | null
+          fin_payout_state?: Database["public"]["Enums"]["fin_payout_state"]
+          fin_platform_fee_bps?: number
+          fin_platform_fee_cents?: number
+          fin_provider_net_cents?: number
+          fin_referral_fee_bps?: number
+          fin_referral_fee_cents?: number
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -3624,7 +3835,6 @@ export type Database = {
           manually_completed_by?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
-          medicaid_remit_received_at?: string | null
           mileage?: number | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
@@ -3640,19 +3850,6 @@ export type Database = {
           patient_phone?: string | null
           payer?: string | null
           payer_id?: string | null
-          payer_kind?: string | null
-          payer_user_id?: string | null
-          payment_source?: string | null
-          payment_status?: string
-          payout_eligible_at?: string | null
-          payout_hold_reasons?: string[]
-          payout_is_medicaid?: boolean
-          payout_released_at?: string | null
-          payout_released_by?: string | null
-          payout_status?: Database["public"]["Enums"]["trip_payout_status"]
-          payout_transfer_id?: string | null
-          payout_validated_at?: string | null
-          payout_validated_by?: string | null
           pickup_address: string
           pickup_address_details?: string | null
           pickup_city: string
@@ -3662,14 +3859,10 @@ export type Database = {
           pickup_location_id?: string | null
           pickup_time: string
           pickup_zip?: string | null
-          platform_fee_cents?: number | null
           priority_offer_created_at?: string | null
           priority_offer_expires_at?: string | null
           priority_offer_provider_id?: string | null
           priority_offer_refused_at?: string | null
-          provider_payout_cents?: number | null
-          referral_fee_cents?: number
-          referral_fee_source_user_id?: string | null
           region?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -3692,6 +3885,28 @@ export type Database = {
           wait_minutes?: number | null
         }
         Update: {
+          _legacy_cost_breakdown?: Json | null
+          _legacy_cost_total?: number | null
+          _legacy_estimated_cost_cents?: number | null
+          _legacy_financial_locked_at?: string | null
+          _legacy_medicaid_remit_received_at?: string | null
+          _legacy_payer_kind?: string | null
+          _legacy_payer_user_id?: string | null
+          _legacy_payment_source?: string | null
+          _legacy_payment_status?: string
+          _legacy_payout_eligible_at?: string | null
+          _legacy_payout_hold_reasons?: string[]
+          _legacy_payout_is_medicaid?: boolean
+          _legacy_payout_released_at?: string | null
+          _legacy_payout_released_by?: string | null
+          _legacy_payout_status?: Database["public"]["Enums"]["trip_payout_status"]
+          _legacy_payout_transfer_id?: string | null
+          _legacy_payout_validated_at?: string | null
+          _legacy_payout_validated_by?: string | null
+          _legacy_platform_fee_cents?: number | null
+          _legacy_provider_payout_cents?: number | null
+          _legacy_referral_fee_cents?: number
+          _legacy_referral_fee_source_user_id?: string | null
           actual_dropoff_at?: string | null
           actual_miles?: number | null
           actual_pickup_at?: string | null
@@ -3704,8 +3919,6 @@ export type Database = {
           completed_by?: string | null
           completion_source?: string | null
           contact_id?: string | null
-          cost_breakdown?: Json | null
-          cost_total?: number | null
           created_at?: string
           created_by?: string | null
           delivery_hazmat?: boolean
@@ -3732,13 +3945,27 @@ export type Database = {
           dropoff_zip?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
-          estimated_cost_cents?: number | null
           estimated_dropoff_at?: string | null
           estimated_duration_seconds?: number | null
           estimated_duration_traffic_seconds?: number | null
           estimated_miles?: number | null
           estimated_pickup_at?: string | null
-          financial_locked_at?: string | null
+          fin_completed_at?: string | null
+          fin_gross_cents?: number
+          fin_is_medicaid?: boolean
+          fin_locked_at?: string | null
+          fin_medicaid_funds_received_at?: string | null
+          fin_payer_kind?: Database["public"]["Enums"]["fin_payer_kind"] | null
+          fin_payer_user_id?: string | null
+          fin_payment_source?: string | null
+          fin_payment_state?: Database["public"]["Enums"]["fin_payment_state"]
+          fin_payout_hold_until?: string | null
+          fin_payout_state?: Database["public"]["Enums"]["fin_payout_state"]
+          fin_platform_fee_bps?: number
+          fin_platform_fee_cents?: number
+          fin_provider_net_cents?: number
+          fin_referral_fee_bps?: number
+          fin_referral_fee_cents?: number
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
@@ -3746,7 +3973,6 @@ export type Database = {
           manually_completed_by?: string | null
           medicaid_number?: string | null
           medicaid_plan?: string | null
-          medicaid_remit_received_at?: string | null
           mileage?: number | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
@@ -3762,19 +3988,6 @@ export type Database = {
           patient_phone?: string | null
           payer?: string | null
           payer_id?: string | null
-          payer_kind?: string | null
-          payer_user_id?: string | null
-          payment_source?: string | null
-          payment_status?: string
-          payout_eligible_at?: string | null
-          payout_hold_reasons?: string[]
-          payout_is_medicaid?: boolean
-          payout_released_at?: string | null
-          payout_released_by?: string | null
-          payout_status?: Database["public"]["Enums"]["trip_payout_status"]
-          payout_transfer_id?: string | null
-          payout_validated_at?: string | null
-          payout_validated_by?: string | null
           pickup_address?: string
           pickup_address_details?: string | null
           pickup_city?: string
@@ -3784,14 +3997,10 @@ export type Database = {
           pickup_location_id?: string | null
           pickup_time?: string
           pickup_zip?: string | null
-          platform_fee_cents?: number | null
           priority_offer_created_at?: string | null
           priority_offer_expires_at?: string | null
           priority_offer_provider_id?: string | null
           priority_offer_refused_at?: string | null
-          provider_payout_cents?: number | null
-          referral_fee_cents?: number
-          referral_fee_source_user_id?: string | null
           region?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -4076,6 +4285,90 @@ export type Database = {
       }
     }
     Views: {
+      admin_fin_ledger: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          created_by: string | null
+          display_id: string | null
+          fin_completed_at: string | null
+          fin_gross_cents: number | null
+          fin_is_medicaid: boolean | null
+          fin_locked_at: string | null
+          fin_medicaid_funds_received_at: string | null
+          fin_payer_kind: Database["public"]["Enums"]["fin_payer_kind"] | null
+          fin_payer_user_id: string | null
+          fin_payment_source: string | null
+          fin_payment_state:
+            | Database["public"]["Enums"]["fin_payment_state"]
+            | null
+          fin_payout_hold_until: string | null
+          fin_payout_state:
+            | Database["public"]["Enums"]["fin_payout_state"]
+            | null
+          fin_platform_fee_cents: number | null
+          fin_provider_net_cents: number | null
+          fin_referral_fee_cents: number | null
+          pickup_date: string | null
+          trip_id: string | null
+          trip_status: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          display_id?: string | null
+          fin_completed_at?: string | null
+          fin_gross_cents?: number | null
+          fin_is_medicaid?: boolean | null
+          fin_locked_at?: string | null
+          fin_medicaid_funds_received_at?: string | null
+          fin_payer_kind?: Database["public"]["Enums"]["fin_payer_kind"] | null
+          fin_payer_user_id?: string | null
+          fin_payment_source?: string | null
+          fin_payment_state?:
+            | Database["public"]["Enums"]["fin_payment_state"]
+            | null
+          fin_payout_hold_until?: string | null
+          fin_payout_state?:
+            | Database["public"]["Enums"]["fin_payout_state"]
+            | null
+          fin_platform_fee_cents?: number | null
+          fin_provider_net_cents?: number | null
+          fin_referral_fee_cents?: number | null
+          pickup_date?: string | null
+          trip_id?: string | null
+          trip_status?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          display_id?: string | null
+          fin_completed_at?: string | null
+          fin_gross_cents?: number | null
+          fin_is_medicaid?: boolean | null
+          fin_locked_at?: string | null
+          fin_medicaid_funds_received_at?: string | null
+          fin_payer_kind?: Database["public"]["Enums"]["fin_payer_kind"] | null
+          fin_payer_user_id?: string | null
+          fin_payment_source?: string | null
+          fin_payment_state?:
+            | Database["public"]["Enums"]["fin_payment_state"]
+            | null
+          fin_payout_hold_until?: string | null
+          fin_payout_state?:
+            | Database["public"]["Enums"]["fin_payout_state"]
+            | null
+          fin_platform_fee_cents?: number | null
+          fin_provider_net_cents?: number | null
+          fin_referral_fee_cents?: number | null
+          pickup_date?: string | null
+          trip_id?: string | null
+          trip_status?: string | null
+        }
+        Relationships: []
+      }
       expiring_provider_credentials: {
         Row: {
           company_name: string | null
@@ -4151,36 +4444,6 @@ export type Database = {
           avg_professionalism: number | null
           provider_id: string | null
           ratings_count: number | null
-        }
-        Relationships: []
-      }
-      trip_financial_ledger: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          display_id: string | null
-          financial_locked_at: string | null
-          gross_cents: number | null
-          medicaid_remit_received_at: string | null
-          payer_kind: string | null
-          payer_label: string | null
-          payment_source: string | null
-          payment_status: string | null
-          payout_eligible_at: string | null
-          payout_hold_reasons: string[] | null
-          payout_is_medicaid: boolean | null
-          payout_released_at: string | null
-          payout_status:
-            | Database["public"]["Enums"]["trip_payout_status"]
-            | null
-          platform_fee_cents: number | null
-          provider_name: string | null
-          provider_payout_cents: number | null
-          provider_user_id: string | null
-          referral_fee_cents: number | null
-          referral_fee_source_user_id: string | null
-          referral_source_name: string | null
-          trip_id: string | null
         }
         Relationships: []
       }
@@ -4318,6 +4581,44 @@ export type Database = {
       }
       ensure_member_display_id: { Args: never; Returns: string }
       escalate_overdue_compliance_reviews: { Args: never; Returns: undefined }
+      fin_get_settings: {
+        Args: never
+        Returns: {
+          medicaid_hold_days: number
+          platform_fee_bps: number
+          standard_hold_hours: number
+        }[]
+      }
+      fin_mark_paid: {
+        Args: {
+          _amount_cents: number
+          _external_ref?: string
+          _source: string
+          _trip_id: string
+        }
+        Returns: string
+      }
+      fin_refund: {
+        Args: { _reason?: string; _trip_id: string }
+        Returns: undefined
+      }
+      fin_release_payout: {
+        Args: { _transfer_ref?: string; _trip_id: string }
+        Returns: string
+      }
+      fin_set_amounts: {
+        Args: {
+          _gross_cents: number
+          _is_medicaid?: boolean
+          _payer_kind?: Database["public"]["Enums"]["fin_payer_kind"]
+          _payer_user_id?: string
+          _payment_source?: string
+          _referral_flat_cents?: number
+          _trip_id: string
+        }
+        Returns: undefined
+      }
+      fin_validate_payment: { Args: { _trip_id: string }; Returns: undefined }
       gen_webhook_secret: { Args: never; Returns: string }
       get_trips_admin_metadata: {
         Args: never
@@ -4523,6 +4824,22 @@ export type Database = {
         | "equipment"
         | "dme"
         | "other"
+      fin_charge_status: "pending" | "succeeded" | "failed" | "refunded"
+      fin_payer_kind:
+        | "patient"
+        | "facility"
+        | "broker"
+        | "workers_comp"
+        | "medicaid"
+        | "provider_self"
+      fin_payment_state: "none" | "invoiced" | "paid" | "validated" | "refunded"
+      fin_payout_state:
+        | "none"
+        | "holding"
+        | "releasable"
+        | "paid_out"
+        | "cancelled"
+      fin_payout_status: "pending" | "released" | "failed" | "reversed"
       membership_tier: "none" | "free" | "paid"
       payout_account_status:
         | "not_connected"
@@ -4684,6 +5001,24 @@ export const Constants = {
         "dme",
         "other",
       ],
+      fin_charge_status: ["pending", "succeeded", "failed", "refunded"],
+      fin_payer_kind: [
+        "patient",
+        "facility",
+        "broker",
+        "workers_comp",
+        "medicaid",
+        "provider_self",
+      ],
+      fin_payment_state: ["none", "invoiced", "paid", "validated", "refunded"],
+      fin_payout_state: [
+        "none",
+        "holding",
+        "releasable",
+        "paid_out",
+        "cancelled",
+      ],
+      fin_payout_status: ["pending", "released", "failed", "reversed"],
       membership_tier: ["none", "free", "paid"],
       payout_account_status: [
         "not_connected",
