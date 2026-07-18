@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-// Stripe billing portal wiring removed — subscription management flows through /membership
+import { cancelMyMembership } from "@/utils/payments.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, updateTripDetails, recordHipaaAck } from "@/lib/trips.functions";
 import { ensureMyDisplayId } from "@/lib/system-ids.functions";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
