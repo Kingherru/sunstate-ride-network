@@ -235,7 +235,7 @@ export const listAdminFinActions = createServerFn({ method: "POST" })
     return (rows ?? []) as Array<{
       id: string; admin_user_id: string | null; action: string; trip_id: string | null;
       provider_user_id: string | null; amount_cents: number | null; reason: string | null;
-      metadata: unknown; created_at: string;
+      metadata: string; created_at: string;
     }>;
   });
 
