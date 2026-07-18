@@ -19,7 +19,9 @@ export const PAYOUT_STATE_LABELS: Record<string, string> = {
   none: "No payout",
   holding: "Holding period",
   releasable: "Ready to release",
+  released_to_balance: "In provider balance",
   paid_out: "Paid to provider",
+  cashed_out: "Cashed out",
   cancelled: "Cancelled",
 };
 
