@@ -1179,50 +1179,65 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       </label>
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="portal-label">Transportation type</span>
-        <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
-                className="portal-select">
-          <option value="ambulatory">Ambulatory</option>
-          <option value="wheelchair">Wheelchair</option>
-          <option value="stretcher">Stretcher</option>
-        </select>
-      </label>
+      {!isDelivery && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="portal-label">Transportation type</span>
+          <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
+                  className="portal-select">
+            <option value="ambulatory">Ambulatory</option>
+            <option value="wheelchair">Wheelchair</option>
+            <option value="stretcher">Stretcher</option>
+          </select>
+        </label>
+      )}
       <label className="flex flex-col gap-1 text-sm">
         <span className="portal-label">Service level</span>
         <select value={form.service_level} onChange={(e) => setForm({ ...form, service_level: e.target.value })}
                 className="portal-select">
-          <option value="curb_to_curb">Curb to curb</option>
-          <option value="door_to_door">Door to door</option>
-          <option value="bed_to_bed">Bed to bed</option>
-          <option value="driveway_pickup">Pickup in driveway</option>
+          {isDelivery ? (
+            <>
+              <option value="curb_to_curb">Curb to curb (hand-off outside)</option>
+              <option value="door_to_door">Door to door (hand-off at door)</option>
+            </>
+          ) : (
+            <>
+              <option value="curb_to_curb">Curb to curb</option>
+              <option value="door_to_door">Door to door</option>
+              <option value="bed_to_bed">Bed to bed</option>
+              <option value="driveway_pickup">Pickup in driveway</option>
+            </>
+          )}
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
-        <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
-        Round trip (return pickup time required)
-      </label>
-      {form.round_trip && (
+      {!isDelivery && (
         <>
-          <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
-          <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+          <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
+            <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
+            Round trip (return pickup time required)
+          </label>
+          {form.round_trip && (
+            <>
+              <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
+              <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+            </>
+          )}
+          <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
+            <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
+            {[
+              ["needs_wheelchair", "Needs wheelchair"],
+              ["has_passenger", "Has passenger / companion"],
+              ["needs_assistance_to_vehicle", "Help into vehicle"],
+              ["needs_surgery_signin", "Sign-in for surgery"],
+              ["needs_surgery_signout", "Sign-out from surgery"],
+            ].map(([k, label]) => (
+              <label key={k} className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={!!form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.checked })} />
+                {label}
+              </label>
+            ))}
+          </fieldset>
         </>
       )}
-      <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
-        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
-        {[
-          ["needs_wheelchair", "Needs wheelchair"],
-          ["has_passenger", "Has passenger / companion"],
-          ["needs_assistance_to_vehicle", "Help into vehicle"],
-          ["needs_surgery_signin", "Sign-in for surgery"],
-          ["needs_surgery_signout", "Sign-out from surgery"],
-        ].map(([k, label]) => (
-          <label key={k} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={!!form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.checked })} />
-            {label}
-          </label>
-        ))}
-      </fieldset>
 
       {canPickPayer && (
         <label className="flex flex-col gap-1 text-sm col-span-2">
