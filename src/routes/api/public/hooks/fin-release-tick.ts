@@ -10,9 +10,9 @@ export const Route = createFileRoute("/api/public/hooks/fin-release-tick")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
-        if (!expected || apikey !== expected) {
+        const expected = process.env.FIN_CRON_SECRET;
+        const provided = request.headers.get("x-cron-secret");
+        if (!expected || provided !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
         const url = new URL(request.url);
