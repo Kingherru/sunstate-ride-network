@@ -7,11 +7,8 @@ export const Route = createFileRoute("/api/public/hooks/release-eligible-payouts
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected =
-          process.env.SUPABASE_PUBLISHABLE_KEY ||
-          process.env.SUPABASE_ANON_KEY ||
-          "";
-        const provided = request.headers.get("apikey") || "";
+        const expected = process.env.FIN_CRON_SECRET;
+        const provided = request.headers.get("x-cron-secret");
         if (!expected || provided !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
