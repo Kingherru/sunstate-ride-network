@@ -2095,8 +2095,8 @@ function TripDetailView({
           <section>
             <H>Notes & instructions</H>
             <div className="space-y-4">
-              <Row label="Special instructions" full>{textarea("special_instructions", canEditAll)}</Row>
-              <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>
+              <Row label={isDelivery ? "Delivery instructions" : "Special instructions"} full>{textarea("special_instructions", canEditAll)}</Row>
+              {!isDelivery && <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>}
               <Row label="Provider notes" full>{textarea("provider_notes", canEditProviderFields)}</Row>
             </div>
           </section>
