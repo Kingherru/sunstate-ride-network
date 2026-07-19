@@ -108,9 +108,9 @@ function ContactsAndPayersPanel({ portal, initialSubTab = "contacts" }: { portal
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-extrabold tracking-tight">Contacts &amp; Payers</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight">{showPayers ? "Contacts & Payers" : "Contacts"}</h2>
         <p className="text-sm text-muted-foreground">
-          Manage saved contacts{showPayers ? " and the third parties who pay for trips" : ""}.
+          {showPayers ? "Manage saved contacts and the third parties who pay for trips." : "Manage your saved contacts."}
         </p>
       </div>
       <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none border-b border-border">
@@ -1179,50 +1179,65 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       </label>
       <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
       <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="portal-label">Transportation type</span>
-        <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
-                className="portal-select">
-          <option value="ambulatory">Ambulatory</option>
-          <option value="wheelchair">Wheelchair</option>
-          <option value="stretcher">Stretcher</option>
-        </select>
-      </label>
+      {!isDelivery && (
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="portal-label">Transportation type</span>
+          <select value={form.transport_type} onChange={(e) => setForm({ ...form, transport_type: e.target.value })}
+                  className="portal-select">
+            <option value="ambulatory">Ambulatory</option>
+            <option value="wheelchair">Wheelchair</option>
+            <option value="stretcher">Stretcher</option>
+          </select>
+        </label>
+      )}
       <label className="flex flex-col gap-1 text-sm">
         <span className="portal-label">Service level</span>
         <select value={form.service_level} onChange={(e) => setForm({ ...form, service_level: e.target.value })}
                 className="portal-select">
-          <option value="curb_to_curb">Curb to curb</option>
-          <option value="door_to_door">Door to door</option>
-          <option value="bed_to_bed">Bed to bed</option>
-          <option value="driveway_pickup">Pickup in driveway</option>
+          {isDelivery ? (
+            <>
+              <option value="curb_to_curb">Curb to curb (hand-off outside)</option>
+              <option value="door_to_door">Door to door (hand-off at door)</option>
+            </>
+          ) : (
+            <>
+              <option value="curb_to_curb">Curb to curb</option>
+              <option value="door_to_door">Door to door</option>
+              <option value="bed_to_bed">Bed to bed</option>
+              <option value="driveway_pickup">Pickup in driveway</option>
+            </>
+          )}
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
-        <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
-        Round trip (return pickup time required)
-      </label>
-      {form.round_trip && (
+      {!isDelivery && (
         <>
-          <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
-          <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+          <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
+            <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
+            Round trip (return pickup time required)
+          </label>
+          {form.round_trip && (
+            <>
+              <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
+              <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+            </>
+          )}
+          <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
+            <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
+            {[
+              ["needs_wheelchair", "Needs wheelchair"],
+              ["has_passenger", "Has passenger / companion"],
+              ["needs_assistance_to_vehicle", "Help into vehicle"],
+              ["needs_surgery_signin", "Sign-in for surgery"],
+              ["needs_surgery_signout", "Sign-out from surgery"],
+            ].map(([k, label]) => (
+              <label key={k} className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={!!form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.checked })} />
+                {label}
+              </label>
+            ))}
+          </fieldset>
         </>
       )}
-      <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
-        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
-        {[
-          ["needs_wheelchair", "Needs wheelchair"],
-          ["has_passenger", "Has passenger / companion"],
-          ["needs_assistance_to_vehicle", "Help into vehicle"],
-          ["needs_surgery_signin", "Sign-in for surgery"],
-          ["needs_surgery_signout", "Sign-out from surgery"],
-        ].map(([k, label]) => (
-          <label key={k} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={!!form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.checked })} />
-            {label}
-          </label>
-        ))}
-      </fieldset>
 
       {canPickPayer && (
         <label className="flex flex-col gap-1 text-sm col-span-2">
@@ -1246,15 +1261,17 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       )}
 
       <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      {!isDelivery && (
+        <label className="flex flex-col gap-1 text-sm col-span-2">
+          <span className="portal-label">Mobility notes</span>
+          <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
+                    className="portal-select" rows={2} />
+        </label>
+      )}
       <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="portal-label">Mobility notes</span>
-        <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
-                  className="portal-select" rows={2} />
-      </label>
-      <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="portal-label">Special instructions</span>
+        <span className="portal-label">{isDelivery ? "Delivery instructions" : "Special instructions"}</span>
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
-                  className="portal-select" rows={2} />
+                  className="portal-select" rows={2} placeholder={isDelivery ? "Access notes, dock instructions, cold-chain requirements, etc." : ""} />
       </label>
 
       <div className="col-span-2 space-y-3">
@@ -1753,6 +1770,7 @@ function TripDetailView({
     quoteStage = { key: "estimate", label: "Estimate only", tone: "bg-zinc-100 text-zinc-700 border-zinc-300" };
 
   const isRound = !!t.round_trip;
+  const isDelivery = (t as any).trip_kind === "medical_delivery";
   const flags: string[] = [];
   if (isRound) flags.push("Round trip");
   if (t.needs_wheelchair) flags.push("Wheelchair");
@@ -1954,42 +1972,84 @@ function TripDetailView({
         {/* Main column */}
         <div className="lg:col-span-2 space-y-8">
           <section>
-            <H>Trip information</H>
+            <H>{isDelivery ? "Delivery information" : "Trip information"}</H>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <Row label="Trip #">{readOnly(t.trip_number ?? t.display_id)}</Row>
+              <Row label={isDelivery ? "Reference #" : "Trip #"}>{readOnly(t.trip_number ?? t.display_id)}</Row>
               <Row label="Source">{readOnly(t.source)}</Row>
-              <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
-              <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
-              <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
-              <Row label="Authorization #">{readOnly(t.authorization_number)}</Row>
-              <Row label="Patient needs" full>
-                {flags.length ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {flags.map((f) => (
-                      <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30">
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground">No special needs indicated.</span>
-                )}
-              </Row>
+              {!isDelivery && (
+                <>
+                  <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
+                  <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
+                  <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
+                  <Row label="Authorization #">{readOnly(t.authorization_number)}</Row>
+                  <Row label="Patient needs" full>
+                    {flags.length ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {flags.map((f) => (
+                          <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">No special needs indicated.</span>
+                    )}
+                  </Row>
+                </>
+              )}
+              {isDelivery && (
+                <>
+                  <Row label="Item type">{readOnly((t as any).delivery_item_type ? String((t as any).delivery_item_type).replace(/_/g, " ") : null)}</Row>
+                  <Row label="Weight">{readOnly((t as any).delivery_weight_lbs ? `${(t as any).delivery_weight_lbs} lbs` : null)}</Row>
+                  <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
+                  <Row label="Recipient">{readOnly((t as any).delivery_recipient_name)}</Row>
+                  <Row label="Recipient phone">{readOnly((t as any).delivery_recipient_phone)}</Row>
+                  <Row label="Item description" full>{readOnly((t as any).delivery_item_description)}</Row>
+                  <Row label="Handling flags" full>
+                    {(() => {
+                      const dflags: string[] = [];
+                      if ((t as any).delivery_temperature_sensitive) dflags.push("Cold chain");
+                      if ((t as any).delivery_signature_required) dflags.push("Signature required");
+                      if ((t as any).delivery_hazmat) dflags.push("Hazmat / biohazard");
+                      if ((t as any).delivery_rush) dflags.push("Rush");
+                      return dflags.length ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {dflags.map((f) => (
+                            <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      ) : <span className="text-muted-foreground">No special handling.</span>;
+                    })()}
+                  </Row>
+                </>
+              )}
             </div>
           </section>
 
           <div className="border-t border-border" />
 
           <section>
-            <H>Passenger information</H>
+            <H>{isDelivery ? "Sender & recipient" : "Passenger information"}</H>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <Row label="Name">{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
-              <Row label="Phone">{input("patient_phone", canEditAll, { type: "tel" })}</Row>
-              <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
-              <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
-              <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
-              <Row label="Emergency contact">{input("emergency_contact_name", canEditAll)}</Row>
-              <Row label="Emergency phone">{input("emergency_contact_phone", canEditAll, { type: "tel" })}</Row>
+              <Row label={isDelivery ? "Sender name" : "Name"}>{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
+              <Row label={isDelivery ? "Sender phone" : "Phone"}>{input("patient_phone", canEditAll, { type: "tel" })}</Row>
+              {!isDelivery && (
+                <>
+                  <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
+                  <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
+                  <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
+                  <Row label="Emergency contact">{input("emergency_contact_name", canEditAll)}</Row>
+                  <Row label="Emergency phone">{input("emergency_contact_phone", canEditAll, { type: "tel" })}</Row>
+                </>
+              )}
+              {isDelivery && (
+                <>
+                  <Row label="Recipient name">{readOnly((t as any).delivery_recipient_name)}</Row>
+                  <Row label="Recipient phone">{readOnly((t as any).delivery_recipient_phone)}</Row>
+                </>
+              )}
             </div>
           </section>
 
@@ -2010,7 +2070,7 @@ function TripDetailView({
                   <Row label="Date">{input("pickup_date", canEditAll, { type: "date" })}</Row>
                   <Row label="Time">{input("pickup_time", canEditAll, { type: "time" })}</Row>
                 </div>
-                <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>
+                {!isDelivery && <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>}
               </div>
               <div className="space-y-3">
                 <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary">Drop-off</div>
@@ -2035,8 +2095,8 @@ function TripDetailView({
           <section>
             <H>Notes & instructions</H>
             <div className="space-y-4">
-              <Row label="Special instructions" full>{textarea("special_instructions", canEditAll)}</Row>
-              <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>
+              <Row label={isDelivery ? "Delivery instructions" : "Special instructions"} full>{textarea("special_instructions", canEditAll)}</Row>
+              {!isDelivery && <Row label="Mobility notes" full>{textarea("mobility_notes", canEditAll)}</Row>}
               <Row label="Provider notes" full>{textarea("provider_notes", canEditProviderFields)}</Row>
             </div>
           </section>
