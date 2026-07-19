@@ -10,8 +10,9 @@ export const Route = createFileRoute("/changelog")({
       { property: "og:title", content: "Changelog — My Florida NEMT" },
       { property: "og:description", content: "Recent releases, fixes, and improvements across My Florida NEMT." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://myfloridanemt.com/changelog" },
     ],
-    links: [{ rel: "canonical", href: "https://floridanemt.com/changelog" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/changelog" }],
   }),
   component: ChangelogPage,
 });
