@@ -251,7 +251,7 @@ function HomePage() {
                 <div className="font-mono font-bold text-sm tracking-[0.22em] mb-4" style={{ color: CORAL }}>
                   {step.n}
                 </div>
-                <h4 className="text-2xl font-bold font-display mb-2" style={{ color: NAVY }}>{step.title}</h4>
+                <h3 className="text-2xl font-bold font-display mb-2" style={{ color: NAVY }}>{step.title}</h3>
                 <p className="text-sm" style={{ color: `${NAVY}b3` }}>{step.desc}</p>
               </div>
             ))}
