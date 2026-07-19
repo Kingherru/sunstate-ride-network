@@ -2878,7 +2878,7 @@ function PortalSidebar(props: {
             <div className="font-display text-lg font-bold tracking-tight truncate group-hover:text-[oklch(0.92_0.07_65)] transition-colors">
               {displayName}
             </div>
-            <div className="text-[10px] uppercase tracking-wider text-white/40 opacity-0 group-hover:opacity-100 mt-0.5">Click to edit</div>
+            <div className="text-[10px] uppercase tracking-wider text-white/80 opacity-0 group-hover:opacity-100 mt-0.5">Click to edit</div>
           </button>
         )}
         {portal === "provider" && (
