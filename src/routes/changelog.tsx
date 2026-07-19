@@ -68,7 +68,7 @@ function ChangelogPage() {
                   </span>
                 )}
               </span>
-              <div className="text-[10px] font-mono uppercase tracking-wider text-white/40 mt-0.5">{c.date}</div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-white/80 mt-0.5">{c.date}</div>
             </a>
           ))}
         </nav>
