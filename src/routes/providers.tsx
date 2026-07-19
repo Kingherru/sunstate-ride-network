@@ -412,12 +412,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="Business EIN"
+                    aria-label="Business EIN"
                     value={form.ein ?? ""}
                     onChange={(e) => setForm({ ...form, ein: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="NPI (if any)"
+                    aria-label="NPI"
                     value={form.npi ?? ""}
                     onChange={(e) => setForm({ ...form, npi: e.target.value })}
                   />
@@ -425,6 +427,7 @@ function ProvidersPage() {
                 <input
                   className={inputCls}
                   placeholder="Driver's license number"
+                  aria-label="Driver's license number"
                   value={form.driverLicenseNumber ?? ""}
                   onChange={(e) => setForm({ ...form, driverLicenseNumber: e.target.value })}
                 />
@@ -432,12 +435,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="Insurance carrier"
+                    aria-label="Insurance carrier"
                     value={form.insuranceCarrier ?? ""}
                     onChange={(e) => setForm({ ...form, insuranceCarrier: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="Policy number"
+                    aria-label="Insurance policy number"
                     value={form.insurancePolicyNumber ?? ""}
                     onChange={(e) => setForm({ ...form, insurancePolicyNumber: e.target.value })}
                   />
