@@ -189,10 +189,10 @@ export const adminRunFinCron = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
     const base = process.env.SITE_URL ?? "https://myfloridanemt.com";
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
-    if (!key) throw new Error("Missing publishable key");
+    const key = process.env.FIN_CRON_SECRET;
+    if (!key) throw new Error("Missing FIN_CRON_SECRET");
     const res = await fetch(`${base.replace(/\/$/, "")}/api/public/hooks/${data.job}?trigger=admin`, {
-      method: "POST", headers: { apikey: key, "content-type": "application/json" }, body: "{}",
+      method: "POST", headers: { "x-cron-secret": key, "content-type": "application/json" }, body: "{}",
     });
     const text = await res.text();
     if (!res.ok) throw new Error(text || `Run failed (${res.status})`);
