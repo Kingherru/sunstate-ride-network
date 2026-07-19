@@ -2070,7 +2070,7 @@ function TripDetailView({
                   <Row label="Date">{input("pickup_date", canEditAll, { type: "date" })}</Row>
                   <Row label="Time">{input("pickup_time", canEditAll, { type: "time" })}</Row>
                 </div>
-                <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>
+                {!isDelivery && <Row label="Appointment time">{input("appointment_time", canEditAll, { type: "time" })}</Row>}
               </div>
               <div className="space-y-3">
                 <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary">Drop-off</div>
