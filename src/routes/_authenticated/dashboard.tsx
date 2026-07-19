@@ -1972,27 +1972,59 @@ function TripDetailView({
         {/* Main column */}
         <div className="lg:col-span-2 space-y-8">
           <section>
-            <H>Trip information</H>
+            <H>{isDelivery ? "Delivery information" : "Trip information"}</H>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <Row label="Trip #">{readOnly(t.trip_number ?? t.display_id)}</Row>
+              <Row label={isDelivery ? "Reference #" : "Trip #"}>{readOnly(t.trip_number ?? t.display_id)}</Row>
               <Row label="Source">{readOnly(t.source)}</Row>
-              <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
-              <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
-              <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
-              <Row label="Authorization #">{readOnly(t.authorization_number)}</Row>
-              <Row label="Patient needs" full>
-                {flags.length ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {flags.map((f) => (
-                      <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30">
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground">No special needs indicated.</span>
-                )}
-              </Row>
+              {!isDelivery && (
+                <>
+                  <Row label="Transportation type">{readOnly(t.transport_type)}</Row>
+                  <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
+                  <Row label="Trip type">{readOnly(isRound ? "Round trip" : "One-way")}</Row>
+                  <Row label="Authorization #">{readOnly(t.authorization_number)}</Row>
+                  <Row label="Patient needs" full>
+                    {flags.length ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {flags.map((f) => (
+                          <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/30">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">No special needs indicated.</span>
+                    )}
+                  </Row>
+                </>
+              )}
+              {isDelivery && (
+                <>
+                  <Row label="Item type">{readOnly((t as any).delivery_item_type ? String((t as any).delivery_item_type).replace(/_/g, " ") : null)}</Row>
+                  <Row label="Weight">{readOnly((t as any).delivery_weight_lbs ? `${(t as any).delivery_weight_lbs} lbs` : null)}</Row>
+                  <Row label="Service level">{readOnly(t.service_level ? String(t.service_level).replace(/_/g, " ") : null)}</Row>
+                  <Row label="Recipient">{readOnly((t as any).delivery_recipient_name)}</Row>
+                  <Row label="Recipient phone">{readOnly((t as any).delivery_recipient_phone)}</Row>
+                  <Row label="Item description" full>{readOnly((t as any).delivery_item_description)}</Row>
+                  <Row label="Handling flags" full>
+                    {(() => {
+                      const dflags: string[] = [];
+                      if ((t as any).delivery_temperature_sensitive) dflags.push("Cold chain");
+                      if ((t as any).delivery_signature_required) dflags.push("Signature required");
+                      if ((t as any).delivery_hazmat) dflags.push("Hazmat / biohazard");
+                      if ((t as any).delivery_rush) dflags.push("Rush");
+                      return dflags.length ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {dflags.map((f) => (
+                            <span key={f} className="text-[0.7rem] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      ) : <span className="text-muted-foreground">No special handling.</span>;
+                    })()}
+                  </Row>
+                </>
+              )}
             </div>
           </section>
 
