@@ -21,9 +21,9 @@ export const Route = createFileRoute("/providers")({
       },
       { property: "og:title", content: "Join the My Florida NEMT Provider Network" },
       { property: "og:description", content: "Register your NEMT company, upload credentials, and start receiving trips." },
-      { property: "og:url", content: "/providers" },
+      { property: "og:url", content: "https://myfloridanemt.com/providers" },
     ],
-    links: [{ rel: "canonical", href: "/providers" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/providers" }],
   }),
   component: ProvidersPage,
 });
