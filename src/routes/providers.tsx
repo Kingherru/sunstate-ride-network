@@ -293,6 +293,7 @@ function ProvidersPage() {
                 <input
                   className={inputCls}
                   placeholder="Legal company name"
+                  aria-label="Legal company name"
                   value={form.companyName}
                   onChange={(e) => setForm({ ...form, companyName: e.target.value })}
                 />
@@ -300,12 +301,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="Primary city (e.g. Orlando)"
+                    aria-label="Primary city"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="County (e.g. Orange)"
+                    aria-label="County"
                     value={form.county ?? ""}
                     onChange={(e) => setForm({ ...form, county: e.target.value })}
                   />
@@ -314,6 +317,7 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="ZIP code (5 digits)"
+                    aria-label="ZIP code"
                     inputMode="numeric"
                     maxLength={5}
                     value={form.zipCode}
@@ -324,6 +328,7 @@ function ProvidersPage() {
                     type="number"
                     min={0}
                     placeholder="Fleet size"
+                    aria-label="Fleet size"
                     value={form.fleetSize ?? ""}
                     onChange={(e) =>
                       setForm({
