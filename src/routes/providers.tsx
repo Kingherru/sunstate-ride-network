@@ -516,6 +516,7 @@ function ProvidersPage() {
               <textarea
                 className={`${inputCls} min-h-[90px]`}
                 placeholder="Notes (optional)"
+                aria-label="Additional notes"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
               />
