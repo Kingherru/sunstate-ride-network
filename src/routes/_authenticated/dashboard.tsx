@@ -1260,7 +1260,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         </label>
       )}
 
-      <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      {canPickPayer && (
+        <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      )}
       {!isDelivery && (
         <label className="flex flex-col gap-1 text-sm col-span-2">
           <span className="portal-label">Mobility notes</span>
@@ -2167,26 +2169,28 @@ function TripDetailView({
                 <span className="text-muted-foreground">Payment status</span>
                 <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${paymentTone}`}>{paymentLabel}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Responsible party</span>
-                {editing && canEditAll ? (
-                  <select
-                    value={form.payer}
-                    onChange={(e) => setField("payer", e.target.value)}
-                    className="border border-border rounded-sm px-2 py-1 text-sm bg-background"
-                  >
-                    <option value="">—</option>
-                    <option value="Patient">Patient</option>
-                    <option value="Facility">Facility</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Medicaid">Medicaid</option>
-                    <option value="Broker">Broker</option>
-                    <option value="Other">Other</option>
-                  </select>
-                ) : (
-                  <span className="font-semibold">{t.payer ?? "—"}</span>
-                )}
-              </div>
+              {portal !== "patient" && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Responsible party</span>
+                  {editing && canEditAll ? (
+                    <select
+                      value={form.payer}
+                      onChange={(e) => setField("payer", e.target.value)}
+                      className="border border-border rounded-sm px-2 py-1 text-sm bg-background"
+                    >
+                      <option value="">—</option>
+                      <option value="Patient">Patient</option>
+                      <option value="Facility">Facility</option>
+                      <option value="Insurance">Insurance</option>
+                      <option value="Medicaid">Medicaid</option>
+                      <option value="Broker">Broker</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  ) : (
+                    <span className="font-semibold">{t.payer ?? "—"}</span>
+                  )}
+                </div>
+              )}
               {(() => {
                 const estCents = (t.estimated_cost_cents as number | null) ??
                   (t.cost_total != null ? Math.round(Number(t.cost_total) * 100) : null);
