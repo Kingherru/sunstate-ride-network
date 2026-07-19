@@ -28,6 +28,9 @@ const staticPaths = [
   "/about",
   "/contact",
   "/request-a-ride",
+  "/auth",
+  "/reset-password",
+  "/black-tie",
 ];
 
 const paths = [
