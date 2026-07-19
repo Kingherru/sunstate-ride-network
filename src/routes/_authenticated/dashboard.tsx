@@ -1260,7 +1260,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         </label>
       )}
 
-      <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      {canPickPayer && (
+        <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      )}
       {!isDelivery && (
         <label className="flex flex-col gap-1 text-sm col-span-2">
           <span className="portal-label">Mobility notes</span>
