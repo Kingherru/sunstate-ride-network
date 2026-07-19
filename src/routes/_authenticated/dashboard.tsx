@@ -2031,15 +2031,25 @@ function TripDetailView({
           <div className="border-t border-border" />
 
           <section>
-            <H>Passenger information</H>
+            <H>{isDelivery ? "Sender & recipient" : "Passenger information"}</H>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <Row label="Name">{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
-              <Row label="Phone">{input("patient_phone", canEditAll, { type: "tel" })}</Row>
-              <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
-              <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
-              <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
-              <Row label="Emergency contact">{input("emergency_contact_name", canEditAll)}</Row>
-              <Row label="Emergency phone">{input("emergency_contact_phone", canEditAll, { type: "tel" })}</Row>
+              <Row label={isDelivery ? "Sender name" : "Name"}>{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
+              <Row label={isDelivery ? "Sender phone" : "Phone"}>{input("patient_phone", canEditAll, { type: "tel" })}</Row>
+              {!isDelivery && (
+                <>
+                  <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
+                  <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
+                  <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
+                  <Row label="Emergency contact">{input("emergency_contact_name", canEditAll)}</Row>
+                  <Row label="Emergency phone">{input("emergency_contact_phone", canEditAll, { type: "tel" })}</Row>
+                </>
+              )}
+              {isDelivery && (
+                <>
+                  <Row label="Recipient name">{readOnly((t as any).delivery_recipient_name)}</Row>
+                  <Row label="Recipient phone">{readOnly((t as any).delivery_recipient_phone)}</Row>
+                </>
+              )}
             </div>
           </section>
 
