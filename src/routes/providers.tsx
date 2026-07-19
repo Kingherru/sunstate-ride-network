@@ -347,6 +347,7 @@ function ProvidersPage() {
                     <input
                       className={inputCls}
                       placeholder="e.g. 32801, 32803, 32806"
+                      aria-label="Add preferred ZIP code"
                       value={zipInput}
                       onChange={(e) => setZipInput(e.target.value)}
                       onKeyDown={(e) => {
