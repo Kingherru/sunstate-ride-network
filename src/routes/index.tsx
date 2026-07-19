@@ -155,9 +155,9 @@ function HomePage() {
             </h3>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Learn more", to: "/services/ambulatory" as const, color: MINT },
-                { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "Learn more", to: "/services/wheelchair" as const, color: PEACH },
-                { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "Learn more", to: "/services/stretcher" as const, color: CORAL },
+                { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Explore ambulatory services", to: "/services/ambulatory" as const, color: MINT },
+                { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "View wheelchair transport details", to: "/services/wheelchair" as const, color: PEACH },
+                { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "See stretcher transport options", to: "/services/stretcher" as const, color: CORAL },
               ].map((svc) => (
                 <Link
                   key={svc.label}
