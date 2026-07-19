@@ -15,6 +15,10 @@ const CREAM = "#FFF8EE";     // warm cream neutral
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { title: "My Florida NEMT — Statewide Medical Transportation Network" },
+      { name: "description", content: "Reliable non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher trips connecting patients, facilities, and vetted providers 24/7." },
+      { property: "og:title", content: "My Florida NEMT — Statewide Medical Transportation Network" },
+      { property: "og:description", content: "Ambulatory, wheelchair, and stretcher medical transport across all 67 Florida counties." },
       { property: "og:url", content: "https://myfloridanemt.com/" },
     ],
     links: [{ rel: "canonical", href: "https://myfloridanemt.com/" }],
