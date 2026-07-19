@@ -108,9 +108,9 @@ function ContactsAndPayersPanel({ portal, initialSubTab = "contacts" }: { portal
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-extrabold tracking-tight">Contacts &amp; Payers</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight">{showPayers ? "Contacts & Payers" : "Contacts"}</h2>
         <p className="text-sm text-muted-foreground">
-          Manage saved contacts{showPayers ? " and the third parties who pay for trips" : ""}.
+          {showPayers ? "Manage saved contacts and the third parties who pay for trips." : "Manage your saved contacts."}
         </p>
       </div>
       <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none border-b border-border">
