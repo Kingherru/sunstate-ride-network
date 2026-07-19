@@ -35,9 +35,9 @@ export const Route = createFileRoute("/request-a-ride")({
       },
       { property: "og:title", content: "Request a Ride — My Florida NEMT" },
       { property: "og:description", content: "Book NEMT transport across Florida." },
-      { property: "og:url", content: "/request-a-ride" },
+      { property: "og:url", content: "https://myfloridanemt.com/request-a-ride" },
     ],
-    links: [{ rel: "canonical", href: "/request-a-ride" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/request-a-ride" }],
   }),
   component: RequestRidePage,
 });
