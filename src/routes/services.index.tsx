@@ -11,9 +11,9 @@ export const Route = createFileRoute("/services/")({
       },
       { property: "og:title", content: "NEMT Services — My Florida NEMT" },
       { property: "og:description", content: "Ambulatory, wheelchair, and stretcher medical transport." },
-      { property: "og:url", content: "/services" },
+      { property: "og:url", content: "https://myfloridanemt.com/services" },
     ],
-    links: [{ rel: "canonical", href: "/services" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/services" }],
   }),
   component: ServicesIndex,
 });
