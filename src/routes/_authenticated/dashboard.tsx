@@ -1261,15 +1261,17 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       )}
 
       <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
+      {!isDelivery && (
+        <label className="flex flex-col gap-1 text-sm col-span-2">
+          <span className="portal-label">Mobility notes</span>
+          <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
+                    className="portal-select" rows={2} />
+        </label>
+      )}
       <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="portal-label">Mobility notes</span>
-        <textarea value={form.mobility_notes} onChange={(e) => setForm({ ...form, mobility_notes: e.target.value })}
-                  className="portal-select" rows={2} />
-      </label>
-      <label className="flex flex-col gap-1 text-sm col-span-2">
-        <span className="portal-label">Special instructions</span>
+        <span className="portal-label">{isDelivery ? "Delivery instructions" : "Special instructions"}</span>
         <textarea value={form.special_instructions} onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
-                  className="portal-select" rows={2} />
+                  className="portal-select" rows={2} placeholder={isDelivery ? "Access notes, dock instructions, cold-chain requirements, etc." : ""} />
       </label>
 
       <div className="col-span-2 space-y-3">
