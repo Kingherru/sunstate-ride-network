@@ -15,6 +15,10 @@ const CREAM = "#FFF8EE";     // warm cream neutral
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { title: "My Florida NEMT — Statewide Medical Transportation Network" },
+      { name: "description", content: "Reliable non-emergency medical transportation across all 67 Florida counties. Ambulatory, wheelchair, and stretcher trips connecting patients, facilities, and vetted providers 24/7." },
+      { property: "og:title", content: "My Florida NEMT — Statewide Medical Transportation Network" },
+      { property: "og:description", content: "Ambulatory, wheelchair, and stretcher medical transport across all 67 Florida counties." },
       { property: "og:url", content: "https://myfloridanemt.com/" },
     ],
     links: [{ rel: "canonical", href: "https://myfloridanemt.com/" }],
@@ -151,9 +155,9 @@ function HomePage() {
             </h3>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Learn more", to: "/services/ambulatory" as const, color: MINT },
-                { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "Learn more", to: "/services/wheelchair" as const, color: PEACH },
-                { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "Learn more", to: "/services/stretcher" as const, color: CORAL },
+                { n: "01", label: "Ambulatory", desc: "Patients who walk independently or with minor assistance.", cta: "Explore ambulatory services", to: "/services/ambulatory" as const, color: MINT },
+                { n: "02", label: "Wheelchair", desc: "Hydraulic lifts or ramps for safe manual & power chair transport.", cta: "View wheelchair transport details", to: "/services/wheelchair" as const, color: PEACH },
+                { n: "03", label: "Stretcher", desc: "Non-emergency gurney transport for bed-confined patients.", cta: "See stretcher transport options", to: "/services/stretcher" as const, color: CORAL },
               ].map((svc) => (
                 <Link
                   key={svc.label}
@@ -247,7 +251,7 @@ function HomePage() {
                 <div className="font-mono font-bold text-sm tracking-[0.22em] mb-4" style={{ color: CORAL }}>
                   {step.n}
                 </div>
-                <h4 className="text-2xl font-bold font-display mb-2" style={{ color: NAVY }}>{step.title}</h4>
+                <h3 className="text-2xl font-bold font-display mb-2" style={{ color: NAVY }}>{step.title}</h3>
                 <p className="text-sm" style={{ color: `${NAVY}b3` }}>{step.desc}</p>
               </div>
             ))}

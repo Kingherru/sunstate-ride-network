@@ -10,8 +10,11 @@ export const Route = createFileRoute("/membership")({
     meta: [
       { title: "My Florida NEMT Membership — $10/mo or $100/yr dispatch network" },
       { name: "description", content: "Join the My Florida NEMT dispatch network. $10/mo or $100/yr (save $20) — send and receive trips with approved NEMT providers in your region." },
-      { rel: "canonical", href: "https://floridanemt.com/membership" } as any,
+      { property: "og:title", content: "My Florida NEMT Membership — Dispatch Network" },
+      { property: "og:description", content: "Send and receive trips with approved NEMT providers. $10/mo or $100/yr — cancel anytime." },
+      { property: "og:url", content: "https://myfloridanemt.com/membership" },
     ],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/membership" }],
   }),
   component: MembershipPage,
 });

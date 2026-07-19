@@ -21,9 +21,9 @@ export const Route = createFileRoute("/providers")({
       },
       { property: "og:title", content: "Join the My Florida NEMT Provider Network" },
       { property: "og:description", content: "Register your NEMT company, upload credentials, and start receiving trips." },
-      { property: "og:url", content: "/providers" },
+      { property: "og:url", content: "https://myfloridanemt.com/providers" },
     ],
-    links: [{ rel: "canonical", href: "/providers" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/providers" }],
   }),
   component: ProvidersPage,
 });
@@ -248,12 +248,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="First name"
+                    aria-label="First name"
                     value={form.firstName}
                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="Last name"
+                    aria-label="Last name"
                     value={form.lastName}
                     onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                   />
@@ -262,6 +264,7 @@ function ProvidersPage() {
                   className={inputCls}
                   type="tel"
                   placeholder="Phone number"
+                  aria-label="Phone number"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
@@ -269,6 +272,7 @@ function ProvidersPage() {
                   className={inputCls}
                   type="email"
                   placeholder="Email (login / primary contact)"
+                  aria-label="Email address"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -276,6 +280,7 @@ function ProvidersPage() {
                   className={inputCls}
                   type="email"
                   placeholder="Dispatch email (where ride requests go)"
+                  aria-label="Dispatch email"
                   value={form.dispatchEmail ?? ""}
                   onChange={(e) => setForm({ ...form, dispatchEmail: e.target.value })}
                 />
@@ -288,6 +293,7 @@ function ProvidersPage() {
                 <input
                   className={inputCls}
                   placeholder="Legal company name"
+                  aria-label="Legal company name"
                   value={form.companyName}
                   onChange={(e) => setForm({ ...form, companyName: e.target.value })}
                 />
@@ -295,12 +301,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="Primary city (e.g. Orlando)"
+                    aria-label="Primary city"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="County (e.g. Orange)"
+                    aria-label="County"
                     value={form.county ?? ""}
                     onChange={(e) => setForm({ ...form, county: e.target.value })}
                   />
@@ -309,6 +317,7 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="ZIP code (5 digits)"
+                    aria-label="ZIP code"
                     inputMode="numeric"
                     maxLength={5}
                     value={form.zipCode}
@@ -319,6 +328,7 @@ function ProvidersPage() {
                     type="number"
                     min={0}
                     placeholder="Fleet size"
+                    aria-label="Fleet size"
                     value={form.fleetSize ?? ""}
                     onChange={(e) =>
                       setForm({
@@ -337,6 +347,7 @@ function ProvidersPage() {
                     <input
                       className={inputCls}
                       placeholder="e.g. 32801, 32803, 32806"
+                      aria-label="Add preferred ZIP code"
                       value={zipInput}
                       onChange={(e) => setZipInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -401,12 +412,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="Business EIN"
+                    aria-label="Business EIN"
                     value={form.ein ?? ""}
                     onChange={(e) => setForm({ ...form, ein: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="NPI (if any)"
+                    aria-label="NPI"
                     value={form.npi ?? ""}
                     onChange={(e) => setForm({ ...form, npi: e.target.value })}
                   />
@@ -414,6 +427,7 @@ function ProvidersPage() {
                 <input
                   className={inputCls}
                   placeholder="Driver's license number"
+                  aria-label="Driver's license number"
                   value={form.driverLicenseNumber ?? ""}
                   onChange={(e) => setForm({ ...form, driverLicenseNumber: e.target.value })}
                 />
@@ -421,12 +435,14 @@ function ProvidersPage() {
                   <input
                     className={inputCls}
                     placeholder="Insurance carrier"
+                    aria-label="Insurance carrier"
                     value={form.insuranceCarrier ?? ""}
                     onChange={(e) => setForm({ ...form, insuranceCarrier: e.target.value })}
                   />
                   <input
                     className={inputCls}
                     placeholder="Policy number"
+                    aria-label="Insurance policy number"
                     value={form.insurancePolicyNumber ?? ""}
                     onChange={(e) => setForm({ ...form, insurancePolicyNumber: e.target.value })}
                   />
@@ -500,6 +516,7 @@ function ProvidersPage() {
               <textarea
                 className={`${inputCls} min-h-[90px]`}
                 placeholder="Notes (optional)"
+                aria-label="Additional notes"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
               />

@@ -13,6 +13,7 @@ export const Route = createFileRoute("/shop/")({
       { name: "description", content: "Buy online HIPAA training and NEMT certification courses. Complete the exam and get a printable certificate." },
       { property: "og:title", content: "Training Shop — HIPAA & NEMT Certification" },
       { property: "og:description", content: "Certification courses for NEMT drivers, dispatchers, and staff." },
+      { property: "og:url", content: "https://myfloridanemt.com/shop" },
       { name: "robots", content: "index,follow" },
     ],
     links: [{ rel: "canonical", href: "https://myfloridanemt.com/shop" }],

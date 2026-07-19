@@ -13,9 +13,9 @@ export const Route = createFileRoute("/about")({
       },
       { property: "og:title", content: "About My Florida NEMT" },
       { property: "og:description", content: "Simple non-emergency medical transportation technology built around people." },
-      { property: "og:url", content: "/about" },
+      { property: "og:url", content: "https://myfloridanemt.com/about" },
     ],
-    links: [{ rel: "canonical", href: "/about" }],
+    links: [{ rel: "canonical", href: "https://myfloridanemt.com/about" }],
   }),
   component: AboutPage,
 });
