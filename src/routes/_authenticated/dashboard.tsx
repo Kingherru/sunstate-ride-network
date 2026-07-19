@@ -1770,6 +1770,7 @@ function TripDetailView({
     quoteStage = { key: "estimate", label: "Estimate only", tone: "bg-zinc-100 text-zinc-700 border-zinc-300" };
 
   const isRound = !!t.round_trip;
+  const isDelivery = (t as any).trip_kind === "medical_delivery";
   const flags: string[] = [];
   if (isRound) flags.push("Round trip");
   if (t.needs_wheelchair) flags.push("Wheelchair");
