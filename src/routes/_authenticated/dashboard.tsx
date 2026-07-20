@@ -1222,7 +1222,14 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       {!isDelivery && (
         <>
           <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
-            <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
+            <input type="checkbox" checked={form.round_trip} onChange={(e) => {
+              const on = e.target.checked;
+              setForm({
+                ...form,
+                round_trip: on,
+                return_pickup_time: on && !form.return_pickup_time ? form.pickup_time : form.return_pickup_time,
+              });
+            }} />
             Round trip (return pickup time required)
           </label>
           {form.round_trip && (
