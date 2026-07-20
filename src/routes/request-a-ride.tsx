@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
@@ -21,6 +21,7 @@ import { DatePickerField } from "@/components/ui/date-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
+import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 
 
 export const Route = createFileRoute("/request-a-ride")({
@@ -771,6 +772,7 @@ function RequestRidePage() {
                 ))}
               </div>
             )}
+            <TripLegsPreview className="mt-2" legs={buildLegs(form)} />
             <Field label="Mobility notes" error={errors.mobilityNotes}>
               <textarea
                 className={`${inputCls} min-h-[80px]`}
