@@ -386,6 +386,7 @@ export const copyRequestToDates = createServerFn({ method: "POST" })
       base.appointment_time = d.appointmentTime || null;
       base.return_pickup_time = d.returnPickupTime || null;
       base.return_dropoff_time = d.returnDropoffTime || null;
+      base.return_date = d.returnDate || ((source as any).round_trip ? d.pickupDate : null);
       base.status = "pending";
       // Each copy is an independent one-off trip (never a recurring series).
       base.recurrence_rule = null;
