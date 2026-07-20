@@ -876,6 +876,7 @@ function RequestRidePage() {
                     value={form.recurrenceEndDate ?? ""}
                     onChange={(v) => upd("recurrenceEndDate", v)}
                     min={form.pickupDate || new Date().toISOString().slice(0, 10)}
+                    booking
                   />
                 </Field>
               )}
