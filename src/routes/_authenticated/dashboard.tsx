@@ -1018,11 +1018,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
 
   const m = useMutation({
     mutationFn: async () => {
-      if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
       if (form.round_trip && !form.return_pickup_time) {
         throw new Error("Return pickup time is required for round trips.");
       }
-      const ack = await recordHipaaAck({ data: { context: "send_trip" } });
       const payload: any = { ...form };
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
@@ -1048,9 +1046,10 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           delete payload.delivery_weight_lbs;
         }
       }
-      return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
+      // HIPAA ack is resolved server-side from the user's Settings record.
+      return createTrip({ data: payload });
     },
-    onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
+    onSuccess: () => { toast.success("Trip created"); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
   });
 
