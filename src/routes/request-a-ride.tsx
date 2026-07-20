@@ -175,6 +175,7 @@ function RequestRidePage() {
   const enrich = useServerFn(enrichRideRequest);
   const fetchOne = useServerFn(getMyRequest);
   const [form, setForm] = useState<RideRequestInput>(empty);
+  const [returnDateManual, setReturnDateManual] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{
