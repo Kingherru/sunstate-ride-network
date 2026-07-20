@@ -63,6 +63,7 @@ const empty: RideRequestInput = {
   roundTrip: false,
   returnPickupTime: "",
   returnDropoffTime: "",
+  returnDate: "",
   additionalStops: [],
   mobilityNotes: "",
   specialInstructions: "",
