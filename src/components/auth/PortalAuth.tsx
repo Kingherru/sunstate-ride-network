@@ -8,7 +8,7 @@ import {
   PATIENT_RELATIONSHIP_OPTIONS,
 } from "@/lib/patient-relationships";
 
-export type PortalKind = "patient" | "provider" | "facility";
+export type PortalKind = "patient" | "provider" | "facility" | "staff";
 
 const COPY: Record<PortalKind, { eyebrow: string; title: string; blurb: string; bullets: string[] }> = {
   patient: {
@@ -41,6 +41,16 @@ const COPY: Record<PortalKind, { eyebrow: string; title: string; blurb: string; 
       "Statewide provider network",
     ],
   },
+  staff: {
+    eyebrow: "Staff & Operations",
+    title: "Dispatchers, admins & zone managers",
+    blurb: "Manage trips, provider compliance, zones, and payouts from one place.",
+    bullets: [
+      "Manage trips & dispatch",
+      "Review provider compliance",
+      "Configure zones & payouts",
+    ],
+  },
 };
 
 export function PortalAuth({ kind }: { kind: PortalKind }) {
@@ -58,9 +68,10 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [billing, setBilling] = useState({ firstName: "", lastName: "", email: "", phone: "" });
   const copy = COPY[kind];
   const isPatient = kind === "patient";
+  const isStaff = kind === "staff";
   const isSignup = mode === "signup";
 
-  const dest = `/${kind}/dashboard` as const;
+  const dest = isStaff ? "/admin" : `/${kind}/dashboard`;
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {

@@ -9,5 +9,5 @@ export const Route = createFileRoute("/staff/login")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => <PortalAuth kind="provider" />,
+  component: () => <PortalAuth kind="staff" />,
 });

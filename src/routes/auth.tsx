@@ -49,7 +49,7 @@ function AuthPage() {
     }
   }
 
-  async function routeAfterAuth(userId: string) {
+  async function routeAfterAuth(user: { id: string; user_metadata?: Record<string, any> }) {
     if (redirectTarget) {
       window.location.href = redirectTarget;
       return;
@@ -57,16 +57,21 @@ function AuthPage() {
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId);
+      .eq("user_id", user.id);
     const roleList = (roles ?? []).map((r) => r.role);
     const isOps = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"]
       .some((r) => roleList.includes(r as any));
-    navigate({ to: isOps ? "/admin" : "/" });
+    if (isOps) {
+      navigate({ to: "/admin" });
+      return;
+    }
+    const portal = (user.user_metadata?.portal as "patient" | "provider" | "facility" | undefined) ?? "provider";
+    navigate({ to: `/${portal}/dashboard` } as any);
   }
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) void routeAfterAuth(data.user.id);
+      if (data.user) void routeAfterAuth(data.user);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -93,7 +98,7 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Welcome back.");
         await router.invalidate();
-        if (data.user) await routeAfterAuth(data.user.id);
+        if (data.user) await routeAfterAuth(data.user);
         else navigate({ to: "/" });
       }
     } catch (err) {
