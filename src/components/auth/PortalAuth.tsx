@@ -8,7 +8,7 @@ import {
   PATIENT_RELATIONSHIP_OPTIONS,
 } from "@/lib/patient-relationships";
 
-export type PortalKind = "patient" | "provider" | "facility";
+export type PortalKind = "patient" | "provider" | "facility" | "staff";
 
 const COPY: Record<PortalKind, { eyebrow: string; title: string; blurb: string; bullets: string[] }> = {
   patient: {
@@ -39,6 +39,16 @@ const COPY: Record<PortalKind, { eyebrow: string; title: string; blurb: string; 
       "Manage many patients in one place",
       "Schedule recurring discharges",
       "Statewide provider network",
+    ],
+  },
+  staff: {
+    eyebrow: "Staff & Operations",
+    title: "Dispatchers, admins & zone managers",
+    blurb: "Manage trips, provider compliance, zones, and payouts from one place.",
+    bullets: [
+      "Manage trips & dispatch",
+      "Review provider compliance",
+      "Configure zones & payouts",
     ],
   },
 };

@@ -5,6 +5,7 @@ function loginForPath(pathname: string): string {
   if (pathname.startsWith("/patient")) return "/patient/login";
   if (pathname.startsWith("/provider")) return "/provider/login";
   if (pathname.startsWith("/facility")) return "/facility/login";
+  if (pathname.startsWith("/staff")) return "/staff/login";
   return "/auth";
 }
 
