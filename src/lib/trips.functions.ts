@@ -213,7 +213,7 @@ const createTripSchema = tripBaseSchema.extend({
 /** Create a HIPAA acknowledgment for the current user. */
 export const recordHipaaAck = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { context: "send_trip" | "bulk_upload" | "api_push" | "public_request" }) => input)
+  .inputValidator((input: { context: "send_trip" | "bulk_upload" | "api_push" | "public_request" | "settings" }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
