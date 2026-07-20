@@ -1314,9 +1314,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         return <div className="col-span-2"><TripLegsPreview legs={legs} /></div>;
       })()}
 
-      <div className="col-span-2 space-y-3"></div>
-
-      <div className="col-span-2 space-y-3"></div>
+      <div className="col-span-2 space-y-3">
         <PriceEstimate
           pickupZip={pickupMeta.zip || form.pickup_zip || ""}
           miles={estimatedMiles}
