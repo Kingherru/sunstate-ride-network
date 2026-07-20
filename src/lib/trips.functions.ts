@@ -89,6 +89,43 @@ export const listRegionalProviders = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+function normalizeDateInput(v: unknown): unknown {
+  if (v == null || v === "") return v;
+  if (typeof v !== "string") return v;
+  const s = v.trim();
+  if (!s) return s;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // Handle ISO datetime "2026-07-20T00:00:00.000Z" or "MM/DD/YYYY"
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const us = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (us) return `${us[3]}-${us[1].padStart(2, "0")}-${us[2].padStart(2, "0")}`;
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+  return s;
+}
+function normalizeTimeInput(v: unknown): unknown {
+  if (v == null || v === "") return v;
+  if (typeof v !== "string") return v;
+  const s = v.trim();
+  if (!s) return s;
+  if (/^\d{2}:\d{2}(:\d{2})?$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  if (m) {
+    let h = parseInt(m[1], 10);
+    const suffix = m[3]?.toLowerCase();
+    if (suffix === "pm" && h < 12) h += 12;
+    if (suffix === "am" && h === 12) h = 0;
+    return `${String(h).padStart(2, "0")}:${m[2]}`;
+  }
+  return s;
+}
+
 const tripBaseSchema = z.object({
   patient_first_name: z.string().trim().min(1).max(80),
   patient_last_name: z.string().trim().min(1).max(80),
