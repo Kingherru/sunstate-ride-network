@@ -235,7 +235,7 @@ export const getReservationReview = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const cols =
       SELECT_COLS +
-      ", pickup_address_details, pickup_zip, dropoff_zip, appointment_time, return_pickup_time, return_dropoff_time, dispatch_source, scheduled_start_time, assigned_driver_id, service_level, needs_wheelchair, payer, medicaid_number, medicaid_plan";
+      ", pickup_address_details, pickup_zip, dropoff_zip, appointment_time, return_pickup_time, return_dropoff_time, return_date, dispatch_source, scheduled_start_time, assigned_driver_id, service_level, needs_wheelchair, payer, medicaid_number, medicaid_plan";
     const { data: row, error } = await supabase
       .from("ride_requests")
       .select(cols)
@@ -302,6 +302,7 @@ const copyDateEntrySchema = z.object({
   appointmentTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
 
 const copyToDatesSchema = z.object({
@@ -385,6 +386,7 @@ export const copyRequestToDates = createServerFn({ method: "POST" })
       base.appointment_time = d.appointmentTime || null;
       base.return_pickup_time = d.returnPickupTime || null;
       base.return_dropoff_time = d.returnDropoffTime || null;
+      base.return_date = d.returnDate || ((source as any).round_trip ? d.pickupDate : null);
       base.status = "pending";
       // Each copy is an independent one-off trip (never a recurring series).
       base.recurrence_rule = null;

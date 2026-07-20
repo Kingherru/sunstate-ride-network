@@ -24,6 +24,9 @@ export interface TripPdfInput {
   transport_type?: string | null;
   service_level?: string | null;
   round_trip?: boolean | null;
+  return_date?: string | null;
+  return_pickup_time?: string | null;
+  return_dropoff_time?: string | null;
   mobility_notes?: string | null;
   special_instructions?: string | null;
   payer?: string | null;
@@ -92,6 +95,10 @@ export function downloadTripPdf(trip: TripPdfInput) {
   row("Type", trip.transport_type || "ambulatory");
   row("Service level", (trip.service_level || "curb_to_curb").replace(/_/g, " "));
   row("Round trip", trip.round_trip ? "Yes" : "No");
+  if (trip.round_trip) {
+    row("Return date / time", `${trip.return_date || trip.pickup_date} at ${trip.return_pickup_time || "—"}`);
+    if (trip.return_dropoff_time) row("Return drop-off", trip.return_dropoff_time);
+  }
   row("Mobility notes", trip.mobility_notes || "—");
   row("Special", trip.special_instructions || "—");
   row("Payer", trip.payer || "—");

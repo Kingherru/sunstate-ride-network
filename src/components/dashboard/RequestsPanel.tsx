@@ -22,6 +22,7 @@ type Row = {
   appointment_time: string | null;
   return_pickup_time: string | null;
   return_dropoff_time: string | null;
+  return_date: string | null;
   round_trip: boolean | null;
   trip_type: string | null;
   transport_type: string | null;
@@ -118,7 +119,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("ride_requests")
-        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,medicaid_number,medicaid_plan,created_at")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,return_date,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,medicaid_number,medicaid_plan,created_at")
         .is("assigned_provider_id", null)
         .in("status", ["pending", "open", "new"])
         .order("pickup_date", { ascending: true });
@@ -229,6 +230,9 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
                   {(r.round_trip || r.trip_type === "round_trip" || r.return_pickup_time) && (
                     <>
+                      {r.return_date && r.return_date !== r.pickup_date && (
+                        <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return date:</span> {r.return_date}</span>
+                      )}
                       <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return pickup:</span> {r.return_pickup_time || "—"}</span>
                       {r.return_dropoff_time && (
                         <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return drop-off:</span> {r.return_dropoff_time}</span>

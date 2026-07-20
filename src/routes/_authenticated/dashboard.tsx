@@ -976,6 +976,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     round_trip: !!seed.round_trip,
     return_pickup_time: "",
     return_dropoff_time: "",
+    return_date: "",
     service_level: seed.service_level ?? "curb_to_curb",
     needs_wheelchair: !!seed.needs_wheelchair,
     has_passenger: !!seed.has_passenger,
@@ -1000,6 +1001,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
   });
   const isDelivery = form.trip_kind === "medical_delivery";
   const [hipaaOk, setHipaaOk] = useState(false);
+  const [returnDateManual, setReturnDateManual] = useState(false);
   // Location metadata from Google Places for live mileage/quote.
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.dropoff_zip ?? "", lat: null, lng: null });
@@ -1019,10 +1021,13 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         throw new Error("Return pickup time is required for round trips.");
       }
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
-      const payload = { ...form };
+      const payload: any = { ...form };
+      if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
+      if (!payload.round_trip) payload.return_date = null;
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
+      if (!payload.return_date) delete payload.return_date;
       if (!payload.appointment_time) delete payload.appointment_time;
       if (!payload.payer_id) delete payload.payer_id;
       // Delivery-only fields: strip when not a delivery, and coerce weight.
@@ -1161,7 +1166,11 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       <DatePickerField
         label="Pickup date"
         value={form.pickup_date}
-        onChange={(v) => setForm({ ...form, pickup_date: v })}
+        onChange={(v) => setForm({
+          ...form,
+          pickup_date: v,
+          return_date: form.round_trip && !returnDateManual ? v : form.return_date,
+        })}
         required
         booking
       />
@@ -1237,14 +1246,26 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
                 ...form,
                 round_trip: on,
                 return_pickup_time: on && !form.return_pickup_time ? form.pickup_time : form.return_pickup_time,
+                return_date: on ? (returnDateManual && form.return_date ? form.return_date : form.pickup_date) : "",
               });
+              if (!on) setReturnDateManual(false);
             }} />
-            Round trip (return pickup time required)
+            Round trip (return date &amp; pickup time required)
           </label>
           {form.round_trip && (
             <>
-              <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
+              <DatePickerField
+                label="Return date"
+                value={form.return_date}
+                onChange={(v) => { setReturnDateManual(true); setForm({ ...form, return_date: v }); }}
+                required
+                booking
+              />
+              <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.return_date || form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
               <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+              <div className="col-span-2 -mt-1 text-[11px] text-muted-foreground">
+                Defaults to your pickup date. Change it if the patient returns on a different day (e.g. after surgery).
+              </div>
             </>
           )}
           <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
@@ -1309,13 +1330,14 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           { label: "Pickup", from: pickup, to: dropoff, date: form.pickup_date, time: form.pickup_time },
         ];
         if (form.round_trip) {
+          const rdate = form.return_date || form.pickup_date;
           legs.push({
             label: "Return",
             from: dropoff,
             to: pickup,
-            date: form.pickup_date,
+            date: rdate,
             time: form.return_pickup_time || form.pickup_time,
-            inheritedDate: true,
+            inheritedDate: !form.return_date || form.return_date === form.pickup_date,
             inheritedTime: !form.return_pickup_time,
           });
         }
@@ -1610,6 +1632,7 @@ type EditableFields = {
   appointment_time: string;
   return_pickup_time: string;
   return_dropoff_time: string;
+  return_date: string;
   dropoff_address: string;
   dropoff_city: string;
   dropoff_zip: string;
@@ -1639,6 +1662,7 @@ function buildForm(t: any): EditableFields {
     appointment_time: toFormValue(t.appointment_time),
     return_pickup_time: toFormValue(t.return_pickup_time),
     return_dropoff_time: toFormValue(t.return_dropoff_time),
+    return_date: toFormValue(t.return_date),
     dropoff_address: toFormValue(t.dropoff_address),
     dropoff_city: toFormValue(t.dropoff_city),
     dropoff_zip: toFormValue(t.dropoff_zip),
@@ -2134,6 +2158,7 @@ function TripDetailView({
                 <Row label="Distance">{readOnly(t.estimated_miles ? `${t.estimated_miles} mi` : t.actual_miles ? `${t.actual_miles} mi` : null)}</Row>
                 {isRound && (
                   <div className="grid grid-cols-2 gap-4">
+                    <Row label="Return date">{input("return_date", canEditAll, { type: "date" })}</Row>
                     <Row label="Return pickup">{input("return_pickup_time", canEditAll, { type: "time" })}</Row>
                     <Row label="Return dropoff">{input("return_dropoff_time", canEditAll, { type: "time" })}</Row>
                   </div>

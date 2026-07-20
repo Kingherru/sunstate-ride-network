@@ -2949,6 +2949,7 @@ export type Database = {
           requester_email: string | null
           requester_phone: string | null
           requester_user_id: string | null
+          return_date: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
           round_trip: boolean
@@ -3044,6 +3045,7 @@ export type Database = {
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
@@ -3139,6 +3141,7 @@ export type Database = {
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
@@ -3953,6 +3956,7 @@ export type Database = {
           referral_fee_cents: number
           referral_fee_source_user_id: string | null
           region: string | null
+          return_date: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
           ride_request_id: string | null
@@ -4091,6 +4095,7 @@ export type Database = {
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
           region?: string | null
+          return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           ride_request_id?: string | null
@@ -4229,6 +4234,7 @@ export type Database = {
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
           region?: string | null
+          return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
           ride_request_id?: string | null

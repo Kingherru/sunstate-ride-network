@@ -151,6 +151,7 @@ function ReservationReviewPage() {
             </div>
             {isRound && (
               <div className="grid grid-cols-2 gap-4">
+                <Field label="Return date">{(r as any).return_date || r.pickup_date || "—"}</Field>
                 <Field label="Return pickup">{r.return_pickup_time || "—"}</Field>
                 <Field label="Return drop-off">{r.return_dropoff_time || "—"}</Field>
               </div>
