@@ -88,8 +88,26 @@ export function TripFinancialBreakdown({
         <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Pre-submit estimate</span>
       </div>
 
+      <div className="text-[11px] text-muted-foreground grid grid-cols-3 gap-2 border border-border/60 rounded-sm p-2">
+        <div><span className="font-bold text-foreground">{legCount}</span> {legCount === 1 ? "leg" : "legs"}{tripTypeLabel ? ` · ${tripTypeLabel}` : ""}</div>
+        <div><span className="font-bold text-foreground">{legCount}</span> {legCount === 1 ? "pickup" : "pickups"}</div>
+        <div><span className="font-bold text-foreground">{totalMiles.toFixed(1)} mi</span>{miles > 0 && legCount > 1 ? ` (${miles.toFixed(1)} × ${legCount})` : ""}</div>
+        {waitMinutes > 0 && <div className="col-span-3"><span className="font-bold text-foreground">{waitMinutes}</span> min projected wait time</div>}
+      </div>
+
+      {fareLines.length > 0 && (
+        <ul className="text-xs divide-y divide-border/60 border border-border/60 rounded-sm px-2">
+          {fareLines.map((l, i) => (
+            <li key={i} className="flex items-start justify-between py-1.5 gap-4">
+              <span className="text-muted-foreground">{l.label}</span>
+              <span className="tabular-nums font-semibold">{fmt(l.amount)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <ul className="text-sm divide-y divide-border/60">
-        <Row label="Client trip charge" value={clientCharge} hint="Base fare quoted to the client / payer." />
+        <Row label="Estimated Trip Total (client charge)" value={clientCharge} hint="Sum of every leg, pickup, mileage, wait time, and add-ons above." />
         <Row
           label="Provider referral fee"
           value={referralFee}
@@ -118,9 +136,9 @@ export function TripFinancialBreakdown({
       <div className="flex items-center justify-between border-t-2 border-foreground pt-3">
         <div>
           <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Final amount required before trip moves forward
+            Estimated Trip Total required before dispatch
           </div>
-          <div className="text-[11px] text-muted-foreground">Client charge plus your referral fee. Trip is not dispatched until this is confirmed.</div>
+          <div className="text-[11px] text-muted-foreground">Client charge plus your referral fee. Final amount may change if trip details are modified before completion.</div>
         </div>
         <div className="font-display text-2xl font-extrabold tracking-tight text-primary">{fmt(finalRequired)}</div>
       </div>
