@@ -190,6 +190,10 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         round_trip: data.tripType === "round_trip" || data.roundTrip,
         return_pickup_time: data.returnPickupTime || null,
         return_dropoff_time: data.returnDropoffTime || null,
+        return_date:
+          data.tripType === "round_trip" || data.roundTrip
+            ? (data.returnDate || data.pickupDate)
+            : null,
 
         additional_stops: data.additionalStops ?? [],
         mobility_notes: data.mobilityNotes || null,
