@@ -23,7 +23,9 @@ function serverClient() {
   );
 }
 
-function computeFare(
+export type FareLine = { label: string; amount: number };
+
+function computeFareBreakdown(
   p: {
     base_pickup: number;
     per_mile: number;
@@ -33,30 +35,51 @@ function computeFare(
   },
   miles: number,
   transport: "ambulatory" | "wheelchair" | "gurney",
-): number {
+  legs: number,
+  waitMinutes: number,
+  waitPerHour: number,
+): { lines: FareLine[]; total: number } {
   const base = Number(p.base_pickup) || 0;
   const mile = Number(p.per_mile) || 0;
   const min = Number(p.minimum_fare) || 0;
   const addon =
     transport === "wheelchair" ? Number(p.wheelchair_addon) || 0 :
     transport === "gurney" ? Number(p.stretcher_addon) || 0 : 0;
-  const raw = base + mile * Math.max(0, miles) + addon;
-  return Math.max(min, raw);
+  const lgs = Math.max(1, Math.floor(legs || 1));
+  const mi = Math.max(0, miles);
+  const lines: FareLine[] = [];
+  if (base > 0) lines.push({ label: `Pickup fee × ${lgs}`, amount: +(base * lgs).toFixed(2) });
+  if (mi > 0 && mile > 0) lines.push({ label: `Mileage (${mi.toFixed(1)} mi × $${mile.toFixed(2)})`, amount: +(mile * mi).toFixed(2) });
+  if (addon > 0) lines.push({ label: `${transport === "gurney" ? "Stretcher" : "Wheelchair"} add-on`, amount: +addon.toFixed(2) });
+  if (waitMinutes > 0 && waitPerHour > 0) {
+    const hrs = Math.ceil(waitMinutes / 60);
+    lines.push({ label: `Wait time (${hrs} hr × $${waitPerHour.toFixed(2)})`, amount: +(hrs * waitPerHour).toFixed(2) });
+  }
+  let total = +lines.reduce((a, l) => a + l.amount, 0).toFixed(2);
+  if (total < min) {
+    lines.push({ label: "Minimum fare adjustment", amount: +(min - total).toFixed(2) });
+    total = min;
+  }
+  return { lines, total: +total.toFixed(2) };
 }
 
 const inputSchema = z.object({
   pickupZip: z.string().trim().max(10).optional().or(z.literal("")),
   zoneId: z.string().uuid().optional().or(z.literal("")),
-  miles: z.number().min(0).max(500).default(10),
+  miles: z.number().min(0).max(2000).default(10),
   transportType: z.enum(["ambulatory", "wheelchair", "gurney"]).default("ambulatory"),
   providerId: z.string().uuid().optional().or(z.literal("")),
+  legs: z.number().int().min(1).max(20).default(1),
+  waitMinutes: z.number().min(0).max(1440).default(0),
 });
 
 export type ZonePriceEstimate = {
   zone: { id: string | null; name: string | null; providerCount: number } | null;
-  zoneAverage: { dollars: number; usingDefault: boolean };
-  provider: { id: string; dollars: number } | null;
+  zoneAverage: { dollars: number; usingDefault: boolean; lines: FareLine[] };
+  provider: { id: string; dollars: number; lines: FareLine[] } | null;
   miles: number;
+  legs: number;
+  waitMinutes: number;
   transportType: "ambulatory" | "wheelchair" | "gurney";
 };
 
@@ -65,6 +88,8 @@ export const estimateTripPrice = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<ZonePriceEstimate> => {
     const sb = serverClient();
     const miles = data.miles || 0;
+    const legs = data.legs || 1;
+    const waitMinutes = data.waitMinutes || 0;
 
     let zoneId = data.zoneId || null;
     if (!zoneId && data.pickupZip) {
@@ -107,28 +132,35 @@ export const estimateTripPrice = createServerFn({ method: "POST" })
       }
     }
 
-    const zoneDollars = computeFare(zoneSrc, miles, data.transportType);
+    const zoneBreak = computeFareBreakdown(zoneSrc, miles, data.transportType, legs, waitMinutes, 0);
 
     let provider: ZonePriceEstimate["provider"] = null;
     if (data.providerId) {
       const { data: pp } = await sb
         .from("provider_pricing")
-        .select("owner_id, base_pickup, per_mile, minimum_fare, wheelchair_addon, stretcher_addon")
+        .select("owner_id, base_pickup, per_mile, minimum_fare, wheelchair_addon, stretcher_addon, wait_per_min, wait_unit")
         .eq("owner_id", data.providerId)
         .maybeSingle();
       if (pp) {
-        provider = {
-          id: data.providerId,
-          dollars: computeFare(pp as any, miles, data.transportType),
-        };
+        const p: any = pp;
+        const waitUnit = String(p.wait_unit ?? "hour");
+        const waitPerHour = waitUnit === "hour"
+          ? Number(p.wait_per_min || 0)
+          : waitUnit === "half_hour"
+            ? Number(p.wait_per_min || 0) * 2
+            : Number(p.wait_per_min || 0) * 60;
+        const pb = computeFareBreakdown(p, miles, data.transportType, legs, waitMinutes, waitPerHour);
+        provider = { id: data.providerId, dollars: pb.total, lines: pb.lines };
       }
     }
 
     return {
       zone,
-      zoneAverage: { dollars: Math.round(zoneDollars * 100) / 100, usingDefault },
+      zoneAverage: { dollars: Math.round(zoneBreak.total * 100) / 100, usingDefault, lines: zoneBreak.lines },
       provider,
       miles,
+      legs,
+      waitMinutes,
       transportType: data.transportType,
     };
   });
