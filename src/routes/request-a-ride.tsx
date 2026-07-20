@@ -527,6 +527,8 @@ function RequestRidePage() {
                 pickupZip={pickupMeta.zip}
                 miles={estimatedMiles}
                 transportType={form.transportType}
+                legs={form.tripType === "round_trip" ? 2 : form.tripType === "multi_trip" ? 1 + form.additionalStops.length : 1}
+                tripTypeLabel={TRIP_TYPE_LABELS[form.tripType]}
               />
             )}
             {form.blackTie && (
