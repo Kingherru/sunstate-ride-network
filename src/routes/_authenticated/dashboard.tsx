@@ -1281,6 +1281,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           pickupZip={pickupMeta.zip || form.pickup_zip || ""}
           miles={estimatedMiles}
           transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
+          legs={form.round_trip ? 2 : 1}
+          tripTypeLabel={form.round_trip ? "Round trip" : "One-way"}
         />
         {portal === "provider" && (
           <TripFinancialBreakdown
@@ -1288,6 +1290,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
             miles={estimatedMiles}
             transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
             senderUserId={userId ?? undefined}
+            legs={form.round_trip ? 2 : 1}
+            tripTypeLabel={form.round_trip ? "Round trip" : "One-way"}
           />
         )}
       </div>
