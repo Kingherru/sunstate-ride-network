@@ -205,7 +205,9 @@ const tripBaseSchema = z.object({
 const createTripSchema = tripBaseSchema.extend({
   source: z.enum(["manual", "csv"]).optional(),
   assigned_to: z.string().uuid().optional(),
-  hipaa_ack_id: z.string().uuid(),
+  // HIPAA acknowledgment is managed from Settings. The server auto-resolves
+  // the user's latest ack (or records one) if this is omitted.
+  hipaa_ack_id: z.string().uuid().optional(),
 });
 
 /** Create a HIPAA acknowledgment for the current user. */
