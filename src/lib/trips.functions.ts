@@ -139,6 +139,7 @@ const tripBaseSchema = z.object({
   appointment_time: z.preprocess(normalizeTimeInput, z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "HH:MM").optional().nullable()),
   return_pickup_time: z.preprocess(normalizeTimeInput, z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "HH:MM").optional().nullable()),
   return_dropoff_time: z.preprocess(normalizeTimeInput, z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "HH:MM").optional().nullable()),
+  return_date: z.preprocess(normalizeDateInput, z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable()),
   dropoff_address: z.string().trim().min(1).max(255),
   dropoff_city: z.string().trim().min(1).max(80),
   dropoff_zip: z.string().trim().max(10).optional().nullable(),
