@@ -14,21 +14,30 @@ export function TripFinancialBreakdown({
   transportType = "ambulatory",
   providerId,
   senderUserId,
+  legs = 1,
+  waitMinutes = 0,
+  tripTypeLabel,
 }: {
   pickupZip: string;
+  /** One-way miles. The engine multiplies by leg count. */
   miles: number;
   transportType?: "ambulatory" | "wheelchair" | "gurney";
   providerId?: string;
   senderUserId?: string;
+  legs?: number;
+  waitMinutes?: number;
+  tripTypeLabel?: string;
 }) {
   const zip = (pickupZip || "").replace(/\D/g, "").slice(0, 5);
-  const enabled = zip.length === 5 && miles > 0;
+  const legCount = Math.max(1, Math.floor(legs || 1));
+  const totalMiles = +(Math.max(0, miles) * legCount).toFixed(2);
+  const enabled = zip.length === 5 && totalMiles > 0;
   const platformFeePct = usePlatformFeePct();
 
   const estQ = useQuery({
-    queryKey: ["price-estimate", zip, miles, transportType, providerId ?? ""],
+    queryKey: ["price-estimate", zip, totalMiles, transportType, providerId ?? "", legCount, waitMinutes],
     queryFn: () => estimateTripPrice({
-      data: { pickupZip: zip, miles, transportType, providerId: providerId ?? "" },
+      data: { pickupZip: zip, miles: totalMiles, transportType, providerId: providerId ?? "", legs: legCount, waitMinutes },
     }),
     enabled,
     staleTime: 60_000,
@@ -60,6 +69,7 @@ export function TripFinancialBreakdown({
   if (!estQ.data) return null;
 
   const clientCharge = estQ.data.provider?.dollars ?? estQ.data.zoneAverage.dollars ?? 0;
+  const fareLines = estQ.data.provider?.lines ?? estQ.data.zoneAverage.lines ?? [];
 
   const feeType = feeQ.data?.referral_fee_type ?? null;
   const feeVal = Number(feeQ.data?.referral_fee_amount ?? 0);
