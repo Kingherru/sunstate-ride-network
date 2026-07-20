@@ -818,7 +818,7 @@ function RequestRidePage() {
               {form.recurrence !== "none" && (
                 <Field label="Repeat until" error={errors.recurrenceEndDate}>
                   <DatePickerField
-                    value={form.recurrenceEndDate}
+                    value={form.recurrenceEndDate ?? ""}
                     onChange={(v) => upd("recurrenceEndDate", v)}
                     min={form.pickupDate || new Date().toISOString().slice(0, 10)}
                   />
