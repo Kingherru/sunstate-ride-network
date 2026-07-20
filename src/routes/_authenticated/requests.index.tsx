@@ -180,6 +180,7 @@ function RequestsPage() {
                 <p className="text-sm font-medium text-zinc-900">
                   {r.pickup_date} · Pickup {r.pickup_time || "—"}
                   {(r as any).appointment_time ? ` · Appt ${(r as any).appointment_time}` : ""}
+                  {(r as any).return_date && (r as any).return_date !== (r as any).pickup_date ? ` · Return date ${(r as any).return_date}` : ""}
                   {(r as any).return_pickup_time ? ` · Return pickup ${(r as any).return_pickup_time}` : ""}
                   {(r as any).return_dropoff_time ? ` · Return drop-off ${(r as any).return_dropoff_time}` : ""}
                 </p>
