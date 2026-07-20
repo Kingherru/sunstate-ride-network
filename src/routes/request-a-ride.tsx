@@ -17,6 +17,7 @@ import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
@@ -483,10 +484,24 @@ function RequestRidePage() {
                 <input className={inputCls} value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} list="fl-cities" />
               </Field>
               <Field label="Date" required error={errors.pickupDate}>
-                <input type="date" className={inputCls} value={form.pickupDate} onChange={(e) => upd("pickupDate", e.target.value)} />
+                <DatePickerField
+                  value={form.pickupDate}
+                  onChange={(v) => upd("pickupDate", v)}
+                  min={new Date().toISOString().slice(0, 10)}
+                  required
+                />
               </Field>
               <Field label="Pickup time" required error={errors.pickupTime}>
-                <input type="time" className={inputCls} value={form.pickupTime} onChange={(e) => upd("pickupTime", e.target.value)} />
+                <input type="time" className={inputCls} value={form.pickupTime} onChange={(e) => {
+                  const v = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    pickupTime: v,
+                    // Cascade to return leg and any empty additional stops so users only edit what differs
+                    returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
+                    additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
+                  }));
+                }} />
               </Field>
             </div>
             <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
@@ -622,11 +637,16 @@ function RequestRidePage() {
                     type="button"
                     key={t}
                     onClick={() => {
-                      upd("tripType", t);
-                      upd("roundTrip", t === "round_trip");
-                      if (t !== "multi_trip" && form.additionalStops.length > 0) {
-                        upd("additionalStops", []);
-                      }
+                      setForm((f) => ({
+                        ...f,
+                        tripType: t,
+                        roundTrip: t === "round_trip",
+                        // Default the return leg time to the pickup time when switching to round trip
+                        returnPickupTime:
+                          t === "round_trip" && !f.returnPickupTime ? f.pickupTime : f.returnPickupTime,
+                        // Clear stops when leaving multi-trip; otherwise keep them
+                        additionalStops: t === "multi_trip" ? f.additionalStops : [],
+                      }));
                     }}
                     className={`p-4 border rounded-sm text-sm font-bold uppercase tracking-wide transition-all ${
                       form.tripType === t
@@ -680,7 +700,7 @@ function RequestRidePage() {
                     onClick={() =>
                       upd("additionalStops", [
                         ...form.additionalStops,
-                        { address: "", city: "", pickupTime: "", note: "" },
+                        { address: "", city: "", pickupTime: form.pickupTime ?? "", note: "" },
                       ])
                     }
                     disabled={form.additionalStops.length >= 10}
@@ -797,12 +817,10 @@ function RequestRidePage() {
               </Field>
               {form.recurrence !== "none" && (
                 <Field label="Repeat until" error={errors.recurrenceEndDate}>
-                  <input
-                    type="date"
-                    className={inputCls}
-                    value={form.recurrenceEndDate}
-                    min={form.pickupDate || undefined}
-                    onChange={(e) => upd("recurrenceEndDate", e.target.value)}
+                  <DatePickerField
+                    value={form.recurrenceEndDate ?? ""}
+                    onChange={(v) => upd("recurrenceEndDate", v)}
+                    min={form.pickupDate || new Date().toISOString().slice(0, 10)}
                   />
                 </Field>
               )}

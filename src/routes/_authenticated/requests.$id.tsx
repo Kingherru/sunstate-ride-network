@@ -10,6 +10,7 @@ import {
   listRequestHistory,
 } from "@/lib/requests.functions";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 
 
 export const Route = createFileRoute("/_authenticated/requests/$id")({
@@ -472,9 +473,11 @@ function RescheduleForm({
       <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Pickup</h3>
       <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Pickup date">
-          <input type="date" required value={v.pickupDate}
-            onChange={(e) => set("pickupDate", e.target.value)}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
+          <DatePickerField
+            value={v.pickupDate}
+            onChange={(nv) => set("pickupDate", nv)}
+            required
+          />
         </Field>
         <Field label="Pickup time">
           <input type="time" required value={v.pickupTime}

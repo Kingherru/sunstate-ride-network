@@ -45,6 +45,7 @@ import { SendFeedbackPanel } from "@/components/dashboard/SendFeedbackPanel";
 import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
 import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
@@ -1155,8 +1156,17 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       <Field label="Building / Doctor's office / Suite" v={form.pickup_address_details} on={(v) => setForm({ ...form, pickup_address_details: v })} className="col-span-2" placeholder="e.g. Dr. Smith — Suite 210" />
       <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
       <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
-      <Field label="Pickup date" v={form.pickup_date} on={(v) => setForm({ ...form, pickup_date: v })} required type="date" />
-      <Field label="Pickup time" v={form.pickup_time} on={(v) => setForm({ ...form, pickup_time: v })} required type="time" />
+      <DatePickerField
+        label="Pickup date"
+        value={form.pickup_date}
+        onChange={(v) => setForm({ ...form, pickup_date: v })}
+        required
+        min={new Date().toISOString().slice(0, 10)}
+      />
+      <Field label="Pickup time" v={form.pickup_time} on={(v: string) => setForm({
+        ...form, pickup_time: v,
+        return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
+      })} required type="time" />
       <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
 
       <label className="flex flex-col gap-1 text-sm col-span-2">
@@ -1212,7 +1222,14 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       {!isDelivery && (
         <>
           <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
-            <input type="checkbox" checked={form.round_trip} onChange={(e) => setForm({ ...form, round_trip: e.target.checked })} />
+            <input type="checkbox" checked={form.round_trip} onChange={(e) => {
+              const on = e.target.checked;
+              setForm({
+                ...form,
+                round_trip: on,
+                return_pickup_time: on && !form.return_pickup_time ? form.pickup_time : form.return_pickup_time,
+              });
+            }} />
             Round trip (return pickup time required)
           </label>
           {form.round_trip && (
