@@ -379,6 +379,7 @@ const editableFieldsSchema = z.object({
   appointment_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
   return_pickup_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
   return_dropoff_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+  return_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   dropoff_address: z.string().trim().max(255).nullable().optional(),
   dropoff_city: z.string().trim().max(80).nullable().optional(),
   dropoff_zip: z.string().trim().max(10).nullable().optional(),
