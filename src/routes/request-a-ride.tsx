@@ -18,6 +18,7 @@ import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { TimePickerField } from "@/components/ui/time-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
@@ -538,21 +539,24 @@ function RequestRidePage() {
                 <DatePickerField
                   value={form.pickupDate}
                   onChange={(v) => upd("pickupDate", v)}
-                  min={new Date().toISOString().slice(0, 10)}
+                  booking
                   required
                 />
               </Field>
               <Field label="Pickup time" required error={errors.pickupTime}>
-                <input type="time" className={inputCls} value={form.pickupTime} onChange={(e) => {
-                  const v = e.target.value;
-                  setForm((f) => ({
-                    ...f,
-                    pickupTime: v,
-                    // Cascade to return leg and any empty additional stops so users only edit what differs
-                    returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
-                    additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
-                  }));
-                }} />
+                <TimePickerField
+                  value={form.pickupTime}
+                  pickupDate={form.pickupDate}
+                  enforceLeadTime
+                  onChange={(v) => {
+                    setForm((f) => ({
+                      ...f,
+                      pickupTime: v,
+                      returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
+                      additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
+                    }));
+                  }}
+                />
               </Field>
             </div>
             <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
@@ -719,13 +723,13 @@ function RequestRidePage() {
             {form.tripType === "round_trip" && (
               <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
                 <Field label="Return pickup time" required error={errors.returnPickupTime}>
-                  <input
-                    type="time"
-                    className={inputCls}
+                  <TimePickerField
                     value={form.returnPickupTime ?? ""}
-                    onChange={(e) => upd("returnPickupTime", e.target.value)}
+                    pickupDate={form.pickupDate}
+                    enforceLeadTime
+                    onChange={(v) => upd("returnPickupTime", v)}
+                    helperText="When the patient is ready to be picked up after the appointment."
                   />
-                  <p className="mt-1 text-xs text-muted">When the patient is ready to be picked up after the appointment.</p>
                 </Field>
                 <Field label="Return drop-off time" error={errors.returnDropoffTime}>
                   <input
@@ -786,14 +790,13 @@ function RequestRidePage() {
                         upd("additionalStops", next);
                       }}
                     />
-                    <input
-                      type="time"
-                      className={inputCls}
-                      aria-label={`Stop ${i + 1} pickup time`}
+                    <TimePickerField
                       value={stop.pickupTime ?? ""}
-                      onChange={(e) => {
+                      pickupDate={form.pickupDate}
+                      enforceLeadTime
+                      onChange={(v) => {
                         const next = [...form.additionalStops];
-                        next[i] = { ...next[i], pickupTime: e.target.value };
+                        next[i] = { ...next[i], pickupTime: v };
                         upd("additionalStops", next);
                       }}
                     />
@@ -873,6 +876,7 @@ function RequestRidePage() {
                     value={form.recurrenceEndDate ?? ""}
                     onChange={(v) => upd("recurrenceEndDate", v)}
                     min={form.pickupDate || new Date().toISOString().slice(0, 10)}
+                    booking
                   />
                 </Field>
               )}

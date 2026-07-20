@@ -47,6 +47,7 @@ import { AddressAutocomplete, type AddressSelection } from "@/components/forms/A
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { TimePickerField } from "@/components/ui/time-picker-field";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
 import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
@@ -1162,12 +1163,19 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         value={form.pickup_date}
         onChange={(v) => setForm({ ...form, pickup_date: v })}
         required
-        min={new Date().toISOString().slice(0, 10)}
+        booking
       />
-      <Field label="Pickup time" v={form.pickup_time} on={(v: string) => setForm({
-        ...form, pickup_time: v,
-        return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
-      })} required type="time" />
+      <TimePickerField
+        label="Pickup time"
+        value={form.pickup_time}
+        pickupDate={form.pickup_date}
+        enforceLeadTime
+        required
+        onChange={(v) => setForm({
+          ...form, pickup_time: v,
+          return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
+        })}
+      />
       <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
 
       <label className="flex flex-col gap-1 text-sm col-span-2">
@@ -1235,7 +1243,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           </label>
           {form.round_trip && (
             <>
-              <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
+              <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
               <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
             </>
           )}

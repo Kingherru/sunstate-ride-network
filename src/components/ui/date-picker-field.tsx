@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { maxPickupDate, minPickupDate } from "@/lib/booking-constraints";
 
 /**
  * DatePickerField
@@ -13,6 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
  * - Defaults to the current year.
  * - Works inside dialogs (pointer-events-auto).
  * - Keyboard/screen-reader accessible via Radix Popover + shadcn Calendar.
+ *
+ * Booking constraints:
+ * - `booking` prop applies platform-wide pickup date limits (min lead time, max advance days).
+ * - Explicit `min` / `max` props still override the booking defaults.
  */
 export function DatePickerField({
   label,
@@ -24,6 +29,8 @@ export function DatePickerField({
   min,
   max,
   id,
+  booking = false,
+  helperText,
 }: {
   label?: string;
   value: string; // YYYY-MM-DD or ""
@@ -34,14 +41,18 @@ export function DatePickerField({
   min?: string; // YYYY-MM-DD
   max?: string;
   id?: string;
+  booking?: boolean;
+  helperText?: string;
 }) {
   const parsed = React.useMemo(() => {
     if (!value) return undefined;
     const d = parse(value, "yyyy-MM-dd", new Date());
     return isValid(d) ? d : undefined;
   }, [value]);
-  const minDate = min ? parse(min, "yyyy-MM-dd", new Date()) : undefined;
-  const maxDate = max ? parse(max, "yyyy-MM-dd", new Date()) : undefined;
+  const effMin = min ?? (booking ? minPickupDate() : undefined);
+  const effMax = max ?? (booking ? maxPickupDate() : undefined);
+  const minDate = effMin ? parse(effMin, "yyyy-MM-dd", new Date()) : undefined;
+  const maxDate = effMax ? parse(effMax, "yyyy-MM-dd", new Date()) : undefined;
 
   return (
     <label className={cn("block", className)}>
@@ -72,8 +83,17 @@ export function DatePickerField({
               onChange(format(d, "yyyy-MM-dd"));
             }}
             disabled={(d) => {
-              if (minDate && d < minDate) return true;
-              if (maxDate && d > maxDate) return true;
+              // Compare on calendar-day precision (ignore time).
+              if (minDate) {
+                const minDay = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+                const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                if (day < minDay) return true;
+              }
+              if (maxDate) {
+                const maxDay = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+                const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                if (day > maxDay) return true;
+              }
               return false;
             }}
             initialFocus
@@ -81,6 +101,7 @@ export function DatePickerField({
           />
         </PopoverContent>
       </Popover>
+      {helperText && <p className="mt-1 text-xs text-muted-foreground">{helperText}</p>}
       {required && (
         // Hidden native input keeps form-level `required` semantics for browsers/AT.
         <input
