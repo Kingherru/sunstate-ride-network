@@ -230,6 +230,9 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}</span>
                   {(r.round_trip || r.trip_type === "round_trip" || r.return_pickup_time) && (
                     <>
+                      {r.return_date && r.return_date !== r.pickup_date && (
+                        <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return date:</span> {r.return_date}</span>
+                      )}
                       <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return pickup:</span> {r.return_pickup_time || "—"}</span>
                       {r.return_dropoff_time && (
                         <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Return drop-off:</span> {r.return_dropoff_time}</span>
