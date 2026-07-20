@@ -20,6 +20,8 @@ export function BusinessInfoPanel() {
         </p>
       </div>
 
+      <HipaaAcknowledgmentCard />
+
       {q.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
       {!q.isLoading && !app && (
