@@ -542,7 +542,13 @@ function RequestRidePage() {
               <Field label="Date" required error={errors.pickupDate}>
                 <DatePickerField
                   value={form.pickupDate}
-                  onChange={(v) => upd("pickupDate", v)}
+                  onChange={(v) => {
+                    setForm((f) => ({
+                      ...f,
+                      pickupDate: v,
+                      returnDate: !returnDateManual && f.tripType === "round_trip" ? v : f.returnDate,
+                    }));
+                  }}
                   booking
                   required
                 />
