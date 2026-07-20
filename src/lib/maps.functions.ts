@@ -80,12 +80,13 @@ export const FL_DEFAULTS = {
 // Wait time: $15 per 30 minutes = $0.50/min
 export const FL_WAIT_PER_MIN = 0.5;
 
-export function estimateCostCents(transportType: string | null | undefined, miles: number): number {
+export function estimateCostCents(transportType: string | null | undefined, miles: number, legs: number = 1): number {
   const k = (transportType ?? "ambulatory") as keyof typeof FL_DEFAULTS;
   const r = FL_DEFAULTS[k] ?? FL_DEFAULTS.ambulatory;
   const loadMid = (r.load + r.loadMax) / 2;
   const mileMid = (r.perMileMin + r.perMileMax) / 2;
-  return Math.round((loadMid + mileMid * miles) * 100);
+  const lgs = Math.max(1, Math.floor(legs || 1));
+  return Math.round((loadMid * lgs + mileMid * miles) * 100);
 }
 
 /** Geocode pickup & dropoff for a public ride request, compute miles + duration + polyline + estimate, then write back.
@@ -117,7 +118,6 @@ export const enrichRideRequest = createServerFn({ method: "POST" })
       ...stops.map((s: any) => geocode([s?.address, s?.city, "FL"].filter(Boolean).join(", "))),
     ]);
     if (!p || !d) {
-      // Still send a basic confirmation email if we have one to send to.
       if (req.patient_email) {
         await enqueueConfirmationEmail(supabaseAdmin, req as any, null, null);
       }
@@ -128,8 +128,10 @@ export const enrichRideRequest = createServerFn({ method: "POST" })
 
     const isRoundTrip = req.trip_type === "round_trip" || req.round_trip === true;
     const multiplier = isRoundTrip ? 2 : 1;
+    // Legs = 1 for one-way, 2 for round trip, or 1 + additional stops for multi-trip.
+    const legs = isRoundTrip ? 2 : 1 + validIntermediates.length;
     const adjustedMiles = info.miles != null ? +(info.miles * multiplier).toFixed(2) : null;
-    const cents = adjustedMiles != null ? estimateCostCents(req.transport_type, adjustedMiles) : null;
+    const cents = adjustedMiles != null ? estimateCostCents(req.transport_type, adjustedMiles, legs) : null;
 
     await supabaseAdmin.from("ride_requests").update({
       pickup_lat: p.lat, pickup_lng: p.lng, pickup_zip: p.zip,
