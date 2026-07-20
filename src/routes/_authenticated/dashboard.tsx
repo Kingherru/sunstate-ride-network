@@ -1243,7 +1243,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           </label>
           {form.round_trip && (
             <>
-              <Field label="Return pickup time" v={form.return_pickup_time} on={(v) => setForm({ ...form, return_pickup_time: v })} required type="time" />
+              <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
               <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
             </>
           )}
