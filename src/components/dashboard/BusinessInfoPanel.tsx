@@ -84,6 +84,59 @@ export function BusinessInfoPanel() {
   );
 }
 
+function HipaaAcknowledgmentCard() {
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["hipaa-ack-status"],
+    queryFn: () => getMyHipaaAckStatus(),
+  });
+  const m = useMutation({
+    mutationFn: async () => recordHipaaAck({ data: { context: "settings" } }),
+    onSuccess: () => {
+      toast.success("HIPAA acknowledgment recorded");
+      qc.invalidateQueries({ queryKey: ["hipaa-ack-status"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not record acknowledgment"),
+  });
+  const acknowledged = !!q.data?.acknowledged;
+  const when = q.data?.acknowledged_at
+    ? new Date(q.data.acknowledged_at).toLocaleString()
+    : null;
+  return (
+    <section className="bg-card border border-border rounded-sm p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-extrabold text-sm uppercase tracking-wide">
+            HIPAA acknowledgment
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Acknowledge once here and it applies automatically to every trip you create or upload. My Florida NEMT does not access PHI included in trip details — it is visible only to you and the receiving provider.
+          </p>
+        </div>
+        <span
+          className={`text-xs font-bold px-2 py-1 rounded-sm border ${
+            acknowledged
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-amber-50 border-amber-200 text-amber-800"
+          }`}
+        >
+          {acknowledged ? "On file" : "Not on file"}
+        </span>
+      </div>
+      {acknowledged && when && (
+        <p className="text-xs text-muted-foreground">Last acknowledged {when}</p>
+      )}
+      <button
+        onClick={() => m.mutate()}
+        disabled={m.isPending}
+        className="portal-btn-primary px-4 py-2 text-sm"
+      >
+        {m.isPending ? "Saving…" : acknowledged ? "Re-acknowledge" : "Acknowledge HIPAA"}
+      </button>
+    </section>
+  );
+}
+
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="bg-card border border-border rounded-sm p-4 space-y-2">
