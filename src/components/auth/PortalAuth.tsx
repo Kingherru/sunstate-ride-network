@@ -68,9 +68,10 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
   const [billing, setBilling] = useState({ firstName: "", lastName: "", email: "", phone: "" });
   const copy = COPY[kind];
   const isPatient = kind === "patient";
+  const isStaff = kind === "staff";
   const isSignup = mode === "signup";
 
-  const dest = `/${kind}/dashboard` as const;
+  const dest = isStaff ? "/admin" : `/${kind}/dashboard`;
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
