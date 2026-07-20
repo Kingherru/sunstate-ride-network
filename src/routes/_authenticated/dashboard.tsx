@@ -1365,11 +1365,10 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         )}
       </div>
 
-      <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
-        <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
-        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. My Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
-      </label>
-      <button disabled={m.isPending || !hipaaOk} className="portal-btn-primary col-span-2 py-3">
+      <p className="col-span-2 text-xs text-muted-foreground bg-muted/30 border border-border rounded-sm p-2">
+        HIPAA acknowledgment is stored once in <strong>Settings → Business info</strong> and applied automatically to every trip you create.
+      </p>
+      <button disabled={m.isPending} className="portal-btn-primary col-span-2 py-3">
         {m.isPending ? "Creating…" : "Create trip"}
       </button>
     </form>
