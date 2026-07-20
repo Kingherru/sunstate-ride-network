@@ -80,7 +80,7 @@ async function requireHipaaAck(
     .from("hipaa_acknowledgments")
     .select("id")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+    .order("acknowledged_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (latest?.id) return latest.id;
