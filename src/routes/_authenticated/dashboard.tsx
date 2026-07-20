@@ -1163,9 +1163,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         required
         min={new Date().toISOString().slice(0, 10)}
       />
-      <Field label="Pickup time" v={form.pickup_time} on={(v) => setForm({
+      <Field label="Pickup time" v={form.pickup_time} on={(v: string) => setForm({
         ...form, pickup_time: v,
-        // Auto-fill return pickup time on round trips when not yet set
         return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
       })} required type="time" />
       <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
