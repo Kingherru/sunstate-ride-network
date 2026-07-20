@@ -289,7 +289,7 @@ export const createTrip = createServerFn({ method: "POST" })
   });
 
 const bulkTripsSchema = z.object({
-  hipaa_ack_id: z.string().uuid(),
+  hipaa_ack_id: z.string().uuid().optional(),
   trips: z.array(tripBaseSchema).min(1).max(500),
 });
 
