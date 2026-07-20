@@ -232,15 +232,15 @@ export const getMyHipaaAckStatus = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data } = await supabase
       .from("hipaa_acknowledgments")
-      .select("id, created_at, context, version")
+      .select("id, acknowledged_at, context, version")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .order("acknowledged_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     return {
       acknowledged: !!data?.id,
       latest_id: (data?.id as string | undefined) ?? null,
-      acknowledged_at: (data?.created_at as string | undefined) ?? null,
+      acknowledged_at: (data?.acknowledged_at as string | undefined) ?? null,
       version: (data?.version as string | undefined) ?? null,
     };
   });
