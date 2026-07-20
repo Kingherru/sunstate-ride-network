@@ -76,6 +76,7 @@ export const rideRequestSchema = z.object({
   roundTrip: z.boolean().default(false),
   returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
   additionalStops: z.array(additionalStopSchema).max(10).default([]),
   mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
