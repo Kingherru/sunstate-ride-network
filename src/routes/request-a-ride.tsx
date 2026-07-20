@@ -111,13 +111,14 @@ function buildLegs(f: RideRequestInput): LegInput[] {
     }
   }
   if (f.tripType === "round_trip") {
+    const rdate = f.returnDate || f.pickupDate;
     legs.push({
       label: "Return",
       from: dropoff,
       to: pickup,
-      date: f.pickupDate,
+      date: rdate,
       time: f.returnPickupTime || f.pickupTime,
-      inheritedDate: true,
+      inheritedDate: !f.returnDate || f.returnDate === f.pickupDate,
       inheritedTime: !f.returnPickupTime,
     });
   }
