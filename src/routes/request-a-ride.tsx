@@ -539,21 +539,24 @@ function RequestRidePage() {
                 <DatePickerField
                   value={form.pickupDate}
                   onChange={(v) => upd("pickupDate", v)}
-                  min={new Date().toISOString().slice(0, 10)}
+                  booking
                   required
                 />
               </Field>
               <Field label="Pickup time" required error={errors.pickupTime}>
-                <input type="time" className={inputCls} value={form.pickupTime} onChange={(e) => {
-                  const v = e.target.value;
-                  setForm((f) => ({
-                    ...f,
-                    pickupTime: v,
-                    // Cascade to return leg and any empty additional stops so users only edit what differs
-                    returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
-                    additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
-                  }));
-                }} />
+                <TimePickerField
+                  value={form.pickupTime}
+                  pickupDate={form.pickupDate}
+                  enforceLeadTime
+                  onChange={(v) => {
+                    setForm((f) => ({
+                      ...f,
+                      pickupTime: v,
+                      returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
+                      additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
+                    }));
+                  }}
+                />
               </Field>
             </div>
             <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
