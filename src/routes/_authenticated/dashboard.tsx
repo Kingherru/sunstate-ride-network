@@ -1659,6 +1659,7 @@ function buildForm(t: any): EditableFields {
     appointment_time: toFormValue(t.appointment_time),
     return_pickup_time: toFormValue(t.return_pickup_time),
     return_dropoff_time: toFormValue(t.return_dropoff_time),
+    return_date: toFormValue(t.return_date),
     dropoff_address: toFormValue(t.dropoff_address),
     dropoff_city: toFormValue(t.dropoff_city),
     dropoff_zip: toFormValue(t.dropoff_zip),
