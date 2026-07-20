@@ -47,6 +47,7 @@ import { AddressAutocomplete, type AddressSelection } from "@/components/forms/A
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { TimePickerField } from "@/components/ui/time-picker-field";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
 import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
