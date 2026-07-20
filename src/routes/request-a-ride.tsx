@@ -72,6 +72,56 @@ const empty: RideRequestInput = {
   blackTie: false,
 };
 
+function buildLegs(f: RideRequestInput): LegInput[] {
+  const pickup = [f.pickupAddress, f.pickupCity].filter(Boolean).join(", ");
+  const dropoff = [f.dropoffAddress, f.dropoffCity].filter(Boolean).join(", ");
+  const legs: LegInput[] = [];
+  // Leg 1: primary pickup → drop-off (or first stop for multi-trip)
+  const firstTo =
+    f.tripType === "multi_trip" && f.additionalStops.length > 0
+      ? [f.additionalStops[0].address, f.additionalStops[0].city].filter(Boolean).join(", ")
+      : dropoff;
+  legs.push({
+    label: "Pickup",
+    from: pickup,
+    to: firstTo,
+    date: f.pickupDate,
+    time: f.pickupTime,
+  });
+  if (f.tripType === "multi_trip") {
+    for (let i = 0; i < f.additionalStops.length; i++) {
+      const s = f.additionalStops[i];
+      const next = f.additionalStops[i + 1];
+      const to = next
+        ? [next.address, next.city].filter(Boolean).join(", ")
+        : dropoff;
+      const stopTime = s.pickupTime ?? "";
+      legs.push({
+        label: `Stop ${i + 1}`,
+        from: [s.address, s.city].filter(Boolean).join(", "),
+        to,
+        date: f.pickupDate,
+        time: stopTime || f.pickupTime,
+        inheritedDate: true,
+        inheritedTime: !stopTime,
+        note: s.note || undefined,
+      });
+    }
+  }
+  if (f.tripType === "round_trip") {
+    legs.push({
+      label: "Return",
+      from: dropoff,
+      to: pickup,
+      date: f.pickupDate,
+      time: f.returnPickupTime || f.pickupTime,
+      inheritedDate: true,
+      inheritedTime: !f.returnPickupTime,
+    });
+  }
+  return legs;
+}
+
 
 const TRIP_TYPE_LABELS: Record<RideRequestInput["tripType"], string> = {
   one_way: "One-way",
