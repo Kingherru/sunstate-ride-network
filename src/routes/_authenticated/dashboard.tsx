@@ -45,6 +45,7 @@ import { SendFeedbackPanel } from "@/components/dashboard/SendFeedbackPanel";
 import { listMyPayers } from "@/lib/payers.functions";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
 import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
