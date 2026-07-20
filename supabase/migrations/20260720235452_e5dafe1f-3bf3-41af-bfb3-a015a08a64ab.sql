@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.ride_requests_enforce_field_authorization() FROM PUBLIC, anon, authenticated;

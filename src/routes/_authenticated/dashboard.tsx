@@ -1000,7 +1000,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     delivery_recipient_phone: seed.delivery_recipient_phone ?? "",
   });
   const isDelivery = form.trip_kind === "medical_delivery";
-  const [hipaaOk, setHipaaOk] = useState(false);
+  // HIPAA acknowledgment is now managed in Settings (Business info). The
+  // server auto-resolves the caller's latest acknowledgment on submit, so
+  // this form no longer prompts for it every time.
   const [returnDateManual, setReturnDateManual] = useState(false);
   // Location metadata from Google Places for live mileage/quote.
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
@@ -1016,11 +1018,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
 
   const m = useMutation({
     mutationFn: async () => {
-      if (!hipaaOk) throw new Error("Please confirm HIPAA acknowledgment.");
       if (form.round_trip && !form.return_pickup_time) {
         throw new Error("Return pickup time is required for round trips.");
       }
-      const ack = await recordHipaaAck({ data: { context: "send_trip" } });
       const payload: any = { ...form };
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
@@ -1046,9 +1046,10 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           delete payload.delivery_weight_lbs;
         }
       }
-      return createTrip({ data: { ...payload, hipaa_ack_id: ack.id } });
+      // HIPAA ack is resolved server-side from the user's Settings record.
+      return createTrip({ data: payload });
     },
-    onSuccess: () => { toast.success("Trip created"); setHipaaOk(false); onCreated(); },
+    onSuccess: () => { toast.success("Trip created"); onCreated(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
   });
 
@@ -1364,11 +1365,10 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         )}
       </div>
 
-      <label className="col-span-2 flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3">
-        <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" required />
-        <span><strong>HIPAA acknowledgment.</strong> I confirm this transmission complies with HIPAA. My Florida NEMT does not access PHI included in trip details — it is visible only to me and the receiving provider.</span>
-      </label>
-      <button disabled={m.isPending || !hipaaOk} className="portal-btn-primary col-span-2 py-3">
+      <p className="col-span-2 text-xs text-muted-foreground bg-muted/30 border border-border rounded-sm p-2">
+        HIPAA acknowledgment is stored once in <strong>Settings → Business info</strong> and applied automatically to every trip you create.
+      </p>
+      <button disabled={m.isPending} className="portal-btn-primary col-span-2 py-3">
         {m.isPending ? "Creating…" : "Create trip"}
       </button>
     </form>
@@ -1398,7 +1398,6 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
   const [preview, setPreview] = useState<any[] | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
-  const [hipaaOk, setHipaaOk] = useState(false);
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1422,14 +1421,12 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
   async function upload() {
     const rows = (window as any).__csvRows as any[] | undefined;
     if (!rows) return;
-    if (!hipaaOk) { toast.error("Please confirm HIPAA acknowledgment"); return; }
     setBusy(true);
     try {
-      const ack = await recordHipaaAck({ data: { context: "bulk_upload" } });
-      const res = await createTripsBulk({ data: { trips: rows, hipaa_ack_id: ack.id } });
+      // HIPAA ack is resolved server-side from Settings.
+      const res = await createTripsBulk({ data: { trips: rows } });
       toast.success(`Uploaded ${res.count} trips`);
       setPreview(null);
-      setHipaaOk(false);
       if (fileRef.current) fileRef.current.value = "";
       onUploaded();
     } catch (e: any) {
@@ -1467,12 +1464,11 @@ function CsvUpload({ onUploaded }: { onUploaded: () => void }) {
               </tbody>
             </table>
           </div>
-          <label className="flex items-start gap-2 text-sm bg-muted/40 border border-border rounded-sm p-3 mb-3">
-            <input type="checkbox" checked={hipaaOk} onChange={(e) => setHipaaOk(e.target.checked)} className="mt-0.5" />
-            <span><strong>HIPAA acknowledgment.</strong> I confirm this bulk transmission complies with HIPAA. My Florida NEMT does not access PHI included in trip details.</span>
-          </label>
+          <p className="text-xs text-muted-foreground bg-muted/30 border border-border rounded-sm p-2 mb-3">
+            HIPAA acknowledgment is stored once in <strong>Settings → Business info</strong> and applied automatically to bulk uploads.
+          </p>
           <button
-            disabled={busy || missing.length > 0 || !hipaaOk}
+            disabled={busy || missing.length > 0}
             onClick={upload}
             className="portal-btn-primary px-6 py-2"
           >

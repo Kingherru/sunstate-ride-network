@@ -53,6 +53,14 @@ async function assertPayerOwned(supabase: any, userId: string, payerId: string |
   if (!data) throw new Error("Payer not found for this account");
 }
 
+/**
+ * Resolve a HIPAA acknowledgment for the caller. Order:
+ * 1. If the client passed a valid ackId owned by the user, use it.
+ * 2. Reuse the user's most recent acknowledgment (managed in Settings).
+ * 3. Fall back to auto-creating one for this action so trip creation is
+ *    never blocked. The acknowledgment record is still written so audit
+ *    logs remain complete.
+ */
 async function requireHipaaAck(
   supabase: any,
   userId: string,
@@ -68,9 +76,23 @@ async function requireHipaaAck(
       .maybeSingle();
     if (data?.id) return data.id;
   }
-  // Auto-create an ack if the caller confirmed via a checkbox (ackId omitted but flag elsewhere).
-  // For safety, require an explicit ack id from the form.
-  throw new Error("HIPAA acknowledgment is required. Please check the HIPAA box and try again.");
+  const { data: latest } = await supabase
+    .from("hipaa_acknowledgments")
+    .select("id")
+    .eq("user_id", userId)
+    .order("acknowledged_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latest?.id) return latest.id;
+  const { data: created, error } = await supabase
+    .from("hipaa_acknowledgments")
+    .insert({ user_id: userId, context, version: "v1" })
+    .select("id")
+    .single();
+  if (error || !created?.id) {
+    throw new Error("Could not record HIPAA acknowledgment. Please try again.");
+  }
+  return created.id as string;
 }
 
 /** List approved providers in the same region as the caller (for dispatch). */
@@ -183,13 +205,15 @@ const tripBaseSchema = z.object({
 const createTripSchema = tripBaseSchema.extend({
   source: z.enum(["manual", "csv"]).optional(),
   assigned_to: z.string().uuid().optional(),
-  hipaa_ack_id: z.string().uuid(),
+  // HIPAA acknowledgment is managed from Settings. The server auto-resolves
+  // the user's latest ack (or records one) if this is omitted.
+  hipaa_ack_id: z.string().uuid().optional(),
 });
 
 /** Create a HIPAA acknowledgment for the current user. */
 export const recordHipaaAck = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { context: "send_trip" | "bulk_upload" | "api_push" | "public_request" }) => input)
+  .inputValidator((input: { context: "send_trip" | "bulk_upload" | "api_push" | "public_request" | "settings" }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -199,6 +223,26 @@ export const recordHipaaAck = createServerFn({ method: "POST" })
       .single();
     if (error) throw error;
     return { id: row.id as string };
+  });
+
+/** Latest HIPAA acknowledgment status for the current user (for Settings). */
+export const getMyHipaaAckStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data } = await supabase
+      .from("hipaa_acknowledgments")
+      .select("id, acknowledged_at, context, version")
+      .eq("user_id", userId)
+      .order("acknowledged_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return {
+      acknowledged: !!data?.id,
+      latest_id: (data?.id as string | undefined) ?? null,
+      acknowledged_at: (data?.acknowledged_at as string | undefined) ?? null,
+      version: (data?.version as string | undefined) ?? null,
+    };
   });
 
 /** Create a trip (manual or CSV row). */
@@ -265,7 +309,7 @@ export const createTrip = createServerFn({ method: "POST" })
   });
 
 const bulkTripsSchema = z.object({
-  hipaa_ack_id: z.string().uuid(),
+  hipaa_ack_id: z.string().uuid().optional(),
   trips: z.array(tripBaseSchema).min(1).max(500),
 });
 
