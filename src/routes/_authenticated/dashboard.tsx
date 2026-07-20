@@ -983,7 +983,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     special_instructions: seed.special_instructions ?? "",
     payer: seed.payer ?? "",
     payer_id: seed.payer_id ?? "",
-    trip_number: "",
+    
     // Medical Delivery fields (only used when trip_kind === 'medical_delivery')
     delivery_item_type: seed.delivery_item_type ?? "prescription",
     delivery_item_description: seed.delivery_item_description ?? "",
@@ -1084,7 +1084,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       {!isDelivery && (
         <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       )}
-      <Field label={isDelivery ? "Reference #" : "Trip number"} v={form.trip_number} on={(v) => setForm({ ...form, trip_number: v })} />
+      
 
       {isDelivery ? (
         <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
