@@ -976,6 +976,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     round_trip: !!seed.round_trip,
     return_pickup_time: "",
     return_dropoff_time: "",
+    return_date: "",
     service_level: seed.service_level ?? "curb_to_curb",
     needs_wheelchair: !!seed.needs_wheelchair,
     has_passenger: !!seed.has_passenger,
