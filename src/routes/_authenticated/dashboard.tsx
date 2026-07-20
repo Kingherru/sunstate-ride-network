@@ -1327,13 +1327,14 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           { label: "Pickup", from: pickup, to: dropoff, date: form.pickup_date, time: form.pickup_time },
         ];
         if (form.round_trip) {
+          const rdate = form.return_date || form.pickup_date;
           legs.push({
             label: "Return",
             from: dropoff,
             to: pickup,
-            date: form.pickup_date,
+            date: rdate,
             time: form.return_pickup_time || form.pickup_time,
-            inheritedDate: true,
+            inheritedDate: !form.return_date || form.return_date === form.pickup_date,
             inheritedTime: !form.return_pickup_time,
           });
         }
