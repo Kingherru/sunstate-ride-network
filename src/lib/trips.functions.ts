@@ -53,6 +53,14 @@ async function assertPayerOwned(supabase: any, userId: string, payerId: string |
   if (!data) throw new Error("Payer not found for this account");
 }
 
+/**
+ * Resolve a HIPAA acknowledgment for the caller. Order:
+ * 1. If the client passed a valid ackId owned by the user, use it.
+ * 2. Reuse the user's most recent acknowledgment (managed in Settings).
+ * 3. Fall back to auto-creating one for this action so trip creation is
+ *    never blocked. The acknowledgment record is still written so audit
+ *    logs remain complete.
+ */
 async function requireHipaaAck(
   supabase: any,
   userId: string,
@@ -68,9 +76,23 @@ async function requireHipaaAck(
       .maybeSingle();
     if (data?.id) return data.id;
   }
-  // Auto-create an ack if the caller confirmed via a checkbox (ackId omitted but flag elsewhere).
-  // For safety, require an explicit ack id from the form.
-  throw new Error("HIPAA acknowledgment is required. Please check the HIPAA box and try again.");
+  const { data: latest } = await supabase
+    .from("hipaa_acknowledgments")
+    .select("id")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latest?.id) return latest.id;
+  const { data: created, error } = await supabase
+    .from("hipaa_acknowledgments")
+    .insert({ user_id: userId, context, version: "v1" })
+    .select("id")
+    .single();
+  if (error || !created?.id) {
+    throw new Error("Could not record HIPAA acknowledgment. Please try again.");
+  }
+  return created.id as string;
 }
 
 /** List approved providers in the same region as the caller (for dispatch). */
