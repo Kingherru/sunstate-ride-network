@@ -1629,6 +1629,7 @@ type EditableFields = {
   appointment_time: string;
   return_pickup_time: string;
   return_dropoff_time: string;
+  return_date: string;
   dropoff_address: string;
   dropoff_city: string;
   dropoff_zip: string;
