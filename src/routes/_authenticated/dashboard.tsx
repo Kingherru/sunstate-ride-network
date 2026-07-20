@@ -1025,6 +1025,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
+      if (!payload.return_date) delete payload.return_date;
       if (!payload.appointment_time) delete payload.appointment_time;
       if (!payload.payer_id) delete payload.payer_id;
       // Delivery-only fields: strip when not a delivery, and coerce weight.
