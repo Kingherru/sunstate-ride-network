@@ -1001,6 +1001,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
   });
   const isDelivery = form.trip_kind === "medical_delivery";
   const [hipaaOk, setHipaaOk] = useState(false);
+  const [returnDateManual, setReturnDateManual] = useState(false);
   // Location metadata from Google Places for live mileage/quote.
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.dropoff_zip ?? "", lat: null, lng: null });
