@@ -302,6 +302,7 @@ const copyDateEntrySchema = z.object({
   appointmentTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
 
 const copyToDatesSchema = z.object({
