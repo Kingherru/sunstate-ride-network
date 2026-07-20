@@ -1294,7 +1294,29 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
                   className="portal-select" rows={2} placeholder={isDelivery ? "Access notes, dock instructions, cold-chain requirements, etc." : ""} />
       </label>
 
-      <div className="col-span-2 space-y-3">
+      {!isDelivery && (() => {
+        const pickup = [form.pickup_address, form.pickup_city].filter(Boolean).join(", ");
+        const dropoff = [form.dropoff_address, form.dropoff_city].filter(Boolean).join(", ");
+        const legs: LegInput[] = [
+          { label: "Pickup", from: pickup, to: dropoff, date: form.pickup_date, time: form.pickup_time },
+        ];
+        if (form.round_trip) {
+          legs.push({
+            label: "Return",
+            from: dropoff,
+            to: pickup,
+            date: form.pickup_date,
+            time: form.return_pickup_time || form.pickup_time,
+            inheritedDate: true,
+            inheritedTime: !form.return_pickup_time,
+          });
+        }
+        return <div className="col-span-2"><TripLegsPreview legs={legs} /></div>;
+      })()}
+
+      <div className="col-span-2 space-y-3"></div>
+
+      <div className="col-span-2 space-y-3"></div>
         <PriceEstimate
           pickupZip={pickupMeta.zip || form.pickup_zip || ""}
           miles={estimatedMiles}
