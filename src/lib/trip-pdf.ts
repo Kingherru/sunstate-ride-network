@@ -24,6 +24,9 @@ export interface TripPdfInput {
   transport_type?: string | null;
   service_level?: string | null;
   round_trip?: boolean | null;
+  return_date?: string | null;
+  return_pickup_time?: string | null;
+  return_dropoff_time?: string | null;
   mobility_notes?: string | null;
   special_instructions?: string | null;
   payer?: string | null;
