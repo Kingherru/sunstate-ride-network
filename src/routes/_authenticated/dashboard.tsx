@@ -1000,7 +1000,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     delivery_recipient_phone: seed.delivery_recipient_phone ?? "",
   });
   const isDelivery = form.trip_kind === "medical_delivery";
-  const [hipaaOk, setHipaaOk] = useState(false);
+  // HIPAA acknowledgment is now managed in Settings (Business info). The
+  // server auto-resolves the caller's latest acknowledgment on submit, so
+  // this form no longer prompts for it every time.
   const [returnDateManual, setReturnDateManual] = useState(false);
   // Location metadata from Google Places for live mileage/quote.
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
