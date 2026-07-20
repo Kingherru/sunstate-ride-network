@@ -235,7 +235,7 @@ export const getReservationReview = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const cols =
       SELECT_COLS +
-      ", pickup_address_details, pickup_zip, dropoff_zip, appointment_time, return_pickup_time, return_dropoff_time, dispatch_source, scheduled_start_time, assigned_driver_id, service_level, needs_wheelchair, payer, medicaid_number, medicaid_plan";
+      ", pickup_address_details, pickup_zip, dropoff_zip, appointment_time, return_pickup_time, return_dropoff_time, return_date, dispatch_source, scheduled_start_time, assigned_driver_id, service_level, needs_wheelchair, payer, medicaid_number, medicaid_plan";
     const { data: row, error } = await supabase
       .from("ride_requests")
       .select(cols)
