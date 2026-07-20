@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
@@ -21,6 +21,7 @@ import { DatePickerField } from "@/components/ui/date-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
+import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 
 
 export const Route = createFileRoute("/request-a-ride")({
@@ -70,6 +71,56 @@ const empty: RideRequestInput = {
   createAccount: false,
   blackTie: false,
 };
+
+function buildLegs(f: RideRequestInput): LegInput[] {
+  const pickup = [f.pickupAddress, f.pickupCity].filter(Boolean).join(", ");
+  const dropoff = [f.dropoffAddress, f.dropoffCity].filter(Boolean).join(", ");
+  const legs: LegInput[] = [];
+  // Leg 1: primary pickup → drop-off (or first stop for multi-trip)
+  const firstTo =
+    f.tripType === "multi_trip" && f.additionalStops.length > 0
+      ? [f.additionalStops[0].address, f.additionalStops[0].city].filter(Boolean).join(", ")
+      : dropoff;
+  legs.push({
+    label: "Pickup",
+    from: pickup,
+    to: firstTo,
+    date: f.pickupDate,
+    time: f.pickupTime,
+  });
+  if (f.tripType === "multi_trip") {
+    for (let i = 0; i < f.additionalStops.length; i++) {
+      const s = f.additionalStops[i];
+      const next = f.additionalStops[i + 1];
+      const to = next
+        ? [next.address, next.city].filter(Boolean).join(", ")
+        : dropoff;
+      const stopTime = s.pickupTime ?? "";
+      legs.push({
+        label: `Stop ${i + 1}`,
+        from: [s.address, s.city].filter(Boolean).join(", "),
+        to,
+        date: f.pickupDate,
+        time: stopTime || f.pickupTime,
+        inheritedDate: true,
+        inheritedTime: !stopTime,
+        note: s.note || undefined,
+      });
+    }
+  }
+  if (f.tripType === "round_trip") {
+    legs.push({
+      label: "Return",
+      from: dropoff,
+      to: pickup,
+      date: f.pickupDate,
+      time: f.returnPickupTime || f.pickupTime,
+      inheritedDate: true,
+      inheritedTime: !f.returnPickupTime,
+    });
+  }
+  return legs;
+}
 
 
 const TRIP_TYPE_LABELS: Record<RideRequestInput["tripType"], string> = {
@@ -771,6 +822,7 @@ function RequestRidePage() {
                 ))}
               </div>
             )}
+            <TripLegsPreview className="mt-2" legs={buildLegs(form)} />
             <Field label="Mobility notes" error={errors.mobilityNotes}>
               <textarea
                 className={`${inputCls} min-h-[80px]`}
