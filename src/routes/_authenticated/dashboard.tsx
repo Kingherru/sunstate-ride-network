@@ -1163,12 +1163,19 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         value={form.pickup_date}
         onChange={(v) => setForm({ ...form, pickup_date: v })}
         required
-        min={new Date().toISOString().slice(0, 10)}
+        booking
       />
-      <Field label="Pickup time" v={form.pickup_time} on={(v: string) => setForm({
-        ...form, pickup_time: v,
-        return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
-      })} required type="time" />
+      <TimePickerField
+        label="Pickup time"
+        value={form.pickup_time}
+        pickupDate={form.pickup_date}
+        enforceLeadTime
+        required
+        onChange={(v) => setForm({
+          ...form, pickup_time: v,
+          return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
+        })}
+      />
       <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
 
       <label className="flex flex-col gap-1 text-sm col-span-2">
