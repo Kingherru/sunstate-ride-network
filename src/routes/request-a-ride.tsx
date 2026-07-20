@@ -723,13 +723,13 @@ function RequestRidePage() {
             {form.tripType === "round_trip" && (
               <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
                 <Field label="Return pickup time" required error={errors.returnPickupTime}>
-                  <input
-                    type="time"
-                    className={inputCls}
+                  <TimePickerField
                     value={form.returnPickupTime ?? ""}
-                    onChange={(e) => upd("returnPickupTime", e.target.value)}
+                    pickupDate={form.pickupDate}
+                    enforceLeadTime
+                    onChange={(v) => upd("returnPickupTime", v)}
+                    helperText="When the patient is ready to be picked up after the appointment."
                   />
-                  <p className="mt-1 text-xs text-muted">When the patient is ready to be picked up after the appointment.</p>
                 </Field>
                 <Field label="Return drop-off time" error={errors.returnDropoffTime}>
                   <input
