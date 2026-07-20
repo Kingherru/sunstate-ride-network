@@ -1021,7 +1021,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         throw new Error("Return pickup time is required for round trips.");
       }
       const ack = await recordHipaaAck({ data: { context: "send_trip" } });
-      const payload = { ...form };
+      const payload: any = { ...form };
+      if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
+      if (!payload.round_trip) payload.return_date = null;
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
