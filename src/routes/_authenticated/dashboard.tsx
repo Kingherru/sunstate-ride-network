@@ -1243,14 +1243,26 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
                 ...form,
                 round_trip: on,
                 return_pickup_time: on && !form.return_pickup_time ? form.pickup_time : form.return_pickup_time,
+                return_date: on ? (returnDateManual && form.return_date ? form.return_date : form.pickup_date) : "",
               });
+              if (!on) setReturnDateManual(false);
             }} />
-            Round trip (return pickup time required)
+            Round trip (return date &amp; pickup time required)
           </label>
           {form.round_trip && (
             <>
-              <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
+              <DatePickerField
+                label="Return date"
+                value={form.return_date}
+                onChange={(v) => { setReturnDateManual(true); setForm({ ...form, return_date: v }); }}
+                required
+                booking
+              />
+              <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.return_date || form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
               <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+              <div className="col-span-2 -mt-1 text-[11px] text-muted-foreground">
+                Defaults to your pickup date. Change it if the patient returns on a different day (e.g. after surgery).
+              </div>
             </>
           )}
           <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
