@@ -637,11 +637,16 @@ function RequestRidePage() {
                     type="button"
                     key={t}
                     onClick={() => {
-                      upd("tripType", t);
-                      upd("roundTrip", t === "round_trip");
-                      if (t !== "multi_trip" && form.additionalStops.length > 0) {
-                        upd("additionalStops", []);
-                      }
+                      setForm((f) => ({
+                        ...f,
+                        tripType: t,
+                        roundTrip: t === "round_trip",
+                        // Default the return leg time to the pickup time when switching to round trip
+                        returnPickupTime:
+                          t === "round_trip" && !f.returnPickupTime ? f.pickupTime : f.returnPickupTime,
+                        // Clear stops when leaving multi-trip; otherwise keep them
+                        additionalStops: t === "multi_trip" ? f.additionalStops : [],
+                      }));
                     }}
                     className={`p-4 border rounded-sm text-sm font-bold uppercase tracking-wide transition-all ${
                       form.tripType === t
