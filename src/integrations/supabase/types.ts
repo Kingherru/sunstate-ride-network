@@ -5039,6 +5039,17 @@ export type Database = {
         Args: { _ride_request_id: string }
         Returns: string
       }
+      provider_can_serve_ride: {
+        Args: {
+          _dropoff_lat: number
+          _dropoff_lng: number
+          _pickup_lat: number
+          _pickup_lng: number
+          _provider_id: string
+          _stored_miles: number
+        }
+        Returns: boolean
+      }
       provider_covers_pickup: {
         Args: {
           _pickup_lat: number
