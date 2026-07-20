@@ -22,6 +22,7 @@ type Row = {
   appointment_time: string | null;
   return_pickup_time: string | null;
   return_dropoff_time: string | null;
+  return_date: string | null;
   round_trip: boolean | null;
   trip_type: string | null;
   transport_type: string | null;
