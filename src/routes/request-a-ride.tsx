@@ -250,6 +250,7 @@ function RequestRidePage() {
           roundTrip: !!row.round_trip,
           returnPickupTime: "",
           returnDropoffTime: "",
+          returnDate: "",
           additionalStops: Array.isArray(row.additional_stops)
             ? (row.additional_stops as RideRequestInput["additionalStops"])
             : [],
