@@ -2155,6 +2155,7 @@ function TripDetailView({
                 <Row label="Distance">{readOnly(t.estimated_miles ? `${t.estimated_miles} mi` : t.actual_miles ? `${t.actual_miles} mi` : null)}</Row>
                 {isRound && (
                   <div className="grid grid-cols-2 gap-4">
+                    <Row label="Return date">{input("return_date", canEditAll, { type: "date" })}</Row>
                     <Row label="Return pickup">{input("return_pickup_time", canEditAll, { type: "time" })}</Row>
                     <Row label="Return dropoff">{input("return_dropoff_time", canEditAll, { type: "time" })}</Row>
                   </div>
