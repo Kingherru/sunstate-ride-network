@@ -225,6 +225,26 @@ export const recordHipaaAck = createServerFn({ method: "POST" })
     return { id: row.id as string };
   });
 
+/** Latest HIPAA acknowledgment status for the current user (for Settings). */
+export const getMyHipaaAckStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data } = await supabase
+      .from("hipaa_acknowledgments")
+      .select("id, created_at, context, version")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return {
+      acknowledged: !!data?.id,
+      latest_id: (data?.id as string | undefined) ?? null,
+      acknowledged_at: (data?.created_at as string | undefined) ?? null,
+      version: (data?.version as string | undefined) ?? null,
+    };
+  });
+
 /** Create a trip (manual or CSV row). */
 export const createTrip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
