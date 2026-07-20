@@ -1163,7 +1163,11 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       <DatePickerField
         label="Pickup date"
         value={form.pickup_date}
-        onChange={(v) => setForm({ ...form, pickup_date: v })}
+        onChange={(v) => setForm({
+          ...form,
+          pickup_date: v,
+          return_date: form.round_trip && !returnDateManual ? v : form.return_date,
+        })}
         required
         booking
       />
