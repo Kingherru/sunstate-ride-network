@@ -790,14 +790,13 @@ function RequestRidePage() {
                         upd("additionalStops", next);
                       }}
                     />
-                    <input
-                      type="time"
-                      className={inputCls}
-                      aria-label={`Stop ${i + 1} pickup time`}
+                    <TimePickerField
                       value={stop.pickupTime ?? ""}
-                      onChange={(e) => {
+                      pickupDate={form.pickupDate}
+                      enforceLeadTime
+                      onChange={(v) => {
                         const next = [...form.additionalStops];
-                        next[i] = { ...next[i], pickupTime: e.target.value };
+                        next[i] = { ...next[i], pickupTime: v };
                         upd("additionalStops", next);
                       }}
                     />
