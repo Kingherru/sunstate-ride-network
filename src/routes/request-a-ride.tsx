@@ -709,9 +709,15 @@ function RequestRidePage() {
                         // Default the return leg time to the pickup time when switching to round trip
                         returnPickupTime:
                           t === "round_trip" && !f.returnPickupTime ? f.pickupTime : f.returnPickupTime,
+                        // Default the return date to the pickup date when switching to round trip
+                        returnDate:
+                          t === "round_trip"
+                            ? (returnDateManual && f.returnDate ? f.returnDate : f.pickupDate)
+                            : "",
                         // Clear stops when leaving multi-trip; otherwise keep them
                         additionalStops: t === "multi_trip" ? f.additionalStops : [],
                       }));
+                      if (t !== "round_trip") setReturnDateManual(false);
                     }}
                     className={`p-4 border rounded-sm text-sm font-bold uppercase tracking-wide transition-all ${
                       form.tripType === t
@@ -732,10 +738,23 @@ function RequestRidePage() {
 
             {form.tripType === "round_trip" && (
               <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
+                <Field label="Return date" required error={(errors as any).returnDate}>
+                  <DatePickerField
+                    value={form.returnDate ?? ""}
+                    onChange={(v) => {
+                      setReturnDateManual(true);
+                      upd("returnDate", v);
+                    }}
+                    booking
+                  />
+                  <p className="mt-1 text-xs text-muted">
+                    Defaults to your pickup date. Change it if the patient returns on a different day (e.g. surgery).
+                  </p>
+                </Field>
                 <Field label="Return pickup time" required error={errors.returnPickupTime}>
                   <TimePickerField
                     value={form.returnPickupTime ?? ""}
-                    pickupDate={form.pickupDate}
+                    pickupDate={form.returnDate || form.pickupDate}
                     enforceLeadTime
                     onChange={(v) => upd("returnPickupTime", v)}
                     helperText="When the patient is ready to be picked up after the appointment."
