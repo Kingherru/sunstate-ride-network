@@ -1026,6 +1026,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
+      if (!payload.patient_email) delete payload.patient_email;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
       if (!payload.return_date) delete payload.return_date;
