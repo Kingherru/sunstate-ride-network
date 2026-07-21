@@ -1620,6 +1620,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
 
 type EditableFields = {
   patient_phone: string;
+  patient_email: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
   pickup_address: string;
