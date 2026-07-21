@@ -1651,6 +1651,7 @@ function toFormValue(v: unknown): string {
 function buildForm(t: any): EditableFields {
   return {
     patient_phone: toFormValue(t.patient_phone),
+    patient_email: toFormValue(t.patient_email),
     emergency_contact_name: toFormValue(t.emergency_contact_name),
     emergency_contact_phone: toFormValue(t.emergency_contact_phone),
     pickup_address: toFormValue(t.pickup_address),
