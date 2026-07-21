@@ -51,7 +51,7 @@ import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
 
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
-import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
+import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { reviewProviderApplication, updateProviderCompliance } from "@/lib/staff.functions";
