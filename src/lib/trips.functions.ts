@@ -413,6 +413,7 @@ export const updateTripStatus = createServerFn({ method: "POST" })
 
 const editableFieldsSchema = z.object({
   patient_phone: z.string().trim().max(32).nullable().optional(),
+  patient_email: z.string().trim().email().max(255).nullable().optional().or(z.literal("")),
   emergency_contact_name: z.string().trim().max(120).nullable().optional(),
   emergency_contact_phone: z.string().trim().max(32).nullable().optional(),
   pickup_address: z.string().trim().max(255).nullable().optional(),
