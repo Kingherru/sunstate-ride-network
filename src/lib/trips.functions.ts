@@ -532,6 +532,29 @@ export const listReservationsByState = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await q;
     if (error) throw error;
-    return rows ?? [];
+    const list = rows ?? [];
+
+    // Enrich booked rows with referral-acceptance metadata from the linked trip,
+    // so the UI can badge trips that were promoted from a priority-offer referral.
+    if (data.state === "booked" && list.length > 0) {
+      const ids = list.map((r: any) => r.id);
+      const { data: trips } = await supabase
+        .from("trips")
+        .select("ride_request_id, priority_offer_accepted_at")
+        .in("ride_request_id", ids)
+        .not("priority_offer_accepted_at", "is", null);
+      const byReq = new Map<string, string>();
+      for (const t of trips ?? []) {
+        if (t.ride_request_id && t.priority_offer_accepted_at) {
+          byReq.set(t.ride_request_id as string, t.priority_offer_accepted_at as string);
+        }
+      }
+      for (const r of list as any[]) {
+        const ts = byReq.get(r.id);
+        if (ts) (r as any).priority_offer_accepted_at = ts;
+      }
+    }
+
+    return list;
   });
 

@@ -526,6 +526,14 @@ export function ReservationsPanel({
                       ) : (
                         <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Unassigned</span>
                       )}
+                      {state === "booked" && (r as any).priority_offer_accepted_at && (
+                        <span
+                          className="bg-violet-100 text-violet-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm"
+                          title={`Referral accepted ${new Date((r as any).priority_offer_accepted_at).toLocaleString()}`}
+                        >
+                          Promoted from Referral · {new Date((r as any).priority_offer_accepted_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                        </span>
+                      )}
                     </div>
                     <div className="font-extrabold">{r.patient_first_name} {r.patient_last_name}</div>
                     <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
