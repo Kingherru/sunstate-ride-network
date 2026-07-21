@@ -1091,6 +1091,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       <Field label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
       <Field label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
       <Field label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field label={isDelivery ? "Sender email" : "Patient email"} v={form.patient_email} on={(v) => setForm({ ...form, patient_email: v })} type="email" />
       {!isDelivery && (
         <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       )}
