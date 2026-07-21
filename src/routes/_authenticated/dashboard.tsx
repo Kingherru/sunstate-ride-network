@@ -2112,6 +2112,7 @@ function TripDetailView({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <Row label={isDelivery ? "Sender name" : "Name"}>{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
               <Row label={isDelivery ? "Sender phone" : "Phone"}>{input("patient_phone", canEditAll, { type: "tel" })}</Row>
+              <Row label={isDelivery ? "Sender email" : "Email"}>{input("patient_email", canEditAll, { type: "email" })}</Row>
               {!isDelivery && (
                 <>
                   <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
