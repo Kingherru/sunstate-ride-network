@@ -954,6 +954,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     patient_first_name: seed.patient_first_name ?? "",
     patient_last_name: seed.patient_last_name ?? "",
     patient_phone: seed.patient_phone ?? "",
+    patient_email: seed.patient_email ?? "",
     patient_date_of_birth: seed.patient_date_of_birth ?? "",
     medicaid_number: seed.medicaid_number ?? "",
     medicaid_plan: seed.medicaid_plan ?? "",
