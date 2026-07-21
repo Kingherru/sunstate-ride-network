@@ -95,18 +95,73 @@ function fmtUsd(v: number | null | undefined, isCents: boolean): string {
 }
 
 
+type ResvState = "unconfirmed" | "booked" | "past" | "history";
+const RESV_TABS: { id: ResvState; label: string; blurb: string }[] = [
+  { id: "unconfirmed", label: "Unconfirmed", blurb: "New reservations awaiting approval, payment, provider assignment, or dispatch review." },
+  { id: "booked", label: "Booked", blurb: "Confirmed and assigned reservations ready to be completed." },
+  { id: "past", label: "Past", blurb: "Completed or canceled reservations from the last 30 days." },
+  { id: "history", label: "Trip History", blurb: "Permanent record of completed reservations older than 30 days." },
+];
+
 export function AdminReservationsPanel() {
   const fetch = useServerFn(listAllReservationsAdmin);
+  const [state, setState] = useState<ResvState>("unconfirmed");
   const [status, setStatus] = useState("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const q = useQuery({
-    queryKey: ["admin-reservations", status],
-    queryFn: () => fetch({ data: { status } }),
+    queryKey: ["admin-reservations", state, status],
+    queryFn: () => fetch({ data: { reservation_state: state, status } }),
   });
 
+  const counts = useQuery({
+    queryKey: ["admin-reservations", "counts"],
+    queryFn: async () => {
+      const [u, b, p, h] = await Promise.all([
+        fetch({ data: { reservation_state: "unconfirmed" } }),
+        fetch({ data: { reservation_state: "booked" } }),
+        fetch({ data: { reservation_state: "past" } }),
+        fetch({ data: { reservation_state: "history" } }),
+      ]);
+      return { unconfirmed: u.length, booked: b.length, past: p.length, history: h.length };
+    },
+  });
+
+  const meta = RESV_TABS.find((t) => t.id === state)!;
 
   return (
     <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
+        <p className="text-xs text-muted-foreground">
+          Lifecycle: Create Trip → Unconfirmed → Booked → Completed (Trip History). Single source of truth per reservation.
+        </p>
+      </div>
+
+      <div className="inline-flex bg-card border border-border rounded-sm p-1 flex-wrap">
+        {RESV_TABS.map((t) => {
+          const c = counts.data?.[t.id];
+          const active = state === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setState(t.id)}
+              className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm inline-flex items-center gap-2 ${
+                active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {t.label}
+              {typeof c === "number" && (
+                <span className={`inline-flex items-center justify-center min-w-[1.25rem] px-1 py-0.5 rounded-sm text-[10px] font-mono ${
+                  active ? "bg-primary-foreground/20" : "bg-muted text-foreground"
+                }`}>{c}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-xs text-muted-foreground">{meta.blurb}</p>
+
       <div className="bg-card border border-border rounded-sm p-4 flex flex-wrap gap-3 items-center">
         <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</label>
         <select value={status} onChange={(e) => setStatus(e.target.value)}
@@ -126,14 +181,15 @@ export function AdminReservationsPanel() {
               <th className="text-left p-3">Dropoff</th>
               <th className="text-left p-3">Type</th>
               <th className="text-left p-3">Status</th>
+              <th className="text-left p-3">Assigned</th>
               <th className="text-left p-3">Created</th>
             </tr>
           </thead>
           <tbody>
-            {q.isLoading && <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Loading reservations…</td></tr>}
-            {q.error && <tr><td colSpan={7} className="p-6 text-center text-destructive">{(q.error as Error).message}</td></tr>}
+            {q.isLoading && <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Loading reservations…</td></tr>}
+            {q.error && <tr><td colSpan={8} className="p-6 text-center text-destructive">{(q.error as Error).message}</td></tr>}
             {!q.isLoading && (q.data?.length ?? 0) === 0 && (
-              <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No reservations found.</td></tr>
+              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No reservations in this bucket.</td></tr>
             )}
             {q.data?.map((r: any) => (
               <tr
@@ -141,12 +197,13 @@ export function AdminReservationsPanel() {
                 onClick={() => setOpenId(r.id)}
                 className="border-t border-border cursor-pointer hover:bg-secondary/30"
               >
-                <td className="p-3">{r.pickup_date} {r.pickup_time?.slice(0,5)}</td>
+                <td className="p-3 whitespace-nowrap">{r.pickup_date} {r.pickup_time?.slice(0,5)}</td>
                 <td className="p-3">{r.patient_first_name} {r.patient_last_name}</td>
                 <td className="p-3">{r.pickup_city} {r.pickup_zip}</td>
                 <td className="p-3">{r.dropoff_city} {r.dropoff_zip ?? ""}</td>
                 <td className="p-3 capitalize">{r.transport_type ?? "—"}</td>
                 <td className="p-3"><StatusBadge status={r.status} /></td>
+                <td className="p-3 text-xs">{r.assigned_provider_id ? "Yes" : <span className="text-muted-foreground">—</span>}</td>
                 <td className="p-3 text-xs text-muted-foreground">{r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}</td>
               </tr>
             ))}
@@ -160,4 +217,5 @@ export function AdminReservationsPanel() {
     </div>
   );
 }
+
 
