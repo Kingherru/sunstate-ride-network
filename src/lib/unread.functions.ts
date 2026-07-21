@@ -213,7 +213,7 @@ export const getUnreadCounts = createServerFn({ method: "GET" })
         const { count: pendingPay } = await supabase
           .from("fin_payouts")
           .select("id", { count: "exact", head: true })
-          .in("status", ["pending", "held", "review"]);
+          .eq("status", "pending");
         counts.admin_payouts = pendingPay ?? 0;
       } catch { counts.admin_payouts = 0; }
     }
