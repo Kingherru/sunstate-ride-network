@@ -3920,6 +3920,7 @@ export type Database = {
           odometer_end: number | null
           odometer_start: number | null
           patient_date_of_birth: string | null
+          patient_email: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone: string | null
@@ -4059,6 +4060,7 @@ export type Database = {
           odometer_end?: number | null
           odometer_start?: number | null
           patient_date_of_birth?: string | null
+          patient_email?: string | null
           patient_first_name: string
           patient_last_name: string
           patient_phone?: string | null
@@ -4198,6 +4200,7 @@ export type Database = {
           odometer_end?: number | null
           odometer_start?: number | null
           patient_date_of_birth?: string | null
+          patient_email?: string | null
           patient_first_name?: string
           patient_last_name?: string
           patient_phone?: string | null

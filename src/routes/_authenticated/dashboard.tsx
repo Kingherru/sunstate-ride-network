@@ -954,6 +954,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     patient_first_name: seed.patient_first_name ?? "",
     patient_last_name: seed.patient_last_name ?? "",
     patient_phone: seed.patient_phone ?? "",
+    patient_email: seed.patient_email ?? "",
     patient_date_of_birth: seed.patient_date_of_birth ?? "",
     medicaid_number: seed.medicaid_number ?? "",
     medicaid_plan: seed.medicaid_plan ?? "",
@@ -1025,6 +1026,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
+      if (!payload.patient_email) delete payload.patient_email;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
       if (!payload.return_dropoff_time) delete payload.return_dropoff_time;
       if (!payload.return_date) delete payload.return_date;
@@ -1090,6 +1092,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       <Field label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
       <Field label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
       <Field label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field label={isDelivery ? "Sender email" : "Patient email"} v={form.patient_email} on={(v) => setForm({ ...form, patient_email: v })} type="email" />
       {!isDelivery && (
         <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       )}
@@ -1617,6 +1620,7 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
 
 type EditableFields = {
   patient_phone: string;
+  patient_email: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
   pickup_address: string;
@@ -1647,6 +1651,7 @@ function toFormValue(v: unknown): string {
 function buildForm(t: any): EditableFields {
   return {
     patient_phone: toFormValue(t.patient_phone),
+    patient_email: toFormValue(t.patient_email),
     emergency_contact_name: toFormValue(t.emergency_contact_name),
     emergency_contact_phone: toFormValue(t.emergency_contact_phone),
     pickup_address: toFormValue(t.pickup_address),
@@ -2107,6 +2112,7 @@ function TripDetailView({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <Row label={isDelivery ? "Sender name" : "Name"}>{readOnly(`${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trim())}</Row>
               <Row label={isDelivery ? "Sender phone" : "Phone"}>{input("patient_phone", canEditAll, { type: "tel" })}</Row>
+              <Row label={isDelivery ? "Sender email" : "Email"}>{input("patient_email", canEditAll, { type: "email" })}</Row>
               {!isDelivery && (
                 <>
                   <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
