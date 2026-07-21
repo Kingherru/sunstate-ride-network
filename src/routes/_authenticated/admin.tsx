@@ -223,6 +223,8 @@ function AdminPage() {
     if (id === "reservations") return TAB_KEYS.adminReservations;
     if (id === "dispatch") return TAB_KEYS.adminDispatch;
     if (id === "trips") return TAB_KEYS.adminTrips;
+    if (id === "providers") return TAB_KEYS.adminProviders;
+    if (id === "payouts") return TAB_KEYS.adminPayouts;
     return null;
   };
 
@@ -300,7 +302,13 @@ function AdminPage() {
                       const tk = adminTabKeyFor(item.id);
                       const tkBadge = tk ? ((unread as any)[tk] ?? 0) : 0;
                       const msgBadge = item.id === "messaging" ? (unreadMsgsQ.data ?? 0) : 0;
+                      // Messages are always urgent (red); otherwise use the tab-key severity.
+                      const sev = msgBadge > 0 ? "red" : (tk ? severityFor(tk) : "red");
                       const badge = tkBadge + msgBadge;
+                      const color =
+                        sev === "green" ? "bg-emerald-600"
+                        : sev === "yellow" ? "bg-amber-500"
+                        : "bg-red-600";
 
                       return (
                         <SidebarMenuItem key={item.id}>
@@ -314,7 +322,7 @@ function AdminPage() {
                             {badge > 0 && (
                               <span
                                 aria-label={`${badge} new`}
-                                className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white animate-pulse"
+                                className={`ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white animate-pulse ${color}`}
                               >
                                 {badge > 99 ? "99+" : badge}
                               </span>
