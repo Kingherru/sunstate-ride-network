@@ -152,6 +152,7 @@ const tripBaseSchema = z.object({
   patient_first_name: z.string().trim().min(1).max(80),
   patient_last_name: z.string().trim().min(1).max(80),
   patient_phone: z.string().trim().max(32).optional().nullable(),
+  patient_email: z.string().trim().email("Enter a valid email").max(255).optional().nullable().or(z.literal("")),
   pickup_address: z.string().trim().min(1).max(255),
   pickup_city: z.string().trim().min(1).max(80),
   pickup_zip: z.string().trim().max(10).optional().nullable(),
