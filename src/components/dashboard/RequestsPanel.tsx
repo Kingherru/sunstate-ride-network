@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { listMyReservations } from "@/lib/schedule-board.functions";
+import { listReservationsByState } from "@/lib/trips.functions";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
 import { formatMinutes } from "@/components/maps/RoutePreview";
@@ -138,10 +138,9 @@ export function RequestsPanel({ userId }: { userId: string }) {
       .update({ assigned_provider_id: userId, status: "assigned" })
       .eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Approved — moved to Reservations");
+    toast.success("Approved — moved to Booked Reservations");
     qc.invalidateQueries({ queryKey: ["incoming-requests"] });
-    qc.invalidateQueries({ queryKey: ["reservations"] });
-    qc.invalidateQueries({ queryKey: ["my-reservations"] });
+    qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
   }
   async function deny(id: string) {
     const { error } = await supabase
@@ -168,7 +167,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Incoming Requests</h2>
         <p className="text-sm text-muted-foreground">
-          Trip requests routed to you by My Florida NEMT (auto by ZIP) or sent directly by another provider/facility. Approve to move to Reservations.
+          Trip requests routed to you by My Florida NEMT (auto by ZIP) or sent directly by another provider/facility. Approve to move into Booked Reservations.
         </p>
       </div>
 
@@ -266,7 +265,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   onClick={() => approve(r.id)}
                   disabled={!isPaidMember}
                   className="text-xs font-bold bg-accent text-accent-foreground px-3 py-2 rounded-sm hover:bg-accent/90 disabled:opacity-50"
-                  title={!isPaidMember ? "Active paid membership required" : "Approve and move to Reservations"}
+                  title={!isPaidMember ? "Active paid membership required" : "Approve and move to Booked Reservations"}
                 >
                   Approve
                 </button>
@@ -280,20 +279,63 @@ export function RequestsPanel({ userId }: { userId: string }) {
 }
 
 
-
-type Bucket = "past" | "current" | "future";
+/**
+ * Reservations panel — three lifecycle sections:
+ *   • Unconfirmed  — newly created, awaiting approval/payment/assignment
+ *   • Booked       — confirmed & assigned, ready to complete
+ *   • Past         — recently completed or canceled (last 30 days)
+ *
+ * Completed trips older than 30 days move to Trip History (permanent record).
+ * A DB trigger keeps `reservation_state` in sync — one source of truth.
+ */
+type ResvState = "unconfirmed" | "booked" | "past";
+type Scope = "requester" | "provider" | "ops";
 type AssignFilter = "all" | "assigned" | "unassigned";
 
-export function ReservationsPanel({ userId }: { userId: string }) {
-  const [bucket, setBucket] = useState<Bucket>("current");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+const STATE_META: Record<ResvState, { label: string; blurb: string }> = {
+  unconfirmed: {
+    label: "Unconfirmed",
+    blurb: "Newly created trips waiting on approval, payment, provider assignment, or dispatch review.",
+  },
+  booked: {
+    label: "Booked",
+    blurb: "Confirmed and assigned reservations that are ready to be completed.",
+  },
+  past: {
+    label: "Past",
+    blurb: "Completed or canceled reservations from the last 30 days. Older completed trips move into Trip History.",
+  },
+};
+
+export function ReservationsPanel({
+  userId,
+  scope = "provider",
+}: {
+  userId: string;
+  scope?: Scope;
+}) {
+  const [state, setState] = useState<ResvState>("unconfirmed");
   const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
   const [payerFilter, setPayerFilter] = useState<"all" | "medicaid">("all");
   const [search, setSearch] = useState("");
-  const fn = useServerFn(listMyReservations);
+  const fn = useServerFn(listReservationsByState);
+
+  // Counts across all three buckets so the tab pill shows totals.
+  const counts = useQuery({
+    queryKey: ["reservations-by-state", "counts", scope, userId],
+    queryFn: async () => {
+      const [u, b, p] = await Promise.all([
+        fn({ data: { state: "unconfirmed", scope } }),
+        fn({ data: { state: "booked", scope } }),
+        fn({ data: { state: "past", scope } }),
+      ]);
+      return { unconfirmed: u.length, booked: b.length, past: p.length };
+    },
+  });
+
   const q = useQuery({
-    queryKey: ["my-reservations", bucket],
-    queryFn: () => fn({ data: { bucket } }),
+    queryKey: ["reservations-by-state", state, scope, userId],
+    queryFn: () => fn({ data: { state, scope } }),
   });
   const provider = useQuery({
     queryKey: ["provider-profile-cms", userId],
@@ -306,12 +348,9 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       return data;
     },
   });
+
   const allRows = (q.data ?? []) as any[];
-
-  const statusOptions = Array.from(new Set(allRows.map((r) => r.status).filter(Boolean)));
-
-  const rows = allRows.filter((r) => {
-    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+  const rows = useMemo(() => allRows.filter((r) => {
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
     if (payerFilter === "medicaid" && !isMedicaidTrip(r)) return false;
@@ -321,56 +360,54 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       if (!hay.includes(s)) return false;
     }
     return true;
-  });
+  }), [allRows, assignFilter, payerFilter, search]);
 
   const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
     (acc[r.pickup_date] ||= []).push(r);
     return acc;
   }, {});
   const dates = Object.keys(grouped).sort((a, b) =>
-    bucket === "past" ? b.localeCompare(a) : a.localeCompare(b),
+    state === "past" ? b.localeCompare(a) : a.localeCompare(b),
   );
+
+  const meta = STATE_META[state];
 
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
         <p className="text-sm text-muted-foreground">
-          Confirmed trips assigned to you. Use the filters below to focus this list — the Schedule tab has its own separate day-view.
+          Create Trip → Unconfirmed Reservation → Booked Reservation → Completed (Trip History).
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex bg-card border border-border rounded-sm p-1">
-          {(["past","current","future"] as Bucket[]).map((b) => (
+      {/* Three lifecycle sections */}
+      <div className="inline-flex bg-card border border-border rounded-sm p-1 flex-wrap">
+        {(["unconfirmed", "booked", "past"] as ResvState[]).map((s) => {
+          const c = counts.data?.[s];
+          const active = state === s;
+          return (
             <button
-              key={b}
-              onClick={() => setBucket(b)}
-              className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm ${
-                bucket === b ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+              key={s}
+              onClick={() => setState(s)}
+              className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm inline-flex items-center gap-2 ${
+                active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              {b === "past" ? "Past" : b === "current" ? "Today" : "Future"}
+              {STATE_META[s].label}
+              {typeof c === "number" && (
+                <span className={`inline-flex items-center justify-center min-w-[1.25rem] px-1 py-0.5 rounded-sm text-[10px] font-mono ${
+                  active ? "bg-primary-foreground/20" : "bg-muted text-foreground"
+                }`}>{c}</span>
+              )}
             </button>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
-          aria-label="Filter by status"
-        >
-          <option value="all">All statuses</option>
-          {["pending","accepted","assigned","in_progress","completed","cancelled"].map((s) => (
-            <option key={s} value={s}>{s.replace("_", " ")}</option>
-          ))}
-          {statusOptions.filter((s) => !["pending","accepted","assigned","in_progress","completed","cancelled"].includes(String(s))).map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+      <p className="text-xs text-muted-foreground">{meta.blurb}</p>
 
-
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={assignFilter}
           onChange={(e) => setAssignFilter(e.target.value as AssignFilter)}
@@ -408,7 +445,11 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
       {!q.isLoading && rows.length === 0 && (
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
-          No reservations match these filters.
+          {state === "unconfirmed"
+            ? "No unconfirmed reservations. New trips will show up here first."
+            : state === "booked"
+            ? "No booked reservations yet. Confirmed & assigned trips appear here."
+            : "No past reservations in the last 30 days. Older completed trips are in Trip History."}
         </div>
       )}
 
@@ -460,14 +501,20 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                 return (
                 <div
                   key={r.id}
-                  draggable
-                  onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; }}
-                  className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap cursor-grab active:cursor-grabbing border ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
-                  title="Drag onto the Schedule tab to (re)assign a driver and time"
+                  draggable={state === "booked"}
+                  onDragStart={(e) => { if (state === "booked") { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; } }}
+                  className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap border ${
+                    state === "booked" ? "cursor-grab active:cursor-grabbing" : ""
+                  } ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
+                  title={state === "booked" ? "Drag onto the Schedule tab to (re)assign a driver and time" : undefined}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${
+                        state === "unconfirmed" ? "bg-amber-100 text-amber-800"
+                        : state === "booked" ? "bg-emerald-100 text-emerald-700"
+                        : "bg-slate-100 text-slate-700"
+                      }`}>{r.status}</span>
                       {medicaid && <MedicaidBadge />}
                       {r.scheduled_start_time && (
                         <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
@@ -494,14 +541,16 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
                     <Link to="/reservations/$id/review" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</Link>
-                    <button
-                      type="button"
-                      onClick={onDownloadCms}
-                      className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
-                      title="Generate a CMS-1500 claim form pre-filled with trip, patient, and provider data"
-                    >
-                      Download CMS-1500
-                    </button>
+                    {scope !== "requester" && (
+                      <button
+                        type="button"
+                        onClick={onDownloadCms}
+                        className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
+                        title="Generate a CMS-1500 claim form pre-filled with trip, patient, and provider data"
+                      >
+                        Download CMS-1500
+                      </button>
+                    )}
                   </div>
                 </div>
                 );

@@ -2949,6 +2949,7 @@ export type Database = {
           requester_email: string | null
           requester_phone: string | null
           requester_user_id: string | null
+          reservation_state: string | null
           return_date: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
@@ -3045,6 +3046,7 @@ export type Database = {
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -3141,6 +3143,7 @@ export type Database = {
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -3957,6 +3960,7 @@ export type Database = {
           referral_fee_cents: number
           referral_fee_source_user_id: string | null
           region: string | null
+          reservation_state: string | null
           return_date: string | null
           return_dropoff_time: string | null
           return_pickup_time: string | null
@@ -4097,6 +4101,7 @@ export type Database = {
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
           region?: string | null
+          reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -4237,6 +4242,7 @@ export type Database = {
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
           region?: string | null
+          reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
           return_pickup_time?: string | null
@@ -4794,6 +4800,27 @@ export type Database = {
       admin_user_ids: { Args: never; Returns: string[] }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      compute_ride_reservation_state: {
+        Args: {
+          _assigned_provider_id: string
+          _cancel_reason: string
+          _payment_status: string
+          _reference_at: string
+          _status: string
+        }
+        Returns: string
+      }
+      compute_trip_reservation_state: {
+        Args: {
+          _assigned_to: string
+          _cancel_reason: string
+          _completed_at: string
+          _no_show_reason: string
+          _payment_status: string
+          _status: string
+        }
+        Returns: string
+      }
       decide_trip_quote: {
         Args: { _approve: boolean; _decision_note?: string; _quote_id: string }
         Returns: undefined
@@ -5038,6 +5065,8 @@ export type Database = {
       }
       open_dispatch_thread: { Args: { _zone_id?: string }; Returns: string }
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
+      promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
+      promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
         Args: { _ride_request_id: string }
         Returns: string
