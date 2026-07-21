@@ -3952,6 +3952,7 @@ export type Database = {
           pickup_time: string
           pickup_zip: string | null
           platform_fee_cents: number | null
+          priority_offer_accepted_at: string | null
           priority_offer_created_at: string | null
           priority_offer_expires_at: string | null
           priority_offer_provider_id: string | null
@@ -4093,6 +4094,7 @@ export type Database = {
           pickup_time: string
           pickup_zip?: string | null
           platform_fee_cents?: number | null
+          priority_offer_accepted_at?: string | null
           priority_offer_created_at?: string | null
           priority_offer_expires_at?: string | null
           priority_offer_provider_id?: string | null
@@ -4234,6 +4236,7 @@ export type Database = {
           pickup_time?: string
           pickup_zip?: string | null
           platform_fee_cents?: number | null
+          priority_offer_accepted_at?: string | null
           priority_offer_created_at?: string | null
           priority_offer_expires_at?: string | null
           priority_offer_provider_id?: string | null
