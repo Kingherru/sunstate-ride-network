@@ -3054,14 +3054,20 @@ function PortalSidebar(props: {
                 {(() => {
                   const tk = tabKeyFor ? tabKeyFor(key) : null;
                   const n = tk ? (unread?.[tk] ?? 0) : 0;
-                  return n > 0 ? (
+                  if (!tk || n <= 0) return null;
+                  const sev = severityFor(tk);
+                  const color =
+                    sev === "green" ? "bg-emerald-600"
+                    : sev === "yellow" ? "bg-amber-500"
+                    : "bg-red-600";
+                  return (
                     <span
                       aria-label={`${n} new`}
-                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white animate-pulse"
+                      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white animate-pulse ${color}`}
                     >
                       {n > 99 ? "99+" : n}
                     </span>
-                  ) : null;
+                  );
                 })()}
               </span>
 
