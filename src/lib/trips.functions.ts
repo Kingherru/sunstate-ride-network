@@ -493,3 +493,45 @@ export const updateTripDetails = createServerFn({ method: "POST" })
     return { ok: true, updated: Object.keys(patch).length };
   });
 
+/**
+ * List the caller's reservations in a given lifecycle bucket.
+ * Uses the `reservation_state` column, which a DB trigger keeps synced from
+ * status, payment, and provider assignment.
+ *
+ * scope:
+ *   - "requester" (patient/facility): rows they created
+ *   - "provider": rows assigned to them
+ *   - "ops": all rows (admin/dispatcher/zone_manager/staff); optional zone_id filter
+ */
+export const listReservationsByState = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      state: "unconfirmed" | "booked" | "past" | "history";
+      scope: "requester" | "provider" | "ops";
+      zone_id?: string | null;
+      limit?: number;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const cols =
+      "id, status, reservation_state, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, trip_type, transport_type, patient_first_name, patient_last_name, patient_phone, patient_date_of_birth, patient_gender, dispatch_source, requester_user_id, assigned_provider_id, assigned_driver_id, service_level, needs_wheelchair, distance_miles, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, payment_status, scheduled_start_time, created_at";
+
+    let q = supabase
+      .from("ride_requests")
+      .select(cols)
+      .eq("reservation_state", data.state)
+      .order("pickup_date", { ascending: data.state === "past" || data.state === "history" ? false : true })
+      .order("pickup_time", { ascending: true })
+      .limit(Math.min(data.limit ?? 300, 1000));
+
+    if (data.scope === "requester") q = q.eq("requester_user_id", userId);
+    else if (data.scope === "provider") q = q.eq("assigned_provider_id", userId);
+    // ops: no user filter; RLS on ride_requests already restricts to staff/admin roles.
+
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    return rows ?? [];
+  });
+
