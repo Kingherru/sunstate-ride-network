@@ -287,9 +287,18 @@ function AdminPage() {
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar collapsible="icon">
           <SidebarHeader className="border-b border-border">
-            <div className="px-2 py-2">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">My Florida NEMT</p>
-              <p className="text-sm font-extrabold tracking-tight">Admin</p>
+            <div className="px-2 py-2 flex items-center justify-between gap-2">
+              <div>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">My Florida NEMT</p>
+                <p className="text-sm font-extrabold tracking-tight">Admin</p>
+              </div>
+              <Link
+                to="/notifications"
+                aria-label="Notifications"
+                className="inline-flex h-8 w-8 items-center justify-center rounded hover:bg-muted"
+              >
+                <BellRing className="h-4 w-4" />
+              </Link>
             </div>
           </SidebarHeader>
           <SidebarContent>
