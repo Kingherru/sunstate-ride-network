@@ -47,6 +47,7 @@ import { Route as PatientLoginRouteImport } from './routes/patient.login'
 import { Route as FacilityLoginRouteImport } from './routes/facility.login'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -268,6 +269,12 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
@@ -462,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/learn': typeof AuthenticatedLearnRouteWithChildren
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/facility/login': typeof FacilityLoginRoute
@@ -527,6 +535,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/facility/login': typeof FacilityLoginRoute
@@ -598,6 +607,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/facility/login': typeof FacilityLoginRoute
@@ -669,6 +679,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/learn'
+    | '/notifications'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/facility/login'
@@ -734,6 +745,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
+    | '/notifications'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/facility/login'
@@ -804,6 +816,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/learn'
+    | '/_authenticated/notifications'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/facility/login'
@@ -1167,6 +1180,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/learn': {
       id: '/_authenticated/learn'
       path: '/learn'
@@ -1397,6 +1417,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedFacilityDashboardRoute: typeof AuthenticatedFacilityDashboardRoute
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
   AuthenticatedProviderDashboardRoute: typeof AuthenticatedProviderDashboardRoute
@@ -1410,6 +1431,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedFacilityDashboardRoute: AuthenticatedFacilityDashboardRoute,
   AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
   AuthenticatedProviderDashboardRoute: AuthenticatedProviderDashboardRoute,

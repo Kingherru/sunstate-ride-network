@@ -62,7 +62,7 @@ import {
 } from "@/lib/patient-relationships";
 import { computeProviderOnboarding, SOFT_ACCESS_TABS } from "@/lib/provider-onboarding";
 import { ProviderOnboardingChecklist } from "@/components/onboarding/ProviderOnboardingChecklist";
-import { Lock } from "lucide-react";
+import { Lock, Bell as BellIcon } from "lucide-react";
 
 function PaymentsTab({ portal }: { portal: PortalKind }) {
   const isFacility = portal === "facility";
@@ -2990,10 +2990,19 @@ function PortalSidebar(props: {
   return (
     <aside className="w-64 shrink-0 bg-[oklch(0.20_0.05_257)] text-white min-h-screen flex flex-col">
       <div className="px-5 py-6 border-b border-white/10">
-        <Link to="/" className="flex items-center gap-2 mb-5">
-          <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
-          <span className="font-display font-bold text-base tracking-tight uppercase">My Florida NEMT</span>
-        </Link>
+        <div className="flex items-center justify-between mb-5">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
+            <span className="font-display font-bold text-base tracking-tight uppercase">My Florida NEMT</span>
+          </Link>
+          <Link
+            to="/notifications"
+            aria-label="Notifications"
+            className="relative inline-flex h-8 w-8 items-center justify-center rounded hover:bg-white/10"
+          >
+            <BellIcon className="h-4 w-4" />
+          </Link>
+        </div>
         {editing ? (
           <div className="space-y-2">
             <input
