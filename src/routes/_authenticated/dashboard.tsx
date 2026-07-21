@@ -32,7 +32,7 @@ import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPa
 import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useTripSync } from "@/hooks/useTripSync";
-import { useUnreadCounts, useMarkTabViewed } from "@/hooks/useUnreadCounts";
+import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnreadCounts";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
@@ -276,6 +276,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     if (portal === "provider" && t === "reservations") return TAB_KEYS.providerReservations;
     if (portal === "provider" && t === "trips" && tripsSubtab === "reservations") return TAB_KEYS.providerReservations;
     if (portal === "provider" && t === "received") return TAB_KEYS.providerReferrals;
+    if (portal === "provider" && t === "payments") return TAB_KEYS.providerPayments;
+    if (portal === "provider" && t === "payouts") return TAB_KEYS.providerPayouts;
+    if (portal === "provider" && t === "memberships") return TAB_KEYS.providerMembership;
+    if (portal === "provider" && t === "business_info") return TAB_KEYS.providerCompliance;
+    if (portal === "provider" && t === "drivers") return TAB_KEYS.providerDrivers;
+    if (portal === "provider" && t === "vehicles") return TAB_KEYS.providerVehicles;
     if (portal === "facility" && t === "sent") return TAB_KEYS.facilitySent;
     if (portal === "patient" && t === "sent") return TAB_KEYS.patientSent;
     return null;
@@ -3054,14 +3060,20 @@ function PortalSidebar(props: {
                 {(() => {
                   const tk = tabKeyFor ? tabKeyFor(key) : null;
                   const n = tk ? (unread?.[tk] ?? 0) : 0;
-                  return n > 0 ? (
+                  if (!tk || n <= 0) return null;
+                  const sev = severityFor(tk);
+                  const color =
+                    sev === "green" ? "bg-emerald-600"
+                    : sev === "yellow" ? "bg-amber-500"
+                    : "bg-red-600";
+                  return (
                     <span
                       aria-label={`${n} new`}
-                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white animate-pulse"
+                      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white animate-pulse ${color}`}
                     >
                       {n > 99 ? "99+" : n}
                     </span>
-                  ) : null;
+                  );
                 })()}
               </span>
 
