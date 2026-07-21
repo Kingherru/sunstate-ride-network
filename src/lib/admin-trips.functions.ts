@@ -53,20 +53,29 @@ export const listAllTripsAdmin = createServerFn({ method: "GET" })
 
 export const listAllReservationsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { status?: string; limit?: number } | undefined) => input ?? {})
+  .inputValidator(
+    (input: {
+      status?: string;
+      reservation_state?: "unconfirmed" | "booked" | "past" | "history" | "all";
+      limit?: number;
+    } | undefined) => input ?? {},
+  )
   .handler(async ({ data, context }) => {
     await requireOps(context);
+    const state = data.reservation_state ?? "unconfirmed";
     let q = context.supabase
       .from("ride_requests")
-      .select("id, status, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, transport_type, requester_user_id, created_at, assigned_provider_id")
-      .order("pickup_date", { ascending: false })
+      .select("id, status, reservation_state, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, transport_type, requester_user_id, created_at, assigned_provider_id")
+      .order("pickup_date", { ascending: state === "past" || state === "history" })
       .order("pickup_time", { ascending: false })
       .limit(Math.min(data.limit ?? 200, 500));
+    if (state !== "all") q = q.eq("reservation_state", state);
     if (data.status && data.status !== "all") q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw error;
     return rows ?? [];
   });
+
 
 export const getAdminReservation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
