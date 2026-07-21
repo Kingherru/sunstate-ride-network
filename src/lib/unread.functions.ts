@@ -135,7 +135,7 @@ export const getUnreadCounts = createServerFn({ method: "GET" })
       const { count: failed } = await supabase
         .from("trip_payments")
         .select("id", { count: "exact", head: true })
-        .eq("provider_id", userId)
+        .eq("provider_user_id", userId)
         .eq("status", "failed");
       counts.provider_payments = failed ?? 0;
     } catch { counts.provider_payments = 0; }
