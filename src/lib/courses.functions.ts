@@ -176,7 +176,9 @@ export const submitAttempt = createServerFn({ method: "POST" })
       .eq("id", enrollment.course_id)
       .single();
 
-    const { data: questions } = await supabase
+    // correct_index is not readable via RLS; use service-role client for grading only.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: questions } = await supabaseAdmin
       .from("course_questions")
       .select("id,correct_index")
       .eq("course_id", enrollment.course_id);
