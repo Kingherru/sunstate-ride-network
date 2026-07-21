@@ -276,6 +276,12 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     if (portal === "provider" && t === "reservations") return TAB_KEYS.providerReservations;
     if (portal === "provider" && t === "trips" && tripsSubtab === "reservations") return TAB_KEYS.providerReservations;
     if (portal === "provider" && t === "received") return TAB_KEYS.providerReferrals;
+    if (portal === "provider" && t === "payments") return TAB_KEYS.providerPayments;
+    if (portal === "provider" && t === "payouts") return TAB_KEYS.providerPayouts;
+    if (portal === "provider" && t === "memberships") return TAB_KEYS.providerMembership;
+    if (portal === "provider" && t === "business_info") return TAB_KEYS.providerCompliance;
+    if (portal === "provider" && t === "drivers") return TAB_KEYS.providerDrivers;
+    if (portal === "provider" && t === "vehicles") return TAB_KEYS.providerVehicles;
     if (portal === "facility" && t === "sent") return TAB_KEYS.facilitySent;
     if (portal === "patient" && t === "sent") return TAB_KEYS.patientSent;
     return null;
