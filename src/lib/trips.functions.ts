@@ -515,46 +515,25 @@ export const listReservationsByState = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // Read directly from `trips` — the single source of truth for created trips.
+    // Column aliases bridge to the ride_requests-shaped fields the UI expects.
     const cols =
-      "id, status, reservation_state, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, trip_type, transport_type, patient_first_name, patient_last_name, patient_phone, patient_date_of_birth, patient_gender, dispatch_source, requester_user_id, assigned_provider_id, assigned_driver_id, service_level, needs_wheelchair, distance_miles, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, payment_status, scheduled_start_time, created_at";
+      "id, display_id, status, reservation_state, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, payment_status, created_at, priority_offer_accepted_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
 
     let q = supabase
-      .from("ride_requests")
+      .from("trips")
       .select(cols)
       .eq("reservation_state", data.state)
       .order("pickup_date", { ascending: data.state === "past" || data.state === "history" ? false : true })
       .order("pickup_time", { ascending: true })
       .limit(Math.min(data.limit ?? 300, 1000));
 
-    if (data.scope === "requester") q = q.eq("requester_user_id", userId);
-    else if (data.scope === "provider") q = q.eq("assigned_provider_id", userId);
-    // ops: no user filter; RLS on ride_requests already restricts to staff/admin roles.
+    if (data.scope === "requester") q = q.eq("created_by", userId);
+    else if (data.scope === "provider") q = q.eq("assigned_to", userId);
+    // ops: RLS on trips restricts to staff/admin roles.
 
     const { data: rows, error } = await q;
     if (error) throw error;
-    const list = rows ?? [];
-
-    // Enrich booked rows with referral-acceptance metadata from the linked trip,
-    // so the UI can badge trips that were promoted from a priority-offer referral.
-    if (data.state === "booked" && list.length > 0) {
-      const ids = list.map((r: any) => r.id);
-      const { data: trips } = await supabase
-        .from("trips")
-        .select("ride_request_id, priority_offer_accepted_at")
-        .in("ride_request_id", ids)
-        .not("priority_offer_accepted_at", "is", null);
-      const byReq = new Map<string, string>();
-      for (const t of trips ?? []) {
-        if (t.ride_request_id && t.priority_offer_accepted_at) {
-          byReq.set(t.ride_request_id as string, t.priority_offer_accepted_at as string);
-        }
-      }
-      for (const r of list as any[]) {
-        const ts = byReq.get(r.id);
-        if (ts) (r as any).priority_offer_accepted_at = ts;
-      }
-    }
-
-    return list;
+    return rows ?? [];
   });
 
