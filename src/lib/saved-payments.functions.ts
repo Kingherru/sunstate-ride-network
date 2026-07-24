@@ -268,11 +268,11 @@ export const payForConfirmedTrip = createServerFn({ method: "POST" })
             let providerName: string | undefined;
             if (rr.assigned_provider_id) {
               const { data: prov } = await supabaseAdmin
-                .from("provider_applications")
-                .select("business_name")
+                .from("member_profiles")
+                .select("company_name, full_name")
                 .eq("user_id", rr.assigned_provider_id)
                 .maybeSingle();
-              providerName = prov?.business_name ?? undefined;
+              providerName = (prov?.company_name ?? prov?.full_name) ?? undefined;
             }
             const { sendTripEmail } = await import("@/lib/trips/notify.server");
             await sendTripEmail({
