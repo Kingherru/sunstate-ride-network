@@ -1076,3 +1076,47 @@ function Field({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function AdminNotificationBell({ onOpen }: { onOpen: () => void }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listMyNotifications);
+  const q = useQuery({
+    queryKey: ["notifications-bell-unread"],
+    queryFn: () => listFn({ data: { filter: "unread", limit: 1, offset: 0 } }),
+    refetchInterval: 60_000,
+  });
+  useEffect(() => {
+    let ch: ReturnType<typeof supabase.channel> | null = null;
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      ch = supabase
+        .channel(`admin-notif-bell-${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` },
+          () => qc.invalidateQueries({ queryKey: ["notifications-bell-unread"] }),
+        )
+        .subscribe();
+    });
+    return () => {
+      if (ch) void supabase.removeChannel(ch);
+    };
+  }, [qc]);
+  const count = q.data?.total ?? 0;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Notifications${count ? `, ${count} unread` : ""}`}
+      className="relative inline-flex h-8 w-8 items-center justify-center rounded hover:bg-muted"
+    >
+      <BellRing className="h-4 w-4" />
+      {count > 0 && (
+        <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </button>
+  );
+}
