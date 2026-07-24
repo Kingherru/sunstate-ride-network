@@ -21,6 +21,7 @@ import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { ProviderBalancePanel } from "@/components/dashboard/ProviderBalancePanel";
 import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
+import { TripHistoryPanel } from "@/components/dashboard/TripHistoryPanel";
 import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { NetworkPanel } from "@/components/dashboard/NetworkPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
@@ -163,11 +164,11 @@ type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
 type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "trips" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
-type TripsSubtab = "new" | "reservations";
+type TripsSubtab = "new" | "reservations" | "history";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
-  provider: ["onboarding", "trips", "schedule", "received", "sent", "vehicles", "saved_patients", "reviews", "medicaid", "training", "messages", "account"],
+  provider: ["onboarding", "trips", "schedule", "received", "vehicles", "saved_patients", "reviews", "medicaid", "training", "messages", "account"],
   facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "messages", "payments", "account"],
 };
 
