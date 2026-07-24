@@ -303,11 +303,37 @@ export const createTrip = createServerFn({ method: "POST" })
         .select()
         .single();
       if (assignErr) throw assignErr;
+      await sendTripConfirmationSafe(assignedRow);
       return assignedRow;
     }
 
+    await sendTripConfirmationSafe(row);
     return row;
   });
+
+async function sendTripConfirmationSafe(trip: any) {
+  try {
+    const email = trip?.patient_email;
+    if (!email) return;
+    const { sendTripEmail } = await import("@/lib/trips/notify.server");
+    await sendTripEmail({
+      templateName: "trip-confirmation",
+      recipientEmail: email,
+      idempotencyKey: `trip-confirmation:${trip.id}`,
+      templateData: {
+        recipientName: [trip.patient_first_name, trip.patient_last_name].filter(Boolean).join(" ") || "there",
+        tripShortId: trip.trip_number ?? String(trip.id).slice(0, 8),
+        pickupAddress: [trip.pickup_address, trip.pickup_city].filter(Boolean).join(", "),
+        dropoffAddress: [trip.dropoff_address, trip.dropoff_city].filter(Boolean).join(", "),
+        pickupDate: trip.pickup_date ?? "",
+        pickupTime: trip.pickup_time ?? "",
+        tripType: trip.round_trip ? "Round Trip" : "One-way",
+      },
+    });
+  } catch (e) {
+    console.error("trip-confirmation send failed", e);
+  }
+}
 
 const bulkTripsSchema = z.object({
   hipaa_ack_id: z.string().uuid().optional(),
