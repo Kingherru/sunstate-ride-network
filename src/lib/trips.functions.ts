@@ -415,6 +415,39 @@ export const updateTripStatus = createServerFn({ method: "POST" })
     const { error } = await supabase.from("trips").update(patch).eq("id", data.trip_id);
     if (error) throw error;
 
+    if (data.status === "accepted") {
+      try {
+        const { data: trip } = await supabase
+          .from("trips")
+          .select("id, trip_number, patient_first_name, patient_last_name, patient_email, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, cost_total")
+          .eq("id", data.trip_id)
+          .maybeSingle();
+        if (trip?.patient_email) {
+          const { sendTripEmail } = await import("@/lib/trips/notify.server");
+          const cents = Math.round(Number(trip.cost_total ?? 0) * 100);
+          const amountUsd = (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
+          const base = process.env.SITE_URL ?? "https://myfloridanemt.com";
+          await sendTripEmail({
+            templateName: "trip-accepted-invoice",
+            recipientEmail: trip.patient_email,
+            idempotencyKey: `trip-accepted:${trip.id}`,
+            templateData: {
+              recipientName: [trip.patient_first_name, trip.patient_last_name].filter(Boolean).join(" ") || "there",
+              tripShortId: trip.trip_number ?? String(trip.id).slice(0, 8),
+              pickupAddress: [trip.pickup_address, trip.pickup_city].filter(Boolean).join(", "),
+              dropoffAddress: [trip.dropoff_address, trip.dropoff_city].filter(Boolean).join(", "),
+              pickupDate: trip.pickup_date ?? "",
+              pickupTime: trip.pickup_time ?? "",
+              amountUsd,
+              payUrl: `${base.replace(/\/$/, "")}/dashboard?tab=trips&pay=${trip.id}`,
+            },
+          });
+        }
+      } catch (e) {
+        console.error("trip-accepted-invoice send failed", e);
+      }
+    }
+
     if (data.status === "completed") {
       try {
         const { releaseTripPayout } = await import("@/lib/payouts.functions");
