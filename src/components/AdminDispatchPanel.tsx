@@ -34,8 +34,10 @@ export function AdminDispatchPanel() {
   const assignTripFn = useServerFn(adminAssignTrip);
   const cancelTripFn = useServerFn(adminCancelTrip);
 
+  const statsFn = useServerFn(listDispatchZoneStats);
   const zonesQ = useQuery({ queryKey: ["disp", "zones"], queryFn: () => zonesFn() });
   const zipsQ = useQuery({ queryKey: ["disp", "zips"], queryFn: () => zipsFn() });
+  const statsQ = useQuery({ queryKey: ["disp", "stats"], queryFn: () => statsFn() });
 
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [zipInput, setZipInput] = useState("");
