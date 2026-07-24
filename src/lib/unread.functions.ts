@@ -144,7 +144,7 @@ export const getUnreadCounts = createServerFn({ method: "GET" })
     counts.provider_payouts = await countSince(
       supabase, "fin_payouts", "created_at",
       marks[TAB_KEYS.providerPayouts] ?? EPOCH,
-      (q) => q.eq("provider_id", userId),
+      (q) => q.eq("provider_user_id", userId),
     );
 
     // Membership: snapshot — non-zero when denied/caution requires action.
