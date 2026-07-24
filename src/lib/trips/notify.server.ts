@@ -155,3 +155,45 @@ export async function getCallerRole(userId: string): Promise<'staff' | 'provider
     return 'patient'
   }
 }
+
+/** Format a trip-ish object for template data. Works for `trips` and `ride_requests`. */
+export function summarizeTrip(t: any): Record<string, unknown> {
+  const short =
+    t?.trip_number ??
+    (t?.id ? String(t.id).slice(0, 8) : '')
+  return {
+    tripShortId: short,
+    pickupAddress: [t?.pickup_address, t?.pickup_city].filter(Boolean).join(', '),
+    dropoffAddress: [t?.dropoff_address, t?.dropoff_city].filter(Boolean).join(', '),
+    pickupDate: t?.pickup_date ?? '',
+    pickupTime: t?.pickup_time ?? '',
+    tripType: t?.round_trip ? 'Round Trip' : (t?.trip_type ?? 'One-way'),
+    transportType: t?.transport_type ?? '',
+  }
+}
+
+/** Fan out a workflow email to a list of recipients, one per mailbox, with per-recipient idempotency. */
+export async function fanOut(opts: {
+  templateName: TripEmailTemplate
+  recipients: Array<{ email: string; name?: string | null; userId?: string | null }>
+  baseIdempotencyKey: string
+  templateData: Record<string, unknown>
+  recipientNameKey?: string
+}): Promise<void> {
+  const seen = new Set<string>()
+  for (const r of opts.recipients) {
+    const email = r.email?.toLowerCase().trim()
+    if (!email || seen.has(email)) continue
+    seen.add(email)
+    const key = `${opts.baseIdempotencyKey}:${r.userId ?? email}`
+    await sendTripEmail({
+      templateName: opts.templateName,
+      recipientEmail: email,
+      idempotencyKey: key,
+      templateData: {
+        ...opts.templateData,
+        [opts.recipientNameKey ?? 'recipientName']: r.name ?? 'there',
+      },
+    })
+  }
+}
