@@ -14,9 +14,6 @@ import {
   DollarSign,
   Plug,
   Wallet,
-  FileText,
-  Search as SearchIcon,
-  BookOpen,
   Settings,
   Palette,
   ShieldCheck,
@@ -115,9 +112,6 @@ type TabId =
   | "integrations"
   | "payouts"
   | "ledger"
-  | "content"
-  | "seo"
-  | "blog"
   | "theme"
   | "changelog"
   | "system";
@@ -164,14 +158,6 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "ledger", label: "Finance console", icon: DollarSign, visible: (c) => c.isOps },
       { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps },
       { id: "integrations", label: "Integrations", icon: Plug, visible: (c) => c.isAdmin },
-    ],
-  },
-  {
-    label: "Content",
-    items: [
-      { id: "content", label: "Content management", icon: FileText, visible: (c) => c.isAdmin },
-      { id: "seo", label: "SEO settings", icon: SearchIcon, visible: (c) => c.isAdmin },
-      { id: "blog", label: "Blog / Resources", icon: BookOpen, visible: (c) => c.isAdmin },
     ],
   },
   {
@@ -418,9 +404,6 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
         <MonthlyPayoutReport scope="admin" title="Monthly billing & payout report — all providers" />
       </div>
     ) : <NoAccess />;
-    case "content": return <ComingSoon title="Content management" description="Edit marketing pages, service-area copy, and static site content." />;
-    case "seo": return <ComingSoon title="SEO settings" description="Site-wide meta defaults, robots directives, and sitemap controls." />;
-    case "blog": return <ComingSoon title="Blog / Resources" description="Author, edit, and publish resource articles. Direct link: /resources." />;
     case "system": return caps.isAdmin ? <SystemSettingsPanel /> : <NoAccess />;
     default: return <OverviewTab />;
   }
