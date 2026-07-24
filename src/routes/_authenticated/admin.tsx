@@ -46,6 +46,8 @@ import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
+import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
+import { listMyNotifications } from "@/lib/notifications.functions";
 
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnreadCounts";
@@ -100,6 +102,7 @@ function derivedStatus(a: Application): ComplianceStatus {
 
 type TabId =
   | "overview"
+  | "notifications"
   | "users"
   | "providers"
   | "facilities"
