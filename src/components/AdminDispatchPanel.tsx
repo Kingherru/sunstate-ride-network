@@ -255,8 +255,12 @@ export function AdminDispatchPanel() {
         )}
       </section>
 
+      {/* Unmapped ZIP fallback */}
+      <ZipFallbackSection zones={zones} onAssigned={() => qc.invalidateQueries({ queryKey: ["disp"] })} canEdit={caps.canManageZones} />
+
       {/* Provider weekly schedules */}
       <section className="bg-card border border-border rounded-2xl p-5">
+
         <h2 className="text-lg font-extrabold tracking-tight mb-3">Provider Weekly Schedules</h2>
         {schedQ.isLoading ? (
           <div className="text-sm text-muted-foreground">Loading…</div>
