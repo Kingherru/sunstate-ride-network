@@ -18,9 +18,41 @@ export const listDispatchZones = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("dispatch_zones")
       .select("id, code, name, sort_order")
+      .eq("kind", "region")
       .order("sort_order");
     if (error) throw error;
     return data ?? [];
+  });
+
+export const listDispatchCounties = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { region_id?: string | null }) => input)
+  .handler(async ({ data, context }) => {
+    let q = context.supabase
+      .from("dispatch_zones")
+      .select("id, code, name, region_id")
+      .eq("kind", "county")
+      .order("name");
+    if (data.region_id) q = q.eq("region_id", data.region_id);
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    return rows ?? [];
+  });
+
+export const listDispatchCountyStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { region_id?: string | null }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.rpc("dispatch_county_stats", {
+      _region_id: data.region_id ?? null,
+    });
+    if (error) throw error;
+    return (rows ?? []) as Array<{
+      county_id: string; code: string; name: string;
+      region_id: string | null; region_code: string | null;
+      zip_count: number; providers: number; facilities: number;
+      patients: number; active_trips: number;
+    }>;
   });
 
 export const listDispatchZoneStats = createServerFn({ method: "GET" })
@@ -41,11 +73,40 @@ export const listZoneZips = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("dispatch_zone_zips")
-      .select("zip, zone_id")
+      .select("zip, zone_id, county_id")
       .order("zip");
     if (error) throw error;
     return data ?? [];
   });
+
+export const setZipCounty = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { zip: string; county_id: string | null }) => input)
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { error } = await context.supabase
+      .from("dispatch_zone_zips")
+      .update({ county_id: data.county_id })
+      .eq("zip", data.zip);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const assignZipsToCounty = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { county_id: string; zips: string[] }) => input)
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const zips = data.zips.filter((z) => /^\d{5}$/.test(z));
+    if (!zips.length) return { count: 0 };
+    const { error } = await context.supabase
+      .from("dispatch_zone_zips")
+      .update({ county_id: data.county_id })
+      .in("zip", zips);
+    if (error) throw error;
+    return { count: zips.length };
+  });
+
 
 const assignZipsSchema = z.object({
   zone_id: z.string().uuid(),
