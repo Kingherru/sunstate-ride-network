@@ -658,9 +658,19 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                       </span>
                     )}
                   </button>
+                  {portal === "provider" && (
+                    <button
+                      type="button"
+                      onClick={() => setTripsSubtab("history")}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "history" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Trip History
+                    </button>
+                  )}
                 </div>
                 {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTripsSubtab("reservations"); }} /> : <PaidOnly />)}
                 {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} />}
+                {tripsSubtab === "history" && portal === "provider" && <TripHistoryPanel userId={userId!} />}
               </div>
             )}
             {tab === "schedule" && <ScheduleCalendarPanel />}
