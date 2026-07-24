@@ -161,11 +161,16 @@ export function AdminDispatchPanel() {
 
       {/* Dispatch zones */}
       <section className="bg-card border border-border rounded-2xl p-5">
-        <h2 className="text-lg font-extrabold tracking-tight mb-3">Dispatch Zones</h2>
+        <h2 className="text-lg font-extrabold tracking-tight mb-1">Dispatch Zones</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Florida is organized into 5 operating regions. Every FL ZIP (32000–34999) is auto-mapped, and providers, facilities, and patients are placed in the correct zone from their ZIP. Move a ZIP between zones any time — trips will re-route automatically.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4">
           {zones.map((z: any) => {
-            const count = zipsByZone.get(z.id)?.length ?? 0;
+            const s = (statsQ.data ?? []).find((x: any) => x.zone_id === z.id);
+            const count = s?.zip_count ?? zipsByZone.get(z.id)?.length ?? 0;
             const active = activeZoneId === z.id;
+            const mgr = s?.managers?.[0];
             return (
               <button
                 key={z.id}
@@ -173,7 +178,16 @@ export function AdminDispatchPanel() {
                 className={`border rounded-sm p-3 text-left ${active ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}
               >
                 <div className="text-sm font-bold">{z.name}</div>
-                <div className="text-xs text-muted-foreground">{count} ZIP{count === 1 ? "" : "s"}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  Manager: <span className="text-foreground font-semibold">{mgr?.name || "Unassigned"}</span>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px]">
+                  <div>ZIPs: <span className="font-bold text-foreground">{count}</span></div>
+                  <div>Trips: <span className="font-bold text-foreground">{s?.active_trips ?? 0}</span></div>
+                  <div>Providers: <span className="font-bold text-foreground">{s?.providers ?? 0}</span></div>
+                  <div>Facilities: <span className="font-bold text-foreground">{s?.facilities ?? 0}</span></div>
+                  <div>Patients: <span className="font-bold text-foreground">{s?.patients ?? 0}</span></div>
+                </div>
               </button>
             );
           })}
