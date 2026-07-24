@@ -1842,6 +1842,8 @@ export type Database = {
           platform_fee_pct: number
           updated_at: string
           updated_by: string | null
+          zip_fallback_mode: string
+          zip_fallback_zone_id: string | null
         }
         Insert: {
           id?: boolean
@@ -1850,6 +1852,8 @@ export type Database = {
           platform_fee_pct?: number
           updated_at?: string
           updated_by?: string | null
+          zip_fallback_mode?: string
+          zip_fallback_zone_id?: string | null
         }
         Update: {
           id?: boolean
@@ -1858,8 +1862,25 @@ export type Database = {
           platform_fee_pct?: number
           updated_at?: string
           updated_by?: string | null
+          zip_fallback_mode?: string
+          zip_fallback_zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_zip_fallback_zone_id_fkey"
+            columns: ["zip_fallback_zone_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_settings_zip_fallback_zone_id_fkey"
+            columns: ["zip_fallback_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_pricing_averages"
+            referencedColumns: ["zone_id"]
+          },
+        ]
       }
       platform_theme: {
         Row: {
@@ -5123,6 +5144,16 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_unmapped_zips: {
+        Args: never
+        Returns: {
+          facility_count: number
+          patient_count: number
+          provider_count: number
+          trip_count: number
+          zip: string
+        }[]
       }
       log_staff_action: {
         Args: {
