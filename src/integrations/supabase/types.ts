@@ -3846,6 +3846,7 @@ export type Database = {
           actual_miles: number | null
           actual_pickup_at: string | null
           additional_passengers: number
+          additional_stops: Json
           appointment_time: string | null
           assigned_to: string | null
           authorization_number: string | null
@@ -3873,6 +3874,7 @@ export type Database = {
           diagnosis_code: string | null
           dispatch_zone_id: string | null
           display_id: string | null
+          distance_miles: number | null
           driver_id: string | null
           dropoff_address: string
           dropoff_city: string
@@ -3958,6 +3960,9 @@ export type Database = {
           priority_offer_provider_id: string | null
           priority_offer_refused_at: string | null
           provider_payout_cents: number | null
+          recurrence_end_date: string | null
+          recurrence_exceptions: Json
+          recurrence_rule: string | null
           referral_fee_cents: number
           referral_fee_source_user_id: string | null
           region: string | null
@@ -3988,6 +3993,7 @@ export type Database = {
           actual_miles?: number | null
           actual_pickup_at?: string | null
           additional_passengers?: number
+          additional_stops?: Json
           appointment_time?: string | null
           assigned_to?: string | null
           authorization_number?: string | null
@@ -4015,6 +4021,7 @@ export type Database = {
           diagnosis_code?: string | null
           dispatch_zone_id?: string | null
           display_id?: string | null
+          distance_miles?: number | null
           driver_id?: string | null
           dropoff_address: string
           dropoff_city: string
@@ -4100,6 +4107,9 @@ export type Database = {
           priority_offer_provider_id?: string | null
           priority_offer_refused_at?: string | null
           provider_payout_cents?: number | null
+          recurrence_end_date?: string | null
+          recurrence_exceptions?: Json
+          recurrence_rule?: string | null
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
           region?: string | null
@@ -4130,6 +4140,7 @@ export type Database = {
           actual_miles?: number | null
           actual_pickup_at?: string | null
           additional_passengers?: number
+          additional_stops?: Json
           appointment_time?: string | null
           assigned_to?: string | null
           authorization_number?: string | null
@@ -4157,6 +4168,7 @@ export type Database = {
           diagnosis_code?: string | null
           dispatch_zone_id?: string | null
           display_id?: string | null
+          distance_miles?: number | null
           driver_id?: string | null
           dropoff_address?: string
           dropoff_city?: string
@@ -4242,6 +4254,9 @@ export type Database = {
           priority_offer_provider_id?: string | null
           priority_offer_refused_at?: string | null
           provider_payout_cents?: number | null
+          recurrence_end_date?: string | null
+          recurrence_exceptions?: Json
+          recurrence_rule?: string | null
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
           region?: string | null
