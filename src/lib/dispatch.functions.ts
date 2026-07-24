@@ -43,9 +43,10 @@ export const listDispatchCountyStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { region_id?: string | null }) => input)
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase.rpc("dispatch_county_stats", {
+    const { data: rows, error } = await (context.supabase as any).rpc("dispatch_county_stats", {
       _region_id: data.region_id ?? null,
     });
+
     if (error) throw error;
     return (rows ?? []) as Array<{
       county_id: string; code: string; name: string;
