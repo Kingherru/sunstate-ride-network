@@ -20,7 +20,7 @@ export const previewImportZips = createServerFn({ method: "POST" })
     if (!parsed.length) return { parsed: [], existing: [], newZips: [], conflicts: [] };
     const { data: existing } = await context.supabase
       .from("dispatch_zone_zips")
-      .select("zip, dispatch_zones!dispatch_zone_zips_zone_id_fkey(code,name)")
+      .select("zip, dispatch_zones!inner(code,name)")
       .in("zip", parsed);
     const taken = new Set((existing ?? []).map((r) => r.zip));
     return {
@@ -31,7 +31,6 @@ export const previewImportZips = createServerFn({ method: "POST" })
         zoneName: (r.dispatch_zones as { name: string }).name,
       })),
     };
-
   });
 
 export const importZipsToZone = createServerFn({ method: "POST" })

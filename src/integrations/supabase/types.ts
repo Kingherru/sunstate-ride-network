@@ -330,41 +330,24 @@ export type Database = {
       }
       dispatch_zone_zips: {
         Row: {
-          county_id: string | null
           created_at: string
           updated_at: string
           zip: string
           zone_id: string
         }
         Insert: {
-          county_id?: string | null
           created_at?: string
           updated_at?: string
           zip: string
           zone_id: string
         }
         Update: {
-          county_id?: string | null
           created_at?: string
           updated_at?: string
           zip?: string
           zone_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "dispatch_zone_zips_county_id_fkey"
-            columns: ["county_id"]
-            isOneToOne: false
-            referencedRelation: "dispatch_zones"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispatch_zone_zips_county_id_fkey"
-            columns: ["county_id"]
-            isOneToOne: false
-            referencedRelation: "zone_pricing_averages"
-            referencedColumns: ["zone_id"]
-          },
           {
             foreignKeyName: "dispatch_zone_zips_zone_id_fkey"
             columns: ["zone_id"]
@@ -387,9 +370,7 @@ export type Database = {
           created_at: string
           id: string
           is_preset: boolean
-          kind: string
           name: string
-          region_id: string | null
           sort_order: number
           updated_at: string
         }
@@ -398,9 +379,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_preset?: boolean
-          kind?: string
           name: string
-          region_id?: string | null
           sort_order?: number
           updated_at?: string
         }
@@ -409,28 +388,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_preset?: boolean
-          kind?: string
           name?: string
-          region_id?: string | null
           sort_order?: number
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "dispatch_zones_region_id_fkey"
-            columns: ["region_id"]
-            isOneToOne: false
-            referencedRelation: "dispatch_zones"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dispatch_zones_region_id_fkey"
-            columns: ["region_id"]
-            isOneToOne: false
-            referencedRelation: "zone_pricing_averages"
-            referencedColumns: ["zone_id"]
-          },
-        ]
+        Relationships: []
       }
       driver_earning_adjustments: {
         Row: {
@@ -4888,21 +4850,6 @@ export type Database = {
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
-      }
-      dispatch_county_stats: {
-        Args: { _region_id?: string }
-        Returns: {
-          active_trips: number
-          code: string
-          county_id: string
-          facilities: number
-          name: string
-          patients: number
-          providers: number
-          region_code: string
-          region_id: string
-          zip_count: number
-        }[]
       }
       dispatch_zone_stats: {
         Args: never
