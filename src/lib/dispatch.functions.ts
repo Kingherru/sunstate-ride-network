@@ -86,6 +86,62 @@ export const removeZipFromZone = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/* ---------- ZIP fallback settings ---------- */
+
+export const getZipFallbackSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("platform_settings")
+      .select("zip_fallback_mode, zip_fallback_zone_id")
+      .eq("id", true)
+      .maybeSingle();
+    if (error) throw error;
+    return {
+      mode: (data?.zip_fallback_mode ?? "manual_review") as "manual_review" | "default_zone",
+      zoneId: (data?.zip_fallback_zone_id ?? null) as string | null,
+    };
+  });
+
+const fallbackSchema = z.object({
+  mode: z.enum(["manual_review", "default_zone"]),
+  zoneId: z.string().uuid().nullable(),
+});
+
+export const updateZipFallbackSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => fallbackSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    if (data.mode === "default_zone" && !data.zoneId) {
+      throw new Error("Pick a default zone or switch to manual review.");
+    }
+    const { error } = await context.supabase
+      .from("platform_settings")
+      .update({
+        zip_fallback_mode: data.mode,
+        zip_fallback_zone_id: data.mode === "default_zone" ? data.zoneId : null,
+      })
+      .eq("id", true);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const listUnmappedZips = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("list_unmapped_zips");
+    if (error) throw error;
+    return (data ?? []) as Array<{
+      zip: string;
+      trip_count: number;
+      provider_count: number;
+      facility_count: number;
+      patient_count: number;
+    }>;
+  });
+
+
 /* ---------- Trip lookup ---------- */
 
 export const findTripByDisplayId = createServerFn({ method: "GET" })
