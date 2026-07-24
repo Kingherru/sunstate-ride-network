@@ -282,13 +282,8 @@ function AdminPage() {
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">My Florida NEMT</p>
                 <p className="text-sm font-extrabold tracking-tight">Admin</p>
               </div>
-              <Link
-                to="/notifications"
-                aria-label="Notifications"
-                className="inline-flex h-8 w-8 items-center justify-center rounded hover:bg-muted"
-              >
-                <BellRing className="h-4 w-4" />
-              </Link>
+              <AdminNotificationBell onOpen={() => handleAdminTab("notifications")} />
+
             </div>
           </SidebarHeader>
           <SidebarContent>
