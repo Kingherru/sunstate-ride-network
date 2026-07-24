@@ -292,6 +292,9 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       }
     } catch (e) {
       console.error("ride-request workflow notify failed", e);
+    }
+
+
 
     return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
   });
