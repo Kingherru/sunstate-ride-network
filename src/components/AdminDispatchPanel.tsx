@@ -39,9 +39,17 @@ export function AdminDispatchPanel() {
   const cancelTripFn = useServerFn(adminCancelTrip);
 
   const statsFn = useServerFn(listDispatchZoneStats);
+  const countiesFn = useServerFn(listDispatchCounties);
+  const countyStatsFn = useServerFn(listDispatchCountyStats);
+  const setZipCountyFn = useServerFn(setZipCounty);
   const zonesQ = useQuery({ queryKey: ["disp", "zones"], queryFn: () => zonesFn() });
   const zipsQ = useQuery({ queryKey: ["disp", "zips"], queryFn: () => zipsFn() });
   const statsQ = useQuery({ queryKey: ["disp", "stats"], queryFn: () => statsFn() });
+  const allCountiesQ = useQuery({
+    queryKey: ["disp", "counties", "all"],
+    queryFn: () => countiesFn({ data: {} }),
+  });
+
 
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [zipInput, setZipInput] = useState("");
