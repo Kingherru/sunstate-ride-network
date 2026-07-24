@@ -136,11 +136,17 @@ export function AdminDispatchPanel() {
 
   const zones = zonesQ.data ?? [];
   const zips = zipsQ.data ?? [];
-  const zipsByZone = new Map<string, string[]>();
+  const allCounties = (allCountiesQ.data ?? []) as Array<{ id: string; code: string; name: string; region_id: string | null }>;
+  const countyById = new Map(allCounties.map((c) => [c.id, c]));
+  const zipsByZone = new Map<string, Array<{ zip: string; county_id: string | null }>>();
   zips.forEach((z: any) => {
     if (!zipsByZone.has(z.zone_id)) zipsByZone.set(z.zone_id, []);
-    zipsByZone.get(z.zone_id)!.push(z.zip);
+    zipsByZone.get(z.zone_id)!.push({ zip: z.zip, county_id: z.county_id ?? null });
   });
+  const activeRegionCounties = activeZoneId
+    ? allCounties.filter((c) => c.region_id === activeZoneId)
+    : [];
+
 
   return (
     <div className="space-y-8">
