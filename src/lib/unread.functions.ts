@@ -144,7 +144,7 @@ export const getUnreadCounts = createServerFn({ method: "GET" })
     counts.provider_payouts = await countSince(
       supabase, "fin_payouts", "created_at",
       marks[TAB_KEYS.providerPayouts] ?? EPOCH,
-      (q) => q.eq("provider_id", userId),
+      (q) => q.eq("provider_user_id", userId),
     );
 
     // Membership: snapshot — non-zero when denied/caution requires action.
@@ -173,12 +173,12 @@ export const getUnreadCounts = createServerFn({ method: "GET" })
     counts.provider_drivers = await countSince(
       supabase, "drivers", "created_at",
       marks[TAB_KEYS.providerDrivers] ?? EPOCH,
-      (q) => q.eq("provider_user_id", userId),
+      (q) => q.eq("owner_id", userId),
     );
     counts.provider_vehicles = await countSince(
       supabase, "vehicles", "created_at",
       marks[TAB_KEYS.providerVehicles] ?? EPOCH,
-      (q) => q.eq("provider_user_id", userId),
+      (q) => q.eq("owner_id", userId),
     );
 
     // ── Admin / ops queues ──────────────────────────────────────────────
