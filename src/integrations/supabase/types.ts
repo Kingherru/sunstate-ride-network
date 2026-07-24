@@ -4851,6 +4851,21 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      dispatch_zone_stats: {
+        Args: never
+        Returns: {
+          active_trips: number
+          code: string
+          facilities: number
+          managers: Json
+          name: string
+          patients: number
+          providers: number
+          sort_order: number
+          zip_count: number
+          zone_id: string
+        }[]
+      }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
@@ -4980,6 +4995,7 @@ export type Database = {
         Returns: undefined
       }
       fin_validate_payment: { Args: { _trip_id: string }; Returns: undefined }
+      fl_zip_zone_code: { Args: { _zip: string }; Returns: string }
       gen_webhook_secret: { Args: never; Returns: string }
       get_trips_admin_metadata: {
         Args: never

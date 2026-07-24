@@ -23,6 +23,19 @@ export const listDispatchZones = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const listDispatchZoneStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("dispatch_zone_stats");
+    if (error) throw error;
+    return (data ?? []) as Array<{
+      zone_id: string; code: string; name: string; sort_order: number;
+      zip_count: number; providers: number; facilities: number;
+      patients: number; active_trips: number;
+      managers: Array<{ user_id: string; name: string; email: string | null }>;
+    }>;
+  });
+
 export const listZoneZips = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
