@@ -63,6 +63,22 @@ export function AdminDispatchPanel() {
     queryFn: () => tripsFn({ data: { zone_id: activeZoneId! } }),
   });
 
+  const countyStatsQ = useQuery({
+    queryKey: ["disp", "county-stats", activeZoneId],
+    enabled: !!activeZoneId,
+    queryFn: () => countyStatsFn({ data: { region_id: activeZoneId } }),
+  });
+
+  const mSetCounty = useMutation({
+    mutationFn: (v: { zip: string; county_id: string | null }) => setZipCountyFn({ data: v }),
+    onSuccess: () => {
+      toast.success("County updated");
+      qc.invalidateQueries({ queryKey: ["disp"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+
   const schedQ = useQuery({
     queryKey: ["disp", "schedules"],
     queryFn: () => schedFn({ data: {} }),
