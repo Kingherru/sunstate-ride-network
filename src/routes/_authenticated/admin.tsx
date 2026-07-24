@@ -46,6 +46,8 @@ import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
+import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
+import { listMyNotifications } from "@/lib/notifications.functions";
 
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnreadCounts";
@@ -100,6 +102,7 @@ function derivedStatus(a: Application): ComplianceStatus {
 
 type TabId =
   | "overview"
+  | "notifications"
   | "users"
   | "providers"
   | "facilities"
@@ -131,6 +134,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Overview",
     items: [
       { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps },
+      { id: "notifications", label: "Notifications", icon: BellRing, visible: (c) => c.isOps },
     ],
   },
   {
@@ -278,13 +282,8 @@ function AdminPage() {
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">My Florida NEMT</p>
                 <p className="text-sm font-extrabold tracking-tight">Admin</p>
               </div>
-              <Link
-                to="/notifications"
-                aria-label="Notifications"
-                className="inline-flex h-8 w-8 items-center justify-center rounded hover:bg-muted"
-              >
-                <BellRing className="h-4 w-4" />
-              </Link>
+              <AdminNotificationBell onOpen={() => handleAdminTab("notifications")} />
+
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -377,6 +376,7 @@ function AdminPage() {
 function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabilities> }) {
   switch (tab) {
     case "overview": return <OverviewTab />;
+    case "notifications": return <NotificationsPanel />;
     case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
     case "providers": return <ProvidersTab caps={caps} />;
     case "dispatch": return caps.canDispatch ? <AdminDispatchPanel /> : <NoAccess />;
@@ -1074,5 +1074,49 @@ function Field({ label, value }: { label: string; value: string }) {
       <dt className="text-muted text-xs">{label}</dt>
       <dd className="font-medium break-words">{value}</dd>
     </div>
+  );
+}
+
+function AdminNotificationBell({ onOpen }: { onOpen: () => void }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listMyNotifications);
+  const q = useQuery({
+    queryKey: ["notifications-bell-unread"],
+    queryFn: () => listFn({ data: { filter: "unread", limit: 1, offset: 0 } }),
+    refetchInterval: 60_000,
+  });
+  useEffect(() => {
+    let ch: ReturnType<typeof supabase.channel> | null = null;
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      ch = supabase
+        .channel(`admin-notif-bell-${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` },
+          () => qc.invalidateQueries({ queryKey: ["notifications-bell-unread"] }),
+        )
+        .subscribe();
+    });
+    return () => {
+      if (ch) void supabase.removeChannel(ch);
+    };
+  }, [qc]);
+  const count = q.data?.total ?? 0;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Notifications${count ? `, ${count} unread` : ""}`}
+      className="relative inline-flex h-8 w-8 items-center justify-center rounded hover:bg-muted"
+    >
+      <BellRing className="h-4 w-4" />
+      {count > 0 && (
+        <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </button>
   );
 }

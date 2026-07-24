@@ -64,6 +64,8 @@ import {
 import { computeProviderOnboarding, SOFT_ACCESS_TABS } from "@/lib/provider-onboarding";
 import { ProviderOnboardingChecklist } from "@/components/onboarding/ProviderOnboardingChecklist";
 import { Lock, Bell as BellIcon } from "lucide-react";
+import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
+import { listMyNotifications } from "@/lib/notifications.functions";
 
 function PaymentsTab({ portal }: { portal: PortalKind }) {
   const isFacility = portal === "facility";
@@ -163,13 +165,13 @@ type Trip = Database["public"]["Tables"]["trips"]["Row"];
 type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
-type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "trips" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "changelog" | "account" | "onboarding";
+type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "trips" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "notifications" | "changelog" | "account" | "onboarding";
 type TripsSubtab = "new" | "reservations" | "history";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
-  patient:  ["new", "sent", "saved_patients", "feedback", "messages", "payments", "account"],
-  provider: ["onboarding", "trips", "schedule", "received", "vehicles", "saved_patients", "reviews", "medicaid", "training", "messages", "account"],
-  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "messages", "payments", "account"],
+  patient:  ["new", "sent", "saved_patients", "feedback", "messages", "notifications", "payments", "account"],
+  provider: ["onboarding", "trips", "schedule", "received", "vehicles", "saved_patients", "reviews", "medicaid", "training", "messages", "notifications", "account"],
+  facility: ["new", "sent", "upload", "providers", "saved_providers", "saved_patients", "feedback", "messages", "notifications", "payments", "account"],
 };
 
 
@@ -212,6 +214,7 @@ function tabLabel(t: Tab, portal: PortalKind, counts: { received: number; sent: 
   if (t === "training") return "Training & Tests";
   if (t === "schedule") return "Schedule";
   if (t === "messages") return "Messages";
+  if (t === "notifications") return "Notifications";
   if (t === "changelog") return "Changelog";
   if (t === "onboarding") return "Onboarding";
   return "Account";
@@ -703,6 +706,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "medicaid" && <MedicaidSubmissionCenter userId={userId!} />}
             {tab === "training" && <TrainingPanel />}
             {tab === "messages" && <MessagesPanel userId={userId!} portal={portal} />}
+            {tab === "notifications" && <NotificationsPanel />}
             {tab === "changelog" && <ChangelogPanel />}
             {tab === "account" && <AccountPanel profile={profile} portal={portal} userId={userId!} />}
             </>)}
@@ -2949,6 +2953,54 @@ function WeeklyWorkHoursCard() {
 
 // ───────────────────────── Sidebar ─────────────────────────
 
+function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listMyNotifications);
+  const q = useQuery({
+    queryKey: ["notifications-bell-unread"],
+    queryFn: () => listFn({ data: { filter: "unread", limit: 1, offset: 0 } }),
+    refetchInterval: 60_000,
+  });
+  useEffect(() => {
+    let uid: string | null = null;
+    let ch: ReturnType<typeof supabase.channel> | null = null;
+    supabase.auth.getUser().then(({ data }) => {
+      uid = data.user?.id ?? null;
+      if (!uid) return;
+      ch = supabase
+        .channel(`notif-bell-${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` },
+          () => qc.invalidateQueries({ queryKey: ["notifications-bell-unread"] }),
+        )
+        .subscribe();
+    });
+    return () => {
+      if (ch) void supabase.removeChannel(ch);
+    };
+  }, [qc]);
+  const count = q.data?.total ?? 0;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Notifications${count ? `, ${count} unread` : ""}`}
+      className="relative inline-flex h-8 w-8 items-center justify-center rounded hover:bg-white/10"
+    >
+      <BellIcon className="h-4 w-4" />
+      {count > 0 && (
+        <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+
+
+
 
 
 function PortalSidebar(props: {
@@ -3006,13 +3058,8 @@ function PortalSidebar(props: {
             <span className="size-7 bg-[oklch(0.872_0.078_65.2)] grid place-items-center font-display font-bold text-[oklch(0.18_0.05_257)] text-sm">F</span>
             <span className="font-display font-bold text-base tracking-tight uppercase">My Florida NEMT</span>
           </Link>
-          <Link
-            to="/notifications"
-            aria-label="Notifications"
-            className="relative inline-flex h-8 w-8 items-center justify-center rounded hover:bg-white/10"
-          >
-            <BellIcon className="h-4 w-4" />
-          </Link>
+          <NotificationBellButton onOpen={() => onTab("notifications" as Tab)} />
+
         </div>
         {editing ? (
           <div className="space-y-2">
