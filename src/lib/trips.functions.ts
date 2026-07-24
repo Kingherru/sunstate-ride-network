@@ -477,11 +477,14 @@ export const assignTrip = createServerFn({ method: "POST" })
     if (data.assigned_to === trip.created_by) throw new Error("Provider cannot be the trip creator.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from("trips")
       .update({ assigned_to: data.assigned_to, status: "assigned" })
-      .eq("id", data.trip_id);
+      .eq("id", data.trip_id)
+      .select()
+      .single();
     if (error) throw error;
+    await notifyTripWorkflowSafe(updated, userId);
     return { ok: true };
   });
 
