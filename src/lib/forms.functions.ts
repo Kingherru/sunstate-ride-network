@@ -241,6 +241,61 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       }
     }
 
+    // Role-aware workflow notification: route to embed provider if the request
+    // came from their widget, otherwise to MFN staff. Silent on failure.
+    try {
+      const {
+        getStaffRecipients,
+        getUserMailbox,
+        siteBase,
+        fanOut,
+      } = await import("@/lib/trips/notify.server");
+      const base = siteBase();
+      const summary = {
+        tripShortId: String(row.id).slice(0, 8),
+        pickupAddress: [data.pickupAddress, data.pickupCity].filter(Boolean).join(", "),
+        dropoffAddress: [data.dropoffAddress, data.dropoffCity].filter(Boolean).join(", "),
+        pickupDate: data.pickupDate ?? "",
+        pickupTime: data.pickupTime ?? "",
+        tripType: data.tripType === "round_trip" || data.roundTrip ? "Round Trip" : "One-way",
+        transportType: (data as any).transportType ?? "",
+      };
+      const label = "A new transportation request from a patient";
+      if (embedProviderId) {
+        const target = await getUserMailbox(embedProviderId);
+        if (target.email) {
+          await fanOut({
+            templateName: "staff-new-trip-review",
+            recipients: [{ email: target.email, name: target.name, userId: embedProviderId }],
+            baseIdempotencyKey: `staff-new-trip-review:rr:${row.id}`,
+            templateData: {
+              ...summary,
+              sourceLabel: label,
+              reviewUrl: `${base}/dashboard?tab=requests&request=${row.id}`,
+            },
+          });
+        }
+      } else {
+        const staff = await getStaffRecipients();
+        if (staff.length) {
+          await fanOut({
+            templateName: "staff-new-trip-review",
+            recipients: staff.map((s) => ({ email: s.email, userId: s.userId })),
+            baseIdempotencyKey: `staff-new-trip-review:rr:${row.id}`,
+            templateData: {
+              ...summary,
+              sourceLabel: label,
+              reviewUrl: `${base}/admin?tab=reservations&request=${row.id}`,
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.error("ride-request workflow notify failed", e);
+    }
+
+
+
     return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
   });
 

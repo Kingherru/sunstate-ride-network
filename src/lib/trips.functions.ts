@@ -304,12 +304,97 @@ export const createTrip = createServerFn({ method: "POST" })
         .single();
       if (assignErr) throw assignErr;
       await sendTripConfirmationSafe(assignedRow);
+      await notifyTripWorkflowSafe(assignedRow, userId);
       return assignedRow;
     }
 
     await sendTripConfirmationSafe(row);
+    await notifyTripWorkflowSafe(row, userId);
     return row;
   });
+
+/**
+ * Role-aware workflow notification. Sends exactly one class of email based on
+ * who created the trip and who needs the next action. Silent on failure — the
+ * customer-facing confirmation is already sent by this point.
+ */
+async function notifyTripWorkflowSafe(trip: any, callerUserId: string) {
+  try {
+    const {
+      getCallerRole,
+      getStaffRecipients,
+      getProvidersInRegion,
+      getUserMailbox,
+      summarizeTrip,
+      siteBase,
+      fanOut,
+    } = await import("@/lib/trips/notify.server");
+
+    const role = await getCallerRole(callerUserId);
+    const base = siteBase();
+    const summary = summarizeTrip(trip);
+    const providerUrl = `${base}/dashboard?tab=requests&trip=${trip.id}`;
+    const staffUrl = `${base}/admin?tab=reservations&trip=${trip.id}`;
+
+    // Trip was pre-assigned → notify that assignee to approve/decline.
+    if (trip.assigned_to && trip.assigned_to !== callerUserId) {
+      const caller = await getUserMailbox(callerUserId);
+      const target = await getUserMailbox(trip.assigned_to);
+      if (target.email) {
+        await fanOut({
+          templateName: "provider-approval-request",
+          recipients: [{ email: target.email, name: target.name, userId: trip.assigned_to }],
+          baseIdempotencyKey: `provider-approval-request:${trip.id}`,
+          templateData: {
+            ...summary,
+            senderName: caller.name ?? (role === "staff" ? "My Florida NEMT" : "A provider"),
+            reviewUrl: providerUrl,
+          },
+        });
+      }
+      return;
+    }
+
+    // Unassigned, created by staff → open quote request to regional providers.
+    if (role === "staff") {
+      const providers = await getProvidersInRegion(trip.region);
+      if (providers.length) {
+        await fanOut({
+          templateName: "provider-quote-request",
+          recipients: providers.map((p) => ({ email: p.email, name: p.name, userId: p.userId })),
+          baseIdempotencyKey: `provider-quote-request:${trip.id}`,
+          templateData: {
+            ...summary,
+            region: trip.region ?? "",
+            viewUrl: providerUrl,
+          },
+          recipientNameKey: "providerName",
+        });
+      }
+      return;
+    }
+
+    // Unassigned, created by patient / facility / provider → notify MFN staff.
+    const staff = await getStaffRecipients();
+    if (!staff.length) return;
+    const label =
+      role === "patient" ? "A new transportation request from a patient"
+      : role === "facility" ? "A new transportation request from a facility"
+      : "A new trip from a provider";
+    await fanOut({
+      templateName: "staff-new-trip-review",
+      recipients: staff.map((s) => ({ email: s.email, userId: s.userId })),
+      baseIdempotencyKey: `staff-new-trip-review:${trip.id}`,
+      templateData: {
+        ...summary,
+        sourceLabel: label,
+        reviewUrl: staffUrl,
+      },
+    });
+  } catch (e) {
+    console.error("notifyTripWorkflowSafe failed", e);
+  }
+}
 
 async function sendTripConfirmationSafe(trip: any) {
   try {
@@ -392,11 +477,14 @@ export const assignTrip = createServerFn({ method: "POST" })
     if (data.assigned_to === trip.created_by) throw new Error("Provider cannot be the trip creator.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from("trips")
       .update({ assigned_to: data.assigned_to, status: "assigned" })
-      .eq("id", data.trip_id);
+      .eq("id", data.trip_id)
+      .select()
+      .single();
     if (error) throw error;
+    await notifyTripWorkflowSafe(updated, userId);
     return { ok: true };
   });
 
