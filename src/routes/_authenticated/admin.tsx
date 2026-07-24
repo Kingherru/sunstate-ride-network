@@ -376,6 +376,7 @@ function AdminPage() {
 function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabilities> }) {
   switch (tab) {
     case "overview": return <OverviewTab />;
+    case "notifications": return <NotificationsPanel />;
     case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
     case "providers": return <ProvidersTab caps={caps} />;
     case "dispatch": return caps.canDispatch ? <AdminDispatchPanel /> : <NoAccess />;
