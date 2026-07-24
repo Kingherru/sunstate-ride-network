@@ -41,7 +41,11 @@ export const getPublicCourse = createServerFn({ method: "GET" })
       .select("id,ord,title")
       .eq("course_id", course.id)
       .order("ord");
-    const { count } = await sb
+    // `course_questions` SELECT is column-restricted for anon; use the admin
+    // client for a HEAD count so the public catalog can display the real
+    // exam length without exposing answer-key columns.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
       .from("course_questions")
       .select("*", { head: true, count: "exact" })
       .eq("course_id", course.id);
