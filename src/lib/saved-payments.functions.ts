@@ -258,6 +258,46 @@ export const payForConfirmedTrip = createServerFn({ method: "POST" })
 
       if (pi.status === "succeeded") {
         await supabaseAdmin.from("ride_requests").update({ payment_status: "paid" }).eq("id", req.id);
+        try {
+          const { data: rr } = await supabaseAdmin
+            .from("ride_requests")
+            .select("id, patient_first_name, patient_last_name, patient_email, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, return_date, return_pickup_time, assigned_provider_id, special_instructions")
+            .eq("id", req.id)
+            .maybeSingle();
+          if (rr?.patient_email) {
+            let providerName: string | undefined;
+            if (rr.assigned_provider_id) {
+              const { data: prov } = await supabaseAdmin
+                .from("member_profiles")
+                .select("company_name, first_name, last_name")
+                .eq("user_id", rr.assigned_provider_id)
+                .maybeSingle();
+              providerName = prov?.company_name
+                ?? [prov?.first_name, prov?.last_name].filter(Boolean).join(" ")
+                ?? undefined;
+            }
+            const { sendTripEmail } = await import("@/lib/trips/notify.server");
+            await sendTripEmail({
+              templateName: "trip-final-details",
+              recipientEmail: rr.patient_email,
+              idempotencyKey: `trip-final:${rr.id}`,
+              templateData: {
+                recipientName: [rr.patient_first_name, rr.patient_last_name].filter(Boolean).join(" ") || "there",
+                tripShortId: String(rr.id).slice(0, 8),
+                pickupAddress: [rr.pickup_address, rr.pickup_city].filter(Boolean).join(", "),
+                dropoffAddress: [rr.dropoff_address, rr.dropoff_city].filter(Boolean).join(", "),
+                pickupDate: rr.pickup_date ?? "",
+                pickupTime: rr.pickup_time ?? "",
+                returnDate: rr.return_date ?? undefined,
+                returnTime: rr.return_pickup_time ?? undefined,
+                providerName,
+                specialInstructions: rr.special_instructions ?? undefined,
+              },
+            });
+          }
+        } catch (e) {
+          console.error("trip-final-details send failed", e);
+        }
         return { ok: true, payment_intent_id: pi.id };
       }
       if (pi.status === "requires_action" && pi.client_secret) {

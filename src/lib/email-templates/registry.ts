@@ -3,6 +3,9 @@ import { template as driverEarningsReport } from './driver-earnings-report'
 import { template as providerFundsAvailable } from './provider-funds-available'
 import { template as providerCashoutCompleted } from './provider-cashout-completed'
 import { template as providerCashoutFailed } from './provider-cashout-failed'
+import { template as tripConfirmation } from './trip-confirmation'
+import { template as tripAcceptedInvoice } from './trip-accepted-invoice'
+import { template as tripFinalDetails } from './trip-final-details'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -22,4 +25,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'provider-funds-available': providerFundsAvailable,
   'provider-cashout-completed': providerCashoutCompleted,
   'provider-cashout-failed': providerCashoutFailed,
+  'trip-confirmation': tripConfirmation,
+  'trip-accepted-invoice': tripAcceptedInvoice,
+  'trip-final-details': tripFinalDetails,
 }

@@ -217,6 +217,30 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       console.error("submitRideRequest error", error);
       return { ok: false as const, error: "Could not submit your request. Please call (800) 555-0199." };
     }
+
+    // Fire-and-forget confirmation email (email #1 of 3 in trip lifecycle).
+    if (data.patientEmail) {
+      try {
+        const { sendTripEmail } = await import("@/lib/trips/notify.server");
+        await sendTripEmail({
+          templateName: "trip-confirmation",
+          recipientEmail: data.patientEmail,
+          idempotencyKey: `trip-confirmation:rr:${row.id}`,
+          templateData: {
+            recipientName: `${data.patientFirstName} ${data.patientLastName}`.trim() || "there",
+            tripShortId: String(row.id).slice(0, 8),
+            pickupAddress: [data.pickupAddress, data.pickupCity].filter(Boolean).join(", "),
+            dropoffAddress: [data.dropoffAddress, data.dropoffCity].filter(Boolean).join(", "),
+            pickupDate: data.pickupDate ?? "",
+            pickupTime: data.pickupTime ?? "",
+            tripType: data.tripType === "round_trip" || data.roundTrip ? "Round Trip" : "One-way",
+          },
+        });
+      } catch (e) {
+        console.error("trip-confirmation (ride_request) send failed", e);
+      }
+    }
+
     return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
   });
 
