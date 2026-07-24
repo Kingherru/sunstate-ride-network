@@ -596,6 +596,164 @@ function BulkZipImporter({ zones, onDone }: { zones: any[]; onDone: () => void }
   );
 }
 
+function ZipFallbackSection({
+  zones, onAssigned, canEdit,
+}: {
+  zones: any[];
+  onAssigned: () => void;
+  canEdit: boolean;
+}) {
+  const qc = useQueryClient();
+  const getFallbackFn = useServerFn(getZipFallbackSettings);
+  const updFallbackFn = useServerFn(updateZipFallbackSettings);
+  const unmappedFn = useServerFn(listUnmappedZips);
+  const assignFn = useServerFn(assignZipsToZone);
+
+  const fbQ = useQuery({ queryKey: ["disp", "zip-fallback"], queryFn: () => getFallbackFn() });
+  const unQ = useQuery({ queryKey: ["disp", "unmapped-zips"], queryFn: () => unmappedFn() });
+
+  const [mode, setMode] = useState<"manual_review" | "default_zone">("manual_review");
+  const [zoneId, setZoneId] = useState<string>("");
+  const [selected, setSelected] = useState<Record<string, string>>({});
+
+  const loaded = fbQ.data;
+  // sync form with server on load
+  if (loaded && mode !== loaded.mode) {
+    // one-shot sync via microtask to avoid re-render loop
+    queueMicrotask(() => {
+      setMode(loaded.mode);
+      setZoneId(loaded.zoneId ?? "");
+    });
+  }
+
+  const mSave = useMutation({
+    mutationFn: () => updFallbackFn({ data: { mode, zoneId: mode === "default_zone" ? (zoneId || null) : null } }),
+    onSuccess: () => {
+      toast.success("Fallback saved");
+      qc.invalidateQueries({ queryKey: ["disp", "zip-fallback"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
+  });
+
+  const mAssignOne = useMutation({
+    mutationFn: (v: { zip: string; zone_id: string }) => assignFn({ data: { zone_id: v.zone_id, zips: [v.zip] } }),
+    onSuccess: () => {
+      toast.success("ZIP assigned");
+      qc.invalidateQueries({ queryKey: ["disp"] });
+      onAssigned();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+  const rows = unQ.data ?? [];
+
+  return (
+    <section className="bg-card border border-border rounded-2xl p-5 space-y-5">
+      <div>
+        <h2 className="text-lg font-extrabold tracking-tight mb-1">Unmapped ZIP Fallback</h2>
+        <p className="text-xs text-muted-foreground">
+          Choose what happens when a provider, facility, patient, or trip enters a ZIP that isn't in any zone. Manual review keeps the record unassigned and lists it below. Default zone auto-routes to the zone you pick.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <label className={`border rounded-sm p-3 cursor-pointer ${mode === "manual_review" ? "border-primary bg-primary/5" : "border-border"}`}>
+          <input type="radio" className="mr-2" name="fbmode" checked={mode === "manual_review"} onChange={() => setMode("manual_review")} disabled={!canEdit} />
+          <span className="text-sm font-bold">Flag for manual review</span>
+          <div className="text-[11px] text-muted-foreground mt-1">Recommended. Records stay unassigned and appear in the review list below.</div>
+        </label>
+        <label className={`border rounded-sm p-3 cursor-pointer md:col-span-2 ${mode === "default_zone" ? "border-primary bg-primary/5" : "border-border"}`}>
+          <input type="radio" className="mr-2" name="fbmode" checked={mode === "default_zone"} onChange={() => setMode("default_zone")} disabled={!canEdit} />
+          <span className="text-sm font-bold">Auto-assign to a default zone</span>
+          <div className="mt-2">
+            <select
+              value={zoneId}
+              onChange={(e) => setZoneId(e.target.value)}
+              disabled={!canEdit || mode !== "default_zone"}
+              className="bg-background border border-border rounded-sm px-2 py-1 text-sm"
+            >
+              <option value="">Select zone…</option>
+              {zones.map((z: any) => (
+                <option key={z.id} value={z.id}>{z.name}</option>
+              ))}
+            </select>
+          </div>
+        </label>
+      </div>
+
+      {canEdit && (
+        <div>
+          <button
+            onClick={() => mSave.mutate()}
+            disabled={mSave.isPending || (mode === "default_zone" && !zoneId)}
+            className="bg-primary text-primary-foreground text-sm font-bold px-4 py-2 rounded-sm disabled:opacity-50"
+          >
+            Save fallback
+          </button>
+        </div>
+      )}
+
+      <div className="pt-2 border-t border-border">
+        <h3 className="text-sm font-bold mb-2">Manual review queue</h3>
+        {unQ.isLoading ? (
+          <div className="text-sm text-muted-foreground">Loading…</div>
+        ) : rows.length === 0 ? (
+          <div className="text-sm text-muted-foreground">No unmapped ZIPs. Every record is routed to a zone.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+                <tr>
+                  <th className="py-2 pr-3">ZIP</th>
+                  <th className="py-2 pr-3 text-right">Trips</th>
+                  <th className="py-2 pr-3 text-right">Providers</th>
+                  <th className="py-2 pr-3 text-right">Facilities</th>
+                  <th className="py-2 pr-3 text-right">Patients</th>
+                  <th className="py-2 pr-3">Assign to zone</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.zip} className="border-b border-border">
+                    <td className="py-2 pr-3 font-mono font-bold">{r.zip}</td>
+                    <td className="py-2 pr-3 text-right">{r.trip_count}</td>
+                    <td className="py-2 pr-3 text-right">{r.provider_count}</td>
+                    <td className="py-2 pr-3 text-right">{r.facility_count}</td>
+                    <td className="py-2 pr-3 text-right">{r.patient_count}</td>
+                    <td className="py-2 pr-3">
+                      <div className="flex gap-2">
+                        <select
+                          value={selected[r.zip] ?? ""}
+                          onChange={(e) => setSelected((s) => ({ ...s, [r.zip]: e.target.value }))}
+                          className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
+                          disabled={!canEdit}
+                        >
+                          <option value="">— zone —</option>
+                          {zones.map((z: any) => (
+                            <option key={z.id} value={z.id}>{z.name}</option>
+                          ))}
+                        </select>
+                        <button
+                          disabled={!canEdit || !selected[r.zip] || mAssignOne.isPending}
+                          onClick={() => mAssignOne.mutate({ zip: r.zip, zone_id: selected[r.zip] })}
+                          className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-sm disabled:opacity-50"
+                        >
+                          Assign
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
 function fmtCents(v: number | null | undefined): string {
   if (v == null) return "—";
   const n = Number(v) / 100;
