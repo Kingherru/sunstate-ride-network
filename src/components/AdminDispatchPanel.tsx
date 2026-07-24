@@ -254,19 +254,66 @@ export function AdminDispatchPanel() {
                 🔒 {permissionMessage("canManageZones")}
               </div>
             )}
-            <div className="flex flex-wrap gap-1">
-              {(zipsByZone.get(activeZoneId) ?? []).map((zip) => (
-                <span key={zip} className="text-xs font-mono bg-background border border-border rounded-sm px-2 py-1 flex items-center gap-1">
-                  {zip}
-                  {caps.canManageZones && (
-                    <button onClick={() => mRemove.mutate(zip)} className="text-red-600 font-bold hover:text-red-700">×</button>
-                  )}
-                </span>
-              ))}
-              {(zipsByZone.get(activeZoneId) ?? []).length === 0 && (
-                <span className="text-xs text-muted-foreground">No ZIPs assigned yet.</span>
-              )}
+            {activeRegionCounties.length > 0 && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Counties in {zones.find((z: any) => z.id === activeZoneId)?.name}
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {activeRegionCounties.map((c) => {
+                    const cs = (countyStatsQ.data ?? []).find((x: any) => x.county_id === c.id) as any;
+                    return (
+                      <div key={c.id} className="border border-border rounded-sm p-2 bg-background/40">
+                        <div className="text-sm font-bold">{c.name}</div>
+                        <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px]">
+                          <div>ZIPs: <span className="font-bold text-foreground">{cs?.zip_count ?? 0}</span></div>
+                          <div>Trips: <span className="font-bold text-foreground">{cs?.active_trips ?? 0}</span></div>
+                          <div>Providers: <span className="font-bold text-foreground">{cs?.providers ?? 0}</span></div>
+                          <div>Facilities: <span className="font-bold text-foreground">{cs?.facilities ?? 0}</span></div>
+                          <div>Patients: <span className="font-bold text-foreground">{cs?.patients ?? 0}</span></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                ZIPs in this region ({(zipsByZone.get(activeZoneId) ?? []).length}) — set county per ZIP
+              </h3>
+              <div className="flex flex-wrap gap-1">
+                {(zipsByZone.get(activeZoneId) ?? []).map(({ zip, county_id }) => (
+                  <span key={zip} className="text-xs font-mono bg-background border border-border rounded-sm px-2 py-1 flex items-center gap-1">
+                    <span className="font-bold">{zip}</span>
+                    {caps.canManageZones ? (
+                      <select
+                        value={county_id ?? ""}
+                        onChange={(e) => mSetCounty.mutate({ zip, county_id: e.target.value || null })}
+                        className="bg-transparent border border-border rounded-sm px-1 py-0.5 text-[11px] font-sans"
+                      >
+                        <option value="">— County —</option>
+                        {activeRegionCounties.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name.replace(" County, FL", "")}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground font-sans">
+                        {county_id ? (countyById.get(county_id)?.name.replace(" County, FL", "") ?? "—") : "—"}
+                      </span>
+                    )}
+                    {caps.canManageZones && (
+                      <button onClick={() => mRemove.mutate(zip)} className="text-red-600 font-bold hover:text-red-700">×</button>
+                    )}
+                  </span>
+                ))}
+                {(zipsByZone.get(activeZoneId) ?? []).length === 0 && (
+                  <span className="text-xs text-muted-foreground">No ZIPs assigned yet.</span>
+                )}
+              </div>
             </div>
+
 
             <div className="mt-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
