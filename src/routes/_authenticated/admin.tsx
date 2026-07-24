@@ -134,6 +134,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Overview",
     items: [
       { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps },
+      { id: "notifications", label: "Notifications", icon: BellRing, visible: (c) => c.isOps },
     ],
   },
   {
