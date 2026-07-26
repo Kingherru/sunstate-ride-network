@@ -616,15 +616,13 @@ function ZipFallbackSection({
   const [zoneId, setZoneId] = useState<string>("");
   const [selected, setSelected] = useState<Record<string, string>>({});
 
-  const loaded = fbQ.data;
-  // sync form with server on load
-  if (loaded && mode !== loaded.mode) {
-    // one-shot sync via microtask to avoid re-render loop
-    queueMicrotask(() => {
-      setMode(loaded.mode);
-      setZoneId(loaded.zoneId ?? "");
-    });
-  }
+  // sync form with server on load / when server value changes
+  useEffect(() => {
+    if (!fbQ.data) return;
+    setMode(fbQ.data.mode);
+    setZoneId(fbQ.data.zoneId ?? "");
+  }, [fbQ.data]);
+
 
   const mSave = useMutation({
     mutationFn: () => updFallbackFn({ data: { mode, zoneId: mode === "default_zone" ? (zoneId || null) : null } }),
