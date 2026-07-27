@@ -4043,6 +4043,7 @@ export type Database = {
           transport_type: string | null
           trip_kind: Database["public"]["Enums"]["trip_kind"]
           trip_number: string | null
+          unconfirmed_expires_at: string | null
           updated_at: string
           vehicle_id: string | null
           wait_minutes: number | null
@@ -4190,6 +4191,7 @@ export type Database = {
           transport_type?: string | null
           trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_number?: string | null
+          unconfirmed_expires_at?: string | null
           updated_at?: string
           vehicle_id?: string | null
           wait_minutes?: number | null
@@ -4337,6 +4339,7 @@ export type Database = {
           transport_type?: string | null
           trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_number?: string | null
+          unconfirmed_expires_at?: string | null
           updated_at?: string
           vehicle_id?: string | null
           wait_minutes?: number | null
@@ -4870,6 +4873,10 @@ export type Database = {
         Returns: undefined
       }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
+      admin_extend_unconfirmed_reservation: {
+        Args: { _days?: number; _trip_id: string }
+        Returns: string
+      }
       admin_grant_free_membership: {
         Args: { _user_id: string }
         Returns: undefined
@@ -4959,6 +4966,7 @@ export type Database = {
       }
       ensure_member_display_id: { Args: never; Returns: string }
       escalate_overdue_compliance_reviews: { Args: never; Returns: undefined }
+      expire_stale_unconfirmed_reservations: { Args: never; Returns: number }
       fin_admin_adjust_balance: {
         Args: { _amount_cents: number; _note: string; _provider: string }
         Returns: undefined
@@ -5177,6 +5185,7 @@ export type Database = {
         }
         Returns: number
       }
+      notify_expiring_unconfirmed_reservations: { Args: never; Returns: number }
       offer_trip_priority: {
         Args: { _provider_user_id: string; _trip_id: string }
         Returns: undefined

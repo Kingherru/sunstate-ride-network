@@ -493,14 +493,23 @@ export const assignTrip = createServerFn({ method: "POST" })
  *  sends funds — an admin must release from the Admin Portal. */
 export const updateTripStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { trip_id: string; status: "accepted" | "declined" | "completed" | "canceled" }) => input)
+  .inputValidator((input: {
+    trip_id: string;
+    status: "accepted" | "declined" | "completed" | "canceled";
+    reason?: string | null;
+  }) => input)
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const patch: { status: typeof data.status; completed_at?: string } = { status: data.status };
-    if (data.status === "completed") {
-      patch.completed_at = new Date().toISOString();
+    // "declined" is stored as `canceled` + cancel_reason so the reservation
+    // moves to Past and the reason is preserved for audits/emails.
+    const effectiveStatus = data.status === "declined" ? "canceled" : data.status;
+    const patch: Record<string, unknown> = { status: effectiveStatus };
+    if (data.status === "completed") patch.completed_at = new Date().toISOString();
+    if (data.status === "declined" || data.status === "canceled") {
+      patch.cancel_reason = (data.reason ?? "").trim() || (data.status === "declined" ? "Declined by recipient" : "Canceled");
+      patch.canceled_at = new Date().toISOString();
     }
-    const { error } = await supabase.from("trips").update(patch).eq("id", data.trip_id);
+    const { error } = await supabase.from("trips").update(patch as never).eq("id", data.trip_id);
     if (error) throw error;
 
     if (data.status === "accepted") {
@@ -655,7 +664,7 @@ export const listReservationsByState = createServerFn({ method: "GET" })
     // Read directly from `trips` — the single source of truth for created trips.
     // Column aliases bridge to the ride_requests-shaped fields the UI expects.
     const cols =
-      "id, display_id, status, reservation_state, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, payment_status, created_at, priority_offer_accepted_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
+      "id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, trip_type, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, provider_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
 
     let q = supabase
       .from("trips")
