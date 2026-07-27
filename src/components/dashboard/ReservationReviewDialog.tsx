@@ -147,10 +147,22 @@ export function ReservationReviewDialog({
   const qc = useQueryClient();
   const update = useServerFn(updateTripStatus);
   const saveDetails = useServerFn(updateTripDetails);
-  const [busy, setBusy] = useState<"accept" | "decline" | "save" | null>(null);
+  const refer = useServerFn(referTrip);
+  const respond = useServerFn(respondToReferral);
+  const loadConnected = useServerFn(listConnectedProviders);
+  const loadHistory = useServerFn(listTripReferralHistory);
+  const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | null>(null);
   const [editing, setEditing] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+  const [providerPickerOpen, setProviderPickerOpen] = useState(false);
+  const [uid, setUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => { if (mounted) setUid(data.user?.id ?? null); });
+    return () => { mounted = false; };
+  }, []);
 
   const isRound = !!row.round_trip;
   const isDelivery = String(row.trip_type ?? "").toLowerCase() === "medical_delivery";
