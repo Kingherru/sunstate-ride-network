@@ -103,8 +103,8 @@ export function Footer({ portal = "public" }: { portal?: FooterPortal }) {
             <ul className="space-y-3 text-sm text-muted">
               <li><Link to="/contact" className="hover:text-primary">Contact</Link></li>
               <li><a href="mailto:myfloridanemt@gmail.com" className="hover:text-primary">Support</a></li>
-              <li><Link to="/contact" className="hover:text-primary">Privacy Policy</Link></li>
-              <li><Link to="/contact" className="hover:text-primary">HIPAA Notice</Link></li>
+              <li><Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link></li>
+              <li><Link to="/privacy-policy" hash="phi-hipaa" className="hover:text-primary">HIPAA Notice</Link></li>
             </ul>
           </div>
         </div>

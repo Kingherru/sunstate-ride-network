@@ -17,6 +17,7 @@ import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
@@ -117,6 +118,11 @@ const RequestARideRoute = RequestARideRouteImport.update({
 const ProvidersRoute = ProvidersRouteImport.update({
   id: '/providers',
   path: '/providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MembershipRoute = MembershipRouteImport.update({
@@ -456,6 +462,7 @@ export interface FileRoutesByFullPath {
   '/join-our-network': typeof JoinOurNetworkRoute
   '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -526,6 +533,7 @@ export interface FileRoutesByTo {
   '/join-our-network': typeof JoinOurNetworkRoute
   '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -594,6 +602,7 @@ export interface FileRoutesById {
   '/join-our-network': typeof JoinOurNetworkRoute
   '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/providers': typeof ProvidersRoute
   '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -666,6 +675,7 @@ export interface FileRouteTypes {
     | '/join-our-network'
     | '/mcp'
     | '/membership'
+    | '/privacy-policy'
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
@@ -736,6 +746,7 @@ export interface FileRouteTypes {
     | '/join-our-network'
     | '/mcp'
     | '/membership'
+    | '/privacy-policy'
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
@@ -803,6 +814,7 @@ export interface FileRouteTypes {
     | '/join-our-network'
     | '/mcp'
     | '/membership'
+    | '/privacy-policy'
     | '/providers'
     | '/request-a-ride'
     | '/reset-password'
@@ -875,6 +887,7 @@ export interface RootRouteChildren {
   JoinOurNetworkRoute: typeof JoinOurNetworkRoute
   McpRoute: typeof McpRoute
   MembershipRoute: typeof MembershipRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProvidersRoute: typeof ProvidersRoute
   RequestARideRoute: typeof RequestARideRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -968,6 +981,13 @@ declare module '@tanstack/react-router' {
       path: '/providers'
       fullPath: '/providers'
       preLoaderRoute: typeof ProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/membership': {
@@ -1505,6 +1525,7 @@ const rootRouteChildren: RootRouteChildren = {
   JoinOurNetworkRoute: JoinOurNetworkRoute,
   McpRoute: McpRoute,
   MembershipRoute: MembershipRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProvidersRoute: ProvidersRoute,
   RequestARideRoute: RequestARideRoute,
   ResetPasswordRoute: ResetPasswordRoute,
