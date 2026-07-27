@@ -192,7 +192,12 @@ export function RequestsPanel({ userId }: { userId: string }) {
       )}
 
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
-      {!q.isLoading && rows.length === 0 && (
+      {q.isError && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-4 text-sm text-destructive">
+          Reservations could not be loaded. Please try again.
+        </div>
+      )}
+      {!q.isLoading && !q.isError && rows.length === 0 && (
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">No open requests right now.</div>
       )}
       <div className="space-y-3">
