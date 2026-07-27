@@ -625,6 +625,50 @@ export function ReservationReviewDialog({
             </DialogContent>
           </Dialog>
         )}
+
+        {providerPickerOpen && (
+          <Dialog open={providerPickerOpen} onOpenChange={setProviderPickerOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Send to a connected provider</DialogTitle>
+                <DialogDescription>
+                  Select a provider you've previously completed trips with. They'll review the reservation and accept or decline it.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-72 overflow-y-auto border border-border rounded-sm">
+                {connectedQ.isLoading ? (
+                  <div className="p-4 text-sm text-muted-foreground">Loading connected providers…</div>
+                ) : (connectedQ.data ?? []).length === 0 ? (
+                  <div className="p-4 text-sm text-muted-foreground">
+                    No connected providers yet. Complete a trip together to build a connection, or use "Send to My Florida NEMT".
+                  </div>
+                ) : (
+                  (connectedQ.data ?? []).map((p: any) => (
+                    <button
+                      key={p.user_id}
+                      type="button"
+                      disabled={!!busy}
+                      onClick={() => sendToProvider(p.user_id)}
+                      className="w-full text-left px-4 py-3 border-b border-border last:border-b-0 hover:bg-muted disabled:opacity-60"
+                    >
+                      <div className="text-sm font-bold text-foreground">{p.company ?? p.name}</div>
+                      {p.company && <div className="text-xs text-muted-foreground">{p.name}</div>}
+                    </button>
+                  ))
+                )}
+              </div>
+              <DialogFooter>
+                <button
+                  type="button"
+                  onClick={() => setProviderPickerOpen(false)}
+                  className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted"
+                >
+                  Cancel
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </DialogContent>
     </Dialog>
   );
