@@ -118,13 +118,12 @@ export const referTrip = createServerFn({ method: "POST" })
     try {
       await supabaseAdmin.from("notifications").insert({
         user_id: targetId,
-        kind: "referral_received",
+        type: "referral_received",
         title: "New reservation referral",
         body: "A reservation has been referred to you for review.",
-        severity: "info",
         link: `/dashboard?trip=${data.trip_id}`,
       });
-    } catch { /* notifications table may reject unknown severity — non-fatal */ }
+    } catch { /* non-fatal */ }
 
     return { ok: true as const };
   });
