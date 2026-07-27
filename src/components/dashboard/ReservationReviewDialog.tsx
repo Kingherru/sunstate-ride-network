@@ -55,6 +55,13 @@ type Row = {
   emergency_contact_phone?: string | null;
   created_at?: string | null;
   unconfirmed_expires_at?: string | null;
+  created_by?: string | null;
+  requester_user_id?: string | null;
+  assigned_provider_id?: string | null;
+  referral_status?: string | null;
+  referral_target_id?: string | null;
+  referral_sent_at?: string | null;
+  referral_decided_at?: string | null;
 };
 
 function mobilityLabel(r: Row) {
