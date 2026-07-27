@@ -893,16 +893,19 @@ function SelectField({ label, v, on, options, required, className = "" }: {
   );
 }
 
-function Field({ label, v, on, required, type = "text", placeholder, className = "" }: {
-  label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string;
+function Field({ label, v, on, required, type = "text", placeholder, className = "", error, name }: {
+  label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string; error?: string; name?: string;
 }) {
   return (
     <label className={`block ${className}`}>
       <span className="portal-label">{label}{required && " *"}</span>
       <input
+        data-field={name}
         type={type} value={v} onChange={(e) => on(e.target.value)} required={required} placeholder={placeholder}
-        className="portal-input"
+        aria-invalid={error ? true : undefined}
+        className={`portal-input ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
       />
+      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
     </label>
   );
 }
@@ -1044,14 +1047,49 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     staleTime: 60_000,
   });
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validateClient(payload: any): Record<string, string> {
+    const errs: Record<string, string> = {};
+    const req = (k: string, label: string) => {
+      if (!payload[k] || String(payload[k]).trim() === "") errs[k] = `${label} is required.`;
+    };
+    req("patient_first_name", isDelivery ? "Sender first name" : "Patient first name");
+    req("patient_last_name", isDelivery ? "Sender last name" : "Patient last name");
+    req("pickup_address", "Pickup address");
+    req("pickup_city", "Pickup city");
+    req("pickup_date", "Pickup date");
+    req("pickup_time", "Pickup time");
+    req("dropoff_address", "Dropoff address");
+    req("dropoff_city", "Dropoff city");
+    if (payload.round_trip) {
+      req("return_date", "Return date");
+      req("return_pickup_time", "Return pickup time");
+    }
+    if (payload.patient_email && !/^\S+@\S+\.\S+$/.test(String(payload.patient_email))) {
+      errs.patient_email = "Please enter a valid email address.";
+    }
+    return errs;
+  }
+
   const m = useMutation({
     mutationFn: async () => {
-      if (form.round_trip && !form.return_pickup_time) {
-        throw new Error("Return pickup time is required for round trips.");
-      }
       const payload: any = { ...form };
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
+      const clientErrs = validateClient(payload);
+      if (Object.keys(clientErrs).length > 0) {
+        setFieldErrors(clientErrs);
+        const first = Object.keys(clientErrs)[0];
+        // Focus the first invalid field
+        setTimeout(() => {
+          const el = document.querySelector(`[data-field="${first}"]`) as HTMLElement | null;
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          el?.focus?.();
+        }, 0);
+        throw new Error(clientErrs[first]);
+      }
+      setFieldErrors({});
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.patient_email) delete payload.patient_email;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
@@ -1059,7 +1097,6 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       if (!payload.return_date) delete payload.return_date;
       if (!payload.appointment_time) delete payload.appointment_time;
       if (!payload.payer_id) delete payload.payer_id;
-      // Delivery-only fields: strip when not a delivery, and coerce weight.
       if (payload.trip_kind !== "medical_delivery") {
         delete payload.delivery_item_type;
         delete payload.delivery_item_description;
@@ -1075,11 +1112,22 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           delete payload.delivery_weight_lbs;
         }
       }
-      // HIPAA ack is resolved server-side from the user's Settings record.
       return createTrip({ data: payload });
     },
-    onSuccess: () => { toast.success("Trip created"); onCreated(); },
-    onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
+    onSuccess: () => { toast.success("Trip created"); setFieldErrors({}); onCreated(); },
+    onError: async (e: any) => {
+      const { humanizeError } = await import("@/lib/friendly-errors");
+      const friendly = humanizeError(e);
+      if (friendly.fields && Object.keys(friendly.fields).length > 0) {
+        setFieldErrors(friendly.fields);
+        const first = Object.keys(friendly.fields)[0];
+        setTimeout(() => {
+          const el = document.querySelector(`[data-field="${first}"]`) as HTMLElement | null;
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 0);
+      }
+      toast.error(friendly.message);
+    },
   });
 
   return (
@@ -1116,12 +1164,12 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         })}
       </fieldset>
 
-      <Field label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
-      <Field label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
-      <Field label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
-      <Field label={isDelivery ? "Sender email" : "Patient email"} v={form.patient_email} on={(v) => setForm({ ...form, patient_email: v })} type="email" />
+      <Field name="patient_first_name" error={fieldErrors.patient_first_name} label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
+      <Field name="patient_last_name" error={fieldErrors.patient_last_name} label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
+      <Field name="patient_phone" error={fieldErrors.patient_phone} label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field name="patient_email" error={fieldErrors.patient_email} label={isDelivery ? "Sender email" : "Patient email"} v={form.patient_email} on={(v) => setForm({ ...form, patient_email: v })} type="email" />
       {!isDelivery && (
-        <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
+        <Field name="patient_date_of_birth" error={fieldErrors.patient_date_of_birth} label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       )}
       
 
@@ -1192,8 +1240,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         />
       </label>
       <Field label="Building / Doctor's office / Suite" v={form.pickup_address_details} on={(v) => setForm({ ...form, pickup_address_details: v })} className="col-span-2" placeholder="e.g. Dr. Smith — Suite 210" />
-      <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
-      <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
+      <Field name="pickup_city" error={fieldErrors.pickup_city} label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
+      <Field name="pickup_zip" error={fieldErrors.pickup_zip} label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
       <DatePickerField
         label="Pickup date"
         value={form.pickup_date}
@@ -1236,8 +1284,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           required
         />
       </label>
-      <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
-      <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
+      <Field name="dropoff_city" error={fieldErrors.dropoff_city} label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
+      <Field name="dropoff_zip" error={fieldErrors.dropoff_zip} label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       {!isDelivery && (
         <label className="flex flex-col gap-1 text-sm">
           <span className="portal-label">Transportation type</span>

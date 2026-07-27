@@ -249,7 +249,11 @@ export const getMyHipaaAckStatus = createServerFn({ method: "GET" })
 /** Create a trip (manual or CSV row). */
 export const createTrip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => createTripSchema.parse(input))
+  .inputValidator((input: unknown) => {
+    const r = createTripSchema.safeParse(input);
+    if (!r.success) throw new Error(JSON.stringify(r.error.issues));
+    return r.data;
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureCanSendTrip(supabase, userId);
