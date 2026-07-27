@@ -205,7 +205,69 @@ export function ReservationReviewDialog({
     qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
     qc.invalidateQueries({ queryKey: ["my-trips"] });
     qc.invalidateQueries({ queryKey: ["unread-counts"] });
+    qc.invalidateQueries({ queryKey: ["referral-history", row.id] });
   };
+
+  // Referral state derived from the row
+  const senderId = row.created_by ?? row.requester_user_id ?? null;
+  const isSender = !!uid && !!senderId && uid === senderId;
+  const referralStatus = (row.referral_status ?? "none").toLowerCase();
+  const isPendingReferral = referralStatus === "pending";
+  const isReferralTarget = !!uid && !!row.referral_target_id && uid === row.referral_target_id;
+  const canRoute = isSender && isUnconfirmed && !isPendingReferral && !row.assigned_provider_id;
+
+  const historyQ = useQuery({
+    queryKey: ["referral-history", row.id],
+    queryFn: () => loadHistory({ data: { trip_id: row.id } }),
+    enabled: open,
+  });
+
+  const connectedQ = useQuery({
+    queryKey: ["connected-providers"],
+    queryFn: () => loadConnected(),
+    enabled: open && providerPickerOpen,
+  });
+
+  async function sendToMfn() {
+    setBusy("refer");
+    try {
+      await refer({ data: { trip_id: row.id, target: "mfn" } });
+      toast.success("Sent to My Florida NEMT for review");
+      invalidate();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send referral");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function sendToProvider(providerId: string) {
+    setBusy("refer");
+    try {
+      await refer({ data: { trip_id: row.id, target: providerId } });
+      toast.success("Referral sent to provider");
+      setProviderPickerOpen(false);
+      invalidate();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send referral");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function respondReferral(accept: boolean, reason?: string) {
+    setBusy("respond");
+    try {
+      await respond({ data: { trip_id: row.id, accept, reason: reason ?? null } });
+      toast.success(accept ? "Referral accepted — moved to Booked" : "Referral declined — returned to sender");
+      invalidate();
+      if (accept) onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not respond to referral");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function saveEdits() {
     setBusy("save");
