@@ -76,14 +76,20 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { date: string }) => input)
   .handler(async ({ data, context }) => {
+    const uid = context.userId;
     const { data: rows, error } = await context.supabase
-      .from("ride_requests")
-      .select("id, pickup_date, pickup_time, appointment_time, scheduled_start_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, assigned_driver_id, status")
-      .eq("assigned_provider_id", context.userId)
+      .from("trips")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, status, reservation_state, assigned_to, created_by")
       .eq("pickup_date", data.date)
+      .in("reservation_state", ["booked", "unconfirmed"])
+      .or(`assigned_to.eq.${uid},created_by.eq.${uid}`)
       .order("pickup_time");
     if (error) throw error;
-    return rows ?? [];
+    return (rows ?? []).map((r: any) => ({
+      ...r,
+      assigned_driver_id: r.driver_id,
+      scheduled_start_time: r.pickup_time,
+    }));
   });
 
 /** List an entire week (7 days starting from week_start ISO date) */
@@ -91,34 +97,42 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { week_start: string }) => input)
   .handler(async ({ data, context }) => {
+    const uid = context.userId;
     const start = new Date(data.week_start + "T00:00:00");
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
     const endIso = end.toISOString().slice(0, 10);
     const { data: rows, error } = await context.supabase
-      .from("ride_requests")
-      .select("id, pickup_date, pickup_time, appointment_time, scheduled_start_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, assigned_driver_id, status")
-      .eq("assigned_provider_id", context.userId)
+      .from("trips")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, status, reservation_state, assigned_to, created_by")
+      .in("reservation_state", ["booked", "unconfirmed"])
+      .or(`assigned_to.eq.${uid},created_by.eq.${uid}`)
       .gte("pickup_date", data.week_start)
       .lte("pickup_date", endIso)
       .order("pickup_date")
       .order("pickup_time");
     if (error) throw error;
-    return rows ?? [];
+    return (rows ?? []).map((r: any) => ({
+      ...r,
+      assigned_driver_id: r.driver_id,
+      scheduled_start_time: r.pickup_time,
+    }));
   });
 
-/** Assign or clear a driver + scheduled time for a reservation */
+/** Assign or clear a driver + scheduled time for a booked trip */
 export const assignDriverSlot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) => input)
   .handler(async ({ data, context }) => {
-    const { data: r } = await context.supabase
-      .from("ride_requests")
-      .select("id, assigned_provider_id")
+    const uid = context.userId;
+    const { data: t, error: tErr } = await context.supabase
+      .from("trips")
+      .select("id, assigned_to, created_by")
       .eq("id", data.reservation_id)
       .maybeSingle();
-    if (!r || r.assigned_provider_id !== context.userId) {
-      throw new Error("Reservation not found or not assigned to you");
+    if (tErr) throw tErr;
+    if (!t || (t.assigned_to !== uid && t.created_by !== uid)) {
+      throw new Error("Trip not found or not yours");
     }
     if (data.driver_id) {
       const { data: d } = await context.supabase
@@ -126,14 +140,14 @@ export const assignDriverSlot = createServerFn({ method: "POST" })
         .select("id, owner_id")
         .eq("id", data.driver_id)
         .maybeSingle();
-      if (!d || d.owner_id !== context.userId) throw new Error("Driver not on your fleet");
+      if (!d || d.owner_id !== uid) throw new Error("Driver not on your fleet");
     }
-    const { error } = await context.supabase
-      .from("ride_requests")
-      .update({
-        assigned_driver_id: data.driver_id,
-        scheduled_start_time: data.scheduled_start_time,
-      })
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const update: any = { driver_id: data.driver_id };
+    if (data.scheduled_start_time) update.pickup_time = data.scheduled_start_time;
+    const { error } = await supabaseAdmin
+      .from("trips")
+      .update(update)
       .eq("id", data.reservation_id);
     if (error) throw error;
     return { ok: true };
