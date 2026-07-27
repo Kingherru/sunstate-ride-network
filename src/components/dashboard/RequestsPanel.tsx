@@ -8,6 +8,8 @@ import { listReservationsByState } from "@/lib/trips.functions";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
 import { formatMinutes } from "@/components/maps/RoutePreview";
+import { ReservationReviewDialog } from "@/components/dashboard/ReservationReviewDialog";
+
 
 type Row = {
   id: string;
@@ -318,7 +320,9 @@ export function ReservationsPanel({
   const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
   const [payerFilter, setPayerFilter] = useState<"all" | "medicaid">("all");
   const [search, setSearch] = useState("");
+  const [reviewing, setReviewing] = useState<any | null>(null);
   const fn = useServerFn(listReservationsByState);
+
 
   // Counts across all three buckets so the tab pill shows totals.
   const counts = useQuery({
@@ -548,7 +552,7 @@ export function ReservationsPanel({
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
-                    <Link to="/reservations/$id/review" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</Link>
+                    <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</button>
                     {scope !== "requester" && (
                       <button
                         type="button"
@@ -567,6 +571,15 @@ export function ReservationsPanel({
           </div>
         ))}
       </div>
+      {reviewing && (
+        <ReservationReviewDialog
+          row={reviewing}
+          open={!!reviewing}
+          onOpenChange={(v) => { if (!v) setReviewing(null); }}
+          canApprove={scope === "provider" || scope === "ops"}
+        />
+      )}
     </div>
   );
 }
+
