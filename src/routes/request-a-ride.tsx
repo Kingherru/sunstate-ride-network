@@ -200,6 +200,42 @@ function RequestRidePage() {
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
 
+  // Restore a draft from localStorage so a network/validation error doesn't lose the user's typing.
+  const DRAFT_KEY = "mfnemt.rideRequest.draft.v1";
+  const REMEMBER_KEY = "mfnemt.rideRequest.remember.v1";
+  const [remember, setRemember] = useState<boolean>(true);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<RideRequestInput>;
+        setForm((f) => ({ ...f, ...saved, pickupDate: "", pickupTime: "", appointmentTime: "", returnDate: "", returnPickupTime: "", returnDropoffTime: "" }));
+      }
+      const r = localStorage.getItem(REMEMBER_KEY);
+      if (r != null) setRemember(r === "1");
+    } catch { /* ignore */ }
+  }, []);
+  // Persist a lightweight draft as the user types (patient + addresses only, no dates/times).
+  useEffect(() => {
+    if (!remember) return;
+    try {
+      const draft = {
+        patientFirstName: form.patientFirstName,
+        patientLastName: form.patientLastName,
+        patientPhone: form.patientPhone,
+        patientEmail: form.patientEmail,
+        pickupAddress: form.pickupAddress,
+        pickupAddressDetails: form.pickupAddressDetails,
+        pickupCity: form.pickupCity,
+        dropoffAddress: form.dropoffAddress,
+        dropoffCity: form.dropoffCity,
+        transportType: form.transportType,
+        mobilityNotes: form.mobilityNotes,
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch { /* ignore */ }
+  }, [remember, form.patientFirstName, form.patientLastName, form.patientPhone, form.patientEmail, form.pickupAddress, form.pickupAddressDetails, form.pickupCity, form.dropoffAddress, form.dropoffCity, form.transportType, form.mobilityNotes]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -215,6 +251,7 @@ function RequestRidePage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -351,6 +388,23 @@ function RequestRidePage() {
           } catch (e) {
             console.error("account creation failed", e);
           }
+        }
+        if (remember) {
+          try { localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            patientFirstName: parsed.data.patientFirstName,
+            patientLastName: parsed.data.patientLastName,
+            patientPhone: parsed.data.patientPhone,
+            patientEmail: parsed.data.patientEmail,
+            pickupAddress: parsed.data.pickupAddress,
+            pickupAddressDetails: parsed.data.pickupAddressDetails,
+            pickupCity: parsed.data.pickupCity,
+            dropoffAddress: parsed.data.dropoffAddress,
+            dropoffCity: parsed.data.dropoffCity,
+            transportType: parsed.data.transportType,
+            mobilityNotes: parsed.data.mobilityNotes,
+          })); } catch { /* ignore */ }
+        } else {
+          try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
         }
       } else {
         toast.error(res.error);
@@ -506,6 +560,19 @@ function RequestRidePage() {
                 <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => upd("patientEmail", e.target.value)} />
               </Field>
             </div>
+            <label className="flex items-center gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
+                checked={remember}
+                onChange={(e) => {
+                  setRemember(e.target.checked);
+                  try { localStorage.setItem(REMEMBER_KEY, e.target.checked ? "1" : "0"); } catch { /* ignore */ }
+                  if (!e.target.checked) { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } }
+                }}
+              />
+              Remember my info on this device so I don't have to re-enter it next time.
+            </label>
           </fieldset>
 
           {/* Pickup */}
