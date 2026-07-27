@@ -552,7 +552,7 @@ export function ReservationsPanel({
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
-                    <Link to="/reservations/$id/review" params={{ id: r.id }} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</Link>
+                    <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</button>
                     {scope !== "requester" && (
                       <button
                         type="button"
