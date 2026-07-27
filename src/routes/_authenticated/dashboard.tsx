@@ -1284,8 +1284,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           required
         />
       </label>
-      <Field label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
-      <Field label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
+      <Field name="dropoff_city" error={fieldErrors.dropoff_city} label="Dropoff city" v={form.dropoff_city} on={(v) => setForm({ ...form, dropoff_city: v })} required />
+      <Field name="dropoff_zip" error={fieldErrors.dropoff_zip} label="Dropoff ZIP" v={form.dropoff_zip} on={(v) => setForm({ ...form, dropoff_zip: v })} />
       {!isDelivery && (
         <label className="flex flex-col gap-1 text-sm">
           <span className="portal-label">Transportation type</span>
