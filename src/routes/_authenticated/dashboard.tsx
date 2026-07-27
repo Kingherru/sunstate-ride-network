@@ -1240,8 +1240,8 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         />
       </label>
       <Field label="Building / Doctor's office / Suite" v={form.pickup_address_details} on={(v) => setForm({ ...form, pickup_address_details: v })} className="col-span-2" placeholder="e.g. Dr. Smith — Suite 210" />
-      <Field label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
-      <Field label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
+      <Field name="pickup_city" error={fieldErrors.pickup_city} label="Pickup city" v={form.pickup_city} on={(v) => setForm({ ...form, pickup_city: v })} required />
+      <Field name="pickup_zip" error={fieldErrors.pickup_zip} label="Pickup ZIP" v={form.pickup_zip} on={(v) => setForm({ ...form, pickup_zip: v })} />
       <DatePickerField
         label="Pickup date"
         value={form.pickup_date}
