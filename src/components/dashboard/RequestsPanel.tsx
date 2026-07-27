@@ -320,7 +320,9 @@ export function ReservationsPanel({
   const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
   const [payerFilter, setPayerFilter] = useState<"all" | "medicaid">("all");
   const [search, setSearch] = useState("");
+  const [reviewing, setReviewing] = useState<any | null>(null);
   const fn = useServerFn(listReservationsByState);
+
 
   // Counts across all three buckets so the tab pill shows totals.
   const counts = useQuery({
