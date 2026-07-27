@@ -560,6 +560,19 @@ function RequestRidePage() {
                 <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => upd("patientEmail", e.target.value)} />
               </Field>
             </div>
+            <label className="flex items-center gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
+                checked={remember}
+                onChange={(e) => {
+                  setRemember(e.target.checked);
+                  try { localStorage.setItem(REMEMBER_KEY, e.target.checked ? "1" : "0"); } catch { /* ignore */ }
+                  if (!e.target.checked) { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } }
+                }}
+              />
+              Remember my info on this device so I don't have to re-enter it next time.
+            </label>
           </fieldset>
 
           {/* Pickup */}
