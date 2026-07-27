@@ -1164,12 +1164,12 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         })}
       </fieldset>
 
-      <Field label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
-      <Field label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
-      <Field label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
-      <Field label={isDelivery ? "Sender email" : "Patient email"} v={form.patient_email} on={(v) => setForm({ ...form, patient_email: v })} type="email" />
+      <Field name="patient_first_name" error={fieldErrors.patient_first_name} label={isDelivery ? "Sender / requestor first name" : "Patient first name"} v={form.patient_first_name} on={(v) => setForm({ ...form, patient_first_name: v })} required />
+      <Field name="patient_last_name" error={fieldErrors.patient_last_name} label={isDelivery ? "Sender / requestor last name" : "Patient last name"} v={form.patient_last_name} on={(v) => setForm({ ...form, patient_last_name: v })} required />
+      <Field name="patient_phone" error={fieldErrors.patient_phone} label={isDelivery ? "Sender phone" : "Patient phone"} v={form.patient_phone} on={(v) => setForm({ ...form, patient_phone: v })} />
+      <Field name="patient_email" error={fieldErrors.patient_email} label={isDelivery ? "Sender email" : "Patient email"} v={form.patient_email} on={(v) => setForm({ ...form, patient_email: v })} type="email" />
       {!isDelivery && (
-        <Field label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
+        <Field name="patient_date_of_birth" error={fieldErrors.patient_date_of_birth} label="Patient date of birth" v={form.patient_date_of_birth} on={(v) => setForm({ ...form, patient_date_of_birth: v })} type="date" />
       )}
       
 
