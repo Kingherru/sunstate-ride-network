@@ -493,14 +493,23 @@ export const assignTrip = createServerFn({ method: "POST" })
  *  sends funds — an admin must release from the Admin Portal. */
 export const updateTripStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { trip_id: string; status: "accepted" | "declined" | "completed" | "canceled" }) => input)
+  .inputValidator((input: {
+    trip_id: string;
+    status: "accepted" | "declined" | "completed" | "canceled";
+    reason?: string | null;
+  }) => input)
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const patch: { status: typeof data.status; completed_at?: string } = { status: data.status };
-    if (data.status === "completed") {
-      patch.completed_at = new Date().toISOString();
+    // "declined" is stored as `canceled` + cancel_reason so the reservation
+    // moves to Past and the reason is preserved for audits/emails.
+    const effectiveStatus = data.status === "declined" ? "canceled" : data.status;
+    const patch: Record<string, unknown> = { status: effectiveStatus };
+    if (data.status === "completed") patch.completed_at = new Date().toISOString();
+    if (data.status === "declined" || data.status === "canceled") {
+      patch.cancel_reason = (data.reason ?? "").trim() || (data.status === "declined" ? "Declined by recipient" : "Canceled");
+      patch.canceled_at = new Date().toISOString();
     }
-    const { error } = await supabase.from("trips").update(patch).eq("id", data.trip_id);
+    const { error } = await supabase.from("trips").update(patch as never).eq("id", data.trip_id);
     if (error) throw error;
 
     if (data.status === "accepted") {
