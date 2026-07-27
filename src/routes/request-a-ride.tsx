@@ -389,6 +389,23 @@ function RequestRidePage() {
             console.error("account creation failed", e);
           }
         }
+        if (remember) {
+          try { localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            patientFirstName: parsed.data.patientFirstName,
+            patientLastName: parsed.data.patientLastName,
+            patientPhone: parsed.data.patientPhone,
+            patientEmail: parsed.data.patientEmail,
+            pickupAddress: parsed.data.pickupAddress,
+            pickupAddressDetails: parsed.data.pickupAddressDetails,
+            pickupCity: parsed.data.pickupCity,
+            dropoffAddress: parsed.data.dropoffAddress,
+            dropoffCity: parsed.data.dropoffCity,
+            transportType: parsed.data.transportType,
+            mobilityNotes: parsed.data.mobilityNotes,
+          })); } catch { /* ignore */ }
+        } else {
+          try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+        }
       } else {
         toast.error(res.error);
       }
