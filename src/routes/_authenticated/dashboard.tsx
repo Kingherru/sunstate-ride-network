@@ -3584,6 +3584,119 @@ function BusinessInfoCard({ profile, userId, portal }: { profile: Profile; userI
   );
 }
 
+function PricingPreferenceCard() {
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["my-pricing-mode"],
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return { pricing_mode: "recommended" as const };
+      const { data } = await supabase
+        .from("provider_pricing")
+        .select("pricing_mode")
+        .eq("owner_id", uid)
+        .maybeSingle();
+      const mode = (data as any)?.pricing_mode;
+      return { pricing_mode: (mode === "custom" ? "custom" : "recommended") as "custom" | "recommended" };
+    },
+    staleTime: 30_000,
+  });
+  const mode = q.data?.pricing_mode ?? "recommended";
+  const [busy, setBusy] = useState(false);
+
+  async function setMode(next: "recommended" | "custom") {
+    if (next === mode || busy) return;
+    setBusy(true);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) throw new Error("Not signed in");
+      const { error } = await supabase
+        .from("provider_pricing")
+        .upsert({ owner_id: uid, pricing_mode: next } as any, { onConflict: "owner_id" });
+      if (error) throw error;
+      toast.success(
+        next === "custom"
+          ? "Quotes will now use your custom pricing"
+          : "Quotes will now use My Florida NEMT recommended pricing",
+      );
+      qc.invalidateQueries({ queryKey: ["my-pricing-mode"] });
+      qc.invalidateQueries({ queryKey: ["price-estimate"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to update pricing preference");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const Option = ({
+    value,
+    title,
+    desc,
+  }: { value: "recommended" | "custom"; title: string; desc: string }) => {
+    const active = mode === value;
+    return (
+      <button
+        type="button"
+        onClick={() => setMode(value)}
+        disabled={busy}
+        className={`text-left border rounded-sm p-4 transition-colors ${
+          active
+            ? "border-primary bg-primary/5 ring-1 ring-primary"
+            : "border-border bg-background hover:border-primary/40"
+        }`}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className={`inline-block size-3 rounded-full border ${
+              active ? "bg-primary border-primary" : "border-muted-foreground/40"
+            }`}
+          />
+          <span className="font-bold text-sm">{title}</span>
+          {active && (
+            <span className="ml-auto text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground px-2 py-0.5 rounded-sm">
+              Active
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground leading-snug">{desc}</p>
+      </button>
+    );
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div>
+        <h3 className="text-lg font-extrabold tracking-tight">Quote Pricing Source</h3>
+        <p className="text-sm text-muted-foreground max-w-2xl mt-1">
+          Choose which pricing your quotes use throughout the platform. You can switch at any time.
+          A value of <strong>$0.00</strong> in your custom pricing is treated as intentional and will
+          be shown as $0.00 on the quote — it won't fall back to the recommended rate.
+        </p>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <Option
+          value="recommended"
+          title="Use My Florida NEMT Recommended Pricing"
+          desc="Quotes are calculated from the platform's recommended rates for the trip's service area."
+        />
+        <Option
+          value="custom"
+          title="Use My Custom Pricing"
+          desc="Quotes are calculated from the rates you publish in the Pricing tab (pickup, mileage, wait, add-ons, delivery)."
+        />
+      </div>
+      {mode === "custom" && (
+        <div className="text-[11px] text-muted-foreground border-l-2 border-primary pl-3">
+          Tip: review your rates in <strong>Settings → Pricing</strong> so every line on your quote
+          reflects what you want to charge.
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ReferralFeeCard({ profile, userId }: { profile: Profile; userId: string }) {
   const qc = useQueryClient();
   const p = profile as any;
