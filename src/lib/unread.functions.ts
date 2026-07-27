@@ -119,10 +119,12 @@ export const getUnreadCounts = createServerFn({ method: "GET" })
     );
 
     // ── Provider queues ─────────────────────────────────────────────────
+    // Count new trips assigned to OR created by this provider since last view,
+    // so provider-created trips light up their own Reservations badge too.
     counts.provider_reservations = await countSince(
-      supabase, "ride_requests", "created_at",
+      supabase, "trips", "created_at",
       marks[TAB_KEYS.providerReservations] ?? EPOCH,
-      (q) => q.eq("assigned_provider_id", userId),
+      (q) => q.or(`assigned_to.eq.${userId},created_by.eq.${userId}`),
     );
     counts.provider_referrals = await countSince(
       supabase, "trips", "created_at",
