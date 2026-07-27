@@ -699,7 +699,7 @@ export const listReservationsByState = createServerFn({ method: "GET" })
     // Read directly from `trips` — the single source of truth for created trips.
     // Column aliases bridge to the ride_requests-shaped fields the UI expects.
     const cols =
-      "id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
+      "id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, referral_status, referral_target_id, referral_sent_at, referral_decided_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
 
     let q = supabase
       .from("trips")
@@ -710,7 +710,10 @@ export const listReservationsByState = createServerFn({ method: "GET" })
       .limit(Math.min(data.limit ?? 300, 1000));
 
     if (data.scope === "requester") q = q.eq("created_by", userId);
-    else if (data.scope === "provider") q = q.or(`assigned_to.eq.${userId},created_by.eq.${userId}`);
+    else if (data.scope === "provider") {
+      // Provider sees trips they created, are assigned to, OR have a pending referral for.
+      q = q.or(`assigned_to.eq.${userId},created_by.eq.${userId},referral_target_id.eq.${userId}`);
+    }
     // ops: RLS on trips restricts to staff/admin roles.
 
     const { data: rows, error } = await q;
