@@ -365,6 +365,7 @@ export function ReservationReviewDialog({
             <Section title="Notes">
               <Textarea label="Special Instructions" value={draft.special_instructions} onChange={(v) => setDraft({ ...draft, special_instructions: v })} />
               <Textarea label="Mobility Notes" value={draft.mobility_notes} onChange={(v) => setDraft({ ...draft, mobility_notes: v })} />
+              <Textarea label="Provider Notes (internal)" value={draft.provider_notes} onChange={(v) => setDraft({ ...draft, provider_notes: v })} />
             </Section>
           </div>
         )}
