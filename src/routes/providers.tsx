@@ -17,9 +17,9 @@ export const Route = createFileRoute("/providers")({
       {
         name: "description",
         content:
-          "Apply to join the My Florida NEMT provider network. Upload your driver license, insurance, W-9, EIN letter, NPI, agreements, and vehicle photos. Get categorized by your service area and onboarded statewide.",
+          "Apply to join the My Florida NEMT provider network. Upload credentials and get onboarded statewide across Florida.",
       },
-      { property: "og:title", content: "Join the My Florida NEMT Provider Network" },
+      { property: "og:title", content: "Apply to the My Florida NEMT Provider Network" },
       { property: "og:description", content: "Register your NEMT company, upload credentials, and start receiving trips." },
       { property: "og:url", content: "https://myfloridanemt.com/providers" },
     ],

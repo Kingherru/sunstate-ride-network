@@ -8,9 +8,9 @@ export const Route = createFileRoute("/join-our-network")({
       {
         name: "description",
         content:
-          "Launching a non-emergency medical transportation business in Florida? Get exclusive NEMT leads, a verified profile, and statewide patient demand from Pensacola to the Keys.",
+          "Launch or grow a Florida NEMT business with exclusive leads, a verified profile, and statewide patient demand.",
       },
-      { property: "og:title", content: "Join the My Florida NEMT Provider Network" },
+      { property: "og:title", content: "Benefits for Florida NEMT Providers" },
       { property: "og:description", content: "Exclusive NEMT leads and statewide demand for Florida providers." },
       { property: "og:url", content: "/join-our-network" },
     ],

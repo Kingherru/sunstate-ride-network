@@ -5,7 +5,7 @@ import aboutImage from "@/assets/about-nemt.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — Simple NEMT Technology Built Around People | My Florida NEMT" },
+      { title: "About My Florida NEMT — NEMT Built Around People" },
       {
         name: "description",
         content:

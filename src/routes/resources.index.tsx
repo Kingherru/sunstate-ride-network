@@ -10,7 +10,7 @@ export const Route = createFileRoute("/resources/")({
       {
         name: "description",
         content:
-          "The My Florida NEMT blog: guides, playbooks, and reference articles for patients, caregivers, providers, and dispatchers across Florida's non-emergency medical transportation industry.",
+          "Guides, playbooks, and reference articles for patients, caregivers, providers, and dispatchers in Florida NEMT.",
       },
       { property: "og:title", content: "My Florida NEMT Blog & Resources" },
       { property: "og:description", content: "Search NEMT guides for patients, providers, caregivers, and Florida transportation planners." },
