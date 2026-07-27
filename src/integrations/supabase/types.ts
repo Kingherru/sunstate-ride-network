@@ -3835,6 +3835,58 @@ export type Database = {
           },
         ]
       }
+      trip_referral_history: {
+        Row: {
+          action: string
+          created_at: string
+          from_user_id: string
+          id: string
+          reason: string | null
+          to_user_id: string
+          trip_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          from_user_id: string
+          id?: string
+          reason?: string | null
+          to_user_id: string
+          trip_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          reason?: string | null
+          to_user_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_referral_history_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_referral_history_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_referral_history_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_summary_logs: {
         Row: {
           created_at: string
@@ -4025,8 +4077,13 @@ export type Database = {
           recurrence_end_date: string | null
           recurrence_exceptions: Json
           recurrence_rule: string | null
+          referral_decided_at: string | null
+          referral_decline_reason: string | null
           referral_fee_cents: number
           referral_fee_source_user_id: string | null
+          referral_sent_at: string | null
+          referral_status: string | null
+          referral_target_id: string | null
           region: string | null
           reservation_state: string | null
           return_date: string | null
@@ -4173,8 +4230,13 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_exceptions?: Json
           recurrence_rule?: string | null
+          referral_decided_at?: string | null
+          referral_decline_reason?: string | null
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
+          referral_sent_at?: string | null
+          referral_status?: string | null
+          referral_target_id?: string | null
           region?: string | null
           reservation_state?: string | null
           return_date?: string | null
@@ -4321,8 +4383,13 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_exceptions?: Json
           recurrence_rule?: string | null
+          referral_decided_at?: string | null
+          referral_decline_reason?: string | null
           referral_fee_cents?: number
           referral_fee_source_user_id?: string | null
+          referral_sent_at?: string | null
+          referral_status?: string | null
+          referral_target_id?: string | null
           region?: string | null
           reservation_state?: string | null
           return_date?: string | null
