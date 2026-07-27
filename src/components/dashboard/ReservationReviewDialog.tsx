@@ -1,9 +1,16 @@
-import { useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { updateTripStatus, updateTripDetails } from "@/lib/trips.functions";
+import {
+  listConnectedProviders,
+  listTripReferralHistory,
+  referTrip,
+  respondToReferral,
+} from "@/lib/referrals.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { formatTime12, formatDateLong, formatIsoDateTime12 } from "@/lib/time-format";
 
 type Row = {
@@ -48,6 +55,13 @@ type Row = {
   emergency_contact_phone?: string | null;
   created_at?: string | null;
   unconfirmed_expires_at?: string | null;
+  created_by?: string | null;
+  requester_user_id?: string | null;
+  assigned_provider_id?: string | null;
+  referral_status?: string | null;
+  referral_target_id?: string | null;
+  referral_sent_at?: string | null;
+  referral_decided_at?: string | null;
 };
 
 function mobilityLabel(r: Row) {
@@ -133,10 +147,22 @@ export function ReservationReviewDialog({
   const qc = useQueryClient();
   const update = useServerFn(updateTripStatus);
   const saveDetails = useServerFn(updateTripDetails);
-  const [busy, setBusy] = useState<"accept" | "decline" | "save" | null>(null);
+  const refer = useServerFn(referTrip);
+  const respond = useServerFn(respondToReferral);
+  const loadConnected = useServerFn(listConnectedProviders);
+  const loadHistory = useServerFn(listTripReferralHistory);
+  const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | null>(null);
   const [editing, setEditing] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+  const [providerPickerOpen, setProviderPickerOpen] = useState(false);
+  const [uid, setUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => { if (mounted) setUid(data.user?.id ?? null); });
+    return () => { mounted = false; };
+  }, []);
 
   const isRound = !!row.round_trip;
   const isDelivery = String(row.trip_type ?? "").toLowerCase() === "medical_delivery";
@@ -179,7 +205,69 @@ export function ReservationReviewDialog({
     qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
     qc.invalidateQueries({ queryKey: ["my-trips"] });
     qc.invalidateQueries({ queryKey: ["unread-counts"] });
+    qc.invalidateQueries({ queryKey: ["referral-history", row.id] });
   };
+
+  // Referral state derived from the row
+  const senderId = row.created_by ?? row.requester_user_id ?? null;
+  const isSender = !!uid && !!senderId && uid === senderId;
+  const referralStatus = (row.referral_status ?? "none").toLowerCase();
+  const isPendingReferral = referralStatus === "pending";
+  const isReferralTarget = !!uid && !!row.referral_target_id && uid === row.referral_target_id;
+  const canRoute = isSender && isUnconfirmed && !isPendingReferral && !row.assigned_provider_id;
+
+  const historyQ = useQuery({
+    queryKey: ["referral-history", row.id],
+    queryFn: () => loadHistory({ data: { trip_id: row.id } }),
+    enabled: open,
+  });
+
+  const connectedQ = useQuery({
+    queryKey: ["connected-providers"],
+    queryFn: () => loadConnected(),
+    enabled: open && providerPickerOpen,
+  });
+
+  async function sendToMfn() {
+    setBusy("refer");
+    try {
+      await refer({ data: { trip_id: row.id, target: "mfn" } });
+      toast.success("Sent to My Florida NEMT for review");
+      invalidate();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send referral");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function sendToProvider(providerId: string) {
+    setBusy("refer");
+    try {
+      await refer({ data: { trip_id: row.id, target: providerId } });
+      toast.success("Referral sent to provider");
+      setProviderPickerOpen(false);
+      invalidate();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send referral");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function respondReferral(accept: boolean, reason?: string) {
+    setBusy("respond");
+    try {
+      await respond({ data: { trip_id: row.id, accept, reason: reason ?? null } });
+      toast.success(accept ? "Referral accepted — moved to Booked" : "Referral declined — returned to sender");
+      invalidate();
+      if (accept) onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not respond to referral");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function saveEdits() {
     setBusy("save");
@@ -370,6 +458,46 @@ export function ReservationReviewDialog({
           </div>
         )}
 
+        {/* ============ Referral status + history ============ */}
+        {(isPendingReferral || (historyQ.data && historyQ.data.length > 0)) && (
+          <section className="border border-border rounded-sm p-4 mt-2">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+              <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-foreground">Referral</h3>
+              {isPendingReferral && (
+                <span className="inline-flex items-center border text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-100 text-amber-900 border-amber-300">
+                  Pending response
+                </span>
+              )}
+              {referralStatus === "accepted" && (
+                <span className="inline-flex items-center border text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-emerald-100 text-emerald-900 border-emerald-300">
+                  Accepted
+                </span>
+              )}
+              {referralStatus === "declined" && (
+                <span className="inline-flex items-center border text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-red-100 text-red-900 border-red-300">
+                  Declined — with sender
+                </span>
+              )}
+            </div>
+            {historyQ.data && historyQ.data.length > 0 ? (
+              <ol className="space-y-1.5 text-xs">
+                {historyQ.data.map((h: any) => (
+                  <li key={h.id} className="flex flex-wrap gap-x-2 items-baseline">
+                    <span className="font-bold uppercase tracking-wide text-[10px] text-muted-foreground">{h.action}</span>
+                    <span className="text-foreground">
+                      {h.from_name} → {h.to_name}
+                    </span>
+                    <span className="text-muted-foreground">{formatIsoDateTime12(h.created_at)}</span>
+                    {h.reason && <span className="text-muted-foreground italic">— {h.reason}</span>}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-xs text-muted-foreground">Awaiting response from the referred provider.</p>
+            )}
+          </section>
+        )}
+
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between">
           <button
             type="button"
@@ -378,7 +506,7 @@ export function ReservationReviewDialog({
           >
             Close
           </button>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
             {editing && (
               <button
                 type="button"
@@ -389,7 +517,50 @@ export function ReservationReviewDialog({
                 {busy === "save" ? "Saving…" : "Save changes"}
               </button>
             )}
-            {!editing && canApprove && isUnconfirmed && (
+            {/* Sender routing controls — only while unconfirmed, no pending referral, no assignment */}
+            {!editing && canRoute && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={sendToMfn}
+                  className="text-sm font-bold bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {busy === "refer" ? "Sending…" : "Send to My Florida NEMT"}
+                </button>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => setProviderPickerOpen(true)}
+                  className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted disabled:opacity-60"
+                >
+                  Send to Provider
+                </button>
+              </>
+            )}
+            {/* Recipient response controls */}
+            {!editing && isPendingReferral && isReferralTarget && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => setDeclineOpen(true)}
+                  className="text-sm font-bold text-white bg-red-600 border border-red-700 px-4 py-2 rounded-sm hover:bg-red-700 disabled:opacity-60"
+                >
+                  Decline referral
+                </button>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => respondReferral(true)}
+                  className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {busy === "respond" ? "Accepting…" : "Accept referral"}
+                </button>
+              </>
+            )}
+            {/* Standard approve/decline — for the reservation owner / staff when no referral is in flight */}
+            {!editing && canApprove && isUnconfirmed && !isPendingReferral && !isReferralTarget && (
               <>
                 <button
                   type="button"
@@ -437,11 +608,62 @@ export function ReservationReviewDialog({
                 </button>
                 <button
                   type="button"
-                  disabled={busy === "decline"}
-                  onClick={decline}
+                  disabled={busy === "decline" || busy === "respond"}
+                  onClick={async () => {
+                    if (isPendingReferral && isReferralTarget) {
+                      await respondReferral(false, declineReason);
+                      setDeclineOpen(false);
+                    } else {
+                      await decline();
+                    }
+                  }}
                   className="text-sm font-bold text-white bg-red-600 border border-red-700 px-4 py-2 rounded-sm hover:bg-red-700 disabled:opacity-60"
                 >
-                  {busy === "decline" ? "Declining…" : "Confirm decline"}
+                  {busy === "decline" || busy === "respond" ? "Declining…" : "Confirm decline"}
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {providerPickerOpen && (
+          <Dialog open={providerPickerOpen} onOpenChange={setProviderPickerOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Send to a connected provider</DialogTitle>
+                <DialogDescription>
+                  Select a provider you've previously completed trips with. They'll review the reservation and accept or decline it.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-72 overflow-y-auto border border-border rounded-sm">
+                {connectedQ.isLoading ? (
+                  <div className="p-4 text-sm text-muted-foreground">Loading connected providers…</div>
+                ) : (connectedQ.data ?? []).length === 0 ? (
+                  <div className="p-4 text-sm text-muted-foreground">
+                    No connected providers yet. Complete a trip together to build a connection, or use "Send to My Florida NEMT".
+                  </div>
+                ) : (
+                  (connectedQ.data ?? []).map((p: any) => (
+                    <button
+                      key={p.user_id}
+                      type="button"
+                      disabled={!!busy}
+                      onClick={() => sendToProvider(p.user_id)}
+                      className="w-full text-left px-4 py-3 border-b border-border last:border-b-0 hover:bg-muted disabled:opacity-60"
+                    >
+                      <div className="text-sm font-bold text-foreground">{p.company ?? p.name}</div>
+                      {p.company && <div className="text-xs text-muted-foreground">{p.name}</div>}
+                    </button>
+                  ))
+                )}
+              </div>
+              <DialogFooter>
+                <button
+                  type="button"
+                  onClick={() => setProviderPickerOpen(false)}
+                  className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted"
+                >
+                  Cancel
                 </button>
               </DialogFooter>
             </DialogContent>
