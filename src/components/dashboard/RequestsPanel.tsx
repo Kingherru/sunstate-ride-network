@@ -571,6 +571,15 @@ export function ReservationsPanel({
           </div>
         ))}
       </div>
+      {reviewing && (
+        <ReservationReviewDialog
+          row={reviewing}
+          open={!!reviewing}
+          onOpenChange={(v) => { if (!v) setReviewing(null); }}
+          canApprove={scope === "provider" || scope === "ops"}
+        />
+      )}
     </div>
   );
 }
+
