@@ -893,16 +893,19 @@ function SelectField({ label, v, on, options, required, className = "" }: {
   );
 }
 
-function Field({ label, v, on, required, type = "text", placeholder, className = "" }: {
-  label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string;
+function Field({ label, v, on, required, type = "text", placeholder, className = "", error, name }: {
+  label: string; v: string; on: (v: string) => void; required?: boolean; type?: string; placeholder?: string; className?: string; error?: string; name?: string;
 }) {
   return (
     <label className={`block ${className}`}>
       <span className="portal-label">{label}{required && " *"}</span>
       <input
+        data-field={name}
         type={type} value={v} onChange={(e) => on(e.target.value)} required={required} placeholder={placeholder}
-        className="portal-input"
+        aria-invalid={error ? true : undefined}
+        className={`portal-input ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
       />
+      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
     </label>
   );
 }
