@@ -163,6 +163,7 @@ export function ReservationReviewDialog({
     emergency_contact_phone: row.emergency_contact_phone ?? "",
     special_instructions: row.special_instructions ?? "",
     mobility_notes: row.mobility_notes ?? "",
+    provider_notes: row.provider_notes ?? "",
     payer: row.payer ?? "",
   }));
 

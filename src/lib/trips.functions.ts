@@ -630,10 +630,16 @@ export const updateTripDetails = createServerFn({ method: "POST" })
     // cost_total is deliberately excluded from this endpoint — use the trip quote RPC flow.
     const patch: Record<string, unknown> = {};
     const providerOnlyKeys = new Set(["provider_notes"]);
-    for (const [k, v] of Object.entries(data.patch)) {
-      if (v === undefined) continue;
+    const submittedEntries = Object.entries(data.patch).filter(([, v]) => v !== undefined);
+    for (const [k, v] of submittedEntries) {
       if (isRecipient && !isSender && !isAdmin && !providerOnlyKeys.has(k)) continue;
       patch[k] = v === "" ? null : v;
+    }
+    if (submittedEntries.length > 0 && Object.keys(patch).length === 0) {
+      // Provider tried to edit fields they're not allowed to change — don't silently drop.
+      throw new Error(
+        "As the assigned provider you can only edit Provider Notes on this reservation. Ask the requester or an admin to update the other details.",
+      );
     }
     if (Object.keys(patch).length === 0) return { ok: true, updated: 0 };
 
