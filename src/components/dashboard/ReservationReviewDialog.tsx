@@ -458,6 +458,46 @@ export function ReservationReviewDialog({
           </div>
         )}
 
+        {/* ============ Referral status + history ============ */}
+        {(isPendingReferral || (historyQ.data && historyQ.data.length > 0)) && (
+          <section className="border border-border rounded-sm p-4 mt-2">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+              <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-foreground">Referral</h3>
+              {isPendingReferral && (
+                <span className="inline-flex items-center border text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-100 text-amber-900 border-amber-300">
+                  Pending response
+                </span>
+              )}
+              {referralStatus === "accepted" && (
+                <span className="inline-flex items-center border text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-emerald-100 text-emerald-900 border-emerald-300">
+                  Accepted
+                </span>
+              )}
+              {referralStatus === "declined" && (
+                <span className="inline-flex items-center border text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-red-100 text-red-900 border-red-300">
+                  Declined — with sender
+                </span>
+              )}
+            </div>
+            {historyQ.data && historyQ.data.length > 0 ? (
+              <ol className="space-y-1.5 text-xs">
+                {historyQ.data.map((h: any) => (
+                  <li key={h.id} className="flex flex-wrap gap-x-2 items-baseline">
+                    <span className="font-bold uppercase tracking-wide text-[10px] text-muted-foreground">{h.action}</span>
+                    <span className="text-foreground">
+                      {h.from_name} → {h.to_name}
+                    </span>
+                    <span className="text-muted-foreground">{formatIsoDateTime12(h.created_at)}</span>
+                    {h.reason && <span className="text-muted-foreground italic">— {h.reason}</span>}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-xs text-muted-foreground">Awaiting response from the referred provider.</p>
+            )}
+          </section>
+        )}
+
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between">
           <button
             type="button"
@@ -466,7 +506,7 @@ export function ReservationReviewDialog({
           >
             Close
           </button>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
             {editing && (
               <button
                 type="button"
@@ -477,7 +517,50 @@ export function ReservationReviewDialog({
                 {busy === "save" ? "Saving…" : "Save changes"}
               </button>
             )}
-            {!editing && canApprove && isUnconfirmed && (
+            {/* Sender routing controls — only while unconfirmed, no pending referral, no assignment */}
+            {!editing && canRoute && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={sendToMfn}
+                  className="text-sm font-bold bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {busy === "refer" ? "Sending…" : "Send to My Florida NEMT"}
+                </button>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => setProviderPickerOpen(true)}
+                  className="text-sm font-bold border border-border px-4 py-2 rounded-sm hover:bg-muted disabled:opacity-60"
+                >
+                  Send to Provider
+                </button>
+              </>
+            )}
+            {/* Recipient response controls */}
+            {!editing && isPendingReferral && isReferralTarget && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => setDeclineOpen(true)}
+                  className="text-sm font-bold text-white bg-red-600 border border-red-700 px-4 py-2 rounded-sm hover:bg-red-700 disabled:opacity-60"
+                >
+                  Decline referral
+                </button>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => respondReferral(true)}
+                  className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {busy === "respond" ? "Accepting…" : "Accept referral"}
+                </button>
+              </>
+            )}
+            {/* Standard approve/decline — for the reservation owner / staff when no referral is in flight */}
+            {!editing && canApprove && isUnconfirmed && !isPendingReferral && !isReferralTarget && (
               <>
                 <button
                   type="button"
