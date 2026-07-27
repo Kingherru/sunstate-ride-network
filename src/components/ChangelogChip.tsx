@@ -6,6 +6,51 @@
  */
 export const CHANGELOG: { version: string; date: string; notes: string[] }[] = [
   {
+    version: "0.14.0",
+    date: "2026-07-27",
+    notes: [
+      "Redesigned the Review Reservation dialog with a full trip summary, inline editing while Unconfirmed, and 12-hour AM/PM times across the platform.",
+      "Added green Approve / red Decline actions with a reason-capture step; declines record a cancel reason and move the trip to Past.",
+      "Unconfirmed Reservations now auto-expire after 60 days with 7/3/1-day reminders and an admin extend/restore action.",
+      "New Trip creation instantly syncs to the Unconfirmed tab and updates the notification badge across all portals.",
+      "Fixed request-a-ride submission errors and added a 'Remember my info' option so patients don't re-enter contact details.",
+    ],
+  },
+  {
+    version: "0.13.0",
+    date: "2026-07-20",
+    notes: [
+      "Consolidated Trip History into the Trips panel with search, date filters, and financial summaries.",
+      "Reservation workflow now carries every New Trip field into the reservation and keeps changes synchronized across portals.",
+      "Three-email trip lifecycle: Confirmation on creation, Invoice on acceptance, Details after payment.",
+      "Populated the five Florida Dispatch Zones and auto-assign providers, facilities, and patients by ZIP.",
+      "Added a universal notification badge system and a dedicated Notifications page with multi-select mark-as-read.",
+    ],
+  },
+  {
+    version: "0.12.0",
+    date: "2026-07-13",
+    notes: [
+      "Simplified reservation lifecycle: Unconfirmed → Booked → Past, with accepted referrals promoted into Booked automatically.",
+      "Round Trip workflow now includes an editable Return Date reflected in quotes, summaries, emails, and PDF exports.",
+      "Added Medical Pickups & Deliveries as a new service with dedicated pricing and reservation flow.",
+      "Improved multi-leg quote calculation on New Trip and Reservation pages.",
+      "Moved HIPAA acknowledgment to a one-time settings step instead of after every trip.",
+    ],
+  },
+  {
+    version: "0.11.0",
+    date: "2026-07-06",
+    notes: [
+      "Providers are auto-approved on registration; compliance is tracked as Approved / Caution / Denied with real-time sync across portals.",
+      "Onboarding tab disappears once complete; non-members see a Soft Access banner with membership-gated features.",
+      "Merged New Trip and Reservations into a single Trips panel, and Contacts + Payers into one panel.",
+      "Bidirectional Driver ↔ Vehicle assignment with a Primary Driver / Primary Vehicle picker.",
+      "Referral Fee Settings added to Provider Account (flat amount or percentage).",
+      "48-hour payout hold on standard trips and Net-15 payouts on Medicaid trips, with server-side guards against self-assignment and price tampering.",
+    ],
+  },
+  {
     version: "0.10.0",
     date: "2026-07-15",
     notes: [
