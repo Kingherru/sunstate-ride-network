@@ -1047,14 +1047,49 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     staleTime: 60_000,
   });
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validateClient(payload: any): Record<string, string> {
+    const errs: Record<string, string> = {};
+    const req = (k: string, label: string) => {
+      if (!payload[k] || String(payload[k]).trim() === "") errs[k] = `${label} is required.`;
+    };
+    req("patient_first_name", isDelivery ? "Sender first name" : "Patient first name");
+    req("patient_last_name", isDelivery ? "Sender last name" : "Patient last name");
+    req("pickup_address", "Pickup address");
+    req("pickup_city", "Pickup city");
+    req("pickup_date", "Pickup date");
+    req("pickup_time", "Pickup time");
+    req("dropoff_address", "Dropoff address");
+    req("dropoff_city", "Dropoff city");
+    if (payload.round_trip) {
+      req("return_date", "Return date");
+      req("return_pickup_time", "Return pickup time");
+    }
+    if (payload.patient_email && !/^\S+@\S+\.\S+$/.test(String(payload.patient_email))) {
+      errs.patient_email = "Please enter a valid email address.";
+    }
+    return errs;
+  }
+
   const m = useMutation({
     mutationFn: async () => {
-      if (form.round_trip && !form.return_pickup_time) {
-        throw new Error("Return pickup time is required for round trips.");
-      }
       const payload: any = { ...form };
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
+      const clientErrs = validateClient(payload);
+      if (Object.keys(clientErrs).length > 0) {
+        setFieldErrors(clientErrs);
+        const first = Object.keys(clientErrs)[0];
+        // Focus the first invalid field
+        setTimeout(() => {
+          const el = document.querySelector(`[data-field="${first}"]`) as HTMLElement | null;
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          el?.focus?.();
+        }, 0);
+        throw new Error(clientErrs[first]);
+      }
+      setFieldErrors({});
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.patient_email) delete payload.patient_email;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
@@ -1062,7 +1097,6 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       if (!payload.return_date) delete payload.return_date;
       if (!payload.appointment_time) delete payload.appointment_time;
       if (!payload.payer_id) delete payload.payer_id;
-      // Delivery-only fields: strip when not a delivery, and coerce weight.
       if (payload.trip_kind !== "medical_delivery") {
         delete payload.delivery_item_type;
         delete payload.delivery_item_description;
@@ -1078,11 +1112,22 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           delete payload.delivery_weight_lbs;
         }
       }
-      // HIPAA ack is resolved server-side from the user's Settings record.
       return createTrip({ data: payload });
     },
-    onSuccess: () => { toast.success("Trip created"); onCreated(); },
-    onError: (e: any) => toast.error(e.message ?? "Failed to create trip"),
+    onSuccess: () => { toast.success("Trip created"); setFieldErrors({}); onCreated(); },
+    onError: async (e: any) => {
+      const { humanizeError } = await import("@/lib/friendly-errors");
+      const friendly = humanizeError(e);
+      if (friendly.fields && Object.keys(friendly.fields).length > 0) {
+        setFieldErrors(friendly.fields);
+        const first = Object.keys(friendly.fields)[0];
+        setTimeout(() => {
+          const el = document.querySelector(`[data-field="${first}"]`) as HTMLElement | null;
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 0);
+      }
+      toast.error(friendly.message);
+    },
   });
 
   return (
