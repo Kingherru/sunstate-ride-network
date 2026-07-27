@@ -608,11 +608,18 @@ export function ReservationReviewDialog({
                 </button>
                 <button
                   type="button"
-                  disabled={busy === "decline"}
-                  onClick={decline}
+                  disabled={busy === "decline" || busy === "respond"}
+                  onClick={async () => {
+                    if (isPendingReferral && isReferralTarget) {
+                      await respondReferral(false, declineReason);
+                      setDeclineOpen(false);
+                    } else {
+                      await decline();
+                    }
+                  }}
                   className="text-sm font-bold text-white bg-red-600 border border-red-700 px-4 py-2 rounded-sm hover:bg-red-700 disabled:opacity-60"
                 >
-                  {busy === "decline" ? "Declining…" : "Confirm decline"}
+                  {busy === "decline" || busy === "respond" ? "Declining…" : "Confirm decline"}
                 </button>
               </DialogFooter>
             </DialogContent>
