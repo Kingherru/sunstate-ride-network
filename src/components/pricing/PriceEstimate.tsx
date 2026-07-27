@@ -58,9 +58,23 @@ export function PriceEstimate({
   if (q.isLoading) return <div className="text-xs text-muted-foreground">Calculating Estimated Trip Total…</div>;
   if (!q.data) return null;
 
-  const lines = q.data.provider?.lines ?? q.data.zoneAverage.lines;
-  const total = q.data.provider?.dollars ?? q.data.zoneAverage.dollars;
-  const usingDefault = q.data.zoneAverage.usingDefault && !q.data.provider;
+  const active = q.data.active;
+  const lines = active.lines;
+  const total = active.dollars;
+  const source = active.source;
+
+  const badgeClass =
+    source === "custom"
+      ? "bg-primary/10 text-primary border-primary/30"
+      : source === "recommended"
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : "bg-amber-50 text-amber-800 border-amber-200";
+  const badgeLabel =
+    source === "custom"
+      ? "Provider Custom Pricing"
+      : source === "recommended"
+        ? "My Florida NEMT Recommended Pricing"
+        : "My Florida NEMT Recommended (default)";
 
   return (
     <div className={`bg-secondary/40 border border-border rounded-sm ${compact ? "p-3" : "p-4"} space-y-3`}>
@@ -76,6 +90,11 @@ export function PriceEstimate({
           <div><span className="font-bold text-foreground">{totalMiles.toFixed(1)} mi</span> total{miles > 0 && legCount > 1 ? ` (${miles.toFixed(1)} × ${legCount})` : ""}</div>
           {waitMinutes > 0 && <div><span className="font-bold text-foreground">{waitMinutes}</span> min wait</div>}
         </div>
+      </div>
+
+      <div className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest border px-2 py-1 rounded-sm ${badgeClass}`}>
+        <span className="size-1.5 rounded-full bg-current" />
+        {badgeLabel}
       </div>
 
       {lines.length > 0 && (
@@ -94,11 +113,13 @@ export function PriceEstimate({
       )}
 
       <p className="text-[11px] text-muted-foreground leading-snug">
-        {usingDefault
-          ? "Reference estimate — using platform default rates until more providers publish pricing for this area."
-          : q.data.zone
-            ? `Live average from ${q.data.zone.providerCount} active provider${q.data.zone.providerCount === 1 ? "" : "s"} in this dispatch zone.`
-            : "Reference estimate."} The final total may change if trip details are modified before completion.
+        {source === "custom"
+          ? "Quoted using this provider's custom published pricing. A value of $0.00 means the provider has chosen not to charge for that item."
+          : source === "default"
+            ? "Reference estimate — using platform default rates until more providers publish pricing for this area."
+            : q.data.zone
+              ? `Live average from ${q.data.zone.providerCount} active provider${q.data.zone.providerCount === 1 ? "" : "s"} in this dispatch zone.`
+              : "Reference estimate."} The final total may change if trip details are modified before completion.
       </p>
     </div>
   );

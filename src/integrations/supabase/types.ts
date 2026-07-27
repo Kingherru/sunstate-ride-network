@@ -2556,6 +2556,7 @@ export type Database = {
           pay_wait_unit: string | null
           pay_wheelchair_addon: number | null
           per_mile: number
+          pricing_mode: string
           stretcher_addon: number
           updated_at: string
           wait_per_min: number
@@ -2596,6 +2597,7 @@ export type Database = {
           pay_wait_unit?: string | null
           pay_wheelchair_addon?: number | null
           per_mile?: number
+          pricing_mode?: string
           stretcher_addon?: number
           updated_at?: string
           wait_per_min?: number
@@ -2636,6 +2638,7 @@ export type Database = {
           pay_wait_unit?: string | null
           pay_wheelchair_addon?: number | null
           per_mile?: number
+          pricing_mode?: string
           stretcher_addon?: number
           updated_at?: string
           wait_per_min?: number
