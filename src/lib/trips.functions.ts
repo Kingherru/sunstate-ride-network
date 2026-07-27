@@ -503,7 +503,29 @@ export const updateTripStatus = createServerFn({ method: "POST" })
     reason?: string | null;
   }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
+
+    // Authorize: caller must be sender (created_by), assigned provider (assigned_to), or ops/admin.
+    const { data: tripRow, error: tripErr } = await supabase
+      .from("trips")
+      .select("id, created_by, assigned_to")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    if (tripErr) throw tripErr;
+    if (!tripRow) throw new Error("Reservation not found");
+
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    const roleSet = new Set((roles ?? []).map((r: { role: string }) => r.role));
+    const isPrivileged = ["admin", "staff", "dispatcher", "app_manager", "zone_manager"].some((r) => roleSet.has(r));
+    const isSender = tripRow.created_by === userId;
+    const isRecipient = tripRow.assigned_to === userId;
+    if (!isSender && !isRecipient && !isPrivileged) {
+      throw new Error("You do not have permission to update this reservation");
+    }
+
     // "declined" is stored as `canceled` + cancel_reason so the reservation
     // moves to Past and the reason is preserved for audits/emails.
     const effectiveStatus = data.status === "declined" ? "canceled" : data.status;
@@ -513,7 +535,10 @@ export const updateTripStatus = createServerFn({ method: "POST" })
       patch.cancel_reason = (data.reason ?? "").trim() || (data.status === "declined" ? "Declined by recipient" : "Canceled");
       patch.canceled_at = new Date().toISOString();
     }
-    const { error } = await supabase.from("trips").update(patch as never).eq("id", data.trip_id);
+
+    // Authenticated UPDATE on public.trips is revoked at column level for safety; use admin client after authz.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("trips").update(patch as never).eq("id", data.trip_id);
     if (error) throw error;
 
     if (data.status === "accepted") {
