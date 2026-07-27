@@ -666,7 +666,7 @@ export const listReservationsByState = createServerFn({ method: "GET" })
       .limit(Math.min(data.limit ?? 300, 1000));
 
     if (data.scope === "requester") q = q.eq("created_by", userId);
-    else if (data.scope === "provider") q = q.eq("assigned_to", userId);
+    else if (data.scope === "provider") q = q.or(`assigned_to.eq.${userId},created_by.eq.${userId}`);
     // ops: RLS on trips restricts to staff/admin roles.
 
     const { data: rows, error } = await q;
