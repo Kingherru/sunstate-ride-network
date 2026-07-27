@@ -1,9 +1,16 @@
-import { useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { updateTripStatus, updateTripDetails } from "@/lib/trips.functions";
+import {
+  listConnectedProviders,
+  listTripReferralHistory,
+  referTrip,
+  respondToReferral,
+} from "@/lib/referrals.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { formatTime12, formatDateLong, formatIsoDateTime12 } from "@/lib/time-format";
 
 type Row = {
