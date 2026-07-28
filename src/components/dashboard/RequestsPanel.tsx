@@ -219,7 +219,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   )}
                 </div>
                 <div className="font-extrabold">
-                  {r.patient_first_name} {r.patient_last_name} · {r.pickup_date}
+                  Patient · {r.pickup_date} <span className="text-xs font-normal text-muted-foreground">(details available after you claim)</span>
                 </div>
                 <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                   <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
