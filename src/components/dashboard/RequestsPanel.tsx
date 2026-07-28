@@ -111,11 +111,9 @@ export function RequestsPanel({ userId }: { userId: string }) {
   const q = useQuery({
     queryKey: ["incoming-requests", userId],
     queryFn: async (): Promise<Row[]> => {
-      const { data, error } = await supabase
-        .from("ride_requests")
-        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,return_date,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,medicaid_number,medicaid_plan,created_at")
-        .is("assigned_provider_id", null)
-        .in("status", ["pending", "open", "new"])
+      const { data, error } = await (supabase as any)
+        .from("open_ride_requests_public")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,return_date,round_trip,trip_type,transport_type,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,is_medicaid,created_at")
         .order("pickup_date", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Row[];
