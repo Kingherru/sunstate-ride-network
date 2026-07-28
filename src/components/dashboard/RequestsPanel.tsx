@@ -28,8 +28,6 @@ type Row = {
   round_trip: boolean | null;
   trip_type: string | null;
   transport_type: string | null;
-  patient_first_name: string;
-  patient_last_name: string;
   dispatch_source: string | null;
   requester_user_id: string | null;
   service_level: string | null;
@@ -39,18 +37,12 @@ type Row = {
   estimated_duration_seconds: number | null;
   estimated_duration_traffic_seconds: number | null;
   payer: string | null;
-  medicaid_number: string | null;
-  medicaid_plan: string | null;
+  is_medicaid: boolean | null;
   created_at?: string | null;
-
 };
 
-function isMedicaidTrip(r: { payer?: string | null; medicaid_number?: string | null; medicaid_plan?: string | null }) {
-  return (
-    !!r.medicaid_number ||
-    !!r.medicaid_plan ||
-    (!!r.payer && r.payer.toLowerCase().includes("medicaid"))
-  );
+function isMedicaidTrip(r: { is_medicaid?: boolean | null; payer?: string | null }) {
+  return !!r.is_medicaid || (!!r.payer && r.payer.toLowerCase().includes("medicaid"));
 }
 
 function MedicaidBadge() {
@@ -119,11 +111,9 @@ export function RequestsPanel({ userId }: { userId: string }) {
   const q = useQuery({
     queryKey: ["incoming-requests", userId],
     queryFn: async (): Promise<Row[]> => {
-      const { data, error } = await supabase
-        .from("ride_requests")
-        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,return_date,round_trip,trip_type,transport_type,patient_first_name,patient_last_name,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,medicaid_number,medicaid_plan,created_at")
-        .is("assigned_provider_id", null)
-        .in("status", ["pending", "open", "new"])
+      const { data, error } = await (supabase as any)
+        .from("open_ride_requests_public")
+        .select("id,status,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,pickup_date,pickup_time,appointment_time,return_pickup_time,return_dropoff_time,return_date,round_trip,trip_type,transport_type,dispatch_source,requester_user_id,service_level,needs_wheelchair,distance_miles,estimated_cost_cents,estimated_duration_seconds,estimated_duration_traffic_seconds,payer,is_medicaid,created_at")
         .order("pickup_date", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Row[];
@@ -229,7 +219,7 @@ export function RequestsPanel({ userId }: { userId: string }) {
                   )}
                 </div>
                 <div className="font-extrabold">
-                  {r.patient_first_name} {r.patient_last_name} · {r.pickup_date}
+                  Patient · {r.pickup_date} <span className="text-xs font-normal text-muted-foreground">(details available after you claim)</span>
                 </div>
                 <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                   <span><span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}</span>
