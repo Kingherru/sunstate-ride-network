@@ -28,8 +28,6 @@ type Row = {
   round_trip: boolean | null;
   trip_type: string | null;
   transport_type: string | null;
-  patient_first_name: string;
-  patient_last_name: string;
   dispatch_source: string | null;
   requester_user_id: string | null;
   service_level: string | null;
@@ -39,18 +37,12 @@ type Row = {
   estimated_duration_seconds: number | null;
   estimated_duration_traffic_seconds: number | null;
   payer: string | null;
-  medicaid_number: string | null;
-  medicaid_plan: string | null;
+  is_medicaid: boolean | null;
   created_at?: string | null;
-
 };
 
-function isMedicaidTrip(r: { payer?: string | null; medicaid_number?: string | null; medicaid_plan?: string | null }) {
-  return (
-    !!r.medicaid_number ||
-    !!r.medicaid_plan ||
-    (!!r.payer && r.payer.toLowerCase().includes("medicaid"))
-  );
+function isMedicaidTrip(r: { is_medicaid?: boolean | null; payer?: string | null }) {
+  return !!r.is_medicaid || (!!r.payer && r.payer.toLowerCase().includes("medicaid"));
 }
 
 function MedicaidBadge() {
