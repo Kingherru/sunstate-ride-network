@@ -253,10 +253,10 @@ function RequestDetailPage() {
             {r.provider_notes ? (
               <p className="whitespace-pre-wrap text-sm text-zinc-800">{r.provider_notes}</p>
             ) : (
-              <p className="text-sm text-zinc-500">No notes from the provider yet.</p>
+              <p className="text-sm text-zinc-600">No notes from the provider yet.</p>
             )}
             {r.canceled_at && (
-              <p className="mt-3 text-xs text-zinc-500">
+              <p className="mt-3 text-xs text-zinc-600">
                 Canceled {new Date(r.canceled_at).toLocaleString()}
                 {r.cancel_reason ? ` — ${r.cancel_reason}` : ""}
               </p>
@@ -272,7 +272,7 @@ function RequestDetailPage() {
                 {formatMinutes((r as any).estimated_duration_traffic_seconds)}
                 {(r as any).estimated_duration_seconds != null &&
                   (r as any).estimated_duration_seconds !== (r as any).estimated_duration_traffic_seconds && (
-                    <span className="ml-2 text-xs text-zinc-500">
+                    <span className="ml-2 text-xs text-zinc-600">
                       typical {formatMinutes((r as any).estimated_duration_seconds)}
                     </span>
                   )}
@@ -359,7 +359,7 @@ function RequestDetailPage() {
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500">{title}</h2>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-600">{title}</h2>
       <div className="space-y-2 text-sm">{children}</div>
     </div>
   );
@@ -367,7 +367,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs font-medium text-zinc-500">{label}</div>
+      <div className="text-xs font-medium text-zinc-600">{label}</div>
       <div className="text-sm text-zinc-900">{children}</div>
     </div>
   );
@@ -421,7 +421,7 @@ function RescheduleForm({
         Update pickup, passenger details, and trip type. Changes notify the provider.
       </p>
 
-      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Passenger</h3>
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-600">Passenger</h3>
       <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="First name">
           <input type="text" required value={v.patientFirstName}
@@ -450,7 +450,7 @@ function RescheduleForm({
         </Field>
       </div>
 
-      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Trip type</h3>
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-600">Trip type</h3>
       <div className="mt-2 grid grid-cols-3 gap-2">
         {tripTypes.map((t) => (
           <button
@@ -471,7 +471,7 @@ function RescheduleForm({
         ))}
       </div>
 
-      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-500">Pickup</h3>
+      <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-zinc-600">Pickup</h3>
       <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Pickup date">
           <DatePickerField
@@ -505,7 +505,7 @@ function RescheduleForm({
       {v.tripType === "multi_trip" && (
         <>
           <div className="mt-5 flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-600">
               Additional stops
             </h3>
             <button
@@ -520,7 +520,7 @@ function RescheduleForm({
             </button>
           </div>
           {v.additionalStops.length === 0 && (
-            <p className="mt-2 text-xs text-zinc-500">No stops yet.</p>
+            <p className="mt-2 text-xs text-zinc-600">No stops yet.</p>
           )}
           <div className="mt-2 space-y-2">
             {v.additionalStops.map((s, i) => (
@@ -716,10 +716,10 @@ function HistorySection({ id, locked }: { id: string; locked: boolean }) {
         Every edit to this reservation is recorded so patients, providers, and dispatchers can see what changed.
       </p>
 
-      {q.isLoading && <p className="mt-4 text-sm text-zinc-500">Loading history…</p>}
+      {q.isLoading && <p className="mt-4 text-sm text-zinc-600">Loading history…</p>}
       {q.isError && <p className="mt-4 text-sm text-red-700">Could not load history.</p>}
       {q.data && q.data.length === 0 && (
-        <p className="mt-4 text-sm text-zinc-500">No changes recorded yet.</p>
+        <p className="mt-4 text-sm text-zinc-600">No changes recorded yet.</p>
       )}
 
       {q.data && q.data.length > 0 && (
@@ -743,7 +743,7 @@ function HistorySection({ id, locked }: { id: string; locked: boolean }) {
                     {fields.map((f) => (
                       <li key={f}>
                         <span className="font-medium">{f.replace(/_/g, " ")}:</span>{" "}
-                        <span className="text-zinc-500 line-through">{fmtHistoryValue(changes[f].from)}</span>{" "}
+                        <span className="text-zinc-600 line-through">{fmtHistoryValue(changes[f].from)}</span>{" "}
                         →{" "}
                         <span className="text-zinc-900">{fmtHistoryValue(changes[f].to)}</span>
                       </li>

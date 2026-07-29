@@ -96,7 +96,7 @@ export function StaffPermissionsPanel({ callerIsAdmin }: { callerIsAdmin: boolea
 
       {/* Grant by email */}
       <div className="border-b border-slate-100 px-5 py-4">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Grant role by email</div>
+        <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Grant role by email</div>
         <div className="flex flex-wrap items-end gap-2">
           <label className="flex-1 min-w-[220px] text-sm">
             <span className="mb-1 block text-slate-600">Email</span>
@@ -129,16 +129,16 @@ export function StaffPermissionsPanel({ callerIsAdmin }: { callerIsAdmin: boolea
             {inviteMut.isPending ? "Granting…" : "Grant role"}
           </button>
         </div>
-        <p className="mt-2 text-xs text-slate-500">{ROLE_DESCRIPTIONS[role]}</p>
+        <p className="mt-2 text-xs text-slate-600">{ROLE_DESCRIPTIONS[role]}</p>
       </div>
 
       {/* Staff list */}
       <div className="px-5 py-4">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Current staff</div>
+        <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Current staff</div>
         {staffQ.isLoading ? (
-          <p className="text-sm text-slate-500">Loading…</p>
+          <p className="text-sm text-slate-600">Loading…</p>
         ) : staff.length === 0 ? (
-          <p className="text-sm text-slate-500">No staff yet.</p>
+          <p className="text-sm text-slate-600">No staff yet.</p>
         ) : (
           <ul className="space-y-3">
             {staff.map((s: any) => {
@@ -148,9 +148,9 @@ export function StaffPermissionsPanel({ callerIsAdmin }: { callerIsAdmin: boolea
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <div className="text-sm font-medium text-slate-900">
-                        {s.name ?? "(no name)"} <span className="ml-2 text-xs text-slate-500">{s.display_id ?? ""}</span>
+                        {s.name ?? "(no name)"} <span className="ml-2 text-xs text-slate-600">{s.display_id ?? ""}</span>
                       </div>
-                      <div className="text-xs text-slate-500">{s.phone ?? ""}</div>
+                      <div className="text-xs text-slate-600">{s.phone ?? ""}</div>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {s.roles.map((r: StaffRole) => (
@@ -160,7 +160,7 @@ export function StaffPermissionsPanel({ callerIsAdmin }: { callerIsAdmin: boolea
                             <button
                               type="button"
                               onClick={() => revokeMut.mutate({ user_id: s.user_id, role: r })}
-                              className="text-slate-400 hover:text-red-600"
+                              className="text-slate-600 hover:text-red-600"
                               title="Revoke"
                             >×</button>
                           )}
@@ -188,7 +188,7 @@ export function StaffPermissionsPanel({ callerIsAdmin }: { callerIsAdmin: boolea
                   {/* Zone assignments (only meaningful for zone managers) */}
                   {s.roles.includes("zone_manager" as StaffRole) && (
                     <div className="mt-3 border-t border-slate-100 pt-2">
-                      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Assigned zones</div>
+                      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-600">Assigned zones</div>
                       <div className="flex flex-wrap gap-1">
                         {zones.map((z: any) => {
                           const assigned = s.zones.some((za: any) => za.zone_id === z.id);

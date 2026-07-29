@@ -131,7 +131,7 @@ function AuthPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-sm px-4 py-3 text-sm"
+            className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/85 rounded-sm px-4 py-3 text-sm"
           />
           <input
             type="password"
@@ -140,7 +140,7 @@ function AuthPage() {
             placeholder="Password (min 8 chars)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-sm px-4 py-3 text-sm"
+            className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/85 rounded-sm px-4 py-3 text-sm"
           />
           <button
             type="submit"
@@ -169,7 +169,7 @@ function AuthPage() {
             </button>
           )}
         </div>
-        <p className="mt-6 text-xs text-white/60 leading-relaxed">
+        <p className="mt-6 text-xs text-white/85 leading-relaxed">
           New accounts have no admin permissions until granted by the project owner.
         </p>
       </div>

@@ -37,9 +37,9 @@ export function AuditLogPanel() {
       </div>
       <div className="max-h-[420px] overflow-y-auto">
         {q.isLoading ? (
-          <p className="px-5 py-6 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-6 text-sm text-slate-600">Loading…</p>
         ) : entries.length === 0 ? (
-          <p className="px-5 py-6 text-sm text-slate-500">No audit entries yet.</p>
+          <p className="px-5 py-6 text-sm text-slate-600">No audit entries yet.</p>
         ) : (
           <ul className="divide-y divide-slate-100 text-sm">
             {entries.map((e: any) => (
@@ -49,17 +49,17 @@ export function AuditLogPanel() {
                     <div className="font-medium text-slate-900">
                       {ACTION_LABELS[e.action] ?? e.action}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-600">
                       {e.actor_display_id ?? "—"} · {e.actor_email ?? ""}
                       {e.target_kind && e.target_id ? ` → ${e.target_kind}:${e.target_id.slice(0, 8)}` : ""}
                     </div>
                     {e.metadata && Object.keys(e.metadata).length > 0 && (
-                      <div className="mt-0.5 text-xs text-slate-500 truncate max-w-[600px]">
+                      <div className="mt-0.5 text-xs text-slate-600 truncate max-w-[600px]">
                         {Object.entries(e.metadata).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join("  ·  ")}
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-slate-400 whitespace-nowrap">
+                  <div className="text-xs text-slate-600 whitespace-nowrap">
                     {new Date(e.created_at).toLocaleString()}
                   </div>
                 </div>

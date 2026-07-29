@@ -127,7 +127,7 @@ function BlackTiePage() {
               ].map(([n, l]) => (
                 <div key={l as string}>
                   <dt className="font-display text-3xl font-extrabold tracking-tighter text-[#c8a24a]">{n}</dt>
-                  <dd className="mt-1 text-[11px] font-mono uppercase tracking-widest text-white/60">{l}</dd>
+                  <dd className="mt-1 text-[11px] font-mono uppercase tracking-widest text-white/85">{l}</dd>
                 </div>
               ))}
             </dl>
@@ -144,7 +144,7 @@ function BlackTiePage() {
               Vehicles for every arrival.
             </h2>
           </div>
-          <p className="text-sm text-white/60 max-w-md">
+          <p className="text-sm text-white/85 max-w-md">
             Every Black Tie vehicle is late-model, professionally detailed, and driven by a licensed, insured, background-checked chauffeur.
           </p>
         </div>
@@ -157,7 +157,7 @@ function BlackTiePage() {
                 <h3 className="font-display text-xl font-extrabold tracking-tight leading-tight">{v.name}</h3>
                 <p className="mt-3 text-sm text-white/70 leading-relaxed">{v.blurb}</p>
               </div>
-              <div className="mt-6 pt-4 border-t border-white/10 text-[11px] font-mono uppercase tracking-widest text-white/50">
+              <div className="mt-6 pt-4 border-t border-white/10 text-[11px] font-mono uppercase tracking-widest text-white/85">
                 {v.seats}
               </div>
             </article>

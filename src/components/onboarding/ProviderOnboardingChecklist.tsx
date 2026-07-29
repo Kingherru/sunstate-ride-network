@@ -138,7 +138,7 @@ function ChecklistRow({
         {step.done ? (
           <CheckCircle2 className="h-5 w-5 text-accent" />
         ) : (
-          <Circle className="h-5 w-5 text-muted-foreground/60" />
+          <Circle className="h-5 w-5 text-muted-foreground" />
         )}
       </div>
       <div className="flex-1 min-w-0">

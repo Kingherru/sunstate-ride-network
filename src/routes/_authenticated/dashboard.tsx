@@ -2546,7 +2546,7 @@ function RateProviderModal({ trip, onClose, onSaved }: { trip: Trip; onClose: ()
         <div className="flex gap-1 text-2xl">
           {[1,2,3,4,5].map((n) => (
             <button type="button" key={n} onClick={() => setStars(n)}
-                    className={n <= stars ? "text-amber-500" : "text-muted-foreground/40"}>★</button>
+                    className={n <= stars ? "text-amber-500" : "text-muted-foreground"}>★</button>
           ))}
         </div>
         <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4}
@@ -3206,7 +3206,7 @@ function PortalSidebar(props: {
       </nav>
 
       <div className="px-5 py-4 border-t border-white/10 text-xs space-y-2">
-        <div className="text-white/50 truncate font-mono text-[11px]" title={userEmail ?? ""}>{userEmail}</div>
+        <div className="text-white/85 truncate font-mono text-[11px]" title={userEmail ?? ""}>{userEmail}</div>
         <button
           onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
           className="font-bold uppercase tracking-wider text-white/70 hover:text-white text-[11px]"
