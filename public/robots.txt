@@ -1,4 +1,26 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /patient/
+Disallow: /provider/
+Disallow: /facility/
+Disallow: /staff/
+Disallow: /requests
+Disallow: /notifications
+Disallow: /learn
+Disallow: /reservations
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /verify/
+Disallow: /embed/
+Disallow: /checkout/
+Disallow: /shop/return
+Disallow: /mcp
+Disallow: /.mcp/
+Disallow: /.well-known/
+Disallow: /lovable/
+Disallow: /email/
+Disallow: /api/
 
 Sitemap: https://myfloridanemt.com/sitemap.xml
