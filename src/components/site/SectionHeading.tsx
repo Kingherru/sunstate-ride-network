@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function SectionHeading({ eyebrow, title, description, className = "", invert = false }: Props) {
-  const muted = invert ? "text-white/60" : "text-muted";
+  const muted = invert ? "text-white/85" : "text-muted";
   return (
     <div className={`flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 ${className}`}>
       <div>

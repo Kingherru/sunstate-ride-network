@@ -18,7 +18,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
         </li>
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-2">
-            <ChevronRight size={14} className="text-muted-foreground/60" aria-hidden="true" />
+            <ChevronRight size={14} className="text-muted-foreground" aria-hidden="true" />
             {item.to ? (
               <Link
                 to={item.to}

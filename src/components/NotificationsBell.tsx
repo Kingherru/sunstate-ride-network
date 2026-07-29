@@ -78,9 +78,9 @@ export function NotificationsBell() {
             )}
           </div>
           <ul className="max-h-96 overflow-y-auto">
-            {q.isLoading && <li className="p-4 text-sm text-zinc-500">Loading…</li>}
+            {q.isLoading && <li className="p-4 text-sm text-zinc-600">Loading…</li>}
             {!q.isLoading && rows.length === 0 && (
-              <li className="p-4 text-sm text-zinc-500">No notifications yet.</li>
+              <li className="p-4 text-sm text-zinc-600">No notifications yet.</li>
             )}
             {rows.map((n) => {
               const isUnread = !n.read_at;
@@ -98,7 +98,7 @@ export function NotificationsBell() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-zinc-900">{n.title}</p>
                     {n.body && <p className="mt-0.5 text-xs text-zinc-600">{n.body}</p>}
-                    <p className="mt-1 text-[10px] uppercase tracking-wide text-zinc-400">
+                    <p className="mt-1 text-[10px] uppercase tracking-wide text-zinc-600">
                       {new Date(n.created_at).toLocaleString()}
                     </p>
                   </div>

@@ -168,7 +168,7 @@ function RequestsPage() {
                   <span className="inline-block rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-900">
                     {tripTypeLabel(r.trip_type, r.round_trip)}
                   </span>
-                  <span className="text-xs text-zinc-500 capitalize">{r.transport_type}</span>
+                  <span className="text-xs text-zinc-600 capitalize">{r.transport_type}</span>
                 </div>
                 <Link
                   to="/requests/$id"
@@ -198,12 +198,12 @@ function RequestsPage() {
                 <p className="text-sm text-zinc-700">
                   <span className="font-medium">To:</span> {r.dropoff_address}, {r.dropoff_city}
                 </p>
-                <p className="mt-1 text-xs text-zinc-500">Phone: {r.patient_phone}</p>
+                <p className="mt-1 text-xs text-zinc-600">Phone: {r.patient_phone}</p>
                 {r.recurrence_rule && (
                   <p className="mt-1 text-xs text-purple-800">Recurrence: {r.recurrence_rule}</p>
                 )}
                 {r.canceled_at && (
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-zinc-600">
                     Canceled {new Date(r.canceled_at).toLocaleString()}
                     {r.cancel_reason ? ` — ${r.cancel_reason}` : ""}
                   </p>

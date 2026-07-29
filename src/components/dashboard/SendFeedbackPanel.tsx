@@ -28,7 +28,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
         const half = !filled && value >= n - 0.5;
         return (
           <div key={n} className="relative w-8 h-8 leading-none">
-            <span className={filled ? "text-amber-500" : half ? "text-muted-foreground/30" : "text-muted-foreground/30"}>
+            <span className={filled ? "text-amber-500" : half ? "text-muted-foreground" : "text-muted-foreground"}>
               ★
             </span>
             {half && (

@@ -18,10 +18,10 @@ function StarDisplay({ value }: { value: number }) {
     <span className="text-amber-500 text-lg leading-none" aria-label={`${value} out of 5`}>
       {"★".repeat(full)}
       {half && <span className="relative inline-block">
-        <span className="text-muted-foreground/30">★</span>
+        <span className="text-muted-foreground">★</span>
         <span className="absolute inset-0 overflow-hidden" style={{ width: "50%" }}>★</span>
       </span>}
-      <span className="text-muted-foreground/30">{"★".repeat(empty)}</span>
+      <span className="text-muted-foreground">{"★".repeat(empty)}</span>
     </span>
   );
 }

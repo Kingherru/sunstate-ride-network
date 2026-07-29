@@ -214,13 +214,13 @@ function HomePage() {
                 className="group bg-white/[0.04] border border-white/[0.08] rounded-xl p-8 hover:bg-white/[0.08] hover:border-white/20 transition-all"
               >
                 <div className="flex items-start justify-between mb-8">
-                  <span className="font-mono text-xs text-white/55">{c.code}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-white/55">
+                  <span className="font-mono text-xs text-white/85">{c.code}</span>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-white/85">
                     {c.region}
                   </span>
                 </div>
                 <h3 className="text-3xl font-extrabold tracking-tight mb-3 text-white">{c.name}</h3>
-                <p className="text-sm text-white/65 leading-relaxed mb-6">{c.blurb}</p>
+                <p className="text-sm text-white/85 leading-relaxed mb-6">{c.blurb}</p>
                 <span className="text-xs font-bold uppercase tracking-widest group-hover:underline" style={{ color: PEACH }}>
                   View coverage →
                 </span>
