@@ -26,7 +26,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const router = useRouter();
   const { next } = Route.useSearch();
-  const redirectTarget = safeNext(next);
+  const redirectTarget = safeNext(next ?? "");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
