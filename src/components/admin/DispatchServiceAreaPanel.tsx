@@ -241,32 +241,16 @@ export function DispatchServiceAreaPanel({
 
                 {open && (
                   <div className="border-t border-border p-3 space-y-3 bg-background/40">
-                    {canEdit && (
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground self-center">
-                          Dispatch zone
-                        </label>
-                        <select
-                          value={c.region_id ?? ""}
-                          disabled={mMove.isPending}
-                          onChange={(e) =>
-                            mMove.mutate({ county_id: c.id, zone_id: e.target.value })
-                          }
-                          className="bg-background border border-border rounded-sm px-2 py-1.5 text-sm"
-                          aria-label={`Dispatch zone for ${c.name}`}
-                        >
-                          <option value="" disabled>
-                            Unassigned
-                          </option>
-                          {zones.map((z) => (
-                            <option key={z.id} value={z.id}>
-                              {z.name}
-                            </option>
-                          ))}
-                        </select>
-                        <AddZipsToCounty countyId={c.id} />
-                      </div>
-                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-[11px] text-muted-foreground">
+                        Dispatch zone{" "}
+                        <strong className="text-foreground">
+                          {zones.find((z) => z.id === c.region_id)?.name ?? "Unassigned"}
+                        </strong>{" "}
+                        · set by the system
+                      </span>
+                      {canEdit && <AddZipsToCounty countyId={c.id} />}
+                    </div>
 
                     <ZipChips
                       zips={countyZips}
@@ -275,6 +259,7 @@ export function DispatchServiceAreaPanel({
                     />
                   </div>
                 )}
+
               </div>
             );
           })}
