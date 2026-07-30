@@ -312,9 +312,17 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Trip History</h2>
         <p className="text-sm text-muted-foreground">
-          Permanent record of completed trips. Search or filter to find any past trip and drill into
-          payment, payout, and driver details.
+          Every trip whose scheduled date has passed, including trips still awaiting completion.
+          Records are retained for at least two years. Search or filter to find any past trip and
+          drill into payment, payout, and driver details.
         </p>
+        {needsCompletionCount > 0 && (
+          <p className="mt-1 text-sm font-semibold text-amber-800">
+            {needsCompletionCount} trip{needsCompletionCount === 1 ? "" : "s"} in this range still
+            need completion details.
+          </p>
+        )}
+
       </div>
 
       {/* Filter toolbar */}
