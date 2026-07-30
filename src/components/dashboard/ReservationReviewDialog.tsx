@@ -727,7 +727,9 @@ export function ReservationReviewDialog({
                   onClick={approve}
                   className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
                 >
-                  {busy === "accept" ? "Approving…" : "Approve reservation"}
+                  {busy === "accept"
+                    ? "Sending invoice…"
+                    : `Send Invoice & Confirm Trip${parsedQuoteCents != null ? ` · $${(parsedQuoteCents / 100).toFixed(2)}` : ""}`}
                 </button>
               </>
             )}
