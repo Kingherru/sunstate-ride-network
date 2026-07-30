@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { listReservationsByState } from "@/lib/trips.functions";
+import { listReservationsByState, updateTripStatus } from "@/lib/trips.functions";
+import { SavedTripsPanel, type TripDraft } from "@/components/dashboard/SavedTripsPanel";
 import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
 import { formatMinutes } from "@/components/maps/RoutePreview";
@@ -283,7 +284,8 @@ export function RequestsPanel({ userId }: { userId: string }) {
  * A DB trigger plus a 5-minute recompute keep `reservation_state` in sync —
  * one source of truth shared by the Admin, Dispatch, and Provider portals.
  */
-type ResvState = "unconfirmed" | "booked" | "past";
+type ResvState = "unconfirmed" | "booked" | "past" | "canceled";
+type ResvSection = ResvState | "drafts";
 type Scope = "requester" | "provider" | "ops";
 type AssignFilter = "all" | "assigned" | "unassigned";
 
@@ -298,19 +300,47 @@ const STATE_META: Record<ResvState, { label: string; blurb: string }> = {
   },
   past: {
     label: "Past",
-    blurb: "Reservations whose scheduled time has passed but that aren't completed yet, plus canceled trips. Still editable — mark them completed here and they move to Trip History.",
+    blurb: "Reservations whose scheduled time has passed but that aren't completed yet. Still editable — mark them completed here and they move to Trip History.",
+  },
+  canceled: {
+    label: "Canceled",
+    blurb: "Trips you canceled or that were declined. Kept here for reference — you can still review or duplicate them.",
   },
 };
+
+const CANCELED_STATUSES = new Set(["canceled", "cancelled", "declined", "denied", "no_show"]);
 
 
 export function ReservationsPanel({
   userId,
   scope = "provider",
+  onResumeDraft,
 }: {
   userId: string;
   scope?: Scope;
+  onResumeDraft?: (draft: TripDraft) => void;
 }) {
-  const [state, setState] = useState<ResvState>("unconfirmed");
+  const [section, setSection] = useState<ResvSection>("unconfirmed");
+  const state: ResvState = section === "drafts" ? "unconfirmed" : section;
+  const qc = useQueryClient();
+  const cancelTripFn = useServerFn(updateTripStatus);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
+
+  async function cancelReservation(id: string) {
+    const reason = prompt("Cancel this reservation? Add an optional reason:", "");
+    if (reason === null) return;
+    setCancelingId(id);
+    try {
+      await cancelTripFn({ data: { trip_id: id, status: "canceled", reason: reason || null } });
+      toast.success("Reservation canceled — moved to the Canceled section");
+      qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
+      qc.invalidateQueries({ queryKey: ["my-trips"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not cancel this reservation");
+    } finally {
+      setCancelingId(null);
+    }
+  }
   const [assignFilter, setAssignFilter] = useState<AssignFilter>("all");
   const [payerFilter, setPayerFilter] = useState<"all" | "medicaid">("all");
   const [search, setSearch] = useState("");
@@ -327,13 +357,19 @@ export function ReservationsPanel({
         fn({ data: { state: "booked", scope } }),
         fn({ data: { state: "past", scope } }),
       ]);
-      return { unconfirmed: u.length, booked: b.length, past: p.length };
+      const canceled = p.filter((r: any) => CANCELED_STATUSES.has(String(r.status ?? "").toLowerCase()));
+      return {
+        unconfirmed: u.length,
+        booked: b.length,
+        past: p.length - canceled.length,
+        canceled: canceled.length,
+      };
     },
   });
 
   const q = useQuery({
-    queryKey: ["reservations-by-state", state, scope, userId],
-    queryFn: () => fn({ data: { state, scope } }),
+    queryKey: ["reservations-by-state", state === "canceled" ? "past" : state, scope, userId],
+    queryFn: () => fn({ data: { state: state === "canceled" ? "past" : state, scope } }),
   });
   const provider = useQuery({
     queryKey: ["provider-profile-cms", userId],
@@ -347,7 +383,12 @@ export function ReservationsPanel({
     },
   });
 
-  const allRows = (q.data ?? []) as any[];
+  // "Canceled" is carved out of the Past bucket so canceled trips live in
+  // their own section and stay accessible later.
+  const allRows = ((q.data ?? []) as any[]).filter((r) => {
+    const canceled = CANCELED_STATUSES.has(String(r.status ?? "").toLowerCase());
+    return state === "canceled" ? canceled : !canceled;
+  });
   const rows = useMemo(() => allRows.filter((r) => {
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
@@ -381,13 +422,13 @@ export function ReservationsPanel({
 
       {/* Three lifecycle sections */}
       <div className="inline-flex bg-card border border-border rounded-sm p-1 flex-wrap">
-        {(["unconfirmed", "booked", "past"] as ResvState[]).map((s) => {
-          const c = counts.data?.[s];
-          const active = state === s;
+        {(["unconfirmed", "booked", "past", "canceled"] as ResvState[]).map((s) => {
+          const c = (counts.data as any)?.[s];
+          const active = section === s;
           return (
             <button
               key={s}
-              onClick={() => setState(s)}
+              onClick={() => setSection(s)}
               className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm inline-flex items-center gap-2 ${
                 active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
               }`}
@@ -401,7 +442,21 @@ export function ReservationsPanel({
             </button>
           );
         })}
+        {onResumeDraft && (
+          <button
+            onClick={() => setSection("drafts")}
+            className={`text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-sm ${
+              section === "drafts" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            Drafts
+          </button>
+        )}
       </div>
+
+      {section === "drafts" && onResumeDraft ? (
+        <SavedTripsPanel variant="drafts" onResume={onResumeDraft} />
+      ) : (<>
 
       <p className="text-xs text-muted-foreground">{meta.blurb}</p>
 
@@ -447,6 +502,8 @@ export function ReservationsPanel({
             ? "No unconfirmed reservations. New trips will show up here first."
             : state === "booked"
             ? "No booked reservations yet. Confirmed & assigned trips appear here."
+            : state === "canceled"
+            ? "No canceled reservations."
             : "Nothing past due. Reservations move here once their pickup time passes, until they're completed."}
         </div>
       )}
@@ -547,6 +604,17 @@ export function ReservationsPanel({
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
                     <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</button>
+                    {(state === "unconfirmed" || state === "booked") && (
+                      <button
+                        type="button"
+                        onClick={() => cancelReservation(r.id)}
+                        disabled={cancelingId === r.id}
+                        className="text-xs font-bold border border-destructive/40 text-destructive px-3 py-2 rounded-sm hover:bg-destructive/10 disabled:opacity-50"
+                        title="Cancel this trip — it moves to the Canceled section and stays available for reference"
+                      >
+                        {cancelingId === r.id ? "Canceling…" : "Cancel trip"}
+                      </button>
+                    )}
                     {scope !== "requester" && (
                       <button
                         type="button"
@@ -565,6 +633,7 @@ export function ReservationsPanel({
           </div>
         ))}
       </div>
+      </>)}
       {reviewing && (
         <ReservationReviewDialog
           row={reviewing}
