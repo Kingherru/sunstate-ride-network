@@ -130,7 +130,10 @@ export function AdminUsersPanel() {
   };
 
   return (
+    <>
+    <TestDispatchAccountCard />
     <div className="bg-card border border-border p-5">
+
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-extrabold tracking-tight">All users — providers &amp; facilities</h2>
