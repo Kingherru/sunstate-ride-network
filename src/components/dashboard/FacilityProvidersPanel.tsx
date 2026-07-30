@@ -20,8 +20,9 @@ export function FacilityProvidersPanel({ initialMode = "lookup" }: { initialMode
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Providers</h2>
         <p className="text-sm text-muted-foreground">
-          Look up NEMT providers within 50 miles of a pickup address. Save the ones you trust to your subscribed list.
+          Search by pickup ZIP code to see approved, active providers that service that area. Save the ones you trust to your subscribed list.
         </p>
+
       </div>
       <div className="flex gap-2 border-b border-border">
         {(["lookup", "saved"] as const).map((m) => (
