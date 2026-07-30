@@ -156,12 +156,14 @@ function groupKeyDaily(dateIso: string): string {
 }
 
 export function TripHistoryPanel({ userId }: { userId: string }) {
+  const qc = useQueryClient();
   const [preset, setPreset] = useState<Preset>("30d");
   const initialRange = presetRange("30d")!;
   const [range, setRange] = useState<DateRange | undefined>({ from: initialRange.from, to: initialRange.to });
   const [search, setSearch] = useState("");
   const [view, setView] = useState<ViewMode>("list");
   const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "unpaid">("all");
+  const [completion, setCompletion] = useState<CompletionFilter>("all");
 
   function applyPreset(p: Preset) {
     setPreset(p);
@@ -177,12 +179,19 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
     queryKey: ["trip-history", userId, fromIso, toIsoStr],
     enabled: !!userId,
     queryFn: async (): Promise<HistoryTrip[]> => {
+      // History = completed trips PLUS any trip whose scheduled date has already
+      // passed, even if it was never marked completed. `reservation_state` is
+      // kept in sync by a cron job; the pickup_date check catches trips whose
+      // time elapsed since the last sync.
+      const todayIso = toIso(new Date());
       let query = supabase
         .from("trips")
         .select(
-          "id, trip_number, status, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
+          "id, trip_number, status, reservation_state, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
         )
-        .in("status", COMPLETED_STATUSES)
+        .or(
+          `status.in.(${COMPLETED_STATUSES.join(",")}),reservation_state.in.(past,history),pickup_date.lt.${todayIso}`,
+        )
         .or(`created_by.eq.${userId},assigned_to.eq.${userId}`)
         .order("pickup_date", { ascending: false })
         .limit(1000);
@@ -193,6 +202,21 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       return (data ?? []) as HistoryTrip[];
     },
   });
+
+  // Keep history in step with status changes made in the Provider, Dispatch, or
+  // Admin portals (assignment, completion, payment) without a manual refresh.
+  useEffect(() => {
+    const ch = supabase
+      .channel(`trip-history-${userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => {
+        qc.invalidateQueries({ queryKey: ["trip-history"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [userId, qc]);
+
 
   const allTrips = q.data ?? [];
   const driverIds = useMemo(
