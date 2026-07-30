@@ -32,6 +32,22 @@ export const upsertIntegration = createServerFn({ method: "POST" })
     // AES-256-GCM encrypt secrets in the trusted server runtime before they
     // ever hit the database. Only ciphertext (v1:<iv>:<tag>:<ct>) is stored.
     const { encryptSecret } = await import("./integrations-crypto.server");
+
+    // Merge with any previously stored config so unchanged secrets survive.
+    const { data: prior } = await supabase
+      .from("provider_integrations")
+      .select("config")
+      .eq("provider_id", userId)
+      .eq("vendor", data.vendor)
+      .maybeSingle();
+
+    const incoming = { ...(data.config ?? {}) } as Record<string, unknown>;
+    if (typeof incoming.apiSecret === "string" && incoming.apiSecret) {
+      incoming.apiSecretEncrypted = encryptSecret(incoming.apiSecret);
+    }
+    delete incoming.apiSecret;
+    const merged = { ...((prior?.config ?? {}) as Record<string, unknown>), ...incoming };
+
     const { error } = await supabase
       .from("provider_integrations")
       .upsert({
@@ -40,7 +56,7 @@ export const upsertIntegration = createServerFn({ method: "POST" })
         api_key_encrypted: encryptSecret(data.api_key),
         webhook_secret: data.webhook_secret ? encryptSecret(data.webhook_secret) : null,
         enabled: data.enabled ?? false,
-        config: (data.config ?? {}) as any,
+        config: merged as any,
       }, { onConflict: "provider_id,vendor" });
     if (error) throw error;
     return { ok: true };

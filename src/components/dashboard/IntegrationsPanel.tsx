@@ -8,9 +8,15 @@ import { ProviderWebhooksPanel } from "./ProviderWebhooksPanel";
 type Vendor = "hibambi" | "routegenie" | "duetride";
 
 const VENDORS: { id: Vendor; label: string; blurb: string }[] = [
-  { id: "duetride", label: "DuetRide", blurb: "Sync trips and dispatch updates with DuetRide — recommended for Florida providers." },
+  { id: "duetride", label: "Duet", blurb: "Send trips to Duet and receive driver arrival, pickup, drop-off and completion updates back automatically." },
   { id: "hibambi", label: "hiBambi", blurb: "Push outbound trips and ingest inbound trips from hiBambi." },
   { id: "routegenie", label: "RouteGenie", blurb: "Push outbound trips and ingest inbound trips from RouteGenie." },
+];
+
+const DUET_EVENT_SLUGS = [
+  "ride-scheduled", "ride-unscheduled", "will-call-initiated", "on-the-way",
+  "pickup-arrived", "pickup-completed", "dropoff-arrived", "dropoff-completed",
+  "ride-canceled", "ride-rejected", "no-show", "gps-event",
 ];
 
 export function IntegrationsPanel() {
@@ -45,11 +51,17 @@ export function IntegrationsPanel() {
           );
         })}
       </div>
-      <div className="bg-muted/40 border border-border rounded-sm p-4 text-xs text-muted-foreground">
+      <div className="bg-muted/40 border border-border rounded-sm p-4 text-xs text-muted-foreground space-y-1">
         <p className="font-bold text-foreground mb-1">Webhook URLs (give these to the vendor):</p>
         <p>Inbound hiBambi: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/hibambi/webhook</code></p>
         <p>Inbound RouteGenie: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/routegenie/webhook</code></p>
+        <p className="pt-2 font-bold text-foreground">Duet event endpoints (one per event, Bearer = your webhook secret):</p>
+        <p className="font-mono break-all">
+          {typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/duet/events/&#123;event&#125;
+        </p>
+        <p>Events: {DUET_EVENT_SLUGS.join(", ")}</p>
       </div>
+
       <EmbedCodePanel />
       <div className="border-t border-border pt-6">
         <ProviderWebhooksPanel />
@@ -61,13 +73,31 @@ export function IntegrationsPanel() {
 function VendorCard({ vendor, label, blurb, existing, onChange }: {
   vendor: Vendor; label: string; blurb: string; existing: any; onChange: () => void;
 }) {
+  const isDuet = vendor === "duetride";
   const [apiKey, setApiKey] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
+  const [apiSecret, setApiSecret] = useState("");
+  const [tpId, setTpId] = useState(String(existing?.config?.transportationProviderId ?? ""));
+  const [baseUrl, setBaseUrl] = useState(String(existing?.config?.baseUrl ?? ""));
   const [enabled, setEnabled] = useState(existing?.enabled ?? false);
 
   const save = useMutation({
-    mutationFn: () => upsertIntegration({ data: { vendor, api_key: apiKey, webhook_secret: webhookSecret || undefined, enabled } }),
-    onSuccess: () => { toast.success(`${label} saved`); setApiKey(""); setWebhookSecret(""); onChange(); },
+    mutationFn: () => upsertIntegration({
+      data: {
+        vendor,
+        api_key: apiKey,
+        webhook_secret: webhookSecret || undefined,
+        enabled,
+        config: isDuet
+          ? {
+              transportationProviderId: tpId.trim(),
+              baseUrl: baseUrl.trim() || undefined,
+              ...(apiSecret ? { apiSecret } : {}),
+            }
+          : undefined,
+      },
+    }),
+    onSuccess: () => { toast.success(`${label} saved`); setApiKey(""); setWebhookSecret(""); setApiSecret(""); onChange(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
   });
   const remove = useMutation({
@@ -106,6 +136,38 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
             className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
           />
         </label>
+        {isDuet && (
+          <>
+            <label className="block text-sm">
+              <span className="font-bold">API secret</span>
+              <input
+                type="password"
+                value={apiSecret}
+                onChange={(e) => setApiSecret(e.target.value)}
+                placeholder={existing?.config?.apiSecretEncrypted ? "•••••••• (saved)" : "Duet apiSecret"}
+                className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-bold">Transportation provider ID</span>
+              <input
+                value={tpId}
+                onChange={(e) => setTpId(e.target.value)}
+                placeholder="Your Duet transportation provider ID"
+                className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-bold">API base URL (optional)</span>
+              <input
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder="https://api.duetride.com"
+                className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
+              />
+            </label>
+          </>
+        )}
         <label className="flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
           Enable sync

@@ -5,8 +5,9 @@ import { PLATFORM_FEE_PCT } from "@/lib/payouts";
 type StripeEnvLocal = "sandbox" | "live";
 
 // ─── Payout policy constants ─────────────────────────────────────────────
-// Standard trips: 48-hour validation hold before funds may be released.
-export const PAYOUT_STANDARD_HOLD_HOURS = 48;
+// Standard trips: completed trips stay pending validation for 7 days before
+// funds may be released (168 hours).
+export const PAYOUT_STANDARD_HOLD_HOURS = 24 * 7;
 // Medicaid trips: Net-15 — MFN does not receive Medicaid funds immediately.
 export const PAYOUT_MEDICAID_NET_DAYS = 15;
 

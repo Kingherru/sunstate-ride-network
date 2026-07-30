@@ -3745,6 +3745,70 @@ export type Database = {
           },
         ]
       }
+      trip_dispatch_events: {
+        Row: {
+          created_at: string
+          event_time: string | null
+          event_type: string
+          external_ride_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          payload: Json
+          provider_id: string | null
+          trip_id: string | null
+          vendor: string
+        }
+        Insert: {
+          created_at?: string
+          event_time?: string | null
+          event_type: string
+          external_ride_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          payload?: Json
+          provider_id?: string | null
+          trip_id?: string | null
+          vendor: string
+        }
+        Update: {
+          created_at?: string
+          event_time?: string | null
+          event_type?: string
+          external_ride_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          payload?: Json
+          provider_id?: string | null
+          trip_id?: string | null
+          vendor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_dispatch_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_dispatch_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_dispatch_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_drafts: {
         Row: {
           autosaved: boolean
@@ -4049,6 +4113,9 @@ export type Database = {
           cancel_reason: string | null
           completed_at: string | null
           completed_by: string | null
+          completion_attested: boolean
+          completion_attested_at: string | null
+          completion_attested_by: string | null
           completion_source: string | null
           contact_id: string | null
           cost_breakdown: Json | null
@@ -4071,13 +4138,19 @@ export type Database = {
           dispatch_zone_id: string | null
           display_id: string | null
           distance_miles: number | null
+          driver_arrived_at: string | null
           driver_id: string | null
           dropoff_address: string
+          dropoff_arrived_at: string | null
           dropoff_city: string
           dropoff_lat: number | null
           dropoff_lng: number | null
           dropoff_location_id: string | null
           dropoff_zip: string | null
+          duet_last_event: string | null
+          duet_last_event_at: string | null
+          duet_ride_id: string | null
+          duet_synced_at: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           estimated_cost_cents: number | null
@@ -4170,7 +4243,9 @@ export type Database = {
           region: string | null
           reservation_state: string | null
           return_date: string | null
+          return_dropoff_at: string | null
           return_dropoff_time: string | null
+          return_pickup_at: string | null
           return_pickup_building: string | null
           return_pickup_doctor: string | null
           return_pickup_suite: string | null
@@ -4208,6 +4283,9 @@ export type Database = {
           cancel_reason?: string | null
           completed_at?: string | null
           completed_by?: string | null
+          completion_attested?: boolean
+          completion_attested_at?: string | null
+          completion_attested_by?: string | null
           completion_source?: string | null
           contact_id?: string | null
           cost_breakdown?: Json | null
@@ -4230,13 +4308,19 @@ export type Database = {
           dispatch_zone_id?: string | null
           display_id?: string | null
           distance_miles?: number | null
+          driver_arrived_at?: string | null
           driver_id?: string | null
           dropoff_address: string
+          dropoff_arrived_at?: string | null
           dropoff_city: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          duet_last_event?: string | null
+          duet_last_event_at?: string | null
+          duet_ride_id?: string | null
+          duet_synced_at?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           estimated_cost_cents?: number | null
@@ -4329,7 +4413,9 @@ export type Database = {
           region?: string | null
           reservation_state?: string | null
           return_date?: string | null
+          return_dropoff_at?: string | null
           return_dropoff_time?: string | null
+          return_pickup_at?: string | null
           return_pickup_building?: string | null
           return_pickup_doctor?: string | null
           return_pickup_suite?: string | null
@@ -4367,6 +4453,9 @@ export type Database = {
           cancel_reason?: string | null
           completed_at?: string | null
           completed_by?: string | null
+          completion_attested?: boolean
+          completion_attested_at?: string | null
+          completion_attested_by?: string | null
           completion_source?: string | null
           contact_id?: string | null
           cost_breakdown?: Json | null
@@ -4389,13 +4478,19 @@ export type Database = {
           dispatch_zone_id?: string | null
           display_id?: string | null
           distance_miles?: number | null
+          driver_arrived_at?: string | null
           driver_id?: string | null
           dropoff_address?: string
+          dropoff_arrived_at?: string | null
           dropoff_city?: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           dropoff_location_id?: string | null
           dropoff_zip?: string | null
+          duet_last_event?: string | null
+          duet_last_event_at?: string | null
+          duet_ride_id?: string | null
+          duet_synced_at?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           estimated_cost_cents?: number | null
@@ -4488,7 +4583,9 @@ export type Database = {
           region?: string | null
           reservation_state?: string | null
           return_date?: string | null
+          return_dropoff_at?: string | null
           return_dropoff_time?: string | null
+          return_pickup_at?: string | null
           return_pickup_building?: string | null
           return_pickup_doctor?: string | null
           return_pickup_suite?: string | null
