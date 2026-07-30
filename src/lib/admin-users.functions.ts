@@ -460,11 +460,29 @@ export const setMemberMembership = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const status = data.status ?? (data.tier === "none" ? "inactive" : "active");
     const { error } = await (context as any).supabase.rpc("admin_set_membership", {
       _user_id: data.user_id,
       _tier: data.tier,
-      _status: data.status ?? (data.tier === "none" ? "inactive" : "active"),
+      _status: status,
     });
     if (error) throw new Error(error.message);
-    return { ok: true, user_id: data.user_id, tier: data.tier };
+
+    // Read back with the admin client so a silently-reverted write surfaces.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: after } = await supabaseAdmin
+      .from("member_profiles")
+      .select("membership_tier, membership_status")
+      .eq("user_id", data.user_id)
+      .maybeSingle();
+    if (after && after.membership_tier !== data.tier) {
+      throw new Error("Membership did not save. Please try again or contact support.");
+    }
+    return {
+      ok: true,
+      user_id: data.user_id,
+      tier: after?.membership_tier ?? data.tier,
+      status: after?.membership_status ?? status,
+    };
   });
+
