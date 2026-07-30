@@ -15,6 +15,7 @@ export function TripFinancialBreakdown({
   providerId,
   senderUserId,
   legs = 1,
+  stops,
   waitMinutes = 0,
   tripTypeLabel,
 }: {
@@ -25,19 +26,22 @@ export function TripFinancialBreakdown({
   providerId?: string;
   senderUserId?: string;
   legs?: number;
+  /** Extra stops the user actually entered (a return leg is not a stop). */
+  stops?: number;
   waitMinutes?: number;
   tripTypeLabel?: string;
 }) {
   const zip = (pickupZip || "").replace(/\D/g, "").slice(0, 5);
   const legCount = Math.max(1, Math.floor(legs || 1));
+  const stopCount = Math.max(0, Math.floor(stops ?? legCount - 1));
   const totalMiles = +(Math.max(0, miles) * legCount).toFixed(2);
   const enabled = zip.length === 5 && totalMiles > 0;
   const platformFeePct = usePlatformFeePct();
 
   const estQ = useQuery({
-    queryKey: ["price-estimate", zip, totalMiles, transportType, providerId ?? "", legCount, waitMinutes],
+    queryKey: ["price-estimate", zip, totalMiles, transportType, providerId ?? "", legCount, stopCount, waitMinutes],
     queryFn: () => estimateTripPrice({
-      data: { pickupZip: zip, miles: totalMiles, transportType, providerId: providerId ?? "", legs: legCount, waitMinutes },
+      data: { pickupZip: zip, miles: totalMiles, transportType, providerId: providerId ?? "", legs: legCount, stops: stopCount, waitMinutes },
     }),
     enabled,
     staleTime: 60_000,

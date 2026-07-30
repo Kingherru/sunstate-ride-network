@@ -1051,6 +1051,12 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
     dropoff_city: seed.dropoff_city ?? "",
     dropoff_zip: seed.dropoff_zip ?? "",
     transport_type: seed.transport_type ?? "ambulatory",
+    // one_way | round_trip | multi_trip — mirrors the public request form.
+    trip_type: seed.trip_type ?? (Array.isArray(seed.additional_stops) && seed.additional_stops.length > 0
+      ? "multi_trip"
+      : seed.round_trip ? "round_trip" : "one_way"),
+    // Only stops the user explicitly adds live here. Never auto-populated.
+    additional_stops: Array.isArray(seed.additional_stops) ? seed.additional_stops : [],
     round_trip: !!seed.round_trip,
     return_pickup_time: resuming ? seed.return_pickup_time ?? "" : "",
     return_dropoff_time: resuming ? seed.return_dropoff_time ?? "" : "",
@@ -1139,6 +1145,15 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  // Billable stops = only the stops the user entered. A return leg is never a stop.
+  const tripStopCount =
+    form.trip_type === "multi_trip"
+      ? (form.additional_stops ?? []).filter((s: any) => s?.address?.trim() && s?.city?.trim()).length
+      : 0;
+  const tripLegCount = form.trip_type === "round_trip" ? 2 : 1 + tripStopCount;
+  const tripTypeLabel =
+    form.trip_type === "round_trip" ? "Round trip" : form.trip_type === "multi_trip" ? "Multi trip" : "One-way";
+
   function validateClient(payload: any): Record<string, string> {
     const errs: Record<string, string> = {};
     const req = (k: string, label: string) => {
@@ -1156,6 +1171,15 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
       req("return_date", "Return date");
       req("return_pickup_time", "Return pickup time");
     }
+    if (payload.trip_type === "multi_trip") {
+      const stops = Array.isArray(payload.additional_stops) ? payload.additional_stops : [];
+      if (stops.filter((s: any) => s?.address?.trim() && s?.city?.trim()).length === 0) {
+        errs.additional_stops = "Add at least one stop, or switch back to a one-way trip.";
+      } else {
+        const bad = stops.findIndex((s: any) => (s?.address?.trim() || s?.city?.trim()) && !(s?.address?.trim() && s?.city?.trim()));
+        if (bad >= 0) errs.additional_stops = `Stop ${bad + 1} needs both an address and a city.`;
+      }
+    }
     if (payload.patient_email && !/^\S+@\S+\.\S+$/.test(String(payload.patient_email))) {
       errs.patient_email = "Please enter a valid email address.";
     }
@@ -1165,6 +1189,14 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
   const m = useMutation({
     mutationFn: async () => {
       const payload: any = { ...form };
+      // Trip type drives round_trip / stops so nothing is ever inferred.
+      payload.round_trip = payload.trip_type === "round_trip";
+      payload.additional_stops =
+        payload.trip_type === "multi_trip"
+          ? (Array.isArray(payload.additional_stops) ? payload.additional_stops : []).filter(
+              (s: any) => s?.address?.trim() && s?.city?.trim(),
+            )
+          : [];
       if (payload.round_trip && !payload.return_date) payload.return_date = payload.pickup_date;
       if (!payload.round_trip) payload.return_date = null;
       const clientErrs = validateClient(payload);
@@ -1180,6 +1212,7 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
         throw new Error(clientErrs[first]);
       }
       setFieldErrors({});
+      delete payload.trip_type; // UI-only discriminator
       if (!payload.patient_date_of_birth) delete payload.patient_date_of_birth;
       if (!payload.patient_email) delete payload.patient_email;
       if (!payload.return_pickup_time) delete payload.return_pickup_time;
@@ -1438,19 +1471,39 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
       </label>
       {!isDelivery && (
         <>
-          <label className="flex items-center gap-2 text-sm font-bold mt-2 col-span-2">
-            <input type="checkbox" checked={form.round_trip} onChange={(e) => {
-              const on = e.target.checked;
-              setForm({
-                ...form,
-                round_trip: on,
-                return_pickup_time: on && !form.return_pickup_time ? form.pickup_time : form.return_pickup_time,
-                return_date: on ? (returnDateManual && form.return_date ? form.return_date : form.pickup_date) : "",
-              });
-              if (!on) setReturnDateManual(false);
-            }} />
-            Round trip (return date &amp; pickup time required)
+          <label className="flex flex-col gap-1 text-sm col-span-2 mt-2">
+            <span className="portal-label">Trip type</span>
+            <select
+              value={form.trip_type}
+              onChange={(e) => {
+                const t = e.target.value;
+                const on = t === "round_trip";
+                setForm({
+                  ...form,
+                  trip_type: t,
+                  round_trip: on,
+                  // Stops are only kept for multi-trip; never auto-created.
+                  additional_stops: t === "multi_trip" ? form.additional_stops : [],
+                  return_pickup_time: on && !form.return_pickup_time ? form.pickup_time : on ? form.return_pickup_time : "",
+                  return_date: on ? (returnDateManual && form.return_date ? form.return_date : form.pickup_date) : "",
+                });
+                if (!on) setReturnDateManual(false);
+              }}
+              className="portal-select"
+            >
+              <option value="one_way">One-way trip</option>
+              <option value="round_trip">Round trip (return date &amp; pickup time required)</option>
+              <option value="multi_trip">Multi trip (one or more extra stops)</option>
+            </select>
+            <span className="text-[11px] text-muted-foreground">
+              {form.trip_type === "multi_trip"
+                ? "Add only the stops you actually need — each stop you enter may add a stop fee."
+                : form.trip_type === "round_trip"
+                  ? "A return leg is included. Return legs are not charged as additional stops."
+                  : "Single pickup to a single drop-off."}
+            </span>
           </label>
+
           {form.round_trip && (
             <>
               <DatePickerField
@@ -1469,6 +1522,62 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
                 Defaults to your pickup date. Change it if the patient returns on a different day (e.g. after surgery).
               </div>
             </>
+          )}
+
+          {form.trip_type === "multi_trip" && (
+            <fieldset className="col-span-2 space-y-3 border border-border rounded-sm p-3" data-field="additional_stops">
+              <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Additional stops</legend>
+              {form.additional_stops.length === 0 && (
+                <p className="text-xs text-muted-foreground">No stops yet. Add at least one stop between pickup and drop-off.</p>
+              )}
+              {form.additional_stops.map((stop: any, i: number) => {
+                const update = (patch: any) =>
+                  setForm({
+                    ...form,
+                    additional_stops: form.additional_stops.map((s: any, idx: number) => (idx === i ? { ...s, ...patch } : s)),
+                  });
+                return (
+                  <div key={i} className="grid gap-2 sm:grid-cols-2 border border-border rounded-sm p-3">
+                    <div className="sm:col-span-2 flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Stop {i + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm({ ...form, additional_stops: form.additional_stops.filter((_: any, idx: number) => idx !== i) })
+                        }
+                        className="text-xs font-bold underline text-muted-foreground hover:text-foreground"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+                      <span className="portal-label">Stop address</span>
+                      <AddressAutocomplete
+                        value={stop.address ?? ""}
+                        onChange={(v: string) => update({ address: v })}
+                        onSelect={(sel: AddressSelection) => update({ address: sel.address, city: sel.city || stop.city || "" })}
+                        className="portal-select"
+                      />
+                    </label>
+                    <Field label="Stop city" v={stop.city ?? ""} on={(v) => update({ city: v })} />
+                    <TimePickerField label="Stop pickup time" value={stop.pickupTime ?? ""} onChange={(v) => update({ pickupTime: v })} />
+                    <Field label="Stop note (optional)" v={stop.note ?? ""} on={(v) => update({ note: v })} className="sm:col-span-2" placeholder="e.g. pharmacy pickup" />
+                  </div>
+                );
+              })}
+              {fieldErrors.additional_stops && (
+                <p className="text-xs font-bold text-destructive">{fieldErrors.additional_stops}</p>
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  setForm({ ...form, additional_stops: [...form.additional_stops, { address: "", city: "", pickupTime: "", note: "" }] })
+                }
+                className="border-2 border-border px-4 py-2 text-sm font-bold rounded-sm hover:bg-muted"
+              >
+                Add a stop
+              </button>
+            </fieldset>
           )}
           <fieldset className="col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border border-border rounded-sm p-3">
             <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Patient needs</legend>
@@ -1536,6 +1645,19 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
         const legs: LegInput[] = [
           { label: "Pickup", from: pickup, to: dropoff, date: form.pickup_date, time: form.pickup_time },
         ];
+        if (form.trip_type === "multi_trip") {
+          (form.additional_stops ?? [])
+            .filter((st: any) => st?.address?.trim() && st?.city?.trim())
+            .forEach((st: any, i: number) => {
+              legs.push({
+                label: `Stop ${i + 1}`,
+                from: pickup,
+                to: [st.address, st.city].filter(Boolean).join(", "),
+                date: form.pickup_date,
+                time: st.pickupTime || form.pickup_time,
+              });
+            });
+        }
         if (form.round_trip) {
           const rdate = form.return_date || form.pickup_date;
           legs.push({
@@ -1557,8 +1679,9 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
           miles={estimatedMiles}
           transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
           providerId={portal === "provider" ? (userId ?? undefined) : undefined}
-          legs={form.round_trip ? 2 : 1}
-          tripTypeLabel={form.round_trip ? "Round trip" : "One-way"}
+          legs={tripLegCount}
+          stops={tripStopCount}
+          tripTypeLabel={tripTypeLabel}
         />
         {portal === "provider" && (
           <TripFinancialBreakdown
@@ -1566,8 +1689,9 @@ function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, porta
             miles={estimatedMiles}
             transportType={(form.transport_type === "stretcher" ? "gurney" : form.transport_type) as "ambulatory" | "wheelchair" | "gurney"}
             senderUserId={userId ?? undefined}
-            legs={form.round_trip ? 2 : 1}
-            tripTypeLabel={form.round_trip ? "Round trip" : "One-way"}
+            legs={tripLegCount}
+            stops={tripStopCount}
+            tripTypeLabel={tripTypeLabel}
           />
         )}
       </div>
