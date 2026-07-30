@@ -316,6 +316,21 @@ export function ReservationReviewDialog({
     }
   }
 
+  async function complete() {
+    setBusy("complete");
+    try {
+      await update({ data: { trip_id: row.id, status: "completed" } });
+      toast.success("Trip completed — moved to Trip History");
+      invalidate();
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not complete this trip");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+
   async function decline() {
     setBusy("decline");
     try {
