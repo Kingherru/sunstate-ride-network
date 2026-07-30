@@ -144,16 +144,28 @@ function Field({
   error?: string;
 }) {
   return (
-    <label className="block">
+    <label
+      className={
+        error
+          ? "block rounded-sm [&_input]:border-destructive [&_textarea]:border-destructive [&_select]:border-destructive [&_button]:border-destructive"
+          : "block"
+      }
+      data-field-error={error ? "true" : undefined}
+    >
       <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
         {label}
         {required && <span className="text-accent"> *</span>}
       </span>
       {children}
-      {error && <span className="block mt-1 text-xs text-destructive">{error}</span>}
+      {error && (
+        <span role="alert" className="block mt-1 text-xs font-semibold text-destructive">
+          {error}
+        </span>
+      )}
     </label>
   );
 }
+
 
 const inputCls =
   "w-full bg-card border border-input rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all";
