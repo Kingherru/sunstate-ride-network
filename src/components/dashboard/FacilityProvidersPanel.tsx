@@ -56,12 +56,17 @@ function LookupTab() {
     try {
       const r = await find({ data: { address: address.trim(), radius_miles: radius } });
       if (!r.ok) {
-        toast.error(r.error === "geocode_failed" ? "Could not find that address" : r.error);
+        toast.error(
+          r.error === "no_zip" || r.error === "geocode_failed"
+            ? "Enter a 5-digit ZIP code (or an address that includes one)."
+            : r.error,
+        );
         setResults([]);
       } else {
         setResults(r.results);
-        if (r.results.length === 0) toast.message(`No providers within ${radius} miles.`);
+        if (r.results.length === 0) toast.message(`No providers service ZIP ${r.zip} yet.`);
       }
+
     } finally {
       setBusy(false);
     }
