@@ -79,7 +79,7 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
     const uid = context.userId;
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, status, reservation_state, assigned_to, created_by")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, scheduled_start_time, status, reservation_state, assigned_to, created_by")
       .eq("pickup_date", data.date)
       .in("reservation_state", ["booked", "unconfirmed"])
       .or(`assigned_to.eq.${uid},created_by.eq.${uid}`)
@@ -88,7 +88,7 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
     return (rows ?? []).map((r: any) => ({
       ...r,
       assigned_driver_id: r.driver_id,
-      scheduled_start_time: r.pickup_time,
+      scheduled_start_time: r.scheduled_start_time ?? r.pickup_time,
     }));
   });
 
@@ -104,7 +104,7 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
     const endIso = end.toISOString().slice(0, 10);
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, status, reservation_state, assigned_to, created_by")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, scheduled_start_time, status, reservation_state, assigned_to, created_by")
       .in("reservation_state", ["booked", "unconfirmed"])
       .or(`assigned_to.eq.${uid},created_by.eq.${uid}`)
       .gte("pickup_date", data.week_start)
@@ -115,7 +115,7 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
     return (rows ?? []).map((r: any) => ({
       ...r,
       assigned_driver_id: r.driver_id,
-      scheduled_start_time: r.pickup_time,
+      scheduled_start_time: r.scheduled_start_time ?? r.pickup_time,
     }));
   });
 
@@ -144,7 +144,7 @@ export const assignDriverSlot = createServerFn({ method: "POST" })
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const update: any = { driver_id: data.driver_id };
-    if (data.scheduled_start_time) update.pickup_time = data.scheduled_start_time;
+    update.scheduled_start_time = data.scheduled_start_time ?? null;
     const { error } = await supabaseAdmin
       .from("trips")
       .update(update)
