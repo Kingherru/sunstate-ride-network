@@ -10,6 +10,7 @@ import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
 import { formatMinutes } from "@/components/maps/RoutePreview";
 import { ReservationReviewDialog } from "@/components/dashboard/ReservationReviewDialog";
+import { listReferralReservations, confirmReferralReservation } from "@/lib/referrals.functions";
 
 
 type Row = {
@@ -511,6 +512,8 @@ export function ReservationsPanel({
     return state === "canceled" ? canceled : !canceled;
   });
   const rows = useMemo(() => allRows.filter((r) => {
+    // Approved referrals live in their own Referral Reservations section below.
+    if (isPendingReferralReservation(r, userId)) return false;
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
     if (payerFilter === "medicaid" && !isMedicaidTrip(r)) return false;
@@ -520,7 +523,7 @@ export function ReservationsPanel({
       if (!hay.includes(s)) return false;
     }
     return true;
-  }), [allRows, assignFilter, payerFilter, search]);
+  }), [allRows, assignFilter, payerFilter, search, userId]);
 
   const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
     (acc[r.pickup_date] ||= []).push(r);
@@ -755,6 +758,9 @@ export function ReservationsPanel({
         ))}
       </div>
       </>)}
+
+      {scope === "provider" && <ReferralReservationsSection userId={userId} />}
+
       {reviewing && (
         <ReservationReviewDialog
           row={reviewing}
