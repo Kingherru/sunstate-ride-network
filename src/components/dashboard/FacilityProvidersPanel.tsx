@@ -88,11 +88,11 @@ function LookupTab() {
     <div className="space-y-4">
       <form onSubmit={search} className="bg-card border border-border rounded-sm p-4 grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Pickup address or ZIP</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Pickup ZIP code or address</span>
           <input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="e.g. 123 Main St, Jacksonville, FL"
+            placeholder="e.g. 32256 or 123 Main St, Jacksonville, FL"
             className="mt-1 w-full border border-border rounded-sm px-3 py-2 text-sm"
           />
         </label>
@@ -114,12 +114,34 @@ function LookupTab() {
           {results.map((r) => (
             <div key={r.user_id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <div className="font-extrabold">{r.company_name ?? (`${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || "Provider")}</div>
+                <div className="font-extrabold flex items-center gap-2 flex-wrap">
+                  {r.company_name ?? (`${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || "Provider")}
+                  <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-muted text-foreground">
+                    {r.match_type === "zip"
+                      ? "Services this ZIP"
+                      : r.match_type === "zone"
+                        ? `Serves ${r.zone_name ?? "this zone"}`
+                        : "Long-distance"}
+                  </span>
+                  {r.medicaid_verified && (
+                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm border border-border">Medicaid verified</span>
+                  )}
+                </div>
+                {r.company_name && (`${r.first_name ?? ""} ${r.last_name ?? ""}`.trim()) && (
+                  <div className="text-xs text-foreground mt-1">{`${r.first_name ?? ""} ${r.last_name ?? ""}`.trim()}</div>
+                )}
                 <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
-                  <span className="inline-flex items-center gap-1"><MapPin className="size-3" /> {r.city ?? "—"}{r.region ? ` · ${r.region}` : ""}</span>
-                  <span><span className="font-bold text-foreground">{r.distance_miles} mi</span> from pickup</span>
-                  <span>~{r.est_drive_miles} mi drive</span>
-                  <span className="font-bold text-foreground">Est. ${(r.est_fare_low_cents/100).toFixed(0)}–${(r.est_fare_high_cents/100).toFixed(0)}</span>
+                  <span className="inline-flex items-center gap-1"><MapPin className="size-3" /> {r.city ?? "—"}{r.region ? ` · ${r.region}` : ""}{r.postal_code ? ` ${r.postal_code}` : ""}</span>
+                  {r.phone && (
+                    <a href={`tel:${r.phone}`} className="inline-flex items-center gap-1 font-bold text-foreground hover:underline"><Phone className="size-3" /> {r.phone}</a>
+                  )}
+                  {r.dispatch_email && (
+                    <a href={`mailto:${r.dispatch_email}`} className="inline-flex items-center gap-1 hover:underline"><Mail className="size-3" /> {r.dispatch_email}</a>
+                  )}
+                  {r.distance_miles != null && <span><span className="font-bold text-foreground">{r.distance_miles} mi</span> from pickup</span>}
+                  {r.est_fare_low_cents != null && r.est_fare_high_cents != null && (
+                    <span className="font-bold text-foreground">Est. ${(r.est_fare_low_cents / 100).toFixed(0)}–${(r.est_fare_high_cents / 100).toFixed(0)}</span>
+                  )}
                   {r.service_radius_miles != null && <span>Service radius: {r.service_radius_miles} mi</span>}
                 </div>
               </div>
@@ -134,11 +156,12 @@ function LookupTab() {
         </div>
       )}
       {results && results.length === 0 && (
-        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">No approved providers in this radius. Try widening the search.</div>
+        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">No approved, active providers service that ZIP code yet. Try a nearby ZIP or widen the radius.</div>
       )}
     </div>
   );
 }
+
 
 function SavedTab() {
   const qc = useQueryClient();
