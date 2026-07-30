@@ -533,7 +533,6 @@ export const updateTripStatus = createServerFn({ method: "POST" })
     if (data.status === "completed") patch.completed_at = new Date().toISOString();
     if (data.status === "declined" || data.status === "canceled") {
       patch.cancel_reason = (data.reason ?? "").trim() || (data.status === "declined" ? "Declined by recipient" : "Canceled");
-      patch.canceled_at = new Date().toISOString();
     }
 
     // Authenticated UPDATE on public.trips is revoked at column level for safety; use admin client after authz.

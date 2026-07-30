@@ -4128,6 +4128,7 @@ export type Database = {
           round_trip: boolean
           route_computed_at: string | null
           route_polyline: string | null
+          scheduled_start_time: string | null
           service_level: Database["public"]["Enums"]["service_level"] | null
           signature_name: string | null
           signature_relation: string | null
@@ -4281,6 +4282,7 @@ export type Database = {
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
+          scheduled_start_time?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           signature_name?: string | null
           signature_relation?: string | null
@@ -4434,6 +4436,7 @@ export type Database = {
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
+          scheduled_start_time?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           signature_name?: string | null
           signature_relation?: string | null
