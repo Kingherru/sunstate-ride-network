@@ -65,8 +65,24 @@ export function ReferralReviewModal({
     }
     setBusy(status === "accepted" ? "accept" : "decline");
     try {
-      await updateTripStatus({ data: { trip_id: trip.id, status } });
-      toast.success(status === "accepted" ? "Trip accepted" : "Trip declined");
+      // Pending referrals go through the referral workflow (assigns the trip on
+      // accept, re-routes to the next eligible provider on decline). Trips that
+      // are already assigned just change status.
+      if (String(trip?.referral_status ?? "").toLowerCase() === "pending") {
+        const res: any = await respondToReferral({
+          data: { trip_id: trip.id, accept: status === "accepted" },
+        });
+        toast.success(
+          status === "accepted"
+            ? "Referral accepted — trip moved to your Booked reservations"
+            : res?.rerouted
+              ? "Referral declined — sent to the next eligible provider"
+              : "Referral declined — returned to dispatch",
+        );
+      } else {
+        await updateTripStatus({ data: { trip_id: trip.id, status } });
+        toast.success(status === "accepted" ? "Trip accepted" : "Trip declined");
+      }
       onDone();
     } catch (e: any) {
       toast.error(e?.message ?? `Could not ${status === "accepted" ? "accept" : "decline"} trip`);
@@ -74,6 +90,7 @@ export function ReferralReviewModal({
       setBusy(null);
     }
   }
+
 
   const pickupWhen = [trip?.pickup_date, trip?.pickup_time].filter(Boolean).join(" ");
 
