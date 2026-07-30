@@ -11,9 +11,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * or billed until the draft is submitted through `createTrip`.
  */
 
-const draftPayload = z.record(z.string(), z.unknown());
+type DraftPayload = Record<string, any>;
 
-function summarize(p: Record<string, unknown>): string {
+const draftPayload = z.record(z.string(), z.any());
+
+function summarize(p: DraftPayload): string {
   const name = [p.patient_first_name, p.patient_last_name].filter(Boolean).join(" ").trim();
   const route = [p.pickup_city, p.dropoff_city].filter(Boolean).join(" → ");
   const when = [p.pickup_date, p.pickup_time].filter(Boolean).join(" ");
@@ -34,7 +36,7 @@ export const listTripDrafts = createServerFn({ method: "GET" })
     if (error) throw error;
     return (data ?? []) as Array<{
       id: string;
-      payload: Record<string, unknown>;
+      payload: DraftPayload;
       summary: string | null;
       autosaved: boolean;
       created_at: string;
