@@ -6,7 +6,7 @@ import { listDirectReferralsAdmin } from "@/lib/admin-trips.functions";
 import { suggestProvidersForTrip, autoAssignTrip } from "@/lib/assignment.functions";
 import { adminAssignTrip } from "@/lib/system-ids.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { fmtTime12 } from "@/lib/time-format";
+import { formatTime12 } from "@/lib/time-format";
 
 const SOURCE_OPTIONS = ["all", "public_form", "web", "provider", "facility", "api"];
 
@@ -156,7 +156,7 @@ export function AdminDirectReferralsPanel() {
               <tr key={t.id} className="border-t border-border align-top">
                 <td className="p-3 font-mono text-xs">{t.display_id ?? t.id.slice(0, 8)}</td>
                 <td className="p-3 whitespace-nowrap">
-                  {t.pickup_date} {t.pickup_time ? fmtTime12(t.pickup_time) : ""}
+                  {t.pickup_date} {t.pickup_time ? formatTime12(t.pickup_time) : ""}
                 </td>
                 <td className="p-3">
                   <div>
