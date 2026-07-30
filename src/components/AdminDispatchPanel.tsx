@@ -403,7 +403,20 @@ function TripRow({
         <td className="py-2 pr-3 text-xs">{t.pickup_date} · {t.pickup_city} {t.pickup_zip ?? ""}</td>
         <td className="py-2 pr-3 text-xs">{t.original_provider_name ?? "—"}</td>
         <td className="py-2 pr-3 text-xs capitalize">{t.source ?? "—"}</td>
-        <td className="py-2 pr-3 text-xs">{t.status}</td>
+        <td className="py-2 pr-3 text-xs">
+          {t.status}
+          {String(t.referral_status ?? "").toLowerCase() === "pending" && (
+            <div className="mt-1 inline-block bg-amber-100 text-amber-800 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+              Referral pending{t.referral_target_name ? ` · ${t.referral_target_name}` : ""}
+            </div>
+          )}
+          {String(t.referral_status ?? "").toLowerCase() === "declined" && (
+            <div className="mt-1 inline-block bg-red-100 text-red-700 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+              Referral declined
+            </div>
+          )}
+        </td>
+
         <td className="py-2 pr-3 text-xs">{t.payment_status ?? "—"}</td>
         <td className="py-2 pr-3 text-xs text-right font-mono">{fmtCents(t.referral_fee_cents)}</td>
         <td className="py-2 pr-3 text-xs text-right font-mono">{fmtCents(t.platform_fee_cents)}</td>
