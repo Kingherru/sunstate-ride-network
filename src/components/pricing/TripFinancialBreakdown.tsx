@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { estimateTripPrice } from "@/lib/zone-pricing.functions";
+import { computeReferralPayoutCents } from "@/lib/referral-fee.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 
@@ -47,19 +48,18 @@ export function TripFinancialBreakdown({
     staleTime: 60_000,
   });
 
-  const feeQ = useQuery({
-    queryKey: ["my-referral-fee", senderUserId ?? ""],
-    enabled: !!senderUserId,
+  // Referral payout is system-calculated from the admin-controlled rate.
+  // The percentage itself is never exposed to providers — only the amount.
+  const referralQ = useQuery({
+    queryKey: ["referral-payout-cents", Math.round(((estQ.data?.provider?.dollars ?? estQ.data?.zoneAverage?.dollars ?? 0) as number) * 100)],
+    enabled: !!estQ.data,
     staleTime: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("member_profiles")
-        .select("referral_fee_type, referral_fee_amount")
-        .eq("user_id", senderUserId!)
-        .maybeSingle();
-      if (error) return { referral_fee_type: null, referral_fee_amount: null };
-      return data as { referral_fee_type: "flat" | "percent" | null; referral_fee_amount: number | null };
-    },
+    queryFn: () =>
+      computeReferralPayoutCents({
+        data: {
+          amountCents: Math.round(((estQ.data?.provider?.dollars ?? estQ.data?.zoneAverage?.dollars ?? 0) as number) * 100),
+        },
+      }),
   });
 
   if (!enabled) {
@@ -75,11 +75,7 @@ export function TripFinancialBreakdown({
   const clientCharge = estQ.data.provider?.dollars ?? estQ.data.zoneAverage.dollars ?? 0;
   const fareLines = estQ.data.provider?.lines ?? estQ.data.zoneAverage.lines ?? [];
 
-  const feeType = feeQ.data?.referral_fee_type ?? null;
-  const feeVal = Number(feeQ.data?.referral_fee_amount ?? 0);
-  const referralFee =
-    feeType === "flat" ? Math.max(0, feeVal) :
-    feeType === "percent" ? Math.max(0, (clientCharge * feeVal) / 100) : 0;
+  const referralFee = Math.max(0, (referralQ.data?.cents ?? 0) / 100);
 
   const finalRequired = clientCharge + referralFee;
   const platformFee = finalRequired * platformFeePct;
@@ -115,14 +111,8 @@ export function TripFinancialBreakdown({
         <Row
           label="Provider referral fee"
           value={referralFee}
-          hint={
-            !feeType
-              ? "No referral fee set. Configure a default in Account → Business Information."
-              : feeType === "percent"
-                ? `Your default: ${feeVal}% of the client trip charge.`
-                : `Your default: flat $${feeVal.toFixed(2)} per referred trip.`
-          }
-          muted={!feeType}
+          hint="Calculated automatically by My Florida NEMT and paid to you after the trip is completed."
+          muted={referralFee <= 0}
         />
         <Row
           label="My Florida NEMT platform fee"
