@@ -205,8 +205,9 @@ export function AdminUsersPanel() {
                     <td className="py-2 pr-3">{u.company_name ?? "—"}</td>
                     <td className="py-2 pr-3">{u.city ?? "—"}</td>
                     <td className="py-2 pr-3">
-                      {u.membership_tier ?? "—"}{u.membership_status ? ` · ${u.membership_status}` : ""}
+                      <MembershipSelect user={u} />
                     </td>
+
                     <td className="py-2 pr-3 text-xs text-muted-foreground">
                       {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "never"}
                     </td>
