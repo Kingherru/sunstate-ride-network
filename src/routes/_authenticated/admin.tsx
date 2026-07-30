@@ -131,17 +131,23 @@ type NavItem = {
 
 type NavGroup = { label: string; items: NavItem[] };
 
+/** True when the signed-in user is a dispatcher only (the Dispatch Portal view). */
+export function isDispatchOnly(c: ReturnType<typeof useCapabilities>) {
+  return c.isDispatcher && !c.isAdmin && !c.isAppManager && !c.isZoneManager && !c.isStaff;
+}
+
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps },
+      { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps && !isDispatchOnly(c) },
       { id: "notifications", label: "Notifications", icon: BellRing, visible: (c) => c.isOps },
     ],
   },
   {
     label: "People & Accounts",
     items: [
+      { id: "account", label: "Account", icon: UserCog, visible: (c) => isDispatchOnly(c) },
       { id: "users", label: "Users", icon: UsersIcon, visible: (c) => c.isAdmin },
       { id: "providers", label: "Providers", icon: Building2, visible: (c) => c.isOps },
       { id: "facilities", label: "Facilities", icon: Building, visible: (c) => c.isOps },
@@ -160,9 +166,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Finance",
     items: [
-      { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing },
-      { id: "ledger", label: "Finance console", icon: DollarSign, visible: (c) => c.isOps },
-      { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps },
+      { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing && !isDispatchOnly(c) },
+      { id: "ledger", label: "Finance console", icon: DollarSign, visible: (c) => c.isOps && !isDispatchOnly(c) },
+      { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps && !isDispatchOnly(c) },
       { id: "integrations", label: "Integrations", icon: Plug, visible: (c) => c.isAdmin },
     ],
   },
@@ -170,7 +176,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { id: "theme", label: "Theme & branding", icon: Palette, visible: (c) => c.canConfigurePricing },
-      { id: "security", label: "Security", icon: ShieldCheck, visible: (c) => c.canManageStaff || c.canViewAuditLog || c.canDispatch },
+      {
+        id: "security",
+        label: "Security",
+        icon: ShieldCheck,
+        visible: (c) => !isDispatchOnly(c) && (c.canManageStaff || c.canViewAuditLog || c.canDispatch),
+      },
       { id: "changelog", label: "Changelog", icon: History, visible: (c) => c.isOps },
       { id: "system", label: "System settings", icon: Settings, visible: (c) => c.isAdmin },
     ],
