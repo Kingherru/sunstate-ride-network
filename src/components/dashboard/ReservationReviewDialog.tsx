@@ -215,7 +215,14 @@ export function ReservationReviewDialog({
     qc.invalidateQueries({ queryKey: ["my-trips"] });
     qc.invalidateQueries({ queryKey: ["unread-counts"] });
     qc.invalidateQueries({ queryKey: ["referral-history", row.id] });
+    // Keep Admin + Dispatch portals in sync with provider-side changes
+    qc.invalidateQueries({ queryKey: ["admin-reservations"] });
+    qc.invalidateQueries({ queryKey: ["admin-trips"] });
+    qc.invalidateQueries({ queryKey: ["trip-history"] });
+    qc.invalidateQueries({ queryKey: ["incoming-requests"] });
+    qc.invalidateQueries({ queryKey: ["disp"] });
   };
+
 
   // Referral state derived from the row
   const senderId = row.created_by ?? row.requester_user_id ?? null;
