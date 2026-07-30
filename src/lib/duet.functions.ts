@@ -39,20 +39,26 @@ export const pullTripFromDuet = createServerFn({ method: "POST" })
     return await refreshTripFromDuet(data.trip_id);
   });
 
-/** Timeline of dispatch-software updates received for a trip. */
+/** Timeline of dispatch-software activity for a trip (sent, received, errors). */
 export const listTripDispatchEvents = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ trip_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    const { data: trip } = await context.supabase
+      .from("trips")
+      .select("id, duet_ride_id, duet_synced_at, duet_last_event, duet_last_event_at")
+      .eq("id", data.trip_id)
+      .maybeSingle();
     const { data: rows, error } = await context.supabase
       .from("trip_dispatch_events")
-      .select("id, event_type, event_time, latitude, longitude, created_at")
+      .select("id, vendor, event_type, event_time, external_ride_id, latitude, longitude, payload, created_at")
       .eq("trip_id", data.trip_id)
-      .order("event_time", { ascending: true })
+      .order("event_time", { ascending: false })
       .limit(200);
     if (error) throw error;
-    return rows ?? [];
+    return { trip: trip ?? null, events: rows ?? [] };
   });
+
 
 const manualSchema = z.object({
   trip_id: z.string().uuid(),

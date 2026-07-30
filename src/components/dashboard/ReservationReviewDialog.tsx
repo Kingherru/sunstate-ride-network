@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatTime12, formatDateLong, formatIsoDateTime12 } from "@/lib/time-format";
 import { TimeSelect } from "@/components/ui/time-picker-field";
 import { ManualCompletionDialog } from "@/components/dashboard/ManualCompletionDialog";
+import { TripSyncTimeline } from "@/components/dashboard/TripSyncTimeline";
 
 type Row = {
   id: string;
@@ -642,6 +643,8 @@ export function ReservationReviewDialog({
             )}
           </section>
         )}
+
+        <TripSyncTimeline tripId={row.id} canSync={canComplete || canApprove} />
 
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between">
           <button
