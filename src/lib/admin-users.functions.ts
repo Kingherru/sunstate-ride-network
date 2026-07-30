@@ -426,3 +426,29 @@ export const deleteTestDispatchAccount = createServerFn({ method: "POST" })
     });
     return { ok: true, removed: true };
   });
+
+/**
+ * Admin/ops-only: set a member's membership tier + status.
+ * Runs through the `admin_set_membership` SQL function, which re-verifies the
+ * caller's staff role and writes to the staff audit log.
+ */
+export const setMemberMembership = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        tier: z.enum(["none", "free", "paid"]),
+        status: z.enum(["active", "inactive", "canceled", "past_due"]).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await (context as any).supabase.rpc("admin_set_membership", {
+      _user_id: data.user_id,
+      _tier: data.tier,
+      _status: data.status ?? (data.tier === "none" ? "inactive" : "active"),
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true, user_id: data.user_id, tier: data.tier };
+  });

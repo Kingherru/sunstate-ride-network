@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listNonPatientUsers } from "@/lib/admin-users.functions";
+import { toast } from "sonner";
+import { listNonPatientUsers, setMemberMembership } from "@/lib/admin-users.functions";
 import { supabase } from "@/integrations/supabase/client";
+
 
 
 /**
@@ -124,9 +126,9 @@ export function RegisteredMembersList({
                     )}
                   </td>
                   <td className="py-2 pr-3">
-                    {u.membership_tier ?? "—"}
-                    {u.membership_status ? ` · ${u.membership_status}` : ""}
+                    <MembershipControl user={u} />
                   </td>
+
                   <td className="py-2 pr-3 text-xs text-muted-foreground">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
                   </td>
@@ -143,6 +145,57 @@ export function RegisteredMembersList({
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Inline membership control: lets admins/ops grant or revoke a member's
+ * membership tier. Writes go through the audited `setMemberMembership`
+ * server action (regular members cannot change these fields themselves).
+ */
+function MembershipControl({ user }: { user: any }) {
+  const qc = useQueryClient();
+  const setMembership = useServerFn(setMemberMembership);
+  const tier: string = user.membership_tier ?? "none";
+  const status: string = user.membership_status ?? "inactive";
+
+  const mutation = useMutation({
+    mutationFn: (next: "none" | "free" | "paid") =>
+      setMembership({ data: { user_id: user.id, tier: next } }),
+    onSuccess: (_d, next) => {
+      toast.success(
+        next === "none"
+          ? "Membership removed"
+          : `Membership set to ${next === "paid" ? "Paid" : "Free"}`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin", "non-patient-users"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not update membership"),
+  });
+
+  return (
+    <div className="flex items-center gap-2">
+      <select
+        value={tier}
+        disabled={mutation.isPending}
+        onChange={(e) => mutation.mutate(e.target.value as "none" | "free" | "paid")}
+        className="text-xs font-semibold bg-background border border-border rounded-sm px-2 py-1 disabled:opacity-60"
+        aria-label={`Membership for ${user.email ?? user.company_name ?? "member"}`}
+      >
+        <option value="none">None</option>
+        <option value="free">Free</option>
+        <option value="paid">Paid</option>
+      </select>
+      <span
+        className={
+          status === "active"
+            ? "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-emerald-100 text-emerald-800"
+            : "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground"
+        }
+      >
+        {status}
+      </span>
     </div>
   );
 }
