@@ -167,6 +167,15 @@ export function ReservationReviewDialog({
   const isRound = !!row.round_trip;
   const isDelivery = String(row.trip_type ?? "").toLowerCase() === "medical_delivery";
   const isUnconfirmed = String(row.reservation_state ?? "").toLowerCase() === "unconfirmed";
+  const statusLower = String(row.status ?? "").toLowerCase();
+  const isFinished = ["completed", "canceled", "cancelled", "no_show"].includes(statusLower);
+  // Past-due reservations stay actionable: they can still be marked completed,
+  // which is what moves them into Trip History.
+  const canComplete =
+    canApprove &&
+    !isFinished &&
+    ["past", "booked"].includes(String(row.reservation_state ?? "").toLowerCase());
+
 
   // Editable draft mirrors current row values; only sent fields are patched.
   const [draft, setDraft] = useState(() => ({
