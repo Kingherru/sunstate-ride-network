@@ -1846,6 +1846,7 @@ export type Database = {
           market_pricing: Json
           medicaid_pricing: Json
           platform_fee_pct: number
+          referral_fee_pct: number
           updated_at: string
           updated_by: string | null
           zip_fallback_mode: string
@@ -1856,6 +1857,7 @@ export type Database = {
           market_pricing?: Json
           medicaid_pricing?: Json
           platform_fee_pct?: number
+          referral_fee_pct?: number
           updated_at?: string
           updated_by?: string | null
           zip_fallback_mode?: string
@@ -1866,6 +1868,7 @@ export type Database = {
           market_pricing?: Json
           medicaid_pricing?: Json
           platform_fee_pct?: number
+          referral_fee_pct?: number
           updated_at?: string
           updated_by?: string | null
           zip_fallback_mode?: string
@@ -5260,6 +5263,7 @@ export type Database = {
       fin_validate_payment: { Args: { _trip_id: string }; Returns: undefined }
       fl_zip_zone_code: { Args: { _zip: string }; Returns: string }
       gen_webhook_secret: { Args: never; Returns: string }
+      get_referral_fee_pct: { Args: never; Returns: number }
       get_trips_admin_metadata: {
         Args: never
         Returns: {
