@@ -35,37 +35,52 @@ export type ProviderLookupRow = {
   last_name: string | null;
   city: string | null;
   region: string | null;
+  phone: string | null;
+  dispatch_email: string | null;
+  postal_code: string | null;
   service_radius_miles: number | null;
-  distance_miles: number;
-  est_drive_miles: number;
-  est_fare_low_cents: number;
-  est_fare_high_cents: number;
+  medicaid_verified: boolean;
+  zone_name: string | null;
+  /** "zip" = ZIP is in the provider's saved service area, "zone" = same dispatch zone, "long_distance" = covers long-distance trips */
+  match_type: "zip" | "zone" | "long_distance";
+  distance_miles: number | null;
+  est_drive_miles: number | null;
+  est_fare_low_cents: number | null;
+  est_fare_high_cents: number | null;
   is_saved: boolean;
 };
 
-/** Find approved NEMT providers within 50 miles of an address. */
+function extractZip(input: string): string | null {
+  const m = input.match(/\b(\d{5})(?:-\d{4})?\b/);
+  return m ? m[1] : null;
+}
+
+/**
+ * Find eligible providers for a pickup ZIP code (or address containing one).
+ * Eligibility comes from the provider's saved service area (preferred ZIP codes,
+ * business ZIP, dispatch zone, long-distance flag), approval status and active
+ * membership — enforced server-side by `search_providers_by_zip`.
+ */
 export const findProvidersNearAddress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ address: z.string().min(3).max(300), radius_miles: z.number().min(1).max(150).default(50) }).parse(i))
-  .handler(async ({ data, context }): Promise<{ ok: true; center: { lat: number; lng: number }; results: ProviderLookupRow[] } | { ok: false; error: string }> => {
-    const g = await geocode(data.address);
-    if (!g) return { ok: false, error: "geocode_failed" };
+  .handler(async ({ data, context }): Promise<{ ok: true; zip: string; center: { lat: number; lng: number } | null; results: ProviderLookupRow[] } | { ok: false; error: string }> => {
+    let zip = extractZip(data.address);
+    let center: { lat: number; lng: number } | null = null;
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // approved providers with geocoded service center
-    const { data: profs, error } = await supabaseAdmin
-      .from("member_profiles")
-      .select("user_id, company_name, first_name, last_name, city, region, service_radius_miles, center_lat, center_lng, dispatch_email")
-      .not("center_lat", "is", null)
-      .not("center_lng", "is", null);
+    // Only geocode when the input isn't already a ZIP (keeps ZIP search working
+    // even when the maps connector is unavailable).
+    if (!zip || !/^\d{5}(-\d{4})?$/.test(data.address.trim())) {
+      const g = await geocode(data.address);
+      if (g) {
+        center = { lat: g.lat, lng: g.lng };
+        zip = zip ?? g.zip;
+      }
+    }
+    if (!zip) return { ok: false, error: "no_zip" };
+
+    const { data: matches, error } = await context.supabase.rpc("search_providers_by_zip", { _zip: zip });
     if (error) return { ok: false, error: error.message };
-
-    // approved provider emails
-    const { data: apps } = await supabaseAdmin
-      .from("provider_applications")
-      .select("email")
-      .eq("status", "approved");
-    const approvedEmails = new Set((apps ?? []).map((a: any) => (a.email ?? "").toLowerCase()));
 
     const saved = await context.supabase
       .from("facility_saved_providers")
@@ -73,36 +88,46 @@ export const findProvidersNearAddress = createServerFn({ method: "POST" })
       .eq("facility_user_id", context.userId);
     const savedSet = new Set((saved.data ?? []).map((s: any) => s.provider_user_id));
 
-    const center = { lat: g.lat, lng: g.lng };
-    const rows: ProviderLookupRow[] = (profs ?? [])
-      .filter((p: any) => approvedEmails.has((p.dispatch_email ?? "").toLowerCase()))
-      .map((p: any) => {
+    const rows: ProviderLookupRow[] = (matches ?? []).map((p: any) => {
+      let distance: number | null = null;
+      let driveMiles: number | null = null;
+      let low: number | null = null;
+      let high: number | null = null;
+      if (center && p.center_lat != null && p.center_lng != null) {
         const d = miles(center, { lat: Number(p.center_lat), lng: Number(p.center_lng) });
-        // Approximate driving miles from straight-line distance (typical FL road factor ~1.25)
-        const driveMiles = +(d * 1.25).toFixed(1);
-        const amb = { loadMin: 50, loadMax: 50, mileMin: 1.5, mileMax: 3.5 };
-        const low = Math.round((amb.loadMin + amb.mileMin * driveMiles) * 100);
-        const high = Math.round((amb.loadMax + amb.mileMax * driveMiles) * 100);
-        return {
-          user_id: p.user_id,
-          company_name: p.company_name,
-          first_name: p.first_name,
-          last_name: p.last_name,
-          city: p.city,
-          region: p.region,
-          service_radius_miles: p.service_radius_miles,
-          distance_miles: +d.toFixed(1),
-          est_drive_miles: driveMiles,
-          est_fare_low_cents: low,
-          est_fare_high_cents: high,
-          is_saved: savedSet.has(p.user_id),
-        };
-      })
-      .filter((r) => r.distance_miles <= data.radius_miles)
-      .sort((a, b) => a.distance_miles - b.distance_miles);
+        distance = +d.toFixed(1);
+        driveMiles = +(d * 1.25).toFixed(1);
+        low = Math.round((50 + 1.5 * driveMiles) * 100);
+        high = Math.round((50 + 3.5 * driveMiles) * 100);
+      }
+      return {
+        user_id: p.user_id,
+        company_name: p.company_name,
+        first_name: p.first_name,
+        last_name: p.last_name,
+        city: p.city,
+        region: p.region,
+        phone: p.phone,
+        dispatch_email: p.dispatch_email,
+        postal_code: p.postal_code,
+        service_radius_miles: p.service_radius_miles,
+        medicaid_verified: !!p.medicaid_verified,
+        zone_name: p.zone_name ?? null,
+        match_type: (p.match_type ?? "long_distance") as ProviderLookupRow["match_type"],
+        distance_miles: distance,
+        est_drive_miles: driveMiles,
+        est_fare_low_cents: low,
+        est_fare_high_cents: high,
+        is_saved: savedSet.has(p.user_id),
+      };
+    })
+      // Direct ZIP/zone coverage always shows; long-distance-only providers are
+      // limited to the selected radius when we know how far away they are.
+      .filter((r) => r.match_type !== "long_distance" || r.distance_miles == null || r.distance_miles <= data.radius_miles);
 
-    return { ok: true, center, results: rows };
+    return { ok: true, zip, center, results: rows };
   });
+
 
 /** List saved providers for the current facility, with profile info. */
 export const listSavedProviders = createServerFn({ method: "GET" })
