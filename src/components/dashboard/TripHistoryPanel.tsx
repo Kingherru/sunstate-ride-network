@@ -407,6 +407,18 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
             <option value="unpaid">Unpaid / pending</option>
           </select>
 
+          <select
+            value={completion}
+            onChange={(e) => setCompletion(e.target.value as CompletionFilter)}
+            className="text-xs font-bold uppercase tracking-wider bg-background border border-border rounded-sm px-3 py-2"
+            aria-label="Filter by completion status"
+          >
+            <option value="all">All trips</option>
+            <option value="completed">Completed only</option>
+            <option value="needs_completion">Needs completion</option>
+          </select>
+
+
           <div className="inline-flex bg-background border border-border rounded-sm p-0.5">
             {(["list", "weekly", "monthly"] as ViewMode[]).map((v) => (
               <button
