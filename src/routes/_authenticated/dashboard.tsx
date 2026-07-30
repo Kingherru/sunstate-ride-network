@@ -619,7 +619,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               };
               const flNemt = received.filter((t) => isFlNemt((t as any).source));
               const subProv = received.filter((t) => !isFlNemt((t as any).source));
-              const onChanged = () => qc.invalidateQueries({ queryKey: ["my-trips"] });
+              const onChanged = () => {
+                // Keep Provider / Dispatch / Admin views in sync after a referral decision.
+                for (const k of ["my-trips", "reservations-by-state", "admin-reservations", "admin-trips", "incoming-requests", "unread-counts", "disp"]) {
+                  qc.invalidateQueries({ queryKey: [k] });
+                }
+              };
+
               return (
                 <div className="space-y-8">
                   <section>
