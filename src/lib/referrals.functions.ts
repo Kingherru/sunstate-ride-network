@@ -44,10 +44,19 @@ export const listConnectedProviders = createServerFn({ method: "GET" })
     }
     if (ids.size === 0) return [] as Array<{ user_id: string; name: string; company: string | null }>;
 
+    // Only accounts eligible to actually perform trips (no admin/staff/facility).
+    const { data: eligible, error: eErr } = await supabase.rpc("list_eligible_providers_in_region", {
+      _region: null,
+    });
+    if (eErr) throw eErr;
+    const eligibleIds = new Set((eligible ?? []).map((p: any) => p.user_id as string));
+    const filtered = Array.from(ids).filter((id) => eligibleIds.has(id));
+    if (filtered.length === 0) return [] as Array<{ user_id: string; name: string; company: string | null }>;
+
     const { data: profiles, error: pErr } = await supabase
       .from("member_profiles")
       .select("user_id, first_name, last_name, company_name")
-      .in("user_id", Array.from(ids));
+      .in("user_id", filtered);
     if (pErr) throw pErr;
 
     return (profiles ?? []).map((p: any) => ({
@@ -56,6 +65,7 @@ export const listConnectedProviders = createServerFn({ method: "GET" })
       company: p.company_name ?? null,
     }));
   });
+
 
 /**
  * Send an unconfirmed reservation into the referral workflow. Target can be
