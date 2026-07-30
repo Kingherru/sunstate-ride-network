@@ -713,6 +713,7 @@ function RequestRidePage() {
                 miles={estimatedMiles}
                 transportType={form.transportType}
                 legs={form.tripType === "round_trip" ? 2 : form.tripType === "multi_trip" ? 1 + form.additionalStops.length : 1}
+                stops={form.tripType === "multi_trip" ? form.additionalStops.length : 0}
                 tripTypeLabel={TRIP_TYPE_LABELS[form.tripType]}
               />
             )}

@@ -50,6 +50,7 @@ function computeRecommendedFare(
   legs: number,
   waitMinutes: number,
   waitPerHour: number,
+  stops: number,
 ): { lines: FareLine[]; total: number } {
   const base = Number(p.base_pickup) || 0;
   const mile = Number(p.per_mile) || 0;
@@ -59,7 +60,9 @@ function computeRecommendedFare(
     transport === "gurney" ? Number(p.stretcher_addon) || 0 : 0;
   const additionalStop = Number(p.additional_stop) || 0;
   const lgs = Math.max(1, Math.floor(legs || 1));
-  const extraStops = Math.max(0, lgs - 1);
+  // Only stops the requester actually entered are billable. A round-trip
+  // return leg is NOT an "additional stop".
+  const extraStops = Math.max(0, Math.floor(stops || 0));
   const mi = Math.max(0, miles);
   const lines: FareLine[] = [];
   if (base > 0) lines.push({ label: `Pickup fee × ${lgs}`, amount: +(base * lgs).toFixed(2) });
@@ -106,9 +109,10 @@ function computeCustomPassengerFare(
   transport: "ambulatory" | "wheelchair" | "gurney",
   legs: number,
   waitMinutes: number,
+  stops: number,
 ): { lines: FareLine[]; total: number } {
   const lgs = Math.max(1, Math.floor(legs || 1));
-  const extraStops = Math.max(0, lgs - 1);
+  const extraStops = Math.max(0, Math.floor(stops || 0));
   const mi = Math.max(0, miles);
   const base = Math.max(0, Number(p.base_pickup) || 0);
   const mile = Math.max(0, Number(p.per_mile) || 0);
@@ -174,6 +178,11 @@ const inputSchema = z.object({
   transportType: z.enum(["ambulatory", "wheelchair", "gurney"]).default("ambulatory"),
   providerId: z.string().uuid().optional().or(z.literal("")),
   legs: z.number().int().min(1).max(20).default(1),
+  /**
+   * Number of extra stops the requester explicitly entered. Omit to fall
+   * back to legs - 1 (legacy callers). Round trips should pass 0.
+   */
+  stops: z.number().int().min(0).max(20).optional(),
   waitMinutes: z.number().min(0).max(1440).default(0),
 });
 
@@ -206,6 +215,7 @@ export const estimateTripPrice = createServerFn({ method: "POST" })
     const sb = serverClient();
     const miles = data.miles || 0;
     const legs = data.legs || 1;
+    const stops = data.stops ?? Math.max(0, legs - 1);
     const waitMinutes = data.waitMinutes || 0;
 
     let zoneId = data.zoneId || null;
@@ -250,7 +260,7 @@ export const estimateTripPrice = createServerFn({ method: "POST" })
       }
     }
 
-    const zoneBreak = computeRecommendedFare(zoneSrc, miles, data.transportType, legs, waitMinutes, 0);
+    const zoneBreak = computeRecommendedFare(zoneSrc, miles, data.transportType, legs, waitMinutes, 0, stops);
     const zoneName = zone?.name ?? "Florida";
     const recommendedLabel = usingDefault
       ? "My Florida NEMT recommended pricing"
@@ -275,7 +285,7 @@ export const estimateTripPrice = createServerFn({ method: "POST" })
         const mode: "recommended" | "custom" =
           p.pricing_mode === "custom" ? "custom" : "recommended";
         if (mode === "custom") {
-          const pb = computeCustomPassengerFare(p, miles, data.transportType, legs, waitMinutes);
+          const pb = computeCustomPassengerFare(p, miles, data.transportType, legs, waitMinutes, stops);
           provider = { id: data.providerId, dollars: pb.total, lines: pb.lines, mode };
           active = {
             source: "custom",
@@ -292,7 +302,7 @@ export const estimateTripPrice = createServerFn({ method: "POST" })
             : waitUnit === "half_hour"
               ? Number(p.wait_per_min || 0) * 2
               : Number(p.wait_per_min || 0) * 60;
-          const pb = computeRecommendedFare(p, miles, data.transportType, legs, waitMinutes, waitPerHour);
+          const pb = computeRecommendedFare(p, miles, data.transportType, legs, waitMinutes, waitPerHour, stops);
           provider = { id: data.providerId, dollars: pb.total, lines: pb.lines, mode };
         }
       }

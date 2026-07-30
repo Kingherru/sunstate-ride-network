@@ -184,6 +184,22 @@ const tripBaseSchema = z.object({
   dropoff_zip: z.string().trim().max(10).optional().nullable(),
   transport_type: z.enum(["ambulatory", "wheelchair", "stretcher", "gurney"]).optional(),
   round_trip: z.boolean().optional(),
+  /**
+   * Multi-stop support. Only stops the requester explicitly entered are
+   * stored — blank rows are dropped so no phantom stop is ever billed.
+   */
+  additional_stops: z
+    .array(
+      z.object({
+        address: z.string().trim().max(300),
+        city: z.string().trim().max(100),
+        pickupTime: z.preprocess(normalizeTimeInput, z.string().trim().max(8).optional().nullable()).optional(),
+        note: z.string().trim().max(300).optional().nullable(),
+      }),
+    )
+    .max(10)
+    .optional()
+    .transform((v) => (v ?? []).filter((s) => s.address.trim().length > 0 && s.city.trim().length > 0)),
   service_level: z.enum(["door_to_door", "bed_to_bed", "curb_to_curb", "driveway_pickup"]).optional().nullable(),
   needs_wheelchair: z.boolean().optional(),
   has_passenger: z.boolean().optional(),
@@ -300,11 +316,12 @@ export const createTrip = createServerFn({ method: "POST" })
     }
 
     const region = regionFor(data.pickup_city);
-    const { hipaa_ack_id: _ignore, assigned_to: assignedTo, ...rest } = data;
+    const { hipaa_ack_id: _ignore, assigned_to: assignedTo, additional_stops, ...rest } = data;
     const { data: row, error } = await supabase
       .from("trips")
       .insert({
         ...rest,
+        additional_stops: additional_stops ?? [],
         created_by: userId,
         region,
         status: "open",
