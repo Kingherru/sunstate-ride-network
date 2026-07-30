@@ -5427,6 +5427,27 @@ export type Database = {
         Args: { _accept: boolean; _trip_id: string }
         Returns: undefined
       }
+      search_providers_by_zip: {
+        Args: { _zip: string }
+        Returns: {
+          center_lat: number
+          center_lng: number
+          city: string
+          company_name: string
+          dispatch_email: string
+          first_name: string
+          last_name: string
+          long_distance_ok: boolean
+          match_type: string
+          medicaid_verified: boolean
+          phone: string
+          postal_code: string
+          region: string
+          service_radius_miles: number
+          user_id: string
+          zone_name: string
+        }[]
+      }
       set_trip_payment_status: {
         Args: {
           _status: Database["public"]["Enums"]["trip_payment_status"]
