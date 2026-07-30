@@ -46,6 +46,18 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
   const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? sub.current_period_start;
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
+  const { data: existing } = await getSupabase()
+    .from("subscriptions")
+    .select("id")
+    .eq("stripe_subscription_id", sub.id)
+    .maybeSingle();
+
+  // If we never saw the `created` event, insert the row now so membership syncs.
+  if (!existing) {
+    await handleSubscriptionCreated(sub, env);
+    return;
+  }
+
   await getSupabase()
     .from("subscriptions")
     .update({
@@ -60,6 +72,7 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
     .eq("stripe_subscription_id", sub.id)
     .eq("environment", env);
 }
+
 
 async function handleSubscriptionDeleted(sub: any, env: StripeEnv) {
   await getSupabase()
