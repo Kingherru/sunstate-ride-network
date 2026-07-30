@@ -46,6 +46,18 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
   const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? sub.current_period_start;
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
+  const { data: existing } = await getSupabase()
+    .from("subscriptions")
+    .select("id")
+    .eq("stripe_subscription_id", sub.id)
+    .maybeSingle();
+
+  // If we never saw the `created` event, insert the row now so membership syncs.
+  if (!existing) {
+    await handleSubscriptionCreated(sub, env);
+    return;
+  }
+
   await getSupabase()
     .from("subscriptions")
     .update({
@@ -60,6 +72,7 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
     .eq("stripe_subscription_id", sub.id)
     .eq("environment", env);
 }
+
 
 async function handleSubscriptionDeleted(sub: any, env: StripeEnv) {
   await getSupabase()
@@ -95,12 +108,34 @@ async function handleTransferUpdated(tr: any) {
     .update({ status: tr.reversed ? "failed" : "paid", updated_at: new Date().toISOString() })
     .eq("stripe_transfer_id", tr.id);
 }
-async function handleCheckoutSessionCompleted(sess: any) {
+async function handleCheckoutSessionCompleted(sess: any, env: StripeEnv) {
   const meta = sess?.metadata ?? {};
   const userId = meta.userId;
+  const sb = getSupabase();
+
+  // Membership checkout: mark the member Paid immediately, even if the
+  // customer.subscription.* events arrive late or out of order.
+  if (userId && sess?.mode === "subscription" && sess?.payment_status === "paid") {
+    const subId = typeof sess.subscription === "string" ? sess.subscription : sess.subscription?.id;
+    if (subId) {
+      await sb.from("subscriptions").upsert(
+        {
+          user_id: userId,
+          stripe_subscription_id: subId,
+          stripe_customer_id: typeof sess.customer === "string" ? sess.customer : sess.customer?.id,
+          status: "active",
+          price_id: meta.price_id ?? null,
+          product_id: meta.product_id ?? null,
+          environment: env,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "stripe_subscription_id" },
+      );
+    }
+  }
+
   const courseSlug = meta.course_slug;
   if (!userId || !courseSlug) return;
-  const sb = getSupabase();
   const { data: course } = await sb.from("courses").select("id").eq("slug", courseSlug).maybeSingle();
   if (!course) return;
   await sb.from("course_enrollments").upsert(
@@ -108,6 +143,7 @@ async function handleCheckoutSessionCompleted(sess: any) {
     { onConflict: "user_id,course_id" },
   );
 }
+
 
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
@@ -140,7 +176,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await handleTransferUpdated(event.data.object);
               break;
             case "checkout.session.completed":
-              await handleCheckoutSessionCompleted(event.data.object);
+              await handleCheckoutSessionCompleted(event.data.object, env);
               break;
             default:
               console.log("Unhandled event:", event.type);
