@@ -118,10 +118,11 @@ export function DispatchServiceAreaPanel({
         <h2 className="text-lg font-extrabold tracking-tight">Service Areas</h2>
         <p className="text-xs text-muted-foreground mt-1">
           Florida is organized as <strong>Dispatch Zone → County → ZIP codes</strong>. Pick a zone
-          to see its counties, then open a county to review or edit the ZIPs it covers. Moving a
-          county re-routes every one of its ZIPs and trips at once.
+          to see its counties, then open a county to add or remove individual ZIP codes. County
+          assignments are set by the system — they can only be changed in Admin settings below.
         </p>
       </header>
+
 
       {/* Tier 1 — dispatch zones */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2">
@@ -240,32 +241,16 @@ export function DispatchServiceAreaPanel({
 
                 {open && (
                   <div className="border-t border-border p-3 space-y-3 bg-background/40">
-                    {canEdit && (
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground self-center">
-                          Dispatch zone
-                        </label>
-                        <select
-                          value={c.region_id ?? ""}
-                          disabled={mMove.isPending}
-                          onChange={(e) =>
-                            mMove.mutate({ county_id: c.id, zone_id: e.target.value })
-                          }
-                          className="bg-background border border-border rounded-sm px-2 py-1.5 text-sm"
-                          aria-label={`Dispatch zone for ${c.name}`}
-                        >
-                          <option value="" disabled>
-                            Unassigned
-                          </option>
-                          {zones.map((z) => (
-                            <option key={z.id} value={z.id}>
-                              {z.name}
-                            </option>
-                          ))}
-                        </select>
-                        <AddZipsToCounty countyId={c.id} />
-                      </div>
-                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-[11px] text-muted-foreground">
+                        Dispatch zone{" "}
+                        <strong className="text-foreground">
+                          {zones.find((z) => z.id === c.region_id)?.name ?? "Unassigned"}
+                        </strong>{" "}
+                        · set by the system
+                      </span>
+                      {canEdit && <AddZipsToCounty countyId={c.id} />}
+                    </div>
 
                     <ZipChips
                       zips={countyZips}
@@ -274,6 +259,7 @@ export function DispatchServiceAreaPanel({
                     />
                   </div>
                 )}
+
               </div>
             );
           })}
@@ -286,8 +272,49 @@ export function DispatchServiceAreaPanel({
           — they still route by zone. Open a county and add them to file them correctly.
         </div>
       )}
+
+      {canEdit && (
+        <details className="border-t border-border pt-3">
+          <summary className="text-xs font-bold uppercase tracking-wider text-muted-foreground cursor-pointer">
+            Admin settings — county to zone assignments
+          </summary>
+          <p className="text-xs text-muted-foreground mt-2">
+            County assignments are controlled here only. Moving a county re-routes every one of its
+            ZIP codes and trips at once.
+          </p>
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+            {counties.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between gap-2 border border-border rounded-sm px-3 py-2"
+              >
+                <span className="text-sm font-semibold truncate">
+                  {c.name.replace(/, FL$/, "")}
+                </span>
+                <select
+                  value={c.region_id ?? ""}
+                  disabled={mMove.isPending}
+                  onChange={(e) => mMove.mutate({ county_id: c.id, zone_id: e.target.value })}
+                  className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
+                  aria-label={`Dispatch zone for ${c.name}`}
+                >
+                  <option value="" disabled>
+                    Unassigned
+                  </option>
+                  {zones.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
     </section>
   );
+
 }
 
 /** Collapsible ZIP list — shows a preview and expands on demand. */
