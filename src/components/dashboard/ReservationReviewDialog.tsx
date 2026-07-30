@@ -151,7 +151,7 @@ export function ReservationReviewDialog({
   const respond = useServerFn(respondToReferral);
   const loadConnected = useServerFn(listConnectedProviders);
   const loadHistory = useServerFn(listTripReferralHistory);
-  const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | null>(null);
+  const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | "complete" | null>(null);
   const [editing, setEditing] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
