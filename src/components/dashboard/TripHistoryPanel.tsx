@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { Link } from "@tanstack/react-router";
 import { CalendarIcon, SearchIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -29,6 +30,7 @@ type HistoryTrip = {
   id: string;
   trip_number: string | null;
   status: string | null;
+  reservation_state: string | null;
   pickup_date: string;
   pickup_time: string | null;
   patient_first_name: string | null;
@@ -37,7 +39,7 @@ type HistoryTrip = {
   pickup_city: string | null;
   dropoff_address: string | null;
   dropoff_city: string | null;
-  
+
   payment_status: string | null;
   payout_status: string | null;
   cost_total: number | null;
@@ -50,10 +52,21 @@ type HistoryTrip = {
   created_at: string | null;
 };
 
+
 type ViewMode = "list" | "weekly" | "monthly";
 type Preset = "7d" | "30d" | "week" | "month" | "last_month" | "all" | "custom";
+type CompletionFilter = "all" | "completed" | "needs_completion";
 
 const COMPLETED_STATUSES = ["completed", "complete", "delivered", "paid"];
+const CANCELED_STATUSES = ["canceled", "cancelled", "declined", "expired"];
+
+function isCompleted(t: { status: string | null }): boolean {
+  return COMPLETED_STATUSES.includes((t.status ?? "").toLowerCase());
+}
+function isCanceled(t: { status: string | null }): boolean {
+  return CANCELED_STATUSES.includes((t.status ?? "").toLowerCase());
+}
+
 
 function toIso(d: Date): string {
   const y = d.getFullYear();
@@ -144,12 +157,14 @@ function groupKeyDaily(dateIso: string): string {
 }
 
 export function TripHistoryPanel({ userId }: { userId: string }) {
+  const qc = useQueryClient();
   const [preset, setPreset] = useState<Preset>("30d");
   const initialRange = presetRange("30d")!;
   const [range, setRange] = useState<DateRange | undefined>({ from: initialRange.from, to: initialRange.to });
   const [search, setSearch] = useState("");
   const [view, setView] = useState<ViewMode>("list");
   const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "unpaid">("all");
+  const [completion, setCompletion] = useState<CompletionFilter>("all");
 
   function applyPreset(p: Preset) {
     setPreset(p);
@@ -165,12 +180,19 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
     queryKey: ["trip-history", userId, fromIso, toIsoStr],
     enabled: !!userId,
     queryFn: async (): Promise<HistoryTrip[]> => {
+      // History = completed trips PLUS any trip whose scheduled date has already
+      // passed, even if it was never marked completed. `reservation_state` is
+      // kept in sync by a cron job; the pickup_date check catches trips whose
+      // time elapsed since the last sync.
+      const todayIso = toIso(new Date());
       let query = supabase
         .from("trips")
         .select(
-          "id, trip_number, status, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
+          "id, trip_number, status, reservation_state, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
         )
-        .in("status", COMPLETED_STATUSES)
+        .or(
+          `status.in.(${COMPLETED_STATUSES.join(",")}),reservation_state.in.(past,history),pickup_date.lt.${todayIso}`,
+        )
         .or(`created_by.eq.${userId},assigned_to.eq.${userId}`)
         .order("pickup_date", { ascending: false })
         .limit(1000);
@@ -181,6 +203,21 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       return (data ?? []) as HistoryTrip[];
     },
   });
+
+  // Keep history in step with status changes made in the Provider, Dispatch, or
+  // Admin portals (assignment, completion, payment) without a manual refresh.
+  useEffect(() => {
+    const ch = supabase
+      .channel(`trip-history-${userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => {
+        qc.invalidateQueries({ queryKey: ["trip-history"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [userId, qc]);
+
 
   const allTrips = q.data ?? [];
   const driverIds = useMemo(
@@ -207,6 +244,10 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
     return allTrips.filter((t) => {
+      // Canceled/expired trips live in the Past tab, not the history record.
+      if (isCanceled(t) && !isCompleted(t)) return false;
+      if (completion === "completed" && !isCompleted(t)) return false;
+      if (completion === "needs_completion" && isCompleted(t)) return false;
       if (paymentFilter === "paid" && (t.payment_status ?? "").toLowerCase() !== "paid") return false;
       if (paymentFilter === "unpaid" && (t.payment_status ?? "").toLowerCase() === "paid") return false;
       if (!s) return true;
@@ -224,7 +265,13 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
         .toLowerCase();
       return hay.includes(s);
     });
-  }, [allTrips, search, paymentFilter]);
+  }, [allTrips, search, paymentFilter, completion]);
+
+  const needsCompletionCount = useMemo(
+    () => filtered.filter((t) => !isCompleted(t)).length,
+    [filtered],
+  );
+
 
   const grouped = useMemo(() => {
     const map = new Map<string, HistoryTrip[]>();
@@ -265,9 +312,17 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Trip History</h2>
         <p className="text-sm text-muted-foreground">
-          Permanent record of completed trips. Search or filter to find any past trip and drill into
-          payment, payout, and driver details.
+          Every trip whose scheduled date has passed, including trips still awaiting completion.
+          Records are retained for at least two years. Search or filter to find any past trip and
+          drill into payment, payout, and driver details.
         </p>
+        {needsCompletionCount > 0 && (
+          <p className="mt-1 text-sm font-semibold text-amber-800">
+            {needsCompletionCount} trip{needsCompletionCount === 1 ? "" : "s"} in this range still
+            need completion details.
+          </p>
+        )}
+
       </div>
 
       {/* Filter toolbar */}
@@ -352,6 +407,18 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
             <option value="unpaid">Unpaid / pending</option>
           </select>
 
+          <select
+            value={completion}
+            onChange={(e) => setCompletion(e.target.value as CompletionFilter)}
+            className="text-xs font-bold uppercase tracking-wider bg-background border border-border rounded-sm px-3 py-2"
+            aria-label="Filter by completion status"
+          >
+            <option value="all">All trips</option>
+            <option value="completed">Completed only</option>
+            <option value="needs_completion">Needs completion</option>
+          </select>
+
+
           <div className="inline-flex bg-background border border-border rounded-sm p-0.5">
             {(["list", "weekly", "monthly"] as ViewMode[]).map((v) => (
               <button
@@ -395,7 +462,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       )}
       {!q.isLoading && filtered.length === 0 && (
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
-          No completed trips match these filters. Try widening the date range or clearing the search.
+          No past trips match these filters. Try widening the date range or clearing the search.
         </div>
       )}
 
@@ -427,9 +494,11 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
 function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: string | null }) {
   const tripNo = trip.trip_number ?? `#${trip.id.slice(0, 8)}`;
   const passenger = [trip.patient_first_name, trip.patient_last_name].filter(Boolean).join(" ") || "—";
+  const done = isCompleted(trip);
   const completedOn = trip.completed_at
     ? new Date(trip.completed_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
     : trip.pickup_date;
+
 
   return (
     <div className="bg-card border border-border rounded-sm p-3 sm:p-4">
@@ -454,9 +523,15 @@ function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: 
             >
               Payout: {trip.payout_status ?? "—"}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-slate-100 text-slate-700">
-              {trip.status}
+            <span
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm",
+                done ? "bg-slate-100 text-slate-700" : "bg-amber-100 text-amber-900",
+              )}
+            >
+              {done ? trip.status : "Needs completion"}
             </span>
+
           </div>
 
           {/* Passenger + route */}
@@ -470,9 +545,12 @@ function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: 
           {/* Meta grid */}
           <dl className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-xs">
             <div>
-              <dt className="uppercase tracking-wide text-[10px] text-muted-foreground font-bold">Completed</dt>
+              <dt className="uppercase tracking-wide text-[10px] text-muted-foreground font-bold">
+                {done ? "Completed" : "Trip date"}
+              </dt>
               <dd className="text-foreground">{completedOn}</dd>
             </div>
+
             <div>
               <dt className="uppercase tracking-wide text-[10px] text-muted-foreground font-bold">Driver</dt>
               <dd className="text-foreground truncate">{driverName ?? "—"}</dd>
@@ -492,11 +570,17 @@ function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: 
           <Link
             to="/reservations/$id/review"
             params={{ id: trip.id }}
-            className="inline-flex items-center justify-center text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted w-full sm:w-auto"
+            className={cn(
+              "inline-flex items-center justify-center text-xs font-bold px-3 py-2 rounded-sm w-full sm:w-auto",
+              done
+                ? "border border-border hover:bg-muted"
+                : "bg-amber-600 text-white border border-amber-700 hover:bg-amber-700",
+            )}
           >
-            View Details
+            {done ? "View Details" : "Open & complete"}
           </Link>
         </div>
+
       </div>
     </div>
   );
