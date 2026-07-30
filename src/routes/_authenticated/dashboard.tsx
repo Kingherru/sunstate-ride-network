@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,8 @@ import { cancelMyMembership } from "@/utils/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, updateTripDetails, recordHipaaAck } from "@/lib/trips.functions";
 import { ensureMyDisplayId } from "@/lib/system-ids.functions";
+import { saveTripDraft, markTripDraftSubmitted } from "@/lib/trip-drafts.functions";
+import { SavedTripsPanel, type TripDraft } from "@/components/dashboard/SavedTripsPanel";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
