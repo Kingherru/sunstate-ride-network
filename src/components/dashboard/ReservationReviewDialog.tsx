@@ -156,6 +156,7 @@ export function ReservationReviewDialog({
   const qc = useQueryClient();
   const update = useServerFn(updateTripStatus);
   const saveDetails = useServerFn(updateTripDetails);
+  const saveQuote = useServerFn(setReservationQuote);
   const refer = useServerFn(referTrip);
   const respond = useServerFn(respondToReferral);
   const loadConnected = useServerFn(listConnectedProviders);
@@ -166,6 +167,10 @@ export function ReservationReviewDialog({
   const [declineReason, setDeclineReason] = useState("");
   const [providerPickerOpen, setProviderPickerOpen] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
+  const [quoteEditing, setQuoteEditing] = useState(false);
+  const [quoteInput, setQuoteInput] = useState(() =>
+    row.estimated_cost_cents != null ? (row.estimated_cost_cents / 100).toFixed(2) : "",
+  );
 
   useEffect(() => {
     let mounted = true;
