@@ -3,6 +3,7 @@ import { useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { setRememberPreference, getRememberPreference } from "@/lib/session-persistence";
 import {
   PATIENT_TYPE_OPTIONS,
   PATIENT_RELATIONSHIP_OPTIONS,
@@ -53,10 +54,12 @@ const COPY: Record<PortalKind, { eyebrow: string; title: string; blurb: string; 
   },
 };
 
-export function PortalAuth({ kind }: { kind: PortalKind }) {
+export function PortalAuth({ kind, initialMode = "signin" }: { kind: PortalKind; initialMode?: "signin" | "signup" }) {
   const navigate = useNavigate();
   const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+  const [remember, setRemember] = useState(true);
+  const [existingEmail, setExistingEmail] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -73,11 +76,24 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
 
   const dest = isStaff ? "/admin" : `/${kind}/dashboard`;
 
+  // An existing session never auto-navigates — signing in stays intentional.
   useEffect(() => {
+    setRemember(getRememberPreference());
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: dest } as any);
+      if (data.user) setExistingEmail(data.user.email ?? "your account");
     });
-  }, [navigate, dest]);
+  }, []);
+
+  async function signOutExisting() {
+    setBusy(true);
+    try {
+      await supabase.auth.signOut();
+      setExistingEmail(null);
+      await router.invalidate();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,6 +150,7 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
       } else {
         const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        setRememberPreference(remember);
         // Sync billing_contact from user metadata to profile if not yet set (first sign-in after email confirm).
         const uid = signInData.user?.id;
         const metaBilling = (signInData.user?.user_metadata as any)?.billing_contact;
@@ -211,6 +228,29 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
           <p className="md:hidden font-mono text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
             {copy.eyebrow}
           </p>
+          {existingEmail && (
+            <div className="mb-5 rounded-sm border border-border bg-secondary/40 p-4">
+              <p className="text-sm font-bold text-foreground">Already signed in as {existingEmail}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => navigate({ to: dest } as any)}
+                  className="px-4 py-2 rounded-sm bg-[#1D3557] text-white text-xs font-bold uppercase tracking-widest disabled:opacity-60"
+                >
+                  Continue
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void signOutExisting()}
+                  className="px-4 py-2 rounded-sm border border-border text-xs font-bold uppercase tracking-widest disabled:opacity-60"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          )}
           <h2 className="text-2xl font-extrabold tracking-tighter mb-1 text-foreground">
             {mode === "signin" ? "Sign in" : "Create your account"}
           </h2>
@@ -350,6 +390,22 @@ export function PortalAuth({ kind }: { kind: PortalKind }) {
                   )}
                 </div>
               </>
+            )}
+            {mode === "signin" && (
+              <label className="flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                />
+                <span>
+                  Remember me on this device
+                  <span className="block text-xs text-muted-foreground">
+                    Leave unchecked on a shared computer.
+                  </span>
+                </span>
+              </label>
             )}
             <button
               type="submit"

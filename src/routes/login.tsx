@@ -54,6 +54,12 @@ const USER_TYPES = [
   { label: "Staff", blurb: "My Florida NEMT admin team", Icon: ShieldCheck },
 ] as const;
 
+const SIGNUP_OPTIONS = [
+  { to: "/patient/login", label: "Patient / caregiver", blurb: "Book and track rides for yourself or a loved one", Icon: HeartPulse },
+  { to: "/provider/login", label: "Transportation provider", blurb: "NEMT companies, drivers and dispatch teams", Icon: Truck },
+  { to: "/facility/login", label: "Facility", blurb: "Hospitals, SNFs, clinics and case managers", Icon: Building2 },
+] as const;
+
 const OPS_ROLES = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"];
 
 function safeNext(next: string): string | null {
@@ -227,7 +233,42 @@ function LoginPage() {
                 </div>
               </div>
             ) : null}
-            {choices ? (
+            {mode === "signup" && !choices ? (
+              <>
+                <p className="font-mono text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+                  My Florida NEMT
+                </p>
+                <h1 className="text-3xl font-extrabold tracking-tighter mb-2">Create your account</h1>
+                <p className="text-sm text-muted-foreground mb-6 max-w-lg">
+                  Pick the account type that fits you. Registration takes about a minute.
+                </p>
+                <div className="space-y-3 max-w-lg">
+                  {SIGNUP_OPTIONS.map((o) => (
+                    <Link
+                      key={o.to}
+                      to={o.to}
+                      search={{ mode: "signup" }}
+                      className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 hover:border-primary transition"
+                    >
+                      <o.Icon className="h-5 w-5 text-primary shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold">{o.label}</span>
+                        <span className="block text-xs text-muted-foreground">{o.blurb}</span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Dispatcher and staff accounts are created by My Florida NEMT.
+                </p>
+                <p className="text-sm mt-6">
+                  Already have an account?{" "}
+                  <Link to="/login" search={{ next: "", mode: "signin" }} className="font-bold text-primary underline underline-offset-4">
+                    Sign in
+                  </Link>
+                </p>
+              </>
+            ) : choices ? (
               <>
                 <h1 className="text-2xl font-extrabold tracking-tighter mb-1">Choose your portal</h1>
                 <p className="text-sm text-muted-foreground mb-6">
