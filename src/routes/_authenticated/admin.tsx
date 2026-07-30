@@ -7,6 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   LayoutDashboard,
   Users as UsersIcon,
+  UserCog,
   Building2,
   Building,
   Car,
@@ -45,6 +46,7 @@ import { AdminFinanceMonitoring } from "@/components/admin/AdminFinanceMonitorin
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminDirectReferralsPanel } from "@/components/admin/AdminDirectReferralsPanel";
+import { DispatcherAccountPanel, useDispatcherProfile } from "@/components/admin/DispatcherAccountPanel";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
@@ -103,6 +105,7 @@ function derivedStatus(a: Application): ComplianceStatus {
 
 type TabId =
   | "overview"
+  | "account"
   | "notifications"
   | "users"
   | "providers"
@@ -130,17 +133,23 @@ type NavItem = {
 
 type NavGroup = { label: string; items: NavItem[] };
 
+/** True when the signed-in user is a dispatcher only (the Dispatch Portal view). */
+export function isDispatchOnly(c: ReturnType<typeof useCapabilities>) {
+  return c.isDispatcher && !c.isAdmin && !c.isAppManager && !c.isZoneManager && !c.isStaff;
+}
+
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps },
+      { id: "overview", label: "Overview", icon: LayoutDashboard, visible: (c) => c.isOps && !isDispatchOnly(c) },
       { id: "notifications", label: "Notifications", icon: BellRing, visible: (c) => c.isOps },
     ],
   },
   {
     label: "People & Accounts",
     items: [
+      { id: "account", label: "Account", icon: UserCog, visible: (c) => isDispatchOnly(c) },
       { id: "users", label: "Users", icon: UsersIcon, visible: (c) => c.isAdmin },
       { id: "providers", label: "Providers", icon: Building2, visible: (c) => c.isOps },
       { id: "facilities", label: "Facilities", icon: Building, visible: (c) => c.isOps },
@@ -159,9 +168,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Finance",
     items: [
-      { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing },
-      { id: "ledger", label: "Finance console", icon: DollarSign, visible: (c) => c.isOps },
-      { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps },
+      { id: "pricing", label: "Pricing", icon: DollarSign, visible: (c) => c.canConfigurePricing && !isDispatchOnly(c) },
+      { id: "ledger", label: "Finance console", icon: DollarSign, visible: (c) => c.isOps && !isDispatchOnly(c) },
+      { id: "payouts", label: "Payouts", icon: Wallet, visible: (c) => c.isOps && !isDispatchOnly(c) },
       { id: "integrations", label: "Integrations", icon: Plug, visible: (c) => c.isAdmin },
     ],
   },
@@ -169,7 +178,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { id: "theme", label: "Theme & branding", icon: Palette, visible: (c) => c.canConfigurePricing },
-      { id: "security", label: "Security", icon: ShieldCheck, visible: (c) => c.canManageStaff || c.canViewAuditLog || c.canDispatch },
+      {
+        id: "security",
+        label: "Security",
+        icon: ShieldCheck,
+        visible: (c) => !isDispatchOnly(c) && (c.canManageStaff || c.canViewAuditLog || c.canDispatch),
+      },
       { id: "changelog", label: "Changelog", icon: History, visible: (c) => c.isOps },
       { id: "system", label: "System settings", icon: Settings, visible: (c) => c.isAdmin },
     ],
@@ -180,6 +194,10 @@ function AdminPage() {
   const qc = useQueryClient();
   const caps = useCapabilities();
   const [tab, setTab] = useState<TabId>("overview");
+  const dispatcherProfile = useDispatcherProfile(caps.userId ?? null).data as
+    | { first_name: string | null; last_name: string | null }
+    | null
+    | undefined;
 
   const unread = useUnreadCounts(caps.userId ?? null);
   const markViewed = useMarkTabViewed(caps.userId ?? null);
@@ -270,8 +288,16 @@ function AdminPage() {
     .map((g) => ({ ...g, items: g.items.filter((i) => i.visible(caps)) }))
     .filter((g) => g.items.length > 0);
 
+  const dispatchOnly = isDispatchOnly(caps);
+  const fallbackId: TabId = dispatchOnly ? "account" : "overview";
   const activeItem =
-    visibleGroups.flatMap((g) => g.items).find((i) => i.id === tab) ?? { id: "overview", label: "Overview" };
+    visibleGroups.flatMap((g) => g.items).find((i) => i.id === tab)
+    ?? { id: fallbackId, label: dispatchOnly ? "Account" : "Overview" };
+
+  const displayName =
+    [dispatcherProfile?.first_name, dispatcherProfile?.last_name].filter(Boolean).join(" ").trim()
+    || caps.email
+    || "Dispatcher";
 
   return (
     <SidebarProvider>
@@ -279,9 +305,12 @@ function AdminPage() {
         <Sidebar collapsible="icon">
           <SidebarHeader className="border-b border-border">
             <div className="px-2 py-2 flex items-center justify-between gap-2">
-              <div>
+              <div className="min-w-0">
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">My Florida NEMT</p>
-                <p className="text-sm font-extrabold tracking-tight">Admin</p>
+                <p className="text-sm font-extrabold tracking-tight">{dispatchOnly ? "Dispatcher" : "Admin"}</p>
+                {dispatchOnly && (
+                  <p className="text-[11px] text-muted-foreground truncate">{displayName}</p>
+                )}
               </div>
               <AdminNotificationBell onOpen={() => handleAdminTab("notifications")} />
 
@@ -354,7 +383,7 @@ function AdminPage() {
               <h1 className="text-base font-extrabold tracking-tight truncate">{activeItem.label}</h1>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted">
-              <span className="truncate max-w-[220px]">{caps.email}</span>
+              <span className="truncate max-w-[220px]">{dispatchOnly ? displayName : caps.email}</span>
               <span className="inline-flex flex-wrap gap-1">
                 {caps.roles.map((r) => (
                   <span key={r} className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
@@ -376,7 +405,8 @@ function AdminPage() {
 
 function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabilities> }) {
   switch (tab) {
-    case "overview": return <OverviewTab />;
+    case "overview": return isDispatchOnly(caps) ? <DispatcherAccountPanel /> : <OverviewTab />;
+    case "account": return <DispatcherAccountPanel />;
     case "notifications": return <NotificationsPanel />;
     case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
     case "providers": return <ProvidersTab caps={caps} />;
