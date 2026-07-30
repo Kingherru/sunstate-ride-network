@@ -5253,11 +5253,27 @@ export type Database = {
         Returns: number
       }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
+      is_eligible_transport_provider: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_facility_or_provider: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
       is_thread_participant: {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
+      }
+      list_eligible_providers: {
+        Args: never
+        Returns: {
+          city: string
+          company_name: string
+          display_id: string
+          phone: string
+          preferred_zip_codes: string[]
+          region: string
+          user_id: string
+        }[]
       }
       list_expiring_provider_credentials: {
         Args: never
