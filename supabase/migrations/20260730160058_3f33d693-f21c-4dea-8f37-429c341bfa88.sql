@@ -1,0 +1,2 @@
+REVOKE ALL ON FUNCTION public.rank_auto_providers(text, uuid, uuid, boolean, text, boolean, uuid[]) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.rank_auto_providers(text, uuid, uuid, boolean, text, boolean, uuid[]) TO service_role;

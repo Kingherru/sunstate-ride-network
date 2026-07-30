@@ -5377,6 +5377,23 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      rank_auto_providers: {
+        Args: {
+          _created_by: string
+          _exclude?: string[]
+          _is_medicaid: boolean
+          _needs_wheelchair: boolean
+          _pickup_zip: string
+          _service_level: string
+          _zone_id: string
+        }
+        Returns: {
+          area_rank: number
+          n_recent: number
+          rating: number
+          user_id: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -5384,6 +5401,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      refer_next_eligible_provider: {
+        Args: { _trip_id: string }
+        Returns: string
       }
       reservation_scheduled_at: {
         Args: {

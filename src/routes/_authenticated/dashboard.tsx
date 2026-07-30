@@ -439,7 +439,15 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
 
   const realTrips = tripsQ.data ?? [];
   const sent = realTrips.filter((t) => t.created_by === userId);
-  const received = realTrips.filter((t) => t.assigned_to === userId);
+  // Referrals tab: trips assigned to me, plus pending referrals awaiting my
+  // accept/decline (auto-routed by service area or sent by another provider).
+  const received = realTrips.filter(
+    (t) =>
+      t.assigned_to === userId ||
+      ((t as any).referral_target_id === userId &&
+        String((t as any).referral_status ?? "").toLowerCase() === "pending"),
+  );
+
 
 
   const upcoming = sent.filter((t) => ["scheduled","assigned","in_progress"].includes((t.status ?? "").toLowerCase())).length;
@@ -611,7 +619,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
               };
               const flNemt = received.filter((t) => isFlNemt((t as any).source));
               const subProv = received.filter((t) => !isFlNemt((t as any).source));
-              const onChanged = () => qc.invalidateQueries({ queryKey: ["my-trips"] });
+              const onChanged = () => {
+                // Keep Provider / Dispatch / Admin views in sync after a referral decision.
+                for (const k of ["my-trips", "reservations-by-state", "admin-reservations", "admin-trips", "incoming-requests", "unread-counts", "disp"]) {
+                  qc.invalidateQueries({ queryKey: [k] });
+                }
+              };
+
               return (
                 <div className="space-y-8">
                   <section>
@@ -1670,7 +1684,11 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
                   {canRate && t.assigned_to && (t.status === "completed" || t.status === "accepted") && (
                     <button onClick={() => setRating(t)} className="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-sm hover:bg-amber-600 mr-2">★ Rate</button>
                   )}
-                  {role === "recipient" && ["assigned","open","pending","offered"].includes((t.status ?? "").toLowerCase()) && (
+                  {role === "recipient" && (
+                    String((t as any).referral_status ?? "").toLowerCase() === "pending" ||
+                    ["assigned","open","pending","offered"].includes((t.status ?? "").toLowerCase())
+                  ) && (
+
                     <button
                       onClick={() => setReviewing(t)}
                       className="text-xs font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-sm hover:bg-emerald-700"

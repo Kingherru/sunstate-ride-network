@@ -164,7 +164,7 @@ export const listTripsByZone = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let query = context.supabase
       .from("trips")
-      .select("id, display_id, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_city, pickup_zip, dropoff_city, status, dispatch_zone_id, cost_total, referral_fee_cents, platform_fee_cents, provider_payout_cents, payment_status, payout_status, source, created_by, assigned_to")
+      .select("id, display_id, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_city, pickup_zip, dropoff_city, status, dispatch_zone_id, cost_total, referral_fee_cents, platform_fee_cents, provider_payout_cents, payment_status, payout_status, source, created_by, assigned_to, referral_status, referral_target_id, referral_sent_at")
       .order("pickup_date", { ascending: false })
       .limit(200);
     if (data.zone_id) query = query.eq("dispatch_zone_id", data.zone_id);
@@ -174,7 +174,7 @@ export const listTripsByZone = createServerFn({ method: "GET" })
     if (!rows || rows.length === 0) return [] as any[];
 
     const userIds = Array.from(new Set(
-      rows.flatMap((r: any) => [r.created_by, r.assigned_to].filter(Boolean))
+      rows.flatMap((r: any) => [r.created_by, r.assigned_to, r.referral_target_id].filter(Boolean))
     )) as string[];
     const nameMap: Record<string, string> = {};
     if (userIds.length > 0) {
@@ -190,5 +190,7 @@ export const listTripsByZone = createServerFn({ method: "GET" })
       ...r,
       original_provider_name: r.created_by ? (nameMap[r.created_by] ?? null) : null,
       assigned_provider_name: r.assigned_to ? (nameMap[r.assigned_to] ?? null) : null,
+      referral_target_name: r.referral_target_id ? (nameMap[r.referral_target_id] ?? null) : null,
     }));
+
   });
