@@ -104,7 +104,7 @@ function EmbedRequestForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <TimeSelect required className={inputCls} value={form.pickupTime} onChange={(v) => upd("pickupTime", v)} />
-          <TimeSelect placeholder="Appointment time" className={inputCls} value={form.appointmentTime} onChange={(v) => upd("appointmentTime", v)} />
+          <TimeSelect placeholder="Appointment time" className={inputCls} value={form.appointmentTime ?? ""} onChange={(v) => upd("appointmentTime", v)} />
         </div>
         <input required placeholder="Drop-off address*" className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} />
         <select required className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)}>
