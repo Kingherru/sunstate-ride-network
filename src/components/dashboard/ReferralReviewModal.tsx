@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 import { updateTripStatus } from "@/lib/trips.functions";
+import { respondToReferral } from "@/lib/referrals.functions";
+
 import { toast } from "sonner";
 
 /**
