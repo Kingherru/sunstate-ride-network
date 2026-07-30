@@ -77,6 +77,9 @@ export const rideRequestSchema = z.object({
   returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  returnPickupBuilding: z.string().trim().max(120).optional().or(z.literal("")),
+  returnPickupDoctor: z.string().trim().max(120).optional().or(z.literal("")),
+  returnPickupSuite: z.string().trim().max(60).optional().or(z.literal("")),
   additionalStops: z.array(additionalStopSchema).max(10).default([]),
   mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
   specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
@@ -190,6 +193,9 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         round_trip: data.tripType === "round_trip" || data.roundTrip,
         return_pickup_time: data.returnPickupTime || null,
         return_dropoff_time: data.returnDropoffTime || null,
+        return_pickup_building: data.returnPickupBuilding || null,
+        return_pickup_doctor: data.returnPickupDoctor || null,
+        return_pickup_suite: data.returnPickupSuite || null,
         return_date:
           data.tripType === "round_trip" || data.roundTrip
             ? (data.returnDate || data.pickupDate)

@@ -18,7 +18,7 @@ import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { DatePickerField } from "@/components/ui/date-picker-field";
-import { TimePickerField } from "@/components/ui/time-picker-field";
+import { TimePickerField, TimeSelect } from "@/components/ui/time-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
 import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
@@ -64,6 +64,9 @@ const empty: RideRequestInput = {
   returnPickupTime: "",
   returnDropoffTime: "",
   returnDate: "",
+  returnPickupBuilding: "",
+  returnPickupDoctor: "",
+  returnPickupSuite: "",
   additionalStops: [],
   mobilityNotes: "",
   specialInstructions: "",
@@ -674,11 +677,9 @@ function RequestRidePage() {
               </Field>
             </div>
             <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
-              <input
-                type="time"
-                className={inputCls}
+              <TimeSelect
                 value={form.appointmentTime ?? ""}
-                onChange={(e) => upd("appointmentTime", e.target.value)}
+                onChange={(v) => upd("appointmentTime", v)}
               />
               <p className="mt-1 text-xs text-muted">When the patient needs to be at the destination.</p>
             </Field>
@@ -865,13 +866,35 @@ function RequestRidePage() {
                   />
                 </Field>
                 <Field label="Return drop-off time" error={errors.returnDropoffTime}>
-                  <input
-                    type="time"
-                    className={inputCls}
+                  <TimeSelect
                     value={form.returnDropoffTime ?? ""}
-                    onChange={(e) => upd("returnDropoffTime", e.target.value)}
+                    onChange={(v) => upd("returnDropoffTime", v)}
                   />
                   <p className="mt-1 text-xs text-muted">Optional — expected arrival back home.</p>
+                </Field>
+                <Field label="Return pickup building" error={(errors as any).returnPickupBuilding}>
+                  <input
+                    className={inputCls}
+                    value={form.returnPickupBuilding ?? ""}
+                    onChange={(e) => upd("returnPickupBuilding", e.target.value)}
+                    placeholder="e.g. Medical Arts Building B"
+                  />
+                </Field>
+                <Field label="Return pickup doctor / office" error={(errors as any).returnPickupDoctor}>
+                  <input
+                    className={inputCls}
+                    value={form.returnPickupDoctor ?? ""}
+                    onChange={(e) => upd("returnPickupDoctor", e.target.value)}
+                    placeholder="e.g. Dr. Smith"
+                  />
+                </Field>
+                <Field label="Return pickup suite" error={(errors as any).returnPickupSuite}>
+                  <input
+                    className={inputCls}
+                    value={form.returnPickupSuite ?? ""}
+                    onChange={(e) => upd("returnPickupSuite", e.target.value)}
+                    placeholder="e.g. Suite 210"
+                  />
                 </Field>
               </div>
             )}

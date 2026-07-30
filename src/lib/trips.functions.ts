@@ -163,6 +163,9 @@ const tripBaseSchema = z.object({
   return_pickup_time: z.preprocess(normalizeTimeInput, z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "HH:MM").optional().nullable()),
   return_dropoff_time: z.preprocess(normalizeTimeInput, z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "HH:MM").optional().nullable()),
   return_date: z.preprocess(normalizeDateInput, z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable()),
+  return_pickup_building: z.string().trim().max(120).optional().nullable(),
+  return_pickup_doctor: z.string().trim().max(120).optional().nullable(),
+  return_pickup_suite: z.string().trim().max(60).optional().nullable(),
   dropoff_address: z.string().trim().min(1).max(255),
   dropoff_city: z.string().trim().min(1).max(80),
   dropoff_zip: z.string().trim().max(10).optional().nullable(),
@@ -180,6 +183,7 @@ const tripBaseSchema = z.object({
   payer_id: z.string().uuid().optional().nullable(),
   // trip_number is system-generated; users cannot set it.
   patient_date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable().or(z.literal("")),
+  is_medicaid_patient: z.boolean().optional(),
   medicaid_number: z.string().trim().max(64).optional().nullable(),
   medicaid_plan: z.string().trim().max(120).optional().nullable(),
   authorization_number: z.string().trim().max(64).optional().nullable(),
@@ -600,6 +604,9 @@ const editableFieldsSchema = z.object({
   return_pickup_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
   return_dropoff_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
   return_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  return_pickup_building: z.string().trim().max(120).nullable().optional(),
+  return_pickup_doctor: z.string().trim().max(120).nullable().optional(),
+  return_pickup_suite: z.string().trim().max(60).nullable().optional(),
   dropoff_address: z.string().trim().max(255).nullable().optional(),
   dropoff_city: z.string().trim().max(80).nullable().optional(),
   dropoff_zip: z.string().trim().max(10).nullable().optional(),
@@ -698,7 +705,7 @@ export const listReservationsByState = createServerFn({ method: "GET" })
     // Read directly from `trips` — the single source of truth for created trips.
     // Column aliases bridge to the ride_requests-shaped fields the UI expects.
     const cols =
-      "id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, referral_status, referral_target_id, referral_sent_at, referral_decided_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
+      "id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, return_pickup_building, return_pickup_doctor, return_pickup_suite, is_medicaid_patient, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, referral_status, referral_target_id, referral_sent_at, referral_decided_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
 
     let q = supabase
       .from("trips")

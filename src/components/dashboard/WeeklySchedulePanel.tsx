@@ -118,10 +118,10 @@ export function WeeklySchedulePanel() {
           <input type="date" required value={form.pickup_date} onChange={(e) => setForm({ ...form, pickup_date: e.target.value })} className="input" />
         </Field>
         <Field label="Pickup time">
-          <input type="time" required value={form.pickup_time} onChange={(e) => setForm({ ...form, pickup_time: e.target.value })} className="input" />
+          <input type="time" step={300} required value={form.pickup_time} onChange={(e) => setForm({ ...form, pickup_time: e.target.value })} className="input" />
         </Field>
         <Field label="Drop-off time">
-          <input type="time" value={form.dropoff_time} onChange={(e) => setForm({ ...form, dropoff_time: e.target.value })} className="input" />
+          <input type="time" step={300} value={form.dropoff_time} onChange={(e) => setForm({ ...form, dropoff_time: e.target.value })} className="input" />
         </Field>
         <Field label="Round trip">
           <div className="h-9 flex items-center">

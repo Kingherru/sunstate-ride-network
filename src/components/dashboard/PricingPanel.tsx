@@ -95,13 +95,13 @@ export function PricingPanel() {
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">After-hours start</span>
-            <input type="time" value={form.after_hours_start.slice(0, 5)}
+            <input type="time" step={300} value={form.after_hours_start.slice(0, 5)}
                    onChange={(e) => setForm({ ...form, after_hours_start: e.target.value })}
                    className="border border-border rounded-sm px-3 py-2 bg-background" />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">After-hours end</span>
-            <input type="time" value={form.after_hours_end.slice(0, 5)}
+            <input type="time" step={300} value={form.after_hours_end.slice(0, 5)}
                    onChange={(e) => setForm({ ...form, after_hours_end: e.target.value })}
                    className="border border-border rounded-sm px-3 py-2 bg-background" />
           </label>

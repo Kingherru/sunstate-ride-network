@@ -406,11 +406,11 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
                       <input type="checkbox" checked={off} onChange={(e) => setDay(k, { off: e.target.checked })} />
                       <span>Off</span>
                     </label>
-                    <input type="time" disabled={off} value={day.start ?? "09:00"}
+                    <input type="time" step={300} disabled={off} value={day.start ?? "09:00"}
                            onChange={(e) => setDay(k, { start: e.target.value })}
                            className="border border-border rounded-sm px-2 py-1 bg-background disabled:opacity-40" />
                     <span>–</span>
-                    <input type="time" disabled={off} value={day.end ?? "17:00"}
+                    <input type="time" step={300} disabled={off} value={day.end ?? "17:00"}
                            onChange={(e) => setDay(k, { end: e.target.value })}
                            className="border border-border rounded-sm px-2 py-1 bg-background disabled:opacity-40" />
                   </div>
