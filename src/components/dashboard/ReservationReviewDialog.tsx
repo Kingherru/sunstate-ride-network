@@ -604,6 +604,28 @@ export function ReservationReviewDialog({
                 </button>
               </>
             )}
+            {/* Past-due or booked trips can be closed out here; completing moves it to Trip History */}
+            {!editing && canComplete && !isPendingReferral && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => setDeclineOpen(true)}
+                  className="text-sm font-bold text-red-700 border border-red-300 px-4 py-2 rounded-sm hover:bg-red-50 disabled:opacity-60"
+                >
+                  Cancel trip
+                </button>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={complete}
+                  className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {busy === "complete" ? "Completing…" : "Mark completed"}
+                </button>
+              </>
+            )}
+
           </div>
         </DialogFooter>
 
