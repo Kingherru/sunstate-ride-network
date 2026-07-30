@@ -332,8 +332,14 @@ function RequestRidePage() {
       }
       setErrors(errs);
       toast.error("Please fix the highlighted fields.");
+      // Bring the first problem field into view so the user can correct it.
+      requestAnimationFrame(() => {
+        const el = document.querySelector("[data-field-error='true']");
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
       return;
     }
+
     setSubmitting(true);
     try {
       const res = await submit({ data: parsed.data });
