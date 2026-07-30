@@ -9,5 +9,13 @@ export const Route = createFileRoute("/staff/login")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => <PortalAuth kind="staff" />,
+  validateSearch: (s: Record<string, unknown>) => ({
+    mode: s.mode === "signup" ? ("signup" as const) : ("signin" as const),
+  }),
+  component: PortalAuthPage,
 });
+
+function PortalAuthPage() {
+  const { mode } = Route.useSearch();
+  return <PortalAuth kind="staff" initialMode={mode} />;
+}
