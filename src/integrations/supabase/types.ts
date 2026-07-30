@@ -3991,6 +3991,7 @@ export type Database = {
           appointment_time: string | null
           assigned_to: string | null
           authorization_number: string | null
+          auto_assigned_at: string | null
           cancel_reason: string | null
           completed_at: string | null
           completed_by: string | null
@@ -4145,6 +4146,7 @@ export type Database = {
           appointment_time?: string | null
           assigned_to?: string | null
           authorization_number?: string | null
+          auto_assigned_at?: string | null
           cancel_reason?: string | null
           completed_at?: string | null
           completed_by?: string | null
@@ -4299,6 +4301,7 @@ export type Database = {
           appointment_time?: string | null
           assigned_to?: string | null
           authorization_number?: string | null
+          auto_assigned_at?: string | null
           cancel_reason?: string | null
           completed_at?: string | null
           completed_by?: string | null
@@ -4982,6 +4985,7 @@ export type Database = {
         Returns: undefined
       }
       admin_user_ids: { Args: never; Returns: string[] }
+      auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
       compute_ride_reservation_state: {
@@ -5330,6 +5334,17 @@ export type Database = {
       }
       open_dispatch_thread: { Args: { _zone_id?: string }; Returns: string }
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
+      pick_auto_provider: {
+        Args: {
+          _created_by: string
+          _is_medicaid: boolean
+          _needs_wheelchair: boolean
+          _pickup_zip: string
+          _service_level: string
+          _zone_id: string
+        }
+        Returns: string
+      }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
