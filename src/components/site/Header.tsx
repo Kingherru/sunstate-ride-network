@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 const primaryLinks = [
   { to: "/how-it-works", label: "How It Works" },
@@ -26,12 +26,6 @@ const moreLinks = [
 const allLinks = [...servicesLinks, ...primaryLinks, ...moreLinks] as const;
 
 
-const portals = [
-  { to: "/patient/login", label: "Patient Portal", desc: "Patients, families, caregivers", icon: User },
-  { to: "/provider/login", label: "Provider Portal", desc: "NEMT providers & dispatchers", icon: Truck },
-  { to: "/facility/login", label: "Facility Portal", desc: "Hospitals, SNFs, case managers", icon: Building2 },
-] as const;
-
 function useDismiss(open: boolean, close: () => void, ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     if (!open) return;
@@ -50,15 +44,12 @@ function useDismiss(open: boolean, close: () => void, ref: React.RefObject<HTMLE
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
   const [servicesOpen, setServicesOpen] = useState(false);
 
-  const signInRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  useDismiss(signInOpen, () => setSignInOpen(false), signInRef);
   useDismiss(moreOpen, () => setMoreOpen(false), moreRef);
   useDismiss(servicesOpen, () => setServicesOpen(false), servicesRef);
 
