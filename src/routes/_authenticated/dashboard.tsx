@@ -991,8 +991,9 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: () => void; initialTrip?: any; portal: PortalKind; userId?: string | null }) {
-  const seed = initialTrip ?? {};
+function NewTripForm({ onCreated, initialTrip, initialDraft, portal, userId }: { onCreated: () => void; initialTrip?: any; initialDraft?: { id: string; payload: Record<string, any> } | null; portal: PortalKind; userId?: string | null }) {
+  const seed = initialDraft?.payload ?? initialTrip ?? {};
+  const resuming = !!initialDraft;
   const [form, setForm] = useState<any>({
     trip_kind: seed.trip_kind ?? "passenger",
     patient_first_name: seed.patient_first_name ?? "",
