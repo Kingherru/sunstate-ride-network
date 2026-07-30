@@ -108,12 +108,32 @@ async function handleTransferUpdated(tr: any) {
     .update({ status: tr.reversed ? "failed" : "paid", updated_at: new Date().toISOString() })
     .eq("stripe_transfer_id", tr.id);
 }
-async function handleCheckoutSessionCompleted(sess: any) {
+async function handleCheckoutSessionCompleted(sess: any, env: StripeEnv) {
   const meta = sess?.metadata ?? {};
   const userId = meta.userId;
+  const sb = getSupabase();
+
+  // Membership checkout: mark the member Paid immediately, even if the
+  // customer.subscription.* events arrive late or out of order.
+  if (userId && sess?.mode === "subscription" && sess?.payment_status === "paid") {
+    const subId = typeof sess.subscription === "string" ? sess.subscription : sess.subscription?.id;
+    if (subId) {
+      await sb.from("subscriptions").upsert(
+        {
+          user_id: userId,
+          stripe_subscription_id: subId,
+          stripe_customer_id: typeof sess.customer === "string" ? sess.customer : sess.customer?.id,
+          status: "active",
+          environment: env,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "stripe_subscription_id" },
+      );
+    }
+  }
+
   const courseSlug = meta.course_slug;
   if (!userId || !courseSlug) return;
-  const sb = getSupabase();
   const { data: course } = await sb.from("courses").select("id").eq("slug", courseSlug).maybeSingle();
   if (!course) return;
   await sb.from("course_enrollments").upsert(
@@ -121,6 +141,7 @@ async function handleCheckoutSessionCompleted(sess: any) {
     { onConflict: "user_id,course_id" },
   );
 }
+
 
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
