@@ -1050,6 +1050,45 @@ function NewTripForm({ onCreated, initialTrip, initialDraft, portal, userId }: {
     delivery_recipient_phone: seed.delivery_recipient_phone ?? "",
   });
   const isDelivery = form.trip_kind === "medical_delivery";
+
+  // ---- Draft autosave -------------------------------------------------
+  // Everything typed here is saved as an unsubmitted draft so nothing is lost.
+  // Providers find drafts under Reservations; patients/facilities under Saved Trips.
+  const qcDraft = useQueryClient();
+  const saveDraftFn = useServerFn(saveTripDraft);
+  const markDraftSubmitted = useServerFn(markTripDraftSubmitted);
+  const [draftId, setDraftId] = useState<string | null>(initialDraft?.id ?? null);
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const draftIdRef = useRef<string | null>(initialDraft?.id ?? null);
+  const submittedRef = useRef(false);
+  useEffect(() => { draftIdRef.current = draftId; }, [draftId]);
+
+  const draftHasContent =
+    !!(form.patient_first_name || form.patient_last_name || form.patient_phone ||
+       form.pickup_address || form.dropoff_address || form.pickup_date);
+
+  const persistDraft = useCallback(async (autosaved: boolean) => {
+    setSavingDraft(true);
+    try {
+      const res = await saveDraftFn({ data: { draft_id: draftIdRef.current, payload: form, autosaved } });
+      draftIdRef.current = res.id;
+      setDraftId(res.id);
+      setDraftSavedAt(new Date());
+      qcDraft.invalidateQueries({ queryKey: ["trip-drafts"] });
+      return res.id;
+    } finally {
+      setSavingDraft(false);
+    }
+  }, [form, saveDraftFn, qcDraft]);
+
+  useEffect(() => {
+    if (!draftHasContent || submittedRef.current) return;
+    const t = setTimeout(() => { persistDraft(true).catch(() => {}); }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, draftHasContent]);
+
   // HIPAA acknowledgment is now managed in Settings (Business info). The
   // server auto-resolves the caller's latest acknowledgment on submit, so
   // this form no longer prompts for it every time.
