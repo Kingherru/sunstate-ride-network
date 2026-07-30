@@ -166,97 +166,43 @@ export function AdminDispatchPanel() {
         )}
       </section>
 
-      {/* Dispatch zones */}
-      <section className="bg-card border border-border rounded-2xl p-5">
-        <h2 className="text-lg font-extrabold tracking-tight mb-1">Dispatch Zones</h2>
-        <p className="text-xs text-muted-foreground mb-3">
-          Florida is organized into 5 operating regions. Every FL ZIP (32000–34999) is auto-mapped, and providers, facilities, and patients are placed in the correct zone from their ZIP. Move a ZIP between zones any time — trips will re-route automatically.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4">
-          {zones.map((z: any) => {
-            const s = (statsQ.data ?? []).find((x: any) => x.zone_id === z.id);
-            const count = s?.zip_count ?? zipsByZone.get(z.id)?.length ?? 0;
-            const active = activeZoneId === z.id;
-            const mgr = s?.managers?.[0];
-            return (
-              <button
-                key={z.id}
-                onClick={() => setActiveZoneId(z.id)}
-                className={`border rounded-sm p-3 text-left ${active ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}
-              >
-                <div className="text-sm font-bold">{z.name}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Manager: <span className="text-foreground font-semibold">{mgr?.name || "Unassigned"}</span>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px]">
-                  <div>ZIPs: <span className="font-bold text-foreground">{count}</span></div>
-                  <div>Trips: <span className="font-bold text-foreground">{s?.active_trips ?? 0}</span></div>
-                  <div>Providers: <span className="font-bold text-foreground">{s?.providers ?? 0}</span></div>
-                  <div>Facilities: <span className="font-bold text-foreground">{s?.facilities ?? 0}</span></div>
-                  <div>Patients: <span className="font-bold text-foreground">{s?.patients ?? 0}</span></div>
-                </div>
-              </button>
-            );
-          })}
+      {/* Service areas: Zone → County → ZIPs */}
+      <DispatchServiceAreaPanel
+        zones={zones}
+        activeZoneId={activeZoneId}
+        onSelectZone={setActiveZoneId}
+        canEdit={caps.canManageZones}
+      />
+
+      {!caps.canManageZones && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+          🔒 {permissionMessage("canManageZones")}
         </div>
+      )}
 
-        {caps.canManageZones && <BulkZipImporter zones={zones} onDone={() => qc.invalidateQueries()} />}
+      {caps.canManageZones && (
+        <section className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-lg font-extrabold tracking-tight mb-3">Bulk ZIP Import</h2>
+          <BulkZipImporter zones={zones} onDone={() => qc.invalidateQueries()} />
+        </section>
+      )}
 
+      {activeZoneId && (
+        <section className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-lg font-extrabold tracking-tight mb-3">
+            Dispatcher — trips in {zones.find((z: any) => z.id === activeZoneId)?.name}
+          </h2>
+          <ZoneDispatcher
+            zoneId={activeZoneId}
+            trips={tripsQ.data ?? []}
+            loading={tripsQ.isLoading}
+            providersFn={providersFn}
+            onAssign={(trip_id, assigned_to) => mReassign.mutate({ trip_id, assigned_to })}
+            onCancel={(trip_id) => { if (confirm("Cancel this trip?")) mCancelTrip.mutate(trip_id); }}
+          />
+        </section>
+      )}
 
-        {activeZoneId && (
-          <div className="space-y-3">
-            {caps.canManageZones ? (
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                  Add ZIPs to {zones.find((z: any) => z.id === activeZoneId)?.name}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    placeholder="32801, 32803 34103…"
-                    value={zipInput}
-                    onChange={(e) => setZipInput(e.target.value)}
-                    className="flex-1 bg-background border border-border rounded-sm px-3 py-2 text-sm font-mono"
-                  />
-                  <button onClick={handleAssign} disabled={mAssign.isPending} className="bg-primary text-primary-foreground text-sm font-bold px-4 py-2 rounded-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                🔒 {permissionMessage("canManageZones")}
-              </div>
-            )}
-            <div className="flex flex-wrap gap-1">
-              {(zipsByZone.get(activeZoneId) ?? []).map((zip) => (
-                <span key={zip} className="text-xs font-mono bg-background border border-border rounded-sm px-2 py-1 flex items-center gap-1">
-                  {zip}
-                  {caps.canManageZones && (
-                    <button onClick={() => mRemove.mutate(zip)} className="text-red-600 font-bold hover:text-red-700">×</button>
-                  )}
-                </span>
-              ))}
-              {(zipsByZone.get(activeZoneId) ?? []).length === 0 && (
-                <span className="text-xs text-muted-foreground">No ZIPs assigned yet.</span>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                Dispatcher — trips in zone
-              </h3>
-              {activeZoneId && <ZoneDispatcher
-                zoneId={activeZoneId}
-                trips={tripsQ.data ?? []}
-                loading={tripsQ.isLoading}
-                providersFn={providersFn}
-                onAssign={(trip_id, assigned_to) => mReassign.mutate({ trip_id, assigned_to })}
-                onCancel={(trip_id) => { if (confirm("Cancel this trip?")) mCancelTrip.mutate(trip_id); }}
-              />}
-            </div>
-          </div>
-        )}
-      </section>
 
       {/* Unmapped ZIP fallback */}
       <ZipFallbackSection zones={zones} onAssigned={() => qc.invalidateQueries({ queryKey: ["disp"] })} canEdit={caps.canManageZones} />
