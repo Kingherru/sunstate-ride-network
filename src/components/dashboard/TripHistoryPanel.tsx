@@ -559,11 +559,17 @@ function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: 
           <Link
             to="/reservations/$id/review"
             params={{ id: trip.id }}
-            className="inline-flex items-center justify-center text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted w-full sm:w-auto"
+            className={cn(
+              "inline-flex items-center justify-center text-xs font-bold px-3 py-2 rounded-sm w-full sm:w-auto",
+              done
+                ? "border border-border hover:bg-muted"
+                : "bg-amber-600 text-white border border-amber-700 hover:bg-amber-700",
+            )}
           >
-            View Details
+            {done ? "View Details" : "Open & complete"}
           </Link>
         </div>
+
       </div>
     </div>
   );
