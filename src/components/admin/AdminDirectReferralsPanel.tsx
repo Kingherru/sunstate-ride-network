@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { listDirectReferralsAdmin } from "@/lib/admin-trips.functions";
 import { suggestProvidersForTrip, autoAssignTrip } from "@/lib/assignment.functions";
+import { assignmentBlockReason, isTripPaid, WAITING_ON_PAYMENT_LABEL } from "@/lib/payment-gate";
 import { adminAssignTrip } from "@/lib/system-ids.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTime12 } from "@/lib/time-format";
@@ -72,7 +73,11 @@ export function AdminDirectReferralsPanel() {
     onSuccess: (r: any) => {
       refreshAll();
       toast[r?.assigned_to ? "success" : "message"](
-        r?.assigned_to ? "Trip auto-assigned to the best-matched provider." : "No eligible provider found — left for manual dispatch.",
+        r?.assigned_to
+          ? (r?.waiting_on_payment
+              ? "Trip auto-assigned — provider notified not to perform it until payment is received."
+              : "Trip auto-assigned to the best-matched provider.")
+          : "No eligible provider found — left for manual dispatch.",
       );
     },
     onError: (e: any) => toast.error(e?.message ?? "Auto-assign failed"),
@@ -187,6 +192,11 @@ export function AdminDirectReferralsPanel() {
                   )}
                 </td>
                 <td className="p-3 text-right whitespace-nowrap space-x-2">
+                  {!isTripPaid(t) && (
+                    <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                      {WAITING_ON_PAYMENT_LABEL}
+                    </div>
+                  )}
                   <button
                     onClick={() => auto.mutate(t.id)}
                     disabled={auto.isPending}
@@ -196,7 +206,9 @@ export function AdminDirectReferralsPanel() {
                   </button>
                   <button
                     onClick={() => setOpenId(openId === t.id ? null : t.id)}
-                    className="text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-sm bg-primary text-primary-foreground"
+                    disabled={!!assignmentBlockReason(t)}
+                    title={assignmentBlockReason(t) ?? "Assign this trip to a provider"}
+                    className="text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-sm bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {openId === t.id ? "Close" : "Assign"}
                   </button>
