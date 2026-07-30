@@ -51,6 +51,63 @@ export const listAllTripsAdmin = createServerFn({ method: "GET" })
     }));
   });
 
+/**
+ * Direct Referrals: trips that entered the platform (public request form, API,
+ * facility, etc.) and have no provider assigned yet. Ops/dispatch triage these
+ * here; once a provider is assigned they flow into the normal reservation
+ * workflow and drop off this list.
+ */
+export const listDirectReferralsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { source?: string; limit?: number } | undefined) => input ?? {})
+  .handler(async ({ data, context }) => {
+    await requireOps(context);
+    let q = context.supabase
+      .from("trips")
+      .select(
+        "id, display_id, status, source, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, patient_phone, transport_type, trip_kind, medicaid_trip, cost_total, dispatch_zone_id, referral_status, referral_target_id, created_by, created_at",
+      )
+      .is("assigned_to", null)
+      .not("status", "in", "(completed,canceled,no_show)")
+      .order("pickup_date", { ascending: true })
+      .order("pickup_time", { ascending: true })
+      .limit(Math.min(data.limit ?? 200, 500));
+    if (data.source && data.source !== "all") q = q.eq("source", data.source);
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    if (!rows || rows.length === 0) return [] as any[];
+
+    const userIds = Array.from(
+      new Set(rows.flatMap((r: any) => [r.created_by, r.referral_target_id].filter(Boolean))),
+    ) as string[];
+    const names: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: prof } = await context.supabase
+        .from("member_profiles")
+        .select("user_id, first_name, last_name, company_name")
+        .in("user_id", userIds);
+      for (const p of (prof ?? []) as any[]) {
+        names[p.user_id] =
+          p.company_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.user_id.slice(0, 8);
+      }
+    }
+
+    const zoneIds = Array.from(new Set(rows.map((r: any) => r.dispatch_zone_id).filter(Boolean))) as string[];
+    const zones: Record<string, string> = {};
+    if (zoneIds.length > 0) {
+      const { data: z } = await context.supabase.from("dispatch_zones").select("id, name").in("id", zoneIds);
+      for (const row of (z ?? []) as any[]) zones[row.id] = row.name;
+    }
+
+    return rows.map((r: any) => ({
+      ...r,
+      created_by_name: r.created_by ? (names[r.created_by] ?? null) : null,
+      referral_target_name: r.referral_target_id ? (names[r.referral_target_id] ?? null) : null,
+      zone_name: r.dispatch_zone_id ? (zones[r.dispatch_zone_id] ?? null) : null,
+    }));
+  });
+
+
 export const listAllReservationsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
