@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 import { updateTripStatus } from "@/lib/trips.functions";
+import { computeReferralPayoutCents } from "@/lib/referral-fee.functions";
 import { respondToReferral } from "@/lib/referrals.functions";
 
 import { toast } from "sonner";
@@ -33,25 +34,26 @@ export function ReferralReviewModal({
     queryFn: async () => {
       const { data } = await supabase
         .from("member_profiles")
-        .select("first_name, last_name, company_name, referral_fee_type, referral_fee_amount")
+        .select("first_name, last_name, company_name")
         .eq("user_id", trip.created_by)
         .maybeSingle();
       return data as {
         first_name: string | null;
         last_name: string | null;
         company_name: string | null;
-        referral_fee_type: "flat" | "percent" | null;
-        referral_fee_amount: number | null;
       } | null;
     },
   });
 
   const clientCharge = Number(trip?.cost_total ?? 0);
-  const feeType = senderQ.data?.referral_fee_type ?? null;
-  const feeVal = Number(senderQ.data?.referral_fee_amount ?? 0);
-  const referralFee =
-    feeType === "flat" ? Math.max(0, feeVal) :
-    feeType === "percent" ? Math.max(0, (clientCharge * feeVal) / 100) : 0;
+  // System-calculated from the admin-controlled referral rate.
+  const referralQ = useQuery({
+    queryKey: ["referral-payout-cents", Math.round(clientCharge * 100)],
+    enabled: clientCharge > 0,
+    staleTime: 60_000,
+    queryFn: () => computeReferralPayoutCents({ data: { amountCents: Math.round(clientCharge * 100) } }),
+  });
+  const referralFee = Math.max(0, (referralQ.data?.cents ?? 0) / 100);
   const platformFee = clientCharge * platformFeePct;
   const providerNet = Math.max(0, clientCharge - platformFee - referralFee);
 
@@ -153,14 +155,8 @@ export function ReferralReviewModal({
               <FinRow
                 label={`Referral fee to ${referrer}`}
                 value={referralFee}
-                hint={
-                  !feeType
-                    ? "No referral fee set by the referring provider."
-                    : feeType === "percent"
-                      ? `Referring provider's default: ${feeVal}% of the client charge.`
-                      : `Referring provider's default: flat $${feeVal.toFixed(2)}.`
-                }
-                muted={!feeType}
+                hint="Calculated automatically by My Florida NEMT and paid to the referring provider after the trip is completed."
+                muted={referralFee <= 0}
               />
               <FinRow
                 label="My Florida NEMT platform fee"
