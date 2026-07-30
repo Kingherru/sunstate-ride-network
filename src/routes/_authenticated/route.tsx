@@ -1,12 +1,9 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
-function loginForPath(pathname: string): string {
-  if (pathname.startsWith("/patient")) return "/patient/login";
-  if (pathname.startsWith("/provider")) return "/provider/login";
-  if (pathname.startsWith("/facility")) return "/facility/login";
-  if (pathname.startsWith("/staff")) return "/staff/login";
-  return "/auth";
+function loginForPath(_pathname: string): string {
+  // Unified login: everyone signs in at /login and is routed to their portal.
+  return "/login";
 }
 
 export const Route = createFileRoute("/_authenticated")({
