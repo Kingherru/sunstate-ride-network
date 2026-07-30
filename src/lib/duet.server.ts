@@ -94,6 +94,30 @@ export function mapTripToDuetRide(t: any, transportationProviderId: string): Due
   };
 }
 
+/** Record an outbound sync attempt (success or failure) on the trip timeline. */
+export async function logDuetSyncEvent(opts: {
+  tripId: string;
+  providerId?: string | null;
+  eventType: string;
+  externalRideId?: string | null;
+  payload?: unknown;
+}) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("trip_dispatch_events").insert({
+      trip_id: opts.tripId,
+      provider_id: opts.providerId ?? null,
+      vendor: "duetride",
+      event_type: opts.eventType,
+      external_ride_id: opts.externalRideId ?? null,
+      event_time: new Date().toISOString(),
+      payload: (opts.payload ?? {}) as never,
+    });
+  } catch {
+    // Timeline logging must never break the sync itself.
+  }
+}
+
 /** Push (create or update) a trip into the assigned provider's Duet account. */
 export async function syncTripToDuetServer(tripId: string): Promise<{
   ok: boolean; rideId?: string; error?: string;
