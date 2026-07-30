@@ -2984,6 +2984,7 @@ export type Database = {
           id: string
           ip_address: string | null
           is_black_tie: boolean
+          is_medicaid_patient: boolean
           last_updated_at: string
           medicaid_number: string | null
           medicaid_plan: string | null
@@ -3022,6 +3023,9 @@ export type Database = {
           reservation_state: string | null
           return_date: string | null
           return_dropoff_time: string | null
+          return_pickup_building: string | null
+          return_pickup_doctor: string | null
+          return_pickup_suite: string | null
           return_pickup_time: string | null
           round_trip: boolean
           route_computed_at: string | null
@@ -3083,6 +3087,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           is_black_tie?: boolean
+          is_medicaid_patient?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
@@ -3121,6 +3126,9 @@ export type Database = {
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
+          return_pickup_building?: string | null
+          return_pickup_doctor?: string | null
+          return_pickup_suite?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
           route_computed_at?: string | null
@@ -3182,6 +3190,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           is_black_tie?: boolean
+          is_medicaid_patient?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
@@ -3220,6 +3229,9 @@ export type Database = {
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
+          return_pickup_building?: string | null
+          return_pickup_doctor?: string | null
+          return_pickup_suite?: string | null
           return_pickup_time?: string | null
           round_trip?: boolean
           route_computed_at?: string | null
@@ -4058,6 +4070,7 @@ export type Database = {
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
+          is_medicaid_patient: boolean
           manually_completed_at: string | null
           manually_completed_by: string | null
           medicaid_number: string | null
@@ -4122,6 +4135,9 @@ export type Database = {
           reservation_state: string | null
           return_date: string | null
           return_dropoff_time: string | null
+          return_pickup_building: string | null
+          return_pickup_doctor: string | null
+          return_pickup_suite: string | null
           return_pickup_time: string | null
           ride_request_id: string | null
           round_trip: boolean
@@ -4213,6 +4229,7 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          is_medicaid_patient?: boolean
           manually_completed_at?: string | null
           manually_completed_by?: string | null
           medicaid_number?: string | null
@@ -4277,6 +4294,9 @@ export type Database = {
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
+          return_pickup_building?: string | null
+          return_pickup_doctor?: string | null
+          return_pickup_suite?: string | null
           return_pickup_time?: string | null
           ride_request_id?: string | null
           round_trip?: boolean
@@ -4368,6 +4388,7 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          is_medicaid_patient?: boolean
           manually_completed_at?: string | null
           manually_completed_by?: string | null
           medicaid_number?: string | null
@@ -4432,6 +4453,9 @@ export type Database = {
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
+          return_pickup_building?: string | null
+          return_pickup_doctor?: string | null
+          return_pickup_suite?: string | null
           return_pickup_time?: string | null
           ride_request_id?: string | null
           round_trip?: boolean

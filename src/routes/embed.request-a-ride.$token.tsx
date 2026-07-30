@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { rideRequestSchema, submitRideRequest, type RideRequestInput } from "@/lib/forms.functions";
 import { resolveEmbedToken } from "@/lib/embed-tokens.functions";
 import { CITY_LIST } from "@/lib/cities";
+import { TimeSelect } from "@/components/ui/time-picker-field";
 
 export const Route = createFileRoute("/embed/request-a-ride/$token")({
   head: () => ({
@@ -102,8 +103,8 @@ function EmbedRequestForm() {
           <input required type="date" className={inputCls} value={form.pickupDate} onChange={(e) => upd("pickupDate", e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <input required type="time" className={inputCls} value={form.pickupTime} onChange={(e) => upd("pickupTime", e.target.value)} />
-          <input type="time" placeholder="Appt time" className={inputCls} value={form.appointmentTime} onChange={(e) => upd("appointmentTime", e.target.value)} />
+          <TimeSelect required className={inputCls} value={form.pickupTime} onChange={(v) => upd("pickupTime", v)} />
+          <TimeSelect placeholder="Appointment time" className={inputCls} value={form.appointmentTime} onChange={(v) => upd("appointmentTime", v)} />
         </div>
         <input required placeholder="Drop-off address*" className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} />
         <select required className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)}>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/referrals.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTime12, formatDateLong, formatIsoDateTime12 } from "@/lib/time-format";
+import { TimeSelect } from "@/components/ui/time-picker-field";
 
 type Row = {
   id: string;
@@ -107,14 +108,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Input({ label, value, onChange, type = "text", placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <label className="block">
-      <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1">{label}</div>
+      <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-foreground mb-1">{label}</div>
+      {type === "time" ? (
+        <TimeSelect value={value ?? ""} onChange={onChange} className="text-sm" />
+      ) : (
       <input
         type={type}
         value={value ?? ""}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full text-sm border border-border rounded-sm px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+        className="w-full text-sm border border-border rounded-sm px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
       />
+      )}
     </label>
   );
 }
@@ -437,7 +442,7 @@ export function ReservationReviewDialog({
             </Section>
 
             <Section title="Payer & Authorization">
-              <Field label="Payer">{row.payer ?? "—"}</Field>
+              <Field label="Payer">{row.payer || "Self Payer"}</Field>
               {row.medicaid_number && <Field label="Medicaid #">{row.medicaid_number}</Field>}
               {row.medicaid_plan && <Field label="Medicaid Plan">{row.medicaid_plan}</Field>}
               {row.authorization_number && <Field label="Authorization #">{row.authorization_number}</Field>}
@@ -469,6 +474,9 @@ export function ReservationReviewDialog({
                   <Input label="Return Date" type="date" value={draft.return_date} onChange={(v) => setDraft({ ...draft, return_date: v })} />
                   <Input label="Return Pickup Time" type="time" value={String(draft.return_pickup_time).slice(0, 5)} onChange={(v) => setDraft({ ...draft, return_pickup_time: v })} />
                   <Input label="Return Drop-off Time" type="time" value={String(draft.return_dropoff_time).slice(0, 5)} onChange={(v) => setDraft({ ...draft, return_dropoff_time: v })} />
+                  <Input label="Return Pickup Building" value={draft.return_pickup_building} onChange={(v) => setDraft({ ...draft, return_pickup_building: v })} placeholder="e.g. Medical Arts Building B" />
+                  <Input label="Return Pickup Doctor / Office" value={draft.return_pickup_doctor} onChange={(v) => setDraft({ ...draft, return_pickup_doctor: v })} placeholder="e.g. Dr. Smith" />
+                  <Input label="Return Pickup Suite" value={draft.return_pickup_suite} onChange={(v) => setDraft({ ...draft, return_pickup_suite: v })} placeholder="e.g. Suite 210" />
                 </>
               )}
             </Section>

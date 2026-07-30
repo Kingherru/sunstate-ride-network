@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { copyRequestToDates } from "@/lib/requests.functions";
+import { TimeSelect } from "@/components/ui/time-picker-field";
 
 type Entry = {
   pickupDate: string;
@@ -173,19 +174,17 @@ export function CopyTripToDates(props: Props) {
               </label>
               <label className="block text-xs">
                 <span className="block font-bold uppercase tracking-widest text-muted mb-1">Pickup time *</span>
-                <input
-                  type="time"
+                <TimeSelect
                   value={e.pickupTime}
-                  onChange={(ev) => updateRow(i, { pickupTime: ev.target.value })}
+                  onChange={(nv) => updateRow(i, { pickupTime: nv })}
                   className={inputCls}
                 />
               </label>
               <label className="block text-xs">
                 <span className="block font-bold uppercase tracking-widest text-muted mb-1">Appointment time</span>
-                <input
-                  type="time"
+                <TimeSelect
                   value={e.appointmentTime ?? ""}
-                  onChange={(ev) => updateRow(i, { appointmentTime: ev.target.value })}
+                  onChange={(nv) => updateRow(i, { appointmentTime: nv })}
                   className={inputCls}
                 />
               </label>
@@ -193,19 +192,17 @@ export function CopyTripToDates(props: Props) {
                 <>
                   <label className="block text-xs">
                     <span className="block font-bold uppercase tracking-widest text-muted mb-1">Return pickup</span>
-                    <input
-                      type="time"
+                    <TimeSelect
                       value={e.returnPickupTime ?? ""}
-                      onChange={(ev) => updateRow(i, { returnPickupTime: ev.target.value })}
+                      onChange={(nv) => updateRow(i, { returnPickupTime: nv })}
                       className={inputCls}
                     />
                   </label>
                   <label className="block text-xs">
                     <span className="block font-bold uppercase tracking-widest text-muted mb-1">Return drop-off</span>
-                    <input
-                      type="time"
+                    <TimeSelect
                       value={e.returnDropoffTime ?? ""}
-                      onChange={(ev) => updateRow(i, { returnDropoffTime: ev.target.value })}
+                      onChange={(nv) => updateRow(i, { returnDropoffTime: nv })}
                       className={inputCls}
                     />
                   </label>

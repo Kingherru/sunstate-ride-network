@@ -48,7 +48,7 @@ import { AddressAutocomplete, type AddressSelection } from "@/components/forms/A
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 import { DatePickerField } from "@/components/ui/date-picker-field";
-import { TimePickerField } from "@/components/ui/time-picker-field";
+import { TimePickerField, TimeSelect } from "@/components/ui/time-picker-field";
 import { TripFinancialBreakdown } from "@/components/pricing/TripFinancialBreakdown";
 import { ReferralReviewModal } from "@/components/dashboard/ReferralReviewModal";
 
@@ -1000,6 +1000,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     patient_phone: seed.patient_phone ?? "",
     patient_email: seed.patient_email ?? "",
     patient_date_of_birth: seed.patient_date_of_birth ?? "",
+    is_medicaid_patient: !!seed.is_medicaid_patient,
     medicaid_number: seed.medicaid_number ?? "",
     medicaid_plan: seed.medicaid_plan ?? "",
     authorization_number: seed.authorization_number ?? "",
@@ -1022,6 +1023,9 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     return_pickup_time: "",
     return_dropoff_time: "",
     return_date: "",
+    return_pickup_building: seed.return_pickup_building ?? "",
+    return_pickup_doctor: seed.return_pickup_doctor ?? "",
+    return_pickup_suite: seed.return_pickup_suite ?? "",
     service_level: seed.service_level ?? "curb_to_curb",
     needs_wheelchair: !!seed.needs_wheelchair,
     has_passenger: !!seed.has_passenger,
@@ -1053,11 +1057,12 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.pickup_zip ?? "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; lat: number | null; lng: number | null }>({ zip: form.dropoff_zip ?? "", lat: null, lng: null });
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
-  const canPickPayer = portal === "facility" || portal === "provider";
+  const canPickPayer = true;
+  const canManagePayers = portal === "facility" || portal === "provider";
   const payersQ = useQuery({
     queryKey: ["my-payers-picker"],
     queryFn: () => listMyPayers(),
-    enabled: canPickPayer,
+    enabled: canManagePayers,
     staleTime: 60_000,
   });
 
@@ -1224,11 +1229,28 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         </fieldset>
       ) : (
         <fieldset className="col-span-2 grid grid-cols-2 gap-3 border border-border rounded-sm p-3">
-          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Medicaid / CMS billing</legend>
+          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-foreground">Billing &amp; contacts</legend>
+          <label className="col-span-2 flex items-center gap-2 text-sm font-bold text-foreground">
+            <input
+              type="checkbox"
+              checked={!!form.is_medicaid_patient}
+              onChange={(e) => {
+                const on = e.target.checked;
+                setForm({
+                  ...form,
+                  is_medicaid_patient: on,
+                  ...(on ? {} : { medicaid_number: "", medicaid_plan: "", authorization_number: "", diagnosis_code: "" }),
+                });
+              }}
+            />
+            Medicaid patient
+          </label>
+          {form.is_medicaid_patient && (<>
           <Field label="Medicaid #" v={form.medicaid_number} on={(v) => setForm({ ...form, medicaid_number: v })} />
           <Field label="Medicaid plan" v={form.medicaid_plan} on={(v) => setForm({ ...form, medicaid_plan: v })} placeholder="e.g. Sunshine Health, Simply, MMA" />
           <Field label="Authorization #" v={form.authorization_number} on={(v) => setForm({ ...form, authorization_number: v })} />
           <Field label="Diagnosis code" v={form.diagnosis_code} on={(v) => setForm({ ...form, diagnosis_code: v })} placeholder="ICD-10 (optional)" />
+          </>)}
           <Field label="Emergency contact name" v={form.emergency_contact_name} on={(v) => setForm({ ...form, emergency_contact_name: v })} />
           <Field label="Emergency contact phone" v={form.emergency_contact_phone} on={(v) => setForm({ ...form, emergency_contact_phone: v })} />
         </fieldset>
@@ -1278,7 +1300,7 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
           return_pickup_time: form.round_trip && !form.return_pickup_time ? v : form.return_pickup_time,
         })}
       />
-      <Field label="Appointment time" v={form.appointment_time} on={(v) => setForm({ ...form, appointment_time: v })} type="time" />
+      <TimePickerField label="Appointment time" value={form.appointment_time} onChange={(v) => setForm({ ...form, appointment_time: v })} />
 
       <label className="flex flex-col gap-1 text-sm col-span-2">
         <span className="portal-label">Dropoff address</span>
@@ -1355,7 +1377,10 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
                 booking
               />
               <TimePickerField label="Return pickup time" value={form.return_pickup_time} pickupDate={form.return_date || form.pickup_date} enforceLeadTime onChange={(v) => setForm({ ...form, return_pickup_time: v })} required />
-              <Field label="Return dropoff time" v={form.return_dropoff_time} on={(v) => setForm({ ...form, return_dropoff_time: v })} type="time" />
+              <TimePickerField label="Return dropoff time" value={form.return_dropoff_time} onChange={(v) => setForm({ ...form, return_dropoff_time: v })} />
+              <Field label="Return pickup building" v={form.return_pickup_building} on={(v) => setForm({ ...form, return_pickup_building: v })} placeholder="e.g. Medical Arts Building B" />
+              <Field label="Return pickup doctor / office" v={form.return_pickup_doctor} on={(v) => setForm({ ...form, return_pickup_doctor: v })} placeholder="e.g. Dr. Smith" />
+              <Field label="Return pickup suite" v={form.return_pickup_suite} on={(v) => setForm({ ...form, return_pickup_suite: v })} placeholder="e.g. Suite 210" />
               <div className="col-span-2 -mt-1 text-[11px] text-muted-foreground">
                 Defaults to your pickup date. Change it if the patient returns on a different day (e.g. after surgery).
               </div>
@@ -1383,25 +1408,30 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
         <label className="flex flex-col gap-1 text-sm col-span-2">
           <span className="portal-label">Payer (who pays for this trip)</span>
           <select
-            value={form.payer_id || ""}
-            onChange={(e) => setForm({ ...form, payer_id: e.target.value })}
+            value={form.payer_id || (form.payer === "Medicaid" ? "medicaid" : "self")}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "self") { setForm({ ...form, payer_id: "", payer: "Self Payer" }); return; }
+              if (v === "medicaid") { setForm({ ...form, payer_id: "", payer: "Medicaid", is_medicaid_patient: true }); return; }
+              const p = (payersQ.data ?? []).find((x: any) => x.id === v);
+              setForm({ ...form, payer_id: v, payer: p?.name ?? "" });
+            }}
             className="portal-select"
           >
-            <option value="">Self-pay / bill later</option>
+            <option value="self">Self Payer (no third-party payer)</option>
+            {form.is_medicaid_patient && <option value="medicaid">Medicaid</option>}
             {(payersQ.data ?? []).map((p: any) => (
               <option key={p.id} value={p.id}>{p.name}{p.email ? ` — ${p.email}` : ""}</option>
             ))}
           </select>
           <span className="text-[11px] text-muted-foreground">
             Only cards saved to the selected payer will be usable when this trip is charged.
-            {" "}
-            <Link to="/dashboard" search={{ tab: "payers" } as any} className="underline">Manage payers</Link>.
+            {canManagePayers && (<>
+              {" "}
+              <Link to="/dashboard" search={{ tab: "payers" } as any} className="underline">Manage payers</Link>.
+            </>)}
           </span>
         </label>
-      )}
-
-      {canPickPayer && (
-        <Field label="Payer name (free text, optional label)" v={form.payer} on={(v) => setForm({ ...form, payer: v })} className="col-span-2" />
       )}
       {!isDelivery && (
         <label className="flex flex-col gap-1 text-sm col-span-2">
@@ -1804,6 +1834,12 @@ function TripDetailView({
 }) {
   const t: any = trip;
   const [editing, setEditing] = useState(false);
+  const detailPayersQ = useQuery({
+    queryKey: ["my-payers-picker"],
+    queryFn: () => listMyPayers(),
+    enabled: portal === "facility" || portal === "provider",
+    staleTime: 60_000,
+  });
   const [saving, setSaving] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState<null | { onProceed: () => void }>(null);
   const qc = useQueryClient();
@@ -2011,7 +2047,13 @@ function TripDetailView({
   const readOnly = (v: unknown) => <div>{v == null || v === "" ? <span className="text-muted-foreground">—</span> : String(v)}</div>;
 
   const input = (k: keyof EditableFields, allowed: boolean, opts?: { type?: string; placeholder?: string }) =>
-    editing && allowed ? (
+    editing && allowed && opts?.type === "time" ? (
+      <TimeSelect
+        value={String(form[k] ?? "")}
+        onChange={(v) => setField(k, v)}
+        className="text-sm"
+      />
+    ) : editing && allowed ? (
       <input
         type={opts?.type ?? "text"}
         value={form[k]}
@@ -2210,8 +2252,12 @@ function TripDetailView({
               {!isDelivery && (
                 <>
                   <Row label="Date of birth">{readOnly(t.patient_date_of_birth)}</Row>
-                  <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
-                  <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
+                  {t.is_medicaid_patient && (
+                    <>
+                      <Row label="Medicaid #">{readOnly(t.medicaid_number)}</Row>
+                      <Row label="Medicaid plan">{readOnly(t.medicaid_plan)}</Row>
+                    </>
+                  )}
                   <Row label="Emergency contact">{input("emergency_contact_name", canEditAll)}</Row>
                   <Row label="Emergency phone">{input("emergency_contact_phone", canEditAll, { type: "tel" })}</Row>
                 </>
@@ -2257,6 +2303,9 @@ function TripDetailView({
                     <Row label="Return date">{input("return_date", canEditAll, { type: "date" })}</Row>
                     <Row label="Return pickup">{input("return_pickup_time", canEditAll, { type: "time" })}</Row>
                     <Row label="Return dropoff">{input("return_dropoff_time", canEditAll, { type: "time" })}</Row>
+                    <Row label="Return building">{readOnly(t.return_pickup_building)}</Row>
+                    <Row label="Return doctor / office">{readOnly(t.return_pickup_doctor)}</Row>
+                    <Row label="Return suite">{readOnly(t.return_pickup_suite)}</Row>
                   </div>
                 )}
               </div>
@@ -2349,13 +2398,17 @@ function TripDetailView({
                       onChange={(e) => setField("payer", e.target.value)}
                       className="border border-border rounded-sm px-2 py-1 text-sm bg-background"
                     >
-                      <option value="">—</option>
-                      <option value="Patient">Patient</option>
-                      <option value="Facility">Facility</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Medicaid">Medicaid</option>
-                      <option value="Broker">Broker</option>
-                      <option value="Other">Other</option>
+                      <option value="Self Payer">Self Payer</option>
+                      {t.is_medicaid_patient && <option value="Medicaid">Medicaid</option>}
+                      {(detailPayersQ.data ?? []).map((p: any) => (
+                        <option key={p.id} value={p.name}>{p.name}</option>
+                      ))}
+                      {form.payer &&
+                        form.payer !== "Self Payer" &&
+                        form.payer !== "Medicaid" &&
+                        !(detailPayersQ.data ?? []).some((p: any) => p.name === form.payer) && (
+                          <option value={form.payer}>{form.payer}</option>
+                        )}
                     </select>
                   ) : (
                     <span className="font-semibold">{t.payer ?? "—"}</span>
@@ -2976,6 +3029,7 @@ function WeeklyWorkHoursCard() {
                 <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Start</div>
                 <input
                   type="time"
+                  step={300}
                   value={d.start}
                   disabled={d.closed}
                   onChange={(e) => update(k, { start: e.target.value })}
@@ -2986,6 +3040,7 @@ function WeeklyWorkHoursCard() {
                 <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">End</div>
                 <input
                   type="time"
+                  step={300}
                   value={d.end}
                   disabled={d.closed}
                   onChange={(e) => update(k, { end: e.target.value })}

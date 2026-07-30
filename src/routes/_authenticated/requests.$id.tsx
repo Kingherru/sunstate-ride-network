@@ -11,6 +11,7 @@ import {
 } from "@/lib/requests.functions";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { TimeSelect } from "@/components/ui/time-picker-field";
 
 
 export const Route = createFileRoute("/_authenticated/requests/$id")({
@@ -481,8 +482,7 @@ function RescheduleForm({
           />
         </Field>
         <Field label="Pickup time">
-          <input type="time" required value={v.pickupTime}
-            onChange={(e) => set("pickupTime", e.target.value)}
+          <TimeSelect value={v.pickupTime} onChange={(nv) => set("pickupTime", nv)} required
             className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm" />
         </Field>
         <Field label="Pickup address" wide>
