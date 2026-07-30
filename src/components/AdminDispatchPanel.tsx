@@ -21,7 +21,7 @@ import {
   adminCancelTrip,
   listProvidersForZone,
 } from "@/lib/system-ids.functions";
-import { suggestProvidersForTrip, offerTripPriority } from "@/lib/assignment.functions";
+import { suggestProvidersForTrip, offerTripPriority, autoAssignTrip } from "@/lib/assignment.functions";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 
 export function AdminDispatchPanel() {
