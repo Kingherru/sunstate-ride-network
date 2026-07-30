@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { updateTripStatus, updateTripDetails } from "@/lib/trips.functions";
+import { updateTripStatus, updateTripDetails, setReservationQuote } from "@/lib/trips.functions";
 import {
   listConnectedProviders,
   listTripReferralHistory,
@@ -156,6 +156,7 @@ export function ReservationReviewDialog({
   const qc = useQueryClient();
   const update = useServerFn(updateTripStatus);
   const saveDetails = useServerFn(updateTripDetails);
+  const saveQuote = useServerFn(setReservationQuote);
   const refer = useServerFn(referTrip);
   const respond = useServerFn(respondToReferral);
   const loadConnected = useServerFn(listConnectedProviders);
@@ -166,6 +167,10 @@ export function ReservationReviewDialog({
   const [declineReason, setDeclineReason] = useState("");
   const [providerPickerOpen, setProviderPickerOpen] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
+  const [quoteEditing, setQuoteEditing] = useState(false);
+  const [quoteInput, setQuoteInput] = useState(() =>
+    row.estimated_cost_cents != null ? (row.estimated_cost_cents / 100).toFixed(2) : "",
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -321,19 +326,33 @@ export function ReservationReviewDialog({
     }
   }
 
+  const parsedQuoteCents = (() => {
+    const n = Number(String(quoteInput).replace(/[^0-9.]/g, ""));
+    if (!Number.isFinite(n) || n < 0) return null;
+    return Math.round(n * 100);
+  })();
+
   async function approve() {
+    if (quoteInput.trim() !== "" && parsedQuoteCents == null) {
+      toast.error("Enter a valid quote amount before confirming");
+      return;
+    }
     setBusy("accept");
     try {
+      if (parsedQuoteCents != null && parsedQuoteCents !== (row.estimated_cost_cents ?? null)) {
+        await saveQuote({ data: { trip_id: row.id, amount_cents: parsedQuoteCents } });
+      }
       await update({ data: { trip_id: row.id, status: "accepted" } });
-      toast.success("Reservation approved — moved to Booked");
+      toast.success("Invoice sent and trip confirmed — moved to Booked");
       invalidate();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Could not approve reservation");
+      toast.error(e?.message ?? "Could not confirm this trip");
     } finally {
       setBusy(null);
     }
   }
+
 
   async function complete() {
     setBusy("complete");
@@ -405,6 +424,81 @@ export function ReservationReviewDialog({
 
         {!editing ? (
           <div className="space-y-4 py-2">
+            {canApprove && isUnconfirmed && !isPendingReferral && (
+              <section className="border-2 border-primary/40 bg-primary/5 rounded-sm p-4">
+                <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-foreground mb-2">
+                  Invoice Quote
+                </h3>
+                <p className="text-xs text-foreground/80 mb-3">
+                  This is the amount that will be sent on the invoice when you confirm this trip.
+                  Adjust it if the final agreed price is different.
+                </p>
+                <div className="flex items-end gap-3 flex-wrap">
+                  {!quoteEditing ? (
+                    <>
+                      <div>
+                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                          Quote amount to invoice
+                        </div>
+                        <div className="text-2xl font-extrabold text-foreground">
+                          {parsedQuoteCents != null ? `$${(parsedQuoteCents / 100).toFixed(2)}` : priceUsd}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setQuoteEditing(true)}
+                        className="text-xs font-bold border border-border bg-background px-3 py-2 rounded-sm hover:bg-muted"
+                      >
+                        Adjust quote
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <label className="block">
+                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-foreground mb-1">
+                          Quote amount (USD)
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-bold text-foreground">$</span>
+                          <input
+                            autoFocus
+                            inputMode="decimal"
+                            value={quoteInput}
+                            onChange={(e) => setQuoteInput(e.target.value)}
+                            placeholder="0.00"
+                            className="w-40 text-sm border border-border rounded-sm px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          />
+                        </div>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setQuoteEditing(false)}
+                        className="text-xs font-bold border border-border bg-background px-3 py-2 rounded-sm hover:bg-muted"
+                      >
+                        Done
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuoteInput(row.estimated_cost_cents != null ? (row.estimated_cost_cents / 100).toFixed(2) : "");
+                          setQuoteEditing(false);
+                        }}
+                        className="text-xs font-bold text-muted-foreground px-2 py-2 rounded-sm hover:text-foreground"
+                      >
+                        Reset
+                      </button>
+                    </>
+                  )}
+                </div>
+                {parsedQuoteCents != null && parsedQuoteCents !== (row.estimated_cost_cents ?? null) && (
+                  <div className="mt-2 text-xs font-semibold text-amber-900">
+                    Adjusted from {priceUsd}. The confirmed reservation and invoice will use $
+                    {(parsedQuoteCents / 100).toFixed(2)}.
+                  </div>
+                )}
+              </section>
+            )}
+
             <Section title="Trip Summary">
               <Field label="Trip ID"><span className="font-mono text-xs">{row.display_id ?? row.id.slice(0, 8)}</span></Field>
               <Field label="Trip Type">{isDelivery ? "Medical delivery" : (isRound ? "Round trip" : "One way")}</Field>
@@ -633,7 +727,9 @@ export function ReservationReviewDialog({
                   onClick={approve}
                   className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
                 >
-                  {busy === "accept" ? "Approving…" : "Approve reservation"}
+                  {busy === "accept"
+                    ? "Sending invoice…"
+                    : `Send Invoice & Confirm Trip${parsedQuoteCents != null ? ` · $${(parsedQuoteCents / 100).toFixed(2)}` : ""}`}
                 </button>
               </>
             )}

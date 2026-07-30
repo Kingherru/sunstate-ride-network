@@ -711,6 +711,64 @@ export const updateTripDetails = createServerFn({ method: "POST" })
   });
 
 /**
+ * Set the final approved quote amount on a reservation before the invoice is sent.
+ * Allowed for the reservation owner (created_by), the assigned provider, and ops
+ * staff (admin/dispatcher/staff/app_manager). Blocked once the trip is completed,
+ * canceled, or payment has been confirmed/paid.
+ */
+export const setReservationQuote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        trip_id: z.string().uuid(),
+        amount_cents: z.number().int().min(0).max(10_000_000),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const { data: trip, error: tripErr } = await supabase
+      .from("trips")
+      .select("id, created_by, assigned_to, status, payment_status")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    if (tripErr) throw tripErr;
+    if (!trip) throw new Error("Trip not found");
+
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    const roleSet = new Set((roles ?? []).map((r: any) => String(r.role)));
+    const isOps = ["admin", "staff", "dispatcher", "app_manager"].some((r) => roleSet.has(r));
+    const isSender = trip.created_by === userId;
+    const isProvider = trip.assigned_to === userId;
+    if (!isOps && !isSender && !isProvider) {
+      throw new Error("You do not have permission to change the quote on this trip");
+    }
+
+    const status = String(trip.status ?? "").toLowerCase();
+    if (["completed", "canceled", "cancelled", "no_show", "refunded"].includes(status)) {
+      throw new Error("This trip is closed — the quote can no longer be changed.");
+    }
+    const pay = String(trip.payment_status ?? "").toLowerCase();
+    if (["confirmed", "paid", "refunded"].includes(pay)) {
+      throw new Error("Payment has already been processed — the quote can no longer be changed.");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("trips")
+      .update({
+        cost_total: data.amount_cents / 100,
+        estimated_cost_cents: data.amount_cents,
+      } as never)
+      .eq("id", data.trip_id);
+    if (error) throw error;
+    return { ok: true, amount_cents: data.amount_cents };
+  });
+
+
+/**
  * List the caller's reservations in a given lifecycle bucket.
  * Uses the `reservation_state` column, which a DB trigger keeps synced from
  * status, payment, and provider assignment.
