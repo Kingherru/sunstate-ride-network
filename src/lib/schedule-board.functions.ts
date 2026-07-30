@@ -64,7 +64,7 @@ export const listMyDrivers = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("drivers")
-      .select("id, first_name, last_name, status, employment_type, availability")
+      .select("id, first_name, last_name, status, employment_type, availability, vacation_start, vacation_end")
       .eq("owner_id", context.userId)
       .order("first_name");
     if (error) throw error;

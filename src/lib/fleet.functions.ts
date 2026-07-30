@@ -38,6 +38,8 @@ export const upsertDriver = createServerFn({ method: "POST" })
     } | null;
     service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
     primary_vehicle_id?: string | null;
+    vacation_start?: string | null;
+    vacation_end?: string | null;
     contractor_pricing?: {
       hourly_rate_cents?: number | null;
       daily_rate_cents?: number | null;
@@ -58,6 +60,8 @@ export const upsertDriver = createServerFn({ method: "POST" })
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.contractor_pricing === undefined) delete row.contractor_pricing;
     if (data.primary_vehicle_id === undefined) delete row.primary_vehicle_id;
+    if (data.vacation_start === undefined) delete row.vacation_start;
+    if (data.vacation_end === undefined) delete row.vacation_end;
     if (data.employment_type && data.employment_type !== "independent_contractor") {
       row.contractor_pricing = {};
     }
