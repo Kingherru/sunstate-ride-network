@@ -539,7 +539,7 @@ function RequestRidePage() {
           </div>
         )}
 
-        <form onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
+        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
 
           {/* Patient */}
           <fieldset className="space-y-6">
