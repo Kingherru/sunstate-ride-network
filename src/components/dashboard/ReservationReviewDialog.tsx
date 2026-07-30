@@ -32,6 +32,10 @@ type Row = {
   return_pickup_time: string | null;
   return_dropoff_time: string | null;
   return_date: string | null;
+  return_pickup_building?: string | null;
+  return_pickup_doctor?: string | null;
+  return_pickup_suite?: string | null;
+  is_medicaid_patient?: boolean | null;
   round_trip: boolean | null;
   trip_type?: string | null;
   transport_type: string | null;
@@ -197,6 +201,9 @@ export function ReservationReviewDialog({
     return_date: row.return_date ?? "",
     return_pickup_time: row.return_pickup_time ?? "",
     return_dropoff_time: row.return_dropoff_time ?? "",
+    return_pickup_building: row.return_pickup_building ?? "",
+    return_pickup_doctor: row.return_pickup_doctor ?? "",
+    return_pickup_suite: row.return_pickup_suite ?? "",
     patient_phone: row.patient_phone ?? "",
     patient_email: row.patient_email ?? "",
     emergency_contact_name: row.emergency_contact_name ?? "",
@@ -427,6 +434,9 @@ export function ReservationReviewDialog({
                   <Field label="Return Date">{formatDateLong(row.return_date || row.pickup_date)}</Field>
                   <Field label="Return Pickup Time">{formatTime12(row.return_pickup_time)}</Field>
                   <Field label="Return Drop-off Time">{formatTime12(row.return_dropoff_time)}</Field>
+                  {row.return_pickup_building && <Field label="Return Building">{row.return_pickup_building}</Field>}
+                  {row.return_pickup_doctor && <Field label="Return Doctor / Office">{row.return_pickup_doctor}</Field>}
+                  {row.return_pickup_suite && <Field label="Return Suite">{row.return_pickup_suite}</Field>}
                 </>
               )}
             </Section>
@@ -443,8 +453,8 @@ export function ReservationReviewDialog({
 
             <Section title="Payer & Authorization">
               <Field label="Payer">{row.payer || "Self Payer"}</Field>
-              {row.medicaid_number && <Field label="Medicaid #">{row.medicaid_number}</Field>}
-              {row.medicaid_plan && <Field label="Medicaid Plan">{row.medicaid_plan}</Field>}
+              {row.is_medicaid_patient && row.medicaid_number && <Field label="Medicaid #">{row.medicaid_number}</Field>}
+              {row.is_medicaid_patient && row.medicaid_plan && <Field label="Medicaid Plan">{row.medicaid_plan}</Field>}
               {row.authorization_number && <Field label="Authorization #">{row.authorization_number}</Field>}
               {row.diagnosis_code && <Field label="Diagnosis Code">{row.diagnosis_code}</Field>}
             </Section>
