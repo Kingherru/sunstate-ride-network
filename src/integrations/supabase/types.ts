@@ -612,6 +612,8 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string | null
+          vacation_end: string | null
+          vacation_start: string | null
         }
         Insert: {
           availability?: Json
@@ -633,6 +635,8 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string | null
+          vacation_end?: string | null
+          vacation_start?: string | null
         }
         Update: {
           availability?: Json
@@ -654,6 +658,8 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string | null
+          vacation_end?: string | null
+          vacation_start?: string | null
         }
         Relationships: [
           {
@@ -5060,6 +5066,10 @@ export type Database = {
           zip_count: number
           zone_id: string
         }[]
+      }
+      driver_on_vacation: {
+        Args: { _driver_id: string; _on?: string }
+        Returns: boolean
       }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {

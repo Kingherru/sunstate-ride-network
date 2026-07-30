@@ -56,6 +56,11 @@ function DriversCard() {
                     Services: {(d.service_capabilities as string[]).map(capLabel).join(", ")}
                   </div>
                 )}
+                {d.vacation_start && d.vacation_end && (
+                  <div className="text-[11px] font-bold text-accent-foreground bg-accent/30 inline-block rounded-sm px-1.5 py-0.5 mt-0.5">
+                    Vacation: {d.vacation_start} → {d.vacation_end}
+                  </div>
+                )}
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   Vehicle: {veh ? `${veh.name}${veh.plate ? ` (${veh.plate})` : ""}` : "unassigned"}
                 </div>
@@ -183,6 +188,8 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
     availability: initialAvail,
     service_capabilities: (d.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
     primary_vehicle_id: (d.primary_vehicle_id ?? "") as string,
+    vacation_start: (d.vacation_start ?? "") as string,
+    vacation_end: (d.vacation_end ?? "") as string,
     pricing: {
       hourly_rate: centsToDollars(initialPricing.hourly_rate_cents),
       daily_rate: centsToDollars(initialPricing.daily_rate_cents),
@@ -219,6 +226,8 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
       availability: f.availability,
       service_capabilities: f.service_capabilities,
       primary_vehicle_id: f.primary_vehicle_id || null,
+      vacation_start: f.vacation_start || null,
+      vacation_end: f.vacation_end || null,
       contractor_pricing: (isHourly || isDaily || isContractor) ? {
         hourly_rate_cents: isHourly ? dollarsToCents(f.pricing.hourly_rate) : null,
         daily_rate_cents: isDaily ? dollarsToCents(f.pricing.daily_rate) : null,
@@ -259,6 +268,25 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
             {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </label>
+
+        <div className="sm:col-span-2 border border-border rounded-sm p-3 bg-background/60">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="font-bold text-sm">Vacation mode</span>
+            <span className="text-[11px] text-muted-foreground">
+              While active, this driver is hidden from the schedule board and cannot be assigned new trips.
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            <I l="Vacation start" v={f.vacation_start} on={(v) => set({ ...f, vacation_start: v })} type="date" />
+            <I l="Vacation end" v={f.vacation_end} on={(v) => set({ ...f, vacation_end: v })} type="date" />
+          </div>
+          {(f.vacation_start || f.vacation_end) && (
+            <button type="button" className="mt-2 text-xs font-bold text-primary hover:underline"
+                    onClick={() => set({ ...f, vacation_start: "", vacation_end: "" })}>
+              Clear vacation dates
+            </button>
+          )}
+        </div>
 
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Primary vehicle</span>

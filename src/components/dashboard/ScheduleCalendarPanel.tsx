@@ -37,7 +37,11 @@ function fmt12h(hhmm: string) {
   const h = Number(hhmm.slice(0, 2));
   const suffix = h >= 12 ? "PM" : "AM";
   const hh = h % 12 === 0 ? 12 : h % 12;
-  return `${hh} ${suffix}`;
+  return `${hh}:00 ${suffix}`;
+}
+function isOnVacation(d: any, iso: string) {
+  if (!d?.vacation_start || !d?.vacation_end) return false;
+  return iso >= String(d.vacation_start).slice(0, 10) && iso <= String(d.vacation_end).slice(0, 10);
 }
 function fmtTime12(t: string | null | undefined) {
   if (!t) return "";
@@ -109,7 +113,18 @@ export function ScheduleCalendarPanel() {
   );
 
   const drivers = useMemo(() => {
-    let list = allDrivers;
+    // Only drivers actually on duty for the selected day: active, not on vacation,
+    // and not marked off for this day of the week.
+    let list = allDrivers.filter((d: any) => {
+      if (d.status !== "active") return false;
+      if (isOnVacation(d, date)) return false;
+      const a = d?.availability;
+      if (a && typeof a === "object" && a.mode === "weekly") {
+        const day = a.days?.[dow];
+        if (!day || day.off) return false;
+      }
+      return true;
+    });
     if (driverFilter !== "all" && driverFilter !== "unassigned") {
       list = list.filter((d: any) => d.id === driverFilter);
     }
@@ -118,13 +133,12 @@ export function ScheduleCalendarPanel() {
       list = list.filter((d: any) => active.has(d.id));
     }
     return list;
-  }, [allDrivers, driverFilter, hideEmptyDrivers, reservations]);
+  }, [allDrivers, driverFilter, hideEmptyDrivers, reservations, date, dow]);
 
   // Hour columns: work-hour range, extended to include any reservation times that fall outside.
   const hours = useMemo(() => {
-    if (closed && reservations.length === 0) return [];
-    let minH = closed ? Infinity : workStartH;
-    let maxH = closed ? -Infinity : workEndH;
+    let minH = closed ? 6 : Math.min(workStartH, 6);
+    let maxH = closed ? 20 : Math.max(workEndH, 20);
     reservations.forEach((r: any) => {
       const t = (r.scheduled_start_time ?? r.pickup_time ?? "").toString();
       const hh = Number(t.slice(0, 2));
@@ -149,11 +163,6 @@ export function ScheduleCalendarPanel() {
   }, [reservations]);
 
   const unassigned = reservations.filter((r: any) => !r.assigned_driver_id);
-
-  function isAfterHours(hhmm: string) {
-    const h = Number(hhmm.slice(0, 2));
-    return closed || h < workStartH || h >= workEndH;
-  }
 
   function driverDayCfg(d: any) {
     const a = d?.availability;
@@ -194,8 +203,8 @@ export function ScheduleCalendarPanel() {
       <div>
         <h2 className="text-2xl font-extrabold tracking-tight">Schedule board</h2>
         <p className="text-sm text-muted-foreground">
-          Drag a reservation into a driver column at the right time to schedule or reschedule it. The driver is notified automatically.
-          Times outside your posted work hours are shaded so after-hours trips stand out.
+          Hourly time slots run down the left, on-duty drivers across the top. Assigned trips land in their driver's time slot automatically —
+          drag a trip between drivers or hours to reschedule it. Drivers who are off duty, inactive, or in vacation mode are hidden.
         </p>
       </div>
 
@@ -237,7 +246,7 @@ export function ScheduleCalendarPanel() {
         >
           <option value="all">All drivers</option>
           <option value="unassigned">Unassigned only</option>
-          {allDrivers.map((d: any) => (
+          {allDrivers.filter((d: any) => !isOnVacation(d, date)).map((d: any) => (
             <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
           ))}
         </select>
@@ -365,7 +374,7 @@ export function ScheduleCalendarPanel() {
             <thead className="bg-background/60">
               <tr>
                 <th className="sticky left-0 z-10 bg-background/80 border-r border-border text-left text-xs uppercase tracking-wider text-muted-foreground font-bold px-3 py-2 w-44">
-                  Time
+                  Time slot
                 </th>
                 {drivers.map((d: any) => {
                   const dTripCount = reservations.filter((r: any) => r.assigned_driver_id === d.id).length;
@@ -395,17 +404,10 @@ export function ScheduleCalendarPanel() {
             </thead>
             <tbody>
               {hours.map((h) => {
-                const after = isAfterHours(h);
                 return (
                   <tr key={h} className="border-t border-border">
-                    <td
-                      className={`sticky left-0 z-10 border-r border-border px-3 py-2 font-bold whitespace-nowrap ${after ? "bg-accent/15" : "bg-card"}`}
-                      title={after ? "Outside posted work hours" : undefined}
-                    >
-                      <span className="font-mono text-xs text-primary">{fmt12h(h)}</span>
-                      <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-                        {after ? "After hours" : "Work hours"}
-                      </div>
+                    <td className="sticky left-0 z-10 bg-card border-r border-border px-3 py-2 font-bold whitespace-nowrap">
+                      <span className="font-mono text-sm text-primary">{fmt12h(h)}</span>
                     </td>
                     {drivers.map((d: any) => {
                       const key = `${d.id}__${h}`;
@@ -414,10 +416,10 @@ export function ScheduleCalendarPanel() {
                       return (
                         <td
                           key={d.id}
-                          className={`border-r border-border align-top p-1 min-h-[60px] ${after ? "bg-accent/15" : unavail ? "bg-muted/40" : "hover:bg-primary/5"}`}
+                          className={`border-r border-border align-top p-1 min-h-[60px] ${unavail ? "bg-muted/40" : "hover:bg-primary/5"}`}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => onDrop(e, d.id, h)}
-                          title={unavail ? "Driver is off / outside their working hours" : after ? "Outside posted work hours" : undefined}
+                          title={unavail ? "Driver is off / outside their working hours" : undefined}
                         >
                           <div className="space-y-1 min-h-[54px]">
                             {cell.map((r: any) => (
