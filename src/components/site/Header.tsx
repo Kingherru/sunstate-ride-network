@@ -57,7 +57,7 @@ export function Header() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
     setMobileOpen(false);
-    setSignInOpen(false);
+    
     setMoreOpen(false);
     setServicesOpen(false);
   }, [pathname]);
