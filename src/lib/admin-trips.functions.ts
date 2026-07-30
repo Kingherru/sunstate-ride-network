@@ -188,6 +188,15 @@ export const pushReservationToProvider = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireOps(context);
+
+    // Reject anything that is not an approved, active transportation provider
+    const { data: eligible, error: eErr } = await (context.supabase as any).rpc(
+      "is_eligible_transport_provider",
+      { _user_id: data.provider_user_id },
+    );
+    if (eErr) throw eErr;
+    if (!eligible) throw new Error("That account is not an approved transportation provider");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: r, error: rErr } = await (supabaseAdmin as any)
