@@ -79,8 +79,8 @@ export const adminAssignTrip = createServerFn({ method: "POST" })
       if (trip?.created_by === data.assigned_to) {
         throw new Error("Provider cannot be the trip creator.");
       }
-      const { data: isApproved } = await context.supabase.rpc("is_approved_provider", { _user_id: data.assigned_to });
-      if (!isApproved) throw new Error("Assignee is not an approved provider.");
+      const { data: isEligible } = await (context.supabase as any).rpc("is_eligible_transport_provider", { _user_id: data.assigned_to });
+      if (!isEligible) throw new Error("Assignee is not an approved transportation provider.");
     }
 
     const patch: any = { assigned_to: data.assigned_to };
