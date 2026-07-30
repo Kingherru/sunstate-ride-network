@@ -54,8 +54,18 @@ type HistoryTrip = {
 
 type ViewMode = "list" | "weekly" | "monthly";
 type Preset = "7d" | "30d" | "week" | "month" | "last_month" | "all" | "custom";
+type CompletionFilter = "all" | "completed" | "needs_completion";
 
 const COMPLETED_STATUSES = ["completed", "complete", "delivered", "paid"];
+const CANCELED_STATUSES = ["canceled", "cancelled", "declined", "expired"];
+
+function isCompleted(t: { status: string | null }): boolean {
+  return COMPLETED_STATUSES.includes((t.status ?? "").toLowerCase());
+}
+function isCanceled(t: { status: string | null }): boolean {
+  return CANCELED_STATUSES.includes((t.status ?? "").toLowerCase());
+}
+
 
 function toIso(d: Date): string {
   const y = d.getFullYear();
