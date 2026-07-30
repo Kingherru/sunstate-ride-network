@@ -46,9 +46,7 @@ export const listDispatchCounties = createServerFn({ method: "GET" })
 export const listDispatchCountyStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("dispatch_county_stats", {
-      _region_id: undefined as unknown as string,
-    });
+    const { data, error } = await context.supabase.rpc("dispatch_county_stats", { _region_id: null as unknown as string });
     if (error) throw error;
     return (data ?? []) as Array<{
       county_id: string; code: string; name: string;
