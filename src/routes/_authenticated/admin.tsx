@@ -7,6 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   LayoutDashboard,
   Users as UsersIcon,
+  UserCog,
   Building2,
   Building,
   Car,
@@ -45,6 +46,7 @@ import { AdminFinanceMonitoring } from "@/components/admin/AdminFinanceMonitorin
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
 import { AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
 import { AdminDirectReferralsPanel } from "@/components/admin/AdminDirectReferralsPanel";
+import { DispatcherAccountPanel, useDispatcherProfile } from "@/components/admin/DispatcherAccountPanel";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
@@ -388,7 +390,8 @@ function AdminPage() {
 
 function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabilities> }) {
   switch (tab) {
-    case "overview": return <OverviewTab />;
+    case "overview": return isDispatchOnly(caps) ? <DispatcherAccountPanel /> : <OverviewTab />;
+    case "account": return <DispatcherAccountPanel />;
     case "notifications": return <NotificationsPanel />;
     case "users": return caps.isAdmin ? <AdminUsersPanel /> : <NoAccess />;
     case "providers": return <ProvidersTab caps={caps} />;
