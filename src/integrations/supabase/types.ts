@@ -1670,13 +1670,6 @@ export type Database = {
             foreignKeyName: "notification_email_queue_ride_request_id_fkey"
             columns: ["ride_request_id"]
             isOneToOne: false
-            referencedRelation: "open_ride_requests_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_email_queue_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
             referencedRelation: "ride_requests"
             referencedColumns: ["id"]
           },
@@ -1717,13 +1710,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "notifications_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
-            referencedRelation: "open_ride_requests_public"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "notifications_ride_request_id_fkey"
             columns: ["ride_request_id"]
@@ -2899,13 +2885,6 @@ export type Database = {
             foreignKeyName: "ride_request_history_ride_request_id_fkey"
             columns: ["ride_request_id"]
             isOneToOne: false
-            referencedRelation: "open_ride_requests_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ride_request_history_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
             referencedRelation: "ride_requests"
             referencedColumns: ["id"]
           },
@@ -2946,13 +2925,6 @@ export type Database = {
           snapshot?: Json
         }
         Relationships: [
-          {
-            foreignKeyName: "ride_request_revisions_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
-            referencedRelation: "open_ride_requests_public"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "ride_request_revisions_ride_request_id_fkey"
             columns: ["ride_request_id"]
@@ -3773,13 +3745,6 @@ export type Database = {
             foreignKeyName: "trip_payments_ride_request_id_fkey"
             columns: ["ride_request_id"]
             isOneToOne: false
-            referencedRelation: "open_ride_requests_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trip_payments_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
             referencedRelation: "ride_requests"
             referencedColumns: ["id"]
           },
@@ -4513,13 +4478,6 @@ export type Database = {
             foreignKeyName: "trips_ride_request_id_fkey"
             columns: ["ride_request_id"]
             isOneToOne: false
-            referencedRelation: "open_ride_requests_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trips_ride_request_id_fkey"
-            columns: ["ride_request_id"]
-            isOneToOne: false
             referencedRelation: "ride_requests"
             referencedColumns: ["id"]
           },
@@ -4855,114 +4813,6 @@ export type Database = {
           preferred_zip_codes?: string[] | null
           region?: string | null
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      open_ride_requests_public: {
-        Row: {
-          appointment_time: string | null
-          created_at: string | null
-          dispatch_source: string | null
-          distance_miles: number | null
-          dropoff_address: string | null
-          dropoff_city: string | null
-          dropoff_lat: number | null
-          dropoff_lng: number | null
-          dropoff_zip: string | null
-          estimated_cost_cents: number | null
-          estimated_duration_seconds: number | null
-          estimated_duration_traffic_seconds: number | null
-          id: string | null
-          is_medicaid: boolean | null
-          needs_wheelchair: boolean | null
-          payer: string | null
-          pickup_address: string | null
-          pickup_address_details: string | null
-          pickup_city: string | null
-          pickup_date: string | null
-          pickup_lat: number | null
-          pickup_lng: number | null
-          pickup_time: string | null
-          pickup_zip: string | null
-          requester_user_id: string | null
-          return_date: string | null
-          return_dropoff_time: string | null
-          return_pickup_time: string | null
-          round_trip: boolean | null
-          service_level: Database["public"]["Enums"]["service_level"] | null
-          status: string | null
-          transport_type: string | null
-          trip_type: string | null
-        }
-        Insert: {
-          appointment_time?: string | null
-          created_at?: string | null
-          dispatch_source?: string | null
-          distance_miles?: number | null
-          dropoff_address?: string | null
-          dropoff_city?: string | null
-          dropoff_lat?: number | null
-          dropoff_lng?: number | null
-          dropoff_zip?: string | null
-          estimated_cost_cents?: number | null
-          estimated_duration_seconds?: number | null
-          estimated_duration_traffic_seconds?: number | null
-          id?: string | null
-          is_medicaid?: never
-          needs_wheelchair?: boolean | null
-          payer?: string | null
-          pickup_address?: string | null
-          pickup_address_details?: string | null
-          pickup_city?: string | null
-          pickup_date?: string | null
-          pickup_lat?: number | null
-          pickup_lng?: number | null
-          pickup_time?: string | null
-          pickup_zip?: string | null
-          requester_user_id?: string | null
-          return_date?: string | null
-          return_dropoff_time?: string | null
-          return_pickup_time?: string | null
-          round_trip?: boolean | null
-          service_level?: Database["public"]["Enums"]["service_level"] | null
-          status?: string | null
-          transport_type?: string | null
-          trip_type?: string | null
-        }
-        Update: {
-          appointment_time?: string | null
-          created_at?: string | null
-          dispatch_source?: string | null
-          distance_miles?: number | null
-          dropoff_address?: string | null
-          dropoff_city?: string | null
-          dropoff_lat?: number | null
-          dropoff_lng?: number | null
-          dropoff_zip?: string | null
-          estimated_cost_cents?: number | null
-          estimated_duration_seconds?: number | null
-          estimated_duration_traffic_seconds?: number | null
-          id?: string | null
-          is_medicaid?: never
-          needs_wheelchair?: boolean | null
-          payer?: string | null
-          pickup_address?: string | null
-          pickup_address_details?: string | null
-          pickup_city?: string | null
-          pickup_date?: string | null
-          pickup_lat?: number | null
-          pickup_lng?: number | null
-          pickup_time?: string | null
-          pickup_zip?: string | null
-          requester_user_id?: string | null
-          return_date?: string | null
-          return_dropoff_time?: string | null
-          return_pickup_time?: string | null
-          round_trip?: boolean | null
-          service_level?: Database["public"]["Enums"]["service_level"] | null
-          status?: string | null
-          transport_type?: string | null
-          trip_type?: string | null
         }
         Relationships: []
       }
@@ -5375,6 +5225,44 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_open_ride_requests: {
+        Args: never
+        Returns: {
+          appointment_time: string
+          created_at: string
+          dispatch_source: string
+          distance_miles: number
+          dropoff_address: string
+          dropoff_city: string
+          dropoff_lat: number
+          dropoff_lng: number
+          dropoff_zip: string
+          estimated_cost_cents: number
+          estimated_duration_seconds: number
+          estimated_duration_traffic_seconds: number
+          id: string
+          is_medicaid: boolean
+          needs_wheelchair: boolean
+          payer: string
+          pickup_address: string
+          pickup_address_details: string
+          pickup_city: string
+          pickup_date: string
+          pickup_lat: number
+          pickup_lng: number
+          pickup_time: string
+          pickup_zip: string
+          requester_user_id: string
+          return_date: string
+          return_dropoff_time: string
+          return_pickup_time: string
+          round_trip: boolean
+          service_level: string
+          status: string
+          transport_type: string
+          trip_type: string
+        }[]
       }
       list_unmapped_zips: {
         Args: never
