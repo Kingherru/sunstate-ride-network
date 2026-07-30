@@ -284,8 +284,16 @@ function AdminPage() {
     .map((g) => ({ ...g, items: g.items.filter((i) => i.visible(caps)) }))
     .filter((g) => g.items.length > 0);
 
+  const dispatchOnly = isDispatchOnly(caps);
+  const fallbackId: TabId = dispatchOnly ? "account" : "overview";
   const activeItem =
-    visibleGroups.flatMap((g) => g.items).find((i) => i.id === tab) ?? { id: "overview", label: "Overview" };
+    visibleGroups.flatMap((g) => g.items).find((i) => i.id === tab)
+    ?? { id: fallbackId, label: dispatchOnly ? "Account" : "Overview" };
+
+  const displayName =
+    [dispatcherProfile?.first_name, dispatcherProfile?.last_name].filter(Boolean).join(" ").trim()
+    || caps.email
+    || "Dispatcher";
 
   return (
     <SidebarProvider>
@@ -293,9 +301,12 @@ function AdminPage() {
         <Sidebar collapsible="icon">
           <SidebarHeader className="border-b border-border">
             <div className="px-2 py-2 flex items-center justify-between gap-2">
-              <div>
+              <div className="min-w-0">
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">My Florida NEMT</p>
-                <p className="text-sm font-extrabold tracking-tight">Admin</p>
+                <p className="text-sm font-extrabold tracking-tight">{dispatchOnly ? "Dispatcher" : "Admin"}</p>
+                {dispatchOnly && (
+                  <p className="text-[11px] text-muted-foreground truncate">{displayName}</p>
+                )}
               </div>
               <AdminNotificationBell onOpen={() => handleAdminTab("notifications")} />
 
