@@ -236,11 +236,12 @@ export const setUserPrimaryRole = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sb = (context as any).supabase;
 
-    // Snapshot previous state
+    // Snapshot previous state (admin client — RLS would hide other users' roles)
     const { data: userRes, error: getErr } = await supabaseAdmin.auth.admin.getUserById(data.user_id);
     if (getErr || !userRes?.user) throw new Error("User not found.");
     const prevPortal = (userRes.user.user_metadata?.portal as string) ?? null;
-    const { data: prevRoleRows } = await sb.from("user_roles").select("role").eq("user_id", data.user_id);
+    const { data: prevRoleRows } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", data.user_id);
     const prevStaff = (prevRoleRows ?? []).map((r: any) => r.role as string);
     const prevRole = primaryRoleFromState(prevPortal, prevStaff);
 
@@ -262,6 +263,20 @@ export const setUserPrimaryRole = createServerFn({ method: "POST" })
       if (insErr) throw insErr;
     }
 
+    // Read back and confirm the change actually persisted.
+    const { data: afterUser } = await supabaseAdmin.auth.admin.getUserById(data.user_id);
+    const { data: afterRoleRows } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", data.user_id);
+    const newRole = primaryRoleFromState(
+      (afterUser?.user?.user_metadata?.portal as string) ?? null,
+      (afterRoleRows ?? []).map((r: any) => r.role as string),
+    );
+    if (newRole !== data.role) {
+      throw new Error(
+        `Role change did not save (account is still ${ROLE_LABELS[newRole as ManageableRole] ?? newRole}). Please try again.`,
+      );
+    }
+
     await sb.rpc("log_staff_action", {
       _action: "user_role_changed",
       _target_kind: "user",
@@ -275,8 +290,9 @@ export const setUserPrimaryRole = createServerFn({ method: "POST" })
       },
     });
 
-    return { ok: true, previous_role: prevRole, new_role: data.role };
+    return { ok: true, previous_role: prevRole, new_role: newRole };
   });
+
 
 
 /* ------------------------------------------------------------------ */
