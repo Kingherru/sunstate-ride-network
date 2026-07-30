@@ -373,6 +373,7 @@ function TripRow({
     enabled: open,
     queryFn: () => suggestFn({ data: { trip_id: t.id } }),
   });
+  const autoFn = useServerFn(autoAssignTrip);
   const mOffer = useMutation({
     mutationFn: (provider_user_id: string) => offerFn({ data: { trip_id: t.id, provider_user_id } }),
     onSuccess: () => {
@@ -381,6 +382,18 @@ function TripRow({
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to send offer"),
   });
+  const mAuto = useMutation({
+    mutationFn: () => autoFn({ data: { trip_id: t.id } }),
+    onSuccess: (r: any) => {
+      if (r?.assigned_to) toast.success("Auto-assigned to the best eligible provider");
+      else toast.info("No eligible provider available — left unassigned for manual dispatch");
+      for (const k of ["disp", "my-trips", "my-reservations", "day-reservations", "provider-schedule", "admin-trips"]) {
+        qc.invalidateQueries({ queryKey: [k] });
+      }
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Auto-assign failed"),
+  });
+
 
   return (
     <>
