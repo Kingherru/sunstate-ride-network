@@ -10,12 +10,12 @@ export const Route = createFileRoute("/provider/login")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>) => ({
-    mode: s.mode === "signup" ? ("signup" as const) : ("signin" as const),
+    mode: s.mode === "signup" ? ("signup" as const) : undefined,
   }),
   component: PortalAuthPage,
 });
 
 function PortalAuthPage() {
   const { mode } = Route.useSearch();
-  return <PortalAuth kind="provider" initialMode={mode} />;
+  return <PortalAuth kind="provider" initialMode={mode ?? "signin"} />;
 }

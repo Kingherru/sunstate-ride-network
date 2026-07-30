@@ -149,7 +149,7 @@ export function Header() {
           </Link>
           <Link
             to="/login"
-            search={{ next: "", mode: "signup" }}
+            search={{ mode: "signup" }}
             className="hidden lg:inline-flex items-center text-sm font-bold text-foreground px-3 py-2 rounded-md hover:text-accent transition-all"
           >
             Sign Up
@@ -197,7 +197,7 @@ export function Header() {
               </Link>
               <Link
                 to="/login"
-                search={{ next: "", mode: "signup" }}
+                search={{ mode: "signup" }}
                 className="block text-sm font-bold py-3 text-foreground"
               >
                 Sign Up

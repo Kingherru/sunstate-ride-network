@@ -124,7 +124,7 @@ function MedicalDeliveriesPage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                to="/facility.login"
+                to="/facility/login"
                 className="inline-flex items-center gap-2 font-bold px-6 py-3 rounded-sm"
                 style={{ backgroundColor: ORANGE, color: NAVY }}
               >
@@ -256,7 +256,7 @@ function MedicalDeliveriesPage() {
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
-              to="/facility.login"
+              to="/facility/login"
               className="inline-flex items-center gap-2 font-bold px-6 py-3 rounded-sm"
               style={{ backgroundColor: ORANGE, color: NAVY }}
             >

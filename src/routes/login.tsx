@@ -80,8 +80,8 @@ export const Route = createFileRoute("/login")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : "",
-    mode: s.mode === "signup" ? ("signup" as const) : ("signin" as const),
+    next: typeof s.next === "string" ? s.next : undefined,
+    mode: s.mode === "signup" ? ("signup" as const) : undefined,
   }),
   component: LoginPage,
 });
@@ -90,7 +90,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const router = useRouter();
   const { next, mode } = Route.useSearch();
-  const redirectTarget = safeNext(next);
+  const redirectTarget = safeNext(next ?? "");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -263,7 +263,7 @@ function LoginPage() {
                 </p>
                 <p className="text-sm mt-6">
                   Already have an account?{" "}
-                  <Link to="/login" search={{ next: "", mode: "signin" }} className="font-bold text-primary underline underline-offset-4">
+                  <Link to="/login" search={{ mode: undefined }} className="font-bold text-primary underline underline-offset-4">
                     Sign in
                   </Link>
                 </p>
