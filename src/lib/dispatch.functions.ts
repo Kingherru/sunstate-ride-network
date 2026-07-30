@@ -18,9 +18,42 @@ export const listDispatchZones = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("dispatch_zones")
       .select("id, code, name, sort_order")
+      .eq("kind", "region")
       .order("sort_order");
     if (error) throw error;
     return data ?? [];
+  });
+
+/** Counties (the middle tier of Zone → County → ZIPs), with their parent region. */
+export const listDispatchCounties = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("dispatch_zones")
+      .select("id, code, name, region_id")
+      .eq("kind", "county")
+      .order("name");
+    if (error) throw error;
+    return (data ?? []) as Array<{
+      id: string;
+      code: string;
+      name: string;
+      region_id: string | null;
+    }>;
+  });
+
+/** Per-county rollup (ZIPs, providers, facilities, patients, active trips). */
+export const listDispatchCountyStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("dispatch_county_stats", { _region_id: null as unknown as string });
+    if (error) throw error;
+    return (data ?? []) as Array<{
+      county_id: string; code: string; name: string;
+      region_id: string | null; region_code: string | null;
+      zip_count: number; providers: number; facilities: number;
+      patients: number; active_trips: number;
+    }>;
   });
 
 export const listDispatchZoneStats = createServerFn({ method: "GET" })
@@ -41,11 +74,85 @@ export const listZoneZips = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("dispatch_zone_zips")
-      .select("zip, zone_id")
+      .select("zip, zone_id, county_id")
       .order("zip");
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []) as Array<{ zip: string; zone_id: string; county_id: string | null }>;
   });
+
+/** Admin: move an entire county (and all of its ZIPs) into another dispatch zone. */
+export const moveCountyToZone = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ county_id: z.string().uuid(), zone_id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { error: cErr } = await context.supabase
+      .from("dispatch_zones")
+      .update({ region_id: data.zone_id })
+      .eq("id", data.county_id)
+      .eq("kind", "county");
+    if (cErr) throw cErr;
+
+    const { data: moved, error: zErr } = await context.supabase
+      .from("dispatch_zone_zips")
+      .update({ zone_id: data.zone_id })
+      .eq("county_id", data.county_id)
+      .select("zip");
+    if (zErr) throw zErr;
+
+    const zips = (moved ?? []).map((r: { zip: string }) => r.zip);
+    if (zips.length) {
+      const { error: tErr } = await context.supabase
+        .from("trips")
+        .update({ dispatch_zone_id: data.zone_id })
+        .in("pickup_zip", zips);
+      if (tErr) console.error("Trip re-route failed:", tErr);
+    }
+    return { moved: zips.length };
+  });
+
+/** Admin: attach one or more ZIPs to a county (and its parent zone). */
+export const assignZipsToCounty = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        county_id: z.string().uuid(),
+        zips: z.array(z.string().regex(/^\d{5}$/)).min(1).max(2000),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { data: county, error: cErr } = await context.supabase
+      .from("dispatch_zones")
+      .select("id, region_id")
+      .eq("id", data.county_id)
+      .maybeSingle();
+    if (cErr) throw cErr;
+    if (!county?.region_id) throw new Error("That county is not attached to a dispatch zone yet.");
+
+    const rows = data.zips.map((zip) => ({
+      zip,
+      county_id: data.county_id,
+      zone_id: county.region_id as string,
+    }));
+    const { error } = await context.supabase
+      .from("dispatch_zone_zips")
+      .upsert(rows, { onConflict: "zip" });
+    if (error) throw error;
+
+    const { error: tErr } = await context.supabase
+      .from("trips")
+      .update({ dispatch_zone_id: county.region_id })
+      .in("pickup_zip", data.zips);
+    if (tErr) console.error("Trip re-route failed:", tErr);
+
+    return { count: rows.length };
+  });
+
 
 const assignZipsSchema = z.object({
   zone_id: z.string().uuid(),
