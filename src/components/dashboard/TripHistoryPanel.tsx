@@ -29,6 +29,7 @@ type HistoryTrip = {
   id: string;
   trip_number: string | null;
   status: string | null;
+  reservation_state: string | null;
   pickup_date: string;
   pickup_time: string | null;
   patient_first_name: string | null;
@@ -37,7 +38,7 @@ type HistoryTrip = {
   pickup_city: string | null;
   dropoff_address: string | null;
   dropoff_city: string | null;
-  
+
   payment_status: string | null;
   payout_status: string | null;
   cost_total: number | null;
@@ -49,6 +50,7 @@ type HistoryTrip = {
   updated_at: string | null;
   created_at: string | null;
 };
+
 
 type ViewMode = "list" | "weekly" | "monthly";
 type Preset = "7d" | "30d" | "week" | "month" | "last_month" | "all" | "custom";
