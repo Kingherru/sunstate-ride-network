@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { updateTripStatus, updateTripDetails } from "@/lib/trips.functions";
+import { updateTripStatus, updateTripDetails, setReservationQuote } from "@/lib/trips.functions";
 import {
   listConnectedProviders,
   listTripReferralHistory,
