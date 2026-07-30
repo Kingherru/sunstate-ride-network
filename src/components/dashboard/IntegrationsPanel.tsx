@@ -51,11 +51,17 @@ export function IntegrationsPanel() {
           );
         })}
       </div>
-      <div className="bg-muted/40 border border-border rounded-sm p-4 text-xs text-muted-foreground">
+      <div className="bg-muted/40 border border-border rounded-sm p-4 text-xs text-muted-foreground space-y-1">
         <p className="font-bold text-foreground mb-1">Webhook URLs (give these to the vendor):</p>
         <p>Inbound hiBambi: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/hibambi/webhook</code></p>
         <p>Inbound RouteGenie: <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/routegenie/webhook</code></p>
+        <p className="pt-2 font-bold text-foreground">Duet event endpoints (one per event, Bearer = your webhook secret):</p>
+        <p className="font-mono break-all">
+          {typeof window !== "undefined" ? window.location.origin : ""}/api/public/integrations/duet/events/&#123;event&#125;
+        </p>
+        <p>Events: {DUET_EVENT_SLUGS.join(", ")}</p>
       </div>
+
       <EmbedCodePanel />
       <div className="border-t border-border pt-6">
         <ProviderWebhooksPanel />
