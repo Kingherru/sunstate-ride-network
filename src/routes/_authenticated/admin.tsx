@@ -194,6 +194,10 @@ function AdminPage() {
   const qc = useQueryClient();
   const caps = useCapabilities();
   const [tab, setTab] = useState<TabId>("overview");
+  const dispatcherProfile = useDispatcherProfile(caps.userId ?? null).data as
+    | { first_name: string | null; last_name: string | null }
+    | null
+    | undefined;
 
   const unread = useUnreadCounts(caps.userId ?? null);
   const markViewed = useMarkTabViewed(caps.userId ?? null);
@@ -379,7 +383,7 @@ function AdminPage() {
               <h1 className="text-base font-extrabold tracking-tight truncate">{activeItem.label}</h1>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted">
-              <span className="truncate max-w-[220px]">{caps.email}</span>
+              <span className="truncate max-w-[220px]">{dispatchOnly ? displayName : caps.email}</span>
               <span className="inline-flex flex-wrap gap-1">
                 {caps.roles.map((r) => (
                   <span key={r} className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
