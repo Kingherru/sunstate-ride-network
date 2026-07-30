@@ -2786,7 +2786,7 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
                 <div className="font-bold">{p.company_name}</div>
                 <div className="text-xs text-muted-foreground">{p.contact_name} · {p.city} · {p.dispatch_email || p.email}</div>
               </div>
-              <button disabled={busy} onClick={() => pick(p.dispatch_email || p.email, p.company_name)}
+              <button disabled={busy} onClick={() => pick(p.user_id, p.company_name)}
                       className="text-sm font-bold text-primary hover:underline disabled:opacity-50">
                 Send →
               </button>
