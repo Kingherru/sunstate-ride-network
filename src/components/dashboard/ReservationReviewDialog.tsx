@@ -164,6 +164,7 @@ export function ReservationReviewDialog({
   const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | "complete" | null>(null);
   const [editing, setEditing] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [providerPickerOpen, setProviderPickerOpen] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
