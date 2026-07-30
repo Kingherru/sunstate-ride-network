@@ -3742,6 +3742,39 @@ export type Database = {
           },
         ]
       }
+      trip_drafts: {
+        Row: {
+          autosaved: boolean
+          created_at: string
+          id: string
+          payload: Json
+          submitted_trip_id: string | null
+          summary: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autosaved?: boolean
+          created_at?: string
+          id?: string
+          payload?: Json
+          submitted_trip_id?: string | null
+          summary?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autosaved?: boolean
+          created_at?: string
+          id?: string
+          payload?: Json
+          submitted_trip_id?: string | null
+          summary?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trip_payments: {
         Row: {
           amount_cents: number
