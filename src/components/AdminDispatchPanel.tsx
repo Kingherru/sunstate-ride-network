@@ -410,11 +410,14 @@ function TripRow({
         <td className="py-2 pr-3 text-xs text-right font-mono font-bold">{fmtCents(t.provider_payout_cents)}</td>
         <td className="py-2 pr-3">
           <select
-            defaultValue={t.assigned_to ?? ""}
+            value={t.assigned_to ?? ""}
             onChange={(e) => onAssign(t.id, e.target.value || null)}
             className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
           >
             <option value="">— Unassigned —</option>
+            {t.assigned_to && !providers.some((p) => p.user_id === t.assigned_to) && (
+              <option value={t.assigned_to}>{t.assigned_provider_name ?? "Currently assigned"}</option>
+            )}
             {providers.map((p) => (
               <option key={p.user_id} value={p.user_id}>
                 {p.company_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.display_id}
@@ -423,6 +426,15 @@ function TripRow({
           </select>
         </td>
         <td className="py-2 pr-3 text-right whitespace-nowrap">
+          {!t.assigned_to && t.status !== "canceled" && (
+            <button
+              onClick={() => mAuto.mutate()}
+              disabled={mAuto.isPending}
+              className="text-xs font-bold text-primary hover:underline mr-3 disabled:opacity-60"
+            >
+              {mAuto.isPending ? "Assigning…" : "Auto-assign"}
+            </button>
+          )}
           <button onClick={() => setOpen((v) => !v)} className="text-xs font-bold text-primary hover:underline mr-3">
             {open ? "Hide" : "Suggest"}
           </button>
@@ -431,6 +443,7 @@ function TripRow({
               Cancel
             </button>
           )}
+
         </td>
       </tr>
       {open && (
