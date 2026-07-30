@@ -46,7 +46,7 @@ export const listConnectedProviders = createServerFn({ method: "GET" })
 
     // Only accounts eligible to actually perform trips (no admin/staff/facility).
     const { data: eligible, error: eErr } = await supabase.rpc("list_eligible_providers_in_region", {
-      _region: null,
+      _region: null as unknown as string,
     });
     if (eErr) throw eErr;
     const eligibleIds = new Set((eligible ?? []).map((p: any) => p.user_id as string));
