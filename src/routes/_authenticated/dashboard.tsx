@@ -39,6 +39,8 @@ import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnrea
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
+import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@/lib/payment-gate";
+
 import { MedicaidSubmissionCenter } from "@/components/dashboard/MedicaidSubmissionCenter";
 import { TrainingPanel } from "@/components/dashboard/TrainingPanel";
 import { SavedCards } from "@/components/payments/SavedCards";
@@ -635,8 +637,21 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                 }
               };
 
+              const waitingCount = received.filter(
+                (t) => t.assigned_to === userId && !isTripPaid(t as any),
+              ).length;
+
               return (
                 <div className="space-y-8">
+                  {waitingCount > 0 && (
+                    <div className="border border-amber-300 bg-amber-50 text-amber-900 rounded-sm p-4">
+                      <p className="text-sm font-bold uppercase tracking-wide">
+                        {waitingCount} trip{waitingCount === 1 ? "" : "s"} — {WAITING_ON_PAYMENT_LABEL}
+                      </p>
+                      <p className="text-sm mt-1">{WAITING_ON_PAYMENT_NOTE}</p>
+                    </div>
+                  )}
+
                   <section>
                     <div className="mb-3">
                       <h3 className="font-display text-base font-bold tracking-tight">My Florida NEMT Submissions <span className="text-muted-foreground font-normal">({flNemt.length})</span></h3>
@@ -1912,7 +1927,19 @@ function TripList({ trips, userId, role, portal, onChanged, onDuplicate }: { tri
                   <div>{t.pickup_city}{t.pickup_zip ? `, ${t.pickup_zip}` : ""}</div>
                   <div className="text-muted-foreground">↓ {t.dropoff_city}{t.dropoff_zip ? `, ${t.dropoff_zip}` : ""}</div>
                 </td>
-                <td className="px-3 py-2"><TripStatusBadge s={t.status} /></td>
+                <td className="px-3 py-2">
+                  {role === "recipient" && t.assigned_to === userId && !isTripPaid(t as any) ? (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-sm border border-amber-300 bg-amber-100 text-amber-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                      title={WAITING_ON_PAYMENT_NOTE}
+                    >
+                      {WAITING_ON_PAYMENT_LABEL}
+                    </span>
+                  ) : (
+                    <TripStatusBadge s={t.status} />
+                  )}
+                </td>
+
                 <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                   <PaymentStatusControl trip={t} canEdit={role === "sender" || role === "recipient"} onChanged={onChanged} />
                 </td>
