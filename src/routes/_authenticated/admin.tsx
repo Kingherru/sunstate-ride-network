@@ -43,7 +43,8 @@ import { AdminPayoutQueue } from "@/components/admin/AdminPayoutQueue";
 import { AdminFinanceConsole } from "@/components/admin/AdminFinanceConsole";
 import { AdminFinanceMonitoring } from "@/components/admin/AdminFinanceMonitoring";
 import { PlatformWebhooksPanel } from "@/components/PlatformWebhooksPanel";
-import { AdminTripsPanel, AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
+import { AdminReservationsPanel } from "@/components/admin/AdminTripsPanels";
+import { AdminDirectReferralsPanel } from "@/components/admin/AdminDirectReferralsPanel";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
@@ -107,7 +108,7 @@ type TabId =
   | "providers"
   | "facilities"
   | "messaging"
-  | "trips"
+  | "direct-referrals"
   | "reservations"
   | "dispatch"
   | "security"
@@ -149,7 +150,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Operations",
     items: [
       { id: "messaging", label: "Messaging", icon: MessageSquare, visible: (c) => c.isOps },
-      { id: "trips", label: "Trips", icon: Car, visible: (c) => c.isOps },
+      { id: "direct-referrals", label: "Direct Referrals", icon: Car, visible: (c) => c.isOps || c.canDispatch },
       { id: "reservations", label: "Reservations", icon: CalendarClock, visible: (c) => c.isOps },
       { id: "dispatch", label: "Dispatch", icon: Radar, visible: (c) => c.canDispatch },
     ],
@@ -212,7 +213,7 @@ function AdminPage() {
   const adminTabKeyFor = (id: TabId): TabKey | null => {
     if (id === "reservations") return TAB_KEYS.adminReservations;
     if (id === "dispatch") return TAB_KEYS.adminDispatch;
-    if (id === "trips") return TAB_KEYS.adminTrips;
+    if (id === "direct-referrals") return TAB_KEYS.adminTrips;
     if (id === "providers") return TAB_KEYS.adminProviders;
     if (id === "payouts") return TAB_KEYS.adminPayouts;
     return null;
@@ -388,7 +389,7 @@ function TabPanel({ tab, caps }: { tab: TabId; caps: ReturnType<typeof useCapabi
       ? <MessagesPanel userId={caps.userId} portal="facility" />
       : <NoAccess />;
 
-    case "trips": return caps.isOps ? <AdminTripsPanel /> : <NoAccess />;
+    case "direct-referrals": return caps.isOps || caps.canDispatch ? <AdminDirectReferralsPanel /> : <NoAccess />;
     case "reservations": return caps.isOps ? <AdminReservationsPanel /> : <NoAccess />;
     case "pricing": return caps.canConfigurePricing ? <AdminPricingPanel /> : <NoAccess />;
     case "integrations": return caps.isAdmin ? <PlatformWebhooksPanel /> : <NoAccess />;
