@@ -162,13 +162,8 @@ export const suggestProvidersForReservation = createServerFn({ method: "GET" })
     if (rErr) throw rErr;
     if (!r) throw new Error("Reservation not found");
 
-    // Match providers whose service ZIPs contain pickup_zip, or same city as fallback
-    const { data: providers, error: pErr } = await context.supabase
-      .from("member_profiles")
-      .select("user_id, display_id, company_name, city, region, phone, preferred_zip_codes, membership_status")
-
-      .eq("membership_status", "active")
-      .limit(200);
+    // Only approved, active transportation providers — never admin/staff or facility accounts.
+    const { data: providers, error: pErr } = await (context.supabase as any).rpc("list_eligible_providers");
     if (pErr) throw pErr;
 
     const zip = (r.pickup_zip ?? "").trim();
