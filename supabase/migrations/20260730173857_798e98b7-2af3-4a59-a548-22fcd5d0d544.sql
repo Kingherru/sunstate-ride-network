@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.get_referral_fee_pct() FROM authenticated;
