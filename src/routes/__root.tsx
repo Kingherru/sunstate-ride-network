@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { useEffect } from "react";
 import { enforceSessionPersistence } from "@/lib/session-persistence";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
