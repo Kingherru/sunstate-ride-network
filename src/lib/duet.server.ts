@@ -129,17 +129,31 @@ export async function syncTripToDuetServer(tripId: string): Promise<{
   if (!providerId) return { ok: false, error: "Trip has no assigned provider" };
 
   const cfg = await loadDuetConfig(providerId);
-  if (!cfg) return { ok: false, error: "This provider has not connected Duet (Integrations → Duet)." };
+  if (!cfg) {
+    const error = "This provider has not connected Duet (Integrations → Duet).";
+    await logDuetSyncEvent({ tripId, providerId, eventType: "sync.push.error", payload: { error } });
+    return { ok: false, error };
+  }
 
   const tpId = String(cfg.config?.transportationProviderId ?? "");
-  if (!tpId) return { ok: false, error: "Missing Duet transportation provider ID in the integration settings." };
+  if (!tpId) {
+    const error = "Missing Duet transportation provider ID in the integration settings.";
+    await logDuetSyncEvent({ tripId, providerId, eventType: "sync.push.error", payload: { error } });
+    return { ok: false, error };
+  }
 
   const ride = mapTripToDuetRide(trip, tpId);
+  const isUpdate = !!(trip as any).duet_ride_id;
   try {
-    if ((trip as any).duet_ride_id) await duetUpdateRides(cfg, [ride]);
+    if (isUpdate) await duetUpdateRides(cfg, [ride]);
     else await duetCreateRides(cfg, [ride]);
   } catch (e: any) {
-    return { ok: false, error: e?.message ?? "Duet request failed" };
+    const error = e?.message ?? "Duet request failed";
+    await logDuetSyncEvent({
+      tripId, providerId, eventType: "sync.push.error", externalRideId: ride.rideId,
+      payload: { error, mode: isUpdate ? "update-rides" : "create-rides", request: ride },
+    });
+    return { ok: false, error };
   }
 
   await supabaseAdmin.from("trips").update({
@@ -150,6 +164,11 @@ export async function syncTripToDuetServer(tripId: string): Promise<{
   await supabaseAdmin.from("provider_integrations")
     .update({ last_sync_at: new Date().toISOString() })
     .eq("provider_id", providerId).eq("vendor", "duetride");
+
+  await logDuetSyncEvent({
+    tripId, providerId, eventType: "sync.push.ok", externalRideId: ride.rideId,
+    payload: { mode: isUpdate ? "update-rides" : "create-rides", request: ride },
+  });
 
   return { ok: true, rideId: ride.rideId };
 }
@@ -164,11 +183,21 @@ export async function refreshTripFromDuet(tripId: string) {
   if (!cfg) return { ok: false, error: "Duet is not connected for this provider" };
   try {
     const ride = await duetGetRide(cfg, trip.duet_ride_id);
+    await logDuetSyncEvent({
+      tripId, providerId: trip.assigned_to, eventType: "sync.pull.ok",
+      externalRideId: trip.duet_ride_id, payload: { response: ride },
+    });
     return { ok: true, ride };
   } catch (e: any) {
-    return { ok: false, error: e?.message ?? "Duet request failed" };
+    const error = e?.message ?? "Duet request failed";
+    await logDuetSyncEvent({
+      tripId, providerId: trip.assigned_to, eventType: "sync.pull.error",
+      externalRideId: trip.duet_ride_id, payload: { error },
+    });
+    return { ok: false, error };
   }
 }
+
 
 /**
  * Apply an inbound Duet event to the trip record and log it.
