@@ -462,7 +462,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       )}
       {!q.isLoading && filtered.length === 0 && (
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
-          No completed trips match these filters. Try widening the date range or clearing the search.
+          No past trips match these filters. Try widening the date range or clearing the search.
         </div>
       )}
 
