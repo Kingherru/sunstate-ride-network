@@ -523,9 +523,15 @@ function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: 
             >
               Payout: {trip.payout_status ?? "—"}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-slate-100 text-slate-700">
-              {trip.status}
+            <span
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm",
+                done ? "bg-slate-100 text-slate-700" : "bg-amber-100 text-amber-900",
+              )}
+            >
+              {done ? trip.status : "Needs completion"}
             </span>
+
           </div>
 
           {/* Passenger + route */}
