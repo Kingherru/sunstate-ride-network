@@ -424,6 +424,81 @@ export function ReservationReviewDialog({
 
         {!editing ? (
           <div className="space-y-4 py-2">
+            {canApprove && isUnconfirmed && !isPendingReferral && (
+              <section className="border-2 border-primary/40 bg-primary/5 rounded-sm p-4">
+                <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-foreground mb-2">
+                  Invoice Quote
+                </h3>
+                <p className="text-xs text-foreground/80 mb-3">
+                  This is the amount that will be sent on the invoice when you confirm this trip.
+                  Adjust it if the final agreed price is different.
+                </p>
+                <div className="flex items-end gap-3 flex-wrap">
+                  {!quoteEditing ? (
+                    <>
+                      <div>
+                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                          Quote amount to invoice
+                        </div>
+                        <div className="text-2xl font-extrabold text-foreground">
+                          {parsedQuoteCents != null ? `$${(parsedQuoteCents / 100).toFixed(2)}` : priceUsd}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setQuoteEditing(true)}
+                        className="text-xs font-bold border border-border bg-background px-3 py-2 rounded-sm hover:bg-muted"
+                      >
+                        Adjust quote
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <label className="block">
+                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-foreground mb-1">
+                          Quote amount (USD)
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-bold text-foreground">$</span>
+                          <input
+                            autoFocus
+                            inputMode="decimal"
+                            value={quoteInput}
+                            onChange={(e) => setQuoteInput(e.target.value)}
+                            placeholder="0.00"
+                            className="w-40 text-sm border border-border rounded-sm px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          />
+                        </div>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setQuoteEditing(false)}
+                        className="text-xs font-bold border border-border bg-background px-3 py-2 rounded-sm hover:bg-muted"
+                      >
+                        Done
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuoteInput(row.estimated_cost_cents != null ? (row.estimated_cost_cents / 100).toFixed(2) : "");
+                          setQuoteEditing(false);
+                        }}
+                        className="text-xs font-bold text-muted-foreground px-2 py-2 rounded-sm hover:text-foreground"
+                      >
+                        Reset
+                      </button>
+                    </>
+                  )}
+                </div>
+                {parsedQuoteCents != null && parsedQuoteCents !== (row.estimated_cost_cents ?? null) && (
+                  <div className="mt-2 text-xs font-semibold text-amber-900">
+                    Adjusted from {priceUsd}. The confirmed reservation and invoice will use $
+                    {(parsedQuoteCents / 100).toFixed(2)}.
+                  </div>
+                )}
+              </section>
+            )}
+
             <Section title="Trip Summary">
               <Field label="Trip ID"><span className="font-mono text-xs">{row.display_id ?? row.id.slice(0, 8)}</span></Field>
               <Field label="Trip Type">{isDelivery ? "Medical delivery" : (isRound ? "Round trip" : "One way")}</Field>
