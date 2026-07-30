@@ -97,10 +97,13 @@ export function AdminDispatchPanel() {
     mutationFn: (v: { trip_id: string; assigned_to: string | null }) => assignTripFn({ data: v }),
     onSuccess: () => {
       toast.success("Trip assignment updated");
-      qc.invalidateQueries({ queryKey: ["disp", "trips"] });
+      for (const k of ["disp", "my-trips", "my-reservations", "day-reservations", "provider-schedule", "admin-trips", "incoming-requests"]) {
+        qc.invalidateQueries({ queryKey: [k] });
+      }
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
+
 
   const mCancelTrip = useMutation({
     mutationFn: (trip_id: string) => cancelTripFn({ data: { trip_id } }),
