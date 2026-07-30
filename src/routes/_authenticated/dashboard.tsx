@@ -993,7 +993,7 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated, initialTrip, initialDraft, portal, userId }: { onCreated: () => void; initialTrip?: any; initialDraft?: { id: string; payload: Record<string, any> } | null; portal: PortalKind; userId?: string | null }) {
+function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, portal, userId }: { onCreated: () => void; onSavedDraft?: () => void; initialTrip?: any; initialDraft?: { id: string; payload: Record<string, any> } | null; portal: PortalKind; userId?: string | null }) {
   const seed = initialDraft?.payload ?? initialTrip ?? {};
   const resuming = !!initialDraft;
   const [form, setForm] = useState<any>({
@@ -1175,7 +1175,20 @@ function NewTripForm({ onCreated, initialTrip, initialDraft, portal, userId }: {
       }
       return createTrip({ data: payload });
     },
-    onSuccess: () => { toast.success("Trip created"); setFieldErrors({}); onCreated(); },
+    onSuccess: async (res: any) => {
+      toast.success("Trip created");
+      setFieldErrors({});
+      submittedRef.current = true;
+      const id = draftIdRef.current;
+      if (id) {
+        // The draft became a real reservation — retire it from Saved Trips.
+        try { await markDraftSubmitted({ data: { draft_id: id, trip_id: (res?.id as string) ?? null } }); } catch { /* non-fatal */ }
+        draftIdRef.current = null;
+        setDraftId(null);
+        qcDraft.invalidateQueries({ queryKey: ["trip-drafts"] });
+      }
+      onCreated();
+    },
     onError: async (e: any) => {
       const { humanizeError } = await import("@/lib/friendly-errors");
       const friendly = humanizeError(e);
@@ -1533,9 +1546,32 @@ function NewTripForm({ onCreated, initialTrip, initialDraft, portal, userId }: {
       <p className="col-span-2 text-xs text-muted-foreground bg-muted/30 border border-border rounded-sm p-2">
         HIPAA acknowledgment is stored once in <strong>Settings → Business info</strong> and applied automatically to every trip you create.
       </p>
-      <button disabled={m.isPending} className="portal-btn-primary col-span-2 py-3">
-        {m.isPending ? "Creating…" : "Create trip"}
-      </button>
+      <div className="col-span-2 grid gap-2 sm:grid-cols-[1fr_auto] items-center">
+        <button disabled={m.isPending} className="portal-btn-primary py-3">
+          {m.isPending ? "Creating…" : "Create trip"}
+        </button>
+        <button
+          type="button"
+          disabled={savingDraft || !draftHasContent}
+          onClick={async () => {
+            try {
+              await persistDraft(false);
+              toast.success(portal === "provider" ? "Saved as a draft — find it under Reservations" : "Saved — find it under Saved Trips");
+              onSavedDraft?.();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Could not save this trip");
+            }
+          }}
+          className="border-2 border-border px-5 py-3 text-sm font-bold rounded-sm hover:bg-muted disabled:opacity-50"
+        >
+          {savingDraft ? "Saving…" : "Save trip without submitting"}
+        </button>
+      </div>
+      <p className="col-span-2 -mt-2 text-xs text-muted-foreground">
+        {draftSavedAt
+          ? `Draft saved ${draftSavedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} — not submitted yet.`
+          : "Your progress is saved automatically as an unsubmitted draft."}
+      </p>
     </form>
   );
 }
