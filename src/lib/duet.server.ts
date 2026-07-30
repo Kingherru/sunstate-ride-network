@@ -228,7 +228,7 @@ export async function applyDuetEvent(opts: {
       break;
   }
 
-  await supabaseAdmin.from("trips").update(patch).eq("id", trip.id);
+  await supabaseAdmin.from("trips").update(patch as never).eq("id", trip.id);
 
   await supabaseAdmin.from("trip_dispatch_events").insert({
     trip_id: trip.id,
