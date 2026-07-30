@@ -174,7 +174,7 @@ export const listTripsByZone = createServerFn({ method: "GET" })
     if (!rows || rows.length === 0) return [] as any[];
 
     const userIds = Array.from(new Set(
-      rows.flatMap((r: any) => [r.created_by, r.assigned_to].filter(Boolean))
+      rows.flatMap((r: any) => [r.created_by, r.assigned_to, r.referral_target_id].filter(Boolean))
     )) as string[];
     const nameMap: Record<string, string> = {};
     if (userIds.length > 0) {
@@ -190,5 +190,7 @@ export const listTripsByZone = createServerFn({ method: "GET" })
       ...r,
       original_provider_name: r.created_by ? (nameMap[r.created_by] ?? null) : null,
       assigned_provider_name: r.assigned_to ? (nameMap[r.assigned_to] ?? null) : null,
+      referral_target_name: r.referral_target_id ? (nameMap[r.referral_target_id] ?? null) : null,
     }));
+
   });
