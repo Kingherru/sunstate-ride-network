@@ -195,8 +195,20 @@ export const respondToReferral = createServerFn({ method: "POST" })
       action: "declined",
       reason: (data.reason ?? "").trim() || null,
     });
-    return { ok: true as const, accepted: false };
+
+    // Auto re-route to the next eligible provider in the service area, if any.
+    // When nobody is left the trip stays unassigned for manual dispatch.
+    let rerouted_to: string | null = null;
+    try {
+      const { data: next } = await supabaseAdmin.rpc("refer_next_eligible_provider", {
+        _trip_id: data.trip_id,
+      });
+      rerouted_to = (next as string | null) ?? null;
+    } catch { /* non-fatal — dispatch can route manually */ }
+
+    return { ok: true as const, accepted: false, rerouted: !!rerouted_to };
   });
+
 
 /** Full referral history for a trip. Visible to sender, recipient, referral target, and staff. */
 export const listTripReferralHistory = createServerFn({ method: "GET" })
