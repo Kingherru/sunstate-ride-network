@@ -545,9 +545,12 @@ function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: 
           {/* Meta grid */}
           <dl className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-xs">
             <div>
-              <dt className="uppercase tracking-wide text-[10px] text-muted-foreground font-bold">Completed</dt>
+              <dt className="uppercase tracking-wide text-[10px] text-muted-foreground font-bold">
+                {done ? "Completed" : "Trip date"}
+              </dt>
               <dd className="text-foreground">{completedOn}</dd>
             </div>
+
             <div>
               <dt className="uppercase tracking-wide text-[10px] text-muted-foreground font-bold">Driver</dt>
               <dd className="text-foreground truncate">{driverName ?? "—"}</dd>
