@@ -168,7 +168,7 @@ type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
 type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "trips" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "notifications" | "changelog" | "account" | "onboarding";
-type TripsSubtab = "new" | "reservations" | "history";
+type TripsSubtab = "new" | "reservations" | "history" | "saved";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "notifications", "payments", "account"],
@@ -250,6 +250,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const [tab, setTab] = useState<Tab>(baseAllowedTabs[0]);
   const [tripsSubtab, setTripsSubtab] = useState<TripsSubtab>("new");
   const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
+  const [draftSource, setDraftSource] = useState<TripDraft | null>(null);
+  function resumeDraft(d: TripDraft) {
+    setDuplicateSource(null);
+    setDraftSource(d);
+    setTab("trips");
+    setTripsSubtab("new");
+  }
   function startDuplicate(t: Trip) {
     setDuplicateSource(t);
     if (portal === "provider") {
