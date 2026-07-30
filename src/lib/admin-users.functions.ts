@@ -278,3 +278,151 @@ export const setUserPrimaryRole = createServerFn({ method: "POST" })
     return { ok: true, previous_role: prevRole, new_role: data.role };
   });
 
+
+/* ------------------------------------------------------------------ */
+/* Test dispatch account (Admin Portal → Users)                        */
+/* ------------------------------------------------------------------ */
+
+export const TEST_DISPATCH_EMAIL = "dispatch.test@myfloridanemt.com";
+
+function randomPassword() {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  return (
+    "Dx!" +
+    Array.from(bytes, (b) => "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b % 56]).join("")
+  );
+}
+
+/** Admin-only: read the state of the shared test dispatcher account. */
+export const getTestDispatchAccount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let match: any = null;
+    let page = 1;
+    while (!match) {
+      const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) throw error;
+      match = (list?.users ?? []).find(
+        (u: any) => (u.email ?? "").toLowerCase() === TEST_DISPATCH_EMAIL,
+      );
+      if (match) break;
+      if (!list?.users?.length || list.users.length < 200) break;
+      page += 1;
+      if (page > 25) break;
+    }
+    if (!match) return { exists: false as const, email: TEST_DISPATCH_EMAIL };
+    const { data: roleRows } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", match.id);
+    return {
+      exists: true as const,
+      email: TEST_DISPATCH_EMAIL,
+      user_id: match.id as string,
+      last_sign_in_at: (match.last_sign_in_at as string | null) ?? null,
+      roles: (roleRows ?? []).map((r: any) => r.role as string),
+    };
+  });
+
+/**
+ * Admin-only: create (or reset the password of) a test account that holds the
+ * Dispatcher role, so the full dispatch workflow can be exercised end to end.
+ * The generated password is returned once and never stored in plain text.
+ */
+export const provisionTestDispatchAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const password = randomPassword();
+
+    // Find existing
+    let match: any = null;
+    let page = 1;
+    while (!match) {
+      const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) throw error;
+      match = (list?.users ?? []).find(
+        (u: any) => (u.email ?? "").toLowerCase() === TEST_DISPATCH_EMAIL,
+      );
+      if (match) break;
+      if (!list?.users?.length || list.users.length < 200) break;
+      page += 1;
+      if (page > 25) break;
+    }
+
+    let userId: string;
+    let created = false;
+    if (match) {
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(match.id, {
+        password,
+        email_confirm: true,
+        user_metadata: { ...(match.user_metadata ?? {}), portal: "staff", test_account: true },
+      });
+      if (error) throw error;
+      userId = match.id;
+    } else {
+      const { data, error } = await supabaseAdmin.auth.admin.createUser({
+        email: TEST_DISPATCH_EMAIL,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          portal: "staff",
+          test_account: true,
+          first_name: "Test",
+          last_name: "Dispatcher",
+        },
+      });
+      if (error) throw error;
+      userId = data.user!.id;
+      created = true;
+    }
+
+    // Ensure exactly the dispatcher staff role
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles").insert({ user_id: userId, role: "dispatcher" });
+    if (roleErr) throw roleErr;
+
+    await (context as any).supabase.rpc("log_staff_action", {
+      _action: created ? "test_dispatch_account_created" : "test_dispatch_account_reset",
+      _target_kind: "user",
+      _target_id: userId,
+      _metadata: { email: TEST_DISPATCH_EMAIL },
+    });
+
+    return { email: TEST_DISPATCH_EMAIL, password, user_id: userId, created, login_url: "/staff/login" };
+  });
+
+/** Admin-only: remove the test dispatcher account entirely. */
+export const deleteTestDispatchAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let match: any = null;
+    let page = 1;
+    while (!match) {
+      const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) throw error;
+      match = (list?.users ?? []).find(
+        (u: any) => (u.email ?? "").toLowerCase() === TEST_DISPATCH_EMAIL,
+      );
+      if (match) break;
+      if (!list?.users?.length || list.users.length < 200) break;
+      page += 1;
+      if (page > 25) break;
+    }
+    if (!match) return { ok: true, removed: false };
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", match.id);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(match.id);
+    if (error) throw error;
+    await (context as any).supabase.rpc("log_staff_action", {
+      _action: "test_dispatch_account_deleted",
+      _target_kind: "user",
+      _target_id: match.id,
+      _metadata: { email: TEST_DISPATCH_EMAIL },
+    });
+    return { ok: true, removed: true };
+  });

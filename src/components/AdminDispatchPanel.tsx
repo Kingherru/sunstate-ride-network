@@ -21,7 +21,7 @@ import {
   adminCancelTrip,
   listProvidersForZone,
 } from "@/lib/system-ids.functions";
-import { suggestProvidersForTrip, offerTripPriority } from "@/lib/assignment.functions";
+import { suggestProvidersForTrip, offerTripPriority, autoAssignTrip } from "@/lib/assignment.functions";
 import { useCapabilities, permissionMessage } from "@/lib/permissions";
 
 export function AdminDispatchPanel() {
@@ -97,10 +97,13 @@ export function AdminDispatchPanel() {
     mutationFn: (v: { trip_id: string; assigned_to: string | null }) => assignTripFn({ data: v }),
     onSuccess: () => {
       toast.success("Trip assignment updated");
-      qc.invalidateQueries({ queryKey: ["disp", "trips"] });
+      for (const k of ["disp", "my-trips", "my-reservations", "day-reservations", "provider-schedule", "admin-trips", "incoming-requests"]) {
+        qc.invalidateQueries({ queryKey: [k] });
+      }
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
+
 
   const mCancelTrip = useMutation({
     mutationFn: (trip_id: string) => cancelTripFn({ data: { trip_id } }),
@@ -370,6 +373,7 @@ function TripRow({
     enabled: open,
     queryFn: () => suggestFn({ data: { trip_id: t.id } }),
   });
+  const autoFn = useServerFn(autoAssignTrip);
   const mOffer = useMutation({
     mutationFn: (provider_user_id: string) => offerFn({ data: { trip_id: t.id, provider_user_id } }),
     onSuccess: () => {
@@ -378,6 +382,18 @@ function TripRow({
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to send offer"),
   });
+  const mAuto = useMutation({
+    mutationFn: () => autoFn({ data: { trip_id: t.id } }),
+    onSuccess: (r: any) => {
+      if (r?.assigned_to) toast.success("Auto-assigned to the best eligible provider");
+      else toast.info("No eligible provider available — left unassigned for manual dispatch");
+      for (const k of ["disp", "my-trips", "my-reservations", "day-reservations", "provider-schedule", "admin-trips"]) {
+        qc.invalidateQueries({ queryKey: [k] });
+      }
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Auto-assign failed"),
+  });
+
 
   return (
     <>
@@ -394,11 +410,14 @@ function TripRow({
         <td className="py-2 pr-3 text-xs text-right font-mono font-bold">{fmtCents(t.provider_payout_cents)}</td>
         <td className="py-2 pr-3">
           <select
-            defaultValue={t.assigned_to ?? ""}
+            value={t.assigned_to ?? ""}
             onChange={(e) => onAssign(t.id, e.target.value || null)}
             className="bg-background border border-border rounded-sm px-2 py-1 text-xs"
           >
             <option value="">— Unassigned —</option>
+            {t.assigned_to && !providers.some((p) => p.user_id === t.assigned_to) && (
+              <option value={t.assigned_to}>{t.assigned_provider_name ?? "Currently assigned"}</option>
+            )}
             {providers.map((p) => (
               <option key={p.user_id} value={p.user_id}>
                 {p.company_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || p.display_id}
@@ -407,6 +426,15 @@ function TripRow({
           </select>
         </td>
         <td className="py-2 pr-3 text-right whitespace-nowrap">
+          {!t.assigned_to && t.status !== "canceled" && (
+            <button
+              onClick={() => mAuto.mutate()}
+              disabled={mAuto.isPending}
+              className="text-xs font-bold text-primary hover:underline mr-3 disabled:opacity-60"
+            >
+              {mAuto.isPending ? "Assigning…" : "Auto-assign"}
+            </button>
+          )}
           <button onClick={() => setOpen((v) => !v)} className="text-xs font-bold text-primary hover:underline mr-3">
             {open ? "Hide" : "Suggest"}
           </button>
@@ -415,6 +443,7 @@ function TripRow({
               Cancel
             </button>
           )}
+
         </td>
       </tr>
       {open && (
