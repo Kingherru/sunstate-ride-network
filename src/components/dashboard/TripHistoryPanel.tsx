@@ -494,9 +494,11 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
 function TripHistoryCard({ trip, driverName }: { trip: HistoryTrip; driverName: string | null }) {
   const tripNo = trip.trip_number ?? `#${trip.id.slice(0, 8)}`;
   const passenger = [trip.patient_first_name, trip.patient_last_name].filter(Boolean).join(" ") || "—";
+  const done = isCompleted(trip);
   const completedOn = trip.completed_at
     ? new Date(trip.completed_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
     : trip.pickup_date;
+
 
   return (
     <div className="bg-card border border-border rounded-sm p-3 sm:p-4">
