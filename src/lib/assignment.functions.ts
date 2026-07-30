@@ -35,3 +35,15 @@ export const respondPriorityOffer = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/** Ops staff: run the auto-dispatch engine on an existing unassigned trip. */
+export const autoAssignTrip = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { trip_id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: picked, error } = await context.supabase.rpc("auto_assign_trip", {
+      _trip_id: data.trip_id,
+    });
+    if (error) throw error;
+    return { assigned_to: (picked as string | null) ?? null };
+  });
