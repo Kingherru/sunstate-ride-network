@@ -244,6 +244,10 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
     return allTrips.filter((t) => {
+      // Canceled/expired trips live in the Past tab, not the history record.
+      if (isCanceled(t) && !isCompleted(t)) return false;
+      if (completion === "completed" && !isCompleted(t)) return false;
+      if (completion === "needs_completion" && isCompleted(t)) return false;
       if (paymentFilter === "paid" && (t.payment_status ?? "").toLowerCase() !== "paid") return false;
       if (paymentFilter === "unpaid" && (t.payment_status ?? "").toLowerCase() === "paid") return false;
       if (!s) return true;
@@ -261,7 +265,13 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
         .toLowerCase();
       return hay.includes(s);
     });
-  }, [allTrips, search, paymentFilter]);
+  }, [allTrips, search, paymentFilter, completion]);
+
+  const needsCompletionCount = useMemo(
+    () => filtered.filter((t) => !isCompleted(t)).length,
+    [filtered],
+  );
+
 
   const grouped = useMemo(() => {
     const map = new Map<string, HistoryTrip[]>();
