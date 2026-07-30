@@ -2760,22 +2760,11 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
   });
   const [busy, setBusy] = useState(false);
 
-  async function pick(providerEmail: string, providerName: string) {
-    // Find auth user for this provider email
+  async function pick(providerUserId: string, providerName: string) {
     setBusy(true);
     try {
-      // We have provider applications but the recipient must be a member. Try matching by email.
-      const { data: prof } = await supabase
-        .from("member_profiles")
-        .select("user_id, dispatch_email, first_name, last_name")
-        .or(`dispatch_email.eq.${providerEmail}`)
-        .maybeSingle();
-      if (!prof) {
-        toast.error(`${providerName} hasn't signed up as a member yet — they need to join to receive trips in-app.`);
-        setBusy(false);
-        return;
-      }
-      await assignTrip({ data: { trip_id: trip.id, assigned_to: prof.user_id } });
+      await assignTrip({ data: { trip_id: trip.id, assigned_to: providerUserId } });
+
       toast.success(`Sent to ${providerName}`);
       onAssigned();
     } catch (e: any) {
@@ -2797,7 +2786,7 @@ function AssignDialog({ trip, onClose, onAssigned }: { trip: Trip; onClose: () =
                 <div className="font-bold">{p.company_name}</div>
                 <div className="text-xs text-muted-foreground">{p.contact_name} · {p.city} · {p.dispatch_email || p.email}</div>
               </div>
-              <button disabled={busy} onClick={() => pick(p.dispatch_email || p.email, p.company_name)}
+              <button disabled={busy} onClick={() => pick(p.user_id, p.company_name)}
                       className="text-sm font-bold text-primary hover:underline disabled:opacity-50">
                 Send →
               </button>

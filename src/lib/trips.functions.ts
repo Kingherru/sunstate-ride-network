@@ -95,21 +95,34 @@ async function requireHipaaAck(
   return created.id as string;
 }
 
-/** List approved providers in the same region as the caller (for dispatch). */
+/**
+ * List providers in the caller's region that are eligible to receive trips.
+ * Admin/staff/dispatcher and facility accounts are excluded server-side.
+ */
 export const listRegionalProviders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const me = await ensureActiveMember(supabase, userId);
     if (!me.region) return [];
-    const { data, error } = await supabase
-      .from("provider_applications")
-      .select("id, company_name, contact_name, email, dispatch_email, phone, city, region, status")
-      .eq("status", "approved")
-      .eq("region", me.region);
+    const { data, error } = await supabase.rpc("list_eligible_providers_in_region", {
+      _region: me.region,
+    });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((p: any) => ({
+      id: p.user_id as string,
+      user_id: p.user_id as string,
+      company_name: p.company_name ?? p.display_id ?? "Provider",
+      contact_name: p.contact_name ?? "",
+      email: p.dispatch_email ?? "",
+      dispatch_email: p.dispatch_email ?? "",
+      phone: p.phone ?? "",
+      city: p.city ?? "",
+      region: p.region ?? "",
+      status: "approved" as const,
+    }));
   });
+
 
 function normalizeDateInput(v: unknown): unknown {
   if (v == null || v === "") return v;
