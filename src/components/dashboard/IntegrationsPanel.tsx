@@ -73,13 +73,31 @@ export function IntegrationsPanel() {
 function VendorCard({ vendor, label, blurb, existing, onChange }: {
   vendor: Vendor; label: string; blurb: string; existing: any; onChange: () => void;
 }) {
+  const isDuet = vendor === "duetride";
   const [apiKey, setApiKey] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
+  const [apiSecret, setApiSecret] = useState("");
+  const [tpId, setTpId] = useState(String(existing?.config?.transportationProviderId ?? ""));
+  const [baseUrl, setBaseUrl] = useState(String(existing?.config?.baseUrl ?? ""));
   const [enabled, setEnabled] = useState(existing?.enabled ?? false);
 
   const save = useMutation({
-    mutationFn: () => upsertIntegration({ data: { vendor, api_key: apiKey, webhook_secret: webhookSecret || undefined, enabled } }),
-    onSuccess: () => { toast.success(`${label} saved`); setApiKey(""); setWebhookSecret(""); onChange(); },
+    mutationFn: () => upsertIntegration({
+      data: {
+        vendor,
+        api_key: apiKey,
+        webhook_secret: webhookSecret || undefined,
+        enabled,
+        config: isDuet
+          ? {
+              transportationProviderId: tpId.trim(),
+              baseUrl: baseUrl.trim() || undefined,
+              ...(apiSecret ? { apiSecret } : {}),
+            }
+          : undefined,
+      },
+    }),
+    onSuccess: () => { toast.success(`${label} saved`); setApiKey(""); setWebhookSecret(""); setApiSecret(""); onChange(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
   });
   const remove = useMutation({
