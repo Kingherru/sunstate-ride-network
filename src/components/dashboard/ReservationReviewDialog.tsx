@@ -749,16 +749,26 @@ export function ReservationReviewDialog({
                 <button
                   type="button"
                   disabled={!!busy}
-                  onClick={complete}
+                  onClick={() => setCompleteOpen(true)}
                   className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
                 >
-                  {busy === "complete" ? "Completing…" : "Mark completed"}
+                  Complete trip…
                 </button>
               </>
             )}
 
           </div>
         </DialogFooter>
+
+        {completeOpen && (
+          <ManualCompletionDialog
+            open={completeOpen}
+            onOpenChange={setCompleteOpen}
+            trip={row}
+            onCompleted={() => { invalidate(); onOpenChange(false); }}
+          />
+        )}
+
 
         {declineOpen && (
           <Dialog open={declineOpen} onOpenChange={setDeclineOpen}>
