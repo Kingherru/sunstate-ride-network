@@ -124,6 +124,8 @@ async function handleCheckoutSessionCompleted(sess: any, env: StripeEnv) {
           stripe_subscription_id: subId,
           stripe_customer_id: typeof sess.customer === "string" ? sess.customer : sess.customer?.id,
           status: "active",
+          price_id: meta.price_id ?? null,
+          product_id: meta.product_id ?? null,
           environment: env,
           updated_at: new Date().toISOString(),
         },
@@ -174,7 +176,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await handleTransferUpdated(event.data.object);
               break;
             case "checkout.session.completed":
-              await handleCheckoutSessionCompleted(event.data.object);
+              await handleCheckoutSessionCompleted(event.data.object, env);
               break;
             default:
               console.log("Unhandled event:", event.type);
