@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { useEffect } from "react";
+import { enforceSessionPersistence } from "@/lib/session-persistence";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PreviewRefreshButton } from "@/components/site/PreviewRefreshButton";
@@ -149,6 +151,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Clear a non-"remember me" session left over from a previous browser session
+  // so nobody is silently signed back in.
+  useEffect(() => {
+    void enforceSessionPersistence();
+  }, []);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const portal = getPortalContext(pathname);
   const isAuthedArea = portal !== "public";

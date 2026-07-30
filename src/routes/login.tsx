@@ -3,6 +3,7 @@ import { ArrowLeft, Building2, HeartPulse, Headset, ShieldCheck, Truck } from "l
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { setRememberPreference, getRememberPreference } from "@/lib/session-persistence";
 import loginHero from "@/assets/login-hero.jpg";
 
 type PortalOption = {
@@ -53,6 +54,12 @@ const USER_TYPES = [
   { label: "Staff", blurb: "My Florida NEMT admin team", Icon: ShieldCheck },
 ] as const;
 
+const SIGNUP_OPTIONS = [
+  { to: "/patient/login", label: "Patient / caregiver", blurb: "Book and track rides for yourself or a loved one", Icon: HeartPulse },
+  { to: "/provider/login", label: "Transportation provider", blurb: "NEMT companies, drivers and dispatch teams", Icon: Truck },
+  { to: "/facility/login", label: "Facility", blurb: "Hospitals, SNFs, clinics and case managers", Icon: Building2 },
+] as const;
+
 const OPS_ROLES = ["admin", "app_manager", "zone_manager", "dispatcher", "staff"];
 
 function safeNext(next: string): string | null {
@@ -72,8 +79,9 @@ export const Route = createFileRoute("/login")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : "",
+  validateSearch: (s: Record<string, unknown>): { next?: string; mode?: "signup" } => ({
+    ...(typeof s.next === "string" && s.next ? { next: s.next } : {}),
+    ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
   }),
   component: LoginPage,
 });
@@ -81,13 +89,16 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const router = useRouter();
-  const { next } = Route.useSearch();
-  const redirectTarget = safeNext(next);
+  const { next, mode } = Route.useSearch();
+  const redirectTarget = safeNext(next ?? "");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [choices, setChoices] = useState<PortalOption[] | null>(null);
+  const [existingEmail, setExistingEmail] = useState<string | null>(null);
+  const [existingUser, setExistingUser] = useState<{ id: string; user_metadata?: Record<string, any> } | null>(null);
 
   async function resolvePortals(user: {
     id: string;
@@ -122,12 +133,30 @@ function LoginPage() {
     navigate({ to: options[0].to } as any);
   }
 
+  // Never auto-route an existing session. Show it and let the person choose
+  // to continue or sign out — signing in must always be intentional.
   useEffect(() => {
+    setRemember(getRememberPreference());
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) void routeAfterAuth(data.user);
+      if (data.user) {
+        setExistingUser(data.user as any);
+        setExistingEmail(data.user.email ?? "your account");
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function signOutExisting() {
+    setBusy(true);
+    try {
+      await supabase.auth.signOut();
+      setExistingUser(null);
+      setExistingEmail(null);
+      await router.invalidate();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -135,6 +164,7 @@ function LoginPage() {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      setRememberPreference(remember);
       toast.success("Welcome back.");
       await router.invalidate();
       if (data.user) await routeAfterAuth(data.user);
@@ -175,7 +205,70 @@ function LoginPage() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
           {/* Sign in — the main event */}
           <div className="rounded-2xl bg-card border border-border shadow-sm p-6 sm:p-8">
-            {choices ? (
+            {existingUser && !choices ? (
+              <div className="mb-6 rounded-sm border border-border bg-secondary/40 p-4">
+                <p className="text-sm font-bold text-foreground">
+                  You're already signed in as {existingEmail}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  We won't move you automatically — choose what you'd like to do.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void routeAfterAuth(existingUser)}
+                    className="px-4 py-2 rounded-sm bg-primary text-primary-foreground text-xs font-bold uppercase tracking-widest disabled:opacity-60"
+                  >
+                    Continue to my portal
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void signOutExisting()}
+                    className="px-4 py-2 rounded-sm border border-border text-xs font-bold uppercase tracking-widest disabled:opacity-60"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {mode === "signup" && !choices ? (
+              <>
+                <p className="font-mono text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+                  My Florida NEMT
+                </p>
+                <h1 className="text-3xl font-extrabold tracking-tighter mb-2">Create your account</h1>
+                <p className="text-sm text-muted-foreground mb-6 max-w-lg">
+                  Pick the account type that fits you. Registration takes about a minute.
+                </p>
+                <div className="space-y-3 max-w-lg">
+                  {SIGNUP_OPTIONS.map((o) => (
+                    <Link
+                      key={o.to}
+                      to={o.to}
+                      search={{ mode: "signup" }}
+                      className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 hover:border-primary transition"
+                    >
+                      <o.Icon className="h-5 w-5 text-primary shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold">{o.label}</span>
+                        <span className="block text-xs text-muted-foreground">{o.blurb}</span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Dispatcher and staff accounts are created by My Florida NEMT.
+                </p>
+                <p className="text-sm mt-6">
+                  Already have an account?{" "}
+                  <Link to="/login" search={{}} className="font-bold text-primary underline underline-offset-4">
+                    Sign in
+                  </Link>
+                </p>
+              </>
+            ) : choices ? (
               <>
                 <h1 className="text-2xl font-extrabold tracking-tighter mb-1">Choose your portal</h1>
                 <p className="text-sm text-muted-foreground mb-6">
@@ -238,6 +331,21 @@ function LoginPage() {
                       className="portal-input"
                     />
                   </label>
+                  <label className="flex items-center gap-2 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="size-4"
+                    />
+                    <span>
+                      Remember me on this device
+                      <span className="block text-xs text-muted-foreground">
+                        Leave unchecked on shared computers — you'll be signed out when the browser
+                        closes.
+                      </span>
+                    </span>
+                  </label>
                   <div className="flex flex-wrap items-center gap-4">
                     <button
                       type="submit"
@@ -283,18 +391,21 @@ function LoginPage() {
                   <div className="flex flex-wrap gap-2 text-xs font-semibold">
                     <Link
                       to="/patient/login"
+                      search={{ mode: "signup" }}
                       className="px-3 py-1.5 border border-border rounded-sm hover:border-primary"
                     >
                       Patient sign up
                     </Link>
                     <Link
                       to="/provider/login"
+                      search={{ mode: "signup" }}
                       className="px-3 py-1.5 border border-border rounded-sm hover:border-primary"
                     >
                       Provider sign up
                     </Link>
                     <Link
                       to="/facility/login"
+                      search={{ mode: "signup" }}
                       className="px-3 py-1.5 border border-border rounded-sm hover:border-primary"
                     >
                       Facility sign up

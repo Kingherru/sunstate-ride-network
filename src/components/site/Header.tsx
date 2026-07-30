@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, ChevronDown, User, Truck, Building2 } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 const primaryLinks = [
   { to: "/how-it-works", label: "How It Works" },
@@ -26,12 +26,6 @@ const moreLinks = [
 const allLinks = [...servicesLinks, ...primaryLinks, ...moreLinks] as const;
 
 
-const portals = [
-  { to: "/patient/login", label: "Patient Portal", desc: "Patients, families, caregivers", icon: User },
-  { to: "/provider/login", label: "Provider Portal", desc: "NEMT providers & dispatchers", icon: Truck },
-  { to: "/facility/login", label: "Facility Portal", desc: "Hospitals, SNFs, case managers", icon: Building2 },
-] as const;
-
 function useDismiss(open: boolean, close: () => void, ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     if (!open) return;
@@ -50,15 +44,12 @@ function useDismiss(open: boolean, close: () => void, ref: React.RefObject<HTMLE
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
   const [servicesOpen, setServicesOpen] = useState(false);
 
-  const signInRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  useDismiss(signInOpen, () => setSignInOpen(false), signInRef);
   useDismiss(moreOpen, () => setMoreOpen(false), moreRef);
   useDismiss(servicesOpen, () => setServicesOpen(false), servicesRef);
 
@@ -66,7 +57,7 @@ export function Header() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
     setMobileOpen(false);
-    setSignInOpen(false);
+    
     setMoreOpen(false);
     setServicesOpen(false);
   }, [pathname]);
@@ -150,33 +141,19 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="relative hidden md:block" ref={signInRef}>
-            <button
-              type="button"
-              onClick={() => setSignInOpen((v) => !v)}
-              aria-expanded={signInOpen}
-              className="flex items-center gap-1 text-sm font-bold text-primary border border-primary/30 px-4 py-2 rounded-md hover:bg-primary/5 transition-all"
-            >
-              Sign In <ChevronDown className={`size-4 transition-transform ${signInOpen ? "rotate-180" : ""}`} />
-            </button>
-            {signInOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">
-                {portals.map((p) => (
-                  <Link
-                    key={p.to}
-                    to={p.to}
-                    className="flex items-start gap-3 p-3 hover:bg-secondary transition-colors"
-                  >
-                    <p.icon className="size-5 text-accent mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-sm font-bold text-foreground">{p.label}</div>
-                      <div className="text-xs text-muted">{p.desc}</div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          <Link
+            to="/login"
+            className="hidden md:inline-flex items-center text-sm font-bold text-primary border border-primary/30 px-4 py-2 rounded-md hover:bg-primary/5 transition-all"
+          >
+            Sign In
+          </Link>
+          <Link
+            to="/login"
+            search={{ mode: "signup" }}
+            className="hidden lg:inline-flex items-center text-sm font-bold text-foreground px-3 py-2 rounded-md hover:text-accent transition-all"
+          >
+            Sign Up
+          </Link>
           <Link
             to="/request-a-ride"
             className="hidden sm:inline-block text-sm font-bold text-primary-foreground bg-primary px-4 sm:px-5 py-2 rounded-md hover:bg-primary/90 transition-all whitespace-nowrap"
@@ -210,17 +187,21 @@ export function Header() {
             ))}
             <div className="pt-3 mt-2 border-t border-border">
               <p className="text-xs font-mono font-bold uppercase tracking-widest text-muted mb-2">
-                Sign in to your portal
+                Account
               </p>
-              {portals.map((p) => (
-                <Link key={p.to} to={p.to} className="flex items-center gap-3 py-3">
-                  <p.icon className="size-5 text-accent shrink-0" />
-                  <div className="min-w-0">
-                    <div className="text-sm font-bold">{p.label}</div>
-                    <div className="text-xs text-muted">{p.desc}</div>
-                  </div>
-                </Link>
-              ))}
+              <Link
+                to="/login"
+                className="block text-sm font-bold py-3 text-primary"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/login"
+                search={{ mode: "signup" }}
+                className="block text-sm font-bold py-3 text-foreground"
+              >
+                Sign Up
+              </Link>
             </div>
             <Link
               to="/request-a-ride"
