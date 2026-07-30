@@ -8,9 +8,15 @@ import { ProviderWebhooksPanel } from "./ProviderWebhooksPanel";
 type Vendor = "hibambi" | "routegenie" | "duetride";
 
 const VENDORS: { id: Vendor; label: string; blurb: string }[] = [
-  { id: "duetride", label: "DuetRide", blurb: "Sync trips and dispatch updates with DuetRide — recommended for Florida providers." },
+  { id: "duetride", label: "Duet", blurb: "Send trips to Duet and receive driver arrival, pickup, drop-off and completion updates back automatically." },
   { id: "hibambi", label: "hiBambi", blurb: "Push outbound trips and ingest inbound trips from hiBambi." },
   { id: "routegenie", label: "RouteGenie", blurb: "Push outbound trips and ingest inbound trips from RouteGenie." },
+];
+
+const DUET_EVENT_SLUGS = [
+  "ride-scheduled", "ride-unscheduled", "will-call-initiated", "on-the-way",
+  "pickup-arrived", "pickup-completed", "dropoff-arrived", "dropoff-completed",
+  "ride-canceled", "ride-rejected", "no-show", "gps-event",
 ];
 
 export function IntegrationsPanel() {
