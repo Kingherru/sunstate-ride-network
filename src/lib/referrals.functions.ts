@@ -256,3 +256,56 @@ export const listTripReferralHistory = createServerFn({ method: "GET" })
       to_name: nameMap[r.to_user_id] ?? "User",
     }));
   });
+
+/**
+ * Referral Reservations — referrals the caller already ACCEPTED in the
+ * Referrals tab (referral_status = 'accepted', assigned to the caller) that
+ * still need the provider's final confirmation. Once confirmed they move onto
+ * the Schedule Board. No invoice is sent from this flow.
+ */
+export const listReferralReservations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data, error } = await supabase
+      .from("trips")
+      .select(
+        "id, display_id, status, reservation_state, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, appointment_time, round_trip, return_date, service_level, transport_type, needs_wheelchair, patient_first_name, patient_last_name, patient_phone, is_medicaid_patient, payer, estimated_cost_cents, referral_status, referral_decided_at, driver_id, scheduled_start_time",
+      )
+      .eq("assigned_to", userId)
+      .eq("referral_status", "accepted")
+      .in("status", ["accepted", "assigned"])
+      .order("pickup_date", { ascending: true })
+      .order("pickup_time", { ascending: true })
+      .limit(200);
+    if (error) throw error;
+    return data ?? [];
+  });
+
+/**
+ * Provider confirms an accepted referral. Marks the trip confirmed so it lands
+ * on the Schedule Board. Deliberately does NOT send an invoice.
+ */
+export const confirmReferralReservation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ trip_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: trip, error } = await supabase
+      .from("trips")
+      .select("id, assigned_to, referral_status, status")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!trip) throw new Error("Reservation not found.");
+    if (trip.assigned_to !== userId) throw new Error("This referral is not assigned to you.");
+    if (trip.referral_status !== "accepted") throw new Error("This trip is not an accepted referral.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: uErr } = await supabaseAdmin
+      .from("trips")
+      .update({ status: "confirmed" })
+      .eq("id", data.trip_id);
+    if (uErr) throw uErr;
+    return { ok: true as const };
+  });

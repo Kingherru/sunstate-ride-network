@@ -10,6 +10,7 @@ import { RESV_DND_MIME } from "@/components/dashboard/ScheduleCalendarPanel";
 import { downloadCms1500 } from "@/lib/cms-form";
 import { formatMinutes } from "@/components/maps/RoutePreview";
 import { ReservationReviewDialog } from "@/components/dashboard/ReservationReviewDialog";
+import { listReferralReservations, confirmReferralReservation } from "@/lib/referrals.functions";
 
 
 type Row = {
@@ -310,6 +311,127 @@ const STATE_META: Record<ResvState, { label: string; blurb: string }> = {
 
 const CANCELED_STATUSES = new Set(["canceled", "cancelled", "declined", "denied", "no_show"]);
 
+/** A referral this provider accepted in the Referrals tab, still awaiting their confirmation. */
+function isPendingReferralReservation(r: any, userId: string) {
+  return (
+    r?.referral_status === "accepted" &&
+    r?.assigned_provider_id === userId &&
+    ["accepted", "assigned"].includes(String(r?.status ?? "").toLowerCase())
+  );
+}
+
+/**
+ * Referral Reservations — approved referrals only. The provider confirms here
+ * (no invoice is sent) and the trip moves onto the Schedule Board.
+ */
+function ReferralReservationsSection({ userId }: { userId: string }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listReferralReservations);
+  const confirmFn = useServerFn(confirmReferralReservation);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const q = useQuery({
+    queryKey: ["referral-reservations", userId],
+    queryFn: () => listFn(),
+  });
+
+  async function confirm(id: string) {
+    setBusyId(id);
+    try {
+      await confirmFn({ data: { trip_id: id } });
+      toast.success("Referral confirmed — added to your Schedule Board");
+      qc.invalidateQueries({ queryKey: ["referral-reservations"] });
+      qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
+      qc.invalidateQueries({ queryKey: ["schedule-board"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not confirm this referral");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  const rows = (q.data ?? []) as any[];
+
+  return (
+    <section className="pt-6 mt-6 border-t border-border space-y-3">
+      <div>
+        <h2 className="text-xl font-extrabold tracking-tight">Referral Reservations</h2>
+        <p className="text-sm text-muted-foreground">
+          Referrals you approved in the Referrals tab. Confirm here to place the trip on your Schedule Board — no invoice is sent from this section.
+        </p>
+      </div>
+
+      {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
+      {q.isError && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-4 text-sm text-destructive">
+          Referral reservations could not be loaded. Please try again.
+        </div>
+      )}
+      {!q.isLoading && !q.isError && rows.length === 0 && (
+        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
+          No approved referrals waiting on confirmation. Approve a referral in the Referrals tab and it will appear here.
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {rows.map((r) => {
+          const medicaid = isMedicaidTrip({ is_medicaid: r.is_medicaid_patient, payer: r.payer });
+          return (
+            <div
+              key={r.id}
+              className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap border ${
+                medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"
+              }`}
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="bg-violet-100 text-violet-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
+                    Approved Referral
+                  </span>
+                  {medicaid && <MedicaidBadge />}
+                  <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">{r.status}</span>
+                </div>
+                <div className="font-extrabold">
+                  {r.patient_first_name} {r.patient_last_name}
+                </div>
+                <div className="text-xs text-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                  <span>
+                    <span className="font-bold uppercase tracking-wide text-muted-foreground">Date:</span> {r.pickup_date}
+                  </span>
+                  <span>
+                    <span className="font-bold uppercase tracking-wide text-muted-foreground">Pickup:</span> {r.pickup_time || "—"}
+                  </span>
+                  <span>
+                    <span className="font-bold uppercase tracking-wide text-muted-foreground">Appointment:</span> {r.appointment_time || "—"}
+                  </span>
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {r.pickup_address}
+                  {r.pickup_city ? `, ${r.pickup_city}` : ""} → {r.dropoff_address}
+                  {r.dropoff_city ? `, ${r.dropoff_city}` : ""}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => confirm(r.id)}
+                  disabled={busyId === r.id}
+                  className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+                  title="Confirm this referral and add it to the Schedule Board"
+                >
+                  {busyId === r.id ? "Confirming…" : "Confirm & Add to Schedule"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+
+
 
 export function ReservationsPanel({
   userId,
@@ -390,6 +512,8 @@ export function ReservationsPanel({
     return state === "canceled" ? canceled : !canceled;
   });
   const rows = useMemo(() => allRows.filter((r) => {
+    // Approved referrals live in their own Referral Reservations section below.
+    if (isPendingReferralReservation(r, userId)) return false;
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
     if (payerFilter === "medicaid" && !isMedicaidTrip(r)) return false;
@@ -399,7 +523,7 @@ export function ReservationsPanel({
       if (!hay.includes(s)) return false;
     }
     return true;
-  }), [allRows, assignFilter, payerFilter, search]);
+  }), [allRows, assignFilter, payerFilter, search, userId]);
 
   const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
     (acc[r.pickup_date] ||= []).push(r);
@@ -634,6 +758,9 @@ export function ReservationsPanel({
         ))}
       </div>
       </>)}
+
+      {scope === "provider" && <ReferralReservationsSection userId={userId} />}
+
       {reviewing && (
         <ReservationReviewDialog
           row={reviewing}
