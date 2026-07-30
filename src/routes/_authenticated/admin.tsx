@@ -103,6 +103,7 @@ function derivedStatus(a: Application): ComplianceStatus {
 
 type TabId =
   | "overview"
+  | "account"
   | "notifications"
   | "users"
   | "providers"
