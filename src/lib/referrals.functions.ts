@@ -270,7 +270,7 @@ export const listReferralReservations = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("trips")
       .select(
-        "id, display_id, status, reservation_state, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, appointment_time, round_trip, return_date, service_level, transport_type, needs_wheelchair, patient_first_name, patient_last_name, patient_phone, is_medicaid, payer, estimated_cost_cents, referral_status, referral_decided_at, driver_id, scheduled_start_time",
+        "id, display_id, status, reservation_state, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, appointment_time, round_trip, return_date, service_level, transport_type, needs_wheelchair, patient_first_name, patient_last_name, patient_phone, is_medicaid_patient, payer, estimated_cost_cents, referral_status, referral_decided_at, driver_id, scheduled_start_time",
       )
       .eq("assigned_to", userId)
       .eq("referral_status", "accepted")
