@@ -11,6 +11,8 @@ import { downloadCms1500 } from "@/lib/cms-form";
 import { formatMinutes } from "@/components/maps/RoutePreview";
 import { ReservationReviewDialog } from "@/components/dashboard/ReservationReviewDialog";
 import { listReferralReservations, confirmReferralReservation } from "@/lib/referrals.functions";
+import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@/lib/payment-gate";
+
 
 
 type Row = {
@@ -514,6 +516,15 @@ export function ReservationsPanel({
   const rows = useMemo(() => allRows.filter((r) => {
     // Approved referrals live in their own Referral Reservations section below.
     if (isPendingReferralReservation(r, userId)) return false;
+    // Trips routed to this provider that aren't paid yet stay in the Referrals
+    // tab as "Waiting on Payment" — they appear here only after payment.
+    if (
+      scope === "provider" &&
+      r.assigned_provider_id === userId &&
+      r.requester_user_id !== userId &&
+      !isTripPaid(r) &&
+      !CANCELED_STATUSES.has(String(r.status ?? "").toLowerCase())
+    ) return false;
     if (assignFilter === "assigned" && !r.assigned_driver_id) return false;
     if (assignFilter === "unassigned" && r.assigned_driver_id) return false;
     if (payerFilter === "medicaid" && !isMedicaidTrip(r)) return false;
@@ -523,7 +534,8 @@ export function ReservationsPanel({
       if (!hay.includes(s)) return false;
     }
     return true;
-  }), [allRows, assignFilter, payerFilter, search, userId]);
+  }), [allRows, assignFilter, payerFilter, search, userId, scope]);
+
 
   const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
     (acc[r.pickup_date] ||= []).push(r);

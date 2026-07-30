@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assignmentBlockReason } from "@/lib/payment-gate";
+
 
 /** Assign or fetch the caller's permanent display ID (PAT/FAC/STF/FLNP). */
 export const ensureMyDisplayId = createServerFn({ method: "POST" })
@@ -72,12 +74,18 @@ export const adminAssignTrip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Look up the trip's zone for zone_manager gating
     const { data: trip } = await context.supabase
-      .from("trips").select("dispatch_zone_id, created_by").eq("id", data.trip_id).maybeSingle();
+      .from("trips").select("dispatch_zone_id, created_by, payment_status, fin_payment_state").eq("id", data.trip_id).maybeSingle();
+
     await assertDispatchAllowed(context, trip?.dispatch_zone_id ?? null);
 
     if (data.assigned_to) {
+      // Payment gate: no trip may be sent to a performing provider until an
+      // invoice exists and payment has been collected.
+      const blocked = assignmentBlockReason(trip as any);
+      if (blocked) throw new Error(blocked);
       if (trip?.created_by === data.assigned_to) {
         throw new Error("Provider cannot be the trip creator.");
+
       }
       const { data: isEligible } = await (context.supabase as any).rpc("is_eligible_transport_provider", { _user_id: data.assigned_to });
       if (!isEligible) throw new Error("Assignee is not an approved transportation provider.");

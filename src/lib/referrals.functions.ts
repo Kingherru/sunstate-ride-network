@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isTripPaid } from "@/lib/payment-gate";
+
 
 /** Canonical MyFloridaNEMT dispatch account. Referred trips sent to this user land in the MFN admin/dispatch queues. */
 const MFN_USER_ID = "fd011b5d-5645-47e4-b71c-404b13c14880";
@@ -270,7 +272,7 @@ export const listReferralReservations = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("trips")
       .select(
-        "id, display_id, status, reservation_state, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, appointment_time, round_trip, return_date, service_level, transport_type, needs_wheelchair, patient_first_name, patient_last_name, patient_phone, is_medicaid_patient, payer, estimated_cost_cents, referral_status, referral_decided_at, driver_id, scheduled_start_time",
+        "id, display_id, status, reservation_state, pickup_address, pickup_city, dropoff_address, dropoff_city, pickup_date, pickup_time, appointment_time, round_trip, return_date, service_level, transport_type, needs_wheelchair, patient_first_name, patient_last_name, patient_phone, is_medicaid_patient, payer, estimated_cost_cents, referral_status, referral_decided_at, driver_id, scheduled_start_time, payment_status, fin_payment_state",
       )
       .eq("assigned_to", userId)
       .eq("referral_status", "accepted")
@@ -279,7 +281,30 @@ export const listReferralReservations = createServerFn({ method: "GET" })
       .order("pickup_time", { ascending: true })
       .limit(200);
     if (error) throw error;
-    return data ?? [];
+    // Unpaid referrals stay in the Referrals tab as "Waiting on Payment" —
+    // they only surface here (Reservations) once payment has been received.
+    return (data ?? []).filter((t: any) => isTripPaid(t));
+  });
+
+/**
+ * Referrals the provider accepted that are still blocked on payment. Rendered
+ * in the Referrals tab as "Waiting on Payment" — no scheduling actions.
+ */
+export const listReferralsWaitingOnPayment = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data, error } = await supabase
+      .from("trips")
+      .select(
+        "id, display_id, status, pickup_city, dropoff_city, pickup_date, pickup_time, patient_first_name, patient_last_name, estimated_cost_cents, payment_status, fin_payment_state",
+      )
+      .eq("assigned_to", userId)
+      .in("status", ["accepted", "assigned"])
+      .order("pickup_date", { ascending: true })
+      .limit(200);
+    if (error) throw error;
+    return (data ?? []).filter((t: any) => !isTripPaid(t));
   });
 
 /**
@@ -293,13 +318,18 @@ export const confirmReferralReservation = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: trip, error } = await supabase
       .from("trips")
-      .select("id, assigned_to, referral_status, status")
+      .select("id, assigned_to, referral_status, status, payment_status, fin_payment_state")
       .eq("id", data.trip_id)
       .maybeSingle();
     if (error) throw error;
     if (!trip) throw new Error("Reservation not found.");
     if (trip.assigned_to !== userId) throw new Error("This referral is not assigned to you.");
     if (trip.referral_status !== "accepted") throw new Error("This trip is not an accepted referral.");
+    if (!isTripPaid(trip as any)) {
+      throw new Error(
+        "Waiting on Payment — this trip cannot be scheduled or performed until payment is received.",
+      );
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: uErr } = await supabaseAdmin
@@ -309,3 +339,4 @@ export const confirmReferralReservation = createServerFn({ method: "POST" })
     if (uErr) throw uErr;
     return { ok: true as const };
   });
+
