@@ -340,8 +340,27 @@ function RequestRidePage() {
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
-        errs[issue.path.join(".")] = issue.message;
+        const key = issue.path.join(".");
+        const raw = issue.message ?? "";
+        const generic =
+          !raw ||
+          /^Required$/i.test(raw) ||
+          /at least \d+ character/i.test(raw) ||
+          /^Invalid/i.test(raw) ||
+          /expected|received/i.test(raw);
+        errs[key] = generic
+          ? key.toLowerCase().includes("email")
+            ? "Enter a valid email address."
+            : key.toLowerCase().includes("phone")
+              ? "Enter a valid phone number."
+              : key.toLowerCase().includes("date")
+                ? "Choose a date."
+                : key.toLowerCase().includes("time")
+                  ? "Choose a time."
+                  : "This field is required."
+          : raw;
       }
+
       setErrors(errs);
       toast.error("Please fix the highlighted fields.");
       // Bring the first problem field into view so the user can correct it.
