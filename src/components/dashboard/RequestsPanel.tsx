@@ -276,11 +276,12 @@ export function RequestsPanel({ userId }: { userId: string }) {
 /**
  * Reservations panel — three lifecycle sections:
  *   • Unconfirmed  — newly created, awaiting approval/payment/assignment
- *   • Booked       — confirmed & assigned, ready to complete
- *   • Past         — recently completed or canceled (last 30 days)
+ *   • Booked       — confirmed & assigned, still upcoming
+ *   • Past         — scheduled time has elapsed but not completed, or canceled
  *
- * Completed trips older than 30 days move to Trip History (permanent record).
- * A DB trigger keeps `reservation_state` in sync — one source of truth.
+ * Completed trips move straight into Trip History (permanent record).
+ * A DB trigger plus a 5-minute recompute keep `reservation_state` in sync —
+ * one source of truth shared by the Admin, Dispatch, and Provider portals.
  */
 type ResvState = "unconfirmed" | "booked" | "past";
 type Scope = "requester" | "provider" | "ops";
@@ -293,13 +294,14 @@ const STATE_META: Record<ResvState, { label: string; blurb: string }> = {
   },
   booked: {
     label: "Booked",
-    blurb: "Confirmed and assigned reservations that are ready to be completed.",
+    blurb: "Confirmed and assigned reservations whose pickup time is still ahead.",
   },
   past: {
     label: "Past",
-    blurb: "Completed or canceled reservations from the last 30 days. Older completed trips move into Trip History.",
+    blurb: "Reservations whose scheduled time has passed but that aren't completed yet, plus canceled trips. Still editable — mark them completed here and they move to Trip History.",
   },
 };
+
 
 export function ReservationsPanel({
   userId,
@@ -373,7 +375,7 @@ export function ReservationsPanel({
       <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
         <p className="text-sm text-muted-foreground">
-          Create Trip → Unconfirmed Reservation → Booked Reservation → Completed (Trip History).
+          Create Trip → Unconfirmed → Booked → Past (time elapsed) → Completed (Trip History).
         </p>
       </div>
 
@@ -445,7 +447,7 @@ export function ReservationsPanel({
             ? "No unconfirmed reservations. New trips will show up here first."
             : state === "booked"
             ? "No booked reservations yet. Confirmed & assigned trips appear here."
-            : "No past reservations in the last 30 days. Older completed trips are in Trip History."}
+            : "Nothing past due. Reservations move here once their pickup time passes, until they're completed."}
         </div>
       )}
 

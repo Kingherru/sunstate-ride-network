@@ -151,7 +151,7 @@ export function ReservationReviewDialog({
   const respond = useServerFn(respondToReferral);
   const loadConnected = useServerFn(listConnectedProviders);
   const loadHistory = useServerFn(listTripReferralHistory);
-  const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | null>(null);
+  const [busy, setBusy] = useState<"accept" | "decline" | "save" | "refer" | "respond" | "complete" | null>(null);
   const [editing, setEditing] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
@@ -167,6 +167,15 @@ export function ReservationReviewDialog({
   const isRound = !!row.round_trip;
   const isDelivery = String(row.trip_type ?? "").toLowerCase() === "medical_delivery";
   const isUnconfirmed = String(row.reservation_state ?? "").toLowerCase() === "unconfirmed";
+  const statusLower = String(row.status ?? "").toLowerCase();
+  const isFinished = ["completed", "canceled", "cancelled", "no_show"].includes(statusLower);
+  // Past-due reservations stay actionable: they can still be marked completed,
+  // which is what moves them into Trip History.
+  const canComplete =
+    canApprove &&
+    !isFinished &&
+    ["past", "booked"].includes(String(row.reservation_state ?? "").toLowerCase());
+
 
   // Editable draft mirrors current row values; only sent fields are patched.
   const [draft, setDraft] = useState(() => ({
@@ -206,7 +215,14 @@ export function ReservationReviewDialog({
     qc.invalidateQueries({ queryKey: ["my-trips"] });
     qc.invalidateQueries({ queryKey: ["unread-counts"] });
     qc.invalidateQueries({ queryKey: ["referral-history", row.id] });
+    // Keep Admin + Dispatch portals in sync with provider-side changes
+    qc.invalidateQueries({ queryKey: ["admin-reservations"] });
+    qc.invalidateQueries({ queryKey: ["admin-trips"] });
+    qc.invalidateQueries({ queryKey: ["trip-history"] });
+    qc.invalidateQueries({ queryKey: ["incoming-requests"] });
+    qc.invalidateQueries({ queryKey: ["disp"] });
   };
+
 
   // Referral state derived from the row
   const senderId = row.created_by ?? row.requester_user_id ?? null;
@@ -306,6 +322,21 @@ export function ReservationReviewDialog({
       setBusy(null);
     }
   }
+
+  async function complete() {
+    setBusy("complete");
+    try {
+      await update({ data: { trip_id: row.id, status: "completed" } });
+      toast.success("Trip completed — moved to Trip History");
+      invalidate();
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not complete this trip");
+    } finally {
+      setBusy(null);
+    }
+  }
+
 
   async function decline() {
     setBusy("decline");
@@ -580,6 +611,28 @@ export function ReservationReviewDialog({
                 </button>
               </>
             )}
+            {/* Past-due or booked trips can be closed out here; completing moves it to Trip History */}
+            {!editing && canComplete && !isPendingReferral && (
+              <>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={() => setDeclineOpen(true)}
+                  className="text-sm font-bold text-red-700 border border-red-300 px-4 py-2 rounded-sm hover:bg-red-50 disabled:opacity-60"
+                >
+                  Cancel trip
+                </button>
+                <button
+                  type="button"
+                  disabled={!!busy}
+                  onClick={complete}
+                  className="text-sm font-bold text-white bg-emerald-600 border border-emerald-700 px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {busy === "complete" ? "Completing…" : "Mark completed"}
+                </button>
+              </>
+            )}
+
           </div>
         </DialogFooter>
 

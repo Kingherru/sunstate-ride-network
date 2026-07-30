@@ -4994,6 +4994,7 @@ export type Database = {
           _cancel_reason: string
           _payment_status: string
           _reference_at: string
+          _scheduled_at: string
           _status: string
         }
         Returns: string
@@ -5005,6 +5006,7 @@ export type Database = {
           _completed_at: string
           _no_show_reason: string
           _payment_status: string
+          _scheduled_at: string
           _status: string
         }
         Returns: string
@@ -5383,6 +5385,15 @@ export type Database = {
           read_ct: number
         }[]
       }
+      reservation_scheduled_at: {
+        Args: {
+          _pickup_date: string
+          _pickup_time: string
+          _return_date: string
+          _return_time: string
+        }
+        Returns: string
+      }
       respond_priority_offer: {
         Args: { _accept: boolean; _trip_id: string }
         Returns: undefined
@@ -5432,6 +5443,7 @@ export type Database = {
           vehicle_score: number
         }[]
       }
+      sync_reservation_states: { Args: never; Returns: undefined }
       verify_course_certificate: {
         Args: { _token: string }
         Returns: {
