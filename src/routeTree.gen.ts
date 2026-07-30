@@ -80,6 +80,7 @@ import { Route as ApiPublicHooksFinCashoutTickRouteImport } from './routes/api/p
 import { Route as AuthenticatedReservationsIdReviewRouteImport } from './routes/_authenticated/reservations.$id.review'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
+import { Route as ApiPublicIntegrationsDuetEventsEventRouteImport } from './routes/api/public/integrations/duet.events.$event'
 
 const TrainingRoute = TrainingRouteImport.update({
   id: '/training',
@@ -456,6 +457,12 @@ const ApiPublicIntegrationsHibambiWebhookRoute =
     path: '/api/public/integrations/hibambi/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIntegrationsDuetEventsEventRoute =
+  ApiPublicIntegrationsDuetEventsEventRouteImport.update({
+    id: '/api/public/integrations/duet/events/$event',
+    path: '/api/public/integrations/duet/events/$event',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -528,6 +535,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -596,6 +604,7 @@ export interface FileRoutesByTo {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -670,6 +679,7 @@ export interface FileRoutesById {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -744,6 +754,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
+    | '/api/public/integrations/duet/events/$event'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -812,6 +823,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
+    | '/api/public/integrations/duet/events/$event'
   id:
     | '__root__'
     | '/'
@@ -885,6 +897,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
+    | '/api/public/integrations/duet/events/$event'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -936,6 +949,7 @@ export interface RootRouteChildren {
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  ApiPublicIntegrationsDuetEventsEventRoute: typeof ApiPublicIntegrationsDuetEventsEventRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1437,6 +1451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIntegrationsHibambiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/integrations/duet/events/$event': {
+      id: '/api/public/integrations/duet/events/$event'
+      path: '/api/public/integrations/duet/events/$event'
+      fullPath: '/api/public/integrations/duet/events/$event'
+      preLoaderRoute: typeof ApiPublicIntegrationsDuetEventsEventRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1586,6 +1607,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicIntegrationsHibambiWebhookRoute,
   ApiPublicIntegrationsRoutegenieWebhookRoute:
     ApiPublicIntegrationsRoutegenieWebhookRoute,
+  ApiPublicIntegrationsDuetEventsEventRoute:
+    ApiPublicIntegrationsDuetEventsEventRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
