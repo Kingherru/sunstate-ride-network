@@ -65,7 +65,7 @@ export const listDirectReferralsAdmin = createServerFn({ method: "GET" })
     let q = context.supabase
       .from("trips")
       .select(
-        "id, display_id, status, source, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, patient_phone, transport_type, trip_kind, medicaid_trip, cost_total, dispatch_zone_id, referral_status, referral_target_id, created_by, created_at",
+        "id, display_id, status, source, pickup_date, pickup_time, pickup_city, pickup_zip, dropoff_city, dropoff_zip, patient_first_name, patient_last_name, patient_phone, transport_type, trip_kind, medicaid_trip, cost_total, payment_status, fin_payment_state, dispatch_zone_id, referral_status, referral_target_id, created_by, created_at",
       )
       .is("assigned_to", null)
       .not("status", "in", "(completed,canceled,no_show)")
