@@ -14,6 +14,7 @@ import {
   listUnmappedZips,
 } from "@/lib/dispatch.functions";
 
+import { DispatchServiceAreaPanel } from "@/components/admin/DispatchServiceAreaPanel";
 import { listAllSchedules } from "@/lib/schedules.functions";
 import {
   globalSearchById,
