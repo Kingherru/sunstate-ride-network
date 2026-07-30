@@ -20,6 +20,7 @@ import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -133,6 +134,11 @@ const MembershipRoute = MembershipRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinOurNetworkRoute = JoinOurNetworkRouteImport.update({
@@ -460,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -531,6 +538,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -600,6 +608,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -673,6 +682,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/how-it-works'
     | '/join-our-network'
+    | '/login'
     | '/mcp'
     | '/membership'
     | '/privacy-policy'
@@ -744,6 +754,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/how-it-works'
     | '/join-our-network'
+    | '/login'
     | '/mcp'
     | '/membership'
     | '/privacy-policy'
@@ -812,6 +823,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/how-it-works'
     | '/join-our-network'
+    | '/login'
     | '/mcp'
     | '/membership'
     | '/privacy-policy'
@@ -885,6 +897,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   HowItWorksRoute: typeof HowItWorksRoute
   JoinOurNetworkRoute: typeof JoinOurNetworkRoute
+  LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   MembershipRoute: typeof MembershipRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -1002,6 +1015,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join-our-network': {
@@ -1523,6 +1543,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   HowItWorksRoute: HowItWorksRoute,
   JoinOurNetworkRoute: JoinOurNetworkRoute,
+  LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   MembershipRoute: MembershipRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
