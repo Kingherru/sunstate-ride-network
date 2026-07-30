@@ -585,8 +585,16 @@ export function ReservationReviewDialog({
                 >
                   Send to Provider
                 </button>
+                <p className="basis-full text-[11px] text-muted-foreground leading-snug">
+                  Sending this trip costs you nothing — no platform fee is charged when My Florida
+                  NEMT or another provider fulfills it. Your referral payout is credited to you
+                  after the trip is completed, under the standard referral rules. If you confirm and
+                  complete the trip yourself instead, the invoice is created automatically at the
+                  price shown above.
+                </p>
               </>
             )}
+
             {/* Recipient response controls */}
             {!editing && isPendingReferral && isReferralTarget && (
               <>
