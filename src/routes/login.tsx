@@ -79,9 +79,9 @@ export const Route = createFileRoute("/login")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : undefined,
-    mode: s.mode === "signup" ? ("signup" as const) : undefined,
+  validateSearch: (s: Record<string, unknown>): { next?: string; mode?: "signup" } => ({
+    ...(typeof s.next === "string" && s.next ? { next: s.next } : {}),
+    ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
   }),
   component: LoginPage,
 });
@@ -263,7 +263,7 @@ function LoginPage() {
                 </p>
                 <p className="text-sm mt-6">
                   Already have an account?{" "}
-                  <Link to="/login" search={{ mode: undefined }} className="font-bold text-primary underline underline-offset-4">
+                  <Link to="/login" search={{}} className="font-bold text-primary underline underline-offset-4">
                     Sign in
                   </Link>
                 </p>
