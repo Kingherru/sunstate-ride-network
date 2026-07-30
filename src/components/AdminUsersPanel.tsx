@@ -8,6 +8,7 @@ import {
   listNonPatientUsers,
   getUserRoleDetails,
   setUserPrimaryRole,
+  setMemberMembership,
   MANAGEABLE_ROLES,
   ROLE_LABELS,
   type ManageableRole,
@@ -331,4 +332,39 @@ export function AdminUsersPanel() {
     </>
   );
 
+}
+
+/** Inline membership tier control for admins/ops (audited server-side). */
+function MembershipSelect({ user }: { user: any }) {
+  const qc = useQueryClient();
+  const setMembership = useServerFn(setMemberMembership);
+  const tier: string = user.membership_tier ?? "none";
+  const status: string = user.membership_status ?? "inactive";
+
+  const mutation = useMutation({
+    mutationFn: (next: "none" | "free" | "paid") =>
+      setMembership({ data: { user_id: user.id, tier: next } }),
+    onSuccess: (_d, next) => {
+      toast.success(next === "none" ? "Membership removed" : `Membership set to ${next}`);
+      qc.invalidateQueries({ queryKey: ["admin", "non-patient-users"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not update membership"),
+  });
+
+  return (
+    <div className="flex items-center gap-2">
+      <select
+        value={tier}
+        disabled={mutation.isPending}
+        onChange={(e) => mutation.mutate(e.target.value as "none" | "free" | "paid")}
+        className="text-xs font-semibold bg-background border border-border rounded-sm px-2 py-1 disabled:opacity-60"
+        aria-label={`Membership for ${user.email ?? "member"}`}
+      >
+        <option value="none">None</option>
+        <option value="free">Free</option>
+        <option value="paid">Paid</option>
+      </select>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{status}</span>
+    </div>
+  );
 }
