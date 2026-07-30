@@ -5332,6 +5332,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      list_eligible_providers_in_region: {
+        Args: { _region: string }
+        Returns: {
+          city: string
+          company_name: string
+          contact_name: string
+          display_id: string
+          email: string
+          phone: string
+          region: string
+          user_id: string
+        }[]
+      }
       list_expiring_provider_credentials: {
         Args: never
         Returns: {
