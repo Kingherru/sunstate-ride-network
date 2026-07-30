@@ -644,6 +644,8 @@ export function ReservationReviewDialog({
           </section>
         )}
 
+        <TripSyncTimeline tripId={row.id} canSync={canComplete || canApprove} />
+
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between">
           <button
             type="button"
