@@ -124,9 +124,9 @@ export function RegisteredMembersList({
                     )}
                   </td>
                   <td className="py-2 pr-3">
-                    {u.membership_tier ?? "—"}
-                    {u.membership_status ? ` · ${u.membership_status}` : ""}
+                    <MembershipControl user={u} />
                   </td>
+
                   <td className="py-2 pr-3 text-xs text-muted-foreground">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
                   </td>
