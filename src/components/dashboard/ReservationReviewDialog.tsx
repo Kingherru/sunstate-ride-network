@@ -326,19 +326,33 @@ export function ReservationReviewDialog({
     }
   }
 
+  const parsedQuoteCents = (() => {
+    const n = Number(String(quoteInput).replace(/[^0-9.]/g, ""));
+    if (!Number.isFinite(n) || n < 0) return null;
+    return Math.round(n * 100);
+  })();
+
   async function approve() {
+    if (quoteInput.trim() !== "" && parsedQuoteCents == null) {
+      toast.error("Enter a valid quote amount before confirming");
+      return;
+    }
     setBusy("accept");
     try {
+      if (parsedQuoteCents != null && parsedQuoteCents !== (row.estimated_cost_cents ?? null)) {
+        await saveQuote({ data: { trip_id: row.id, amount_cents: parsedQuoteCents } });
+      }
       await update({ data: { trip_id: row.id, status: "accepted" } });
-      toast.success("Reservation approved — moved to Booked");
+      toast.success("Invoice sent and trip confirmed — moved to Booked");
       invalidate();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Could not approve reservation");
+      toast.error(e?.message ?? "Could not confirm this trip");
     } finally {
       setBusy(null);
     }
   }
+
 
   async function complete() {
     setBusy("complete");
