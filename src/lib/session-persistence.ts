@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 /**
  * "Remember me" handling.
  *
@@ -45,6 +43,7 @@ export async function enforceSessionPersistence() {
   }
   if (remembered || sameTabSession) return;
 
+  const { supabase } = await import("@/integrations/supabase/client");
   const { data } = await supabase.auth.getSession();
   if (data.session) await supabase.auth.signOut();
   try {
