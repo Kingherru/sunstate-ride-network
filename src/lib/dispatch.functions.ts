@@ -164,7 +164,7 @@ export const listTripsByZone = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let query = context.supabase
       .from("trips")
-      .select("id, display_id, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_city, pickup_zip, dropoff_city, status, dispatch_zone_id, cost_total, referral_fee_cents, platform_fee_cents, provider_payout_cents, payment_status, payout_status, source, created_by, assigned_to")
+      .select("id, display_id, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_city, pickup_zip, dropoff_city, status, dispatch_zone_id, cost_total, referral_fee_cents, platform_fee_cents, provider_payout_cents, payment_status, payout_status, source, created_by, assigned_to, referral_status, referral_target_id, referral_sent_at")
       .order("pickup_date", { ascending: false })
       .limit(200);
     if (data.zone_id) query = query.eq("dispatch_zone_id", data.zone_id);
