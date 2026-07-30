@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Search, MapPin, BookmarkPlus, BookmarkCheck, Trash2 } from "lucide-react";
+import { Search, MapPin, BookmarkPlus, BookmarkCheck, Trash2, Phone, Mail } from "lucide-react";
 import {
   findProvidersNearAddress,
   listSavedProviders,
