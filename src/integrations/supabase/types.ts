@@ -4984,6 +4984,14 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      admin_set_membership: {
+        Args: {
+          _status?: string
+          _tier: Database["public"]["Enums"]["membership_tier"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       admin_user_ids: { Args: never; Returns: string[] }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
