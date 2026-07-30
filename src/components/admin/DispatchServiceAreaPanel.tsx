@@ -118,10 +118,11 @@ export function DispatchServiceAreaPanel({
         <h2 className="text-lg font-extrabold tracking-tight">Service Areas</h2>
         <p className="text-xs text-muted-foreground mt-1">
           Florida is organized as <strong>Dispatch Zone → County → ZIP codes</strong>. Pick a zone
-          to see its counties, then open a county to review or edit the ZIPs it covers. Moving a
-          county re-routes every one of its ZIPs and trips at once.
+          to see its counties, then open a county to add or remove individual ZIP codes. County
+          assignments are set by the system — they can only be changed in Admin settings below.
         </p>
       </header>
+
 
       {/* Tier 1 — dispatch zones */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2">
