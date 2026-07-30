@@ -325,5 +325,7 @@ export function AdminUsersPanel() {
         </div>
       )}
     </div>
+    </>
   );
+
 }
