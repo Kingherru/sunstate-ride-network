@@ -661,7 +661,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
             {tab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} />}
+            {tab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} onResumeDraft={resumeDraft} />}
             {tab === "trips" && (
               <div className="space-y-6">
                 <div className="flex items-center gap-2 border-b border-border">
@@ -684,6 +684,15 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                       </span>
                     )}
                   </button>
+                  {portal !== "provider" && (
+                    <button
+                      type="button"
+                      onClick={() => setTripsSubtab("saved")}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "saved" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Saved Trips
+                    </button>
+                  )}
                   {portal === "provider" && (
                     <button
                       type="button"
@@ -694,14 +703,27 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     </button>
                   )}
                 </div>
-                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => {
+                {tripsSubtab === "new" && (canSend ? <NewTripForm
+                  key={draftSource?.id ?? duplicateSource?.id ?? "blank"}
+                  portal={portal}
+                  userId={userId}
+                  initialTrip={duplicateSource}
+                  initialDraft={draftSource ? { id: draftSource.id, payload: draftSource.payload } : null}
+                  onSavedDraft={() => {
+                    setDraftSource(null);
+                    setTripsSubtab(portal === "provider" ? "reservations" : "saved");
+                  }}
+                  onCreated={() => {
                   qc.invalidateQueries({ queryKey: ["my-trips"] });
                   qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
                   qc.invalidateQueries({ queryKey: ["unread-counts"] });
+                  qc.invalidateQueries({ queryKey: ["trip-drafts"] });
                   setDuplicateSource(null);
+                  setDraftSource(null);
                   setTripsSubtab("reservations");
                 }} /> : <PaidOnly />)}
-                {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} />}
+                {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} onResumeDraft={resumeDraft} />}
+                {tripsSubtab === "saved" && portal !== "provider" && <SavedTripsPanel variant="saved" onResume={resumeDraft} />}
                 {tripsSubtab === "history" && portal === "provider" && <TripHistoryPanel userId={userId!} />}
               </div>
             )}
