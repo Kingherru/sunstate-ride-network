@@ -144,16 +144,28 @@ function Field({
   error?: string;
 }) {
   return (
-    <label className="block">
+    <label
+      className={
+        error
+          ? "block rounded-sm [&_input]:border-destructive [&_textarea]:border-destructive [&_select]:border-destructive [&_button]:border-destructive"
+          : "block"
+      }
+      data-field-error={error ? "true" : undefined}
+    >
       <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
         {label}
         {required && <span className="text-accent"> *</span>}
       </span>
       {children}
-      {error && <span className="block mt-1 text-xs text-destructive">{error}</span>}
+      {error && (
+        <span role="alert" className="block mt-1 text-xs font-semibold text-destructive">
+          {error}
+        </span>
+      )}
     </label>
   );
 }
+
 
 const inputCls =
   "w-full bg-card border border-input rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all";
@@ -328,12 +340,37 @@ function RequestRidePage() {
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
-        errs[issue.path.join(".")] = issue.message;
+        const key = issue.path.join(".");
+        const raw = issue.message ?? "";
+        const generic =
+          !raw ||
+          /^Required$/i.test(raw) ||
+          /at least \d+ character/i.test(raw) ||
+          /^Invalid/i.test(raw) ||
+          /expected|received/i.test(raw);
+        errs[key] = generic
+          ? key.toLowerCase().includes("email")
+            ? "Enter a valid email address."
+            : key.toLowerCase().includes("phone")
+              ? "Enter a valid phone number."
+              : key.toLowerCase().includes("date")
+                ? "Choose a date."
+                : key.toLowerCase().includes("time")
+                  ? "Choose a time."
+                  : "This field is required."
+          : raw;
       }
+
       setErrors(errs);
       toast.error("Please fix the highlighted fields.");
+      // Bring the first problem field into view so the user can correct it.
+      requestAnimationFrame(() => {
+        const el = document.querySelector("[data-field-error='true']");
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
       return;
     }
+
     setSubmitting(true);
     try {
       const res = await submit({ data: parsed.data });
@@ -539,7 +576,7 @@ function RequestRidePage() {
           </div>
         )}
 
-        <form onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
+        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
 
           {/* Patient */}
           <fieldset className="space-y-6">

@@ -3004,6 +3004,8 @@ export type Database = {
           pickup_lng: number | null
           pickup_time: string
           pickup_zip: string | null
+          promoted_at: string | null
+          promoted_trip_id: string | null
           provider_notes: string | null
           recurrence_end_date: string | null
           recurrence_exceptions: string[]
@@ -3101,6 +3103,8 @@ export type Database = {
           pickup_lng?: number | null
           pickup_time: string
           pickup_zip?: string | null
+          promoted_at?: string | null
+          promoted_trip_id?: string | null
           provider_notes?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
@@ -3198,6 +3202,8 @@ export type Database = {
           pickup_lng?: number | null
           pickup_time?: string
           pickup_zip?: string | null
+          promoted_at?: string | null
+          promoted_trip_id?: string | null
           provider_notes?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
@@ -3253,6 +3259,27 @@ export type Database = {
             columns: ["payer_id"]
             isOneToOne: false
             referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_promoted_trip_id_fkey"
+            columns: ["promoted_trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "ride_requests_promoted_trip_id_fkey"
+            columns: ["promoted_trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_promoted_trip_id_fkey"
+            columns: ["promoted_trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
             referencedColumns: ["id"]
           },
         ]

@@ -103,16 +103,18 @@ export function DatePickerField({
       </Popover>
       {helperText && <p className="mt-1 text-xs text-muted-foreground">{helperText}</p>}
       {required && (
-        // Hidden native input keeps form-level `required` semantics for browsers/AT.
+        // Mirror the value for AT/autofill only. Intentionally NOT `required`:
+        // a hidden (sr-only) required control is unfocusable, so the browser
+        // would silently block form submission with no visible message.
         <input
           tabIndex={-1}
           aria-hidden
           className="sr-only"
           value={value}
           onChange={() => {}}
-          required
         />
       )}
+
     </label>
   );
 }
