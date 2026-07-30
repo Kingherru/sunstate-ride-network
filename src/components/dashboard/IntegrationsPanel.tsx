@@ -136,6 +136,38 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
             className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
           />
         </label>
+        {isDuet && (
+          <>
+            <label className="block text-sm">
+              <span className="font-bold">API secret</span>
+              <input
+                type="password"
+                value={apiSecret}
+                onChange={(e) => setApiSecret(e.target.value)}
+                placeholder={existing?.config?.apiSecretEncrypted ? "•••••••• (saved)" : "Duet apiSecret"}
+                className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-bold">Transportation provider ID</span>
+              <input
+                value={tpId}
+                onChange={(e) => setTpId(e.target.value)}
+                placeholder="Your Duet transportation provider ID"
+                className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="font-bold">API base URL (optional)</span>
+              <input
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder="https://api.duetride.com"
+                className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
+              />
+            </label>
+          </>
+        )}
         <label className="flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
           Enable sync
