@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,8 @@ import { cancelMyMembership } from "@/utils/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { createTrip, createTripsBulk, listRegionalProviders, assignTrip, updateTripStatus, updateTripDetails, recordHipaaAck } from "@/lib/trips.functions";
 import { ensureMyDisplayId } from "@/lib/system-ids.functions";
+import { saveTripDraft, markTripDraftSubmitted } from "@/lib/trip-drafts.functions";
+import { SavedTripsPanel, type TripDraft } from "@/components/dashboard/SavedTripsPanel";
 import { downloadTripPdf, normalizeCsvHeader, type TripPdfInput } from "@/lib/trip-pdf";
 import type { Database } from "@/integrations/supabase/types";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
@@ -166,7 +168,7 @@ type Profile = Database["public"]["Tables"]["member_profiles"]["Row"];
 
 export type PortalKind = "patient" | "provider" | "facility";
 type Tab = "received" | "sent" | "new" | "upload" | "requests" | "reservations" | "trips" | "network" | "rules" | "contacts" | "providers" | "saved_providers" | "saved_patients" | "vehicles" | "drivers" | "driver_earnings" | "pricing" | "memberships" | "payouts" | "integrations" | "payments" | "payers" | "reviews" | "feedback" | "business_info" | "schedule" | "medicaid" | "training" | "messages" | "notifications" | "changelog" | "account" | "onboarding";
-type TripsSubtab = "new" | "reservations" | "history";
+type TripsSubtab = "new" | "reservations" | "history" | "saved";
 
 const PORTAL_TABS: Record<PortalKind, Tab[]> = {
   patient:  ["new", "sent", "saved_patients", "feedback", "messages", "notifications", "payments", "account"],
@@ -248,6 +250,13 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
   const [tab, setTab] = useState<Tab>(baseAllowedTabs[0]);
   const [tripsSubtab, setTripsSubtab] = useState<TripsSubtab>("new");
   const [duplicateSource, setDuplicateSource] = useState<Trip | null>(null);
+  const [draftSource, setDraftSource] = useState<TripDraft | null>(null);
+  function resumeDraft(d: TripDraft) {
+    setDuplicateSource(null);
+    setDraftSource(d);
+    setTab("trips");
+    setTripsSubtab("new");
+  }
   function startDuplicate(t: Trip) {
     setDuplicateSource(t);
     if (portal === "provider") {
@@ -652,7 +661,7 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
             {tab === "sent" && <TripList trips={sent} userId={userId!} role="sender" portal={portal} onChanged={() => qc.invalidateQueries({ queryKey: ["my-trips"] })} onDuplicate={startDuplicate} />}
             {tab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setDuplicateSource(null); setTab("sent"); }} /> : <PaidOnly />)}
             {tab === "upload" && (canSend ? <CsvUpload onUploaded={() => { qc.invalidateQueries({ queryKey: ["my-trips"] }); setTab("sent"); }} /> : <PaidOnly />)}
-            {tab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} />}
+            {tab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} onResumeDraft={resumeDraft} />}
             {tab === "trips" && (
               <div className="space-y-6">
                 <div className="flex items-center gap-2 border-b border-border">
@@ -675,6 +684,15 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                       </span>
                     )}
                   </button>
+                  {portal !== "provider" && (
+                    <button
+                      type="button"
+                      onClick={() => setTripsSubtab("saved")}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${tripsSubtab === "saved" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Saved Trips
+                    </button>
+                  )}
                   {portal === "provider" && (
                     <button
                       type="button"
@@ -685,14 +703,27 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
                     </button>
                   )}
                 </div>
-                {tripsSubtab === "new" && (canSend ? <NewTripForm portal={portal} userId={userId} initialTrip={duplicateSource} onCreated={() => {
+                {tripsSubtab === "new" && (canSend ? <NewTripForm
+                  key={draftSource?.id ?? duplicateSource?.id ?? "blank"}
+                  portal={portal}
+                  userId={userId}
+                  initialTrip={duplicateSource}
+                  initialDraft={draftSource ? { id: draftSource.id, payload: draftSource.payload } : null}
+                  onSavedDraft={() => {
+                    setDraftSource(null);
+                    setTripsSubtab(portal === "provider" ? "reservations" : "saved");
+                  }}
+                  onCreated={() => {
                   qc.invalidateQueries({ queryKey: ["my-trips"] });
                   qc.invalidateQueries({ queryKey: ["reservations-by-state"] });
                   qc.invalidateQueries({ queryKey: ["unread-counts"] });
+                  qc.invalidateQueries({ queryKey: ["trip-drafts"] });
                   setDuplicateSource(null);
+                  setDraftSource(null);
                   setTripsSubtab("reservations");
                 }} /> : <PaidOnly />)}
-                {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} />}
+                {tripsSubtab === "reservations" && <ReservationsPanel userId={userId!} scope={portal === "provider" ? "provider" : "requester"} onResumeDraft={resumeDraft} />}
+                {tripsSubtab === "saved" && portal !== "provider" && <SavedTripsPanel variant="saved" onResume={resumeDraft} />}
                 {tripsSubtab === "history" && portal === "provider" && <TripHistoryPanel userId={userId!} />}
               </div>
             )}
@@ -991,8 +1022,9 @@ function PaidOnly() {
 }
 
 /* -------- New Trip Form -------- */
-function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: () => void; initialTrip?: any; portal: PortalKind; userId?: string | null }) {
-  const seed = initialTrip ?? {};
+function NewTripForm({ onCreated, onSavedDraft, initialTrip, initialDraft, portal, userId }: { onCreated: () => void; onSavedDraft?: () => void; initialTrip?: any; initialDraft?: { id: string; payload: Record<string, any> } | null; portal: PortalKind; userId?: string | null }) {
+  const seed = initialDraft?.payload ?? initialTrip ?? {};
+  const resuming = !!initialDraft;
   const [form, setForm] = useState<any>({
     trip_kind: seed.trip_kind ?? "passenger",
     patient_first_name: seed.patient_first_name ?? "",
@@ -1012,17 +1044,17 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     pickup_city: seed.pickup_city ?? "",
     pickup_zip: seed.pickup_zip ?? "",
     // Date/time intentionally blank so user picks a new schedule.
-    pickup_date: "",
-    pickup_time: "",
-    appointment_time: "",
+    pickup_date: resuming ? seed.pickup_date ?? "" : "",
+    pickup_time: resuming ? seed.pickup_time ?? "" : "",
+    appointment_time: resuming ? seed.appointment_time ?? "" : "",
     dropoff_address: seed.dropoff_address ?? "",
     dropoff_city: seed.dropoff_city ?? "",
     dropoff_zip: seed.dropoff_zip ?? "",
     transport_type: seed.transport_type ?? "ambulatory",
     round_trip: !!seed.round_trip,
-    return_pickup_time: "",
-    return_dropoff_time: "",
-    return_date: "",
+    return_pickup_time: resuming ? seed.return_pickup_time ?? "" : "",
+    return_dropoff_time: resuming ? seed.return_dropoff_time ?? "" : "",
+    return_date: resuming ? seed.return_date ?? "" : "",
     return_pickup_building: seed.return_pickup_building ?? "",
     return_pickup_doctor: seed.return_pickup_doctor ?? "",
     return_pickup_suite: seed.return_pickup_suite ?? "",
@@ -1049,6 +1081,45 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
     delivery_recipient_phone: seed.delivery_recipient_phone ?? "",
   });
   const isDelivery = form.trip_kind === "medical_delivery";
+
+  // ---- Draft autosave -------------------------------------------------
+  // Everything typed here is saved as an unsubmitted draft so nothing is lost.
+  // Providers find drafts under Reservations; patients/facilities under Saved Trips.
+  const qcDraft = useQueryClient();
+  const saveDraftFn = useServerFn(saveTripDraft);
+  const markDraftSubmitted = useServerFn(markTripDraftSubmitted);
+  const [draftId, setDraftId] = useState<string | null>(initialDraft?.id ?? null);
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const draftIdRef = useRef<string | null>(initialDraft?.id ?? null);
+  const submittedRef = useRef(false);
+  useEffect(() => { draftIdRef.current = draftId; }, [draftId]);
+
+  const draftHasContent =
+    !!(form.patient_first_name || form.patient_last_name || form.patient_phone ||
+       form.pickup_address || form.dropoff_address || form.pickup_date);
+
+  const persistDraft = useCallback(async (autosaved: boolean) => {
+    setSavingDraft(true);
+    try {
+      const res = await saveDraftFn({ data: { draft_id: draftIdRef.current, payload: form, autosaved } });
+      draftIdRef.current = res.id;
+      setDraftId(res.id);
+      setDraftSavedAt(new Date());
+      qcDraft.invalidateQueries({ queryKey: ["trip-drafts"] });
+      return res.id;
+    } finally {
+      setSavingDraft(false);
+    }
+  }, [form, saveDraftFn, qcDraft]);
+
+  useEffect(() => {
+    if (!draftHasContent || submittedRef.current) return;
+    const t = setTimeout(() => { persistDraft(true).catch(() => {}); }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, draftHasContent]);
+
   // HIPAA acknowledgment is now managed in Settings (Business info). The
   // server auto-resolves the caller's latest acknowledgment on submit, so
   // this form no longer prompts for it every time.
@@ -1133,7 +1204,20 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       }
       return createTrip({ data: payload });
     },
-    onSuccess: () => { toast.success("Trip created"); setFieldErrors({}); onCreated(); },
+    onSuccess: async (res: any) => {
+      toast.success("Trip created");
+      setFieldErrors({});
+      submittedRef.current = true;
+      const id = draftIdRef.current;
+      if (id) {
+        // The draft became a real reservation — retire it from Saved Trips.
+        try { await markDraftSubmitted({ data: { draft_id: id, trip_id: (res?.id as string) ?? null } }); } catch { /* non-fatal */ }
+        draftIdRef.current = null;
+        setDraftId(null);
+        qcDraft.invalidateQueries({ queryKey: ["trip-drafts"] });
+      }
+      onCreated();
+    },
     onError: async (e: any) => {
       const { humanizeError } = await import("@/lib/friendly-errors");
       const friendly = humanizeError(e);
@@ -1491,9 +1575,32 @@ function NewTripForm({ onCreated, initialTrip, portal, userId }: { onCreated: ()
       <p className="col-span-2 text-xs text-muted-foreground bg-muted/30 border border-border rounded-sm p-2">
         HIPAA acknowledgment is stored once in <strong>Settings → Business info</strong> and applied automatically to every trip you create.
       </p>
-      <button disabled={m.isPending} className="portal-btn-primary col-span-2 py-3">
-        {m.isPending ? "Creating…" : "Create trip"}
-      </button>
+      <div className="col-span-2 grid gap-2 sm:grid-cols-[1fr_auto] items-center">
+        <button disabled={m.isPending} className="portal-btn-primary py-3">
+          {m.isPending ? "Creating…" : "Create trip"}
+        </button>
+        <button
+          type="button"
+          disabled={savingDraft || !draftHasContent}
+          onClick={async () => {
+            try {
+              await persistDraft(false);
+              toast.success(portal === "provider" ? "Saved as a draft — find it under Reservations" : "Saved — find it under Saved Trips");
+              onSavedDraft?.();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Could not save this trip");
+            }
+          }}
+          className="border-2 border-border px-5 py-3 text-sm font-bold rounded-sm hover:bg-muted disabled:opacity-50"
+        >
+          {savingDraft ? "Saving…" : "Save trip without submitting"}
+        </button>
+      </div>
+      <p className="col-span-2 -mt-2 text-xs text-muted-foreground">
+        {draftSavedAt
+          ? `Draft saved ${draftSavedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} — not submitted yet.`
+          : "Your progress is saved automatically as an unsubmitted draft."}
+      </p>
     </form>
   );
 }
