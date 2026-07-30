@@ -183,7 +183,7 @@ const tripBaseSchema = z.object({
   payer_id: z.string().uuid().optional().nullable(),
   // trip_number is system-generated; users cannot set it.
   patient_date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD").optional().nullable().or(z.literal("")),
-  is_medicaid_patient: z.boolean().optional().nullable(),
+  is_medicaid_patient: z.boolean().optional(),
   medicaid_number: z.string().trim().max(64).optional().nullable(),
   medicaid_plan: z.string().trim().max(120).optional().nullable(),
   authorization_number: z.string().trim().max(64).optional().nullable(),
