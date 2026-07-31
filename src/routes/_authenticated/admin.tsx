@@ -58,6 +58,7 @@ import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { reviewProviderApplication, updateProviderCompliance } from "@/lib/staff.functions";
 import { getUnreadMessageCount } from "@/lib/messages.functions";
+import { reloadTabData } from "@/lib/tab-reload";
 
 import {
   Sidebar,
