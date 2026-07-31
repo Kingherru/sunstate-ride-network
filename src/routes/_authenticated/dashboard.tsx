@@ -36,6 +36,7 @@ import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions"
 import { useServerFn } from "@tanstack/react-start";
 import { useTripSync } from "@/hooks/useTripSync";
 import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnreadCounts";
+import { reloadTabData } from "@/lib/tab-reload";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
@@ -306,7 +307,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     setTab(t);
     const key = tabKeyFor(t);
     if (key) markViewed(key);
+    reloadTabData(qc, t);
   }
+
 
   // Clear badge when a tab is already the current view (e.g. after realtime bump).
   useEffect(() => {

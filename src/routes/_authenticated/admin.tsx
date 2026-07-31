@@ -58,6 +58,7 @@ import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { reviewProviderApplication, updateProviderCompliance } from "@/lib/staff.functions";
 import { getUnreadMessageCount } from "@/lib/messages.functions";
+import { reloadTabData } from "@/lib/tab-reload";
 
 import {
   Sidebar,
@@ -242,7 +243,9 @@ function AdminPage() {
     const key = adminTabKeyFor(id);
     if (key) markViewed(key);
     if (id === "messaging") qc.invalidateQueries({ queryKey: ["msg-unread-total"] });
+    reloadTabData(qc, id);
   };
+
 
   useEffect(() => {
     const key = adminTabKeyFor(tab);
