@@ -36,6 +36,7 @@ import { getMyWorkHours, saveMyWorkHours } from "@/lib/schedule-board.functions"
 import { useServerFn } from "@tanstack/react-start";
 import { useTripSync } from "@/hooks/useTripSync";
 import { useUnreadCounts, useMarkTabViewed, severityFor } from "@/hooks/useUnreadCounts";
+import { reloadTabData } from "@/lib/tab-reload";
 import { TAB_KEYS, type TabKey } from "@/lib/unread.functions";
 
 import { PaymentStatusControl } from "@/components/dashboard/PaymentStatusControl";
