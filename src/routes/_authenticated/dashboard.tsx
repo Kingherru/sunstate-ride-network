@@ -306,7 +306,9 @@ export function DashboardPage({ portalOverride }: { portalOverride?: PortalKind 
     setTab(t);
     const key = tabKeyFor(t);
     if (key) markViewed(key);
+    reloadTabData(qc, t);
   }
+
 
   // Clear badge when a tab is already the current view (e.g. after realtime bump).
   useEffect(() => {
