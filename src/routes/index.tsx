@@ -90,7 +90,7 @@ function HomePage() {
         {[
           { icon: <MapPin size={20} />, value: "67", label: "Counties", bg: PEACH, fg: NAVY },
           { icon: <Clock size={20} />, value: "24/7", label: "Dispatch", bg: MINT, fg: NAVY },
-          { icon: <Shield size={20} />, value: "100%", label: "HIPAA Compliant", bg: "#FFFFFF", fg: NAVY },
+          { icon: <Shield size={20} />, value: "100%", label: "HIPAA Compliant", bg: NAVY, fg: "#fff" },
           { icon: <Phone size={20} />, value: "3,500+", label: "Daily Trips", bg: CREAM, fg: NAVY },
         ].map((s) => (
           <div key={s.label} className="px-6 py-10 flex items-center gap-4" style={{ background: s.bg, color: s.fg }}>
