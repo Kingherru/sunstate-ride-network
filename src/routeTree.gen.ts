@@ -9,59 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TrainingRouteImport } from './routes/training'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShopRouteImport } from './routes/shop'
-import { Route as ServicesRouteImport } from './routes/services'
-import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as RequestARideRouteImport } from './routes/request-a-ride'
-import { Route as ProvidersRouteImport } from './routes/providers'
-import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
-import { Route as MembershipRouteImport } from './routes/membership'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
-import { Route as HowItWorksRouteImport } from './routes/how-it-works'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ChangelogRouteImport } from './routes/changelog'
-import { Route as BlackTieRouteImport } from './routes/black-tie'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
-import { Route as ServicesIndexRouteImport } from './routes/services.index'
-import { Route as ServiceAreasIndexRouteImport } from './routes/service-areas.index'
-import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
-import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
-import { Route as ServicesWheelchairRouteImport } from './routes/services.wheelchair'
-import { Route as ServicesStretcherRouteImport } from './routes/services.stretcher'
-import { Route as ServicesMedicalDeliveriesRouteImport } from './routes/services.medical-deliveries'
-import { Route as ServicesAmbulatoryRouteImport } from './routes/services.ambulatory'
-import { Route as ServiceAreasCityRouteImport } from './routes/service-areas.$city'
-import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
-import { Route as ProviderLoginRouteImport } from './routes/provider.login'
-import { Route as PatientLoginRouteImport } from './routes/patient.login'
-import { Route as FacilityLoginRouteImport } from './routes/facility.login'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as EmbedRequestARideTokenRouteImport } from './routes/embed.request-a-ride.$token'
-import { Route as AuthenticatedRequestsIdRouteImport } from './routes/_authenticated/requests.$id'
-import { Route as AuthenticatedProviderMedicaidRouteImport } from './routes/_authenticated/provider.medicaid'
-import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_authenticated/provider.dashboard'
-import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
-import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -72,16 +33,10 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicHooksReleaseEligiblePayoutsRouteImport } from './routes/api/public/hooks/release-eligible-payouts'
 import { Route as ApiPublicHooksFinReleaseTickRouteImport } from './routes/api/public/hooks/fin-release-tick'
 import { Route as ApiPublicHooksFinCashoutTickRouteImport } from './routes/api/public/hooks/fin-cashout-tick'
-import { Route as AuthenticatedReservationsIdReviewRouteImport } from './routes/_authenticated/reservations.$id.review'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
 import { Route as ApiPublicIntegrationsDuetEventsEventRouteImport } from './routes/api/public/integrations/duet.events.$event'
 
-const TrainingRoute = TrainingRouteImport.update({
-  id: '/training',
-  path: '/training',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -92,88 +47,13 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ServicesRoute = ServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ServiceAreasRoute = ServiceAreasRouteImport.update({
-  id: '/service-areas',
-  path: '/service-areas',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RequestARideRoute = RequestARideRouteImport.update({
-  id: '/request-a-ride',
-  path: '/request-a-ride',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProvidersRoute = ProvidersRouteImport.update({
-  id: '/providers',
-  path: '/providers',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
-  id: '/privacy-policy',
-  path: '/privacy-policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MembershipRoute = MembershipRouteImport.update({
-  id: '/membership',
-  path: '/membership',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoinOurNetworkRoute = JoinOurNetworkRouteImport.update({
-  id: '/join-our-network',
-  path: '/join-our-network',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HowItWorksRoute = HowItWorksRouteImport.update({
-  id: '/how-it-works',
-  path: '/how-it-works',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChangelogRoute = ChangelogRouteImport.update({
-  id: '/changelog',
-  path: '/changelog',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BlackTieRoute = BlackTieRouteImport.update({
-  id: '/black-tie',
-  path: '/black-tie',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopIndexRoute = ShopIndexRouteImport.update({
@@ -181,29 +61,9 @@ const ShopIndexRoute = ShopIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShopRoute,
 } as any)
-const ServicesIndexRoute = ServicesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ServicesRoute,
-} as any)
-const ServiceAreasIndexRoute = ServiceAreasIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ServiceAreasRoute,
-} as any)
-const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
-  id: '/resources/',
-  path: '/resources/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
   id: '/verify/$token',
   path: '/verify/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StaffLoginRoute = StaffLoginRouteImport.update({
-  id: '/staff/login',
-  path: '/staff/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopReturnRoute = ShopReturnRouteImport.update({
@@ -216,52 +76,6 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ShopRoute,
 } as any)
-const ServicesWheelchairRoute = ServicesWheelchairRouteImport.update({
-  id: '/wheelchair',
-  path: '/wheelchair',
-  getParentRoute: () => ServicesRoute,
-} as any)
-const ServicesStretcherRoute = ServicesStretcherRouteImport.update({
-  id: '/stretcher',
-  path: '/stretcher',
-  getParentRoute: () => ServicesRoute,
-} as any)
-const ServicesMedicalDeliveriesRoute =
-  ServicesMedicalDeliveriesRouteImport.update({
-    id: '/medical-deliveries',
-    path: '/medical-deliveries',
-    getParentRoute: () => ServicesRoute,
-  } as any)
-const ServicesAmbulatoryRoute = ServicesAmbulatoryRouteImport.update({
-  id: '/ambulatory',
-  path: '/ambulatory',
-  getParentRoute: () => ServicesRoute,
-} as any)
-const ServiceAreasCityRoute = ServiceAreasCityRouteImport.update({
-  id: '/$city',
-  path: '/$city',
-  getParentRoute: () => ServiceAreasRoute,
-} as any)
-const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
-  id: '/resources/$slug',
-  path: '/resources/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProviderLoginRoute = ProviderLoginRouteImport.update({
-  id: '/provider/login',
-  path: '/provider/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatientLoginRoute = PatientLoginRouteImport.update({
-  id: '/patient/login',
-  path: '/patient/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FacilityLoginRoute = FacilityLoginRouteImport.update({
-  id: '/facility/login',
-  path: '/facility/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -272,33 +86,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRequestsIndexRoute =
-  AuthenticatedRequestsIndexRouteImport.update({
-    id: '/requests/',
-    path: '/requests/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -309,45 +101,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmbedRequestARideTokenRoute = EmbedRequestARideTokenRouteImport.update({
-  id: '/embed/request-a-ride/$token',
-  path: '/embed/request-a-ride/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRequestsIdRoute = AuthenticatedRequestsIdRouteImport.update({
-  id: '/requests/$id',
-  path: '/requests/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProviderMedicaidRoute =
-  AuthenticatedProviderMedicaidRouteImport.update({
-    id: '/provider/medicaid',
-    path: '/provider/medicaid',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedProviderDashboardRoute =
-  AuthenticatedProviderDashboardRouteImport.update({
-    id: '/provider/dashboard',
-    path: '/provider/dashboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPatientDashboardRoute =
-  AuthenticatedPatientDashboardRouteImport.update({
-    id: '/patient/dashboard',
-    path: '/patient/dashboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => AuthenticatedLearnRoute,
 } as any)
-const AuthenticatedFacilityDashboardRoute =
-  AuthenticatedFacilityDashboardRouteImport.update({
-    id: '/facility/dashboard',
-    path: '/facility/dashboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -406,12 +164,6 @@ const ApiPublicHooksFinCashoutTickRoute =
     path: '/api/public/hooks/fin-cashout-tick',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedReservationsIdReviewRoute =
-  AuthenticatedReservationsIdReviewRouteImport.update({
-    id: '/reservations/$id/review',
-    path: '/reservations/$id/review',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const ApiPublicIntegrationsRoutegenieWebhookRoute =
   ApiPublicIntegrationsRoutegenieWebhookRouteImport.update({
     id: '/api/public/integrations/routegenie/webhook',
@@ -432,59 +184,20 @@ const ApiPublicIntegrationsDuetEventsEventRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
-  '/black-tie': typeof BlackTieRoute
-  '/changelog': typeof ChangelogRoute
-  '/contact': typeof ContactRoute
-  '/how-it-works': typeof HowItWorksRoute
-  '/join-our-network': typeof JoinOurNetworkRoute
-  '/login': typeof LoginRoute
-  '/membership': typeof MembershipRoute
-  '/privacy-policy': typeof PrivacyPolicyRoute
-  '/providers': typeof ProvidersRoute
-  '/request-a-ride': typeof RequestARideRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
-  '/service-areas': typeof ServiceAreasRouteWithChildren
-  '/services': typeof ServicesRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/training': typeof TrainingRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
   '/learn': typeof AuthenticatedLearnRouteWithChildren
-  '/notifications': typeof AuthenticatedNotificationsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/facility/login': typeof FacilityLoginRoute
-  '/patient/login': typeof PatientLoginRoute
-  '/provider/login': typeof ProviderLoginRoute
-  '/resources/$slug': typeof ResourcesSlugRoute
-  '/service-areas/$city': typeof ServiceAreasCityRoute
-  '/services/ambulatory': typeof ServicesAmbulatoryRoute
-  '/services/medical-deliveries': typeof ServicesMedicalDeliveriesRoute
-  '/services/stretcher': typeof ServicesStretcherRoute
-  '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
-  '/staff/login': typeof StaffLoginRoute
   '/verify/$token': typeof VerifyTokenRoute
-  '/resources/': typeof ResourcesIndexRoute
-  '/service-areas/': typeof ServiceAreasIndexRoute
-  '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
-  '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
-  '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
-  '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
-  '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
-  '/requests/$id': typeof AuthenticatedRequestsIdRoute
-  '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
-  '/requests/': typeof AuthenticatedRequestsIndexRoute
-  '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
@@ -500,55 +213,18 @@ export interface FileRoutesByFullPath {
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
-  '/black-tie': typeof BlackTieRoute
-  '/changelog': typeof ChangelogRoute
-  '/contact': typeof ContactRoute
-  '/how-it-works': typeof HowItWorksRoute
-  '/join-our-network': typeof JoinOurNetworkRoute
-  '/login': typeof LoginRoute
-  '/membership': typeof MembershipRoute
-  '/privacy-policy': typeof PrivacyPolicyRoute
-  '/providers': typeof ProvidersRoute
-  '/request-a-ride': typeof RequestARideRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/training': typeof TrainingRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/notifications': typeof AuthenticatedNotificationsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/facility/login': typeof FacilityLoginRoute
-  '/patient/login': typeof PatientLoginRoute
-  '/provider/login': typeof ProviderLoginRoute
-  '/resources/$slug': typeof ResourcesSlugRoute
-  '/service-areas/$city': typeof ServiceAreasCityRoute
-  '/services/ambulatory': typeof ServicesAmbulatoryRoute
-  '/services/medical-deliveries': typeof ServicesMedicalDeliveriesRoute
-  '/services/stretcher': typeof ServicesStretcherRoute
-  '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
-  '/staff/login': typeof StaffLoginRoute
   '/verify/$token': typeof VerifyTokenRoute
-  '/resources': typeof ResourcesIndexRoute
-  '/service-areas': typeof ServiceAreasIndexRoute
-  '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
-  '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
-  '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
-  '/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
-  '/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
-  '/requests/$id': typeof AuthenticatedRequestsIdRoute
-  '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
-  '/requests': typeof AuthenticatedRequestsIndexRoute
-  '/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
@@ -565,60 +241,20 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
-  '/black-tie': typeof BlackTieRoute
-  '/changelog': typeof ChangelogRoute
-  '/contact': typeof ContactRoute
-  '/how-it-works': typeof HowItWorksRoute
-  '/join-our-network': typeof JoinOurNetworkRoute
-  '/login': typeof LoginRoute
-  '/membership': typeof MembershipRoute
-  '/privacy-policy': typeof PrivacyPolicyRoute
-  '/providers': typeof ProvidersRoute
-  '/request-a-ride': typeof RequestARideRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/service-areas': typeof ServiceAreasRouteWithChildren
-  '/services': typeof ServicesRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/training': typeof TrainingRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
-  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/facility/login': typeof FacilityLoginRoute
-  '/patient/login': typeof PatientLoginRoute
-  '/provider/login': typeof ProviderLoginRoute
-  '/resources/$slug': typeof ResourcesSlugRoute
-  '/service-areas/$city': typeof ServiceAreasCityRoute
-  '/services/ambulatory': typeof ServicesAmbulatoryRoute
-  '/services/medical-deliveries': typeof ServicesMedicalDeliveriesRoute
-  '/services/stretcher': typeof ServicesStretcherRoute
-  '/services/wheelchair': typeof ServicesWheelchairRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
-  '/staff/login': typeof StaffLoginRoute
   '/verify/$token': typeof VerifyTokenRoute
-  '/resources/': typeof ResourcesIndexRoute
-  '/service-areas/': typeof ServiceAreasIndexRoute
-  '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
-  '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
-  '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
-  '/_authenticated/provider/dashboard': typeof AuthenticatedProviderDashboardRoute
-  '/_authenticated/provider/medicaid': typeof AuthenticatedProviderMedicaidRoute
-  '/_authenticated/requests/$id': typeof AuthenticatedRequestsIdRoute
-  '/embed/request-a-ride/$token': typeof EmbedRequestARideTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
-  '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
-  '/_authenticated/reservations/$id/review': typeof AuthenticatedReservationsIdReviewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
@@ -637,58 +273,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
-    | '/auth'
-    | '/black-tie'
-    | '/changelog'
-    | '/contact'
-    | '/how-it-works'
-    | '/join-our-network'
-    | '/login'
-    | '/membership'
-    | '/privacy-policy'
-    | '/providers'
-    | '/request-a-ride'
     | '/reset-password'
-    | '/service-areas'
-    | '/services'
     | '/shop'
     | '/sitemap.xml'
-    | '/training'
-    | '/admin'
-    | '/dashboard'
     | '/learn'
-    | '/notifications'
     | '/checkout/return'
     | '/email/unsubscribe'
-    | '/facility/login'
-    | '/patient/login'
-    | '/provider/login'
-    | '/resources/$slug'
-    | '/service-areas/$city'
-    | '/services/ambulatory'
-    | '/services/medical-deliveries'
-    | '/services/stretcher'
-    | '/services/wheelchair'
     | '/shop/$slug'
     | '/shop/return'
-    | '/staff/login'
     | '/verify/$token'
-    | '/resources/'
-    | '/service-areas/'
-    | '/services/'
     | '/shop/'
-    | '/facility/dashboard'
     | '/learn/$slug'
-    | '/patient/dashboard'
-    | '/provider/dashboard'
-    | '/provider/medicaid'
-    | '/requests/$id'
-    | '/embed/request-a-ride/$token'
     | '/lovable/email/suppression'
     | '/learn/'
-    | '/requests/'
-    | '/reservations/$id/review'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
@@ -705,54 +302,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
-    | '/auth'
-    | '/black-tie'
-    | '/changelog'
-    | '/contact'
-    | '/how-it-works'
-    | '/join-our-network'
-    | '/login'
-    | '/membership'
-    | '/privacy-policy'
-    | '/providers'
-    | '/request-a-ride'
     | '/reset-password'
     | '/sitemap.xml'
-    | '/training'
-    | '/admin'
-    | '/dashboard'
-    | '/notifications'
     | '/checkout/return'
     | '/email/unsubscribe'
-    | '/facility/login'
-    | '/patient/login'
-    | '/provider/login'
-    | '/resources/$slug'
-    | '/service-areas/$city'
-    | '/services/ambulatory'
-    | '/services/medical-deliveries'
-    | '/services/stretcher'
-    | '/services/wheelchair'
     | '/shop/$slug'
     | '/shop/return'
-    | '/staff/login'
     | '/verify/$token'
-    | '/resources'
-    | '/service-areas'
-    | '/services'
     | '/shop'
-    | '/facility/dashboard'
     | '/learn/$slug'
-    | '/patient/dashboard'
-    | '/provider/dashboard'
-    | '/provider/medicaid'
-    | '/requests/$id'
-    | '/embed/request-a-ride/$token'
     | '/lovable/email/suppression'
     | '/learn'
-    | '/requests'
-    | '/reservations/$id/review'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
@@ -768,60 +328,20 @@ export interface FileRouteTypes {
     | '/api/public/integrations/duet/events/$event'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
-    | '/about'
-    | '/auth'
-    | '/black-tie'
-    | '/changelog'
-    | '/contact'
-    | '/how-it-works'
-    | '/join-our-network'
-    | '/login'
-    | '/membership'
-    | '/privacy-policy'
-    | '/providers'
-    | '/request-a-ride'
     | '/reset-password'
-    | '/service-areas'
-    | '/services'
     | '/shop'
     | '/sitemap.xml'
-    | '/training'
-    | '/_authenticated/admin'
-    | '/_authenticated/dashboard'
     | '/_authenticated/learn'
-    | '/_authenticated/notifications'
     | '/checkout/return'
     | '/email/unsubscribe'
-    | '/facility/login'
-    | '/patient/login'
-    | '/provider/login'
-    | '/resources/$slug'
-    | '/service-areas/$city'
-    | '/services/ambulatory'
-    | '/services/medical-deliveries'
-    | '/services/stretcher'
-    | '/services/wheelchair'
     | '/shop/$slug'
     | '/shop/return'
-    | '/staff/login'
     | '/verify/$token'
-    | '/resources/'
-    | '/service-areas/'
-    | '/services/'
     | '/shop/'
-    | '/_authenticated/facility/dashboard'
     | '/_authenticated/learn/$slug'
-    | '/_authenticated/patient/dashboard'
-    | '/_authenticated/provider/dashboard'
-    | '/_authenticated/provider/medicaid'
-    | '/_authenticated/requests/$id'
-    | '/embed/request-a-ride/$token'
     | '/lovable/email/suppression'
     | '/_authenticated/learn/'
-    | '/_authenticated/requests/'
-    | '/_authenticated/reservations/$id/review'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
@@ -838,36 +358,13 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AboutRoute: typeof AboutRoute
-  AuthRoute: typeof AuthRoute
-  BlackTieRoute: typeof BlackTieRoute
-  ChangelogRoute: typeof ChangelogRoute
-  ContactRoute: typeof ContactRoute
-  HowItWorksRoute: typeof HowItWorksRoute
-  JoinOurNetworkRoute: typeof JoinOurNetworkRoute
-  LoginRoute: typeof LoginRoute
-  MembershipRoute: typeof MembershipRoute
-  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
-  ProvidersRoute: typeof ProvidersRoute
-  RequestARideRoute: typeof RequestARideRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ServiceAreasRoute: typeof ServiceAreasRouteWithChildren
-  ServicesRoute: typeof ServicesRouteWithChildren
   ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  TrainingRoute: typeof TrainingRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
-  FacilityLoginRoute: typeof FacilityLoginRoute
-  PatientLoginRoute: typeof PatientLoginRoute
-  ProviderLoginRoute: typeof ProviderLoginRoute
-  ResourcesSlugRoute: typeof ResourcesSlugRoute
-  StaffLoginRoute: typeof StaffLoginRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
-  ResourcesIndexRoute: typeof ResourcesIndexRoute
-  EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
   ApiPublicHooksFinReleaseTickRoute: typeof ApiPublicHooksFinReleaseTickRoute
@@ -886,13 +383,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/training': {
-      id: '/training'
-      path: '/training'
-      fullPath: '/training'
-      preLoaderRoute: typeof TrainingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -907,109 +397,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/services': {
-      id: '/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof ServicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/service-areas': {
-      id: '/service-areas'
-      path: '/service-areas'
-      fullPath: '/service-areas'
-      preLoaderRoute: typeof ServiceAreasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/request-a-ride': {
-      id: '/request-a-ride'
-      path: '/request-a-ride'
-      fullPath: '/request-a-ride'
-      preLoaderRoute: typeof RequestARideRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/providers': {
-      id: '/providers'
-      path: '/providers'
-      fullPath: '/providers'
-      preLoaderRoute: typeof ProvidersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy-policy': {
-      id: '/privacy-policy'
-      path: '/privacy-policy'
-      fullPath: '/privacy-policy'
-      preLoaderRoute: typeof PrivacyPolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/membership': {
-      id: '/membership'
-      path: '/membership'
-      fullPath: '/membership'
-      preLoaderRoute: typeof MembershipRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/join-our-network': {
-      id: '/join-our-network'
-      path: '/join-our-network'
-      fullPath: '/join-our-network'
-      preLoaderRoute: typeof JoinOurNetworkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/how-it-works': {
-      id: '/how-it-works'
-      path: '/how-it-works'
-      fullPath: '/how-it-works'
-      preLoaderRoute: typeof HowItWorksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/changelog': {
-      id: '/changelog'
-      path: '/changelog'
-      fullPath: '/changelog'
-      preLoaderRoute: typeof ChangelogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/black-tie': {
-      id: '/black-tie'
-      path: '/black-tie'
-      fullPath: '/black-tie'
-      preLoaderRoute: typeof BlackTieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1019,13 +411,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shop/': {
       id: '/shop/'
       path: '/'
@@ -1033,39 +418,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopIndexRouteImport
       parentRoute: typeof ShopRoute
     }
-    '/services/': {
-      id: '/services/'
-      path: '/'
-      fullPath: '/services/'
-      preLoaderRoute: typeof ServicesIndexRouteImport
-      parentRoute: typeof ServicesRoute
-    }
-    '/service-areas/': {
-      id: '/service-areas/'
-      path: '/'
-      fullPath: '/service-areas/'
-      preLoaderRoute: typeof ServiceAreasIndexRouteImport
-      parentRoute: typeof ServiceAreasRoute
-    }
-    '/resources/': {
-      id: '/resources/'
-      path: '/resources'
-      fullPath: '/resources/'
-      preLoaderRoute: typeof ResourcesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/verify/$token': {
       id: '/verify/$token'
       path: '/verify/$token'
       fullPath: '/verify/$token'
       preLoaderRoute: typeof VerifyTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/staff/login': {
-      id: '/staff/login'
-      path: '/staff/login'
-      fullPath: '/staff/login'
-      preLoaderRoute: typeof StaffLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop/return': {
@@ -1082,69 +439,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof ShopRoute
     }
-    '/services/wheelchair': {
-      id: '/services/wheelchair'
-      path: '/wheelchair'
-      fullPath: '/services/wheelchair'
-      preLoaderRoute: typeof ServicesWheelchairRouteImport
-      parentRoute: typeof ServicesRoute
-    }
-    '/services/stretcher': {
-      id: '/services/stretcher'
-      path: '/stretcher'
-      fullPath: '/services/stretcher'
-      preLoaderRoute: typeof ServicesStretcherRouteImport
-      parentRoute: typeof ServicesRoute
-    }
-    '/services/medical-deliveries': {
-      id: '/services/medical-deliveries'
-      path: '/medical-deliveries'
-      fullPath: '/services/medical-deliveries'
-      preLoaderRoute: typeof ServicesMedicalDeliveriesRouteImport
-      parentRoute: typeof ServicesRoute
-    }
-    '/services/ambulatory': {
-      id: '/services/ambulatory'
-      path: '/ambulatory'
-      fullPath: '/services/ambulatory'
-      preLoaderRoute: typeof ServicesAmbulatoryRouteImport
-      parentRoute: typeof ServicesRoute
-    }
-    '/service-areas/$city': {
-      id: '/service-areas/$city'
-      path: '/$city'
-      fullPath: '/service-areas/$city'
-      preLoaderRoute: typeof ServiceAreasCityRouteImport
-      parentRoute: typeof ServiceAreasRoute
-    }
-    '/resources/$slug': {
-      id: '/resources/$slug'
-      path: '/resources/$slug'
-      fullPath: '/resources/$slug'
-      preLoaderRoute: typeof ResourcesSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/provider/login': {
-      id: '/provider/login'
-      path: '/provider/login'
-      fullPath: '/provider/login'
-      preLoaderRoute: typeof ProviderLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patient/login': {
-      id: '/patient/login'
-      path: '/patient/login'
-      fullPath: '/patient/login'
-      preLoaderRoute: typeof PatientLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/facility/login': {
-      id: '/facility/login'
-      path: '/facility/login'
-      fullPath: '/facility/login'
-      preLoaderRoute: typeof FacilityLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -1159,39 +453,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/learn': {
       id: '/_authenticated/learn'
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof AuthenticatedLearnRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/requests/': {
-      id: '/_authenticated/requests/'
-      path: '/requests'
-      fullPath: '/requests/'
-      preLoaderRoute: typeof AuthenticatedRequestsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/learn/': {
@@ -1208,54 +474,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/embed/request-a-ride/$token': {
-      id: '/embed/request-a-ride/$token'
-      path: '/embed/request-a-ride/$token'
-      fullPath: '/embed/request-a-ride/$token'
-      preLoaderRoute: typeof EmbedRequestARideTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/requests/$id': {
-      id: '/_authenticated/requests/$id'
-      path: '/requests/$id'
-      fullPath: '/requests/$id'
-      preLoaderRoute: typeof AuthenticatedRequestsIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/provider/medicaid': {
-      id: '/_authenticated/provider/medicaid'
-      path: '/provider/medicaid'
-      fullPath: '/provider/medicaid'
-      preLoaderRoute: typeof AuthenticatedProviderMedicaidRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/provider/dashboard': {
-      id: '/_authenticated/provider/dashboard'
-      path: '/provider/dashboard'
-      fullPath: '/provider/dashboard'
-      preLoaderRoute: typeof AuthenticatedProviderDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/patient/dashboard': {
-      id: '/_authenticated/patient/dashboard'
-      path: '/patient/dashboard'
-      fullPath: '/patient/dashboard'
-      preLoaderRoute: typeof AuthenticatedPatientDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/learn/$slug': {
       id: '/_authenticated/learn/$slug'
       path: '/$slug'
       fullPath: '/learn/$slug'
       preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
       parentRoute: typeof AuthenticatedLearnRoute
-    }
-    '/_authenticated/facility/dashboard': {
-      id: '/_authenticated/facility/dashboard'
-      path: '/facility/dashboard'
-      fullPath: '/facility/dashboard'
-      preLoaderRoute: typeof AuthenticatedFacilityDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -1327,13 +551,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksFinCashoutTickRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/reservations/$id/review': {
-      id: '/_authenticated/reservations/$id/review'
-      path: '/reservations/$id/review'
-      fullPath: '/reservations/$id/review'
-      preLoaderRoute: typeof AuthenticatedReservationsIdReviewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/api/public/integrations/routegenie/webhook': {
       id: '/api/public/integrations/routegenie/webhook'
       path: '/api/public/integrations/routegenie/webhook'
@@ -1372,70 +589,15 @@ const AuthenticatedLearnRouteWithChildren =
   AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
-  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedFacilityDashboardRoute: typeof AuthenticatedFacilityDashboardRoute
-  AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
-  AuthenticatedProviderDashboardRoute: typeof AuthenticatedProviderDashboardRoute
-  AuthenticatedProviderMedicaidRoute: typeof AuthenticatedProviderMedicaidRoute
-  AuthenticatedRequestsIdRoute: typeof AuthenticatedRequestsIdRoute
-  AuthenticatedRequestsIndexRoute: typeof AuthenticatedRequestsIndexRoute
-  AuthenticatedReservationsIdReviewRoute: typeof AuthenticatedReservationsIdReviewRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
-  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedFacilityDashboardRoute: AuthenticatedFacilityDashboardRoute,
-  AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
-  AuthenticatedProviderDashboardRoute: AuthenticatedProviderDashboardRoute,
-  AuthenticatedProviderMedicaidRoute: AuthenticatedProviderMedicaidRoute,
-  AuthenticatedRequestsIdRoute: AuthenticatedRequestsIdRoute,
-  AuthenticatedRequestsIndexRoute: AuthenticatedRequestsIndexRoute,
-  AuthenticatedReservationsIdReviewRoute:
-    AuthenticatedReservationsIdReviewRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
-
-interface ServiceAreasRouteChildren {
-  ServiceAreasCityRoute: typeof ServiceAreasCityRoute
-  ServiceAreasIndexRoute: typeof ServiceAreasIndexRoute
-}
-
-const ServiceAreasRouteChildren: ServiceAreasRouteChildren = {
-  ServiceAreasCityRoute: ServiceAreasCityRoute,
-  ServiceAreasIndexRoute: ServiceAreasIndexRoute,
-}
-
-const ServiceAreasRouteWithChildren = ServiceAreasRoute._addFileChildren(
-  ServiceAreasRouteChildren,
-)
-
-interface ServicesRouteChildren {
-  ServicesAmbulatoryRoute: typeof ServicesAmbulatoryRoute
-  ServicesMedicalDeliveriesRoute: typeof ServicesMedicalDeliveriesRoute
-  ServicesStretcherRoute: typeof ServicesStretcherRoute
-  ServicesWheelchairRoute: typeof ServicesWheelchairRoute
-  ServicesIndexRoute: typeof ServicesIndexRoute
-}
-
-const ServicesRouteChildren: ServicesRouteChildren = {
-  ServicesAmbulatoryRoute: ServicesAmbulatoryRoute,
-  ServicesMedicalDeliveriesRoute: ServicesMedicalDeliveriesRoute,
-  ServicesStretcherRoute: ServicesStretcherRoute,
-  ServicesWheelchairRoute: ServicesWheelchairRoute,
-  ServicesIndexRoute: ServicesIndexRoute,
-}
-
-const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
-  ServicesRouteChildren,
-)
 
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
@@ -1452,36 +614,13 @@ const ShopRouteChildren: ShopRouteChildren = {
 const ShopRouteWithChildren = ShopRoute._addFileChildren(ShopRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AboutRoute: AboutRoute,
-  AuthRoute: AuthRoute,
-  BlackTieRoute: BlackTieRoute,
-  ChangelogRoute: ChangelogRoute,
-  ContactRoute: ContactRoute,
-  HowItWorksRoute: HowItWorksRoute,
-  JoinOurNetworkRoute: JoinOurNetworkRoute,
-  LoginRoute: LoginRoute,
-  MembershipRoute: MembershipRoute,
-  PrivacyPolicyRoute: PrivacyPolicyRoute,
-  ProvidersRoute: ProvidersRoute,
-  RequestARideRoute: RequestARideRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ServiceAreasRoute: ServiceAreasRouteWithChildren,
-  ServicesRoute: ServicesRouteWithChildren,
   ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  TrainingRoute: TrainingRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
-  FacilityLoginRoute: FacilityLoginRoute,
-  PatientLoginRoute: PatientLoginRoute,
-  ProviderLoginRoute: ProviderLoginRoute,
-  ResourcesSlugRoute: ResourcesSlugRoute,
-  StaffLoginRoute: StaffLoginRoute,
   VerifyTokenRoute: VerifyTokenRoute,
-  ResourcesIndexRoute: ResourcesIndexRoute,
-  EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
   ApiPublicHooksFinReleaseTickRoute: ApiPublicHooksFinReleaseTickRoute,
