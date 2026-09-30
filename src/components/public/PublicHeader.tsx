@@ -6,16 +6,19 @@ import { cn } from "@/lib/utils";
 import { LINKS, PUBLIC_PHONE, phoneHref } from "@/lib/site-config";
 
 const NAV = [
-  { label: "Services", href: "/#services" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "For Providers", href: "/#providers" },
-  { label: "Resources", href: "/#resources" },
-];
+  { label: "Services", to: "/services" },
+  { label: "How It Works", to: "/how-it-works" },
+  { label: "Providers", to: "/for-providers" },
+  { label: "Facilities", to: "/for-facilities" },
+  { label: "Coverage", to: "/florida-coverage" },
+  { label: "Training", to: "/shop" },
+  { label: "Sign In", to: "/login" },
+] as const;
 
 const focus = "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-on-primary focus-visible:ring-offset-2 focus-visible:ring-offset-ds-primary";
 
 /** Uppercase nav links: no background blocks, no underline, subtle hover. */
-const navLink = "ds-button-text ds-transition inline-flex items-center px-3 py-2.5 text-[0.9375rem] uppercase tracking-[0.08em] hover:opacity-80";
+const navLink = cn("ds-button-text ds-transition inline-flex items-center rounded-ds-sm px-2.5 py-2.5 text-[0.9375rem] uppercase tracking-[0.08em] hover:opacity-80 data-[status=active]:text-ds-accent", focus);
 
 /** Header actions: icon + text only on the blue header. No background, no border, no underline. */
 function ActionBlocks({ className, full }: { className?: string; full?: boolean }) {
@@ -42,22 +45,19 @@ function ActionBlocks({ className, full }: { className?: string; full?: boolean 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 bg-ds-primary text-ds-on-primary">
+    <header className="sticky top-0 z-50 bg-ds-primary text-ds-on-primary" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}>
       <div className="mfn-container flex min-h-[76px] items-center justify-between gap-4 py-3">
         <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="My Florida NEMT home">
           <BrandName on="blue" className="text-xl sm:text-2xl" />
         </Link>
-        <nav aria-label="Main" className="hidden items-center gap-1 xl:flex">
-          {NAV.slice(0, 3).map((n) => <a key={n.label} href={n.href} className={navLink}>{n.label}</a>)}
-          <Link to="/shop" className={navLink}>Training</Link>
-          <a href={NAV[3].href} className={navLink}>{NAV[3].label}</a>
-          <Link to="/login" className={navLink}>Sign In</Link>
+        <nav aria-label="Main" className="hidden items-center 2xl:flex">
+          {NAV.map((n) => <Link key={n.to} to={n.to} className={navLink}>{n.label}</Link>)}
         </nav>
         <div className="flex items-center gap-3">
           <ActionBlocks className="ds-nudge hidden lg:flex" />
           <button
             type="button"
-            className={cn("inline-flex size-11 items-center justify-center rounded-ds-sm hover:opacity-80 xl:hidden", focus)}
+            className={cn("inline-flex size-11 items-center justify-center rounded-ds-sm hover:opacity-80 2xl:hidden", focus)}
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -68,14 +68,11 @@ export function PublicHeader() {
         </div>
       </div>
       {open && (
-        <nav id="mobile-menu" aria-label="Mobile" className="ds-fade-in border-t border-ds-primary-hover px-4 pb-5 xl:hidden">
-          <ul className="flex flex-col gap-1 pt-2">
-            {NAV.slice(0, 3).map((n) => <li key={n.label}><a href={n.href} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</a></li>)}
-            <li><Link to="/shop" onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>Training</Link></li>
-            <li><a href={NAV[3].href} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{NAV[3].label}</a></li>
-            <li><Link to="/login" onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>Sign In</Link></li>
+        <nav id="mobile-menu" aria-label="Mobile" className="ds-fade-in border-t border-ds-primary-hover px-4 pb-5 2xl:hidden">
+          <ul className="mfn-container flex flex-col gap-1 pt-2">
+            {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
-          <ActionBlocks full className="mt-4 lg:hidden" />
+          <ActionBlocks full className="mfn-container mt-4 lg:hidden" />
         </nav>
       )}
     </header>
