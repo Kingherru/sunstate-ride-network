@@ -19,7 +19,6 @@ import { Route as RequestARideRouteImport } from './routes/request-a-ride'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as MembershipRouteImport } from './routes/membership'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinOurNetworkRouteImport } from './routes/join-our-network'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -53,8 +52,6 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests.index'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -65,8 +62,6 @@ import { Route as AuthenticatedProviderDashboardRouteImport } from './routes/_au
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient.dashboard'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedFacilityDashboardRouteImport } from './routes/_authenticated/facility.dashboard'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -130,11 +125,6 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
 const MembershipRoute = MembershipRouteImport.update({
   id: '/membership',
   path: '/membership',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -303,18 +293,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedRequestsIndexRoute =
   AuthenticatedRequestsIndexRouteImport.update({
     id: '/requests/',
@@ -370,17 +348,6 @@ const AuthenticatedFacilityDashboardRoute =
     path: '/facility/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -474,7 +441,6 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/providers': typeof ProvidersRoute
@@ -485,8 +451,6 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/learn': typeof AuthenticatedLearnRouteWithChildren
@@ -510,8 +474,6 @@ export interface FileRoutesByFullPath {
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -547,7 +509,6 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/providers': typeof ProvidersRoute
@@ -555,8 +516,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -579,8 +538,6 @@ export interface FileRoutesByTo {
   '/service-areas': typeof ServiceAreasIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -618,7 +575,6 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/join-our-network': typeof JoinOurNetworkRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/membership': typeof MembershipRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/providers': typeof ProvidersRoute
@@ -629,8 +585,6 @@ export interface FileRoutesById {
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/training': typeof TrainingRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
@@ -654,8 +608,6 @@ export interface FileRoutesById {
   '/service-areas/': typeof ServiceAreasIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/facility/dashboard': typeof AuthenticatedFacilityDashboardRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -693,7 +645,6 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/join-our-network'
     | '/login'
-    | '/mcp'
     | '/membership'
     | '/privacy-policy'
     | '/providers'
@@ -704,8 +655,6 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/training'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
     | '/learn'
@@ -729,8 +678,6 @@ export interface FileRouteTypes {
     | '/service-areas/'
     | '/services/'
     | '/shop/'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
     | '/learn/$slug'
     | '/patient/dashboard'
@@ -766,7 +713,6 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/join-our-network'
     | '/login'
-    | '/mcp'
     | '/membership'
     | '/privacy-policy'
     | '/providers'
@@ -774,8 +720,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sitemap.xml'
     | '/training'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/dashboard'
     | '/notifications'
@@ -798,8 +742,6 @@ export interface FileRouteTypes {
     | '/service-areas'
     | '/services'
     | '/shop'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/facility/dashboard'
     | '/learn/$slug'
     | '/patient/dashboard'
@@ -836,7 +778,6 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/join-our-network'
     | '/login'
-    | '/mcp'
     | '/membership'
     | '/privacy-policy'
     | '/providers'
@@ -847,8 +788,6 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/training'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/learn'
@@ -872,8 +811,6 @@ export interface FileRouteTypes {
     | '/service-areas/'
     | '/services/'
     | '/shop/'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/facility/dashboard'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/patient/dashboard'
@@ -911,7 +848,6 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   JoinOurNetworkRoute: typeof JoinOurNetworkRoute
   LoginRoute: typeof LoginRoute
-  McpRoute: typeof McpRoute
   MembershipRoute: typeof MembershipRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProvidersRoute: typeof ProvidersRoute
@@ -922,8 +858,6 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrainingRoute: typeof TrainingRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   FacilityLoginRoute: typeof FacilityLoginRoute
@@ -933,8 +867,6 @@ export interface RootRouteChildren {
   StaffLoginRoute: typeof StaffLoginRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
-  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   EmbedRequestARideTokenRoute: typeof EmbedRequestARideTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
@@ -1022,13 +954,6 @@ declare module '@tanstack/react-router' {
       path: '/membership'
       fullPath: '/membership'
       preLoaderRoute: typeof MembershipRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1262,20 +1187,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/requests/': {
       id: '/_authenticated/requests/'
       path: '/requests'
@@ -1345,20 +1256,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/facility/dashboard'
       preLoaderRoute: typeof AuthenticatedFacilityDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -1565,7 +1462,6 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   JoinOurNetworkRoute: JoinOurNetworkRoute,
   LoginRoute: LoginRoute,
-  McpRoute: McpRoute,
   MembershipRoute: MembershipRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProvidersRoute: ProvidersRoute,
@@ -1576,9 +1472,6 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrainingRoute: TrainingRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   FacilityLoginRoute: FacilityLoginRoute,
@@ -1588,8 +1481,6 @@ const rootRouteChildren: RootRouteChildren = {
   StaffLoginRoute: StaffLoginRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
-  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   EmbedRequestARideTokenRoute: EmbedRequestARideTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
