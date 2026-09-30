@@ -202,3 +202,11 @@
 @media (prefers-reduced-motion: reduce) {
   .theme-public *, .theme-portal * { animation: none !important; transition: none !important; }
 }
+
+/* Homepage motion: one-time attention cue + route dash. Disabled by reduced-motion rule above. */
+@keyframes ds-nudge { 0%,100% { transform: none; } 40% { transform: translateY(-3px); } 70% { transform: translateY(1px); } }
+@utility ds-nudge { animation: ds-nudge 700ms ease-out 1.2s 1 both; }
+@keyframes ds-route { to { stroke-dashoffset: -40; } }
+@utility ds-route { stroke-dasharray: 6 14; animation: ds-route 2.4s linear infinite; }
+@keyframes ds-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+@utility ds-draw { stroke-dasharray: 1000; animation: ds-draw 1.2s ease-out both; }

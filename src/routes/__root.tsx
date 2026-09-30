@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -13,6 +14,7 @@ import { enforceSessionPersistence } from "@/lib/session-persistence";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { BrandName } from "@/components/brand/BrandName";
+import { PUBLIC_SHELL_PATHS } from "@/components/public/PublicPage";
 
 function NotFoundComponent() {
   return (
@@ -79,18 +81,24 @@ function RootComponent() {
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const ownShell = PUBLIC_SHELL_PATHS.includes(pathname);
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col">
-        <header className="border-b px-6 py-4 flex items-center justify-between">
-          <Link to="/"><span className="theme-public"><BrandName /></span></Link>
-          <nav className="flex gap-4 text-sm">
-            <Link to="/shop">Training</Link>
-            <Link to="/login">Sign in</Link>
-          </nav>
-        </header>
-        <main className="flex-1 flex flex-col"><Outlet /></main>
-      </div>
+      {ownShell ? (
+        <Outlet />
+      ) : (
+        <div className="min-h-screen flex flex-col">
+          <header className="border-b px-6 py-4 flex items-center justify-between">
+            <Link to="/"><span className="theme-public"><BrandName /></span></Link>
+            <nav className="flex gap-4 text-sm">
+              <Link to="/shop">Training</Link>
+              <Link to="/login">Sign in</Link>
+            </nav>
+          </header>
+          <main className="flex-1 flex flex-col"><Outlet /></main>
+        </div>
+      )}
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
