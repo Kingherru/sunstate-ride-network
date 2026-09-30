@@ -43,7 +43,7 @@ export function Hero() {
 }
 
 /* 2 — One network, two ways to connect */
-function Node({ icon: Icon, label, tone }: { icon: typeof Users; label: string; tone: string }) {
+function Tile({ icon: Icon, label, tone }: { icon: typeof Users; label: string; tone: string }) {
   return (
     <div className={cn("flex min-w-0 flex-1 flex-col items-center gap-2 border-2 px-3 py-4 text-center", tone)}>
       <Icon className="size-7 text-ds-primary" aria-hidden />
@@ -51,7 +51,7 @@ function Node({ icon: Icon, label, tone }: { icon: typeof Users; label: string; 
     </div>
   );
 }
-function Link2({ both }: { both?: boolean }) {
+function Connector({ both }: { both?: boolean }) {
   return (
     <div aria-hidden className="relative flex w-10 shrink-0 items-center sm:w-16">
       <span className="h-0.5 w-full bg-ds-primary" />
@@ -81,17 +81,17 @@ export function NetworkModel() {
           <figure className="border-2 border-ds-border bg-ds-surface p-5">
             <figcaption className="ds-label flex items-center gap-2 text-ds-primary"><CalendarPlus className="size-5" aria-hidden />Public booking connection</figcaption>
             <div className="mt-4 flex items-center" role="img" aria-label="Customers and facilities connect to independent providers">
-              <Node icon={Users} label="Customers & Facilities" tone="border-ds-sky-border bg-ds-sky" />
-              <Link2 />
-              <Node icon={Truck} label="Independent Providers" tone="border-ds-border bg-ds-subtle" />
+              <Tile icon={Users} label="Customers & Facilities" tone="border-ds-sky-border bg-ds-sky" />
+              <Connector />
+              <Tile icon={Truck} label="Independent Providers" tone="border-ds-border bg-ds-subtle" />
             </div>
           </figure>
           <figure className="border-2 border-ds-border bg-ds-surface p-5">
             <figcaption className="ds-label flex items-center gap-2 text-ds-primary"><ArrowLeftRight className="size-5" aria-hidden />Provider-to-provider connection</figcaption>
             <div className="mt-4 flex items-center" role="img" aria-label="Providers connect directly with other providers">
-              <Node icon={Truck} label="Provider" tone="border-ds-peach-border bg-ds-peach" />
-              <Link2 both />
-              <Node icon={Truck} label="Provider" tone="border-ds-peach-border bg-ds-peach" />
+              <Tile icon={Truck} label="Provider" tone="border-ds-peach-border bg-ds-peach" />
+              <Connector both />
+              <Tile icon={Truck} label="Provider" tone="border-ds-peach-border bg-ds-peach" />
             </div>
           </figure>
         </div>
