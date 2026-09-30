@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/public/PublicPage";
-import { Hero, NetworkModel, Paths, Services, Founder, Membership, Training } from "@/components/home/sections";
+import { Hero, NetworkModel, Services, Membership, Training } from "@/components/home/sections";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { ProductDemo } from "@/components/home/ProductDemo";
 import { FloridaMap } from "@/components/home/FloridaMap";
@@ -39,13 +39,11 @@ function Home() {
     <PublicPage>
       <Hero />
       <NetworkModel />
-      <Paths />
       <HowItWorks />
       <ProductDemo />
       <Membership />
       <Services />
       <FloridaMap />
-      <Founder />
       <Training />
     </PublicPage>
   );
