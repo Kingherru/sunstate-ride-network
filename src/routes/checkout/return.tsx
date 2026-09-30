@@ -26,7 +26,7 @@ function CheckoutReturn() {
       <p className="text-muted-foreground mb-2">Your My Florida NEMT membership is active.</p>
       {session_id && <p className="text-xs font-mono text-muted-foreground mb-8 break-all">Receipt: {session_id}</p>}
       <Link
-        to="/dashboard"
+        to="/portal"
         className="inline-block text-sm font-bold text-primary-foreground bg-primary px-6 py-3 rounded-sm hover:bg-primary/90"
       >
         Open Dashboard
