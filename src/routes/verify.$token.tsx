@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { verifyCertificate } from "@/lib/courses.functions";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
 import { CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
 
 const qo = (token: string) => queryOptions({ queryKey: ["verify", token], queryFn: () => verifyCertificate({ data: { token } }) });
@@ -24,7 +22,7 @@ function Verify() {
   const { data } = useSuspenseQuery(qo(token));
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      
       <main className="flex-1 max-w-xl mx-auto px-4 py-16">
         <div className="border border-border rounded-lg p-8 text-center bg-card">
           <ShieldCheck className="w-12 h-12 mx-auto text-primary mb-3" />
@@ -50,7 +48,7 @@ function Verify() {
           )}
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }
