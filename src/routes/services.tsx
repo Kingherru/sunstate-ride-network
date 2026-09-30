@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Accessibility, BedSingle, CalendarClock, CalendarPlus, Footprints, MapPin, Package, Phone, Repeat, Stairs, UserRound, Workflow } from "lucide-react";
+import { Accessibility, BedSingle, CalendarClock, CalendarPlus, Footprints, MapPin, Package, Phone, Repeat, UserRound, DoorOpen, Workflow } from "lucide-react";
 import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, HeroActions, IconItem, NonEmergencyNotice, PageHero, SectionHead, pageHead } from "@/components/public/page-kit";
 import { HOME_IMAGES } from "@/lib/site-config";
@@ -35,7 +35,7 @@ const CHECKLIST = [
   { icon: Repeat, t: "One-way or round-trip" },
   { icon: Accessibility, t: "Mobility and assistance needs" },
   { icon: Workflow, t: "Wheelchair type, size or accessibility needs, when applicable" },
-  { icon: Stairs, t: "Stairs, entrances or transfer considerations" },
+  { icon: DoorOpen, t: "Stairs, entrances or transfer considerations" },
   { icon: Phone, t: "An authorized contact and phone number" },
   { icon: UserRound, t: "Return-trip or wait-time expectations" },
 ];
