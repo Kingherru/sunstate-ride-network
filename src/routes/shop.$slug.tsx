@@ -113,7 +113,7 @@ function CourseDetail() {
               ) : null}
               {!userId && (
                 <p className="text-xs text-muted-foreground mt-3">
-                  Recommended: <Link to="/auth" className="underline">create a free account</Link> so your purchase, progress, and certificate are saved to your profile.
+                  Recommended: <Link to="/login" className="underline">create a free account</Link> so your purchase, progress, and certificate are saved to your profile.
                 </p>
               )}
               <p className="text-[11px] text-muted-foreground mt-3 italic">Pricing subject to change at any time.</p>

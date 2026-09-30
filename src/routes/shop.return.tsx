@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { claimEnrollmentFromSession } from "@/lib/courses.functions";
@@ -28,7 +26,7 @@ function Return() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      
       <main className="flex-1 max-w-2xl mx-auto px-4 py-16 text-center">
         <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
         <h1 className="text-3xl font-extrabold mb-3">Thank you for your purchase</h1>
@@ -44,7 +42,7 @@ function Return() {
           <Button variant="outline" asChild><Link to="/learn">My courses</Link></Button>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }
