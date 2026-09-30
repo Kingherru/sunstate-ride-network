@@ -4,7 +4,7 @@ import { BrandName } from "@/components/brand/BrandName";
 import { LinePattern, LINE_PATTERN_PRESETS, type LinePatternPreset } from "@/components/brand/LinePattern";
 import { DsButton, DsLink, DsField, DsInput, DsSelect, DsTextarea, DsCheckbox, DsRadio } from "@/components/ds/controls";
 import { DsBadge, DsAlert, DsLoading, DsSkeleton, DsEmpty, DsModal } from "@/components/ds/feedback";
-import { btnAction, btnBlue, btnLight, btnOnBlue } from "@/components/home/buttons";
+import { btnAction, btnBlue, btnLight } from "@/components/home/buttons";
 import { CalendarPlus, Monitor, Network, Phone, Smartphone, Tablet } from "lucide-react";
 import { DsCard, DsSoftBox, DsTabs, DsPublicHeader, DsPortalMenu } from "@/components/ds/layout";
 
@@ -94,24 +94,25 @@ function DesignSystemPage() {
         <p className="ds-body-lg text-ds-text-2 mt-2 max-w-2xl">Public website system first, then the quieter portal system.</p>
 
         {/* ------------------------------------------------ PUBLIC */}
-        <Section id="rev2" title="Homepage Revision 2 rules">
+        <Section id="rev3" title="Homepage Revision 3 rules">
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-3 ds-body">
-              <p><strong>Corners:</strong> 0px on every rectangle. Only true circles use .ds-circle.</p>
-              <p><strong>Borders:</strong> 2px standard buttons and interactive boxes; 3px selected, active and focus. Same-family colors only (darker blue on blue, darker orange on orange, neutral gray on white/gray).</p>
-              <p><strong>Spacing:</strong> sections 48 / 64 / 80px (mobile / tablet / desktop), major sections 56 / 80 / 96px; heading-to-content 32–40px; panels 18–32px; grid gaps 16–32px.</p>
-              <p><strong>Map:</strong> accurate US Census county boundaries, thin blue outlines on white, orange selection, one restrained location marker, no routes or decorative lines.</p>
-              <p><strong>Trial language:</strong> “Try the complete provider network free for 30 days.” · “Start 30 Days Free” · “$10 per month after the 30-day trial.”</p>
+              <p><strong>Corners:</strong> 4px standard, 3px small controls (tabs, chips, inputs, map controls), 5px maximum on large image and promotional panels. No pills, no fully square components.</p>
+              <p><strong>Borders:</strong> no permanent 2px/3px borders and no double-border or colored-underlining effects. Separation comes from background color, spacing and restrained shadows. Neutral 1px dividers only where functional: list rows, table-style information, form fields.</p>
+              <p><strong>Focus:</strong> keyboard-only — a visible outline appears only when an element receives keyboard focus.</p>
+              <p><strong>Header:</strong> uppercase navigation (SERVICES, HOW IT WORKS, FOR PROVIDERS, TRAINING, RESOURCES, SIGN IN). CALL US and BOOK A TRIP are icon + text on blue — no background, no border, subtle hover.</p>
+              <p><strong>Training:</strong> one prominent EXPLORE TRAINING button (blue, 4px, no border) below the intro; View Resources is a quiet text link.</p>
+              <p><strong>Spacing:</strong> sections 48 / 64 / 80px (mobile / tablet / desktop), major sections 56 / 80 / 96px; heading-to-content 32–40px; panels 18–32px.</p>
             </div>
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3"><span className={btnAction}><CalendarPlus aria-hidden />Book a Trip</span><span className={btnBlue}><Network aria-hidden />Join the Provider Network</span><span className={btnLight}>Secondary</span></div>
-              <div className="flex flex-wrap gap-3 bg-ds-primary p-4"><span className={btnOnBlue}><Phone aria-hidden />Call Us</span><span className={btnAction}><CalendarPlus aria-hidden />Book a Trip</span><span className="ds-caption !text-ds-on-primary self-center">Header action blocks</span></div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="border-2 border-ds-border p-3 ds-label text-ds-primary">Path: unselected</div>
-                <div className="border-[3px] border-ds-primary-border bg-ds-primary p-3 ds-label text-ds-on-primary">Customer / facility selected</div>
-                <div className="border-[3px] border-ds-border-strong bg-ds-subtle p-3 ds-label text-ds-primary">Provider selected</div>
+              <div className="flex flex-wrap items-center gap-5 bg-ds-primary p-4">
+                <span className="ds-button-text inline-flex items-center gap-2 text-ds-on-primary"><Phone aria-hidden className="size-5" />555-5555-5555</span>
+                <span className="ds-button-text inline-flex items-center gap-2 uppercase tracking-[0.04em] text-ds-accent"><CalendarPlus aria-hidden className="size-5" />Book a Trip</span>
+                <span className="ds-caption !text-ds-on-primary self-center">Header actions — no background</span>
               </div>
-              <div className="flex gap-3">{([[Smartphone, "Mobile"], [Tablet, "Tablet"], [Monitor, "Desktop"]] as const).map(([I, l]) => <span key={l} className="flex items-center gap-2 border-2 border-ds-sky-border bg-ds-sky px-3 py-2 ds-label text-ds-primary"><I className="size-5" aria-hidden />{l}</span>)}</div>
+              <div className="flex flex-wrap gap-3"><span className="ds-button-text rounded-ds-sm bg-ds-primary px-6 py-3 text-ds-on-primary">Tab selected</span><span className="ds-button-text rounded-ds-sm bg-ds-subtle px-6 py-3 text-ds-primary">Tab unselected</span></div>
+              <div className="flex gap-3">{([[Smartphone, "Mobile"], [Tablet, "Tablet"], [Monitor, "Desktop"]] as const).map(([I, l]) => <span key={l} className="flex items-center gap-2 rounded-ds-sm bg-ds-sky px-3 py-2 ds-label text-ds-primary"><I className="size-5" aria-hidden />{l}</span>)}</div>
             </div>
           </div>
         </Section>

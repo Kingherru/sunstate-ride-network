@@ -133,8 +133,9 @@
   --ds-error: #A5281B;
   --ds-error-soft: #FBEAEA;
 
-  --ds-radius: 0px;
-  --ds-radius-sm: 0px;
+  --ds-radius: 4px;
+  --ds-radius-sm: 3px;
+  --ds-radius-lg: 5px;
   --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.06), 0 2px 8px rgb(24 32 42 / 0.05);
 
   background: var(--ds-bg);
@@ -147,7 +148,6 @@
   --ds-bg: var(--mfn-gray);
   --ds-surface: var(--mfn-white);
   --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.05);
-  --ds-radius: 0px;
 }
 
 /* Theme-token utilities */
@@ -201,6 +201,7 @@
   --color-ds-error-soft: var(--ds-error-soft);
   --radius-ds: var(--ds-radius);
   --radius-ds-sm: var(--ds-radius-sm);
+  --radius-ds-lg: var(--ds-radius-lg);
   --shadow-ds: var(--ds-shadow);
   --font-heading: "Archivo", system-ui, sans-serif;
   --font-body: "Source Sans 3", system-ui, sans-serif;
@@ -234,9 +235,8 @@
 @keyframes ds-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
 @utility ds-draw { stroke-dasharray: 1000; animation: ds-draw 1.2s ease-out both; }
 
-/* Square geometry: every rectangular element in the public theme has 0 radius.
-   Only true circles (.ds-circle) stay round. */
-.theme-public *:not(.ds-circle) { border-radius: 0 !important; }
+/* Corner system (Revision 3): 4px standard, 3px small controls, 5px max large panels.
+   Applied explicitly via rounded-ds / rounded-ds-sm / rounded-ds-lg — no global force. */
 
 /* Public containers */
 .theme-public { --mfn-gutter: 18px; }
