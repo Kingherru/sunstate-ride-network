@@ -1,26 +1,27 @@
 import { useRef, useState } from "react";
+import { CalendarCheck, ClipboardList, CreditCard, FolderOpen, Network, Search, Share2, UserPlus, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FLOWS = {
   customers: {
     label: "Customers & Facilities",
     steps: [
-      { t: "Submit the trip details", d: "Pickup, destination, time and the level of mobility support needed." },
-      { t: "Independent providers review the request", d: "Florida providers who serve the area can look at the trip." },
-      { t: "Confirm and complete payment when applicable", d: "Agree on the arrangement before anything is final." },
-      { t: "Manage the trip information from one place", d: "Keep details, times and updates together." },
+      { i: ClipboardList, t: "Submit the trip details", d: "Pickup, destination, time and the level of mobility support needed." },
+      { i: Search, t: "Independent providers review the request", d: "Florida providers who serve the area can look at the trip." },
+      { i: CreditCard, t: "Confirm and complete payment when applicable", d: "Agree on the arrangement before anything is final." },
+      { i: FolderOpen, t: "Manage the trip information from one place", d: "Keep details, times and updates together." },
     ],
   },
   providers: {
     label: "Providers",
     steps: [
-      { t: "Join the Florida network", d: "Create your provider account." },
-      { t: "Build your service profile", d: "Service types, counties, hours and vehicles." },
-      { t: "Find or share opportunities", d: "Look for trips or pass along ones you can’t cover." },
-      { t: "Move confirmed trips into your schedule", d: "Confirmed work lands in a clean day view." },
+      { i: UserPlus, t: "Join the Florida network", d: "Create your provider account." },
+      { i: Network, t: "Build your service profile", d: "Service types, counties, hours and vehicles." },
+      { i: Share2, t: "Find or share opportunities", d: "Look for trips or pass along ones you can’t cover." },
+      { i: CalendarCheck, t: "Move confirmed trips into your schedule", d: "Confirmed work lands in a clean day view." },
     ],
   },
-} as const;
+} as const satisfies Record<string, { label: string; steps: readonly { i: LucideIcon; t: string; d: string }[] }>;
 type Key = keyof typeof FLOWS;
 const KEYS: Key[] = ["customers", "providers"];
 
@@ -36,14 +37,14 @@ export function HowItWorks() {
   const flow = FLOWS[active];
 
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="bg-ds-subtle py-16 sm:py-24 scroll-mt-20">
+    <section id="how-it-works" aria-labelledby="how-title" className="mfn-section bg-ds-subtle scroll-mt-20">
       <div className="mfn-container">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="ds-label text-ds-accent-active">How the network works</p>
             <h2 id="how-title" className="ds-page-title mt-2 text-ds-primary">A clearer way to request, connect and coordinate.</h2>
           </div>
-          <div role="tablist" aria-label="Choose who you are" className="inline-flex bg-ds-surface p-1">
+          <div role="tablist" aria-label="Choose who you are" className="inline-flex border-2 border-ds-border bg-ds-surface p-1">
             {KEYS.map((k, i) => (
               <button
                 key={k}
@@ -56,7 +57,7 @@ export function HowItWorks() {
                 onClick={() => setActive(k)}
                 onKeyDown={(e) => onKey(e, i)}
                 className={cn(
-                  "ds-button-text ds-transition min-h-12 px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus",
+                  "ds-button-text ds-transition min-h-12 px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
                   active === k ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-hover",
                 )}
               >
@@ -66,7 +67,7 @@ export function HowItWorks() {
           </div>
         </div>
 
-        <div id="how-panel" role="tabpanel" aria-labelledby={`how-tab-${active}`} key={active} className="ds-fade-in relative mt-12">
+        <div id="how-panel" role="tabpanel" aria-labelledby={`how-tab-${active}`} key={active} className="ds-fade-in relative mt-9">
           {/* route line (desktop horizontal) */}
           <div aria-hidden className="absolute left-0 right-0 top-8 hidden h-px bg-ds-border md:block" />
           {/* route line (mobile vertical) */}
@@ -81,7 +82,7 @@ export function HowItWorks() {
                   {i + 1}
                 </span>
                 <div>
-                  <h3 className="ds-subheading text-[1.375rem] text-ds-primary">{s.t}</h3>
+                  <h3 className="ds-subheading flex items-start gap-2 text-[1.375rem] text-ds-primary"><s.i className="mt-1 size-5 shrink-0 text-ds-accent-active" aria-hidden />{s.t}</h3>
                   <p className="ds-body-lg mt-2 text-ds-text-2">{s.d}</p>
                 </div>
               </li>
