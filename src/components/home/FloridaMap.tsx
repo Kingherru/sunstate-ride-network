@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Building2, Hash, Layers, Map, MapPin } from "lucide-react";
+import { Building2, Hash, Layers, Map as MapIcon, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FL_COUNTY_PATHS, FL_VIEWBOX, project } from "@/lib/florida-counties";
 
@@ -76,7 +76,7 @@ export function FloridaMap() {
           <p className="ds-body-lg mt-4">My Florida NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
 
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
-            {MODES.map((m) => { const MIcon = { region: Map, county: Layers, city: Building2, zip: Hash }[m.id]; return (
+            {MODES.map((m) => { const MIcon = { region: MapIcon, county: Layers, city: Building2, zip: Hash }[m.id]; return (
               <button key={m.id} role="radio" aria-checked={mode === m.id} onClick={() => { setMode(m.id); setCounty(null); setMarker(null); }}
                 className={cn("ds-button-text ds-transition min-h-12 px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
                   mode === m.id ? "border-[3px] border-ds-primary-border bg-ds-primary text-ds-on-primary" : "border-2 border-ds-border bg-ds-surface text-ds-primary hover:bg-ds-hover")}>

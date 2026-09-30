@@ -19,7 +19,9 @@ export const Route = createFileRoute("/design-system")({
 
 const PUBLIC_SWATCHES = [
   ["Primary brand blue", "#13335A", "--mfn-blue", "light"],
-  ["Action orange", "#E07A1F", "--mfn-orange", "dark"],
+  ["Brand orange (NEMT, eyebrows, accents)", "#E07A1F", "--mfn-orange", "dark"],
+  ["Action orange (buttons, white text)", "#BE5200", "--ds-action", "light"],
+  ["Action orange border / hover / pressed", "#9F4100", "--ds-action-border", "light"],
   ["White", "#FFFFFF", "--mfn-white", "dark"],
   ["Soft neutral gray", "#F4F5F7", "--mfn-gray", "dark"],
   ["Light sky blue", "#EAF2F8", "--mfn-sky", "dark"],
@@ -52,7 +54,8 @@ const CONTRAST = [
   ["Secondary text on soft gray", "5.79:1", "AA"],
   ["Dark text on orange button", "5.45:1", "AA"],
   ["Blue text on orange button", "4.23:1", "Fails AA (normal text) — not used"],
-  ["White text on orange button", "3.01:1", "Fails AA (normal text) — not used"],
+  ["White text on brand orange #E07A1F", "3.01:1", "Fails AA — never used"],
+  ["White text on action orange #BE5200", "4.62:1", "AA — used for all orange buttons"],
   ["Orange “NEMT” on white", "3.01:1", "Large/brand text only (AA large)"],
   ["Orange “NEMT” on blue", "4.23:1", "AA large"],
   ["Blue on light sky blue", "11.25:1", "AA / AAA"],
