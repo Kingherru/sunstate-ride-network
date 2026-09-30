@@ -1,25 +1,52 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BrandName } from "@/components/brand/BrandName";
+import { PublicPage } from "@/components/public/PublicPage";
+import { Hero, Paths, Services, Founder, Membership, Training, FinalCta } from "@/components/home/sections";
+import { HowItWorks } from "@/components/home/HowItWorks";
+import { ProductDemo } from "@/components/home/ProductDemo";
+import { FloridaMap } from "@/components/home/FloridaMap";
+import { CONTACT_INFO } from "@/lib/contact-info";
+
+const TITLE = "My Florida NEMT | Book Transportation & Connect with Florida NEMT Providers";
+const DESC = "Request non-emergency medical transportation, explore provider connections and access practical NEMT tools and training through My Florida NEMT.";
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "My Florida NEMT",
+  url: "https://myfloridanemt.com",
+  email: CONTACT_INFO.email,
+  areaServed: { "@type": "State", name: "Florida" },
+  ...(CONTACT_INFO.phone ? { telephone: CONTACT_INFO.phone } : {}),
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "My Florida NEMT — Rebuild in Progress" },
-      { name: "description", content: "The My Florida NEMT website is being rebuilt. Please check back soon." },
-      { property: "og:title", content: "My Florida NEMT — Rebuild in Progress" },
-      { property: "og:description", content: "The My Florida NEMT website is being rebuilt. Please check back soon." },
+      { title: TITLE },
+      { name: "description", content: DESC },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESC },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify(orgSchema) }],
   }),
   component: Home,
 });
 
 function Home() {
   return (
-    <section className="p-10 max-w-2xl mx-auto text-center">
-      <h1 className="text-3xl"><span className="theme-public"><BrandName /></span></h1>
-      <p className="mt-4">The My Florida NEMT rebuild is in progress.</p>
-    </section>
+    <PublicPage>
+      <Hero />
+      <Paths />
+      <HowItWorks />
+      <ProductDemo />
+      <Services />
+      <FloridaMap />
+      <Founder />
+      <Membership />
+      <Training />
+      <FinalCta />
+    </PublicPage>
   );
 }

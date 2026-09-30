@@ -1,8 +1,8 @@
 // Internal public contact details (formerly exposed via the get_contact_info MCP tool).
-// NOTE: phone looks like a placeholder — confirm the real number.
-export const CONTACT_INFO = {
+// PHONE: insert the real public number here (e.g. "+1-407-555-1234"). Empty shows "Call Us" without a link.
+export const CONTACT_INFO: { name: string; phone: string; email: string; areaServed: string } = {
   name: "My Florida NEMT",
-  phone: "+1-800-555-0199",
+  phone: "",
   email: "myfloridanemt@gmail.com",
   areaServed: "Florida, US",
-} as const;
+};
