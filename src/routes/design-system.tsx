@@ -4,6 +4,8 @@ import { BrandName } from "@/components/brand/BrandName";
 import { LinePattern, LINE_PATTERN_PRESETS, type LinePatternPreset } from "@/components/brand/LinePattern";
 import { DsButton, DsLink, DsField, DsInput, DsSelect, DsTextarea, DsCheckbox, DsRadio } from "@/components/ds/controls";
 import { DsBadge, DsAlert, DsLoading, DsSkeleton, DsEmpty, DsModal } from "@/components/ds/feedback";
+import { btnAction, btnBlue, btnLight, btnOnBlue } from "@/components/home/buttons";
+import { CalendarPlus, Monitor, Network, Phone, Smartphone, Tablet } from "lucide-react";
 import { DsCard, DsSoftBox, DsTabs, DsPublicHeader, DsPortalMenu } from "@/components/ds/layout";
 
 export const Route = createFileRoute("/design-system")({
@@ -55,7 +57,7 @@ const CONTRAST = [
   ["Dark text on orange button", "5.45:1", "AA"],
   ["Blue text on orange button", "4.23:1", "Fails AA (normal text) — not used"],
   ["White text on brand orange #E07A1F", "3.01:1", "Fails AA — never used"],
-  ["White text on action orange #BE5200", "4.62:1", "AA — used for all orange buttons"],
+  ["White text on action orange #BE5200", "5.36:1", "AA — used for all orange buttons"],
   ["Orange “NEMT” on white", "3.01:1", "Large/brand text only (AA large)"],
   ["Orange “NEMT” on blue", "4.23:1", "AA large"],
   ["Blue on light sky blue", "11.25:1", "AA / AAA"],
@@ -92,6 +94,27 @@ function DesignSystemPage() {
         <p className="ds-body-lg text-ds-text-2 mt-2 max-w-2xl">Public website system first, then the quieter portal system.</p>
 
         {/* ------------------------------------------------ PUBLIC */}
+        <Section id="rev2" title="Homepage Revision 2 rules">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-3 ds-body">
+              <p><strong>Corners:</strong> 0px on every rectangle. Only true circles use .ds-circle.</p>
+              <p><strong>Borders:</strong> 2px standard buttons and interactive boxes; 3px selected, active and focus. Same-family colors only (darker blue on blue, darker orange on orange, neutral gray on white/gray).</p>
+              <p><strong>Spacing:</strong> sections 48 / 64 / 80px (mobile / tablet / desktop), major sections 56 / 80 / 96px; heading-to-content 32–40px; panels 18–32px; grid gaps 16–32px.</p>
+              <p><strong>Map:</strong> accurate US Census county boundaries, thin blue outlines on white, orange selection, one restrained location marker, no routes or decorative lines.</p>
+              <p><strong>Trial language:</strong> “Try the complete provider network free for 30 days.” · “Start 30 Days Free” · “$10 per month after the 30-day trial.”</p>
+            </div>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-3"><span className={btnAction}><CalendarPlus aria-hidden />Book a Trip</span><span className={btnBlue}><Network aria-hidden />Join the Provider Network</span><span className={btnLight}>Secondary</span></div>
+              <div className="flex flex-wrap gap-3 bg-ds-primary p-4"><span className={btnOnBlue}><Phone aria-hidden />Call Us</span><span className={btnAction}><CalendarPlus aria-hidden />Book a Trip</span><span className="ds-caption !text-ds-on-primary self-center">Header action blocks</span></div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="border-2 border-ds-border p-3 ds-label text-ds-primary">Path: unselected</div>
+                <div className="border-[3px] border-ds-primary-border bg-ds-primary p-3 ds-label text-ds-on-primary">Customer / facility selected</div>
+                <div className="border-[3px] border-ds-border-strong bg-ds-subtle p-3 ds-label text-ds-primary">Provider selected</div>
+              </div>
+              <div className="flex gap-3">{([[Smartphone, "Mobile"], [Tablet, "Tablet"], [Monitor, "Desktop"]] as const).map(([I, l]) => <span key={l} className="flex items-center gap-2 border-2 border-ds-sky-border bg-ds-sky px-3 py-2 ds-label text-ds-primary"><I className="size-5" aria-hidden />{l}</span>)}</div>
+            </div>
+          </div>
+        </Section>
         <Section id="brand" title="Brand name">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-ds border border-ds-border bg-ds-surface p-6"><BrandName className="text-2xl" /><p className="ds-caption mt-2">On white</p></div>
