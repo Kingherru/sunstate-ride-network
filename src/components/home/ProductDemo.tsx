@@ -182,16 +182,18 @@ export function ProductDemo() {
 
           {/* App-window composition */}
           <div>
-            <div role="radiogroup" aria-label="Preview size" className="mb-3 inline-flex border-2 border-ds-border p-1">
-              {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
-                <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
-                  className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-2 px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
-                    view === v ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-hover")}>
-                  <Icon className="size-5" aria-hidden />{l}
-                </button>
-              ))}
+            <div className="mb-3 flex justify-center">
+              <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-subtle p-1">
+                {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
+                  <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
+                    className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-2 rounded-ds-sm px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                      view === v ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-surface")}>
+                    <Icon className="size-5" aria-hidden />{l}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className={cn("overflow-hidden border-2 border-ds-primary-border bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] border-[3px] px-2 pb-5 pt-3")}>
+            <div className={cn("overflow-hidden rounded-ds-lg bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] px-2 pb-5 pt-3")}>
               <div className="flex items-center justify-between px-2 pb-2 sm:px-3 sm:pb-3">
                 <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
                 <span className="ds-caption !text-ds-on-primary opacity-80">{view === "mobile" ? "Phone" : "Preview"}</span>
