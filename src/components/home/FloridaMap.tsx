@@ -108,7 +108,7 @@ export function FloridaMap() {
         </div>
 
         <div className="relative">
-          <svg viewBox="0 0 430 410" role="img" aria-label={`Simplified map of Florida with ${sel.name} highlighted`} className="h-auto w-full">
+          <svg viewBox="0 0 430 410" role="img" aria-label={`Simplified map of Florida with ${sel.name} highlighted`} className="mx-auto h-auto max-h-[40rem] w-full">
             <path d={OUTLINE} fill="var(--ds-surface)" stroke="var(--ds-primary)" strokeOpacity="0.25" strokeWidth="2" strokeLinejoin="round" />
             {/* subtle road connections */}
             <g fill="none" stroke="var(--ds-primary)" strokeOpacity="0.14" strokeWidth="1" strokeLinecap="round">

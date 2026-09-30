@@ -185,7 +185,7 @@ export function ProductDemo() {
               <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
               <span className="ds-caption !text-ds-on-primary opacity-80">Preview</span>
             </div>
-            <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className="min-h-[34rem] bg-ds-surface p-5 text-ds-on-surface sm:p-10">
+            <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className="min-h-[28rem] bg-ds-surface p-5 text-ds-on-surface sm:p-10">
               <p className="ds-section-title text-ds-primary">{current.label}</p>
               <p className="ds-body-lg mb-8 text-ds-text-2">{current.blurb}</p>
               <div key={active} className="ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
