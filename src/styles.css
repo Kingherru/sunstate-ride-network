@@ -98,6 +98,18 @@
   --ds-accent-hover: #CC6C16;
   --ds-accent-active: #B35F12;
   --ds-border: var(--mfn-line);
+  --ds-border-strong: #B9C2CC;
+  --ds-primary-border: #0A1D33;
+  /* Action orange: darker, accessible with white text. Brand orange stays for NEMT/eyebrows/accents. */
+  --ds-action: #BE5200;
+  --ds-on-action: #FFFFFF;
+  --ds-action-border: #9F4100;
+  --ds-action-hover: #A84400;
+  --ds-action-pressed: #923A00;
+  --ds-sky-border: #C6DAEA;
+  --ds-green-border: #CADFCA;
+  --ds-peach-border: #EFCDB3;
+  --ds-sand-border: #E2D6C1;
   --ds-link: var(--mfn-blue);
   --ds-link-hover: #1F6FB2;
   --ds-focus: #1F6FB2;
@@ -156,6 +168,17 @@
   --color-ds-accent-hover: var(--ds-accent-hover);
   --color-ds-accent-active: var(--ds-accent-active);
   --color-ds-border: var(--ds-border);
+  --color-ds-border-strong: var(--ds-border-strong);
+  --color-ds-primary-border: var(--ds-primary-border);
+  --color-ds-action: var(--ds-action);
+  --color-ds-on-action: var(--ds-on-action);
+  --color-ds-action-border: var(--ds-action-border);
+  --color-ds-action-hover: var(--ds-action-hover);
+  --color-ds-action-pressed: var(--ds-action-pressed);
+  --color-ds-sky-border: var(--ds-sky-border);
+  --color-ds-green-border: var(--ds-green-border);
+  --color-ds-peach-border: var(--ds-peach-border);
+  --color-ds-sand-border: var(--ds-sand-border);
   --color-ds-link: var(--ds-link);
   --color-ds-link-hover: var(--ds-link-hover);
   --color-ds-focus: var(--ds-focus);
@@ -223,3 +246,9 @@
 @utility mfn-container { width: min(100% - 2 * var(--mfn-gutter, 18px), 94vw, 1600px); margin-inline: auto; }
 @utility mfn-container-wide { width: min(100% - 2 * var(--mfn-gutter, 18px), 94vw, 1760px); margin-inline: auto; }
 @utility mfn-read { max-width: 42rem; }
+
+/* Section rhythm (Revision 2): mobile 48 / tablet 64 / desktop 80; large 56 / 80 / 96 */
+.mfn-section { padding-block: 48px; }
+.mfn-section-lg { padding-block: 56px; }
+@media (min-width: 640px) { .mfn-section { padding-block: 64px; } .mfn-section-lg { padding-block: 80px; } }
+@media (min-width: 1024px) { .mfn-section { padding-block: 80px; } .mfn-section-lg { padding-block: 96px; } }

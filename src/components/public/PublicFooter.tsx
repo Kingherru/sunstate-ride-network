@@ -35,8 +35,8 @@ const linkCls = "ds-transition rounded-sm opacity-90 hover:opacity-100 hover:und
 export function PublicFooter() {
   return (
     <footer className="bg-ds-primary text-ds-on-primary">
-      <div className="mfn-container py-20">
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,1fr)] lg:gap-16">
+      <div className="mfn-container py-14">
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,1fr)] lg:gap-12">
           <div id="contact">
             <BrandName on="blue" className="text-2xl" />
             <p className="ds-body-lg mt-4 max-w-sm opacity-90">A Florida network connecting riders, facilities and independent NEMT providers.</p>
@@ -58,7 +58,7 @@ export function PublicFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-16 flex flex-col gap-4 border-t border-ds-on-primary/20 pt-8 ds-body lg:flex-row lg:items-start lg:justify-between lg:gap-12">
+        <div className="mt-10 flex flex-col gap-4 border-t border-ds-on-primary/20 pt-8 ds-body lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           <p className="opacity-80">© {new Date().getFullYear()} My Florida NEMT. Non-emergency transportation only — for emergencies call 911.</p>
           <div>
             <h2 className="sr-only">Legal</h2>

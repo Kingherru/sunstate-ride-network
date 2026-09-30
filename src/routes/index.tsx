@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/public/PublicPage";
-import { Hero, Paths, Services, Founder, Membership, Training, FinalCta } from "@/components/home/sections";
+import { Hero, NetworkModel, Paths, Services, Founder, Membership, Training } from "@/components/home/sections";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { ProductDemo } from "@/components/home/ProductDemo";
 import { FloridaMap } from "@/components/home/FloridaMap";
 import { CONTACT_INFO } from "@/lib/contact-info";
 
-const TITLE = "My Florida NEMT | Book Transportation & Connect with Florida NEMT Providers";
-const DESC = "Request non-emergency medical transportation, explore provider connections and access practical NEMT tools and training through My Florida NEMT.";
+const TITLE = "My Florida NEMT | Florida Peer-to-Peer NEMT Network & Trip Booking";
+const DESC = "A peer-to-peer Florida NEMT network: request transportation from independent providers, or connect provider-to-provider to share and review trip opportunities.";
 
 const orgSchema = {
   "@context": "https://schema.org",
@@ -38,15 +38,15 @@ function Home() {
   return (
     <PublicPage>
       <Hero />
+      <NetworkModel />
       <Paths />
       <HowItWorks />
       <ProductDemo />
+      <Membership />
       <Services />
       <FloridaMap />
       <Founder />
-      <Membership />
       <Training />
-      <FinalCta />
     </PublicPage>
   );
 }

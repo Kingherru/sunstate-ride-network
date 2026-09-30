@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Search, Send, Sparkles, UserRound, Users } from "lucide-react";
+import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Monitor, Search, Send, Smartphone, Sparkles, Tablet, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Fictional sample data only.
@@ -27,11 +27,11 @@ function Preview({ id }: { id: Id }) {
   switch (id) {
     case "notes":
       return (
-        <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+        <div className="grid gap-4 @md:grid-cols-[1fr_auto_1fr] @md:items-center">
           <div className="rounded-ds-sm bg-ds-sand p-4 font-mono text-[0.8rem] leading-relaxed text-ds-on-soft">
             need wc pickup tues 9:15am<br />sunrise villas bldg C → lakeside clinic suite 204<br />return ~11:30 pt uses own chair, 1 escort
           </div>
-          <ArrowRight className="mx-auto size-6 rotate-90 text-ds-accent md:rotate-0" aria-hidden />
+          <ArrowRight className="mx-auto size-6 rotate-90 text-ds-accent @md:rotate-0" aria-hidden />
           <div className="rounded-ds-sm border border-ds-border bg-ds-surface p-4">
             <p className="ds-label mb-2 text-ds-primary">Draft trip</p>
             <Row k="Service" v="Wheelchair" />
@@ -51,7 +51,7 @@ function Preview({ id }: { id: Id }) {
             {[["Sample Transport Co.", "Orlando · 4 mi", "Wheelchair · Stretcher"], ["Example Mobility LLC", "Winter Park · 9 mi", "Ambulatory · Wheelchair"], ["Demo Care Rides", "Kissimmee · 18 mi", "Wheelchair"]].map(([n, l, s]) => (
               <li key={n} className="flex items-center justify-between gap-3 p-3">
                 <div className="flex items-center gap-3"><MapPin className="size-4 text-ds-accent" aria-hidden /><div><p className="ds-label text-ds-on-surface">{n}</p><p className="ds-caption">{l}</p></div></div>
-                <span className="ds-caption hidden sm:block">{s}</span>
+                <span className="ds-caption hidden @md:block">{s}</span>
               </li>
             ))}
           </ul>
@@ -59,7 +59,7 @@ function Preview({ id }: { id: Id }) {
       );
     case "share":
       return (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 @md:grid-cols-2">
           <div className="rounded-ds-sm bg-ds-sky p-4 text-ds-on-soft">
             <p className="ds-label">Trip #S-1042</p>
             <p className="ds-body mt-1">Stretcher · Thu 7:00 AM</p>
@@ -72,7 +72,7 @@ function Preview({ id }: { id: Id }) {
                 <span className={cn("flex size-5 items-center justify-center rounded-sm", on ? "bg-ds-primary text-ds-on-primary" : "border border-ds-border")}>{on && <Check className="size-3.5" aria-hidden />}</span>{n}
               </p>
             ))}
-            <p className="ds-button-text mt-3 inline-flex items-center gap-2 rounded-ds-sm bg-ds-accent px-3 py-2 text-ds-on-accent"><Send className="size-4" aria-hidden /> Share with 2 providers</p>
+            <p className="ds-button-text mt-3 inline-flex items-center gap-2 rounded-ds-sm bg-ds-action px-3 py-2 text-ds-on-action"><Send className="size-4" aria-hidden /> Share with 2 providers</p>
           </div>
         </div>
       );
@@ -109,7 +109,7 @@ function Preview({ id }: { id: Id }) {
       );
     case "customers":
       return (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 @md:grid-cols-2">
           <ul className="rounded-ds-sm border border-ds-border">
             {["Sample Rider A.", "Test Rider B.", "Example Rider C."].map((n, i) => (
               <li key={n} className={cn("flex items-center gap-3 border-b border-ds-border p-3 last:border-0", i === 0 && "bg-ds-sky")}>
@@ -131,6 +131,7 @@ function Preview({ id }: { id: Id }) {
 
 export function ProductDemo() {
   const [active, setActive] = useState<Id>("notes");
+  const [view, setView] = useState<"desktop" | "mobile">("desktop");
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const onKey = (e: React.KeyboardEvent, i: number) => {
     const next = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
@@ -143,7 +144,7 @@ export function ProductDemo() {
   const current = FEATURES.find((f) => f.id === active)!;
 
   return (
-    <section id="providers" aria-labelledby="demo-title" className="relative overflow-hidden bg-ds-bg py-20 sm:py-28 scroll-mt-20">
+    <section id="providers" aria-labelledby="demo-title" className="mfn-section-lg relative overflow-hidden bg-ds-bg scroll-mt-20">
       <div className="mfn-container-wide">
         <div className="max-w-3xl">
           <p className="ds-label text-ds-accent-active">For providers</p>
@@ -151,7 +152,7 @@ export function ProductDemo() {
           <p className="ds-body-lg mt-4 text-ds-text-2">Useful network and organization tools without forcing providers into another complicated dispatch system.</p>
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[30%_1fr]">
+        <div className="mt-9 grid gap-6 lg:grid-cols-[30%_1fr] lg:gap-8">
           <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
             {FEATURES.map((f, i) => {
               const on = f.id === active;
@@ -168,8 +169,8 @@ export function ProductDemo() {
                   onClick={() => setActive(f.id)}
                   onKeyDown={(e) => onKey(e, i)}
                   className={cn(
-                    "ds-transition flex min-h-14 shrink-0 items-center gap-4 border-l-4 px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus",
-                    on ? "border-ds-accent bg-ds-primary text-ds-on-primary" : "border-transparent bg-ds-subtle text-ds-primary hover:bg-ds-hover",
+                    "ds-transition flex min-h-14 shrink-0 items-center gap-4 border-l-4 px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                    on ? "border-ds-accent bg-ds-primary text-ds-on-primary" : "border-ds-border bg-ds-subtle text-ds-primary hover:bg-ds-hover",
                   )}
                 >
                   <Icon className={cn("size-5 shrink-0", on && "text-ds-accent")} aria-hidden />
@@ -180,19 +181,42 @@ export function ProductDemo() {
           </div>
 
           {/* App-window composition */}
-          <div className="overflow-hidden bg-ds-primary p-2 sm:p-3">
-            <div className="flex items-center justify-between px-2 pb-2 sm:px-3 sm:pb-3">
-              <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
-              <span className="ds-caption !text-ds-on-primary opacity-80">Preview</span>
+          <div>
+            <div role="radiogroup" aria-label="Preview size" className="mb-3 inline-flex border-2 border-ds-border p-1">
+              {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
+                <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
+                  className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-2 px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                    view === v ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-hover")}>
+                  <Icon className="size-5" aria-hidden />{l}
+                </button>
+              ))}
             </div>
-            <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className="min-h-[28rem] bg-ds-surface p-5 text-ds-on-surface sm:p-10">
-              <p className="ds-section-title text-ds-primary">{current.label}</p>
-              <p className="ds-body-lg mb-8 text-ds-text-2">{current.blurb}</p>
-              <div key={active} className="ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
+            <div className={cn("overflow-hidden border-2 border-ds-primary-border bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] border-[3px] px-2 pb-5 pt-3")}>
+              <div className="flex items-center justify-between px-2 pb-2 sm:px-3 sm:pb-3">
+                <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
+                <span className="ds-caption !text-ds-on-primary opacity-80">{view === "mobile" ? "Phone" : "Preview"}</span>
+              </div>
+              <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className={cn("@container bg-ds-surface text-ds-on-surface", view === "mobile" ? "min-h-[34rem] p-4" : "min-h-[28rem] p-5 sm:p-10")}>
+                <p className="ds-section-title text-ds-primary">{current.label}</p>
+                <p className="ds-body-lg mb-6 text-ds-text-2">{current.blurb}</p>
+                <div key={active + view} className="ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
+              </div>
             </div>
           </div>
         </div>
         <p className="ds-caption mt-4">Illustration of planned tools using made-up sample data. Features roll out as the network grows.</p>
+
+        <div className="mt-10 grid gap-6 border-2 border-ds-sky-border bg-ds-sky p-6 text-ds-on-soft sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+          <div>
+            <h3 className="ds-section-title uppercase text-ds-primary">Built for the road, not just the office.</h3>
+            <p className="ds-body-lg mfn-read mt-3">Use My Florida NEMT from your phone, tablet or computer. Review opportunities, find providers, share trips, manage offers, check your schedule and save customer details wherever your work takes you.</p>
+          </div>
+          <ul className="grid grid-cols-3 gap-3" aria-label="Works on">
+            {([[Smartphone, "Mobile"], [Tablet, "Tablet"], [Monitor, "Desktop"]] as const).map(([Icon, l]) => (
+              <li key={l} className="flex flex-col items-center gap-2 border-2 border-ds-sky-border bg-ds-surface p-4 text-ds-primary"><Icon className="size-7" aria-hidden /><span className="ds-label">{l}</span></li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );
