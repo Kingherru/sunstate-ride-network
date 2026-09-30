@@ -136,7 +136,7 @@ export function FloridaMap() {
                   stroke="var(--ds-primary)" strokeOpacity={isCounty ? 1 : 0.45}
                   className="ds-transition cursor-pointer hover:opacity-80"
                   onClick={() => { setRegion(COUNTY_REGION[name]); setCounty(name); setMarker(null); }}>
-                  <title>{name} County</title>
+                  <title>{`${name} County`}</title>
                 </path>
               );
             })}
