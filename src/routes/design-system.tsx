@@ -107,7 +107,7 @@ function DesignSystemPage() {
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3"><span className={btnAction}><CalendarPlus aria-hidden />Book a Trip</span><span className={btnBlue}><Network aria-hidden />Join the Provider Network</span><span className={btnLight}>Secondary</span></div>
               <div className="flex flex-wrap items-center gap-5 bg-ds-primary p-4">
-                <span className="ds-button-text inline-flex items-center gap-2 text-ds-on-primary"><Phone aria-hidden className="size-5" />555-5555-5555</span>
+                <span className="ds-button-text inline-flex items-center gap-2 text-ds-on-primary"><Phone aria-hidden className="size-5" />CALL US</span>
                 <span className="ds-button-text inline-flex items-center gap-2 uppercase tracking-[0.04em] text-ds-accent"><CalendarPlus aria-hidden className="size-5" />Book a Trip</span>
                 <span className="ds-caption !text-ds-on-primary self-center">Header actions — no background</span>
               </div>

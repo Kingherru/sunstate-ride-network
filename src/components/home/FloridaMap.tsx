@@ -46,7 +46,7 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "region", label: "Region" }, { id: "county", label: "County" }, { id: "city", label: "City" }, { id: "zip", label: "ZIP code" },
 ];
 
-export function FloridaMap() {
+export function FloridaMap({ page = false }: { page?: boolean } = {}) {
   const [mode, setMode] = useState<Mode>("region");
   const [region, setRegion] = useState<RegionId>("central");
   const [zip, setZip] = useState("");
@@ -68,11 +68,11 @@ export function FloridaMap() {
   const fieldCls = "ds-body-lg w-full min-h-13 rounded-ds-sm border border-ds-border bg-ds-surface px-3 text-ds-on-surface focus-visible:outline-none focus-visible:border-ds-focus focus-visible:ring-2 focus-visible:ring-ds-focus/30";
 
   return (
-    <section id="coverage" aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
+    <section id={page ? "map" : "coverage"} aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
       <div className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-12 lg:items-center">
         <div className="text-ds-on-soft">
-          <p className="ds-label text-ds-accent-active">Florida network</p>
-          <h2 id="map-title" className="ds-page-title mt-2 text-ds-primary">Connections across Florida start here.</h2>
+          <p className="ds-label text-ds-accent-active">{page ? "Explore the map" : "Florida network"}</p>
+          <h2 id="map-title" className="ds-page-title mt-2 text-ds-primary">{page ? "Explore by region, county, city or ZIP code." : "Connections across Florida start here."}</h2>
           <p className="ds-body-lg mt-4">My Florida NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
 
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
@@ -108,7 +108,7 @@ export function FloridaMap() {
             )}
             {mode === "zip" && (
               <form onSubmit={onZip} className="flex items-end gap-2">
-                <label className="block flex-1"><span className="ds-label">Florida ZIP code</span>
+                <label className="block flex-1"><span className="ds-label">Florida ZIP code (approximate match)</span>
                   <input inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))} className={cn(fieldCls, "mt-1.5")} placeholder="e.g. 32801" aria-describedby="zip-msg" /></label>
                 <button className="ds-button-text min-h-13 rounded-ds-sm bg-ds-primary px-6 text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus focus-visible:ring-offset-2">Find</button>
               </form>
@@ -117,7 +117,9 @@ export function FloridaMap() {
           </div>
 
           <div className="mt-2 rounded-ds bg-ds-surface p-6 text-ds-on-surface shadow-ds" aria-live="polite">
-            {county && <p className="ds-label text-ds-accent-active">{county} County · provider participation information is not yet available</p>}
+            {county && (page
+              ? <><p className="ds-label text-ds-accent-active">{county} County</p><p className="ds-body mb-3 mt-1">Network participation information for this county will appear as providers join and complete their service profiles.</p></>
+              : <p className="ds-label text-ds-accent-active">{county} County · provider participation information is not yet available</p>)}
             <p className="ds-section-title text-ds-primary">{sel.name}</p>
             <p className="ds-body-lg mt-1 text-ds-text-2">{sel.counties.length} counties · including {sel.cities.join(", ")}</p>
             <p className="ds-body mt-4">{sel.counties.join(" · ")}</p>
