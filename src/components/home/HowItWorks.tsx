@@ -44,7 +44,7 @@ export function HowItWorks() {
             <p className="ds-label text-ds-accent-active">How the network works</p>
             <h2 id="how-title" className="ds-page-title mt-2 text-ds-primary">A clearer way to request, connect and coordinate.</h2>
           </div>
-          <div role="tablist" aria-label="Choose who you are" className="inline-flex border-2 border-ds-border bg-ds-surface p-1">
+          <div role="tablist" aria-label="Choose who you are" className="inline-flex rounded-ds-sm bg-ds-surface p-1 shadow-ds">
             {KEYS.map((k, i) => (
               <button
                 key={k}
@@ -57,7 +57,7 @@ export function HowItWorks() {
                 onClick={() => setActive(k)}
                 onKeyDown={(e) => onKey(e, i)}
                 className={cn(
-                  "ds-button-text ds-transition min-h-12 px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                  "ds-button-text ds-transition min-h-12 rounded-ds-sm px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
                   active === k ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-hover",
                 )}
               >
@@ -76,7 +76,7 @@ export function HowItWorks() {
             {flow.steps.map((s, i) => (
               <li key={s.t} className="flex gap-5 md:flex-col md:gap-4">
                 <span className={cn(
-                  "relative z-10 flex size-16 shrink-0 items-center justify-center font-heading text-2xl font-bold ring-8 ring-ds-subtle",
+                  "relative z-10 flex size-16 shrink-0 items-center justify-center rounded-ds-sm font-heading text-2xl font-bold ring-8 ring-ds-subtle",
                   i === flow.steps.length - 1 ? "bg-ds-accent text-ds-on-accent" : "bg-ds-primary text-ds-on-primary",
                 )}>
                   {i + 1}

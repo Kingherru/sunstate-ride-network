@@ -20,7 +20,7 @@ const Row = ({ k, v }: { k: string; v: string }) => (
   </div>
 );
 const Chip = ({ children, on }: { children: React.ReactNode; on?: boolean }) => (
-  <span className={cn("ds-caption inline-flex items-center gap-1 px-2.5 py-1 !font-semibold", on ? "bg-ds-primary !text-ds-on-primary" : "bg-ds-subtle !text-ds-on-subtle")}>{children}</span>
+  <span className={cn("ds-caption inline-flex items-center gap-1 rounded-ds-sm px-2.5 py-1 !font-semibold", on ? "bg-ds-primary !text-ds-on-primary" : "bg-ds-subtle !text-ds-on-subtle")}>{children}</span>
 );
 
 function Preview({ id }: { id: Id }) {
@@ -32,7 +32,7 @@ function Preview({ id }: { id: Id }) {
             need wc pickup tues 9:15am<br />sunrise villas bldg C → lakeside clinic suite 204<br />return ~11:30 pt uses own chair, 1 escort
           </div>
           <ArrowRight className="mx-auto size-6 rotate-90 text-ds-accent @md:rotate-0" aria-hidden />
-          <div className="rounded-ds-sm border border-ds-border bg-ds-surface p-4">
+          <div className="rounded-ds-sm bg-ds-subtle p-4">
             <p className="ds-label mb-2 text-ds-primary">Draft trip</p>
             <Row k="Service" v="Wheelchair" />
             <Row k="Pickup" v="Tue · 9:15 AM" />
@@ -65,7 +65,7 @@ function Preview({ id }: { id: Id }) {
             <p className="ds-body mt-1">Stretcher · Thu 7:00 AM</p>
             <p className="ds-caption mt-1">Tampa → St. Petersburg</p>
           </div>
-          <div className="rounded-ds-sm border border-ds-border p-4">
+          <div className="rounded-ds-sm bg-ds-subtle p-4">
             <p className="ds-label mb-2 text-ds-primary">Share with</p>
             {[["Sample Transport Co.", true], ["Example Mobility LLC", true], ["Demo Care Rides", false]].map(([n, on]) => (
               <p key={n as string} className="ds-body flex items-center gap-2 py-1">
@@ -78,13 +78,13 @@ function Preview({ id }: { id: Id }) {
       );
     case "offers":
       return (
-        <div className="rounded-ds-sm border border-ds-border p-4">
+        <div className="rounded-ds-sm bg-ds-subtle p-4">
           <div className="flex items-start justify-between gap-3">
             <div><p className="ds-label text-ds-primary">Incoming opportunity</p><p className="ds-body">Ambulatory · Mon 1:30 PM · Gainesville</p></div>
             <Chip>New</Chip>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-ds-sm bg-ds-subtle p-3"><p className="ds-caption">Offered</p><p className="ds-subheading text-ds-on-subtle">$68.00</p></div>
+            <div className="rounded-ds-sm bg-ds-surface p-3"><p className="ds-caption">Offered</p><p className="ds-subheading text-ds-on-subtle">$68.00</p></div>
             <div className="rounded-ds-sm bg-ds-peach p-3"><p className="ds-caption">Your counter</p><p className="ds-subheading text-ds-on-soft">$75.00</p></div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -117,7 +117,7 @@ function Preview({ id }: { id: Id }) {
               </li>
             ))}
           </ul>
-          <div className="rounded-ds-sm border border-ds-border p-4">
+          <div className="rounded-ds-sm bg-ds-subtle p-4">
             <p className="ds-label mb-2 text-ds-primary">Repeat request</p>
             <Row k="Rider" v="Sample Rider A." />
             <Row k="Usual pickup" v="Home address on file" />
@@ -169,8 +169,8 @@ export function ProductDemo() {
                   onClick={() => setActive(f.id)}
                   onKeyDown={(e) => onKey(e, i)}
                   className={cn(
-                    "ds-transition flex min-h-14 shrink-0 items-center gap-4 border-l-4 px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
-                    on ? "border-ds-accent bg-ds-primary text-ds-on-primary" : "border-ds-border bg-ds-subtle text-ds-primary hover:bg-ds-hover",
+                    "ds-transition flex min-h-14 shrink-0 items-center gap-4 rounded-ds-sm px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                    on ? "bg-ds-primary text-ds-on-primary" : "bg-ds-subtle text-ds-primary hover:bg-ds-hover",
                   )}
                 >
                   <Icon className={cn("size-5 shrink-0", on && "text-ds-accent")} aria-hidden />
@@ -196,7 +196,7 @@ export function ProductDemo() {
                 <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
                 <span className="ds-caption !text-ds-on-primary opacity-80">{view === "mobile" ? "Phone" : "Preview"}</span>
               </div>
-              <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className={cn("@container bg-ds-surface text-ds-on-surface", view === "mobile" ? "min-h-[34rem] p-4" : "min-h-[28rem] p-5 sm:p-10")}>
+              <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className={cn("@container rounded-ds bg-ds-surface text-ds-on-surface", view === "mobile" ? "min-h-[34rem] p-4" : "min-h-[28rem] p-5 sm:p-10")}>
                 <p className="ds-section-title text-ds-primary">{current.label}</p>
                 <p className="ds-body-lg mb-6 text-ds-text-2">{current.blurb}</p>
                 <div key={active + view} className="ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
@@ -204,16 +204,14 @@ export function ProductDemo() {
             </div>
           </div>
         </div>
-        <p className="ds-caption mt-4">Illustration of planned tools using made-up sample data. Features roll out as the network grows.</p>
-
-        <div className="mt-10 grid gap-6 border-2 border-ds-sky-border bg-ds-sky p-6 text-ds-on-soft sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+        <div className="mt-10 grid gap-6 rounded-ds-lg bg-ds-sky p-6 text-ds-on-soft sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
           <div>
             <h3 className="ds-section-title uppercase text-ds-primary">Built for the road, not just the office.</h3>
             <p className="ds-body-lg mfn-read mt-3">Use My Florida NEMT from your phone, tablet or computer. Review opportunities, find providers, share trips, manage offers, check your schedule and save customer details wherever your work takes you.</p>
           </div>
           <ul className="grid grid-cols-3 gap-3" aria-label="Works on">
             {([[Smartphone, "Mobile"], [Tablet, "Tablet"], [Monitor, "Desktop"]] as const).map(([Icon, l]) => (
-              <li key={l} className="flex flex-col items-center gap-2 border-2 border-ds-sky-border bg-ds-surface p-4 text-ds-primary"><Icon className="size-7" aria-hidden /><span className="ds-label">{l}</span></li>
+              <li key={l} className="flex flex-col items-center gap-2 rounded-ds-sm bg-ds-surface p-4 text-ds-primary"><Icon className="size-7" aria-hidden /><span className="ds-label">{l}</span></li>
             ))}
           </ul>
         </div>

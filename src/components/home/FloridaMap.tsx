@@ -65,7 +65,7 @@ export function FloridaMap() {
     setZipMsg(`${zip} is in the ${REGIONS.find((x) => x.id === r)!.name} region. Location is approximate; service availability varies.`);
   };
 
-  const fieldCls = "ds-body-lg w-full min-h-13 border-2 border-ds-border bg-ds-surface px-3 text-ds-on-surface focus-visible:outline-none focus-visible:border-ds-focus focus-visible:ring-2 focus-visible:ring-ds-focus/30";
+  const fieldCls = "ds-body-lg w-full min-h-13 rounded-ds-sm border border-ds-border bg-ds-surface px-3 text-ds-on-surface focus-visible:outline-none focus-visible:border-ds-focus focus-visible:ring-2 focus-visible:ring-ds-focus/30";
 
   return (
     <section id="coverage" aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
@@ -78,8 +78,8 @@ export function FloridaMap() {
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
             {MODES.map((m) => { const MIcon = { region: MapIcon, county: Layers, city: Building2, zip: Hash }[m.id]; return (
               <button key={m.id} role="radio" aria-checked={mode === m.id} onClick={() => { setMode(m.id); setCounty(null); setMarker(null); }}
-                className={cn("ds-button-text ds-transition min-h-12 px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
-                  mode === m.id ? "border-[3px] border-ds-primary-border bg-ds-primary text-ds-on-primary" : "border-2 border-ds-border bg-ds-surface text-ds-primary hover:bg-ds-hover")}>
+                className={cn("ds-button-text ds-transition min-h-12 rounded-ds-sm px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                  mode === m.id ? "bg-ds-primary text-ds-on-primary" : "bg-ds-surface text-ds-primary hover:bg-ds-hover")}>
                 <span className="inline-flex items-center gap-2"><MIcon className="size-5" aria-hidden />{m.label}</span>
               </button>
             ); })}
@@ -110,13 +110,13 @@ export function FloridaMap() {
               <form onSubmit={onZip} className="flex items-end gap-2">
                 <label className="block flex-1"><span className="ds-label">Florida ZIP code</span>
                   <input inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))} className={cn(fieldCls, "mt-1.5")} placeholder="e.g. 32801" aria-describedby="zip-msg" /></label>
-                <button className="ds-button-text min-h-13 bg-ds-primary px-6 text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus focus-visible:ring-offset-2">Find</button>
+                <button className="ds-button-text min-h-13 rounded-ds-sm bg-ds-primary px-6 text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus focus-visible:ring-offset-2">Find</button>
               </form>
             )}
             <p id="zip-msg" aria-live="polite" className="ds-support mt-2 min-h-6">{mode === "zip" ? zipMsg : null}</p>
           </div>
 
-          <div className="mt-2 border-2 border-ds-sky-border bg-ds-surface p-6 text-ds-on-surface" aria-live="polite">
+          <div className="mt-2 rounded-ds bg-ds-surface p-6 text-ds-on-surface shadow-ds" aria-live="polite">
             {county && <p className="ds-label text-ds-accent-active">{county} County · provider participation information is not yet available</p>}
             <p className="ds-section-title text-ds-primary">{sel.name}</p>
             <p className="ds-body-lg mt-1 text-ds-text-2">{sel.counties.length} counties · including {sel.cities.join(", ")}</p>
