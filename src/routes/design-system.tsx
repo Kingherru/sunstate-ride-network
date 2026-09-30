@@ -57,7 +57,7 @@ const CONTRAST = [
   ["Dark text on orange button", "5.45:1", "AA"],
   ["Blue text on orange button", "4.23:1", "Fails AA (normal text) — not used"],
   ["White text on brand orange #E07A1F", "3.01:1", "Fails AA — never used"],
-  ["White text on action orange #BE5200", "5.36:1", "AA — used for all orange buttons"],
+  ["White text on action orange #BE5200", "4.78:1", "AA — used for all orange buttons"],
   ["Orange “NEMT” on white", "3.01:1", "Large/brand text only (AA large)"],
   ["Orange “NEMT” on blue", "4.23:1", "AA large"],
   ["Blue on light sky blue", "11.25:1", "AA / AAA"],
