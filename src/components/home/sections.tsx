@@ -47,7 +47,7 @@ export function Hero() {
 export function Paths() {
   return (
     <section id="paths" aria-labelledby="paths-title" className="bg-ds-bg py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mfn-container">
         <h2 id="paths-title" className="ds-page-title max-w-2xl text-ds-primary">What brings you to My Florida NEMT?</h2>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-12">
@@ -100,7 +100,7 @@ const SERVICES = [
 export function Services() {
   return (
     <section id="services" aria-labelledby="services-title" className="bg-ds-bg py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-start">
+      <div className="mfn-container grid gap-12 lg:grid-cols-2 lg:items-start">
         <div className="lg:sticky lg:top-28">
           <p className="ds-label text-ds-accent-active">Services</p>
           <h2 id="services-title" className="ds-page-title mt-2 text-ds-primary">Transportation needs are different. The starting point should be simple.</h2>
@@ -140,7 +140,7 @@ const PAINS = [
 export function Founder() {
   return (
     <section id="about" aria-labelledby="about-title" className="bg-ds-sand py-20 text-ds-on-soft sm:py-28 scroll-mt-20">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1fr] lg:items-center">
+      <div className="mfn-container grid gap-12 lg:grid-cols-[0.8fr_1fr] lg:items-center">
         <figure className="relative mx-auto w-full max-w-md lg:max-w-none">
           <div className="aspect-[5/6] overflow-hidden rounded-ds"><Img img={IMG.founder} className="object-[60%_center]" /></div>
           <figcaption className="ds-caption mt-2">Representative photo of a working Florida provider.</figcaption>
@@ -175,7 +175,7 @@ export function Membership() {
   return (
     <section id="membership" aria-labelledby="member-title" className="relative overflow-hidden bg-ds-primary py-20 text-ds-on-primary sm:py-28">
       <LinePattern preset="top-right" tone="light" opacity={0.06} />
-      <div className="relative mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center">
+      <div className="relative mfn-container grid gap-12 lg:grid-cols-2 lg:items-center">
         <div>
           <p className="ds-label text-ds-accent">Provider membership</p>
           <h2 id="member-title" className="ds-page-title mt-2">Try the complete provider network free for 60 days.</h2>
@@ -204,7 +204,7 @@ export function Training() {
   ];
   return (
     <section id="resources" aria-labelledby="training-title" className="bg-ds-subtle py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mfn-container">
         <div id="training" className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <p className="ds-label text-ds-accent-active">Training & resources</p>

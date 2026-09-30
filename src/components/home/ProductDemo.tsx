@@ -144,7 +144,7 @@ export function ProductDemo() {
 
   return (
     <section id="providers" aria-labelledby="demo-title" className="relative overflow-hidden bg-ds-bg py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mfn-container">
         <div className="max-w-3xl">
           <p className="ds-label text-ds-accent-active">For providers</p>
           <h2 id="demo-title" className="ds-page-title mt-2 text-ds-primary">Built around the way NEMT providers actually work.</h2>

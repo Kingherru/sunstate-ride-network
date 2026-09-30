@@ -37,7 +37,7 @@ export function HowItWorks() {
 
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="bg-ds-subtle py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mfn-container">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="ds-label text-ds-accent-active">How the network works</p>

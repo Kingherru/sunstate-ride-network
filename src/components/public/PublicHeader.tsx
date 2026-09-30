@@ -34,7 +34,7 @@ export function PublicHeader() {
   const linkCls = cn("ds-transition rounded-ds-sm px-2 py-2 hover:bg-ds-primary-hover", focus);
   return (
     <header className="sticky top-0 z-50 bg-ds-primary text-ds-on-primary">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div className="mfn-container flex items-center justify-between gap-3py-3">
         <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="My Florida NEMT home">
           <BrandName on="blue" className="text-lg sm:text-xl" />
         </Link>

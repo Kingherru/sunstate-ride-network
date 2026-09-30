@@ -52,7 +52,7 @@ export function FloridaMap() {
 
   return (
     <section id="coverage" aria-labelledby="map-title" className="bg-ds-sky py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+      <div className="mfn-container grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <div className="text-ds-on-soft">
           <p className="ds-label text-ds-accent-active">Florida network</p>
           <h2 id="map-title" className="ds-page-title mt-2 text-ds-primary">Connections across Florida start here.</h2>
