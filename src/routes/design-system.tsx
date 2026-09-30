@@ -4,7 +4,7 @@ import { BrandName } from "@/components/brand/BrandName";
 import { LinePattern, LINE_PATTERN_PRESETS, type LinePatternPreset } from "@/components/brand/LinePattern";
 import { DsButton, DsLink, DsField, DsInput, DsSelect, DsTextarea, DsCheckbox, DsRadio } from "@/components/ds/controls";
 import { DsBadge, DsAlert, DsLoading, DsSkeleton, DsEmpty, DsModal } from "@/components/ds/feedback";
-import { btnAction, btnBlue, btnLight, btnOnBlue } from "@/components/home/buttons";
+import { btnAction, btnBlue, btnLight } from "@/components/home/buttons";
 import { CalendarPlus, Monitor, Network, Phone, Smartphone, Tablet } from "lucide-react";
 import { DsCard, DsSoftBox, DsTabs, DsPublicHeader, DsPortalMenu } from "@/components/ds/layout";
 
