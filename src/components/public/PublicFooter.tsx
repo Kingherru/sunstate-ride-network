@@ -35,20 +35,20 @@ const linkCls = "ds-transition rounded-sm opacity-90 hover:opacity-100 hover:und
 export function PublicFooter() {
   return (
     <footer className="bg-ds-primary text-ds-on-primary">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+      <div className="mfn-container py-20">
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,1fr)] lg:gap-16">
           <div id="contact">
-            <BrandName on="blue" className="text-xl" />
-            <p className="ds-body mt-3 max-w-xs opacity-90">A Florida network connecting riders, facilities and independent NEMT providers.</p>
-            <ul className="ds-body mt-5 space-y-1.5">
+            <BrandName on="blue" className="text-2xl" />
+            <p className="ds-body-lg mt-4 max-w-sm opacity-90">A Florida network connecting riders, facilities and independent NEMT providers.</p>
+            <ul className="ds-body-lg mt-6 space-y-2">
               <li>{PUBLIC_PHONE ? <a className={linkCls} href={phoneHref(PUBLIC_PHONE)}>{PUBLIC_PHONE}</a> : <span>Call Us</span>}</li>
               <li><a className={linkCls} href={`mailto:${PUBLIC_EMAIL}`}>{PUBLIC_EMAIL}</a></li>
             </ul>
           </div>
           {COLS.map((c) => (
             <div key={c.title}>
-              <h2 className="ds-label">{c.title}</h2>
-              <ul className="ds-body mt-3 space-y-2">
+              <h2 className="ds-subheading">{c.title}</h2>
+              <ul className="ds-body-lg mt-4 space-y-3">
                 {c.items.map((i) => (
                   <li key={i.label}>
                     {i.to ? <Link to={i.to} className={linkCls}>{i.label}</Link> : <a href={i.href} className={linkCls}>{i.label}</a>}
@@ -58,7 +58,7 @@ export function PublicFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-col gap-3 border-t border-ds-primary-hover pt-6 ds-caption !text-ds-on-primary sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-16 flex flex-col gap-4 border-t border-ds-on-primary/20 pt-8 ds-body lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           <p className="opacity-80">© {new Date().getFullYear()} My Florida NEMT. Non-emergency transportation only — for emergencies call 911.</p>
           <div>
             <h2 className="sr-only">Legal</h2>

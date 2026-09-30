@@ -20,7 +20,7 @@ const Row = ({ k, v }: { k: string; v: string }) => (
   </div>
 );
 const Chip = ({ children, on }: { children: React.ReactNode; on?: boolean }) => (
-  <span className={cn("ds-caption inline-flex items-center gap-1 rounded-full px-2.5 py-1 !font-semibold", on ? "bg-ds-primary !text-ds-on-primary" : "bg-ds-subtle !text-ds-on-subtle")}>{children}</span>
+  <span className={cn("ds-caption inline-flex items-center gap-1 px-2.5 py-1 !font-semibold", on ? "bg-ds-primary !text-ds-on-primary" : "bg-ds-subtle !text-ds-on-subtle")}>{children}</span>
 );
 
 function Preview({ id }: { id: Id }) {
@@ -144,14 +144,14 @@ export function ProductDemo() {
 
   return (
     <section id="providers" aria-labelledby="demo-title" className="relative overflow-hidden bg-ds-bg py-20 sm:py-28 scroll-mt-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mfn-container-wide">
         <div className="max-w-3xl">
           <p className="ds-label text-ds-accent-active">For providers</p>
           <h2 id="demo-title" className="ds-page-title mt-2 text-ds-primary">Built around the way NEMT providers actually work.</h2>
           <p className="ds-body-lg mt-4 text-ds-text-2">Useful network and organization tools without forcing providers into another complicated dispatch system.</p>
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,20rem)_1fr]">
+        <div className="mt-12 grid gap-8 lg:grid-cols-[30%_1fr]">
           <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
             {FEATURES.map((f, i) => {
               const on = f.id === active;
@@ -168,27 +168,27 @@ export function ProductDemo() {
                   onClick={() => setActive(f.id)}
                   onKeyDown={(e) => onKey(e, i)}
                   className={cn(
-                    "ds-transition flex min-h-11 shrink-0 items-center gap-3 rounded-ds-sm px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus",
-                    on ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-hover",
+                    "ds-transition flex min-h-14 shrink-0 items-center gap-4 border-l-4 px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus",
+                    on ? "border-ds-accent bg-ds-primary text-ds-on-primary" : "border-transparent bg-ds-subtle text-ds-primary hover:bg-ds-hover",
                   )}
                 >
                   <Icon className={cn("size-5 shrink-0", on && "text-ds-accent")} aria-hidden />
-                  <span className="ds-button-text whitespace-nowrap">{f.label}</span>
+                  <span className="ds-button-text whitespace-nowrap text-[1.125rem]">{f.label}</span>
                 </button>
               );
             })}
           </div>
 
           {/* App-window composition */}
-          <div className="overflow-hidden rounded-ds bg-ds-primary p-2 shadow-ds sm:p-3">
+          <div className="overflow-hidden bg-ds-primary p-2 sm:p-3">
             <div className="flex items-center justify-between px-2 pb-2 sm:px-3 sm:pb-3">
               <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
               <span className="ds-caption !text-ds-on-primary opacity-80">Preview</span>
             </div>
-            <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className="min-h-[22rem] rounded-ds-sm bg-ds-surface p-4 text-ds-on-surface sm:p-6">
-              <p className="ds-subheading text-ds-primary">{current.label}</p>
-              <p className="ds-support mb-5">{current.blurb}</p>
-              <div key={active} className="ds-fade-in"><Preview id={active} /></div>
+            <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className="min-h-[28rem] bg-ds-surface p-5 text-ds-on-surface sm:p-10">
+              <p className="ds-section-title text-ds-primary">{current.label}</p>
+              <p className="ds-body-lg mb-8 text-ds-text-2">{current.blurb}</p>
+              <div key={active} className="ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
             </div>
           </div>
         </div>

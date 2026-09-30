@@ -121,8 +121,8 @@
   --ds-error: #A5281B;
   --ds-error-soft: #FBEAEA;
 
-  --ds-radius: 0.5rem;
-  --ds-radius-sm: 0.375rem;
+  --ds-radius: 0px;
+  --ds-radius-sm: 0px;
   --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.06), 0 2px 8px rgb(24 32 42 / 0.05);
 
   background: var(--ds-bg);
@@ -135,7 +135,7 @@
   --ds-bg: var(--mfn-gray);
   --ds-surface: var(--mfn-white);
   --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.05);
-  --ds-radius: 0.375rem;
+  --ds-radius: 0px;
 }
 
 /* Theme-token utilities */
@@ -210,3 +210,16 @@
 @utility ds-route { stroke-dasharray: 6 14; animation: ds-route 2.4s linear infinite; }
 @keyframes ds-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
 @utility ds-draw { stroke-dasharray: 1000; animation: ds-draw 1.2s ease-out both; }
+
+/* Square geometry: every rectangular element in the public theme has 0 radius.
+   Only true circles (.ds-circle) stay round. */
+.theme-public *:not(.ds-circle) { border-radius: 0 !important; }
+
+/* Public containers */
+.theme-public { --mfn-gutter: 18px; }
+@media (min-width: 640px) { .theme-public { --mfn-gutter: 28px; } }
+@media (min-width: 1024px) { .theme-public { --mfn-gutter: 32px; } }
+@media (min-width: 1536px) { .theme-public { --mfn-gutter: 48px; } }
+@utility mfn-container { width: min(100% - 2 * var(--mfn-gutter, 18px), 94vw, 1600px); margin-inline: auto; }
+@utility mfn-container-wide { width: min(100% - 2 * var(--mfn-gutter, 18px), 94vw, 1760px); margin-inline: auto; }
+@utility mfn-read { max-width: 42rem; }

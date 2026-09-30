@@ -31,14 +31,14 @@ function PhoneArea({ className }: { className?: string }) {
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
-  const linkCls = cn("ds-transition rounded-ds-sm px-2 py-2 hover:bg-ds-primary-hover", focus);
+  const linkCls = cn("ds-transition px-3 py-2.5 hover:bg-ds-primary-hover", focus);
   return (
     <header className="sticky top-0 z-50 bg-ds-primary text-ds-on-primary">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div className="mfn-container flex min-h-[76px] items-center justify-between gap-4 py-3">
         <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="My Florida NEMT home">
-          <BrandName on="blue" className="text-lg sm:text-xl" />
+          <BrandName on="blue" className="text-xl sm:text-2xl" />
         </Link>
-        <nav aria-label="Main" className="hidden items-center gap-1 ds-body xl:flex">
+        <nav aria-label="Main" className="hidden items-center gap-3 ds-body text-[1.0625rem] xl:flex">
           {NAV.slice(0, 3).map((n) => <a key={n.label} href={n.href} className={linkCls}>{n.label}</a>)}
           <Link to="/shop" className={linkCls}>Training</Link>
           <a href={NAV[3].href} className={linkCls}>{NAV[3].label}</a>
@@ -46,7 +46,7 @@ export function PublicHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <PhoneArea className="ds-nudge hidden lg:inline-flex" />
-          <a href={LINKS.book} className={cn("ds-nudge ds-button-text ds-transition inline-flex min-h-11 items-center rounded-ds-sm bg-ds-accent px-4 text-ds-on-accent hover:bg-ds-accent-hover", focus)}>
+          <a href={LINKS.book} className={cn("ds-nudge ds-button-text ds-transition inline-flex min-h-12 items-center bg-ds-accent px-6 text-[1.0625rem] text-ds-on-accent hover:bg-ds-accent-hover", focus)}>
             Book a Trip
           </a>
           <button
