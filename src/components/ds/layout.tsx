@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { CalendarPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandName } from "@/components/brand/BrandName";
 
 export function DsCard({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-ds border border-ds-border bg-ds-surface text-ds-on-surface p-5 sm:p-6", className)}>{children}</div>;
+  return <div className={cn("rounded-ds bg-ds-surface text-ds-on-surface p-5 sm:p-6 shadow-ds", className)}>{children}</div>;
 }
 
 export type SoftTone = "sky" | "green" | "peach" | "sand" | "gray";
@@ -57,18 +58,18 @@ export function DsTabs({ tabs }: { tabs: { id: string; label: string; content: R
   );
 }
 
-/** Public site header — solid blue. Visual only; links are placeholders for review. */
+/** Public site header — solid blue. Uppercase nav; actions are icon + text, no background. */
 export function DsPublicHeader({ links = ["Services", "Service Areas", "For Providers", "Training"] }: { links?: string[] }) {
   return (
     <header className="bg-ds-primary text-ds-on-primary">
       <div className="mx-auto max-w-6xl flex items-center justify-between gap-4 px-5 py-4">
         <BrandName on="blue" className="text-lg sm:text-xl" />
-        <nav className="hidden md:flex items-center gap-6 ds-body">
+        <nav className="hidden md:flex items-center gap-6 ds-button-text text-[0.9375rem] uppercase tracking-[0.08em]">
           {links.map((l) => (
-            <span key={l} className="ds-transition cursor-pointer opacity-90 hover:opacity-100 hover:underline underline-offset-4">{l}</span>
+            <span key={l} className="ds-transition cursor-pointer hover:opacity-80">{l}</span>
           ))}
         </nav>
-        <span className="ds-button-text rounded-ds-sm bg-ds-accent text-ds-on-accent px-4 py-2">Request a Ride</span>
+        <span className="ds-button-text inline-flex items-center gap-2 uppercase tracking-[0.04em] text-ds-accent"><CalendarPlus className="size-5" aria-hidden />Book a Trip</span>
       </div>
     </header>
   );
