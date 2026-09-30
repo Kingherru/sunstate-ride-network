@@ -48,11 +48,11 @@ export function FloridaMap() {
     setZipMsg(`${zip} is in the ${REGIONS.find((x) => x.id === r)!.name} region.`);
   };
 
-  const fieldCls = "ds-body w-full min-h-11 rounded-ds-sm border border-ds-border bg-ds-surface px-3 text-ds-on-surface focus-visible:outline-none focus-visible:border-ds-focus focus-visible:ring-2 focus-visible:ring-ds-focus/30";
+  const fieldCls = "ds-body-lg w-full min-h-13 border border-ds-border bg-ds-surface px-3 text-ds-on-surface focus-visible:outline-none focus-visible:border-ds-focus focus-visible:ring-2 focus-visible:ring-ds-focus/30";
 
   return (
     <section id="coverage" aria-labelledby="map-title" className="bg-ds-sky py-20 sm:py-28 scroll-mt-20">
-      <div className="mfn-container grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+      <div className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-16 lg:items-center">
         <div className="text-ds-on-soft">
           <p className="ds-label text-ds-accent-active">Florida network</p>
           <h2 id="map-title" className="ds-page-title mt-2 text-ds-primary">Connections across Florida start here.</h2>
@@ -61,14 +61,14 @@ export function FloridaMap() {
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
             {MODES.map((m) => (
               <button key={m.id} role="radio" aria-checked={mode === m.id} onClick={() => setMode(m.id)}
-                className={cn("ds-button-text ds-transition min-h-11 rounded-full px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus",
+                className={cn("ds-button-text ds-transition min-h-12 px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus",
                   mode === m.id ? "bg-ds-primary text-ds-on-primary" : "bg-ds-surface text-ds-primary hover:bg-ds-hover")}>
                 {m.label}
               </button>
             ))}
           </div>
 
-          <div className="mt-5 max-w-md">
+          <div className="mt-6 max-w-xl">
             {mode === "region" && (
               <label className="block"><span className="ds-label">Choose a region</span>
                 <select className={cn(fieldCls, "mt-1.5")} value={region} onChange={(e) => setRegion(e.target.value as RegionId)}>
@@ -93,40 +93,39 @@ export function FloridaMap() {
               <form onSubmit={onZip} className="flex items-end gap-2">
                 <label className="block flex-1"><span className="ds-label">Florida ZIP code</span>
                   <input inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))} className={cn(fieldCls, "mt-1.5")} placeholder="e.g. 32801" aria-describedby="zip-msg" /></label>
-                <button className="ds-button-text min-h-11 rounded-ds-sm bg-ds-primary px-4 text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus focus-visible:ring-offset-2">Find</button>
+                <button className="ds-button-text min-h-13 bg-ds-primary px-6 text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus focus-visible:ring-offset-2">Find</button>
               </form>
             )}
             <p id="zip-msg" aria-live="polite" className="ds-support mt-2 min-h-6">{mode === "zip" ? zipMsg : null}</p>
           </div>
 
-          <div className="mt-2 rounded-ds bg-ds-surface p-5 text-ds-on-surface" aria-live="polite">
-            <p className="ds-subheading text-ds-primary">{sel.name}</p>
-            <p className="ds-support mt-1">{sel.counties.length} counties · including {sel.cities.join(", ")}</p>
-            <p className="ds-caption mt-3">{sel.counties.join(" · ")}</p>
+          <div className="mt-2 bg-ds-surface p-7 text-ds-on-surface" aria-live="polite">
+            <p className="ds-section-title text-ds-primary">{sel.name}</p>
+            <p className="ds-body-lg mt-1 text-ds-text-2">{sel.counties.length} counties · including {sel.cities.join(", ")}</p>
+            <p className="ds-body mt-4">{sel.counties.join(" · ")}</p>
           </div>
-          <p className="ds-label mt-5">Provider participation and service availability vary by location and trip requirements.</p>
+          <p className="ds-subheading mt-6 text-[1.125rem]">Provider participation and service availability vary by location and trip requirements.</p>
         </div>
 
         <div className="relative">
           <svg viewBox="0 0 430 410" role="img" aria-label={`Simplified map of Florida with ${sel.name} highlighted`} className="h-auto w-full">
             <path d={OUTLINE} fill="var(--ds-surface)" stroke="var(--ds-primary)" strokeOpacity="0.25" strokeWidth="2" strokeLinejoin="round" />
             {/* subtle road connections */}
-            <g fill="none" stroke="var(--ds-primary)" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round">
+            <g fill="none" stroke="var(--ds-primary)" strokeOpacity="0.14" strokeWidth="1" strokeLinecap="round">
               <path d="M 40 70 L 120 72 L 222 80 L 318 84" />
               <path d="M 318 84 L 350 196 L 398 300" />
               <path d="M 282 140 L 298 244 L 330 320 L 398 300" />
               <path d="M 282 140 L 350 196" />
               <path d="M 298 244 L 350 196" />
             </g>
-            <path d="M 318 84 L 282 140 L 298 244" fill="none" stroke="var(--ds-accent)" strokeOpacity="0.6" strokeWidth="2" className="ds-route" />
             {REGIONS.map((r) => {
               const on = r.id === region;
               return (
                 <g key={r.id} role="button" tabIndex={0} aria-label={`Show ${r.name}`} aria-pressed={on}
                   onClick={() => setRegion(r.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setRegion(r.id); } }}
                   className="cursor-pointer outline-none [&:focus-visible>circle:first-child]:stroke-[var(--ds-focus)]">
-                  <circle cx={r.x} cy={r.y} r={on ? 20 : 14} fill="var(--ds-primary)" fillOpacity={on ? 0.14 : 0.07} stroke="transparent" strokeWidth="3" className="ds-transition" />
-                  <circle cx={r.x} cy={r.y} r={on ? 7 : 5} fill={on ? "var(--ds-accent)" : "var(--ds-primary)"} />
+                  <circle cx={r.x} cy={r.y} r={on ? 12 : 9} fill="var(--ds-primary)" fillOpacity={on ? 0.12 : 0.0001} stroke="transparent" strokeWidth="3" className="ds-transition" />
+                  <circle cx={r.x} cy={r.y} r={on ? 5 : 3.5} fill={on ? "var(--ds-accent)" : "var(--ds-primary)"} />
                 </g>
               );
             })}
