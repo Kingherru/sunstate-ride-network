@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { BrandName } from "@/components/brand/BrandName";
 import { PUBLIC_EMAIL, PUBLIC_PHONE, phoneHref } from "@/lib/site-config";
 
-type Item = { label: string; to: string; hash?: string };
+type To = "/" | "/services" | "/how-it-works" | "/for-providers" | "/for-facilities" | "/florida-coverage" | "/shop" | "/login";
+type Item = { label: string; to: To; hash?: string };
 const COLS: { title: string; items: Item[] }[] = [
   { title: "Services", items: [
     { label: "Ambulatory", to: "/services", hash: "ambulatory" },
@@ -50,8 +51,7 @@ export function PublicFooter() {
               <ul className="ds-body-lg mt-4 space-y-3">
                 {c.items.map((i) => (
                   <li key={i.label}>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Link to={i.to as any} hash={i.hash} className={linkCls}>{i.label}</Link>
+                    <Link to={i.to} hash={i.hash} className={linkCls}>{i.label}</Link>
                   </li>
                 ))}
               </ul>
