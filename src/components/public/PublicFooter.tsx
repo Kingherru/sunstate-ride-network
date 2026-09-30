@@ -15,12 +15,12 @@ const COLS: { title: string; items: Item[] }[] = [
     { label: "How It Works", href: "/#how-it-works" },
     { label: "Florida Coverage", href: "/#coverage" },
     { label: "For Providers", href: "/#providers" },
-    { label: "For Facilities", href: "/#paths" },
+    { label: "Membership", href: "/#membership" },
   ] },
   { title: "Learn", items: [
     { label: "Resources", href: "/#resources" },
     { label: "Training", to: "/shop" },
-    { label: "About", href: "/#about" },
+    { label: "Our Story", href: "/#how-it-works" },
     { label: "Contact", href: "#contact" },
   ] },
   { title: "Account", items: [
