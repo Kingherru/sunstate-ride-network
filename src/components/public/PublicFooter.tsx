@@ -2,26 +2,25 @@ import { Link } from "@tanstack/react-router";
 import { BrandName } from "@/components/brand/BrandName";
 import { PUBLIC_EMAIL, PUBLIC_PHONE, phoneHref } from "@/lib/site-config";
 
-// TODO(routing phase): anchors below become real pages (services, coverage, about, contact, legal).
-type Item = { label: string; href?: string; to?: "/shop" | "/login" };
+type Item = { label: string; to: string; hash?: string };
 const COLS: { title: string; items: Item[] }[] = [
   { title: "Services", items: [
-    { label: "Ambulatory", href: "/#services" },
-    { label: "Wheelchair", href: "/#services" },
-    { label: "Stretcher or Gurney", href: "/#services" },
-    { label: "Medical Delivery", href: "/#services" },
+    { label: "Ambulatory", to: "/services", hash: "ambulatory" },
+    { label: "Wheelchair", to: "/services", hash: "wheelchair" },
+    { label: "Stretcher or Specialized", to: "/services", hash: "stretcher" },
+    { label: "Medical Delivery", to: "/services", hash: "delivery" },
   ] },
   { title: "Network", items: [
-    { label: "How It Works", href: "/#how-it-works" },
-    { label: "Florida Coverage", href: "/#coverage" },
-    { label: "For Providers", href: "/#providers" },
-    { label: "Membership", href: "/#membership" },
+    { label: "How It Works", to: "/how-it-works" },
+    { label: "Florida Coverage", to: "/florida-coverage" },
+    { label: "For Providers", to: "/for-providers" },
+    { label: "For Facilities", to: "/for-facilities" },
+    { label: "Membership", to: "/for-providers", hash: "membership" },
   ] },
   { title: "Learn", items: [
-    { label: "Resources", href: "/#resources" },
+    { label: "Resources", to: "/", hash: "resources" },
     { label: "Training", to: "/shop" },
-    { label: "Our Story", href: "/#how-it-works" },
-    { label: "Contact", href: "#contact" },
+    { label: "Contact", to: "/", hash: "contact" },
   ] },
   { title: "Account", items: [
     { label: "Sign In", to: "/login" },
@@ -41,7 +40,7 @@ export function PublicFooter() {
             <BrandName on="blue" className="text-2xl" />
             <p className="ds-body-lg mt-4 max-w-sm opacity-90">A Florida network connecting riders, facilities and independent NEMT providers.</p>
             <ul className="ds-body-lg mt-6 space-y-2">
-              <li>{PUBLIC_PHONE ? <a className={linkCls} href={phoneHref(PUBLIC_PHONE)}>{PUBLIC_PHONE}</a> : <span>Call Us</span>}</li>
+              <li>{PUBLIC_PHONE ? <a className={linkCls} href={phoneHref(PUBLIC_PHONE)}>{PUBLIC_PHONE}</a> : <span className="uppercase tracking-[0.04em]">Call Us</span>}</li>
               <li><a className={linkCls} href={`mailto:${PUBLIC_EMAIL}`}>{PUBLIC_EMAIL}</a></li>
             </ul>
           </div>
@@ -51,7 +50,8 @@ export function PublicFooter() {
               <ul className="ds-body-lg mt-4 space-y-3">
                 {c.items.map((i) => (
                   <li key={i.label}>
-                    {i.to ? <Link to={i.to} className={linkCls}>{i.label}</Link> : <a href={i.href} className={linkCls}>{i.label}</a>}
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <Link to={i.to as any} hash={i.hash} className={linkCls}>{i.label}</Link>
                   </li>
                 ))}
               </ul>
