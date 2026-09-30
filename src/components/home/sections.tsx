@@ -184,7 +184,7 @@ export function Paths() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               {p.actions.map((a) => (
                 <a key={a.label} href={a.href}
-                  className={a.primary ? (isProvider ? btnBlue : btnAction) : isProvider ? btnLight : btnOnBlue}>
+                  className={"primary" in a ? (isProvider ? btnBlue : btnAction) : isProvider ? btnLight : btnOnBlue}>
                   <a.icon aria-hidden />{a.label}
                 </a>
               ))}
