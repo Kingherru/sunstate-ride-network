@@ -58,7 +58,7 @@ export function PublicFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-col gap-3 border-t border-ds-primary-hover pt-6 ds-caption !text-ds-on-primary sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-16 flex flex-col gap-4 border-t border-ds-on-primary/20 pt-8 ds-body lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           <p className="opacity-80">© {new Date().getFullYear()} My Florida NEMT. Non-emergency transportation only — for emergencies call 911.</p>
           <div>
             <h2 className="sr-only">Legal</h2>
