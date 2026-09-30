@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Brand } from "@/components/shell/Brand";
+import { BrandName } from "@/components/brand/BrandName";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   return (
     <section className="p-10 max-w-2xl mx-auto text-center">
-      <h1 className="text-3xl"><Brand /></h1>
+      <h1 className="text-3xl"><span className="theme-public"><BrandName /></span></h1>
       <p className="mt-4">The My Florida NEMT rebuild is in progress.</p>
     </section>
   );

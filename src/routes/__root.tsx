@@ -12,7 +12,7 @@ import appCss from "../styles.css?url";
 import { enforceSessionPersistence } from "@/lib/session-persistence";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { Brand } from "@/components/shell/Brand";
+import { BrandName } from "@/components/brand/BrandName";
 
 function NotFoundComponent() {
   return (
@@ -42,7 +42,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "google-site-verification", content: "MjELbnAY45LuqbWT0GfTViGtbQjXgnPhWoYNhP7V0Bg" },
       { property: "og:site_name", content: "My Florida NEMT" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -78,7 +83,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen flex flex-col">
         <header className="border-b px-6 py-4 flex items-center justify-between">
-          <Link to="/"><Brand /></Link>
+          <Link to="/"><span className="theme-public"><BrandName /></span></Link>
           <nav className="flex gap-4 text-sm">
             <Link to="/shop">Training</Link>
             <Link to="/login">Sign in</Link>

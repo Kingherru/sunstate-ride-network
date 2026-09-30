@@ -60,3 +60,145 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground; font-family: system-ui, sans-serif; }
 }
+
+/* =================================================================
+ * MY FLORIDA NEMT design system (Phase 3)
+ * Scoped: only elements inside .theme-public / .theme-portal use it.
+ * Preserved training screens keep the neutral tokens above.
+ * ================================================================= */
+
+.theme-public, .theme-portal {
+  /* brand palette */
+  --mfn-blue: #13335A;
+  --mfn-orange: #E07A1F;
+  --mfn-white: #FFFFFF;
+  --mfn-gray: #F4F5F7;
+  --mfn-sky: #EAF2F8;
+  --mfn-green: #EDF4ED;
+  --mfn-peach: #FAE9DD;
+  --mfn-sand: #F5EFE5;
+  --mfn-text: #18202A;
+  --mfn-text-2: #55616F;
+  --mfn-line: #DCE1E6;
+
+  /* semantic tokens (every background has an on-background) */
+  --ds-bg: var(--mfn-white);
+  --ds-on-bg: var(--mfn-text);
+  --ds-surface: var(--mfn-white);
+  --ds-on-surface: var(--mfn-text);
+  --ds-subtle: var(--mfn-gray);
+  --ds-on-subtle: var(--mfn-text);
+  --ds-text-2: var(--mfn-text-2);
+  --ds-primary: var(--mfn-blue);
+  --ds-on-primary: #FFFFFF;
+  --ds-primary-hover: #0E2744;
+  --ds-primary-active: #0A1D33;
+  --ds-accent: var(--mfn-orange);
+  --ds-on-accent: var(--mfn-text);
+  --ds-accent-hover: #CC6C16;
+  --ds-accent-active: #B35F12;
+  --ds-border: var(--mfn-line);
+  --ds-link: var(--mfn-blue);
+  --ds-link-hover: #1F6FB2;
+  --ds-focus: #1F6FB2;
+  --ds-hover: #EEF1F4;
+  --ds-active: #E3E8ED;
+  --ds-disabled: #E6E9ED;
+  --ds-on-disabled: #6B7682;
+
+  --ds-sky: var(--mfn-sky);
+  --ds-green: var(--mfn-green);
+  --ds-peach: var(--mfn-peach);
+  --ds-sand: var(--mfn-sand);
+  --ds-on-soft: var(--mfn-text);
+
+  --ds-info: var(--mfn-blue);
+  --ds-info-soft: var(--mfn-sky);
+  --ds-success: #1E6B3A;
+  --ds-success-soft: var(--mfn-green);
+  --ds-warning: #8A4B00;
+  --ds-warning-soft: var(--mfn-peach);
+  --ds-error: #A5281B;
+  --ds-error-soft: #FBEAEA;
+
+  --ds-radius: 0.5rem;
+  --ds-radius-sm: 0.375rem;
+  --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.06), 0 2px 8px rgb(24 32 42 / 0.05);
+
+  background: var(--ds-bg);
+  color: var(--ds-on-bg);
+  font-family: "Source Sans 3", system-ui, sans-serif;
+}
+
+/* Portal: quieter. Gray page, white workspace cards, fewer accents. */
+.theme-portal {
+  --ds-bg: var(--mfn-gray);
+  --ds-surface: var(--mfn-white);
+  --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.05);
+  --ds-radius: 0.375rem;
+}
+
+/* Theme-token utilities */
+@theme inline {
+  --color-ds-bg: var(--ds-bg);
+  --color-ds-on-bg: var(--ds-on-bg);
+  --color-ds-surface: var(--ds-surface);
+  --color-ds-on-surface: var(--ds-on-surface);
+  --color-ds-subtle: var(--ds-subtle);
+  --color-ds-on-subtle: var(--ds-on-subtle);
+  --color-ds-text-2: var(--ds-text-2);
+  --color-ds-primary: var(--ds-primary);
+  --color-ds-on-primary: var(--ds-on-primary);
+  --color-ds-primary-hover: var(--ds-primary-hover);
+  --color-ds-primary-active: var(--ds-primary-active);
+  --color-ds-accent: var(--ds-accent);
+  --color-ds-on-accent: var(--ds-on-accent);
+  --color-ds-accent-hover: var(--ds-accent-hover);
+  --color-ds-accent-active: var(--ds-accent-active);
+  --color-ds-border: var(--ds-border);
+  --color-ds-link: var(--ds-link);
+  --color-ds-link-hover: var(--ds-link-hover);
+  --color-ds-focus: var(--ds-focus);
+  --color-ds-hover: var(--ds-hover);
+  --color-ds-active: var(--ds-active);
+  --color-ds-disabled: var(--ds-disabled);
+  --color-ds-on-disabled: var(--ds-on-disabled);
+  --color-ds-sky: var(--ds-sky);
+  --color-ds-green: var(--ds-green);
+  --color-ds-peach: var(--ds-peach);
+  --color-ds-sand: var(--ds-sand);
+  --color-ds-on-soft: var(--ds-on-soft);
+  --color-ds-info: var(--ds-info);
+  --color-ds-info-soft: var(--ds-info-soft);
+  --color-ds-success: var(--ds-success);
+  --color-ds-success-soft: var(--ds-success-soft);
+  --color-ds-warning: var(--ds-warning);
+  --color-ds-warning-soft: var(--ds-warning-soft);
+  --color-ds-error: var(--ds-error);
+  --color-ds-error-soft: var(--ds-error-soft);
+  --radius-ds: var(--ds-radius);
+  --radius-ds-sm: var(--ds-radius-sm);
+  --shadow-ds: var(--ds-shadow);
+  --font-heading: "Archivo", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
+}
+
+/* Typography scale (responsive, restrained) */
+@utility ds-display { font-family: var(--font-heading); font-weight: 700; font-size: clamp(2rem, 1.4rem + 2.6vw, 3.5rem); line-height: 1.08; letter-spacing: -0.015em; }
+@utility ds-page-title { font-family: var(--font-heading); font-weight: 700; font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem); line-height: 1.15; letter-spacing: -0.01em; }
+@utility ds-section-title { font-family: var(--font-heading); font-weight: 650; font-size: clamp(1.375rem, 1.15rem + 0.9vw, 1.875rem); line-height: 1.2; }
+@utility ds-subheading { font-family: var(--font-heading); font-weight: 600; font-size: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem); line-height: 1.35; }
+@utility ds-body-lg { font-family: var(--font-body); font-size: 1.1875rem; line-height: 1.6; }
+@utility ds-body { font-family: var(--font-body); font-size: 1rem; line-height: 1.6; }
+@utility ds-support { font-family: var(--font-body); font-size: 0.9375rem; line-height: 1.5; color: var(--ds-text-2); }
+@utility ds-label { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 600; line-height: 1.3; }
+@utility ds-button-text { font-family: var(--font-body); font-size: 1rem; font-weight: 600; line-height: 1.2; }
+@utility ds-caption { font-family: var(--font-body); font-size: 0.8125rem; line-height: 1.4; color: var(--ds-text-2); }
+
+/* Motion: short, small, and off for reduced-motion users */
+@keyframes ds-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@utility ds-fade-in { animation: ds-fade-in 180ms ease-out both; }
+@utility ds-transition { transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, opacity 150ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-public *, .theme-portal * { animation: none !important; transition: none !important; }
+}
