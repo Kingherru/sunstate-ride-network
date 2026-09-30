@@ -11,9 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ForProvidersRouteImport } from './routes/for-providers'
+import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
+import { Route as FloridaCoverageRouteImport } from './routes/florida-coverage'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -54,6 +59,11 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -67,6 +77,26 @@ const LoginRoute = LoginRouteImport.update({
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
   path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForProvidersRoute = ForProvidersRouteImport.update({
+  id: '/for-providers',
+  path: '/for-providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForFacilitiesRoute = ForFacilitiesRouteImport.update({
+  id: '/for-facilities',
+  path: '/for-facilities',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FloridaCoverageRoute = FloridaCoverageRouteImport.update({
+  id: '/florida-coverage',
+  path: '/florida-coverage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DesignSystemRoute = DesignSystemRouteImport.update({
@@ -229,9 +259,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/design-system': typeof DesignSystemRoute
+  '/florida-coverage': typeof FloridaCoverageRoute
+  '/for-facilities': typeof ForFacilitiesRoute
+  '/for-providers': typeof ForProvidersRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/services': typeof ServicesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -264,9 +299,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/design-system': typeof DesignSystemRoute
+  '/florida-coverage': typeof FloridaCoverageRoute
+  '/for-facilities': typeof ForFacilitiesRoute
+  '/for-providers': typeof ForProvidersRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/portal': typeof AuthenticatedPortalRoute
@@ -299,9 +339,14 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/book': typeof BookRoute
   '/design-system': typeof DesignSystemRoute
+  '/florida-coverage': typeof FloridaCoverageRoute
+  '/for-facilities': typeof ForFacilitiesRoute
+  '/for-providers': typeof ForProvidersRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/services': typeof ServicesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -336,9 +381,14 @@ export interface FileRouteTypes {
     | '/'
     | '/book'
     | '/design-system'
+    | '/florida-coverage'
+    | '/for-facilities'
+    | '/for-providers'
+    | '/how-it-works'
     | '/join'
     | '/login'
     | '/reset-password'
+    | '/services'
     | '/shop'
     | '/sitemap.xml'
     | '/admin'
@@ -371,9 +421,14 @@ export interface FileRouteTypes {
     | '/'
     | '/book'
     | '/design-system'
+    | '/florida-coverage'
+    | '/for-facilities'
+    | '/for-providers'
+    | '/how-it-works'
     | '/join'
     | '/login'
     | '/reset-password'
+    | '/services'
     | '/sitemap.xml'
     | '/admin'
     | '/portal'
@@ -405,9 +460,14 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/book'
     | '/design-system'
+    | '/florida-coverage'
+    | '/for-facilities'
+    | '/for-providers'
+    | '/how-it-works'
     | '/join'
     | '/login'
     | '/reset-password'
+    | '/services'
     | '/shop'
     | '/sitemap.xml'
     | '/_authenticated/admin'
@@ -442,9 +502,14 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   BookRoute: typeof BookRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  FloridaCoverageRoute: typeof FloridaCoverageRoute
+  ForFacilitiesRoute: typeof ForFacilitiesRoute
+  ForProvidersRoute: typeof ForProvidersRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ServicesRoute: typeof ServicesRoute
   ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -482,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -501,6 +573,34 @@ declare module '@tanstack/react-router' {
       path: '/join'
       fullPath: '/join'
       preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-providers': {
+      id: '/for-providers'
+      path: '/for-providers'
+      fullPath: '/for-providers'
+      preLoaderRoute: typeof ForProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-facilities': {
+      id: '/for-facilities'
+      path: '/for-facilities'
+      fullPath: '/for-facilities'
+      preLoaderRoute: typeof ForFacilitiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/florida-coverage': {
+      id: '/florida-coverage'
+      path: '/florida-coverage'
+      fullPath: '/florida-coverage'
+      preLoaderRoute: typeof FloridaCoverageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/design-system': {
@@ -756,9 +856,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   BookRoute: BookRoute,
   DesignSystemRoute: DesignSystemRoute,
+  FloridaCoverageRoute: FloridaCoverageRoute,
+  ForFacilitiesRoute: ForFacilitiesRoute,
+  ForProvidersRoute: ForProvidersRoute,
+  HowItWorksRoute: HowItWorksRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ServicesRoute: ServicesRoute,
   ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
