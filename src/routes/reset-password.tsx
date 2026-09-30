@@ -42,7 +42,7 @@ function ResetPasswordPage() {
       if (error) throw error;
       toast.success("Password updated. Please sign in.");
       await supabase.auth.signOut();
-      navigate({ to: "/auth" });
+      navigate({ to: "/login" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not update password");
     } finally {

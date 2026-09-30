@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -33,11 +32,6 @@ function Login() {
     navigate({ to: "/portal" });
   }
 
-  async function google() {
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/login" });
-    if (res && "error" in res && res.error) setError(String(res.error));
-  }
-
   return (
     <section className="p-10 max-w-sm mx-auto w-full">
       <h1 className="text-2xl font-semibold mb-6">Sign in</h1>
@@ -47,7 +41,6 @@ function Login() {
         {error && <p className="text-sm text-destructive">{error}</p>}
         <button className="border rounded px-3 py-2" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
       </form>
-      <button onClick={google} className="border rounded px-3 py-2 w-full mt-3">Continue with Google</button>
       <a href="/reset-password" className="block text-sm underline mt-4">Forgot password?</a>
     </section>
   );
