@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /** Shared public button styles: 4px radius, no permanent borders, 3px focus ring. */
 export const focusRing = "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus focus-visible:ring-offset-2";
-const base = "ds-button-text ds-transition inline-flex min-h-13 items-center justify-center gap-2.5 rounded-ds px-6 text-[1.0625rem] [&_svg]:size-5 [&_svg]:shrink-0";
+const base = "ds-button-text ds-cta-sweep ds-transition inline-flex min-h-13 max-w-full items-center justify-center gap-2.5 whitespace-nowrap rounded-ds px-[1.8125rem] text-[1.0625rem] [&_svg]:size-5 [&_svg]:shrink-0";
 
 /** Dark action orange, white text. */
 export const btnAction = cn(base, "bg-ds-action text-ds-on-action hover:bg-ds-action-hover active:bg-ds-action-pressed", focusRing);

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Building2, Hash, Layers, Map as MapIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FL_COUNTY_PATHS, FL_VIEWBOX, project } from "@/lib/florida-counties";
+import { HomeReveal } from "./HomeReveal";
 
 type RegionId = "panhandle" | "northeast" | "north-central" | "central" | "tampa-bay" | "southwest" | "southeast";
 
@@ -46,7 +47,7 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "region", label: "Region" }, { id: "county", label: "County" }, { id: "city", label: "City" }, { id: "zip", label: "ZIP code" },
 ];
 
-export function FloridaMap({ page = false }: { page?: boolean } = {}) {
+export function FloridaMap({ page = false, motion = false }: { page?: boolean; motion?: boolean } = {}) {
   const [mode, setMode] = useState<Mode>("region");
   const [region, setRegion] = useState<RegionId>("central");
   const [zip, setZip] = useState("");
@@ -69,11 +70,11 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
 
   return (
     <section id={page ? "map" : "coverage"} aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
-      <div className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-12 lg:items-center">
+      <HomeReveal disabled={!motion} className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-12 lg:items-center">
         <div className="text-ds-on-soft">
           {page && <p className="ds-label text-ds-accent-active">Explore the map</p>}
-          <h2 id="map-title" className={cn("ds-page-title text-ds-primary", page && "mt-2")}>{page ? "Explore by region, county, city or ZIP code." : "Connections across Florida start here."}</h2>
-          <p className="ds-body-lg mt-4">My Florida NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
+          <h2 id="map-title" className={cn("ds-page-title uppercase text-ds-primary", page && "mt-2")}>{page ? "Explore by region, county, city or ZIP code." : "CONNECTIONS ACROSS FLORIDA START HERE."}</h2>
+          <p className="ds-body-lg mt-4">MY FLORIDA NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
 
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
             {MODES.map((m) => { const MIcon = { region: MapIcon, county: Layers, city: Building2, zip: Hash }[m.id]; return (
@@ -136,7 +137,7 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
                 <path key={name} d={d} strokeWidth={isCounty ? 1.6 : 0.6} strokeLinejoin="round"
                   fill={isCounty ? "var(--ds-accent)" : inRegion ? (county ? "var(--ds-peach)" : "var(--ds-accent)") : "var(--ds-surface)"}
                   stroke="var(--ds-primary)" strokeOpacity={isCounty ? 1 : 0.45}
-                  className="ds-transition cursor-pointer hover:opacity-80"
+                  className="cursor-pointer transition-[fill,stroke,opacity] duration-300 hover:opacity-80"
                   onClick={() => { setRegion(COUNTY_REGION[name]); setCounty(name); setMarker(null); }}>
                   <title>{`${name} County`}</title>
                 </path>
@@ -149,7 +150,7 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
           {marker && <p className="ds-support mt-1 text-center">{marker.label}</p>}
           {/* County boundaries: US Census Bureau (public domain). Region groupings are approximate. */}
         </div>
-      </div>
+      </HomeReveal>
     </section>
   );
 }

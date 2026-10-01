@@ -23,7 +23,7 @@ export const webPageLd = (path: string, name: string, description: string, type 
   name,
   description,
   url: `${SITE}${path}`,
-  isPartOf: { "@type": "WebSite", name: "My Florida NEMT", url: `${SITE}/` },
+  isPartOf: { "@type": "WebSite", name: "MY FLORIDA NEMT", url: `${SITE}/` },
 });
 
 /** Interior page head: metadata + canonical + WebPage and BreadcrumbList JSON-LD. */
@@ -58,7 +58,7 @@ export function PageHero({ eyebrow, title, intro, img, children, crumb }: { crum
         </div>
       )}
       <div className={cn("relative mfn-container pb-12 pt-8 lg:py-24", !img && "py-14 lg:py-20")}>
-        <div className={cn(img ? "max-w-2xl lg:max-w-[48%]" : "max-w-4xl")}>
+        <div className={cn(img ? "max-w-2xl lg:max-w-[48%]" : "mx-auto max-w-4xl text-center")}>
           {crumb && (
             <nav aria-label="Breadcrumb" className="ds-support mb-5 !text-ds-on-primary">
               <ol className="flex flex-wrap items-center gap-2 uppercase tracking-[0.06em] opacity-90">
@@ -71,19 +71,19 @@ export function PageHero({ eyebrow, title, intro, img, children, crumb }: { crum
           <p className="ds-label tracking-wide text-ds-accent">{eyebrow}</p>
           <h1 id="page-title" className="ds-display mt-4 uppercase">{title}</h1>
           <div className="ds-body-lg mt-5 max-w-[46rem] space-y-3 text-[1.1875rem] opacity-95 sm:text-[1.25rem]">{intro}</div>
-          {children && <div className="mt-7 flex flex-col gap-3 sm:flex-row">{children}</div>}
+           {children && <div className={cn("mt-7 flex flex-col gap-3 sm:flex-row", !img && "justify-center")}>{children}</div>}
         </div>
       </div>
     </section>
   );
 }
 
-export function SectionHead({ eyebrow, title, intro, id, onBlue }: { eyebrow?: string; title: string; intro?: React.ReactNode; id: string; onBlue?: boolean }) {
+export function SectionHead({ eyebrow, title, intro, id, onBlue, align = "center" }: { eyebrow?: string; title: string; intro?: React.ReactNode; id: string; onBlue?: boolean; align?: "center" | "left" }) {
   return (
-    <div className="max-w-3xl">
+    <div className={cn("max-w-3xl", align === "center" && "mx-auto text-center")}>
       {eyebrow && <p className={cn("ds-label", onBlue ? "text-ds-accent" : "text-ds-accent-active")}>{eyebrow}</p>}
-      <h2 id={id} className={cn("ds-page-title mt-2", !onBlue && "text-ds-primary")}>{title}</h2>
-      {intro && <div className={cn("ds-body-lg mfn-read mt-4", !onBlue && "text-ds-text-2")}>{intro}</div>}
+      <h2 id={id} className={cn("ds-page-title mt-2 uppercase", !onBlue && "text-ds-primary")}>{title}</h2>
+      {intro && <div className={cn("ds-body-lg mfn-read mt-4", align === "center" && "mx-auto", !onBlue && "text-ds-text-2")}>{intro}</div>}
     </div>
   );
 }
@@ -121,7 +121,7 @@ export function NonEmergencyNotice({ className }: { className?: string }) {
   return (
     <aside aria-label="Non-emergency notice" className={cn("flex gap-4 rounded-ds bg-ds-sand p-5 text-ds-on-soft sm:p-6", className)}>
       <Info className="mt-0.5 size-6 shrink-0 text-ds-primary" aria-hidden />
-      <p className="ds-body-lg">My Florida NEMT is for planned, non-emergency transportation coordination. It is not an emergency service. <strong>For a medical emergency, call 911.</strong></p>
+      <p className="ds-body-lg">MY FLORIDA NEMT is for planned, non-emergency transportation coordination. It is not an emergency service. <strong>For a medical emergency, call 911.</strong></p>
     </aside>
   );
 }
@@ -134,7 +134,7 @@ export function CtaBand({ title, text, primary, secondary }: { title: string; te
     <section aria-labelledby="cta-title" className="mfn-section bg-ds-subtle">
       <div className="mfn-container flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
         <div className="max-w-2xl">
-          <h2 id="cta-title" className="ds-page-title text-ds-primary">{title}</h2>
+           <h2 id="cta-title" className="ds-page-title uppercase text-ds-primary">{title}</h2>
           <p className="ds-body-lg mt-3 text-ds-text-2">{text}</p>
         </div>
         <div className="flex shrink-0 flex-col gap-3 sm:flex-row">

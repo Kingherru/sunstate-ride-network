@@ -39,7 +39,7 @@ const NOT = [
   "Not an emergency transportation service",
   "Not a guarantee that every request will be accepted",
   "Not a replacement for a provider’s licensing, insurance or compliance responsibilities",
-  "Not a claim that My Florida NEMT directly operates every trip shown in the network",
+  "Not a claim that MY FLORIDA NEMT directly operates every trip shown in the network",
 ];
 
 const FAQ = [
@@ -47,7 +47,7 @@ const FAQ = [
   { q: "Can facilities use the network?", a: "Yes. Hospitals, care communities, medical offices and case managers can request trips. Facility accounts for teams are being prepared." },
   { q: "Can providers share trips with other providers?", a: "Yes. Provider-to-provider sharing is a core part of the network: a provider can offer a trip it can’t cover, and another participating provider can accept it." },
   { q: "Is service available in every Florida county?", a: "Not yet guaranteed. The network is built around all 67 counties, but participation is still growing and availability depends on the trip, timing, equipment and participating providers." },
-  { q: "Is My Florida NEMT an emergency service?", a: "No. It is for planned, non-emergency transportation. For a medical emergency, call 911." },
+  { q: "Is MY FLORIDA NEMT an emergency service?", a: "No. It is for planned, non-emergency transportation. For a medical emergency, call 911." },
   { q: "Can the network be used from a phone or tablet?", a: "Yes. Requests and provider tools are designed to work on desktop, tablet and mobile." },
 ];
 
@@ -68,7 +68,7 @@ function HowPage() {
         crumb="How It Works"
         eyebrow="HOW IT WORKS"
         title="One network. Two ways to connect."
-        intro={<p>My Florida NEMT gives customers and facilities a public way to request planned transportation — and gives independent providers a way to connect and share trips with each other. Both paths matter equally.</p>}
+        intro={<p>MY FLORIDA NEMT gives customers and facilities a public way to request planned transportation — and gives independent providers a way to connect and share trips with each other. Both paths matter equally.</p>}
       >
         <HeroActions secondary="join" />
       </PageHero>
@@ -86,7 +86,7 @@ function HowPage() {
 
       <section aria-labelledby="role-title" className="mfn-section bg-ds-primary text-ds-on-primary">
         <div className="mfn-container">
-          <SectionHead onBlue id="role-title" eyebrow="Our role" title="What My Florida NEMT does — and what it isn’t." />
+          <SectionHead onBlue id="role-title" eyebrow="Our role" title="What MY FLORIDA NEMT does — and what it isn’t." />
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <div className="rounded-ds bg-ds-primary-hover p-6 sm:p-8">
               <h3 className="ds-subheading flex items-center gap-2"><Network className="size-5 text-ds-accent" aria-hidden />What we do</h3>
@@ -102,7 +102,7 @@ function HowPage() {
 
       <section aria-labelledby="faq-title" className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-14">
-          <SectionHead id="faq-title" eyebrow="FAQ" title="Common questions" />
+          <SectionHead align="left" id="faq-title" eyebrow="FAQ" title="Common questions" />
           <div className="divide-y divide-ds-border">
             {FAQ.map((f) => (
               <details key={f.q} className="group py-2">

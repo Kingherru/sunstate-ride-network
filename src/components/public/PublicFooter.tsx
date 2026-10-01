@@ -52,7 +52,7 @@ export function PublicFooter() {
           </div>
           {COLS.map((c) => (
             <nav key={c.title} aria-label={`Footer ${c.title}`}>
-              <h2 className="ds-label uppercase tracking-[0.08em] text-ds-accent">{c.title}</h2>
+              <p className="ds-label uppercase tracking-[0.08em] text-ds-accent">{c.title}</p>
               <ul className="ds-body mt-5 space-y-3.5">
                 {c.items.map((i) => (
                   <li key={i.label}><Link to={i.to} hash={i.hash} className={linkCls}>{i.label}</Link></li>
@@ -62,7 +62,7 @@ export function PublicFooter() {
           ))}
         </div>
         <div className="mt-14 flex flex-col gap-5 border-t border-ds-on-primary/20 pt-8 ds-body lg:flex-row lg:items-center lg:justify-between">
-          <p className="opacity-80">© {new Date().getFullYear()} My Florida NEMT. Non-emergency transportation only — for emergencies call 911.</p>
+          <p className="opacity-80">© {new Date().getFullYear()} MY FLORIDA NEMT. Non-emergency transportation only — for emergencies call 911.</p>
           <nav aria-label="Legal">
             <ul className="flex flex-wrap gap-x-7 gap-y-3">
               {LEGAL.map((i) => <li key={i.label}><Link to={i.to} className={linkCls}>{i.label}</Link></li>)}

@@ -29,7 +29,7 @@ function ActionBlocks({ className, full }: { className?: string; full?: boolean 
   return (
     <div className={cn("items-center gap-5", full ? "flex flex-col items-start" : "flex", className)}>
       {PUBLIC_PHONE ? (
-        <a href={phoneHref(PUBLIC_PHONE)} className={cn(item, "text-ds-on-primary hover:opacity-80", focus)} aria-label={`Call My Florida NEMT at ${PUBLIC_PHONE}`}>
+        <a href={phoneHref(PUBLIC_PHONE)} className={cn(item, "text-ds-on-primary hover:opacity-80", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
           <Phone aria-hidden />{PUBLIC_PHONE}
         </a>
       ) : (
@@ -47,7 +47,7 @@ export function PublicHeader() {
   return (
     <header className="sticky top-0 z-50 bg-ds-primary text-ds-on-primary" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}>
       <div className="mfn-container flex min-h-[76px] items-center justify-between gap-4 py-3">
-        <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="My Florida NEMT home">
+        <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="MY FLORIDA NEMT home">
           <BrandName on="blue" className="text-xl sm:text-2xl" />
         </Link>
         <nav aria-label="Main" className="hidden items-center 2xl:flex">

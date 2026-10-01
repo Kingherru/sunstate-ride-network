@@ -21,7 +21,7 @@ export function LegalPage({ crumb, title, intro, dateLabel, date, sections }: { 
           <div className="max-w-[46rem]">
             {sections.map((s) => (
               <section key={s.id} id={s.id} aria-labelledby={`${s.id}-h`} className="scroll-mt-28 border-b border-ds-border py-8 first:pt-0 last:border-0">
-                <h2 id={`${s.id}-h`} className="ds-section-title text-ds-primary">{s.h}</h2>
+                <h2 id={`${s.id}-h`} className="ds-section-title uppercase text-ds-primary">{s.h}</h2>
                 <div className="ds-body-lg mt-3 space-y-3 [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-6">{s.body}</div>
               </section>
             ))}

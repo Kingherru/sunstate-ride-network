@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicPage } from "@/components/public/PublicPage";
 import { PageHero, pageHead } from "@/components/public/page-kit";
 
-const DESC = "A list of every public page on the My Florida NEMT website, grouped for customers, facilities and providers.";
+const DESC = "A list of every public page on the MY FLORIDA NEMT website, grouped for customers, facilities and providers.";
 
 export const Route = createFileRoute("/sitemap")({
   head: () => pageHead("/sitemap", "Site Map | My Florida NEMT", DESC, "Site Map", "CollectionPage"),

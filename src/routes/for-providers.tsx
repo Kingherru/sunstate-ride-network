@@ -41,7 +41,7 @@ function ProvidersPage() {
 
       <section aria-labelledby="p2p-title" className="mfn-section bg-ds-subtle">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-14">
-          <SectionHead id="p2p-title" eyebrow="The provider-to-provider model" title="When you can’t cover a trip, another provider might." intro="Share a trip you can’t take, or pick up one a fellow provider needs covered. Both sides review the details and terms before anything is accepted." />
+          <SectionHead align="left" id="p2p-title" eyebrow="The provider-to-provider model" title="When you can’t cover a trip, another provider might." intro="Share a trip you can’t take, or pick up one a fellow provider needs covered. Both sides review the details and terms before anything is accepted." />
           <figure className="rounded-ds-lg bg-ds-surface p-6 shadow-ds sm:p-8">
             <figcaption className="ds-label text-center text-ds-primary">PROVIDER ↔ PROVIDER</figcaption>
             <div className="mt-6 flex items-center" role="img" aria-label="Two providers connected in both directions">
@@ -62,7 +62,7 @@ function ProvidersPage() {
 
       <section aria-labelledby="road-title" className="mfn-section bg-ds-sky">
         <div className="mfn-container grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-14">
-          <SectionHead id="road-title" eyebrow="Mobile access" title="Built for the road, not just the office." intro="The whole provider experience — trip opportunities, sharing, Smart Notes, schedules, status and messages — is designed to work on a desktop at the office, a tablet in the van or a phone between trips. Features will be introduced and expanded as the network grows." />
+          <SectionHead align="left" id="road-title" eyebrow="Mobile access" title="Built for the road, not just the office." intro="The whole provider experience — trip opportunities, sharing, Smart Notes, schedules, status and messages — is designed to work on a desktop at the office, a tablet in the van or a phone between trips. Features will be introduced and expanded as the network grows." />
           <ul className="grid grid-cols-3 gap-4">
             {[{ i: Monitor, t: "Desktop" }, { i: Tablet, t: "Tablet" }, { i: Smartphone, t: "Mobile" }].map(({ i: I, t }) => (
               <li key={t} className="flex flex-col items-center gap-3 rounded-ds bg-ds-surface px-3 py-8 shadow-ds">
@@ -75,7 +75,7 @@ function ProvidersPage() {
 
       <section aria-labelledby="ind-title" className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-14">
-          <SectionHead id="ind-title" eyebrow="Provider independence" title="Your business stays yours." />
+          <SectionHead align="left" id="ind-title" eyebrow="Provider independence" title="Your business stays yours." />
           <ul className="grid gap-3 sm:grid-cols-2">
             {INDEPENDENCE.map((t) => <li key={t} className="ds-body-lg flex gap-3 rounded-ds bg-ds-subtle p-5"><ShieldCheck className="mt-0.5 size-6 shrink-0 text-ds-primary" aria-hidden />{t}</li>)}
           </ul>
@@ -94,7 +94,7 @@ function ProvidersPage() {
           <ul className="grid gap-3 sm:grid-cols-2">
             {[
               { i: LayoutGrid, t: "30 days free, then $10 per month" },
-              { i: BadgePercent, t: "2% My Florida NEMT platform fee on completed trips received through the provider network" },
+              { i: BadgePercent, t: "2% MY FLORIDA NEMT platform fee on completed trips received through the provider network" },
               { i: CreditCard, t: "Payment-processing fees may apply" },
               { i: CalendarX, t: "No long-term contract — cancel anytime" },
             ].map(({ i: I, t }) => <li key={t} className="ds-body-lg flex gap-3 rounded-ds-sm bg-ds-primary-hover p-5"><I className="mt-0.5 size-6 shrink-0 text-ds-accent" aria-hidden />{t}</li>)}
@@ -104,7 +104,7 @@ function ProvidersPage() {
 
       <section aria-labelledby="train-title" className="mfn-section bg-ds-subtle">
         <div className="mfn-container grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-14">
-          <SectionHead id="train-title" eyebrow="Training" title="Keep building your NEMT knowledge." intro="Providers can also use the Training Shop. Classes are $50 per class and are purchased separately from network membership." />
+          <SectionHead align="left" id="train-title" eyebrow="Training" title="Keep building your NEMT knowledge." intro="Providers can also use the Training Shop. Classes are $50 per class and are purchased separately from network membership." />
           <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
             <Link to="/shop" className={btnBlue}><GraduationCap aria-hidden />Explore Training</Link>
           </div>

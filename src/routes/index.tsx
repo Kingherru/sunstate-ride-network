@@ -4,17 +4,17 @@ import { Hero, NetworkConnect, Services, Membership } from "@/components/home/se
 import { ProductDemo } from "@/components/home/ProductDemo";
 import { FloridaMap } from "@/components/home/FloridaMap";
 
-const TITLE = "My Florida NEMT | Florida Peer-to-Peer NEMT Network & Trip Booking";
+const TITLE = "MY FLORIDA NEMT | Florida Peer-to-Peer NEMT Network & Trip Booking";
 const DESC = "A peer-to-peer Florida NEMT network: request transportation from independent providers, or connect provider-to-provider to share and review trip opportunities.";
 
 const orgSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "My Florida NEMT",
+  name: "MY FLORIDA NEMT",
   url: "https://myfloridanemt.com/",
   description: "A Florida peer-to-peer NEMT network connecting customers and facilities with participating transportation providers, and providers with one another.",
 };
-const siteSchema = { "@context": "https://schema.org", "@type": "WebSite", name: "My Florida NEMT", url: "https://myfloridanemt.com/" };
+const siteSchema = { "@context": "https://schema.org", "@type": "WebSite", name: "MY FLORIDA NEMT", url: "https://myfloridanemt.com/" };
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,8 +41,8 @@ function Home() {
     <PublicPage>
       <Hero />
       <NetworkConnect />
-      <ProductDemo />
-      <FloridaMap />
+      <ProductDemo motion />
+      <FloridaMap motion />
       <Services />
       <Membership />
     </PublicPage>

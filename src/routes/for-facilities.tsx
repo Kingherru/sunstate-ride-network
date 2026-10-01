@@ -51,7 +51,7 @@ function FacilitiesPage() {
         eyebrow="FOR FACILITIES"
         title="A clearer way to coordinate planned transportation"
         img={HOME_IMAGES.facility}
-        intro={<p>Facilities and organizations can use My Florida NEMT to organize planned, non-emergency trip requests and share them with participating independent providers.</p>}
+        intro={<p>Facilities and organizations can use MY FLORIDA NEMT to organize planned, non-emergency trip requests and share them with participating independent providers.</p>}
       >
         <HeroActions secondary="how" />
       </PageHero>
@@ -68,11 +68,11 @@ function FacilitiesPage() {
       <section aria-labelledby="flow-title" className="mfn-section bg-ds-sky">
         <div className="mfn-container grid gap-10 lg:grid-cols-2 lg:gap-14">
           <div>
-            <SectionHead id="flow-title" eyebrow="The facility workflow" title="From request to ride, in five steps." />
+            <SectionHead align="left" id="flow-title" eyebrow="The facility workflow" title="From request to ride, in five steps." />
             <div className="mt-8"><Steps steps={FLOW} /></div>
           </div>
           <div className="rounded-ds-lg bg-ds-surface p-6 shadow-ds sm:p-8">
-            <h2 className="ds-section-title text-ds-primary">Facility accounts</h2>
+            <h2 className="ds-section-title uppercase text-ds-primary">Facility accounts</h2>
             <p className="ds-support mt-2">Facility accounts are being prepared. When they are activated:</p>
             <ul className="mt-5 divide-y divide-ds-border">
               {ACCOUNT.map((a) => <li key={a} className="ds-body-lg py-3">{a}</li>)}
@@ -84,7 +84,7 @@ function FacilitiesPage() {
       <section aria-labelledby="ready-title" className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-14">
           <div>
-            <SectionHead id="ready-title" eyebrow="Be prepared" title="What to have ready" intro="These details help participating providers review a request quickly." />
+            <SectionHead align="left" id="ready-title" eyebrow="Be prepared" title="What to have ready" intro="These details help participating providers review a request quickly." />
             <NonEmergencyNotice className="mt-8" />
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
