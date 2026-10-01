@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/public/PublicPage";
-import { Hero, NetworkModel, Services, Membership, Training } from "@/components/home/sections";
-import { HowItWorks } from "@/components/home/HowItWorks";
+import { Hero, NetworkConnect, Services, Membership } from "@/components/home/sections";
 import { ProductDemo } from "@/components/home/ProductDemo";
 import { FloridaMap } from "@/components/home/FloridaMap";
 import { CONTACT_INFO } from "@/lib/contact-info";
@@ -38,13 +37,11 @@ function Home() {
   return (
     <PublicPage>
       <Hero />
-      <NetworkModel />
-      <HowItWorks />
+      <NetworkConnect />
       <ProductDemo />
-      <Membership />
-      <Services />
       <FloridaMap />
-      <Training />
+      <Services />
+      <Membership />
     </PublicPage>
   );
 }
