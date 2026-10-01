@@ -10,6 +10,7 @@ export const Route = createFileRoute("/florida-coverage")({
     "/florida-coverage",
     "Florida NEMT Coverage Map — Explore All 67 Counties | My Florida NEMT",
     "Explore Florida by region, county, city or ZIP code. Provider participation is growing and service availability varies by location and trip needs.",
+    "Florida Coverage",
   ),
   component: CoveragePage,
 });
@@ -25,6 +26,7 @@ function CoveragePage() {
   return (
     <PublicPage>
       <PageHero
+        crumb="Florida Coverage"
         eyebrow="FLORIDA COVERAGE"
         title="Connections across Florida start here"
         intro={<p>My Florida NEMT is being built around all 67 Florida counties. Use the map to explore by region, county, city or ZIP code — and see where to begin, whether you need a ride or serve an area.</p>}

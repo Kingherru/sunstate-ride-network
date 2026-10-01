@@ -10,6 +10,7 @@ export const Route = createFileRoute("/services")({
     "/services",
     "NEMT Services in Florida — Ambulatory, Wheelchair, Stretcher & Delivery | My Florida NEMT",
     "Request ambulatory, wheelchair, stretcher or medical-delivery transportation from participating independent Florida providers. Availability varies by provider and location.",
+    "Services",
   ),
   component: ServicesPage,
 });
@@ -44,6 +45,7 @@ function ServicesPage() {
   return (
     <PublicPage>
       <PageHero
+        crumb="Services"
         eyebrow="SERVICES"
         title="Transportation support for different needs"
         img={HOME_IMAGES.stretcher}

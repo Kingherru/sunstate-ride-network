@@ -8,6 +8,7 @@ export const Route = createFileRoute("/how-it-works")({
     "/how-it-works",
     "How My Florida NEMT Works — Trip Requests & Provider-to-Provider Connections",
     "See the two ways to connect through My Florida NEMT: customers and facilities requesting trips from providers, and providers sharing trips with other providers.",
+    "How It Works",
   ),
   component: HowPage,
 });
@@ -64,6 +65,7 @@ function HowPage() {
   return (
     <PublicPage>
       <PageHero
+        crumb="How It Works"
         eyebrow="HOW IT WORKS"
         title="One network. Two ways to connect."
         intro={<p>My Florida NEMT gives customers and facilities a public way to request planned transportation — and gives independent providers a way to connect and share trips with each other. Both paths matter equally.</p>}
