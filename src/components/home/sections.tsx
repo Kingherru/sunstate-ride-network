@@ -1,5 +1,5 @@
 import {
-  Accessibility, ArrowLeftRight, BadgePercent, BedSingle, CalendarPlus, ClipboardCheck, CreditCard, Footprints, LayoutDashboard, Network, Package, Truck, UserPlus, Users,
+  Accessibility, ArrowLeftRight, BadgePercent, BedSingle, CalendarPlus, ClipboardCheck, CreditCard, Footprints, LayoutDashboard, LayoutGrid, Network, Package, Truck, UserPlus, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HOME_IMAGES as IMG, LINKS } from "@/lib/site-config";

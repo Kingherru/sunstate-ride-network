@@ -50,7 +50,7 @@ function ServicesPage() {
         title="Transportation support for different needs"
         img={HOME_IMAGES.stretcher}
         intro={<>
-          <p>Customers, families, facilities and organizations can request planned transportation through My Florida NEMT.</p>
+          <p>Customers, families, facilities and organizations can request planned transportation through MY FLORIDA NEMT.</p>
           <p className="opacity-90">Trips are carried out by participating independent providers. Availability, equipment, service type and final pricing depend on the provider and the location.</p>
         </>}
       >
@@ -72,7 +72,7 @@ function ServicesPage() {
               </article>
             ))}
           </div>
-          <p className="ds-body-lg mfn-read mt-8 text-ds-text-2">My Florida NEMT does not own every vehicle or employ every driver. Each trip is completed by the participating provider who accepts it.</p>
+          <p className="ds-body-lg mfn-read mt-8 text-ds-text-2">MY FLORIDA NEMT does not own every vehicle or employ every driver. Each trip is completed by the participating provider who accepts it.</p>
         </div>
       </section>
 

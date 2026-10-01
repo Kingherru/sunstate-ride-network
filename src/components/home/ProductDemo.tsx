@@ -147,13 +147,13 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
   return (
     <section id="providers" aria-labelledby="demo-title" className="mfn-section-lg relative overflow-hidden bg-ds-bg scroll-mt-20">
       <div className="mfn-container-wide">
-        <div className={cn("mx-auto max-w-3xl text-center", motion && "home-reveal-heading")}> 
+        <HomeReveal disabled={!motion} className="mx-auto max-w-3xl text-center">
           <p className="ds-label text-ds-accent-active">Provider tools</p>
           <h2 id="demo-title" className="ds-page-title mt-2 uppercase text-ds-primary">BUILT AROUND THE WAY NEMT PROVIDERS ACTUALLY WORK.</h2>
           <p className="ds-body-lg mx-auto mt-4 max-w-[44rem] text-ds-text-2">Review opportunities, organize trip information and stay connected from the office or on the go across desktop, tablet and mobile.</p>
-        </div>
+        </HomeReveal>
 
-        <HomeReveal className="mt-10"><div className="grid gap-6 lg:grid-cols-[30%_1fr] lg:items-center lg:gap-8">
+        <HomeReveal disabled={!motion} className="mt-10"><div className="grid gap-6 lg:grid-cols-[30%_1fr] lg:items-center lg:gap-8">
           <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
             {FEATURES.map((f, i) => {
               const on = f.id === active;

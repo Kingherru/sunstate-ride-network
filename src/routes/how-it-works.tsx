@@ -68,7 +68,7 @@ function HowPage() {
         crumb="How It Works"
         eyebrow="HOW IT WORKS"
         title="One network. Two ways to connect."
-        intro={<p>My Florida NEMT gives customers and facilities a public way to request planned transportation — and gives independent providers a way to connect and share trips with each other. Both paths matter equally.</p>}
+        intro={<p>MY FLORIDA NEMT gives customers and facilities a public way to request planned transportation — and gives independent providers a way to connect and share trips with each other. Both paths matter equally.</p>}
       >
         <HeroActions secondary="join" />
       </PageHero>
@@ -86,7 +86,7 @@ function HowPage() {
 
       <section aria-labelledby="role-title" className="mfn-section bg-ds-primary text-ds-on-primary">
         <div className="mfn-container">
-          <SectionHead onBlue id="role-title" eyebrow="Our role" title="What My Florida NEMT does — and what it isn’t." />
+          <SectionHead onBlue id="role-title" eyebrow="Our role" title="What MY FLORIDA NEMT does — and what it isn’t." />
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <div className="rounded-ds bg-ds-primary-hover p-6 sm:p-8">
               <h3 className="ds-subheading flex items-center gap-2"><Network className="size-5 text-ds-accent" aria-hidden />What we do</h3>

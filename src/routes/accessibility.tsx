@@ -11,11 +11,11 @@ export const Route = createFileRoute("/accessibility")({
     <LegalPage
       crumb="Accessibility Statement"
       title="Accessibility Statement"
-      intro="We want everyone, including people with disabilities, to be able to use My Florida NEMT to request transportation, join the network and learn."
+      intro="We want everyone, including people with disabilities, to be able to use MY FLORIDA NEMT to request transportation, join the network and learn."
       dateLabel="Last reviewed"
       date="October 1, 2026"
       sections={[
-        { id: "commitment", h: "Our commitment", body: <p>My Florida NEMT is committed to making this website usable for people with disabilities. Accessibility is an ongoing effort, and we keep improving it as the platform grows.</p> },
+        { id: "commitment", h: "Our commitment", body: <p>MY FLORIDA NEMT is committed to making this website usable for people with disabilities. Accessibility is an ongoing effort, and we keep improving it as the platform grows.</p> },
         { id: "standard", h: "Our target", body: <p>We design and develop toward the Web Content Accessibility Guidelines (WCAG) 2.2, Level AA.</p> },
         { id: "measures", h: "What we do", body: <ul>
           <li>Keyboard support for navigation, menus, tabs and map controls.</li>

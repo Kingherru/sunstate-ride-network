@@ -94,7 +94,7 @@ function ProvidersPage() {
           <ul className="grid gap-3 sm:grid-cols-2">
             {[
               { i: LayoutGrid, t: "30 days free, then $10 per month" },
-              { i: BadgePercent, t: "2% My Florida NEMT platform fee on completed trips received through the provider network" },
+              { i: BadgePercent, t: "2% MY FLORIDA NEMT platform fee on completed trips received through the provider network" },
               { i: CreditCard, t: "Payment-processing fees may apply" },
               { i: CalendarX, t: "No long-term contract — cancel anytime" },
             ].map(({ i: I, t }) => <li key={t} className="ds-body-lg flex gap-3 rounded-ds-sm bg-ds-primary-hover p-5"><I className="mt-0.5 size-6 shrink-0 text-ds-accent" aria-hidden />{t}</li>)}

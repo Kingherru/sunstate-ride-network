@@ -11,7 +11,7 @@ export const Route = createFileRoute("/privacy")({
     <LegalPage
       crumb="Privacy Policy"
       title="Privacy Policy"
-      intro="This policy explains, in plain language, what information My Florida NEMT collects, why we use it and who we share it with."
+      intro="This policy explains, in plain language, what information MY FLORIDA NEMT collects, why we use it and who we share it with."
       dateLabel="Last updated"
       date="October 1, 2026"
       sections={[
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/privacy")({
             <li>With payment processors that handle transactions.</li>
             <li>With hosting, database, authentication, communication and other technical-service providers that help run the platform.</li>
             <li>With legal authorities when the law requires it.</li>
-            <li>As part of a business transfer if the ownership or operation of My Florida NEMT changes.</li>
+             <li>As part of a business transfer if the ownership or operation of MY FLORIDA NEMT changes.</li>
           </ul>
         </> },
         { id: "retention", h: "How long we keep information", body: <p>We keep information for as long as it is needed to provide the service, maintain trip, payment and training records, resolve disputes and meet legal obligations. When it is no longer needed, we delete or de-identify it.</p> },

@@ -51,7 +51,7 @@ function FacilitiesPage() {
         eyebrow="FOR FACILITIES"
         title="A clearer way to coordinate planned transportation"
         img={HOME_IMAGES.facility}
-        intro={<p>Facilities and organizations can use My Florida NEMT to organize planned, non-emergency trip requests and share them with participating independent providers.</p>}
+        intro={<p>Facilities and organizations can use MY FLORIDA NEMT to organize planned, non-emergency trip requests and share them with participating independent providers.</p>}
       >
         <HeroActions secondary="how" />
       </PageHero>

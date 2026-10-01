@@ -29,7 +29,7 @@ function CoveragePage() {
         crumb="Florida Coverage"
         eyebrow="FLORIDA COVERAGE"
         title="Connections across Florida start here"
-        intro={<p>My Florida NEMT is being built around all 67 Florida counties. Use the map to explore by region, county, city or ZIP code — and see where to begin, whether you need a ride or serve an area.</p>}
+        intro={<p>MY FLORIDA NEMT is being built around all 67 Florida counties. Use the map to explore by region, county, city or ZIP code — and see where to begin, whether you need a ride or serve an area.</p>}
       />
       <FloridaMap page />
 
