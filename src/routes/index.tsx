@@ -42,7 +42,7 @@ function Home() {
       <Hero />
       <NetworkConnect />
       <ProductDemo motion />
-      <FloridaMap />
+      <FloridaMap motion />
       <Services />
       <Membership />
     </PublicPage>

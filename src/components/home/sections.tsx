@@ -110,12 +110,12 @@ export function Services() {
           <div className="mt-7"><a href={LINKS.book} className={`${btnAction} home-primary-cta w-full sm:w-auto`}><CalendarPlus aria-hidden />Book a Trip</a></div>
         </HomeReveal>
         <ul className="grid gap-4 sm:grid-cols-2">
-          {SERVICES.map((s) => (
-            <li key={s.n} className="grid grid-rows-[auto_auto_1fr] rounded-ds bg-ds-subtle p-6 text-center">
+          {SERVICES.map((s, i) => (
+            <li key={s.n} className="h-full"><HomeReveal delay={i * 85} className="grid h-full grid-rows-[auto_auto_1fr] rounded-ds bg-ds-subtle p-6 text-center">
               <span className="mx-auto flex size-14 items-center justify-center rounded-ds-sm bg-ds-surface text-ds-primary"><s.icon className="size-8" aria-hidden /></span>
               <h3 className="ds-subheading mt-4 text-[1.3125rem] uppercase text-ds-primary">{s.n}</h3>
               <p className="ds-body-lg mt-2 text-ds-text-2">{s.d}</p>
-            </li>
+            </HomeReveal></li>
           ))}
         </ul>
       </div>
@@ -132,7 +132,7 @@ export function Membership() {
   ];
   return (
     <section id="membership" aria-labelledby="member-title" className="mfn-section scroll-mt-20 bg-ds-membership text-ds-primary">
-      <div className="mfn-container grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+      <HomeReveal className="mfn-container grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
         <div>
           <p className="ds-label flex items-center gap-2 text-ds-accent-active"><Truck className="size-5" aria-hidden />Provider membership</p>
           <h2 id="member-title" className="mt-4 font-heading text-6xl font-bold uppercase leading-none sm:text-7xl">30 DAYS <span className="text-ds-accent">FREE</span></h2>
@@ -144,7 +144,7 @@ export function Membership() {
             <li key={t} className="ds-body-lg flex items-center gap-4 rounded-ds-sm bg-ds-surface p-5 text-[1.125rem] shadow-ds"><Icon className="size-6 shrink-0 text-ds-accent-active" aria-hidden />{t}</li>
           ))}
         </ul>
-      </div>
+      </HomeReveal>
     </section>
   );
 }

@@ -236,11 +236,6 @@
 @keyframes ds-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @utility ds-fade-in { animation: ds-fade-in 180ms ease-out both; }
 @utility ds-transition { transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, opacity 150ms ease; }
-@media (prefers-reduced-motion: reduce) {
-  .theme-public *, .theme-portal * { animation: none !important; transition: none !important; }
-  .home-reveal { opacity: 1 !important; transform: none !important; }
-}
-
 /* Homepage motion: one-time attention cue + route dash. Disabled by reduced-motion rule above. */
 @keyframes ds-nudge { 0%,100% { transform: none; } 40% { transform: translateY(-3px); } 70% { transform: translateY(1px); } }
 @utility ds-nudge { animation: ds-nudge 700ms ease-out 1.2s 1 both; }
@@ -264,6 +259,10 @@
   &::before { content: ""; position: absolute; inset: 0; z-index: -1; background: color-mix(in oklab, currentColor 14%, transparent); transform: scaleX(0); transform-origin: left; transition: transform 300ms ease; }
   &:hover::before, &:focus-visible::before { transform: scaleX(1); }
   &:hover { transform: translateY(-2px); box-shadow: var(--ds-shadow); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-public *, .theme-portal * { animation: none !important; transition: none !important; }
+  .home-reveal { opacity: 1 !important; transform: none !important; }
 }
 
 /* Corner system (Revision 3): 4px standard, 3px small controls, 5px max large panels.

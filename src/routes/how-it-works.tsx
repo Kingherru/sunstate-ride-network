@@ -39,7 +39,7 @@ const NOT = [
   "Not an emergency transportation service",
   "Not a guarantee that every request will be accepted",
   "Not a replacement for a provider’s licensing, insurance or compliance responsibilities",
-  "Not a claim that My Florida NEMT directly operates every trip shown in the network",
+  "Not a claim that MY FLORIDA NEMT directly operates every trip shown in the network",
 ];
 
 const FAQ = [
@@ -47,7 +47,7 @@ const FAQ = [
   { q: "Can facilities use the network?", a: "Yes. Hospitals, care communities, medical offices and case managers can request trips. Facility accounts for teams are being prepared." },
   { q: "Can providers share trips with other providers?", a: "Yes. Provider-to-provider sharing is a core part of the network: a provider can offer a trip it can’t cover, and another participating provider can accept it." },
   { q: "Is service available in every Florida county?", a: "Not yet guaranteed. The network is built around all 67 counties, but participation is still growing and availability depends on the trip, timing, equipment and participating providers." },
-  { q: "Is My Florida NEMT an emergency service?", a: "No. It is for planned, non-emergency transportation. For a medical emergency, call 911." },
+  { q: "Is MY FLORIDA NEMT an emergency service?", a: "No. It is for planned, non-emergency transportation. For a medical emergency, call 911." },
   { q: "Can the network be used from a phone or tablet?", a: "Yes. Requests and provider tools are designed to work on desktop, tablet and mobile." },
 ];
 
