@@ -55,7 +55,7 @@ const STEPS = [
 ];
 export function NetworkConnect() {
   return (
-    <section id="how-it-works" aria-labelledby="connect-title" className="mfn-section scroll-mt-20 bg-ds-bg">
+    <section id="how-it-works" aria-labelledby="connect-title" className="mfn-section scroll-mt-20 bg-ds-subtle">
       <div className="mfn-container">
         <div className="mx-auto max-w-3xl text-center">
           <p className="ds-label text-ds-accent-active">How it works</p>
@@ -64,7 +64,7 @@ export function NetworkConnect() {
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {PATHS.map((p) => (
-            <article key={p.id} aria-labelledby={p.id} className="flex flex-col rounded-ds-lg bg-ds-subtle p-7 sm:p-9">
+            <article key={p.id} aria-labelledby={p.id} className="flex flex-col rounded-ds-lg bg-ds-surface p-7 shadow-ds sm:p-9">
               <p className="ds-label flex items-center gap-2 text-ds-primary"><p.icon className="size-5" aria-hidden />{p.label}</p>
               <h3 id={p.id} className="ds-section-title mt-3 text-ds-primary">{p.t}</h3>
               <p className="ds-body-lg mt-3 flex-1 text-ds-text-2">{p.d}</p>
