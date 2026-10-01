@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Monitor, Search, Send, Smartphone, Sparkles, Tablet, UserRound, Users } from "lucide-react";
+import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Monitor, Search, Send, Smartphone, Sparkles, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Fictional sample data only.

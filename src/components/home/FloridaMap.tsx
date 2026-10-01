@@ -71,8 +71,8 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
     <section id={page ? "map" : "coverage"} aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
       <div className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-12 lg:items-center">
         <div className="text-ds-on-soft">
-          <p className="ds-label text-ds-accent-active">{page ? "Explore the map" : "Florida network"}</p>
-          <h2 id="map-title" className="ds-page-title mt-2 text-ds-primary">{page ? "Explore by region, county, city or ZIP code." : "Connections across Florida start here."}</h2>
+          {page && <p className="ds-label text-ds-accent-active">Explore the map</p>}
+          <h2 id="map-title" className={cn("ds-page-title", page && "mt-2")} data-x=" text-ds-primary">{page ? "Explore by region, county, city or ZIP code." : "Connections across Florida start here."}</h2>
           <p className="ds-body-lg mt-4">My Florida NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
 
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
