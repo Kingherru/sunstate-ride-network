@@ -153,7 +153,11 @@
   --ds-peach: var(--mfn-pale);
   --ds-sand: var(--mfn-pale);
   --ds-hover: #E6EEF6;
+  overflow-x: clip;
 }
+
+/* Public heading hierarchy is visually consistent even when copy is supplied dynamically. */
+.theme-public h1, .theme-public h2 { text-transform: uppercase; }
 
 /* Portal: quieter. Gray page, white workspace cards, fewer accents. */
 .theme-portal {
