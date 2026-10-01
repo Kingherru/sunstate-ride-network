@@ -79,7 +79,7 @@ function ServicesPage() {
       <section aria-labelledby="before-title" className="mfn-section bg-ds-sky">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-14">
           <div>
-            <SectionHead id="before-title" eyebrow="Get ready" title="Before you request a trip" intro="Having these details ready helps providers review your request quickly and accurately." />
+          <SectionHead align="left" id="before-title" eyebrow="Get ready" title="Before you request a trip" intro="Having these details ready helps providers review your request quickly and accurately." />
             <NonEmergencyNotice className="mt-8" />
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">

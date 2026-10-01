@@ -37,7 +37,7 @@ function CoveragePage() {
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-14">
           <div>
             <p className="ds-label text-ds-accent-active">About availability</p>
-            <h2 id="avail-title" className="ds-page-title mt-2 text-ds-primary">What the map does and doesn’t tell you.</h2>
+            <h2 id="avail-title" className="ds-page-title mt-2 uppercase text-ds-primary">What the map does and doesn’t tell you.</h2>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
             {NOTES.map((n) => <li key={n} className="ds-body-lg flex gap-3 rounded-ds bg-ds-subtle p-5"><Info className="mt-0.5 size-6 shrink-0 text-ds-primary" aria-hidden />{n}</li>)}

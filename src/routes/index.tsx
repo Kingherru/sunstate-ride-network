@@ -41,7 +41,7 @@ function Home() {
     <PublicPage>
       <Hero />
       <NetworkConnect />
-      <ProductDemo />
+      <ProductDemo motion />
       <FloridaMap />
       <Services />
       <Membership />

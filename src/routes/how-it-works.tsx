@@ -102,7 +102,7 @@ function HowPage() {
 
       <section aria-labelledby="faq-title" className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-14">
-          <SectionHead id="faq-title" eyebrow="FAQ" title="Common questions" />
+          <SectionHead align="left" id="faq-title" eyebrow="FAQ" title="Common questions" />
           <div className="divide-y divide-ds-border">
             {FAQ.map((f) => (
               <details key={f.q} className="group py-2">

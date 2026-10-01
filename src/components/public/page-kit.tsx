@@ -58,7 +58,7 @@ export function PageHero({ eyebrow, title, intro, img, children, crumb }: { crum
         </div>
       )}
       <div className={cn("relative mfn-container pb-12 pt-8 lg:py-24", !img && "py-14 lg:py-20")}>
-        <div className={cn(img ? "max-w-2xl lg:max-w-[48%]" : "max-w-4xl")}>
+        <div className={cn(img ? "max-w-2xl lg:max-w-[48%]" : "mx-auto max-w-4xl text-center")}>
           {crumb && (
             <nav aria-label="Breadcrumb" className="ds-support mb-5 !text-ds-on-primary">
               <ol className="flex flex-wrap items-center gap-2 uppercase tracking-[0.06em] opacity-90">
@@ -71,7 +71,7 @@ export function PageHero({ eyebrow, title, intro, img, children, crumb }: { crum
           <p className="ds-label tracking-wide text-ds-accent">{eyebrow}</p>
           <h1 id="page-title" className="ds-display mt-4 uppercase">{title}</h1>
           <div className="ds-body-lg mt-5 max-w-[46rem] space-y-3 text-[1.1875rem] opacity-95 sm:text-[1.25rem]">{intro}</div>
-          {children && <div className="mt-7 flex flex-col gap-3 sm:flex-row">{children}</div>}
+           {children && <div className={cn("mt-7 flex flex-col gap-3 sm:flex-row", !img && "justify-center")}>{children}</div>}
         </div>
       </div>
     </section>
@@ -134,7 +134,7 @@ export function CtaBand({ title, text, primary, secondary }: { title: string; te
     <section aria-labelledby="cta-title" className="mfn-section bg-ds-subtle">
       <div className="mfn-container flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
         <div className="max-w-2xl">
-          <h2 id="cta-title" className="ds-page-title text-ds-primary">{title}</h2>
+           <h2 id="cta-title" className="ds-page-title uppercase text-ds-primary">{title}</h2>
           <p className="ds-body-lg mt-3 text-ds-text-2">{text}</p>
         </div>
         <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
