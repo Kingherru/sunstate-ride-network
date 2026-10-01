@@ -7,8 +7,29 @@ import { btnAction, btnBlue, btnLight, btnOnBlue } from "@/components/home/butto
 export const SITE = "https://myfloridanemt.com";
 
 /** Unique per-page head(): title, description, canonical, OG/Twitter. */
-export function pageHead(path: string, title: string, description: string) {
+/** JSON-LD helpers: one script per block, no undefined values. */
+export const ldScript = (data: object) => ({ type: "application/ld+json", children: JSON.stringify(data) });
+export const breadcrumbLd = (path: string, name: string) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
+    { "@type": "ListItem", position: 2, name, item: `${SITE}${path}` },
+  ],
+});
+export const webPageLd = (path: string, name: string, description: string, type = "WebPage") => ({
+  "@context": "https://schema.org",
+  "@type": type,
+  name,
+  description,
+  url: `${SITE}${path}`,
+  isPartOf: { "@type": "WebSite", name: "My Florida NEMT", url: `${SITE}/` },
+});
+
+/** Interior page head: metadata + canonical + WebPage and BreadcrumbList JSON-LD. */
+export function pageHead(path: string, title: string, description: string, crumb?: string, pageType?: string) {
   return {
+    scripts: crumb ? [ldScript(webPageLd(path, crumb, description, pageType)), ldScript(breadcrumbLd(path, crumb))] : [],
     meta: [
       { title },
       { name: "description", content: description },
@@ -25,7 +46,7 @@ export function pageHead(path: string, title: string, description: string) {
 type Img = (typeof HOME_IMAGES)[keyof typeof HOME_IMAGES];
 
 /** Blue page hero matching the homepage: copy left, photo right with same-color fade. */
-export function PageHero({ eyebrow, title, intro, img, children }: { eyebrow: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
+export function PageHero({ eyebrow, title, intro, img, children, crumb }: { crumb?: string; eyebrow: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
   return (
     <section aria-labelledby="page-title" className="relative overflow-hidden bg-ds-primary text-ds-on-primary">
       {img && (
@@ -38,6 +59,15 @@ export function PageHero({ eyebrow, title, intro, img, children }: { eyebrow: st
       )}
       <div className={cn("relative mfn-container pb-12 pt-8 lg:py-24", !img && "py-14 lg:py-20")}>
         <div className={cn(img ? "max-w-2xl lg:max-w-[48%]" : "max-w-4xl")}>
+          {crumb && (
+            <nav aria-label="Breadcrumb" className="ds-support mb-5 !text-ds-on-primary">
+              <ol className="flex flex-wrap items-center gap-2 uppercase tracking-[0.06em] opacity-90">
+                <li><Link to="/" className="rounded-ds-sm hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-on-primary">Home</Link></li>
+                <li aria-hidden>/</li>
+                <li aria-current="page">{crumb}</li>
+              </ol>
+            </nav>
+          )}
           <p className="ds-label tracking-wide text-ds-accent">{eyebrow}</p>
           <h1 id="page-title" className="ds-display mt-4 uppercase">{title}</h1>
           <div className="ds-body-lg mt-5 max-w-[46rem] space-y-3 text-[1.1875rem] opacity-95 sm:text-[1.25rem]">{intro}</div>

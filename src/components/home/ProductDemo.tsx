@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Monitor, Search, Send, Smartphone, Sparkles, Tablet, UserRound, Users } from "lucide-react";
+import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Monitor, Search, Send, Smartphone, Sparkles, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Fictional sample data only.
@@ -146,13 +146,13 @@ export function ProductDemo() {
   return (
     <section id="providers" aria-labelledby="demo-title" className="mfn-section-lg relative overflow-hidden bg-ds-bg scroll-mt-20">
       <div className="mfn-container-wide">
-        <div className="max-w-3xl">
-          <p className="ds-label text-ds-accent-active">For providers</p>
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="ds-label text-ds-accent-active">Provider tools</p>
           <h2 id="demo-title" className="ds-page-title mt-2 text-ds-primary">Built around the way NEMT providers actually work.</h2>
-          <p className="ds-body-lg mt-4 text-ds-text-2">Useful network and organization tools without forcing providers into another complicated dispatch system.</p>
+          <p className="ds-body-lg mx-auto mt-4 max-w-[44rem] text-ds-text-2">Review opportunities, organize trip information and stay connected from the office or on the go across desktop, tablet and mobile.</p>
         </div>
 
-        <div className="mt-9 grid gap-6 lg:grid-cols-[30%_1fr] lg:gap-8">
+        <div className="mt-10 grid gap-6 lg:grid-cols-[30%_1fr] lg:items-center lg:gap-8">
           <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
             {FEATURES.map((f, i) => {
               const on = f.id === active;
@@ -182,21 +182,20 @@ export function ProductDemo() {
 
           {/* App-window composition */}
           <div>
-            <div className="mb-3 flex justify-center">
-              <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-subtle p-1">
-                {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
-                  <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
-                    className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-2 rounded-ds-sm px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
-                      view === v ? "bg-ds-primary text-ds-on-primary" : "text-ds-primary hover:bg-ds-surface")}>
-                    <Icon className="size-5" aria-hidden />{l}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className={cn("overflow-hidden rounded-ds-lg bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] px-2 pb-5 pt-3")}>
-              <div className="flex items-center justify-between px-2 pb-2 sm:px-3 sm:pb-3">
-                <span className="ds-caption !text-ds-on-primary opacity-80">Provider workspace · sample data</span>
-                <span className="ds-caption !text-ds-on-primary opacity-80">{view === "mobile" ? "Phone" : "Preview"}</span>
+              <div className="px-1 pb-2 sm:pb-3">
+              <div className="flex justify-center">
+                <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-primary-hover p-1">
+                  {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
+                    <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
+                      className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-2 rounded-ds-sm px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                        view === v ? "bg-ds-surface text-ds-primary" : "text-ds-on-primary hover:bg-ds-primary-active")}>
+                      <Icon className="size-5" aria-hidden />{l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+                <p className="ds-caption mt-2 text-center !text-ds-on-primary opacity-80">Provider workspace · sample data</p>
               </div>
               <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className={cn("@container rounded-ds bg-ds-surface text-ds-on-surface", view === "mobile" ? "min-h-[34rem] p-4" : "min-h-[28rem] p-5 sm:p-10")}>
                 <p className="ds-section-title text-ds-primary">{current.label}</p>
@@ -205,17 +204,6 @@ export function ProductDemo() {
               </div>
             </div>
           </div>
-        </div>
-        <div className="mt-10 grid gap-6 rounded-ds-lg bg-ds-sky p-6 text-ds-on-soft sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-          <div>
-            <h3 className="ds-section-title uppercase text-ds-primary">Built for the road, not just the office.</h3>
-            <p className="ds-body-lg mfn-read mt-3">Use My Florida NEMT from your phone, tablet or computer. Review opportunities, find providers, share trips, manage offers, check your schedule and save customer details wherever your work takes you.</p>
-          </div>
-          <ul className="grid grid-cols-3 gap-3" aria-label="Works on">
-            {([[Smartphone, "Mobile"], [Tablet, "Tablet"], [Monitor, "Desktop"]] as const).map(([Icon, l]) => (
-              <li key={l} className="flex flex-col items-center gap-2 rounded-ds-sm bg-ds-surface p-4 text-ds-primary"><Icon className="size-7" aria-hidden /><span className="ds-label">{l}</span></li>
-            ))}
-          </ul>
         </div>
       </div>
     </section>

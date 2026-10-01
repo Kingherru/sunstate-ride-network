@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Building2, Hash, Layers, Map as MapIcon, MapPin } from "lucide-react";
+import { Building2, Hash, Layers, Map as MapIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FL_COUNTY_PATHS, FL_VIEWBOX, project } from "@/lib/florida-counties";
 
@@ -71,8 +71,8 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
     <section id={page ? "map" : "coverage"} aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
       <div className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-12 lg:items-center">
         <div className="text-ds-on-soft">
-          <p className="ds-label text-ds-accent-active">{page ? "Explore the map" : "Florida network"}</p>
-          <h2 id="map-title" className="ds-page-title mt-2 text-ds-primary">{page ? "Explore by region, county, city or ZIP code." : "Connections across Florida start here."}</h2>
+          {page && <p className="ds-label text-ds-accent-active">Explore the map</p>}
+          <h2 id="map-title" className={cn("ds-page-title text-ds-primary", page && "mt-2")}>{page ? "Explore by region, county, city or ZIP code." : "Connections across Florida start here."}</h2>
           <p className="ds-body-lg mt-4">My Florida NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
 
           <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
@@ -124,7 +124,7 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
             <p className="ds-body-lg mt-1 text-ds-text-2">{sel.counties.length} counties · including {sel.cities.join(", ")}</p>
             <p className="ds-body mt-4">{sel.counties.join(" · ")}</p>
           </div>
-          <p className="ds-subheading mt-6 text-[1.125rem]">Provider participation and service availability vary by location and trip requirements.</p>
+          <p className="ds-body-lg mt-6">Availability depends on location, trip requirements and participating providers.</p>
         </div>
 
         <div className="relative">
@@ -147,7 +147,7 @@ export function FloridaMap({ page = false }: { page?: boolean } = {}) {
             ); })()}
           </svg>
           {marker && <p className="ds-support mt-1 text-center">{marker.label}</p>}
-          <p className="ds-caption mt-2 flex items-center gap-1.5"><MapPin className="size-3.5" aria-hidden /> County boundaries: US Census Bureau (public domain). Region groupings and locations are approximate.</p>
+          {/* County boundaries: US Census Bureau (public domain). Region groupings are approximate. */}
         </div>
       </div>
     </section>

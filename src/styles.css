@@ -143,6 +143,17 @@
   font-family: "Source Sans 3", system-ui, sans-serif;
 }
 
+/* Public pages: disciplined blue / orange / white palette. Soft sections use pale blue only. */
+.theme-public {
+  --mfn-pale: #F3F7FB;
+  --ds-subtle: var(--mfn-pale);
+  --ds-sky: var(--mfn-pale);
+  --ds-green: var(--mfn-pale);
+  --ds-peach: var(--mfn-pale);
+  --ds-sand: var(--mfn-pale);
+  --ds-hover: #E6EEF6;
+}
+
 /* Portal: quieter. Gray page, white workspace cards, fewer accents. */
 .theme-portal {
   --ds-bg: var(--mfn-gray);

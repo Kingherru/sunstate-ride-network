@@ -10,6 +10,7 @@ export const Route = createFileRoute("/for-providers")({
     "/for-providers",
     "For Florida NEMT Providers — Peer-to-Peer Network & Membership | My Florida NEMT",
     "Connect with other Florida NEMT providers, share trips you need covered and review network opportunities. 30 days free, then $10/month plus a 2% platform fee on network trips.",
+    "For Providers",
   ),
   component: ProvidersPage,
 });
@@ -25,6 +26,7 @@ function ProvidersPage() {
   return (
     <PublicPage>
       <PageHero
+        crumb="For Providers"
         eyebrow="FOR PROVIDERS"
         title="A peer-to-peer network for Florida NEMT providers"
         img={HOME_IMAGES.provider}
