@@ -36,7 +36,7 @@ const schema = z.object({
   org: z.string().trim().max(160),
   password: z.string().min(8, "Password must be at least 8 characters.").max(72),
   confirm: z.string(),
-  terms: z.literal(true, { errorMap: () => ({ message: "Please accept the Terms and Privacy Policy." }) }),
+  terms: z.literal(true, { message: "Please accept the Terms and Privacy Policy." }),
 });
 
 function CreateAccount() {

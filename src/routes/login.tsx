@@ -7,9 +7,9 @@ import { AuthShell, AuthMessage, PasswordInput, authField, authLabel } from "@/c
 import { btnAction } from "@/components/home/buttons";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { redirect?: string; verified?: "1" } => ({
     redirect: safeReturnPath(s.redirect) ?? undefined,
-    verified: s.verified === "1" ? ("1" as const) : undefined,
+    verified: s.verified === "1" ? "1" : undefined,
   }),
   head: () => ({
     meta: [
