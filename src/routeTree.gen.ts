@@ -38,6 +38,8 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAccountStatusRouteImport } from './routes/_authenticated/account-status'
+import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authenticated/account-setup'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
@@ -199,6 +201,18 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAccountStatusRoute =
+  AuthenticatedAccountStatusRouteImport.update({
+    id: '/account-status',
+    path: '/account-status',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAccountSetupRoute =
+  AuthenticatedAccountSetupRouteImport.update({
+    id: '/account-setup',
+    path: '/account-setup',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -311,6 +325,8 @@ export interface FileRoutesByFullPath {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account-setup': typeof AuthenticatedAccountSetupRoute
+  '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/portal': typeof AuthenticatedPortalRoute
@@ -356,6 +372,8 @@ export interface FileRoutesByTo {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account-setup': typeof AuthenticatedAccountSetupRoute
+  '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/portal': typeof AuthenticatedPortalRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -403,6 +421,8 @@ export interface FileRoutesById {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
+  '/_authenticated/account-status': typeof AuthenticatedAccountStatusRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/_authenticated/portal': typeof AuthenticatedPortalRoute
@@ -451,6 +471,8 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/account-setup'
+    | '/account-status'
     | '/admin'
     | '/learn'
     | '/portal'
@@ -496,6 +518,8 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/account-setup'
+    | '/account-status'
     | '/admin'
     | '/portal'
     | '/checkout/return'
@@ -542,6 +566,8 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/_authenticated/account-setup'
+    | '/_authenticated/account-status'
     | '/_authenticated/admin'
     | '/_authenticated/learn'
     | '/_authenticated/portal'
@@ -814,6 +840,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/account-status': {
+      id: '/_authenticated/account-status'
+      path: '/account-status'
+      fullPath: '/account-status'
+      preLoaderRoute: typeof AuthenticatedAccountStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/account-setup': {
+      id: '/_authenticated/account-setup'
+      path: '/account-setup'
+      fullPath: '/account-setup'
+      preLoaderRoute: typeof AuthenticatedAccountSetupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/learn/': {
       id: '/_authenticated/learn/'
       path: '/'
@@ -943,12 +983,16 @@ const AuthenticatedLearnRouteWithChildren =
   AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountSetupRoute: typeof AuthenticatedAccountSetupRoute
+  AuthenticatedAccountStatusRoute: typeof AuthenticatedAccountStatusRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
   AuthenticatedPortalRoute: typeof AuthenticatedPortalRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountSetupRoute: AuthenticatedAccountSetupRoute,
+  AuthenticatedAccountStatusRoute: AuthenticatedAccountStatusRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
   AuthenticatedPortalRoute: AuthenticatedPortalRoute,
