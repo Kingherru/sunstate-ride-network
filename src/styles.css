@@ -264,6 +264,11 @@
   &:hover::before, &:focus-visible::before { transform: scaleX(1); }
   &:hover { transform: translateY(-2px); box-shadow: var(--ds-shadow); }
 }
+/* Auth pages: one-time fade-and-rise, smooth message entry. */
+@keyframes auth-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes auth-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.auth-enter { animation: auth-rise 500ms cubic-bezier(.2,.7,.2,1) both; }
+.auth-message { animation: auth-fade 240ms ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .theme-public *, .theme-portal * { animation: none !important; transition: none !important; }
   .home-reveal { opacity: 1 !important; transform: none !important; }

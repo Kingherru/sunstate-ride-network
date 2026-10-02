@@ -1,31 +1,27 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { getAccessState } from "@/lib/access.functions";
+import { AccountPlaceholder } from "@/components/auth/AccountPlaceholder";
 
-// Placeholder for the future user portals (provider, patient, facility).
+const LABEL: Record<string, string> = { private_pay: "Private Pay", facility: "Facility", hospital: "Hospital", provider: "Provider" };
+
 export const Route = createFileRoute("/_authenticated/portal")({
-  head: () => ({ meta: [{ title: "Portal — My Florida NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Portal — MY FLORIDA NEMT" }, { name: "robots", content: "noindex" }] }),
+  beforeLoad: async () => {
+    const access = await getAccessState();
+    if (!access.isAdmin && access.destination !== "/portal") throw redirect({ to: access.destination });
+    return { access };
+  },
   component: Portal,
 });
 
 function Portal() {
-  const { user } = Route.useRouteContext();
-  const qc = useQueryClient();
-  const navigate = useNavigate();
-  async function signOut() {
-    await qc.cancelQueries();
-    qc.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
-  }
+  const { user, access } = Route.useRouteContext();
+  const ws = access.workspaces[0];
   return (
-    <section className="p-10 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold">Portal</h1>
-      <p className="mt-2">Signed in as {user.email}. The new portal is being rebuilt.</p>
-      <div className="mt-6 flex gap-4 text-sm">
-        <Link to="/learn" className="underline">My training</Link>
-        <button onClick={signOut} className="underline">Sign out</button>
-      </div>
-    </section>
+    <AccountPlaceholder title="Portal">
+      <p>Signed in as {user.email}.</p>
+      {ws && <p>{LABEL[ws.type] ?? ws.type} account · {ws.status === "pending" ? "Pending review" : "Active"}</p>}
+      <p className="text-ds-text-2">Your portal is being built. Check back soon.</p>
+    </AccountPlaceholder>
   );
 }

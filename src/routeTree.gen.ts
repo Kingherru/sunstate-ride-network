@@ -19,10 +19,12 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProvidersRouteImport } from './routes/for-providers'
 import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
 import { Route as FloridaCoverageRouteImport } from './routes/florida-coverage'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
+import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -36,6 +38,8 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAccountStatusRouteImport } from './routes/_authenticated/account-status'
+import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authenticated/account-setup'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
@@ -103,6 +107,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForProvidersRoute = ForProvidersRouteImport.update({
   id: '/for-providers',
   path: '/for-providers',
@@ -121,6 +130,11 @@ const FloridaCoverageRoute = FloridaCoverageRouteImport.update({
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateAccountRoute = CreateAccountRouteImport.update({
+  id: '/create-account',
+  path: '/create-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -187,6 +201,18 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAccountStatusRoute =
+  AuthenticatedAccountStatusRouteImport.update({
+    id: '/account-status',
+    path: '/account-status',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAccountSetupRoute =
+  AuthenticatedAccountSetupRouteImport.update({
+    id: '/account-setup',
+    path: '/account-setup',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -283,10 +309,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/florida-coverage': typeof FloridaCoverageRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
@@ -297,6 +325,8 @@ export interface FileRoutesByFullPath {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account-setup': typeof AuthenticatedAccountSetupRoute
+  '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/portal': typeof AuthenticatedPortalRoute
@@ -327,10 +357,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/florida-coverage': typeof FloridaCoverageRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
@@ -340,6 +372,8 @@ export interface FileRoutesByTo {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account-setup': typeof AuthenticatedAccountSetupRoute
+  '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/portal': typeof AuthenticatedPortalRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -371,10 +405,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/florida-coverage': typeof FloridaCoverageRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
@@ -385,6 +421,8 @@ export interface FileRoutesById {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
+  '/_authenticated/account-status': typeof AuthenticatedAccountStatusRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/_authenticated/portal': typeof AuthenticatedPortalRoute
@@ -417,10 +455,12 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/book'
+    | '/create-account'
     | '/design-system'
     | '/florida-coverage'
     | '/for-facilities'
     | '/for-providers'
+    | '/forgot-password'
     | '/how-it-works'
     | '/join'
     | '/login'
@@ -431,6 +471,8 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/account-setup'
+    | '/account-status'
     | '/admin'
     | '/learn'
     | '/portal'
@@ -461,10 +503,12 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/book'
+    | '/create-account'
     | '/design-system'
     | '/florida-coverage'
     | '/for-facilities'
     | '/for-providers'
+    | '/forgot-password'
     | '/how-it-works'
     | '/join'
     | '/login'
@@ -474,6 +518,8 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/account-setup'
+    | '/account-status'
     | '/admin'
     | '/portal'
     | '/checkout/return'
@@ -504,10 +550,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/accessibility'
     | '/book'
+    | '/create-account'
     | '/design-system'
     | '/florida-coverage'
     | '/for-facilities'
     | '/for-providers'
+    | '/forgot-password'
     | '/how-it-works'
     | '/join'
     | '/login'
@@ -518,6 +566,8 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/_authenticated/account-setup'
+    | '/_authenticated/account-status'
     | '/_authenticated/admin'
     | '/_authenticated/learn'
     | '/_authenticated/portal'
@@ -550,10 +600,12 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AccessibilityRoute: typeof AccessibilityRoute
   BookRoute: typeof BookRoute
+  CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
   FloridaCoverageRoute: typeof FloridaCoverageRoute
   ForFacilitiesRoute: typeof ForFacilitiesRoute
   ForProvidersRoute: typeof ForProvidersRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
@@ -655,6 +707,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/for-providers': {
       id: '/for-providers'
       path: '/for-providers'
@@ -681,6 +740,13 @@ declare module '@tanstack/react-router' {
       path: '/design-system'
       fullPath: '/design-system'
       preLoaderRoute: typeof DesignSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-account': {
+      id: '/create-account'
+      path: '/create-account'
+      fullPath: '/create-account'
+      preLoaderRoute: typeof CreateAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book': {
@@ -772,6 +838,20 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/account-status': {
+      id: '/_authenticated/account-status'
+      path: '/account-status'
+      fullPath: '/account-status'
+      preLoaderRoute: typeof AuthenticatedAccountStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/account-setup': {
+      id: '/_authenticated/account-setup'
+      path: '/account-setup'
+      fullPath: '/account-setup'
+      preLoaderRoute: typeof AuthenticatedAccountSetupRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/learn/': {
@@ -903,12 +983,16 @@ const AuthenticatedLearnRouteWithChildren =
   AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountSetupRoute: typeof AuthenticatedAccountSetupRoute
+  AuthenticatedAccountStatusRoute: typeof AuthenticatedAccountStatusRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
   AuthenticatedPortalRoute: typeof AuthenticatedPortalRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountSetupRoute: AuthenticatedAccountSetupRoute,
+  AuthenticatedAccountStatusRoute: AuthenticatedAccountStatusRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
   AuthenticatedPortalRoute: AuthenticatedPortalRoute,
@@ -936,10 +1020,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AccessibilityRoute: AccessibilityRoute,
   BookRoute: BookRoute,
+  CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
   FloridaCoverageRoute: FloridaCoverageRoute,
   ForFacilitiesRoute: ForFacilitiesRoute,
   ForProvidersRoute: ForProvidersRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,

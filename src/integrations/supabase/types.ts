@@ -4683,6 +4683,36 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          legacy_review_needed: boolean
+          phone: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          legacy_review_needed?: boolean
+          phone?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          legacy_review_needed?: boolean
+          phone?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -4834,6 +4864,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          account_type: Database["public"]["Enums"]["workspace_type"]
+          created_at: string
+          created_by: string
+          display_name: string
+          id: string
+          status: Database["public"]["Enums"]["workspace_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_type: Database["public"]["Enums"]["workspace_type"]
+          created_at?: string
+          created_by: string
+          display_name: string
+          id?: string
+          status?: Database["public"]["Enums"]["workspace_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["workspace_type"]
+          created_at?: string
+          created_by?: string
+          display_name?: string
+          id?: string
+          status?: Database["public"]["Enums"]["workspace_status"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       zone_manager_assignments: {
         Row: {
@@ -5159,6 +5251,7 @@ export type Database = {
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {
           _assigned_provider_id: string
@@ -5534,6 +5627,7 @@ export type Database = {
         }
         Returns: number
       }
+      my_access_state: { Args: never; Returns: Json }
       notify_expiring_unconfirmed_reservations: { Args: never; Returns: number }
       offer_trip_priority: {
         Args: { _provider_user_id: string; _trip_id: string }
@@ -5702,6 +5796,10 @@ export type Database = {
           valid: boolean
         }[]
       }
+      workspace_role_of: {
+        Args: { _uid: string; _ws: string }
+        Returns: Database["public"]["Enums"]["workspace_role"]
+      }
       zone_id_for_zip: { Args: { _zip: string }; Returns: string }
     }
     Enums: {
@@ -5756,6 +5854,7 @@ export type Database = {
         | "pending"
         | "active"
         | "restricted"
+      profile_status: "active" | "suspended"
       service_level:
         | "door_to_door"
         | "bed_to_bed"
@@ -5768,6 +5867,9 @@ export type Database = {
         | "confirmed"
         | "refunded"
       trip_payout_status: "pending" | "held" | "released" | "canceled"
+      workspace_role: "owner" | "admin" | "member"
+      workspace_status: "active" | "pending" | "suspended"
+      workspace_type: "private_pay" | "facility" | "hospital" | "provider"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5947,6 +6049,7 @@ export const Constants = {
         "active",
         "restricted",
       ],
+      profile_status: ["active", "suspended"],
       service_level: [
         "door_to_door",
         "bed_to_bed",
@@ -5961,6 +6064,9 @@ export const Constants = {
         "refunded",
       ],
       trip_payout_status: ["pending", "held", "released", "canceled"],
+      workspace_role: ["owner", "admin", "member"],
+      workspace_status: ["active", "pending", "suspended"],
+      workspace_type: ["private_pay", "facility", "hospital", "provider"],
     },
   },
 } as const

@@ -1,12 +1,18 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthShell, AuthMessage, PasswordInput, authLabel } from "@/components/auth/AuthShell";
+import { btnAction } from "@/components/home/buttons";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset Password — My Florida NEMT" },
+      { title: "Reset Password — MY FLORIDA NEMT" },
+      { name: "description", content: "Set a new password for your MY FLORIDA NEMT account." },
+      { property: "og:title", content: "Reset Password — MY FLORIDA NEMT" },
+      { property: "og:description", content: "Set a new password for your MY FLORIDA NEMT account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -18,77 +24,61 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [state, setState] = useState<"checking" | "ready" | "invalid">("checking");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Supabase-js auto-detects the recovery token in the URL hash and fires
-    // a PASSWORD_RECOVERY auth event; once we have a session, allow updates.
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) setReady(true);
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const query = new URLSearchParams(window.location.search);
+    if (hash.get("error") || query.get("error")) { setState("invalid"); return; }
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setState("ready");
     });
-    void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
-    });
-    return () => sub.subscription.unsubscribe();
+    const isRecovery = hash.get("type") === "recovery" || query.has("code");
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.auth.getSession();
+      setState((s) => (s === "ready" ? s : data.session && isRecovery ? "ready" : "invalid"));
+    }, 1500);
+    return () => { sub.subscription.unsubscribe(); clearTimeout(timer); };
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) return toast.error("Password must be at least 8 characters");
-    if (password !== confirm) return toast.error("Passwords do not match");
+    if (busy) return;
+    setError(null);
+    if (password.length < 8) return setError("Password must be at least 8 characters.");
+    if (password !== confirm) return setError("Passwords do not match.");
     setBusy(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      toast.success("Password updated. Please sign in.");
-      await supabase.auth.signOut();
-      navigate({ to: "/login" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not update password");
-    } finally {
-      setBusy(false);
-    }
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) { setBusy(false); return setError(/weak|pwned|leaked/i.test(error.message) ? "Please choose a stronger password that hasn't appeared in a data breach." : "We couldn't update your password. Your link may have expired."); }
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
   }
 
   return (
-    <section className="min-h-[80vh] grid place-items-center px-6 py-20">
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8">
-        <h1 className="text-3xl font-extrabold tracking-tighter mb-2">Set a new password</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          {ready
-            ? "Enter and confirm your new password below."
-            : "Verifying your reset link…"}
-        </p>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <input
-            type="password"
-            required
-            minLength={8}
-            placeholder="New password (min 8 chars)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-background border border-input rounded-sm px-4 py-3 text-sm"
-            disabled={!ready}
-          />
-          <input
-            type="password"
-            required
-            minLength={8}
-            placeholder="Confirm new password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="w-full bg-background border border-input rounded-sm px-4 py-3 text-sm"
-            disabled={!ready}
-          />
-          <button
-            type="submit"
-            disabled={busy || !ready}
-            className="w-full px-6 py-3 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition disabled:opacity-60"
-          >
-            {busy ? "Updating…" : "Update password"}
-          </button>
+    <AuthShell title="Set New Password">
+      {state === "checking" && <AuthMessage tone="info">Checking your reset link…</AuthMessage>}
+      {state === "invalid" && (
+        <div className="flex flex-col gap-5">
+          <AuthMessage tone="error">This reset link is invalid or has expired. Please request a new one.</AuthMessage>
+          <Link to="/forgot-password" className={`${btnAction} w-full`}>REQUEST NEW LINK</Link>
+        </div>
+      )}
+      {state === "ready" && (
+        <form onSubmit={onSubmit} className="flex flex-col gap-5">
+          {error && <AuthMessage tone="error">{error}</AuthMessage>}
+          <div>
+            <label htmlFor="pw" className={authLabel}>New password</label>
+            <PasswordInput id="pw" autoComplete="new-password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <p className="ds-caption mt-1.5">At least 8 characters.</p>
+          </div>
+          <div>
+            <label htmlFor="pw2" className={authLabel}>Confirm new password</label>
+            <PasswordInput id="pw2" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+          </div>
+          <button className={`${btnAction} w-full`} disabled={busy}>{busy ? "UPDATING…" : "UPDATE PASSWORD"}</button>
         </form>
-      </div>
-    </section>
+      )}
+    </AuthShell>
   );
 }
