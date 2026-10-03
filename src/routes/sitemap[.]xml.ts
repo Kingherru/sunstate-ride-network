@@ -3,7 +3,7 @@ import type {} from "@tanstack/react-start";
 
 const BASE_URL = "https://myfloridanemt.com";
 // Indexable public pages only. /book and /join are noindex and excluded.
-const paths = ["/", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/shop", "/privacy", "/terms", "/accessibility", "/sitemap"];
+const paths = ["/", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/resources", "/frequently-asked-questions", "/shop", "/shop/hipaa", "/shop/nemt-certification", "/privacy", "/terms", "/accessibility", "/sitemap"];
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {

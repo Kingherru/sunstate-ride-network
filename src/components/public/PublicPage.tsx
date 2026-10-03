@@ -2,7 +2,7 @@ import { PublicHeader } from "./PublicHeader";
 import { PublicFooter } from "./PublicFooter";
 
 /** Wrapper for rebuilt public pages. Root route hides its temporary bar on these paths. */
-export const PUBLIC_SHELL_PATHS = ["/", "/book", "/join", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/privacy", "/terms", "/accessibility", "/sitemap", "/login", "/create-account", "/forgot-password", "/reset-password", "/portal", "/admin", "/account-setup", "/account-status"];
+export const PUBLIC_SHELL_PATHS = ["/", "/book", "/join", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/privacy", "/terms", "/accessibility", "/sitemap", "/resources", "/frequently-asked-questions", "/login", "/create-account", "/forgot-password", "/reset-password", "/portal", "/admin", "/account-setup", "/account-status"];
 
 export function PublicPage({ children }: { children: React.ReactNode }) {
   return (

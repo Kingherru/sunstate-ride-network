@@ -14,11 +14,13 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as FrequentlyAskedQuestionsRouteImport } from './routes/frequently-asked-questions'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForProvidersRouteImport } from './routes/for-providers'
 import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
@@ -82,6 +84,11 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -107,6 +114,12 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FrequentlyAskedQuestionsRoute =
+  FrequentlyAskedQuestionsRouteImport.update({
+    id: '/frequently-asked-questions',
+    path: '/frequently-asked-questions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -315,11 +328,13 @@ export interface FileRoutesByFullPath {
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/frequently-asked-questions': typeof FrequentlyAskedQuestionsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
@@ -363,11 +378,13 @@ export interface FileRoutesByTo {
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/frequently-asked-questions': typeof FrequentlyAskedQuestionsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -411,11 +428,13 @@ export interface FileRoutesById {
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/frequently-asked-questions': typeof FrequentlyAskedQuestionsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
@@ -461,11 +480,13 @@ export interface FileRouteTypes {
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
+    | '/frequently-asked-questions'
     | '/how-it-works'
     | '/join'
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/resources'
     | '/services'
     | '/shop'
     | '/sitemap'
@@ -509,11 +530,13 @@ export interface FileRouteTypes {
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
+    | '/frequently-asked-questions'
     | '/how-it-works'
     | '/join'
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/resources'
     | '/services'
     | '/sitemap'
     | '/sitemap.xml'
@@ -556,11 +579,13 @@ export interface FileRouteTypes {
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
+    | '/frequently-asked-questions'
     | '/how-it-works'
     | '/join'
     | '/login'
     | '/privacy'
     | '/reset-password'
+    | '/resources'
     | '/services'
     | '/shop'
     | '/sitemap'
@@ -606,11 +631,13 @@ export interface RootRouteChildren {
   ForFacilitiesRoute: typeof ForFacilitiesRoute
   ForProvidersRoute: typeof ForProvidersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  FrequentlyAskedQuestionsRoute: typeof FrequentlyAskedQuestionsRoute
   HowItWorksRoute: typeof HowItWorksRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ResourcesRoute: typeof ResourcesRoute
   ServicesRoute: typeof ServicesRoute
   ShopRoute: typeof ShopRouteWithChildren
   SitemapRoute: typeof SitemapRoute
@@ -672,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -705,6 +739,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/frequently-asked-questions': {
+      id: '/frequently-asked-questions'
+      path: '/frequently-asked-questions'
+      fullPath: '/frequently-asked-questions'
+      preLoaderRoute: typeof FrequentlyAskedQuestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -1026,11 +1067,13 @@ const rootRouteChildren: RootRouteChildren = {
   ForFacilitiesRoute: ForFacilitiesRoute,
   ForProvidersRoute: ForProvidersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  FrequentlyAskedQuestionsRoute: FrequentlyAskedQuestionsRoute,
   HowItWorksRoute: HowItWorksRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ResourcesRoute: ResourcesRoute,
   ServicesRoute: ServicesRoute,
   ShopRoute: ShopRouteWithChildren,
   SitemapRoute: SitemapRoute,

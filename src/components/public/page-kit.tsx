@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarPlus, Info, Network, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HOME_IMAGES, LINKS } from "@/lib/site-config";
+import { HomeReveal } from "@/components/home/HomeReveal";
 import { btnAction, btnBlue, btnLight, btnOnBlue } from "@/components/home/buttons";
 
 export const SITE = "https://myfloridanemt.com";
@@ -45,38 +46,43 @@ export function pageHead(path: string, title: string, description: string, crumb
 
 type Img = (typeof HOME_IMAGES)[keyof typeof HOME_IMAGES];
 
-/** Blue page hero matching the homepage: copy left, photo right with same-color fade. */
-export function PageHero({ eyebrow, title, intro, img, children, crumb }: { crumb?: string; eyebrow: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
+/**
+ * Standard inner-page banner: centered H1 + copy on blue, optional faint
+ * decorative photo, breadcrumbs directly below. `eyebrow` is ignored (kept for compatibility).
+ */
+export function PageHero({ title, intro, img, children, crumb }: { crumb?: string; eyebrow?: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
   return (
-    <section aria-labelledby="page-title" className="relative overflow-hidden bg-ds-primary text-ds-on-primary">
-      {img && (
-        <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-[48%]">
-          <div className="relative aspect-[16/9] lg:aspect-auto lg:h-full">
-            <img src={img.src} width={img.w} height={img.h} alt={img.alt} className="h-full w-full object-cover" />
-            <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ds-primary to-transparent lg:inset-y-0 lg:left-0 lg:right-auto lg:h-full lg:w-1/3 lg:bg-gradient-to-r" />
-          </div>
+    <>
+      <section aria-labelledby="page-title" className="relative overflow-hidden bg-ds-primary text-ds-on-primary">
+        {img && <img src={img.src} width={img.w} height={img.h} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-[0.14]" />}
+        <div className="relative mfn-container py-16 lg:py-24">
+          <HomeReveal className="mx-auto max-w-4xl text-center">
+            <h1 id="page-title" className="ds-display uppercase">{title}</h1>
+            <div className="ds-body-lg mx-auto mt-5 max-w-[46rem] space-y-3 text-[1.1875rem] opacity-95 sm:text-[1.25rem]">{intro}</div>
+            {children && <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">{children}</div>}
+          </HomeReveal>
         </div>
-      )}
-      <div className={cn("relative mfn-container pb-12 pt-8 lg:py-24", !img && "py-14 lg:py-20")}>
-        <div className={cn(img ? "max-w-2xl lg:max-w-[48%]" : "mx-auto max-w-4xl text-center")}>
-          {crumb && (
-            <nav aria-label="Breadcrumb" className="ds-support mb-5 !text-ds-on-primary">
-              <ol className="flex flex-wrap items-center gap-2 uppercase tracking-[0.06em] opacity-90">
-                <li><Link to="/" className="rounded-ds-sm hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-on-primary">Home</Link></li>
-                <li aria-hidden>/</li>
-                <li aria-current="page">{crumb}</li>
-              </ol>
-            </nav>
-          )}
-          <p className="ds-label tracking-wide text-ds-accent">{eyebrow}</p>
-          <h1 id="page-title" className="ds-display mt-4 uppercase">{title}</h1>
-          <div className="ds-body-lg mt-5 max-w-[46rem] space-y-3 text-[1.1875rem] opacity-95 sm:text-[1.25rem]">{intro}</div>
-           {children && <div className={cn("mt-7 flex flex-col gap-3 sm:flex-row", !img && "justify-center")}>{children}</div>}
-        </div>
-      </div>
-    </section>
+      </section>
+      {crumb && <Breadcrumbs crumb={crumb} />}
+    </>
   );
 }
+
+/** Visible breadcrumbs (Home / page). Matches breadcrumbLd() emitted by pageHead(). */
+export function Breadcrumbs({ crumb }: { crumb: string }) {
+  return (
+    <nav aria-label="Breadcrumb" className="bg-ds-surface">
+      <ol className="mfn-container ds-support flex flex-wrap items-center gap-2 py-4 uppercase tracking-[0.06em]">
+        <li><Link to="/" className="rounded-ds-sm text-ds-link hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">Home</Link></li>
+        <li aria-hidden>/</li>
+        <li aria-current="page" className="text-ds-on-surface">{crumb}</li>
+      </ol>
+    </nav>
+  );
+}
+
+/** One-time entrance wrapper for public pages (same system as the homepage). */
+export const Reveal = HomeReveal;
 
 export function SectionHead({ eyebrow, title, intro, id, onBlue, align = "center" }: { eyebrow?: string; title: string; intro?: React.ReactNode; id: string; onBlue?: boolean; align?: "center" | "left" }) {
   return (
@@ -126,22 +132,26 @@ export function NonEmergencyNotice({ className }: { className?: string }) {
   );
 }
 
-type Cta = { label: string; to: "/book" | "/join" | "/how-it-works" | "/shop" | "/for-providers"; icon: LucideIcon };
+export type CtaAction = { label: string; to: string; icon: LucideIcon; kind?: "action" | "blue" | "light" };
 
-/** Closing CTA band with a primary + secondary action. */
-export function CtaBand({ title, text, primary, secondary }: { title: string; text: string; primary: Cta; secondary: Cta }) {
+/** Closing CTA: pale orange, dark-blue copy, centered, single-line buttons. Never blue above the blue footer. */
+export function CtaBand({ title, text, actions, primary, secondary }: { title: string; text: string; actions?: CtaAction[]; primary?: CtaAction; secondary?: CtaAction }) {
+  const list = actions ?? [primary, secondary].filter(Boolean) as CtaAction[];
   return (
-    <section aria-labelledby="cta-title" className="mfn-section bg-ds-subtle">
-      <div className="mfn-container flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-        <div className="max-w-2xl">
-           <h2 id="cta-title" className="ds-page-title uppercase text-ds-primary">{title}</h2>
-          <p className="ds-body-lg mt-3 text-ds-text-2">{text}</p>
+    <section aria-labelledby="cta-title" className="mfn-section bg-ds-membership">
+      <HomeReveal className="mfn-container mx-auto max-w-3xl text-center">
+        <h2 id="cta-title" className="ds-page-title uppercase text-ds-primary">{title}</h2>
+        <p className="ds-body-lg mx-auto mt-3 max-w-2xl text-ds-primary">{text}</p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+          {list.map((a, i) => {
+            const cls = a.kind === "light" ? btnOnBlue : a.kind === "blue" || i > 0 ? btnBlue : btnAction;
+            const inner = <><a.icon aria-hidden />{a.label}</>;
+            return /^(tel:|mailto:|https?:)/.test(a.to)
+              ? <a key={a.label} href={a.to} className={cls}>{inner}</a>
+              : <a key={a.label} href={a.to} className={cls}>{inner}</a>;
+          })}
         </div>
-        <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-          <Link to={primary.to} className={btnAction}><primary.icon aria-hidden />{primary.label}</Link>
-          <Link to={secondary.to} className={btnBlue}><secondary.icon aria-hidden />{secondary.label}</Link>
-        </div>
-      </div>
+      </HomeReveal>
     </section>
   );
 }

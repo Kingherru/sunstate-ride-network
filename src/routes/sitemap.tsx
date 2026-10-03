@@ -1,41 +1,65 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { PublicPage } from "@/components/public/PublicPage";
-import { PageHero, pageHead } from "@/components/public/page-kit";
+import { createFileRoute } from "@tanstack/react-router";
+import { BrandName } from "@/components/brand/BrandName";
+import { SITE } from "@/components/public/page-kit";
+import { TRAINING } from "@/lib/site-config";
 
-const DESC = "A list of every public page on the MY FLORIDA NEMT website, grouped for customers, facilities and providers.";
+const TITLE = "HTML Sitemap — All Public Pages | MY FLORIDA NEMT";
+const DESC = "Every public page on the MY FLORIDA NEMT website: services, how it works, providers, patients and facilities, training, resources and policies.";
 
 export const Route = createFileRoute("/sitemap")({
-  head: () => pageHead("/sitemap", "Site Map | My Florida NEMT", DESC, "Site Map", "CollectionPage"),
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESC },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESC },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE}/sitemap` }],
+  }),
   component: SiteMapPage,
 });
 
-type To = "/" | "/services" | "/how-it-works" | "/florida-coverage" | "/book" | "/for-facilities" | "/for-providers" | "/join" | "/shop" | "/login" | "/privacy" | "/terms" | "/accessibility";
-const GROUPS: { h: string; items: { label: string; to: To; hash?: string }[] }[] = [
-  { h: "Main", items: [{ label: "Home", to: "/" }, { label: "Services", to: "/services" }, { label: "How It Works", to: "/how-it-works" }, { label: "Florida Coverage", to: "/florida-coverage" }] },
-  { h: "For customers and facilities", items: [{ label: "Book a Trip", to: "/book" }, { label: "For Facilities", to: "/for-facilities" }] },
-  { h: "For providers", items: [{ label: "For Providers", to: "/for-providers" }, { label: "Membership", to: "/for-providers", hash: "membership" }, { label: "Join the Provider Network", to: "/join" }, { label: "Training", to: "/shop" }] },
-  { h: "Account", items: [{ label: "Sign In", to: "/login" }] },
-  { h: "Legal and accessibility", items: [{ label: "Privacy Policy", to: "/privacy" }, { label: "Terms of Use", to: "/terms" }, { label: "Accessibility Statement", to: "/accessibility" }] },
+const GROUPS: { h: string; items: { label: string; href: string }[] }[] = [
+  { h: "Public Pages", items: [
+    { label: "Home", href: "/" }, { label: "How It Works", href: "/how-it-works" }, { label: "Providers", href: "/for-providers" },
+    { label: "Patients and Facilities", href: "/for-facilities" }, { label: "Coverage", href: "/florida-coverage" },
+    { label: "Join the Provider Network", href: "/join" }, { label: "Submit Trip Request", href: "/book" },
+  ] },
+  { h: "Services", items: [
+    { label: "Services Overview", href: "/services" }, { label: "Ambulatory", href: "/services#ambulatory" }, { label: "Wheelchair", href: "/services#wheelchair" },
+    { label: "Stretcher or Specialized", href: "/services#stretcher" }, { label: "Medical Delivery", href: "/services#delivery" },
+  ] },
+  { h: "Training", items: [{ label: "Training Shop", href: "/shop" }, ...TRAINING.map((t) => ({ label: t.title, href: t.href }))] },
+  { h: "Resources", items: [{ label: "Resources", href: "/resources" }, { label: "People Also Ask", href: "/frequently-asked-questions" }] },
+  { h: "Policies", items: [{ label: "Privacy Policy", href: "/privacy" }, { label: "Terms of Use", href: "/terms" }, { label: "Accessibility Statement", href: "/accessibility" }] },
 ];
+
+const link = "ds-body-lg rounded-ds-sm text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
 
 function SiteMapPage() {
   return (
-    <PublicPage>
-      <PageHero crumb="Site Map" eyebrow="MY FLORIDA NEMT" title="Site map" intro={<p>Every public page on the website, in one place.</p>} />
-      <div className="mfn-section bg-ds-bg">
-        <div className="mfn-container grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {GROUPS.map((g) => (
-            <section key={g.h} aria-labelledby={`sm-${g.h}`} className="rounded-ds bg-ds-subtle p-7">
-              <h2 id={`sm-${g.h}`} className="ds-subheading uppercase tracking-[0.04em] text-ds-primary">{g.h}</h2>
-              <ul className="mt-4 space-y-3">
-                {g.items.map((i) => (
-                  <li key={i.label}><Link to={i.to} hash={i.hash} className="ds-body-lg rounded-ds-sm text-ds-link hover:text-ds-link-hover hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">{i.label}</Link></li>
-                ))}
-              </ul>
+    <div className="theme-public min-h-screen bg-ds-bg">
+      <div className="mfn-container flex items-center justify-between py-6">
+        <a href="/" aria-label="MY FLORIDA NEMT home"><BrandName className="text-xl" /></a>
+        <a href="/" className="ds-button-text uppercase text-ds-link hover:underline underline-offset-4">Back to website</a>
+      </div>
+      <main id="main" className="mfn-container pb-20">
+        <h1 className="ds-display mt-6 text-center uppercase text-ds-primary">Sitemap</h1>
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {GROUPS.map((g, i) => (
+            <section key={g.h} aria-labelledby={`sm-${i}`} className="rounded-ds bg-ds-sky p-7">
+              <h2 id={`sm-${i}`} className="ds-subheading uppercase tracking-[0.04em] text-ds-primary">{g.h}</h2>
+              <ul className="mt-4 space-y-3">{g.items.map((x) => <li key={x.href}><a href={x.href} className={link}>{x.label}</a></li>)}</ul>
             </section>
           ))}
+          <section aria-labelledby="sm-loc" className="rounded-ds bg-ds-sky p-7">
+            <h2 id="sm-loc" className="ds-subheading uppercase tracking-[0.04em] text-ds-primary">Location Pages</h2>
+            <p className="ds-body-lg mt-4 text-ds-text-2">Location pages are coming soon. Explore <a href="/florida-coverage" className={link}>Coverage</a> in the meantime.</p>
+          </section>
         </div>
-      </div>
-    </PublicPage>
+      </main>
+    </div>
   );
 }
