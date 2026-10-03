@@ -11,7 +11,9 @@ import founderImg from "@/assets/home/founder-provider.jpg";
 /** Real public phone number goes in CONTACT_INFO.phone. Empty = show "Call Us" with no link. */
 export const PUBLIC_PHONE = CONTACT_INFO.phone;
 export const PUBLIC_EMAIL = CONTACT_INFO.email;
-export const phoneHref = (p: string) => `tel:${p.replace(/[^\d+]/g, "")}`;
+/** Temporary placeholder number; dial string set explicitly. */
+export const PUBLIC_PHONE_TEL = "tel:5555555555";
+export const phoneHref = (_p: string) => PUBLIC_PHONE_TEL;
 
 /** Temporary AI-generated placeholder photos — replace with licensed/approved photos. */
 export const HOME_IMAGES = {
@@ -24,8 +26,16 @@ export const HOME_IMAGES = {
 } as const;
 
 /** Temporary destinations. TODO(routing phase): replace with real pages. */
+export const BOOKING_ROUTE = "/book";
+/** Existing training products (titles/slugs from the live course catalog). */
+export const TRAINING = [
+  { title: "HIPAA Training for NEMT", href: "/shop/hipaa" },
+  { title: "Florida Basic NEMT Test", href: "/shop/nemt-certification" },
+] as const;
 export const LINKS = {
-  book: "/book",
+  book: BOOKING_ROUTE,
+  createAccount: "/create-account",
+  faq: "/frequently-asked-questions",
   join: "/join",
   training: "/shop",
   signIn: "/login",
