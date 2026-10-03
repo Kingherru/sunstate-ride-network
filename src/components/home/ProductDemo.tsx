@@ -29,8 +29,9 @@ function Preview({ id }: { id: Id }) {
     case "notes":
       return (
         <div className="grid gap-4 @md:grid-cols-[1fr_auto_1fr] @md:items-center">
-          <div className="rounded-ds-sm bg-ds-sand p-4 font-mono text-[0.8rem] leading-relaxed text-ds-on-soft">
-            need wc pickup tues 9:15am<br />sunrise villas bldg C → lakeside clinic suite 204<br />return ~11:30 pt uses own chair, 1 escort
+          <div className="ds-notepad rounded-ds-sm text-[0.95rem] text-ds-on-surface">
+            <p className="ds-label px-4 pt-3 text-ds-primary">Smart Notes</p>
+            <p className="px-4 pb-4">need wc pickup tues 9:15am<br />sunrise villas bldg C → lakeside clinic suite 204<br />return ~11:30 pt uses own chair, 1 escort</p>
           </div>
           <ArrowRight className="mx-auto size-6 rotate-90 text-ds-accent @md:rotate-0" aria-hidden />
           <div className="rounded-ds-sm bg-ds-subtle p-4">
