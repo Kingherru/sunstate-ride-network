@@ -1,62 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowLeftRight, CalendarPlus, Check, Minus, Network, Truck, Users } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, CalendarPlus, Check, Minus, Network, UserPlus, Users } from "lucide-react";
 import { PublicPage } from "@/components/public/PublicPage";
-import { CtaBand, HeroActions, PageHero, SectionHead, Steps, pageHead } from "@/components/public/page-kit";
+import { CtaBand, PageHero, Reveal, SectionHead, Steps, pageHead } from "@/components/public/page-kit";
+import { LINKS } from "@/lib/site-config";
+import { FAQ_ITEMS } from "@/lib/faq";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => pageHead(
     "/how-it-works",
-    "How My Florida NEMT Works — Trip Requests & Provider-to-Provider Connections",
-    "See the two ways to connect through My Florida NEMT: customers and facilities requesting trips from providers, and providers sharing trips with other providers.",
+    "How MY FLORIDA NEMT Works — Trip Requests & NEMT Provider Network",
+    "How Florida NEMT trip requests and provider-to-provider connections work: create an account, submit a request, and how independent NEMT providers share trips.",
     "How It Works",
   ),
   component: HowPage,
 });
 
 const PATH_A = [
-  { t: "Submit the trip details.", d: "Pickup, destination, timing and mobility needs." },
-  { t: "The request is shared through the network.", d: "Based on the trip’s needs and location." },
-  { t: "A participating provider reviews it.", d: "They check availability and trip requirements." },
-  { t: "You receive confirmation.", d: "Provider details are shared when the trip is accepted." },
-  { t: "The trip is completed.", d: "By the participating transportation provider." },
+  { t: "Create an account or request as a guest.", d: "Patients, private-pay customers, caregivers, facilities and hospitals can all request trips." },
+  { t: "Submit the trip request.", d: "Pickup, destination, date and time, mobility needs and an authorized contact." },
+  { t: "Participating providers review it.", d: "They check availability, equipment and trip requirements." },
+  { t: "A provider accepts — or it isn’t covered.", d: "A request is not confirmed until an independent provider accepts it." },
+  { t: "The provider completes the trip.", d: "Provider details are shared once the trip is accepted." },
 ];
 const PATH_B = [
-  { t: "A provider shares a trip it needs covered.", d: "Posted to the network with the key details." },
-  { t: "Qualified providers see the opportunity.", d: "Other participating providers can review it." },
-  { t: "Details and terms are reviewed.", d: "Providers check trip details and applicable terms." },
-  { t: "A receiving provider accepts.", d: "The trip moves to that provider." },
-  { t: "Both follow it through completion.", d: "Using the network’s trip tools." },
+  { t: "Join the provider network.", d: "Create a provider account and complete your business details." },
+  { t: "Receive and review opportunities.", d: "See trip requests and shared trips that fit your area and equipment." },
+  { t: "Share trips you can’t cover.", d: "Offer them to other participating providers instead of turning riders away." },
+  { t: "Connect business to business.", d: "Work provider to provider or contractor to contractor when extra support is needed." },
+  { t: "Follow trips through completion.", d: "Using the network’s trip tools on desktop, tablet or phone." },
 ];
+const IS = ["A peer-to-peer NEMT provider network", "A public booking connection for patients, customers and facilities", "Trip organization and communication tools"];
+const ISNT = ["Not an emergency service — call 911 for emergencies", "Not a transportation broker or traditional dispatch company", "Not an unrestricted marketplace", "Not the operator of every trip in the network"];
 
-const DOES = [
-  "Helps people and organizations request planned transportation",
-  "Helps providers connect with other providers",
-  "Supports trip communication and organization",
-  "Provides network tools on desktop, tablet and mobile",
-  "Supports a growing statewide network",
-];
-const NOT = [
-  "Not an emergency transportation service",
-  "Not a guarantee that every request will be accepted",
-  "Not a replacement for a provider’s licensing, insurance or compliance responsibilities",
-  "Not a claim that MY FLORIDA NEMT directly operates every trip shown in the network",
-];
-
-const FAQ = [
-  { q: "Who can request a trip?", a: "Riders, family members, caregivers, facilities and organizations can request planned, non-emergency transportation." },
-  { q: "Can facilities use the network?", a: "Yes. Hospitals, care communities, medical offices and case managers can request trips. Facility accounts for teams are being prepared." },
-  { q: "Can providers share trips with other providers?", a: "Yes. Provider-to-provider sharing is a core part of the network: a provider can offer a trip it can’t cover, and another participating provider can accept it." },
-  { q: "Is service available in every Florida county?", a: "Not yet guaranteed. The network is built around all 67 counties, but participation is still growing and availability depends on the trip, timing, equipment and participating providers." },
-  { q: "Is MY FLORIDA NEMT an emergency service?", a: "No. It is for planned, non-emergency transportation. For a medical emergency, call 911." },
-  { q: "Can the network be used from a phone or tablet?", a: "Yes. Requests and provider tools are designed to work on desktop, tablet and mobile." },
-];
-
-function PathCard({ id, icon: Icon, label, title, steps, tone, step }: { id: string; icon: typeof Users; label: string; title: string; steps: typeof PATH_A; tone: string; step: string }) {
+function Path({ id, icon: Icon, title, steps, tone, cta }: { id: string; icon: typeof Users; title: string; steps: typeof PATH_A; tone: string; cta: { href: string; label: string } }) {
   return (
-    <section aria-labelledby={id} className={`rounded-ds-lg p-6 sm:p-9 ${tone}`}>
-      <p className="ds-label flex items-center gap-2 text-ds-primary"><Icon className="size-5" aria-hidden />{label}</p>
-      <h2 id={id} className="ds-section-title mt-2 text-ds-primary">{title}</h2>
-      <div className="mt-7"><Steps steps={steps} tone={step} /></div>
+    <section aria-labelledby={id} className={`flex h-full flex-col rounded-ds-lg p-6 sm:p-9 ${tone}`}>
+      <h2 id={id} className="ds-section-title flex items-center gap-3 uppercase text-ds-primary"><Icon className="size-7 shrink-0" aria-hidden />{title}</h2>
+      <div className="mt-7 flex-1"><Steps steps={steps} /></div>
+      <a href={cta.href} className="ds-button-text mt-7 inline-flex items-center gap-2 uppercase text-ds-link hover:underline underline-offset-4">{cta.label}<ArrowRight className="size-4" aria-hidden /></a>
     </section>
   );
 }
@@ -66,61 +47,51 @@ function HowPage() {
     <PublicPage>
       <PageHero
         crumb="How It Works"
-        eyebrow="HOW IT WORKS"
-        title="One network. Two ways to connect."
-        intro={<p>MY FLORIDA NEMT gives customers and facilities a public way to request planned transportation — and gives independent providers a way to connect and share trips with each other. Both paths matter equally.</p>}
-      >
-        <HeroActions secondary="join" />
-      </PageHero>
+        title="How the network works"
+        intro={<p>Two ways to connect: customers and facilities request planned transportation from participating providers, and providers share trips with one another.</p>}
+      />
 
       <div className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-6 lg:grid-cols-2">
-          <PathCard id="path-a" icon={Users} label="Path A · Customers & facilities → providers" title="Request planned transportation" steps={PATH_A} tone="bg-ds-sky" step="bg-ds-primary text-ds-on-primary" />
-          <PathCard id="path-b" icon={ArrowLeftRight} label="Path B · Provider ↔ provider" title="Share and accept trips between providers" steps={PATH_B} tone="bg-ds-peach" step="bg-ds-action text-ds-on-action" />
+          <Reveal direction="left"><Path id="path-a" icon={Users} title="For customers and facilities" steps={PATH_A} tone="bg-ds-sky" cta={{ href: "/for-facilities", label: "Patients and facilities" }} /></Reveal>
+          <Reveal direction="right"><Path id="path-b" icon={ArrowLeftRight} title="For NEMT providers" steps={PATH_B} tone="bg-ds-membership" cta={{ href: "/for-providers", label: "Providers page" }} /></Reveal>
         </div>
-        <div className="mfn-container mt-6 grid gap-4 md:grid-cols-2">
-          <p className="ds-body-lg rounded-ds bg-ds-subtle p-5">Submitting a request does not guarantee acceptance or availability.</p>
-          <p className="ds-body-lg rounded-ds bg-ds-subtle p-5">Participating providers remain independent businesses, responsible for their own licensing, insurance, vehicles, staff, compliance and service decisions.</p>
-        </div>
+        <p className="ds-body-lg mfn-container mx-auto mt-8 max-w-3xl text-center text-ds-text-2">Submitting a request does not guarantee acceptance or availability. Participating providers remain independent businesses responsible for their own licensing, insurance, vehicles and operations.</p>
       </div>
 
       <section aria-labelledby="role-title" className="mfn-section bg-ds-primary text-ds-on-primary">
         <div className="mfn-container">
-          <SectionHead onBlue id="role-title" eyebrow="Our role" title="What MY FLORIDA NEMT does — and what it isn’t." />
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
-            <div className="rounded-ds bg-ds-primary-hover p-6 sm:p-8">
-              <h3 className="ds-subheading flex items-center gap-2"><Network className="size-5 text-ds-accent" aria-hidden />What we do</h3>
-              <ul className="mt-4 space-y-3">{DOES.map((d) => <li key={d} className="ds-body-lg flex gap-3"><Check className="mt-1 size-5 shrink-0 text-ds-accent" aria-hidden />{d}</li>)}</ul>
-            </div>
-            <div className="rounded-ds bg-ds-primary-hover p-6 sm:p-8">
-              <h3 className="ds-subheading flex items-center gap-2"><Truck className="size-5 text-ds-accent" aria-hidden />What we are not</h3>
-              <ul className="mt-4 space-y-3">{NOT.map((d) => <li key={d} className="ds-body-lg flex gap-3"><Minus className="mt-1 size-5 shrink-0 text-ds-accent" aria-hidden />{d}</li>)}</ul>
-            </div>
+          <Reveal><SectionHead onBlue id="role-title" title="What MY FLORIDA NEMT is — and isn’t" intro={<span className="opacity-90">A peer-to-peer provider network with a public booking connection.</span>} /></Reveal>
+          <div className="mx-auto mt-10 grid max-w-5xl gap-6 md:grid-cols-2">
+            <ul className="space-y-3 rounded-ds bg-ds-primary-hover p-6 sm:p-8">{IS.map((d) => <li key={d} className="ds-body-lg flex gap-3"><Check className="mt-1 size-5 shrink-0 text-ds-accent" aria-hidden />{d}</li>)}</ul>
+            <ul className="space-y-3 rounded-ds bg-ds-primary-hover p-6 sm:p-8">{ISNT.map((d) => <li key={d} className="ds-body-lg flex gap-3"><Minus className="mt-1 size-5 shrink-0 text-ds-accent" aria-hidden />{d}</li>)}</ul>
           </div>
         </div>
       </section>
 
       <section aria-labelledby="faq-title" className="mfn-section bg-ds-bg">
-        <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-14">
-          <SectionHead align="left" id="faq-title" eyebrow="FAQ" title="Common questions" />
-          <div className="divide-y divide-ds-border">
-            {FAQ.map((f) => (
-              <details key={f.q} className="group py-2">
-                <summary className="ds-subheading flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-ds-sm text-ds-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
-                  <h3>{f.q}</h3><span aria-hidden className="text-2xl text-ds-accent-active group-open:rotate-45 ds-transition">+</span>
-                </summary>
-                <p className="ds-body-lg mfn-read pb-4 text-ds-text-2">{f.a}</p>
-              </details>
+        <div className="mfn-container mx-auto max-w-3xl">
+          <Reveal><SectionHead id="faq-title" title="People also ask" /></Reveal>
+          <div className="mt-8 divide-y divide-ds-border">
+            {FAQ_ITEMS.slice(0, 4).map((f) => (
+              <div key={f.q} className="py-5">
+                <h3 className="ds-subheading text-ds-primary">{f.q}</h3>
+                <p className="ds-body-lg mt-2 text-ds-text-2">{f.a}</p>
+              </div>
             ))}
           </div>
+          <p className="mt-6 text-center"><a href={LINKS.faq} className="ds-button-text inline-flex items-center gap-2 uppercase text-ds-link hover:underline underline-offset-4">See all questions<ArrowRight className="size-4" aria-hidden /></a></p>
         </div>
       </section>
 
       <CtaBand
-        title="Start with the path that fits you."
+        title="Start with the path that fits you"
         text="Request a planned trip, or join the provider network to share and accept trips."
-        primary={{ label: "Book a Trip", to: "/book", icon: CalendarPlus }}
-        secondary={{ label: "Join the Provider Network", to: "/join", icon: Network }}
+        actions={[
+          { label: "Submit Trip Request", to: LINKS.book, icon: CalendarPlus },
+          { label: "Create an Account", to: LINKS.createAccount, icon: UserPlus },
+          { label: "Join the Provider Network", to: LINKS.join, icon: Network },
+        ]}
       />
     </PublicPage>
   );
