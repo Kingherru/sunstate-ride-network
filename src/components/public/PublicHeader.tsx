@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarPlus, Menu, Phone, X } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
-import { LINKS, PUBLIC_PHONE, phoneHref } from "@/lib/site-config";
+import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL } from "@/lib/site-config";
 
 const NAV = [
   { label: "Services", to: "/services" },
@@ -29,13 +29,13 @@ function ActionBlocks({ className, full }: { className?: string; full?: boolean 
   return (
     <div className={cn("items-center gap-5", full ? "flex flex-col items-start" : "flex", className)}>
       {PUBLIC_PHONE ? (
-        <a href={phoneHref(PUBLIC_PHONE)} className={cn(item, "text-ds-on-primary hover:opacity-80", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
-          <Phone aria-hidden />{PUBLIC_PHONE}
+        <a href={PUBLIC_PHONE_TEL} className={cn(item, "text-ds-on-primary hover:opacity-80", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
+          <Phone aria-hidden />Call Us
         </a>
       ) : (
         <span className={cn(item, "text-ds-on-primary")}><Phone aria-hidden />Call Us</span>
       )}
-      <a href={LINKS.book} className={cn(item, "ds-nudge text-ds-accent hover:opacity-80", focus)}>
+      <a href={BOOKING_ROUTE} className={cn(item, "ds-nudge text-ds-accent hover:opacity-80", focus)}>
         <CalendarPlus aria-hidden />Book a Trip
       </a>
     </div>

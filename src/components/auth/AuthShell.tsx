@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { PublicPage } from "@/components/public/PublicPage";
+import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 
 /** Shared layout for sign-in, account creation and password recovery. */
 export function AuthShell({ title, intro, children, wide = false }: { title: string; intro?: React.ReactNode; children: React.ReactNode; wide?: boolean }) {
   return (
-    <PublicPage>
-      <section className="bg-ds-sky px-5 py-14 sm:py-20">
+    <div className="theme-public flex min-h-screen flex-col bg-ds-sky">
+      <div className="px-5 pt-8 text-center">
+        <a href="/" aria-label="MY FLORIDA NEMT home" className="inline-block rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName className="text-2xl" /></a>
+      </div>
+      <main id="main" className="flex-1 px-5 py-10 sm:py-14">
         <div className={cn("auth-enter mx-auto w-full rounded-ds-lg bg-ds-surface p-6 shadow-[0_8px_30px_rgba(19,51,90,0.08)] sm:p-10", wide ? "max-w-2xl" : "max-w-md")}>
           <h1 className="ds-h2 text-center uppercase text-ds-primary">{title}</h1>
           {intro && <p className="ds-body mt-3 text-center text-ds-text-2">{intro}</p>}
           <div className="mt-8">{children}</div>
         </div>
-      </section>
-    </PublicPage>
+      </main>
+      <p className="pb-8 text-center"><a href="/" className="ds-support uppercase tracking-[0.06em] text-ds-link underline underline-offset-4">Back to website</a></p>
+    </div>
   );
 }
 
