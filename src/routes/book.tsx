@@ -21,28 +21,24 @@ import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TimePickerField, TimeSelect } from "@/components/ui/time-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
-import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
+import { PublicPage } from "@/components/public/PublicPage";
+import { NonEmergencyNotice, pageHead } from "@/components/public/page-kit";
+import { LINKS } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 
 
+const SERVICE_PARAM: Record<string, RideRequestInput["transportType"]> = { ambulatory: "ambulatory", wheelchair: "wheelchair", stretcher: "gurney" };
+
 export const Route = createFileRoute("/book")({
   validateSearch: (s: Record<string, unknown>) =>
-    z.object({ copyFrom: z.string().uuid().optional() }).parse(s),
-  head: () => ({
-    meta: [
-      { title: "Request a Ride — My Florida NEMT" },
-      {
-        name: "description",
-        content:
-          "Book non-emergency medical transportation anywhere in Florida. Ambulatory, wheelchair, and gurney transport with on-time pickup.",
-      },
-      { property: "og:title", content: "Request a Ride — My Florida NEMT" },
-      { property: "og:description", content: "Book NEMT transport across Florida." },
-      { property: "og:url", content: "https://myfloridanemt.com/request-a-ride" },
-    ],
-    links: [{ rel: "canonical", href: "https://myfloridanemt.com/request-a-ride" }],
-  }),
-  component: RequestRidePage,
+    z.object({ copyFrom: z.string().uuid().optional(), service: z.string().max(40).optional().catch(undefined) }).parse(s),
+  head: () => pageHead(
+    "/book",
+    "Submit a Florida NEMT Trip Request — Book a Trip | MY FLORIDA NEMT",
+    "Request ambulatory, wheelchair or stretcher non-emergency medical transportation in Florida. Participating independent providers review each request; acceptance is required.",
+    "Book a Trip",
+  ),
+  component: () => <PublicPage><RequestRidePage /></PublicPage>,
 });
 
 const empty: RideRequestInput = {
@@ -171,7 +167,7 @@ function Field({
 
 
 const inputCls =
-  "w-full bg-ds-surface border border-ds-border rounded-ds-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-ds-sky-border transition-all";
+  "w-full bg-ds-surface border border-ds-border rounded-ds-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ds-focus focus:border-ds-sky-border transition-all";
 
 function haversineMiles(lat1: number | null, lng1: number | null, lat2: number | null, lng2: number | null): number {
   if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return 0;
@@ -185,11 +181,11 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
 
 function RequestRidePage() {
   const router = useRouter();
-  const { copyFrom } = Route.useSearch();
+  const { copyFrom, service } = Route.useSearch();
   const submit = useServerFn(submitRideRequest);
   const enrich = useServerFn(enrichRideRequest);
   const fetchOne = useServerFn(getMyRequest);
-  const [form, setForm] = useState<RideRequestInput>(empty);
+  const [form, setForm] = useState<RideRequestInput>(() => (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [returnDateManual, setReturnDateManual] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -398,37 +394,9 @@ function RequestRidePage() {
           }
         } catch { /* ignore — non-fatal */ }
         setDone({ id: res.id, ...enrichedInfo });
-        toast.success("Ride request received. A dispatcher will contact you shortly.");
+        toast.success("Trip request submitted. It is not confirmed until a provider accepts it.");
         router.invalidate();
 
-        // Optional: create a Patient Portal account with the same email.
-        if (parsed.data.createAccount && parsed.data.patientEmail) {
-          try {
-            const { data: existing } = await supabase.auth.getUser();
-            if (!existing.user) {
-              const { error: signUpErr } = await supabase.auth.signUp({
-                email: parsed.data.patientEmail,
-                password: crypto.randomUUID() + "Aa1!",
-                options: {
-                  emailRedirectTo: `${window.location.origin}/reset-password`,
-                  data: {
-                    portal: "patient",
-                    first_name: parsed.data.patientFirstName,
-                    last_name: parsed.data.patientLastName,
-                  },
-                },
-              });
-              if (!signUpErr) {
-                await supabase.auth.resetPasswordForEmail(parsed.data.patientEmail, {
-                  redirectTo: `${window.location.origin}/reset-password`,
-                });
-                toast.success("Check your email to finish creating your Patient Portal account.");
-              }
-            }
-          } catch (e) {
-            console.error("account creation failed", e);
-          }
-        }
         if (remember) {
           try { localStorage.setItem(DRAFT_KEY, JSON.stringify({
             patientFirstName: parsed.data.patientFirstName,
@@ -451,7 +419,7 @@ function RequestRidePage() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong. Please call (800) 555-0199.");
+      toast.error("Something went wrong. Please try again or call us.");
     } finally {
       setSubmitting(false);
     }
@@ -469,7 +437,7 @@ function RequestRidePage() {
           <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
             Confirmation #{done.id.slice(0, 8).toUpperCase()}
           </p>
-          <h1 className="text-5xl font-extrabold tracking-tighter mb-6">Ride request received.</h1>
+          <h1 className="ds-display mb-6 uppercase text-ds-primary">Trip request submitted</h1>
 
           {hasRoute && (
             <div className="bg-ds-surface border border-ds-border rounded-ds-sm p-5 mb-6 text-left">
@@ -516,61 +484,34 @@ function RequestRidePage() {
                 Open route in Google Maps →
               </a>
               <p className="mt-4 text-[11px] leading-relaxed text-ds-text-2 border-t border-ds-border pt-3">
-                <strong className="font-bold text-ds-on-surface">This is an estimate only.</strong> The final price may change after dispatcher review, provider assignment, wait time, additional stops, or manual quoting. You will receive a confirmed price before your trip is dispatched.
+                <strong className="font-bold text-ds-on-surface">This is an estimate only.</strong> The final price is set by the accepting provider and may change with wait time, additional stops, or manual quoting. A provider confirms pricing before accepting the trip.
               </p>
             </div>
           )}
 
-          <p className="text-ds-text-2 text-lg mb-10">
-            A dispatcher will confirm your pickup details by phone or email within 2 hours. Please be
-            on the lookout for our communication. For urgent same-day requests, call{" "}
-            <a href="tel:8005550199" className="text-ds-primary font-bold">(800) 555-0199</a>.
+          <p className="ds-body-lg mb-10 text-ds-text-2">
+            Your request has been submitted. It is <strong>not a confirmed trip</strong> until a participating independent provider reviews and accepts it. We'll contact you using the details you provided.
           </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link
-              to="/requests/$id"
-              params={{ id: done.id }}
-              className="inline-block px-8 py-4 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-wide uppercase"
-            >
-              Preview trip details
-            </Link>
-            <Link
-              to="/"
-              className="inline-block px-8 py-4 bg-ds-surface border border-ds-border text-ds-on-surface font-bold rounded-ds-sm text-sm tracking-wide uppercase"
-            >
-              Back to home
-            </Link>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link to="/" className="ds-button-text inline-flex min-h-12 items-center rounded-ds-sm bg-ds-primary px-6 uppercase text-ds-on-primary hover:bg-ds-primary-hover">Back to home</Link>
+            <a href={LINKS.createAccount} className="ds-button-text inline-flex min-h-12 items-center rounded-ds-sm bg-ds-sky px-6 uppercase text-ds-primary hover:bg-ds-hover">Create an account</a>
           </div>
-          <p className="mt-4 text-xs text-ds-text-2">
-            You can review and edit the reservation from the trip details page until a dispatcher claims it.
-          </p>
-
-          <CopyTripToDates
-            sourceId={done.id}
-            defaultPickupTime={form.pickupTime}
-            defaultAppointmentTime={form.appointmentTime}
-            defaultReturnPickupTime={form.returnPickupTime}
-            defaultReturnDropoffTime={form.returnDropoffTime}
-            isRoundTrip={form.tripType === "round_trip"}
-          />
-
-
         </div>
       </section>
     );
   }
 
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-3xl mx-auto">
-        <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
-          New Trip Intake
+    <section className="bg-ds-bg px-5 py-16 sm:px-6 lg:py-20">
+      <div className="mx-auto max-w-3xl">
+        <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>
+        <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
+          Share the trip details below. Independent providers in the MY FLORIDA NEMT network review each request — submitting does not guarantee a ride until a provider accepts it.
         </p>
-        <h1 className="text-5xl font-extrabold tracking-tighter mb-4">Request a Ride</h1>
-        <p className="text-ds-text-2 text-lg mb-12 max-w-[55ch]">
-          Tell us about the trip. A dispatcher will confirm by phone within 2 hours. For same-day
-          urgent requests, please call directly.
-        </p>
+        <div role="note" className="ds-body-lg mx-auto mt-6 mb-6 max-w-[46rem] rounded-ds bg-ds-membership p-5 text-center text-ds-primary">
+          <strong>Please submit requests 48–72 hours in advance</strong> whenever possible so providers have time to review and plan the trip.
+        </div>
+        <NonEmergencyNotice className="mb-10" />
 
         {copiedFromId && (
           <div className="mb-6 rounded-ds-sm border border-ds-sky-border bg-ds-sky px-4 py-3 text-sm">
@@ -1115,31 +1056,19 @@ function RequestRidePage() {
             ))}
           </datalist>
 
-          {form.patientEmail && (
-            <label className="flex items-start gap-3 text-sm bg-ds-sky border border-ds-sky-border rounded-ds-sm p-4">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={form.createAccount ?? false}
-                onChange={(e) => upd("createAccount", e.target.checked)}
-              />
-              <span>
-                <strong className="font-bold">Create a Patient Portal account</strong> using{" "}
-                <span className="">{form.patientEmail}</span>. We'll email you a link to set
-                your password so you can track this ride, save patients, and book future trips faster.
-              </span>
-            </label>
-          )}
+          <p className="ds-body rounded-ds-sm bg-ds-sky p-4 text-ds-on-surface">
+            Want to track requests and save details for next time? <a href={LINKS.createAccount} className="font-semibold text-ds-link underline underline-offset-4">Create an account</a> — it's optional.
+          </p>
 
           <button
             type="submit"
             disabled={submitting}
             className="w-full px-8 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-widest uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
           >
-            {submitting ? "Submitting…" : "Submit ride request"}
+            {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
           </button>
           <p className="text-xs text-ds-text-2 text-center">
-            By submitting you agree to be contacted about this trip. We never share patient info.
+            By submitting you agree to be contacted about this trip. Submitting is a request, not a confirmed booking.
           </p>
         </form>
       </div>
