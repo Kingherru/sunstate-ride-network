@@ -28,6 +28,7 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TrainingRouteImport } from './routes/training'
 import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authenticated/account-setup'
 import { Route as AuthenticatedAccountStatusRouteImport } from './routes/_authenticated/account-status'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -36,6 +37,8 @@ import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as FloridaCoverageIndexRouteImport } from './routes/florida-coverage.index'
+import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as ServicesServiceRouteImport } from './routes/services.$service'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
@@ -157,6 +160,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrainingRoute = TrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAccountSetupRoute =
   AuthenticatedAccountSetupRouteImport.update({
     id: '/account-setup',
@@ -197,6 +205,16 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const FloridaCoverageIndexRoute = FloridaCoverageIndexRouteImport.update({
   id: '/florida-coverage/',
   path: '/florida-coverage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/resources/',
+  path: '/resources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
+  id: '/resources/$slug',
+  path: '/resources/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesIndexRoute = ServicesIndexRouteImport.update({
@@ -358,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/training': typeof TrainingRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -365,11 +384,13 @@ export interface FileRoutesByFullPath {
   '/portal': typeof AuthenticatedPortalRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/florida-coverage/': typeof FloridaCoverageIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -410,17 +431,20 @@ export interface FileRoutesByTo {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/training': typeof TrainingRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/portal': typeof AuthenticatedPortalRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/florida-coverage': typeof FloridaCoverageIndexRoute
+  '/resources': typeof ResourcesIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -464,6 +488,7 @@ export interface FileRoutesById {
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/training': typeof TrainingRoute
   '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
   '/_authenticated/account-status': typeof AuthenticatedAccountStatusRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -471,11 +496,13 @@ export interface FileRoutesById {
   '/_authenticated/portal': typeof AuthenticatedPortalRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
   '/florida-coverage/': typeof FloridaCoverageIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -519,6 +546,7 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/training'
     | '/account-setup'
     | '/account-status'
     | '/admin'
@@ -526,11 +554,13 @@ export interface FileRouteTypes {
     | '/portal'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/resources/$slug'
     | '/services/$service'
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
     | '/florida-coverage/'
+    | '/resources/'
     | '/services/'
     | '/shop/'
     | '/learn/$slug'
@@ -571,17 +601,20 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/training'
     | '/account-setup'
     | '/account-status'
     | '/admin'
     | '/portal'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/resources/$slug'
     | '/services/$service'
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
     | '/florida-coverage'
+    | '/resources'
     | '/services'
     | '/shop'
     | '/learn/$slug'
@@ -624,6 +657,7 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
+    | '/training'
     | '/_authenticated/account-setup'
     | '/_authenticated/account-status'
     | '/_authenticated/admin'
@@ -631,11 +665,13 @@ export interface FileRouteTypes {
     | '/_authenticated/portal'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/resources/$slug'
     | '/services/$service'
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
     | '/florida-coverage/'
+    | '/resources/'
     | '/services/'
     | '/shop/'
     | '/_authenticated/learn/$slug'
@@ -679,11 +715,14 @@ export interface RootRouteChildren {
   SitemapRoute: typeof SitemapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  TrainingRoute: typeof TrainingRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  ResourcesSlugRoute: typeof ResourcesSlugRoute
   ServicesServiceRoute: typeof ServicesServiceRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
   FloridaCoverageIndexRoute: typeof FloridaCoverageIndexRoute
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
@@ -839,6 +878,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/training': {
+      id: '/training'
+      path: '/training'
+      fullPath: '/training'
+      preLoaderRoute: typeof TrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/account-setup': {
       id: '/_authenticated/account-setup'
       path: '/account-setup'
@@ -893,6 +939,20 @@ declare module '@tanstack/react-router' {
       path: '/florida-coverage'
       fullPath: '/florida-coverage/'
       preLoaderRoute: typeof FloridaCoverageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/': {
+      id: '/resources/'
+      path: '/resources'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/$slug': {
+      id: '/resources/$slug'
+      path: '/resources/$slug'
+      fullPath: '/resources/$slug'
+      preLoaderRoute: typeof ResourcesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services/': {
@@ -1139,11 +1199,14 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapRoute: SitemapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  TrainingRoute: TrainingRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  ResourcesSlugRoute: ResourcesSlugRoute,
   ServicesServiceRoute: ServicesServiceRoute,
   VerifyTokenRoute: VerifyTokenRoute,
   FloridaCoverageIndexRoute: FloridaCoverageIndexRoute,
+  ResourcesIndexRoute: ResourcesIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,

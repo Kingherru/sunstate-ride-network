@@ -1,3 +1,5 @@
+import { REGIONS, CITIES, cityPath, countyPath } from "@/lib/coverage";
+import { RESOURCES } from "@/lib/resources-content";
 import { createFileRoute } from "@tanstack/react-router";
 import { BrandName } from "@/components/brand/BrandName";
 import { SITE } from "@/components/public/page-kit";
@@ -31,8 +33,8 @@ const GROUPS: { h: string; items: { label: string; href: string }[] }[] = [
     { label: "Services Overview", href: "/services" }, { label: "Ambulatory", href: "/services/ambulatory" }, { label: "Wheelchair", href: "/services/wheelchair" },
     { label: "Stretcher or Specialized", href: "/services/stretcher" }, { label: "Medical Delivery", href: "/services/medical-delivery" },
   ] },
-  { h: "Training", items: [{ label: "Training Shop", href: "/shop" }, ...TRAINING.map((t) => ({ label: t.title, href: t.href }))] },
-  { h: "Resources", items: [{ label: "Resources", href: "/resources" }, { label: "People Also Ask", href: "/frequently-asked-questions" }] },
+  { h: "Training", items: [{ label: "Training", href: "/training" }, { label: "Training Shop", href: "/shop" }, ...TRAINING.map((t) => ({ label: t.title, href: t.href }))] },
+  { h: "Resources", items: [{ label: "Resources", href: "/resources" }, ...RESOURCES.map((r) => ({ label: r.title, href: `/resources/${r.slug}` })), { label: "People Also Ask", href: "/frequently-asked-questions" }] },
   { h: "Policies", items: [{ label: "Privacy Policy", href: "/privacy" }, { label: "Terms of Use", href: "/terms" }, { label: "Accessibility Statement", href: "/accessibility" }] },
 ];
 
@@ -54,9 +56,16 @@ function SiteMapPage() {
               <ul className="mt-4 space-y-3">{g.items.map((x) => <li key={x.href}><a href={x.href} className={link}>{x.label}</a></li>)}</ul>
             </section>
           ))}
-          <section aria-labelledby="sm-loc" className="rounded-ds bg-ds-sky p-7">
-            <h2 id="sm-loc" className="ds-subheading uppercase tracking-[0.04em] text-ds-primary">Location Pages</h2>
-            <p className="ds-body-lg mt-4 text-ds-text-2">Location pages are coming soon. Explore <a href="/florida-coverage" className={link}>Coverage</a> in the meantime.</p>
+          <section aria-labelledby="sm-loc" className="rounded-ds bg-ds-sky p-7 sm:col-span-2 lg:col-span-3">
+            <h2 id="sm-loc" className="ds-subheading uppercase tracking-[0.04em] text-ds-primary">Florida Coverage</h2>
+            <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {REGIONS.map((r) => (
+                <div key={r.slug}>
+                  <a href={`/florida-coverage/${r.slug}`} className={`${link} font-semibold`}>{r.name}</a>
+                  <ul className="mt-2 space-y-2 pl-3">{CITIES.filter((c) => r.counties.includes(c.county)).map((c) => <li key={c.slug}><a href={cityPath(c)} className={link}>{c.name}</a> <span className="ds-body text-ds-text-2">(<a href={countyPath(c.county)} className={link}>{c.county} County</a>)</span></li>)}</ul>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
       </main>
