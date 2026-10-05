@@ -25,7 +25,7 @@ import { CopyTripToDates } from "@/components/requests/CopyTripToDates";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 
 
-export const Route = createFileRoute("/request-a-ride")({
+export const Route = createFileRoute("/book")({
   validateSearch: (s: Record<string, unknown>) =>
     z.object({ copyFrom: z.string().uuid().optional() }).parse(s),
   head: () => ({
