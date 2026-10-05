@@ -66,7 +66,7 @@ export function DatePickerField({
             aria-label={label ?? placeholder}
             className={cn(
               "portal-input w-full justify-start text-left font-normal h-auto",
-              !parsed && "text-muted-foreground",
+              !parsed && "text-ds-text-2",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
@@ -101,7 +101,7 @@ export function DatePickerField({
           />
         </PopoverContent>
       </Popover>
-      {helperText && <p className="mt-1 text-xs text-muted-foreground">{helperText}</p>}
+      {helperText && <p className="mt-1 text-xs text-ds-text-2">{helperText}</p>}
       {required && (
         // Mirror the value for AT/autofill only. Intentionally NOT `required`:
         // a hidden (sr-only) required control is unfocusable, so the browser
