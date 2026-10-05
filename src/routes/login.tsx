@@ -3,8 +3,10 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAccessState, safeReturnPath } from "@/lib/access.functions";
 import { setRememberPreference } from "@/lib/session-persistence";
-import { AuthShell, AuthMessage, PasswordInput, authField, authLabel } from "@/components/auth/AuthShell";
+import { AuthMessage, PasswordInput, authField, authLabel } from "@/components/auth/AuthShell";
 import { btnAction } from "@/components/home/buttons";
+import { BrandName } from "@/components/brand/BrandName";
+import { HOME_IMAGES } from "@/lib/site-config";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>): { redirect?: string; verified?: "1" } => ({
@@ -67,7 +69,22 @@ function Login() {
   }
 
   return (
-    <AuthShell title="Sign In" intro="Welcome back. Sign in to continue.">
+    <div className="theme-public grid min-h-screen bg-ds-bg lg:grid-cols-[1.05fr_1fr]">
+      <aside className="relative hidden overflow-hidden bg-ds-primary lg:block" aria-hidden>
+        <img src={HOME_IMAGES.provider.src} width={HOME_IMAGES.provider.w} height={HOME_IMAGES.provider.h} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+        <div className="relative flex h-full flex-col justify-end p-12 text-ds-on-primary">
+          <p className="ds-section-title max-w-md uppercase">One sign-in for riders, providers, facilities and hospitals.</p>
+        </div>
+      </aside>
+      <main id="main" className="flex flex-col px-5 py-8 sm:px-10">
+        <div className="flex items-center justify-between">
+          <a href="/" aria-label="MY FLORIDA NEMT home" className="rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName className="text-xl" /></a>
+          <a href="/" className="ds-support uppercase tracking-[0.06em] text-ds-link underline-offset-4 hover:underline">Back to website</a>
+        </div>
+        <div className="auth-enter mx-auto my-auto w-full max-w-md py-10">
+          <h1 className="ds-page-title uppercase text-ds-primary">Sign in to MY FLORIDA <span className="text-ds-accent">NEMT</span></h1>
+          <p className="ds-body mt-3 text-ds-text-2">Patients and private-pay customers, providers, facilities and hospitals all sign in here. We'll take you to the right place for your account.</p>
+          <div className="mt-8">
       <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate={false}>
         {notice && <AuthMessage tone="success">{notice}</AuthMessage>}
         {error === "unverified" ? (
@@ -96,6 +113,9 @@ function Login() {
           New here? <Link to="/create-account" className="font-semibold text-ds-link underline underline-offset-4">Create an account</Link>
         </p>
       </form>
-    </AuthShell>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

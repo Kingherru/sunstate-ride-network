@@ -15,7 +15,7 @@ import { enforceSessionPersistence } from "@/lib/session-persistence";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { BrandName } from "@/components/brand/BrandName";
-import { PUBLIC_SHELL_PATHS } from "@/components/public/PublicPage";
+import { usesOwnShell } from "@/components/public/PublicPage";
 
 function NotFoundComponent() {
   return (
@@ -83,7 +83,7 @@ function RootComponent() {
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const ownShell = PUBLIC_SHELL_PATHS.includes(pathname);
+  const ownShell = usesOwnShell(pathname);
   return (
     <QueryClientProvider client={queryClient}>
       {ownShell ? (

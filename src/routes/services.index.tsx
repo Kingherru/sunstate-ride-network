@@ -4,7 +4,7 @@ import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, IconItem, NonEmergencyNotice, PageHero, Reveal, SectionHead, pageHead } from "@/components/public/page-kit";
 import { HOME_IMAGES, LINKS, PUBLIC_PHONE_TEL } from "@/lib/site-config";
 
-export const Route = createFileRoute("/services")({
+export const Route = createFileRoute("/services/")({
   head: () => pageHead(
     "/services",
     "Florida NEMT Services — Medical Rides, Wheelchair, Stretcher & Medical Delivery",
@@ -21,7 +21,7 @@ const SERVICES = [
     d: "Ramp- or lift-equipped vehicles for riders who travel seated in a wheelchair. Include whether it is manual or power, its approximate size and any transfer or securement needs." },
   { id: "stretcher", n: "Stretcher or specialized transportation", icon: BedSingle,
     d: "Planned, non-emergency trips for riders who need to lie flat or need extra positioning support. Mention stairs, narrow entrances, attendants and equipment traveling with the rider." },
-  { id: "delivery", n: "Medical delivery", icon: Package,
+  { id: "medical-delivery", n: "Medical delivery", icon: Package,
     d: "Florida medical delivery for time-sensitive supplies, specimens, equipment or paperwork. Share pickup and drop-off contacts, handling or temperature needs and the deadline." },
 ];
 
@@ -52,13 +52,13 @@ function ServicesPage() {
           <div className="mt-10 grid gap-5 md:grid-cols-2">
             {SERVICES.map((s, i) => (
               <Reveal key={s.id} delay={i * 80}>
-                <a id={s.id} href={`${LINKS.book}?service=${s.id}`} className="group flex h-full scroll-mt-24 flex-col rounded-ds bg-ds-sky p-6 ds-transition hover:bg-ds-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus sm:p-8">
+                <a id={s.id} href={`/services/${s.id}`} className="group flex h-full scroll-mt-24 flex-col rounded-ds bg-ds-sky p-6 ds-transition hover:bg-ds-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus sm:p-8">
                   <span className="flex items-center gap-4">
                     <span className="flex size-12 shrink-0 items-center justify-center rounded-ds-sm bg-ds-primary text-ds-on-primary"><s.icon className="size-6" aria-hidden /></span>
                     <h3 className="ds-section-title uppercase text-ds-primary">{s.n}</h3>
                   </span>
                   <p className="ds-body-lg mt-4 flex-1 text-ds-on-surface">{s.d}</p>
-                  <span className="ds-button-text mt-5 inline-flex items-center gap-2 uppercase text-ds-link">Request this service <ArrowRight className="size-4 ds-transition group-hover:translate-x-1" aria-hidden /></span>
+                  <span className="ds-button-text mt-5 inline-flex items-center gap-2 uppercase text-ds-link">Learn about this service <ArrowRight className="size-4 ds-transition group-hover:translate-x-1" aria-hidden /></span>
                 </a>
               </Reveal>
             ))}
