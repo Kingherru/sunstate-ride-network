@@ -15,7 +15,6 @@ import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
-import { Route as FloridaCoverageRouteImport } from './routes/florida-coverage'
 import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
 import { Route as ForProvidersRouteImport } from './routes/for-providers'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -25,7 +24,6 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -37,6 +35,7 @@ import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as FloridaCoverageIndexRouteImport } from './routes/florida-coverage.index'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as ServicesServiceRouteImport } from './routes/services.$service'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
@@ -92,11 +91,6 @@ const DesignSystemRoute = DesignSystemRouteImport.update({
   path: '/design-system',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FloridaCoverageRoute = FloridaCoverageRouteImport.update({
-  id: '/florida-coverage',
-  path: '/florida-coverage',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ForFacilitiesRoute = ForFacilitiesRouteImport.update({
   id: '/for-facilities',
   path: '/for-facilities',
@@ -141,11 +135,6 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResourcesRoute = ResourcesRouteImport.update({
-  id: '/resources',
-  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopRoute = ShopRouteImport.update({
@@ -205,6 +194,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FloridaCoverageIndexRoute = FloridaCoverageIndexRouteImport.update({
+  id: '/florida-coverage/',
+  path: '/florida-coverage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesIndexRoute = ServicesIndexRouteImport.update({
   id: '/services/',
   path: '/services/',
@@ -247,9 +241,9 @@ const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
 } as any)
 const FloridaCoverageRegionIndexRoute =
   FloridaCoverageRegionIndexRouteImport.update({
-    id: '/$region/',
-    path: '/$region/',
-    getParentRoute: () => FloridaCoverageRoute,
+    id: '/florida-coverage/$region/',
+    path: '/florida-coverage/$region/',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
@@ -288,15 +282,15 @@ const ApiPublicWebhooksDispatchRoute =
   } as any)
 const FloridaCoverageRegionCountyIndexRoute =
   FloridaCoverageRegionCountyIndexRouteImport.update({
-    id: '/$region/$county/',
-    path: '/$region/$county/',
-    getParentRoute: () => FloridaCoverageRoute,
+    id: '/florida-coverage/$region/$county/',
+    path: '/florida-coverage/$region/$county/',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const FloridaCoverageRegionCountyCityRoute =
   FloridaCoverageRegionCountyCityRouteImport.update({
-    id: '/$region/$county/$city',
-    path: '/$region/$county/$city',
-    getParentRoute: () => FloridaCoverageRoute,
+    id: '/florida-coverage/$region/$county/$city',
+    path: '/florida-coverage/$region/$county/$city',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
@@ -351,7 +345,6 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
-  '/florida-coverage': typeof FloridaCoverageRouteWithChildren
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -361,7 +354,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -377,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/florida-coverage/': typeof FloridaCoverageIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -405,7 +398,6 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
-  '/florida-coverage': typeof FloridaCoverageRouteWithChildren
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -415,7 +407,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -429,6 +420,7 @@ export interface FileRoutesByTo {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/florida-coverage': typeof FloridaCoverageIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -459,7 +451,6 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
-  '/florida-coverage': typeof FloridaCoverageRouteWithChildren
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -469,7 +460,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/resources': typeof ResourcesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -485,6 +475,7 @@ export interface FileRoutesById {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/florida-coverage/': typeof FloridaCoverageIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
@@ -515,7 +506,6 @@ export interface FileRouteTypes {
     | '/book'
     | '/create-account'
     | '/design-system'
-    | '/florida-coverage'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -525,7 +515,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
-    | '/resources'
     | '/shop'
     | '/sitemap'
     | '/sitemap.xml'
@@ -541,6 +530,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
+    | '/florida-coverage/'
     | '/services/'
     | '/shop/'
     | '/learn/$slug'
@@ -569,7 +559,6 @@ export interface FileRouteTypes {
     | '/book'
     | '/create-account'
     | '/design-system'
-    | '/florida-coverage'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -579,7 +568,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
-    | '/resources'
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
@@ -593,6 +581,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
+    | '/florida-coverage'
     | '/services'
     | '/shop'
     | '/learn/$slug'
@@ -622,7 +611,6 @@ export interface FileRouteTypes {
     | '/book'
     | '/create-account'
     | '/design-system'
-    | '/florida-coverage'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -632,7 +620,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/reset-password'
-    | '/resources'
     | '/shop'
     | '/sitemap'
     | '/sitemap.xml'
@@ -648,6 +635,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
+    | '/florida-coverage/'
     | '/services/'
     | '/shop/'
     | '/_authenticated/learn/$slug'
@@ -678,7 +666,6 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
-  FloridaCoverageRoute: typeof FloridaCoverageRouteWithChildren
   ForFacilitiesRoute: typeof ForFacilitiesRoute
   ForProvidersRoute: typeof ForProvidersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -688,7 +675,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ResourcesRoute: typeof ResourcesRoute
   ShopRoute: typeof ShopRouteWithChildren
   SitemapRoute: typeof SitemapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -697,18 +683,22 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ServicesServiceRoute: typeof ServicesServiceRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
+  FloridaCoverageIndexRoute: typeof FloridaCoverageIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
   ApiPublicHooksFinReleaseTickRoute: typeof ApiPublicHooksFinReleaseTickRoute
   ApiPublicHooksReleaseEligiblePayoutsRoute: typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicWebhooksDispatchRoute: typeof ApiPublicWebhooksDispatchRoute
+  FloridaCoverageRegionCountyCityRoute: typeof FloridaCoverageRegionCountyCityRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  FloridaCoverageRegionCountyIndexRoute: typeof FloridaCoverageRegionCountyIndexRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
   ApiPublicIntegrationsDuetEventsEventRoute: typeof ApiPublicIntegrationsDuetEventsEventRoute
@@ -756,13 +746,6 @@ declare module '@tanstack/react-router' {
       path: '/design-system'
       fullPath: '/design-system'
       preLoaderRoute: typeof DesignSystemRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/florida-coverage': {
-      id: '/florida-coverage'
-      path: '/florida-coverage'
-      fullPath: '/florida-coverage'
-      preLoaderRoute: typeof FloridaCoverageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-facilities': {
@@ -826,13 +809,6 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/resources': {
-      id: '/resources'
-      path: '/resources'
-      fullPath: '/resources'
-      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop': {
@@ -912,6 +888,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/florida-coverage/': {
+      id: '/florida-coverage/'
+      path: '/florida-coverage'
+      fullPath: '/florida-coverage/'
+      preLoaderRoute: typeof FloridaCoverageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services/': {
       id: '/services/'
       path: '/services'
@@ -970,10 +953,10 @@ declare module '@tanstack/react-router' {
     }
     '/florida-coverage/$region/': {
       id: '/florida-coverage/$region/'
-      path: '/$region'
+      path: '/florida-coverage/$region'
       fullPath: '/florida-coverage/$region/'
       preLoaderRoute: typeof FloridaCoverageRegionIndexRouteImport
-      parentRoute: typeof FloridaCoverageRoute
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
@@ -1019,17 +1002,17 @@ declare module '@tanstack/react-router' {
     }
     '/florida-coverage/$region/$county/': {
       id: '/florida-coverage/$region/$county/'
-      path: '/$region/$county'
+      path: '/florida-coverage/$region/$county'
       fullPath: '/florida-coverage/$region/$county/'
       preLoaderRoute: typeof FloridaCoverageRegionCountyIndexRouteImport
-      parentRoute: typeof FloridaCoverageRoute
+      parentRoute: typeof rootRouteImport
     }
     '/florida-coverage/$region/$county/$city': {
       id: '/florida-coverage/$region/$county/$city'
-      path: '/$region/$county/$city'
+      path: '/florida-coverage/$region/$county/$city'
       fullPath: '/florida-coverage/$region/$county/$city'
       preLoaderRoute: typeof FloridaCoverageRegionCountyCityRouteImport
-      parentRoute: typeof FloridaCoverageRoute
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
@@ -1122,22 +1105,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface FloridaCoverageRouteChildren {
-  FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
-  FloridaCoverageRegionCountyCityRoute: typeof FloridaCoverageRegionCountyCityRoute
-  FloridaCoverageRegionCountyIndexRoute: typeof FloridaCoverageRegionCountyIndexRoute
-}
-
-const FloridaCoverageRouteChildren: FloridaCoverageRouteChildren = {
-  FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,
-  FloridaCoverageRegionCountyCityRoute: FloridaCoverageRegionCountyCityRoute,
-  FloridaCoverageRegionCountyIndexRoute: FloridaCoverageRegionCountyIndexRoute,
-}
-
-const FloridaCoverageRouteWithChildren = FloridaCoverageRoute._addFileChildren(
-  FloridaCoverageRouteChildren,
-)
-
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   ShopReturnRoute: typeof ShopReturnRoute
@@ -1159,7 +1126,6 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
-  FloridaCoverageRoute: FloridaCoverageRouteWithChildren,
   ForFacilitiesRoute: ForFacilitiesRoute,
   ForProvidersRoute: ForProvidersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -1169,7 +1135,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ResourcesRoute: ResourcesRoute,
   ShopRoute: ShopRouteWithChildren,
   SitemapRoute: SitemapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -1178,19 +1143,23 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ServicesServiceRoute: ServicesServiceRoute,
   VerifyTokenRoute: VerifyTokenRoute,
+  FloridaCoverageIndexRoute: FloridaCoverageIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
   ApiPublicHooksFinReleaseTickRoute: ApiPublicHooksFinReleaseTickRoute,
   ApiPublicHooksReleaseEligiblePayoutsRoute:
     ApiPublicHooksReleaseEligiblePayoutsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicWebhooksDispatchRoute: ApiPublicWebhooksDispatchRoute,
+  FloridaCoverageRegionCountyCityRoute: FloridaCoverageRegionCountyCityRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  FloridaCoverageRegionCountyIndexRoute: FloridaCoverageRegionCountyIndexRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,
   ApiPublicIntegrationsRoutegenieWebhookRoute:
