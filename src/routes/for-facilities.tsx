@@ -21,10 +21,10 @@ const WHO = [
   { i: ClipboardList, t: "Case managers" }, { i: Users, t: "Other organizations arranging rides" },
 ];
 const NEEDS = [
-  { i: Footprints, t: "Ambulatory rides", h: "/services#ambulatory" },
-  { i: Accessibility, t: "Wheelchair transportation", h: "/services#wheelchair" },
-  { i: BedSingle, t: "Stretcher or specialized", h: "/services#stretcher" },
-  { i: Package, t: "Medical delivery", h: "/services#delivery" },
+  { i: Footprints, t: "Ambulatory rides", h: "/services/ambulatory" },
+  { i: Accessibility, t: "Wheelchair transportation", h: "/services/wheelchair" },
+  { i: BedSingle, t: "Stretcher or specialized", h: "/services/stretcher" },
+  { i: Package, t: "Medical delivery", h: "/services/medical-delivery" },
 ];
 const FLOW = [
   { t: "Create an account.", d: "Choose Private Pay, Facility or Hospital. Each person uses their own email." },

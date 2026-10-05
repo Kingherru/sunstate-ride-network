@@ -26,7 +26,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResourcesRouteImport } from './routes/resources'
-import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -38,6 +37,7 @@ import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as ServicesServiceRouteImport } from './routes/services.$service'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
@@ -145,11 +145,6 @@ const ResourcesRoute = ResourcesRouteImport.update({
   path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ServicesRoute = ServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -207,10 +202,15 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesServiceRoute = ServicesServiceRouteImport.update({
-  id: '/$service',
-  path: '/$service',
-  getParentRoute: () => ServicesRoute,
+  id: '/services/$service',
+  path: '/services/$service',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ShopIndexRoute = ShopIndexRouteImport.update({
   id: '/',
@@ -341,7 +341,6 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
-  '/services': typeof ServicesRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -357,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -392,7 +392,6 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
-  '/services': typeof ServicesRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -406,6 +405,7 @@ export interface FileRoutesByTo {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -443,7 +443,6 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
-  '/services': typeof ServicesRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -459,6 +458,7 @@ export interface FileRoutesById {
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/return': typeof ShopReturnRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -496,7 +496,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/resources'
-    | '/services'
     | '/shop'
     | '/sitemap'
     | '/sitemap.xml'
@@ -512,6 +511,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
+    | '/services/'
     | '/shop/'
     | '/learn/$slug'
     | '/lovable/email/suppression'
@@ -547,7 +547,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/resources'
-    | '/services'
     | '/sitemap'
     | '/sitemap.xml'
     | '/terms'
@@ -561,6 +560,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
+    | '/services'
     | '/shop'
     | '/learn/$slug'
     | '/lovable/email/suppression'
@@ -597,7 +597,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/resources'
-    | '/services'
     | '/shop'
     | '/sitemap'
     | '/sitemap.xml'
@@ -613,6 +612,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/shop/return'
     | '/verify/$token'
+    | '/services/'
     | '/shop/'
     | '/_authenticated/learn/$slug'
     | '/lovable/email/suppression'
@@ -650,14 +650,15 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
-  ServicesRoute: typeof ServicesRouteWithChildren
   ShopRoute: typeof ShopRouteWithChildren
   SitemapRoute: typeof SitemapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  ServicesServiceRoute: typeof ServicesServiceRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
   ApiPublicHooksFinReleaseTickRoute: typeof ApiPublicHooksFinReleaseTickRoute
@@ -795,13 +796,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/services': {
-      id: '/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof ServicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -879,12 +873,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/': {
+      id: '/services/'
+      path: '/services'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services/$service': {
       id: '/services/$service'
-      path: '/$service'
+      path: '/services/$service'
       fullPath: '/services/$service'
       preLoaderRoute: typeof ServicesServiceRouteImport
-      parentRoute: typeof ServicesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/shop/': {
       id: '/shop/'
@@ -1061,18 +1062,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface ServicesRouteChildren {
-  ServicesServiceRoute: typeof ServicesServiceRoute
-}
-
-const ServicesRouteChildren: ServicesRouteChildren = {
-  ServicesServiceRoute: ServicesServiceRoute,
-}
-
-const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
-  ServicesRouteChildren,
-)
-
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   ShopReturnRoute: typeof ShopReturnRoute
@@ -1105,14 +1094,15 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,
-  ServicesRoute: ServicesRouteWithChildren,
   ShopRoute: ShopRouteWithChildren,
   SitemapRoute: SitemapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  ServicesServiceRoute: ServicesServiceRoute,
   VerifyTokenRoute: VerifyTokenRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
   ApiPublicHooksFinReleaseTickRoute: ApiPublicHooksFinReleaseTickRoute,

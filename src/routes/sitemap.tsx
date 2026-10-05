@@ -28,8 +28,8 @@ const GROUPS: { h: string; items: { label: string; href: string }[] }[] = [
     { label: "Join the Provider Network", href: "/join" }, { label: "Submit Trip Request", href: "/book" },
   ] },
   { h: "Services", items: [
-    { label: "Services Overview", href: "/services" }, { label: "Ambulatory", href: "/services#ambulatory" }, { label: "Wheelchair", href: "/services#wheelchair" },
-    { label: "Stretcher or Specialized", href: "/services#stretcher" }, { label: "Medical Delivery", href: "/services#delivery" },
+    { label: "Services Overview", href: "/services" }, { label: "Ambulatory", href: "/services/ambulatory" }, { label: "Wheelchair", href: "/services/wheelchair" },
+    { label: "Stretcher or Specialized", href: "/services/stretcher" }, { label: "Medical Delivery", href: "/services/medical-delivery" },
   ] },
   { h: "Training", items: [{ label: "Training Shop", href: "/shop" }, ...TRAINING.map((t) => ({ label: t.title, href: t.href }))] },
   { h: "Resources", items: [{ label: "Resources", href: "/resources" }, { label: "People Also Ask", href: "/frequently-asked-questions" }] },
