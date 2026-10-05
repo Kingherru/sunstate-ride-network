@@ -45,12 +45,15 @@ import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
+import { Route as FloridaCoverageRegionIndexRouteImport } from './routes/florida-coverage.$region.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicHooksFinCashoutTickRouteImport } from './routes/api/public/hooks/fin-cashout-tick'
 import { Route as ApiPublicHooksFinReleaseTickRouteImport } from './routes/api/public/hooks/fin-release-tick'
 import { Route as ApiPublicHooksReleaseEligiblePayoutsRouteImport } from './routes/api/public/hooks/release-eligible-payouts'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicWebhooksDispatchRouteImport } from './routes/api/public/webhooks/dispatch'
+import { Route as FloridaCoverageRegionCountyIndexRouteImport } from './routes/florida-coverage.$region.$county.index'
+import { Route as FloridaCoverageRegionCountyCityRouteImport } from './routes/florida-coverage.$region.$county.$city'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -242,6 +245,12 @@ const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AuthenticatedLearnRoute,
 } as any)
+const FloridaCoverageRegionIndexRoute =
+  FloridaCoverageRegionIndexRouteImport.update({
+    id: '/$region/',
+    path: '/$region/',
+    getParentRoute: () => FloridaCoverageRoute,
+  } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -276,6 +285,18 @@ const ApiPublicWebhooksDispatchRoute =
     id: '/api/public/webhooks/dispatch',
     path: '/api/public/webhooks/dispatch',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const FloridaCoverageRegionCountyIndexRoute =
+  FloridaCoverageRegionCountyIndexRouteImport.update({
+    id: '/$region/$county/',
+    path: '/$region/$county/',
+    getParentRoute: () => FloridaCoverageRoute,
+  } as any)
+const FloridaCoverageRegionCountyCityRoute =
+  FloridaCoverageRegionCountyCityRouteImport.update({
+    id: '/$region/$county/$city',
+    path: '/$region/$county/$city',
+    getParentRoute: () => FloridaCoverageRoute,
   } as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
@@ -330,7 +351,7 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
-  '/florida-coverage': typeof FloridaCoverageRoute
+  '/florida-coverage': typeof FloridaCoverageRouteWithChildren
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -361,16 +382,19 @@ export interface FileRoutesByFullPath {
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
+  '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
+  '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
@@ -381,7 +405,7 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
-  '/florida-coverage': typeof FloridaCoverageRoute
+  '/florida-coverage': typeof FloridaCoverageRouteWithChildren
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -410,16 +434,19 @@ export interface FileRoutesByTo {
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
+  '/florida-coverage/$region': typeof FloridaCoverageRegionIndexRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
+  '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/florida-coverage/$region/$county': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
@@ -432,7 +459,7 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
-  '/florida-coverage': typeof FloridaCoverageRoute
+  '/florida-coverage': typeof FloridaCoverageRouteWithChildren
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -463,16 +490,19 @@ export interface FileRoutesById {
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
+  '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
+  '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
@@ -516,16 +546,19 @@ export interface FileRouteTypes {
     | '/learn/$slug'
     | '/lovable/email/suppression'
     | '/learn/'
+    | '/florida-coverage/$region/'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
+    | '/florida-coverage/$region/$county/$city'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/florida-coverage/$region/$county/'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
     | '/api/public/integrations/duet/events/$event'
@@ -565,16 +598,19 @@ export interface FileRouteTypes {
     | '/learn/$slug'
     | '/lovable/email/suppression'
     | '/learn'
+    | '/florida-coverage/$region'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
+    | '/florida-coverage/$region/$county/$city'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/florida-coverage/$region/$county'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
     | '/api/public/integrations/duet/events/$event'
@@ -617,16 +653,19 @@ export interface FileRouteTypes {
     | '/_authenticated/learn/$slug'
     | '/lovable/email/suppression'
     | '/_authenticated/learn/'
+    | '/florida-coverage/$region/'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
+    | '/florida-coverage/$region/$county/$city'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/florida-coverage/$region/$county/'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
     | '/api/public/integrations/duet/events/$event'
@@ -639,7 +678,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
-  FloridaCoverageRoute: typeof FloridaCoverageRoute
+  FloridaCoverageRoute: typeof FloridaCoverageRouteWithChildren
   ForFacilitiesRoute: typeof ForFacilitiesRoute
   ForProvidersRoute: typeof ForProvidersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -929,6 +968,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
       parentRoute: typeof AuthenticatedLearnRoute
     }
+    '/florida-coverage/$region/': {
+      id: '/florida-coverage/$region/'
+      path: '/$region'
+      fullPath: '/florida-coverage/$region/'
+      preLoaderRoute: typeof FloridaCoverageRegionIndexRouteImport
+      parentRoute: typeof FloridaCoverageRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -970,6 +1016,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/webhooks/dispatch'
       preLoaderRoute: typeof ApiPublicWebhooksDispatchRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/florida-coverage/$region/$county/': {
+      id: '/florida-coverage/$region/$county/'
+      path: '/$region/$county'
+      fullPath: '/florida-coverage/$region/$county/'
+      preLoaderRoute: typeof FloridaCoverageRegionCountyIndexRouteImport
+      parentRoute: typeof FloridaCoverageRoute
+    }
+    '/florida-coverage/$region/$county/$city': {
+      id: '/florida-coverage/$region/$county/$city'
+      path: '/$region/$county/$city'
+      fullPath: '/florida-coverage/$region/$county/$city'
+      preLoaderRoute: typeof FloridaCoverageRegionCountyCityRouteImport
+      parentRoute: typeof FloridaCoverageRoute
     }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
@@ -1062,6 +1122,22 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface FloridaCoverageRouteChildren {
+  FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
+  FloridaCoverageRegionCountyCityRoute: typeof FloridaCoverageRegionCountyCityRoute
+  FloridaCoverageRegionCountyIndexRoute: typeof FloridaCoverageRegionCountyIndexRoute
+}
+
+const FloridaCoverageRouteChildren: FloridaCoverageRouteChildren = {
+  FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,
+  FloridaCoverageRegionCountyCityRoute: FloridaCoverageRegionCountyCityRoute,
+  FloridaCoverageRegionCountyIndexRoute: FloridaCoverageRegionCountyIndexRoute,
+}
+
+const FloridaCoverageRouteWithChildren = FloridaCoverageRoute._addFileChildren(
+  FloridaCoverageRouteChildren,
+)
+
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   ShopReturnRoute: typeof ShopReturnRoute
@@ -1083,7 +1159,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
-  FloridaCoverageRoute: FloridaCoverageRoute,
+  FloridaCoverageRoute: FloridaCoverageRouteWithChildren,
   ForFacilitiesRoute: ForFacilitiesRoute,
   ForProvidersRoute: ForProvidersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,

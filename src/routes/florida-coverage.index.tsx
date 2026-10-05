@@ -4,8 +4,11 @@ import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, PageHero, Reveal, pageHead } from "@/components/public/page-kit";
 import { FloridaMap } from "@/components/home/FloridaMap";
 import { LINKS } from "@/lib/site-config";
+import { REGIONS } from "@/lib/coverage";
+import { LinkCard } from "@/components/public/coverage-kit";
+import { SectionHead } from "@/components/public/page-kit";
 
-export const Route = createFileRoute("/florida-coverage")({
+export const Route = createFileRoute("/florida-coverage/")({
   head: () => pageHead(
     "/florida-coverage",
     "Florida NEMT Coverage Map — Explore All 67 Counties | My Florida NEMT",
@@ -31,6 +34,15 @@ function CoveragePage() {
         intro={<p>MY FLORIDA NEMT is being built around all 67 Florida counties. Use the map to explore by region, county, city or ZIP code — and see where to begin, whether you need a ride or serve an area.</p>}
       />
       <FloridaMap page />
+
+      <section aria-labelledby="regions-title" className="mfn-section bg-ds-surface">
+        <div className="mfn-container">
+          <Reveal><SectionHead id="regions-title" title="Browse by region" intro="Florida → region → county → city. Choose a region to see its counties and city pages." /></Reveal>
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {REGIONS.map((r, i) => <li key={r.slug}><Reveal delay={i * 50}><LinkCard href={`/florida-coverage/${r.slug}`} title={r.name} text={`${r.counties.length} counties`} /></Reveal></li>)}
+          </ul>
+        </div>
+      </section>
 
       <section aria-labelledby="avail-title" className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-14">
