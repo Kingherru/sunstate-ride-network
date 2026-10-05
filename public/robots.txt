@@ -1,6 +1,11 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /portal
+Disallow: /account-setup
+Disallow: /account-status
+Disallow: /create-account
+Disallow: /forgot-password
 Disallow: /dashboard
 Disallow: /patient/
 Disallow: /provider/
