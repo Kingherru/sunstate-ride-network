@@ -34,7 +34,7 @@ function ResourcePage() {
           {r.body.map((b, i) => b.t === "h2" ? <h2 key={i} className="ds-section-title mt-10 uppercase text-ds-primary">{b.c}</h2>
             : b.t === "p" ? <p key={i} className="ds-body-lg mt-4">{b.c}</p>
             : b.t === "ul" ? <ul key={i} className="ds-body-lg mt-4 list-disc space-y-2 pl-6">{b.items.map((x) => <li key={x}>{x}</li>)}</ul>
-            : <ol key={i} className="ds-body-lg mt-4 list-decimal space-y-2 pl-6">{b.items.map((x) => <li key={x}>{x}</li>)}</ol>)}
+            : "items" in b ? <ol key={i} className="ds-body-lg mt-4 list-decimal space-y-2 pl-6">{b.items.map((x) => <li key={x}>{x}</li>)}</ol> : null)}
           <p className="ds-body-lg mt-10">Related: {r.related.map((l, i) => <span key={l.href}>{i > 0 && " · "}<a href={l.href} className="text-ds-link underline underline-offset-4">{l.label}</a></span>)} · <a href="/resources" className="text-ds-link underline underline-offset-4">All resources</a></p>
         </div>
       </article>
