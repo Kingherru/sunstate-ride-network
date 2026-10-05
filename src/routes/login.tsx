@@ -82,7 +82,7 @@ function Login() {
           <a href="/" className="ds-support uppercase tracking-[0.06em] text-ds-link underline-offset-4 hover:underline">Back to website</a>
         </div>
         <div className="auth-enter mx-auto my-auto w-full max-w-md py-10">
-          <h1 className="ds-h2 uppercase text-ds-primary">Sign in to MY FLORIDA <span className="text-ds-accent">NEMT</span></h1>
+          <h1 className="ds-page-title uppercase text-ds-primary">Sign in to MY FLORIDA <span className="text-ds-accent">NEMT</span></h1>
           <p className="ds-body mt-3 text-ds-text-2">Patients and private-pay customers, providers, facilities and hospitals all sign in here. We'll take you to the right place for your account.</p>
           <div className="mt-8">
       <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate={false}>
