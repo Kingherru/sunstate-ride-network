@@ -54,7 +54,7 @@ export function AddressAutocomplete({
   onChange,
   onSelect,
   placeholder = "Start typing an address…",
-  className = "w-full border border-border rounded-sm px-3 py-2 bg-background",
+  className = "w-full border border-ds-border rounded-ds-sm px-3 py-2 bg-background",
   inputId,
   disabled,
   countries = ["us"],
@@ -278,16 +278,16 @@ export function AddressAutocomplete({
         <div
           id={`${inputId ?? "addr"}-maps-error`}
           role="status"
-          className="mt-2 rounded-sm border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+          className="mt-2 rounded-ds-sm border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-ds-error"
         >
           <div className="font-semibold">{errorCopy[loadError].title}</div>
-          <div className="mt-0.5 text-destructive/90">{errorCopy[loadError].body}</div>
+          <div className="mt-0.5 text-ds-error/90">{errorCopy[loadError].body}</div>
         </div>
       )}
       {open && suggestions.length > 0 && (
         <ul
           role="listbox"
-          className="absolute z-30 left-0 right-0 mt-1 bg-popover border border-border rounded-sm shadow-lg overflow-hidden max-h-80 overflow-y-auto"
+          className="absolute z-30 left-0 right-0 mt-1 bg-popover border border-ds-border rounded-ds-sm shadow-lg overflow-hidden max-h-80 overflow-y-auto"
         >
           {suggestions.map((s, i) => (
             <li
@@ -297,11 +297,11 @@ export function AddressAutocomplete({
               onMouseEnter={() => setHighlight(i)}
               onMouseDown={(e) => { e.preventDefault(); pick(s.placeId); }}
               className={`px-3 py-2 text-sm cursor-pointer ${
-                i === highlight ? "bg-secondary text-secondary-foreground" : "bg-popover text-foreground"
+                i === highlight ? "bg-secondary text-secondary-foreground" : "bg-popover text-ds-on-surface"
               }`}
             >
               <div className="font-semibold truncate">{s.text}</div>
-              {s.secondary && <div className="text-xs text-muted-foreground truncate">{s.secondary}</div>}
+              {s.secondary && <div className="text-xs text-ds-text-2 truncate">{s.secondary}</div>}
             </li>
           ))}
         </ul>

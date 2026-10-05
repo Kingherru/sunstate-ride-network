@@ -128,7 +128,7 @@ export function RoutePreview({
   if (!hasPoints) {
     return (
       <div
-        className={`bg-secondary border border-border rounded-sm text-xs text-muted-foreground grid place-items-center ${className ?? ""}`}
+        className={`bg-secondary border border-ds-border rounded-ds-sm text-xs text-ds-text-2 grid place-items-center ${className ?? ""}`}
         style={{ height }}
       >
         Route preview will appear once the addresses are geocoded.
@@ -142,7 +142,7 @@ export function RoutePreview({
 
   return (
     <div className={className}>
-      <div ref={ref} className="w-full rounded-sm border border-border overflow-hidden" style={{ height }} />
+      <div ref={ref} className="w-full rounded-ds-sm border border-ds-border overflow-hidden" style={{ height }} />
     </div>
   );
 }
@@ -162,17 +162,17 @@ function MapFallback({
       : "The map couldn't be loaded right now.";
   return (
     <div
-      className={`bg-secondary border border-border rounded-sm p-4 text-sm text-muted-foreground flex flex-col items-center justify-center text-center gap-2 ${className ?? ""}`}
+      className={`bg-secondary border border-ds-border rounded-ds-sm p-4 text-sm text-ds-text-2 flex flex-col items-center justify-center text-center gap-2 ${className ?? ""}`}
       style={{ height }}
       role="alert"
     >
-      <p className="font-medium text-foreground">Map preview unavailable</p>
+      <p className="font-medium text-ds-on-surface">Map preview unavailable</p>
       <p className="text-xs max-w-xs">
         {message} You can still continue with your request — routing will be confirmed by dispatch.
       </p>
       <a
         href="/contact"
-        className="text-xs font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+        className="text-xs font-semibold text-ds-primary underline underline-offset-2 hover:opacity-80"
       >
         Contact support
       </a>

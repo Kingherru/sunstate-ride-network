@@ -54,13 +54,13 @@ export function PriceEstimate({
 
   if (!enabled) {
     return (
-      <div className="text-xs text-muted-foreground border border-dashed border-border rounded-sm px-3 py-2">
+      <div className="text-xs text-ds-text-2 border border-dashed border-ds-border rounded-ds-sm px-3 py-2">
         Enter a Florida pickup ZIP and drop-off to see an Estimated Trip Total.
       </div>
     );
   }
 
-  if (q.isLoading) return <div className="text-xs text-muted-foreground">Calculating Estimated Trip Total…</div>;
+  if (q.isLoading) return <div className="text-xs text-ds-text-2">Calculating Estimated Trip Total…</div>;
   if (!q.data) return null;
 
   const active = q.data.active;
@@ -70,7 +70,7 @@ export function PriceEstimate({
 
   const badgeClass =
     source === "custom"
-      ? "bg-primary/10 text-primary border-primary/30"
+      ? "bg-ds-sky text-ds-primary border-ds-sky-border"
       : source === "recommended"
         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
         : "bg-amber-50 text-amber-800 border-amber-200";
@@ -82,42 +82,42 @@ export function PriceEstimate({
         : "My Florida NEMT Recommended (default)";
 
   return (
-    <div className={`bg-secondary/40 border border-border rounded-sm ${compact ? "p-3" : "p-4"} space-y-3`}>
+    <div className={`bg-secondary/40 border border-ds-border rounded-ds-sm ${compact ? "p-3" : "p-4"} space-y-3`}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+          <div className="text-[11px] uppercase tracking-widest text-ds-text-2">
             Estimated Trip Total{tripTypeLabel ? ` · ${tripTypeLabel}` : ""}
           </div>
-          <div className="font-display text-3xl font-extrabold tracking-tight text-primary">{fmt(total)}</div>
+          <div className="font-display text-3xl font-extrabold tracking-tight text-ds-primary">{fmt(total)}</div>
         </div>
-        <div className="text-right text-[11px] text-muted-foreground leading-tight">
-          <div><span className="font-bold text-foreground">{legCount}</span> {legCount === 1 ? "leg" : "legs"} · <span className="font-bold text-foreground">{legCount}</span> {legCount === 1 ? "pickup" : "pickups"}</div>
-          <div><span className="font-bold text-foreground">{totalMiles.toFixed(1)} mi</span> total{miles > 0 && legCount > 1 ? ` (${miles.toFixed(1)} × ${legCount})` : ""}</div>
-          {waitMinutes > 0 && <div><span className="font-bold text-foreground">{waitMinutes}</span> min wait</div>}
+        <div className="text-right text-[11px] text-ds-text-2 leading-tight">
+          <div><span className="font-bold text-ds-on-surface">{legCount}</span> {legCount === 1 ? "leg" : "legs"} · <span className="font-bold text-ds-on-surface">{legCount}</span> {legCount === 1 ? "pickup" : "pickups"}</div>
+          <div><span className="font-bold text-ds-on-surface">{totalMiles.toFixed(1)} mi</span> total{miles > 0 && legCount > 1 ? ` (${miles.toFixed(1)} × ${legCount})` : ""}</div>
+          {waitMinutes > 0 && <div><span className="font-bold text-ds-on-surface">{waitMinutes}</span> min wait</div>}
         </div>
       </div>
 
-      <div className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest border px-2 py-1 rounded-sm ${badgeClass}`}>
+      <div className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest border px-2 py-1 rounded-ds-sm ${badgeClass}`}>
         <span className="size-1.5 rounded-full bg-current" />
         {badgeLabel}
       </div>
 
       {lines.length > 0 && (
-        <ul className="text-xs divide-y divide-border/60 border-t border-border/60 pt-2">
+        <ul className="text-xs divide-y divide-border/60 border-t border-ds-border/60 pt-2">
           {lines.map((l, i) => (
             <li key={i} className="flex items-start justify-between py-1.5 gap-4">
-              <span className="text-muted-foreground">{l.label}</span>
+              <span className="text-ds-text-2">{l.label}</span>
               <span className="tabular-nums font-semibold">{fmt(l.amount)}</span>
             </li>
           ))}
           <li className="flex items-start justify-between py-2 gap-4 border-t-2 border-foreground mt-1">
             <span className="text-xs font-bold uppercase tracking-wider">Estimated Trip Total</span>
-            <span className="tabular-nums font-extrabold text-primary">{fmt(total)}</span>
+            <span className="tabular-nums font-extrabold text-ds-primary">{fmt(total)}</span>
           </li>
         </ul>
       )}
 
-      <p className="text-[11px] text-muted-foreground leading-snug">
+      <p className="text-[11px] text-ds-text-2 leading-snug">
         {source === "custom"
           ? "Quoted using this provider's custom published pricing. A value of $0.00 means the provider has chosen not to charge for that item."
           : source === "default"

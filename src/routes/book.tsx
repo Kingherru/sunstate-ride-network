@@ -150,18 +150,18 @@ function Field({
     <label
       className={
         error
-          ? "block rounded-sm [&_input]:border-destructive [&_textarea]:border-destructive [&_select]:border-destructive [&_button]:border-destructive"
+          ? "block rounded-ds-sm [&_input]:border-destructive [&_textarea]:border-destructive [&_select]:border-destructive [&_button]:border-destructive"
           : "block"
       }
       data-field-error={error ? "true" : undefined}
     >
-      <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
+      <span className="block text-xs font-bold uppercase tracking-widest text-ds-text-2 mb-2">
         {label}
-        {required && <span className="text-accent"> *</span>}
+        {required && <span className="text-ds-accent-active"> *</span>}
       </span>
       {children}
       {error && (
-        <span role="alert" className="block mt-1 text-xs font-semibold text-destructive">
+        <span role="alert" className="block mt-1 text-xs font-semibold text-ds-error">
           {error}
         </span>
       )}
@@ -171,7 +171,7 @@ function Field({
 
 
 const inputCls =
-  "w-full bg-card border border-input rounded-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all";
+  "w-full bg-ds-surface border border-ds-border rounded-ds-sm px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-ds-sky-border transition-all";
 
 function haversineMiles(lat1: number | null, lng1: number | null, lat2: number | null, lng2: number | null): number {
   if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return 0;
@@ -466,34 +466,34 @@ function RequestRidePage() {
     return (
       <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
+          <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
             Confirmation #{done.id.slice(0, 8).toUpperCase()}
           </p>
           <h1 className="text-5xl font-extrabold tracking-tighter mb-6">Ride request received.</h1>
 
           {hasRoute && (
-            <div className="bg-card border border-border rounded-sm p-5 mb-6 text-left">
+            <div className="bg-ds-surface border border-ds-border rounded-ds-sm p-5 mb-6 text-left">
               <div className="grid sm:grid-cols-3 gap-4 mb-4">
                 {done.miles != null && (
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Total miles</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-ds-text-2">Total miles</div>
                     <div className="text-lg font-extrabold">{done.miles.toFixed(1)} mi</div>
                   </div>
                 )}
                 {done.trafficSec != null && (
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Drive time (traffic)</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-ds-text-2">Drive time (traffic)</div>
                     <div className="text-lg font-extrabold">{formatMinutes(done.trafficSec)}</div>
                     {done.durationSec != null && done.durationSec !== done.trafficSec && (
-                      <div className="text-[11px] text-muted">Typical {formatMinutes(done.durationSec)}</div>
+                      <div className="text-[11px] text-ds-text-2">Typical {formatMinutes(done.durationSec)}</div>
                     )}
                   </div>
                 )}
                 {done.cents != null && (
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Estimated trip cost</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-ds-text-2">Estimated trip cost</div>
                     <div className="text-lg font-extrabold">${(done.cents / 100).toFixed(2)}</div>
-                    <div className="text-[11px] text-muted">
+                    <div className="text-[11px] text-ds-text-2">
                       {form.tripType === "round_trip" ? "Round trip estimate" : form.tripType === "multi_trip" ? "Multi-stop estimate" : "One-way estimate"}
                     </div>
                   </div>
@@ -511,37 +511,37 @@ function RequestRidePage() {
                 href={googleRouteUrl(done.pickupLat, done.pickupLng, done.dropoffLat, done.dropoffLng)}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-3 inline-block text-xs font-bold uppercase tracking-wider text-primary hover:underline"
+                className="mt-3 inline-block text-xs font-bold uppercase tracking-wider text-ds-primary hover:underline"
               >
                 Open route in Google Maps →
               </a>
-              <p className="mt-4 text-[11px] leading-relaxed text-muted border-t border-border pt-3">
-                <strong className="font-bold text-foreground">This is an estimate only.</strong> The final price may change after dispatcher review, provider assignment, wait time, additional stops, or manual quoting. You will receive a confirmed price before your trip is dispatched.
+              <p className="mt-4 text-[11px] leading-relaxed text-ds-text-2 border-t border-ds-border pt-3">
+                <strong className="font-bold text-ds-on-surface">This is an estimate only.</strong> The final price may change after dispatcher review, provider assignment, wait time, additional stops, or manual quoting. You will receive a confirmed price before your trip is dispatched.
               </p>
             </div>
           )}
 
-          <p className="text-muted text-lg mb-10">
+          <p className="text-ds-text-2 text-lg mb-10">
             A dispatcher will confirm your pickup details by phone or email within 2 hours. Please be
             on the lookout for our communication. For urgent same-day requests, call{" "}
-            <a href="tel:8005550199" className="text-primary font-bold">(800) 555-0199</a>.
+            <a href="tel:8005550199" className="text-ds-primary font-bold">(800) 555-0199</a>.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
               to="/requests/$id"
               params={{ id: done.id }}
-              className="inline-block px-8 py-4 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-wide uppercase"
+              className="inline-block px-8 py-4 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-wide uppercase"
             >
               Preview trip details
             </Link>
             <Link
               to="/"
-              className="inline-block px-8 py-4 bg-card border border-border text-foreground font-bold rounded-sm text-sm tracking-wide uppercase"
+              className="inline-block px-8 py-4 bg-ds-surface border border-ds-border text-ds-on-surface font-bold rounded-ds-sm text-sm tracking-wide uppercase"
             >
               Back to home
             </Link>
           </div>
-          <p className="mt-4 text-xs text-muted">
+          <p className="mt-4 text-xs text-ds-text-2">
             You can review and edit the reservation from the trip details page until a dispatcher claims it.
           </p>
 
@@ -563,27 +563,27 @@ function RequestRidePage() {
   return (
     <section className="py-20 px-6">
       <div className="max-w-3xl mx-auto">
-        <p className="font-mono text-xs font-bold text-accent uppercase tracking-[0.2em] mb-4">
+        <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
           New Trip Intake
         </p>
         <h1 className="text-5xl font-extrabold tracking-tighter mb-4">Request a Ride</h1>
-        <p className="text-muted text-lg mb-12 max-w-[55ch]">
+        <p className="text-ds-text-2 text-lg mb-12 max-w-[55ch]">
           Tell us about the trip. A dispatcher will confirm by phone within 2 hours. For same-day
           urgent requests, please call directly.
         </p>
 
         {copiedFromId && (
-          <div className="mb-6 rounded-sm border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <div className="mb-6 rounded-ds-sm border border-ds-sky-border bg-ds-sky px-4 py-3 text-sm">
             <strong className="font-bold">Copied from a previous trip.</strong> Review the details and
             pick a new pickup date before submitting.
           </div>
         )}
 
-        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-card border border-border p-8 md:p-12 rounded-2xl">
+        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
 
           {/* Patient */}
           <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Patient
             </legend>
             <div className="grid md:grid-cols-2 gap-6">
@@ -600,10 +600,10 @@ function RequestRidePage() {
                 <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => upd("patientEmail", e.target.value)} />
               </Field>
             </div>
-            <label className="flex items-center gap-2 text-xs text-muted">
+            <label className="flex items-center gap-2 text-xs text-ds-text-2">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-primary"
+                className="h-4 w-4 accent-[var(--ds-primary)]"
                 checked={remember}
                 onChange={(e) => {
                   setRemember(e.target.checked);
@@ -617,7 +617,7 @@ function RequestRidePage() {
 
           {/* Pickup */}
           <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Pickup
             </legend>
             <Field label="Pickup address" required error={errors.pickupAddress}>
@@ -640,7 +640,7 @@ function RequestRidePage() {
                 onChange={(e) => upd("pickupAddressDetails", e.target.value)}
                 placeholder="e.g. Dr. Patel's office, Baptist MOB Suite 304, side entrance"
               />
-              <p className="mt-1 text-xs text-muted">Building name, doctor or facility name, suite, gate code, or pickup notes.</p>
+              <p className="mt-1 text-xs text-ds-text-2">Building name, doctor or facility name, suite, gate code, or pickup notes.</p>
             </Field>
             <div className="grid md:grid-cols-3 gap-6">
               <Field label="City" required error={errors.pickupCity}>
@@ -681,7 +681,7 @@ function RequestRidePage() {
                 value={form.appointmentTime ?? ""}
                 onChange={(v) => upd("appointmentTime", v)}
               />
-              <p className="mt-1 text-xs text-muted">When the patient needs to be at the destination.</p>
+              <p className="mt-1 text-xs text-ds-text-2">When the patient needs to be at the destination.</p>
             </Field>
           </fieldset>
 
@@ -689,7 +689,7 @@ function RequestRidePage() {
 
           {/* Dropoff */}
           <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Drop-off
             </legend>
             <Field label="Drop-off address" required error={errors.dropoffAddress}>
@@ -718,9 +718,9 @@ function RequestRidePage() {
               />
             )}
             {form.blackTie && (
-              <div className="mt-2 rounded-sm border border-accent/40 bg-accent/5 p-4 text-sm">
-                <p className="font-bold uppercase tracking-widest text-accent text-xs mb-1">Manual quote</p>
-                <p className="text-muted">
+              <div className="mt-2 rounded-ds-sm border border-ds-border bg-ds-membership p-4 text-sm">
+                <p className="font-bold uppercase tracking-widest text-ds-accent-active text-xs mb-1">Manual quote</p>
+                <p className="text-ds-text-2">
                   All Black Tie Transportation requests are quoted manually. Our team will review your
                   request and reply with a custom price before your reservation is confirmed.
                 </p>
@@ -730,7 +730,7 @@ function RequestRidePage() {
 
           {/* Transport details */}
           <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Transport details
             </legend>
             <div className="grid md:grid-cols-3 gap-3">
@@ -739,10 +739,10 @@ function RequestRidePage() {
                   type="button"
                   key={t}
                   onClick={() => upd("transportType", t)}
-                  className={`p-4 border rounded-sm text-sm font-bold uppercase tracking-wide transition-all ${
+                  className={`p-4 border rounded-ds-sm text-sm font-bold uppercase tracking-wide transition-all ${
                     form.transportType === t
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input hover:border-primary/40"
+                      ? "border-primary bg-ds-action text-ds-on-action"
+                      : "border-ds-border hover:border-ds-sky-border"
                   }`}
                 >
                   {t === "gurney" ? "Gurney / Stretcher" : t}
@@ -751,11 +751,11 @@ function RequestRidePage() {
             </div>
 
             {/* Black Tie premium service */}
-            <div className="rounded-sm border border-border p-4 space-y-3">
+            <div className="rounded-ds-sm border border-ds-border p-4 space-y-3">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="mt-1 h-4 w-4 accent-accent"
+                  className="mt-1 h-4 w-4 accent-[var(--ds-action)]"
                   checked={!!form.blackTie}
                   onChange={(e) => {
                     upd("blackTie", e.target.checked);
@@ -766,7 +766,7 @@ function RequestRidePage() {
                   <span className="block text-sm font-bold uppercase tracking-widest">
                     Black Tie Transportation
                   </span>
-                  <span className="block text-xs text-muted mt-1">
+                  <span className="block text-xs text-ds-text-2 mt-1">
                     Premium chauffeured service for airports, weddings, corporate events, and special occasions.
                     Manually quoted — no automatic pricing.
                   </span>
@@ -799,8 +799,8 @@ function RequestRidePage() {
               )}
             </div>
             <div>
-              <span className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
-                Trip type <span className="text-accent">*</span>
+              <span className="block text-xs font-bold uppercase tracking-widest text-ds-text-2 mb-2">
+                Trip type <span className="text-ds-accent-active">*</span>
               </span>
               <div className="grid md:grid-cols-3 gap-3">
                 {(["one_way", "round_trip", "multi_trip"] as const).map((t) => (
@@ -825,17 +825,17 @@ function RequestRidePage() {
                       }));
                       if (t !== "round_trip") setReturnDateManual(false);
                     }}
-                    className={`p-4 border rounded-sm text-sm font-bold uppercase tracking-wide transition-all ${
+                    className={`p-4 border rounded-ds-sm text-sm font-bold uppercase tracking-wide transition-all ${
                       form.tripType === t
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input hover:border-primary/40"
+                        ? "border-primary bg-ds-action text-ds-on-action"
+                        : "border-ds-border hover:border-ds-sky-border"
                     }`}
                   >
                     {TRIP_TYPE_LABELS[t]}
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-muted">
+              <p className="mt-2 text-xs text-ds-text-2">
                 {form.tripType === "one_way" && "Single pickup to a single drop-off."}
                 {form.tripType === "round_trip" && "We'll dispatch a return ride after the appointment."}
                 {form.tripType === "multi_trip" && "Add one or more stops between the pickup and final drop-off."}
@@ -843,7 +843,7 @@ function RequestRidePage() {
             </div>
 
             {form.tripType === "round_trip" && (
-              <div className="border border-dashed border-border rounded-sm p-4 grid md:grid-cols-2 gap-6">
+              <div className="border border-dashed border-ds-border rounded-ds-sm p-4 grid md:grid-cols-2 gap-6">
                 <Field label="Return date" required error={(errors as any).returnDate}>
                   <DatePickerField
                     value={form.returnDate ?? ""}
@@ -853,7 +853,7 @@ function RequestRidePage() {
                     }}
                     booking
                   />
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-xs text-ds-text-2">
                     Defaults to your pickup date. Change it if the patient returns on a different day (e.g. surgery).
                   </p>
                 </Field>
@@ -871,7 +871,7 @@ function RequestRidePage() {
                     value={form.returnDropoffTime ?? ""}
                     onChange={(v) => upd("returnDropoffTime", v)}
                   />
-                  <p className="mt-1 text-xs text-muted">Optional — expected arrival back home.</p>
+                  <p className="mt-1 text-xs text-ds-text-2">Optional — expected arrival back home.</p>
                 </Field>
                 <Field label="Return pickup building" error={(errors as any).returnPickupBuilding}>
                   <input
@@ -902,9 +902,9 @@ function RequestRidePage() {
 
 
             {form.tripType === "multi_trip" && (
-              <div className="space-y-4 border border-dashed border-border rounded-sm p-4">
+              <div className="space-y-4 border border-dashed border-ds-border rounded-ds-sm p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-widest text-muted">
+                  <span className="text-xs font-bold uppercase tracking-widest text-ds-text-2">
                     Additional stops
                   </span>
                   <button
@@ -916,13 +916,13 @@ function RequestRidePage() {
                       ])
                     }
                     disabled={form.additionalStops.length >= 10}
-                    className="text-xs font-bold uppercase tracking-wide text-primary hover:underline disabled:opacity-50"
+                    className="text-xs font-bold uppercase tracking-wide text-ds-primary hover:underline disabled:opacity-50"
                   >
                     + Add stop
                   </button>
                 </div>
                 {form.additionalStops.length === 0 && (
-                  <p className="text-xs text-muted">No stops yet. Add at least one stop between pickup and drop-off.</p>
+                  <p className="text-xs text-ds-text-2">No stops yet. Add at least one stop between pickup and drop-off.</p>
                 )}
                 {form.additionalStops.map((stop, i) => (
                   <div key={i} className="grid md:grid-cols-[1fr_160px_140px_auto] gap-3 items-start">
@@ -965,14 +965,14 @@ function RequestRidePage() {
                           form.additionalStops.filter((_, idx) => idx !== i),
                         )
                       }
-                      className="px-3 py-3 border border-input rounded-sm text-xs font-bold uppercase tracking-wide hover:bg-destructive/10 hover:border-destructive/40 hover:text-destructive"
+                      className="px-3 py-3 border border-ds-border rounded-ds-sm text-xs font-bold uppercase tracking-wide hover:bg-ds-error-soft hover:border-ds-error hover:text-ds-error"
                     >
                       Remove
                     </button>
                     {(errors[`additionalStops.${i}.address`] ||
                       errors[`additionalStops.${i}.city`] ||
                       errors[`additionalStops.${i}.pickupTime`]) && (
-                      <span className="md:col-span-4 text-xs text-destructive">
+                      <span className="md:col-span-4 text-xs text-ds-error">
                         {errors[`additionalStops.${i}.address`] ||
                           errors[`additionalStops.${i}.city`] ||
                           errors[`additionalStops.${i}.pickupTime`]}
@@ -1003,10 +1003,10 @@ function RequestRidePage() {
 
           {/* Recurrence */}
           <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Recurring trip
             </legend>
-            <p className="text-xs text-muted -mt-2">
+            <p className="text-xs text-ds-text-2 -mt-2">
               Schedule the same trip on a repeating basis (e.g. weekly dialysis). Leave as "One-time"
               for a single ride.
             </p>
@@ -1042,7 +1042,7 @@ function RequestRidePage() {
 
           {/* Billing information */}
           <fieldset className="space-y-4">
-            <legend className="text-sm font-bold uppercase tracking-widest text-primary mb-2">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Billing information
             </legend>
             <label className="flex items-start gap-3 text-sm">
@@ -1058,7 +1058,7 @@ function RequestRidePage() {
             </label>
 
             {form.billingSource !== "account" && (
-              <div className="space-y-4 pl-6 border-l-2 border-border">
+              <div className="space-y-4 pl-6 border-l-2 border-ds-border">
                 {savedBilling && (
                   <div className="flex flex-wrap gap-4 text-sm">
                     <label className="flex items-center gap-2">
@@ -1116,7 +1116,7 @@ function RequestRidePage() {
           </datalist>
 
           {form.patientEmail && (
-            <label className="flex items-start gap-3 text-sm bg-primary/5 border border-primary/20 rounded-sm p-4">
+            <label className="flex items-start gap-3 text-sm bg-ds-sky border border-ds-sky-border rounded-ds-sm p-4">
               <input
                 type="checkbox"
                 className="mt-1"
@@ -1125,7 +1125,7 @@ function RequestRidePage() {
               />
               <span>
                 <strong className="font-bold">Create a Patient Portal account</strong> using{" "}
-                <span className="font-mono">{form.patientEmail}</span>. We'll email you a link to set
+                <span className="">{form.patientEmail}</span>. We'll email you a link to set
                 your password so you can track this ride, save patients, and book future trips faster.
               </span>
             </label>
@@ -1134,11 +1134,11 @@ function RequestRidePage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full px-8 py-5 bg-primary text-primary-foreground font-bold rounded-sm text-sm tracking-widest uppercase hover:bg-primary/90 transition-all disabled:opacity-60"
+            className="w-full px-8 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-widest uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
           >
             {submitting ? "Submitting…" : "Submit ride request"}
           </button>
-          <p className="text-xs text-muted text-center">
+          <p className="text-xs text-ds-text-2 text-center">
             By submitting you agree to be contacted about this trip. We never share patient info.
           </p>
         </form>

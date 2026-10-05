@@ -160,9 +160,9 @@ export function TimePickerField({
         invalid={!!error}
       />
       {error ? (
-        <p className="mt-1 text-xs text-destructive">{error}</p>
+        <p className="mt-1 text-xs text-ds-error">{error}</p>
       ) : hint ? (
-        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+        <p className="mt-1 text-xs text-ds-text-2">{hint}</p>
       ) : null}
     </label>
   );

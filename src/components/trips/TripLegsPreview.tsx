@@ -41,20 +41,20 @@ export function TripLegsPreview({
 
   return (
     <section
-      className={`border border-border rounded-sm bg-card ${className ?? ""}`}
+      className={`border border-ds-border rounded-ds-sm bg-ds-surface ${className ?? ""}`}
       aria-label="Trip legs preview"
     >
-      <header className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-ds-border">
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wider">
             Trip legs preview
           </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-ds-text-2 mt-0.5">
             Live summary — {legs.length} leg{legs.length === 1 ? "" : "s"} total
           </p>
         </div>
         {anyInherited && (
-          <span className="text-[11px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-sm">
+          <span className="text-[11px] font-semibold uppercase tracking-wider bg-ds-sky text-ds-primary px-2 py-1 rounded-ds-sm">
             Inherits pickup defaults
           </span>
         )}
@@ -65,7 +65,7 @@ export function TripLegsPreview({
             <div className="flex items-start gap-3">
               <span
                 aria-hidden
-                className="mt-0.5 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0"
+                className="mt-0.5 w-6 h-6 rounded-full bg-ds-action text-ds-on-action text-xs font-bold flex items-center justify-center shrink-0"
               >
                 {i + 1}
               </span>
@@ -73,32 +73,32 @@ export function TripLegsPreview({
                 <div className="flex flex-wrap items-baseline gap-x-2">
                   <span className="text-sm font-bold">{leg.label}</span>
                   {leg.inheritedDate && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-ds-primary">
                       date inherited
                     </span>
                   )}
                   {leg.inheritedTime && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-ds-primary">
                       time inherited
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  <span className="font-semibold text-foreground">
+                <div className="text-xs text-ds-text-2 mt-1">
+                  <span className="font-semibold text-ds-on-surface">
                     {fmtDate(leg.date)}
                   </span>{" "}
                   · {fmtTime(leg.time)}
                 </div>
                 <div className="text-sm mt-1 break-words">
-                  <span className="text-muted-foreground">From</span>{" "}
+                  <span className="text-ds-text-2">From</span>{" "}
                   <span className="font-medium">{leg.from || "—"}</span>
                 </div>
                 <div className="text-sm break-words">
-                  <span className="text-muted-foreground">To</span>{" "}
+                  <span className="text-ds-text-2">To</span>{" "}
                   <span className="font-medium">{leg.to || "—"}</span>
                 </div>
                 {leg.note && (
-                  <div className="text-xs text-muted-foreground mt-1 italic">
+                  <div className="text-xs text-ds-text-2 mt-1 italic">
                     {leg.note}
                   </div>
                 )}
@@ -108,7 +108,7 @@ export function TripLegsPreview({
         ))}
       </ol>
       {anyInherited && (
-        <footer className="px-4 py-2 border-t border-border text-[11px] text-muted-foreground">
+        <footer className="px-4 py-2 border-t border-ds-border text-[11px] text-ds-text-2">
           Legs marked as inherited will use your primary pickup date/time
           unless you edit them.
         </footer>
