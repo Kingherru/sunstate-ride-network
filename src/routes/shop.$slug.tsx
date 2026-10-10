@@ -17,11 +17,15 @@ export const Route = createFileRoute("/shop/$slug")({
     const c = loaderData?.course;
     return {
       meta: [
-        { title: c ? `${c.title} — Training Shop | My Florida NEMT` : "Course — Training Shop" },
+        { title: c ? `${c.title} — Training Shop | MY FLORIDA NEMT` : "Course — Training Shop" },
         { name: "description", content: c?.summary ?? "NEMT certification training course." },
         { property: "og:title", content: c?.title ?? "Training Course" },
         { property: "og:description", content: c?.summary ?? "" },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: `https://myfloridanemt.com/shop/${c?.slug ?? ""}` },
+        { name: "twitter:card", content: "summary" },
       ],
+      links: c ? [{ rel: "canonical", href: `https://myfloridanemt.com/shop/${c.slug}` }] : [],
       scripts: c
         ? [
             {
@@ -33,7 +37,7 @@ export const Route = createFileRoute("/shop/$slug")({
                 description: c.summary,
                 provider: {
                   "@type": "Organization",
-                  name: "My Florida NEMT",
+                  name: "MY FLORIDA NEMT",
                   sameAs: "https://myfloridanemt.com",
                 },
                 offers: {

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/resources/$slug")({
   head: ({ loaderData: r }) => {
     if (!r) return {};
     const path = `/resources/${r.slug}`;
-    const h = trailHead(path, r.metaTitle, r.description, trail(r.title, path));
+    const h = trailHead(path, r.metaTitle, r.description, trail(r.title, path), true);
     return { ...h, meta: [...h.meta.filter((m) => !("property" in m && m.property === "og:type")), { property: "og:type", content: "article" }],
       scripts: [...h.scripts, ldScript({ "@context": "https://schema.org", "@type": "Article", headline: r.title, description: r.description, dateModified: r.reviewed,
         author: { "@type": "Organization", name: "MY FLORIDA NEMT" }, publisher: { "@type": "Organization", name: "MY FLORIDA NEMT" }, mainEntityOfPage: `${SITE}${path}` })] };

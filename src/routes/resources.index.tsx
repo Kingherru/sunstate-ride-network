@@ -22,7 +22,7 @@ function ResourcesPage() {
   const groups = ["Patients & Caregivers", "Providers"] as const;
   return (
     <PublicPage>
-      <PageHero crumb="Resources" title="Resources" intro={<p>Practical guides for riders, caregivers, facilities and NEMT providers. New guides are added as they are written and reviewed.</p>} />
+      <PageHero showCrumbs crumb="Resources" title="Resources" intro={<p>Practical guides for riders, caregivers, facilities and NEMT providers. New guides are added as they are written and reviewed.</p>} />
       {groups.map((g, gi) => (
         <section key={g} aria-labelledby={`g-${gi}`} className={gi % 2 ? "mfn-section bg-ds-surface" : "mfn-section bg-ds-bg"}>
           <div className="mfn-container">

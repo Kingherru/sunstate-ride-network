@@ -15,21 +15,13 @@ export const Route = createFileRoute("/services/$service")({
     if (!loaderData) return {};
     const path = `/services/${loaderData.slug}`;
     const base = pageHead(path, loaderData.title, loaderData.description);
-    const crumbs = {
-      "@context": "https://schema.org", "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-        { "@type": "ListItem", position: 2, name: "Services", item: `${SITE}/services` },
-        { "@type": "ListItem", position: 3, name: loaderData.name, item: `${SITE}${path}` },
-      ],
-    };
     const service = {
       "@context": "https://schema.org", "@type": "Service",
       name: loaderData.name, serviceType: loaderData.serviceType, description: loaderData.description,
       url: `${SITE}${path}`, areaServed: { "@type": "State", name: "Florida" },
       provider: { "@type": "Organization", name: "MY FLORIDA NEMT", url: `${SITE}/` },
     };
-    return { ...base, meta: [...base.meta, { name: "keywords", content: loaderData.keyword }], scripts: [ldScript(service), ldScript(crumbs)] };
+    return { ...base, meta: [...base.meta, { name: "keywords", content: loaderData.keyword }], scripts: [ldScript(service)] };
   },
   notFoundComponent: () => <PublicPage><PageHero title="Service not found" intro={<p><a className="underline" href="/services">See all services</a></p>} /></PublicPage>,
   component: ServiceDetail,
@@ -42,13 +34,6 @@ function ServiceDetail() {
   return (
     <PublicPage>
       <PageHero title={s.h1} intro={<p>{s.intro}</p>} />
-      <nav aria-label="Breadcrumb" className="bg-ds-surface">
-        <ol className="mfn-container ds-support flex flex-wrap items-center gap-2 py-4 uppercase tracking-[0.06em]">
-          <li><a href="/" className="text-ds-link hover:underline underline-offset-4">Home</a></li><li aria-hidden>/</li>
-          <li><a href="/services" className="text-ds-link hover:underline underline-offset-4">Services</a></li><li aria-hidden>/</li>
-          <li aria-current="page">{s.name}</li>
-        </ol>
-      </nav>
 
       <section className="mfn-section bg-ds-bg">
         <div className="mfn-container grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">

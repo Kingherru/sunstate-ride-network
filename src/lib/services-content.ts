@@ -53,6 +53,11 @@ export const SERVICE_PAGES: ServicePage[] = [
       { h: "How to submit a request", p: [
         "Use the Book a Trip form and choose ambulatory as the transportation type. Pick one-way, round-trip or a multi-stop trip, and add notes for anything a driver should know in advance. Whenever possible, submit requests 48–72 hours ahead so providers have time to review and plan.",
       ] },
+      { h: "Round trips, waiting and recurring visits", p: [
+        "Many ambulatory trips are really two trips: the ride to the appointment and the ride home. If you know roughly how long the visit will take, include it, and say whether the rider would rather wait at the office or be picked up at a set time. For procedures with uncertain timing, give the best estimate and a phone number the provider can call when the rider is ready.",
+        "If the rider goes to the same place on a regular schedule \u2014 for example therapy twice a week \u2014 describe the pattern in one request using the repeating-trip option, along with the start and end dates. Providers can then review the whole schedule instead of one trip at a time.",
+        "It also helps to mention anything that makes the trip easier for the rider: a preferred entrance, a companion who will ride along, hearing or vision needs, or a language preference. Clear notes reduce last-minute calls on the day of the trip.",
+      ] },
       { h: "Provider acceptance is required", p: [
         "MY FLORIDA NEMT connects requests with independent transportation providers. A submitted request is not a confirmed ride: a participating provider must review it and accept it. Availability, pricing and timing depend on the provider, the location and the trip details. Not every provider offers every service in every area.",
         "Ambulatory transportation is for planned, non-emergency travel only. For a medical emergency, call 911.",
@@ -98,6 +103,11 @@ export const SERVICE_PAGES: ServicePage[] = [
       { h: "How to submit a request", p: [
         "Choose wheelchair on the Book a Trip form, then add the chair and access details in the notes. Include the appointment time and any return ride. Requests submitted 48–72 hours in advance give providers the best chance to plan an appropriate vehicle.",
       ] },
+      { h: "Helping at pickup and drop-off", p: [
+        "Wheelchair trips often take a little longer at each end than other rides. Allow time for the driver to deploy the ramp or lift, load and secure the chair, and help the rider at the door if needed. If the rider lives in an apartment or a care facility, say which entrance is easiest and whether staff will bring the rider down.",
+        "At the destination, note where the rider should be dropped off \u2014 a main entrance, a medical office building or a specific clinic door \u2014 and whether someone will meet them. Including these details in the request helps providers decide whether they can accept the trip and plan realistic timing.",
+        "If the rider sometimes uses a different chair, such as a transport chair for appointments, tell the provider which one will travel on the day of the trip.",
+      ] },
       { h: "Provider acceptance is required", p: [
         "Independent providers decide whether they can safely accept each trip with the vehicles and staff they have. Submitting a request does not guarantee a ride, and not every provider offers wheelchair service in every Florida area. Pricing and availability are set by the accepting provider.",
         "This service is for planned, non-emergency transportation. For a medical emergency, call 911.",
@@ -141,6 +151,11 @@ export const SERVICE_PAGES: ServicePage[] = [
       { h: "How to submit a request", p: [
         "Select stretcher on the Book a Trip form and add the positioning, access and equipment details in the notes. Submit 48–72 hours ahead whenever you can; same-week requests may be harder for providers to accept.",
       ] },
+      { h: "Planning with facilities and families", p: [
+        "Stretcher trips are often arranged by a hospital discharge planner, a care-facility coordinator or a family member. Whoever submits the request should confirm the timing with the sending and receiving locations first, so the rider is ready when the crew arrives and someone is expecting them at the other end.",
+        "Include the names and phone numbers of the people who can answer questions at each location, and note any paperwork that must travel with the rider. If a family member wants to ride along, mention it in the request, since space can be limited in stretcher-capable vehicles.",
+        "Give providers as much notice as you can. Stretcher-capable vehicles and crews are limited, and same-day requests are less likely to be accepted.",
+      ] },
       { h: "Provider acceptance is required", p: [
         "Only some independent providers operate stretcher-capable vehicles and crews. A request is reviewed by participating providers, and the trip is not confirmed until one accepts it. Availability and pricing vary by provider and location.",
         "If the rider needs emergency care or medical monitoring, call 911 instead.",
@@ -165,10 +180,11 @@ export const SERVICE_PAGES: ServicePage[] = [
     intro: "Some independent providers in the network also move items rather than people — supplies, equipment, specimens or documents that need to arrive on time.",
     imageKey: "facility",
     imageAlt: "A facility coordinator arranges a delivery by phone at a front desk",
-    bookParam: "",
+    bookParam: "medical-delivery",
     sections: [
       { h: "Who medical delivery may help", p: [
         "Medical delivery requests usually come from clinics, pharmacies, labs, home-health agencies, care facilities and medical-equipment suppliers. Individuals and caregivers sometimes need it too, for example when a rider's equipment or paperwork must reach a facility separately.",
+        "Deliveries can be one-time, such as a piece of equipment that must reach a patient's home before a discharge, or part of a regular route between two locations. In either case, the person arranging the delivery should be able to describe what is moving, when it needs to arrive and who will receive it. Clear, specific instructions are what make a delivery dependable, and they help a provider decide quickly whether the job is a good fit for their vehicle and schedule.",
       ] },
       { h: "Typical deliveries", list: [
         "Medical supplies and small equipment",
@@ -181,7 +197,12 @@ export const SERVICE_PAGES: ServicePage[] = [
         "Specimens and regulated items can have their own packaging and handling rules. The sender is responsible for packaging items correctly; providers decide whether they can carry a particular item.",
       ] },
       { h: "How to submit a request", p: [
-        "The online trip form is built around passenger trips and does not yet have a separate delivery option. For now, call or email us with the delivery details, or use the Book a Trip form and describe the delivery clearly in the notes. Planning 48–72 hours ahead helps, especially for recurring routes.",
+        "Choose Medical Delivery on the Book a Trip form. Online delivery requests are not available yet, so the form will show how to call or email us with the pickup location, delivery destination and instructions. We recommend planning 48–72 hours ahead, especially for recurring routes.",
+      ] },
+      { h: "What we do not need for a delivery", p: [
+        "A delivery request is about the item, not a patient. You do not need to share diagnoses, medical history or other patient details to request a delivery. Describe the item in plain terms, its size and handling needs, and who is responsible for it at each end.",
+        "For recurring routes, such as regular runs between a clinic and a lab, describe the schedule, the typical number of items and any cut-off times. That lets providers review whether a recurring route fits their schedule rather than one delivery at a time.",
+        "Keep a record of the contact who arranged the delivery and the person who will receive it, so questions can be answered quickly on the day.",
       ] },
       { h: "Provider acceptance is required", p: [
         "Medical delivery is offered by some participating independent providers, not all of them. Each request is reviewed, and nothing is confirmed until a provider accepts it. Pricing and timing are set by the accepting provider.",

@@ -9,11 +9,8 @@ import {
   type RideRequestInput,
   type BillingContact,
   RECURRENCE_OPTIONS,
-  BLACK_TIE_VEHICLE_OPTIONS,
-  BLACK_TIE_VEHICLE_LABELS,
 } from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
-import { getMyRequest } from "@/lib/requests.functions";
 import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
@@ -23,15 +20,22 @@ import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/R
 import { supabase } from "@/integrations/supabase/client";
 import { PublicPage } from "@/components/public/PublicPage";
 import { NonEmergencyNotice, pageHead } from "@/components/public/page-kit";
-import { LINKS } from "@/lib/site-config";
+import { LINKS, PUBLIC_EMAIL, PUBLIC_PHONE_TEL } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 
+
+const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
+  { id: "ambulatory", label: "Ambulatory", kind: "ride", type: "ambulatory" },
+  { id: "wheelchair", label: "Wheelchair", kind: "ride", type: "wheelchair" },
+  { id: "stretcher", label: "Stretcher", kind: "ride", type: "gurney" },
+  { id: "medical-delivery", label: "Medical Delivery", kind: "delivery" },
+];
 
 const SERVICE_PARAM: Record<string, RideRequestInput["transportType"]> = { ambulatory: "ambulatory", wheelchair: "wheelchair", stretcher: "gurney" };
 
 export const Route = createFileRoute("/book")({
   validateSearch: (s: Record<string, unknown>) =>
-    z.object({ copyFrom: z.string().uuid().optional(), service: z.string().max(40).optional().catch(undefined) }).parse(s),
+    z.object({ service: z.string().max(40).optional().catch(undefined) }).parse(s),
   head: () => pageHead(
     "/book",
     "Submit a Florida NEMT Trip Request — Book a Trip | MY FLORIDA NEMT",
@@ -181,10 +185,10 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
 
 function RequestRidePage() {
   const router = useRouter();
-  const { copyFrom, service } = Route.useSearch();
+  const { service } = Route.useSearch();
+  const [kind, setKind] = useState<"ride" | "delivery">(service === "medical-delivery" ? "delivery" : "ride");
   const submit = useServerFn(submitRideRequest);
   const enrich = useServerFn(enrichRideRequest);
-  const fetchOne = useServerFn(getMyRequest);
   const [form, setForm] = useState<RideRequestInput>(() => (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [returnDateManual, setReturnDateManual] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -201,7 +205,6 @@ function RequestRidePage() {
     dropoffLat?: number | null;
     dropoffLng?: number | null;
   } | null>(null);
-  const [copiedFromId, setCopiedFromId] = useState<string | null>(null);
   const [savedBilling, setSavedBilling] = useState<BillingContact | null>(null);
   const [customBilling, setCustomBilling] = useState<BillingContact>({
     firstName: "", lastName: "", email: "", phone: "",
@@ -210,42 +213,6 @@ function RequestRidePage() {
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
-
-  // Restore a draft from localStorage so a network/validation error doesn't lose the user's typing.
-  const DRAFT_KEY = "mfnemt.rideRequest.draft.v1";
-  const REMEMBER_KEY = "mfnemt.rideRequest.remember.v1";
-  const [remember, setRemember] = useState<boolean>(true);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as Partial<RideRequestInput>;
-        setForm((f) => ({ ...f, ...saved, pickupDate: "", pickupTime: "", appointmentTime: "", returnDate: "", returnPickupTime: "", returnDropoffTime: "" }));
-      }
-      const r = localStorage.getItem(REMEMBER_KEY);
-      if (r != null) setRemember(r === "1");
-    } catch { /* ignore */ }
-  }, []);
-  // Persist a lightweight draft as the user types (patient + addresses only, no dates/times).
-  useEffect(() => {
-    if (!remember) return;
-    try {
-      const draft = {
-        patientFirstName: form.patientFirstName,
-        patientLastName: form.patientLastName,
-        patientPhone: form.patientPhone,
-        patientEmail: form.patientEmail,
-        pickupAddress: form.pickupAddress,
-        pickupAddressDetails: form.pickupAddressDetails,
-        pickupCity: form.pickupCity,
-        dropoffAddress: form.dropoffAddress,
-        dropoffCity: form.dropoffCity,
-        transportType: form.transportType,
-        mobilityNotes: form.mobilityNotes,
-      };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch { /* ignore */ }
-  }, [remember, form.patientFirstName, form.patientLastName, form.patientPhone, form.patientEmail, form.pickupAddress, form.pickupAddressDetails, form.pickupCity, form.dropoffAddress, form.dropoffCity, form.transportType, form.mobilityNotes]);
 
   useEffect(() => {
     let cancelled = false;
@@ -266,64 +233,6 @@ function RequestRidePage() {
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
-
-  useEffect(() => {
-    if (!copyFrom) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await fetchOne({ data: { id: copyFrom } });
-        if (!r.ok || cancelled) return;
-        const row = r.row;
-        const allowed: RideRequestInput["recurrence"][] = [...RECURRENCE_OPTIONS];
-        const rec = allowed.includes(row.recurrence_rule as RideRequestInput["recurrence"])
-          ? (row.recurrence_rule as RideRequestInput["recurrence"])
-          : "none";
-        setForm({
-          patientFirstName: row.patient_first_name ?? "",
-          patientLastName: row.patient_last_name ?? "",
-          patientPhone: row.patient_phone ?? "",
-          patientEmail: row.patient_email ?? "",
-          pickupAddress: row.pickup_address ?? "",
-          pickupAddressDetails: (row as any).pickup_address_details ?? "",
-          pickupCity: row.pickup_city ?? "",
-          pickupDate: "",
-          pickupTime: "",
-          appointmentTime: "",
-          dropoffAddress: row.dropoff_address ?? "",
-          dropoffCity: row.dropoff_city ?? "",
-          transportType:
-            (row.transport_type as RideRequestInput["transportType"]) ?? "ambulatory",
-          tripType:
-            (row.trip_type as RideRequestInput["tripType"]) ??
-            (row.round_trip ? "round_trip" : "one_way"),
-          roundTrip: !!row.round_trip,
-          returnPickupTime: "",
-          returnDropoffTime: "",
-          returnDate: "",
-          additionalStops: Array.isArray(row.additional_stops)
-            ? (row.additional_stops as RideRequestInput["additionalStops"])
-            : [],
-          mobilityNotes: row.mobility_notes ?? "",
-          specialInstructions: row.special_instructions ?? "",
-          recurrence: rec,
-          recurrenceEndDate: "",
-          billingSource: "account",
-          createAccount: false,
-          blackTie: false,
-        });
-        setCopiedFromId(copyFrom);
-        toast.success("Trip copied. Set new pickup/drop-off dates and times to continue.");
-      } catch {
-        toast.error("Could not load that trip to copy.");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [copyFrom, fetchOne]);
-
-
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -397,28 +306,11 @@ function RequestRidePage() {
         toast.success("Trip request submitted. It is not confirmed until a provider accepts it.");
         router.invalidate();
 
-        if (remember) {
-          try { localStorage.setItem(DRAFT_KEY, JSON.stringify({
-            patientFirstName: parsed.data.patientFirstName,
-            patientLastName: parsed.data.patientLastName,
-            patientPhone: parsed.data.patientPhone,
-            patientEmail: parsed.data.patientEmail,
-            pickupAddress: parsed.data.pickupAddress,
-            pickupAddressDetails: parsed.data.pickupAddressDetails,
-            pickupCity: parsed.data.pickupCity,
-            dropoffAddress: parsed.data.dropoffAddress,
-            dropoffCity: parsed.data.dropoffCity,
-            transportType: parsed.data.transportType,
-            mobilityNotes: parsed.data.mobilityNotes,
-          })); } catch { /* ignore */ }
-        } else {
-          try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
-        }
       } else {
         toast.error(res.error);
       }
     } catch (err) {
-      console.error(err);
+      console.error("trip request submission failed");
       toast.error("Something went wrong. Please try again or call us.");
     } finally {
       setSubmitting(false);
@@ -509,17 +401,41 @@ function RequestRidePage() {
           Share the trip details below. Independent providers in the MY FLORIDA NEMT network review each request — submitting does not guarantee a ride until a provider accepts it.
         </p>
         <div role="note" className="ds-body-lg mx-auto mt-6 mb-6 max-w-[46rem] rounded-ds bg-ds-membership p-5 text-center text-ds-primary">
-          <strong>Please submit requests 48–72 hours in advance</strong> whenever possible so providers have time to review and plan the trip.
+          <strong>We recommend submitting requests 48–72 hours in advance.</strong> Short-notice requests may be submitted for review, but availability and acceptance are not guaranteed.
         </div>
         <NonEmergencyNotice className="mb-10" />
 
-        {copiedFromId && (
-          <div className="mb-6 rounded-ds-sm border border-ds-sky-border bg-ds-sky px-4 py-3 text-sm">
-            <strong className="font-bold">Copied from a previous trip.</strong> Review the details and
-            pick a new pickup date before submitting.
+        <fieldset className="mb-8">
+          <legend className="ds-label mb-3 block text-ds-on-surface">What do you need? <span className="text-ds-accent-active">*</span></legend>
+          <div role="radiogroup" aria-label="Service" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {SERVICE_CHOICES.map((c) => {
+              const on = c.kind === "delivery" ? kind === "delivery" : kind === "ride" && form.transportType === c.type;
+              return (
+                <button key={c.id} type="button" role="radio" aria-checked={on}
+                  onClick={() => { setKind(c.kind); if (c.type) upd("transportType", c.type); }}
+                  className={`ds-button-text min-h-12 whitespace-nowrap rounded-ds-sm px-4 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus ${on ? "bg-ds-action text-ds-on-action" : "bg-ds-sky text-ds-primary hover:bg-ds-hover"}`}>
+                  {c.label}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </fieldset>
 
+        {kind === "delivery" ? (
+          <div role="status" className="rounded-ds-lg bg-ds-sky p-6 sm:p-8">
+            <h2 className="ds-section-title uppercase text-ds-primary">Medical delivery requests</h2>
+            <p className="ds-body-lg mt-3">Online medical delivery requests aren’t available yet — the request system currently stores passenger trips only, so we won’t accept a delivery through this form. Please call or email us with:</p>
+            <ul className="ds-body-lg mt-3 list-disc space-y-1 pl-6">
+              <li>The pickup location</li>
+              <li>The delivery destination</li>
+              <li>Basic delivery instructions, such as handling needs and the deadline</li>
+            </ul>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <a href={PUBLIC_PHONE_TEL} className="ds-button-text inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-ds-sm bg-ds-action px-6 uppercase text-ds-on-action hover:bg-ds-action-hover">Call us</a>
+              <a href={`mailto:${PUBLIC_EMAIL}?subject=${encodeURIComponent("Medical delivery request")}`} className="ds-button-text inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-ds-sm bg-ds-primary px-6 uppercase text-ds-on-primary hover:bg-ds-primary-hover">Email us</a>
+            </div>
+          </div>
+        ) : (
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
 
           {/* Patient */}
@@ -541,19 +457,6 @@ function RequestRidePage() {
                 <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => upd("patientEmail", e.target.value)} />
               </Field>
             </div>
-            <label className="flex items-center gap-2 text-xs text-ds-text-2">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-[var(--ds-primary)]"
-                checked={remember}
-                onChange={(e) => {
-                  setRemember(e.target.checked);
-                  try { localStorage.setItem(REMEMBER_KEY, e.target.checked ? "1" : "0"); } catch { /* ignore */ }
-                  if (!e.target.checked) { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } }
-                }}
-              />
-              Remember my info on this device so I don't have to re-enter it next time.
-            </label>
           </fieldset>
 
           {/* Pickup */}
@@ -648,7 +551,7 @@ function RequestRidePage() {
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
-            {!form.blackTie && (
+            {(
               <PriceEstimate
                 pickupZip={pickupMeta.zip}
                 miles={estimatedMiles}
@@ -658,15 +561,6 @@ function RequestRidePage() {
                 tripTypeLabel={TRIP_TYPE_LABELS[form.tripType]}
               />
             )}
-            {form.blackTie && (
-              <div className="mt-2 rounded-ds-sm border border-ds-border bg-ds-membership p-4 text-sm">
-                <p className="font-bold uppercase tracking-widest text-ds-accent-active text-xs mb-1">Manual quote</p>
-                <p className="text-ds-text-2">
-                  All Black Tie Transportation requests are quoted manually. Our team will review your
-                  request and reply with a custom price before your reservation is confirmed.
-                </p>
-              </div>
-            )}
           </fieldset>
 
           {/* Transport details */}
@@ -674,71 +568,6 @@ function RequestRidePage() {
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Transport details
             </legend>
-            <div className="grid md:grid-cols-3 gap-3">
-              {(["ambulatory", "wheelchair", "gurney"] as const).map((t) => (
-                <button
-                  type="button"
-                  key={t}
-                  onClick={() => upd("transportType", t)}
-                  className={`p-4 border rounded-ds-sm text-sm font-bold uppercase tracking-wide transition-all ${
-                    form.transportType === t
-                      ? "border-primary bg-ds-action text-ds-on-action"
-                      : "border-ds-border hover:border-ds-sky-border"
-                  }`}
-                >
-                  {t === "gurney" ? "Gurney / Stretcher" : t}
-                </button>
-              ))}
-            </div>
-
-            {/* Black Tie premium service */}
-            <div className="rounded-ds-sm border border-ds-border p-4 space-y-3">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 accent-[var(--ds-action)]"
-                  checked={!!form.blackTie}
-                  onChange={(e) => {
-                    upd("blackTie", e.target.checked);
-                    if (!e.target.checked) upd("blackTieVehicle", undefined);
-                  }}
-                />
-                <span>
-                  <span className="block text-sm font-bold uppercase tracking-widest">
-                    Black Tie Transportation
-                  </span>
-                  <span className="block text-xs text-ds-text-2 mt-1">
-                    Premium chauffeured service for airports, weddings, corporate events, and special occasions.
-                    Manually quoted — no automatic pricing.
-                  </span>
-                </span>
-              </label>
-              {form.blackTie && (
-                <Field
-                  label="Vehicle type"
-                  required
-                  error={errors.blackTieVehicle}
-                >
-                  <select
-                    className={inputCls}
-                    value={form.blackTieVehicle ?? ""}
-                    onChange={(e) =>
-                      upd(
-                        "blackTieVehicle",
-                        (e.target.value || undefined) as RideRequestInput["blackTieVehicle"],
-                      )
-                    }
-                  >
-                    <option value="">Select a vehicle…</option>
-                    {BLACK_TIE_VEHICLE_OPTIONS.map((v) => (
-                      <option key={v} value={v}>
-                        {BLACK_TIE_VEHICLE_LABELS[v]}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              )}
-            </div>
             <div>
               <span className="block text-xs font-bold uppercase tracking-widest text-ds-text-2 mb-2">
                 Trip type <span className="text-ds-accent-active">*</span>
@@ -778,7 +607,7 @@ function RequestRidePage() {
               </div>
               <p className="mt-2 text-xs text-ds-text-2">
                 {form.tripType === "one_way" && "Single pickup to a single drop-off."}
-                {form.tripType === "round_trip" && "We'll dispatch a return ride after the appointment."}
+                {form.tripType === "round_trip" && "Add the return pickup time so providers can plan the ride home."}
                 {form.tripType === "multi_trip" && "Add one or more stops between the pickup and final drop-off."}
               </p>
             </div>
@@ -1071,6 +900,7 @@ function RequestRidePage() {
             By submitting you agree to be contacted about this trip. Submitting is a request, not a confirmed booking.
           </p>
         </form>
+        )}
       </div>
     </section>
   );

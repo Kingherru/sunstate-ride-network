@@ -1,7 +1,7 @@
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "My Florida NEMT",
+  name: "MY FLORIDA NEMT",
   url: "https://myfloridanemt.com",
   logo: "https://myfloridanemt.com/logo-horizontal.png",
   sameAs: [
@@ -29,7 +29,7 @@ export function buildServiceSchema({
     description,
     provider: {
       "@type": "Organization",
-      name: "My Florida NEMT",
+      name: "MY FLORIDA NEMT",
       url: "https://myfloridanemt.com",
     },
     areaServed: {

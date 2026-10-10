@@ -78,8 +78,8 @@ export function PriceEstimate({
     source === "custom"
       ? "Provider Custom Pricing"
       : source === "recommended"
-        ? "My Florida NEMT Recommended Pricing"
-        : "My Florida NEMT Recommended (default)";
+        ? "MY FLORIDA NEMT Recommended Pricing"
+        : "MY FLORIDA NEMT Recommended (default)";
 
   return (
     <div className={`bg-secondary/40 border border-ds-border rounded-ds-sm ${compact ? "p-3" : "p-4"} space-y-3`}>

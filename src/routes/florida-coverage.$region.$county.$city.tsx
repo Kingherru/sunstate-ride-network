@@ -2,7 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CalendarPlus, Phone, UserPlus } from "lucide-react";
 import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, NonEmergencyNotice, PageHero, Reveal } from "@/components/public/page-kit";
-import { TrailCrumbs, trailHead } from "@/components/public/coverage-kit";
+import { trailHead } from "@/components/public/coverage-kit";
 import { CITIES, cityPath, countyPath, findRegion, regionOfCounty, slugify } from "@/lib/coverage";
 import { LINKS, PUBLIC_PHONE_TEL } from "@/lib/site-config";
 
@@ -29,7 +29,6 @@ function CityPage() {
   return (
     <PublicPage>
       <PageHero title={city.h1} intro={<p>Request non-emergency medical transportation in {city.name}. Participating independent providers review each request — a ride is confirmed only when a provider accepts it.</p>} />
-      <TrailCrumbs trail={trail(city, region.name, region.slug)} />
       <section className="mfn-section bg-ds-bg">
         <div className="mfn-container mfn-read mx-auto space-y-10">
           <Reveal>
