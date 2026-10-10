@@ -21,7 +21,11 @@ export const Route = createFileRoute("/shop/$slug")({
         { name: "description", content: c?.summary ?? "NEMT certification training course." },
         { property: "og:title", content: c?.title ?? "Training Course" },
         { property: "og:description", content: c?.summary ?? "" },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: `https://myfloridanemt.com/shop/${c?.slug ?? ""}` },
+        { name: "twitter:card", content: "summary" },
       ],
+      links: c ? [{ rel: "canonical", href: `https://myfloridanemt.com/shop/${c.slug}` }] : [],
       scripts: c
         ? [
             {
