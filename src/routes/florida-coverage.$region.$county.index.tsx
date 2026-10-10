@@ -2,7 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CalendarPlus, Network } from "lucide-react";
 import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, PageHero, Reveal, SectionHead } from "@/components/public/page-kit";
-import { LinkCard, TrailCrumbs, trailHead } from "@/components/public/coverage-kit";
+import { LinkCard, trailHead } from "@/components/public/coverage-kit";
 import { cityPath, citiesInCounty, countyPath, findCounty, findRegion } from "@/lib/coverage";
 import { LINKS } from "@/lib/site-config";
 
@@ -29,7 +29,6 @@ function CountyPage() {
   return (
     <PublicPage>
       <PageHero title={`${county} County medical rides`} intro={<p>{county} County is part of the {region.name} region. Trip requests from anywhere in the county can be submitted online and are reviewed by participating independent providers.</p>} />
-      <TrailCrumbs trail={trail(region.name, region.slug, county)} />
       <section aria-labelledby="cities" className="mfn-section bg-ds-bg">
         <div className="mfn-container">
           <Reveal><SectionHead id="cities" title={`Cities in ${county} County`} intro="Each city page covers local travel considerations and what to include in your request." /></Reveal>

@@ -27,7 +27,7 @@ export const trailLd = (trail: Crumb[]) => ldScript({
 });
 
 /** Interior head with multi-level breadcrumbs. */
-export function trailHead(path: string, title: string, description: string, trail: Crumb[]) {
+export function trailHead(path: string, title: string, description: string, trail: Crumb[], withCrumbLd = false) {
   return {
     meta: [
       { title }, { name: "description", content: description },
@@ -36,7 +36,7 @@ export function trailHead(path: string, title: string, description: string, trai
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: `${SITE}${path}` }],
-    scripts: [trailLd(trail)],
+    scripts: withCrumbLd ? [trailLd(trail)] : [],
   };
 }
 

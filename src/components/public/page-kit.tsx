@@ -30,7 +30,7 @@ export const webPageLd = (path: string, name: string, description: string, type 
 /** Interior page head: metadata + canonical + WebPage and BreadcrumbList JSON-LD. */
 export function pageHead(path: string, title: string, description: string, crumb?: string, pageType?: string) {
   return {
-    scripts: crumb ? [ldScript(webPageLd(path, crumb, description, pageType)), ldScript(breadcrumbLd(path, crumb))] : [],
+    scripts: crumb ? [ldScript(webPageLd(path, crumb, description, pageType)), ...(path.startsWith("/resources") ? [ldScript(breadcrumbLd(path, crumb))] : [])] : [],
     meta: [
       { title },
       { name: "description", content: description },
@@ -50,7 +50,7 @@ type Img = (typeof HOME_IMAGES)[keyof typeof HOME_IMAGES];
  * Standard inner-page banner: centered H1 + copy on blue, optional faint
  * decorative photo, breadcrumbs directly below. `eyebrow` is ignored (kept for compatibility).
  */
-export function PageHero({ title, intro, img, children, crumb }: { crumb?: string; eyebrow?: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
+export function PageHero({ title, intro, img, children, crumb, showCrumbs }: { crumb?: string; showCrumbs?: boolean; eyebrow?: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
   return (
     <>
       <section aria-labelledby="page-title" className="relative overflow-hidden bg-ds-primary text-ds-on-primary">
@@ -63,7 +63,7 @@ export function PageHero({ title, intro, img, children, crumb }: { crumb?: strin
           </HomeReveal>
         </div>
       </section>
-      {crumb && <Breadcrumbs crumb={crumb} />}
+      {crumb && showCrumbs && <Breadcrumbs crumb={crumb} />}
     </>
   );
 }

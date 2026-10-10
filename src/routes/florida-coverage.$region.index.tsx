@@ -2,7 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CalendarPlus, Network } from "lucide-react";
 import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, PageHero, Reveal, SectionHead } from "@/components/public/page-kit";
-import { LinkCard, TrailCrumbs, trailHead } from "@/components/public/coverage-kit";
+import { LinkCard, trailHead } from "@/components/public/coverage-kit";
 import { citiesInCounty, countyPath, findRegion } from "@/lib/coverage";
 import { LINKS } from "@/lib/site-config";
 
@@ -21,7 +21,6 @@ function RegionPage() {
   return (
     <PublicPage>
       <PageHero title={`${r.name} region`} intro={<p>{r.intro}</p>} />
-      <TrailCrumbs trail={[{ name: "Home", path: "/" }, { name: "Coverage", path: "/florida-coverage" }, { name: r.name, path: `/florida-coverage/${r.slug}` }]} />
       <section aria-labelledby="counties" className="mfn-section bg-ds-bg">
         <div className="mfn-container">
           <Reveal><SectionHead id="counties" title={`Counties in the ${r.name} region`} intro="County pages list the cities we currently have pages for. Showing a county does not mean a provider is available there." /></Reveal>
