@@ -292,12 +292,9 @@
 @media (min-width: 640px) { .mfn-section { padding-block: 64px; } .mfn-section-lg { padding-block: 80px; } }
 @media (min-width: 1024px) { .mfn-section { padding-block: 80px; } .mfn-section-lg { padding-block: 96px; } }
 
-/* Smart Notes preview: clean yellow notepad (original design). */
+/* Smart Notes preview: clean yellow phone-notes surface. No ruled lines, grid, binding or texture. Yellow is limited to this feature. */
 .ds-notepad {
   --ds-note: #FFF6C2;
   background-color: var(--ds-note);
-  background-image: repeating-linear-gradient(to bottom, transparent 0 27px, color-mix(in oklab, #13335A 10%, transparent) 27px 28px);
-  background-position: 0 2.4rem;
-  line-height: 28px;
   box-shadow: 0 1px 3px rgba(19, 51, 90, 0.12);
 }

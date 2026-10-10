@@ -3,10 +3,10 @@ import { LegalPage } from "@/components/public/LegalPage";
 import { pageHead } from "@/components/public/page-kit";
 import { PUBLIC_EMAIL } from "@/lib/site-config";
 
-const DESC = "The terms for using My Florida NEMT: planned non-emergency transportation requests, the provider network, membership fees and training purchases.";
+const DESC = "The terms for using MY FLORIDA NEMT: planned non-emergency transportation requests, the provider network, membership fees and training purchases.";
 
 export const Route = createFileRoute("/terms")({
-  head: () => pageHead("/terms", "Terms of Use | My Florida NEMT", DESC, "Terms of Use"),
+  head: () => pageHead("/terms", "Terms of Use | MY FLORIDA NEMT", DESC, "Terms of Use"),
   component: () => (
     <LegalPage
       crumb="Terms of Use"
