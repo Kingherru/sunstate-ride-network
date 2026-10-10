@@ -13,7 +13,7 @@ export const REGIONS: Region[] = [
     counties: ["Hamilton", "Suwannee", "Lafayette", "Dixie", "Columbia", "Baker", "Union", "Bradford", "Nassau", "Duval", "Clay", "St. Johns", "Putnam", "Flagler"] },
   { slug: "north-central", name: "North Central", intro: "North Central Florida runs from Gainesville and Ocala to the Nature Coast around Inverness — a mix of university-town neighborhoods, horse country and quiet rural roads.",
     counties: ["Gilchrist", "Alachua", "Levy", "Marion", "Citrus", "Hernando"] },
-  { slug: "central", name: "Central", intro: "Central Florida spans the Orlando metro, the Space Coast around Melbourne, Daytona Beach on the Atlantic and Lakeland along I-4 — one of the fastest-growing parts of the state.",
+  { slug: "central", name: "Central", intro: "Central Florida spans the Orlando metro, the Space Coast around Melbourne, Daytona Beach on the Atlantic and Lakeland along I-4.",
     counties: ["Volusia", "Lake", "Sumter", "Seminole", "Orange", "Osceola", "Brevard", "Polk"] },
   { slug: "tampa-bay", name: "Tampa Bay", intro: "The Tampa Bay region wraps around the bay from Tampa and St. Petersburg south to Sarasota, then inland toward the farm and ranch counties of the Heartland.",
     counties: ["Pasco", "Pinellas", "Hillsborough", "Manatee", "Sarasota", "Hardee", "DeSoto", "Highlands"] },
