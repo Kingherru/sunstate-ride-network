@@ -184,6 +184,7 @@ export const SERVICE_PAGES: ServicePage[] = [
     sections: [
       { h: "Who medical delivery may help", p: [
         "Medical delivery requests usually come from clinics, pharmacies, labs, home-health agencies, care facilities and medical-equipment suppliers. Individuals and caregivers sometimes need it too, for example when a rider's equipment or paperwork must reach a facility separately.",
+        "Deliveries can be one-time, such as a piece of equipment that must reach a patient's home before a discharge, or part of a regular route between two locations. In either case, the person arranging the delivery should be able to describe what is moving, when it needs to arrive and who will receive it. Clear, specific instructions are what make a delivery dependable, and they help a provider decide quickly whether the job is a good fit for their vehicle and schedule.",
       ] },
       { h: "Typical deliveries", list: [
         "Medical supplies and small equipment",
