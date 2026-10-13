@@ -13,7 +13,7 @@ export const Route = createFileRoute("/reset-password")({
       { property: "og:description", content: "Set a new password for your MY FLORIDA NEMT account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: ResetPasswordPage,

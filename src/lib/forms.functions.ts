@@ -63,6 +63,7 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         special_instructions: data.specialInstructions || null,
         requester_user_id: requester.userId,
         workspace_id: requester.workspaceId,
+        submitted_via: requester.submittedVia,
         recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
         recurrence_end_date: data.recurrenceEndDate || null,
         embed_provider_id: embedProviderId,
@@ -126,6 +127,7 @@ export const submitDeliveryRequest = createServerFn({ method: "POST" })
         delivery_signature_required: data.signatureRequired,
         requester_user_id: requester.userId,
         workspace_id: requester.workspaceId,
+        submitted_via: requester.submittedVia,
       })
       .select("id")
       .single();

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/verify/$token")({
     meta: [
       { title: "Verify Certificate | MY FLORIDA NEMT" },
       { name: "description", content: "Verify a MY FLORIDA NEMT training certificate." },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: Verify,

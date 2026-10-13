@@ -21,7 +21,7 @@ export const Route = createFileRoute("/login")({
       { property: "og:description", content: "Sign in to your MY FLORIDA NEMT account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: Login,

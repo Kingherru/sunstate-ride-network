@@ -5,7 +5,7 @@ import { AuthMessage } from "@/components/auth/AuthShell";
 import { btnAction } from "@/components/home/buttons";
 
 export const Route = createFileRoute("/_authenticated/account-setup")({
-  head: () => ({ meta: [{ title: "Finish Account Setup — MY FLORIDA NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Finish Account Setup — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async () => {
     const access = await getAccessState();
     if (access.destination !== "/account-setup") throw redirect({ to: access.destination });

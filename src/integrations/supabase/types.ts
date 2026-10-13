@@ -4883,22 +4883,31 @@ export type Database = {
       }
       workspace_members: {
         Row: {
+          can_create_requests: boolean
+          can_view_workspace_requests: boolean
           created_at: string
           id: string
+          is_contractor: boolean
           role: Database["public"]["Enums"]["workspace_role"]
           user_id: string
           workspace_id: string
         }
         Insert: {
+          can_create_requests?: boolean
+          can_view_workspace_requests?: boolean
           created_at?: string
           id?: string
+          is_contractor?: boolean
           role?: Database["public"]["Enums"]["workspace_role"]
           user_id: string
           workspace_id: string
         }
         Update: {
+          can_create_requests?: boolean
+          can_view_workspace_requests?: boolean
           created_at?: string
           id?: string
+          is_contractor?: boolean
           role?: Database["public"]["Enums"]["workspace_role"]
           user_id?: string
           workspace_id?: string
@@ -5265,12 +5274,24 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
+      can_create_workspace_requests: {
+        Args: { _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       can_manage_workspace_requests: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
+      can_view_trip_via_workspace: {
+        Args: { _ride_request_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_view_workspace_requests: {
+        Args: { _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {
@@ -5504,6 +5525,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      has_active_transport_workspace: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       has_any_role: {
         Args: {
