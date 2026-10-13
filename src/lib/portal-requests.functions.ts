@@ -17,7 +17,8 @@ export type RequestListRow = {
   id: string; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
   status: string | null; created_at: string; submitted_via: string | null;
 };
-export type RequestDetailRow = RequestListRow & Record<string, unknown>;
+type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+export type RequestDetailRow = RequestListRow & { [k: string]: Json };
 
 const idInput = (input: unknown) => z.object({ id: z.string().uuid() }).parse(input);
 const NOT_FOUND = "not_found";
