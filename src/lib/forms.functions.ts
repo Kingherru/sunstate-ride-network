@@ -138,24 +138,14 @@ export const rideRequestSchema = z.object({
 
 export type RideRequestInput = z.infer<typeof rideRequestSchema>;
 
+const GENERIC_SUBMIT_ERROR = "We could not submit your request. Please try again or call us.";
+
 export const submitRideRequest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => rideRequestSchema.parse(input))
   .handler(async ({ data }) => {
-    // If the caller is signed in, tag the request with their user id so they can see it in /requests.
-    let requesterUserId: string | null = null;
-    try {
-      const { getRequestHeader } = await import("@tanstack/react-start/server");
-      const authHeader = getRequestHeader("authorization");
-      const token = authHeader?.replace(/^Bearer\s+/i, "");
-      if (token) {
-        const { data: userData } = await supabaseAdmin.auth.getUser(token);
-        requesterUserId = userData.user?.id ?? null;
-      }
-    } catch {
-      // anonymous submission is fine
-    }
+    const { resolveRequester, notifyNewRequest } = await import("@/lib/requests/request-service.server");
+    const requester = await resolveRequester();
 
-    // Resolve optional embed token to attribute the request to the provider whose website hosted the form.
     let embedProviderId: string | null = null;
     let embedTokenStored: string | null = null;
     if (data.embedToken) {
@@ -170,9 +160,11 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       }
     }
 
+    const isRound = data.tripType === "round_trip" || data.roundTrip;
     const { error, data: row } = await supabaseAdmin
       .from("ride_requests")
       .insert({
+        trip_kind: "passenger",
         patient_first_name: data.patientFirstName,
         patient_last_name: data.patientLastName,
         patient_phone: data.patientPhone,
@@ -187,24 +179,18 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         dropoff_city: data.dropoffCity,
         transport_type: data.transportType,
         trip_type: data.tripType,
-        is_black_tie: data.blackTie ?? false,
-        black_tie_vehicle: data.blackTie ? data.blackTieVehicle ?? null : null,
-        black_tie_quote_status: data.blackTie ? "awaiting_quote" : "awaiting_quote" as const,
-        round_trip: data.tripType === "round_trip" || data.roundTrip,
+        round_trip: isRound,
         return_pickup_time: data.returnPickupTime || null,
         return_dropoff_time: data.returnDropoffTime || null,
         return_pickup_building: data.returnPickupBuilding || null,
         return_pickup_doctor: data.returnPickupDoctor || null,
         return_pickup_suite: data.returnPickupSuite || null,
-        return_date:
-          data.tripType === "round_trip" || data.roundTrip
-            ? (data.returnDate || data.pickupDate)
-            : null,
-
+        return_date: isRound ? (data.returnDate || data.pickupDate) : null,
         additional_stops: data.additionalStops ?? [],
         mobility_notes: data.mobilityNotes || null,
         special_instructions: data.specialInstructions || null,
-        requester_user_id: requesterUserId,
+        requester_user_id: requester.userId,
+        workspace_id: requester.workspaceId,
         recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
         recurrence_end_date: data.recurrenceEndDate || null,
         embed_provider_id: embedProviderId,
@@ -218,91 +204,97 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       .select("id")
       .single();
 
-
-    if (error) {
-      console.error("submitRideRequest error", error);
-      return { ok: false as const, error: "Could not submit your request. Please call (800) 555-0199." };
+    if (error || !row) {
+      console.error("submitRideRequest insert failed", error?.code ?? "unknown");
+      return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
     }
 
-    // Fire-and-forget confirmation email (email #1 of 3 in trip lifecycle).
-    if (data.patientEmail) {
-      try {
-        const { sendTripEmail } = await import("@/lib/trips/notify.server");
-        await sendTripEmail({
-          templateName: "trip-confirmation",
-          recipientEmail: data.patientEmail,
-          idempotencyKey: `trip-confirmation:rr:${row.id}`,
-          templateData: {
-            recipientName: `${data.patientFirstName} ${data.patientLastName}`.trim() || "there",
-            tripShortId: String(row.id).slice(0, 8),
-            pickupAddress: [data.pickupAddress, data.pickupCity].filter(Boolean).join(", "),
-            dropoffAddress: [data.dropoffAddress, data.dropoffCity].filter(Boolean).join(", "),
-            pickupDate: data.pickupDate ?? "",
-            pickupTime: data.pickupTime ?? "",
-            tripType: data.tripType === "round_trip" || data.roundTrip ? "Round Trip" : "One-way",
-          },
-        });
-      } catch (e) {
-        console.error("trip-confirmation (ride_request) send failed", e);
-      }
-    }
-
-    // Role-aware workflow notification: route to embed provider if the request
-    // came from their widget, otherwise to MFN staff. Silent on failure.
-    try {
-      const {
-        getStaffRecipients,
-        getUserMailbox,
-        siteBase,
-        fanOut,
-      } = await import("@/lib/trips/notify.server");
-      const base = siteBase();
-      const summary = {
-        tripShortId: String(row.id).slice(0, 8),
-        pickupAddress: [data.pickupAddress, data.pickupCity].filter(Boolean).join(", "),
-        dropoffAddress: [data.dropoffAddress, data.dropoffCity].filter(Boolean).join(", "),
-        pickupDate: data.pickupDate ?? "",
-        pickupTime: data.pickupTime ?? "",
-        tripType: data.tripType === "round_trip" || data.roundTrip ? "Round Trip" : "One-way",
-        transportType: (data as any).transportType ?? "",
-      };
-      const label = "A new transportation request from a patient";
-      if (embedProviderId) {
-        const target = await getUserMailbox(embedProviderId);
-        if (target.email) {
-          await fanOut({
-            templateName: "staff-new-trip-review",
-            recipients: [{ email: target.email, name: target.name, userId: embedProviderId }],
-            baseIdempotencyKey: `staff-new-trip-review:rr:${row.id}`,
-            templateData: {
-              ...summary,
-              sourceLabel: label,
-              reviewUrl: `${base}/dashboard?tab=requests&request=${row.id}`,
-            },
-          });
-        }
-      } else {
-        const staff = await getStaffRecipients();
-        if (staff.length) {
-          await fanOut({
-            templateName: "staff-new-trip-review",
-            recipients: staff.map((s) => ({ email: s.email, userId: s.userId })),
-            baseIdempotencyKey: `staff-new-trip-review:rr:${row.id}`,
-            templateData: {
-              ...summary,
-              sourceLabel: label,
-              reviewUrl: `${base}/admin?tab=reservations&request=${row.id}`,
-            },
-          });
-        }
-      }
-    } catch (e) {
-      console.error("ride-request workflow notify failed", e);
-    }
-
-
+    await notifyNewRequest({
+      id: row.id,
+      category: "passenger_transport",
+      requesterEmail: data.patientEmail || null,
+      embedProviderId,
+    });
 
     return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
+  });
+
+// ---------- Medical Delivery ----------
+
+/** Delivery categories offered publicly. Prescription and lab-specimen
+ *  categories exist in the schema but are NOT offered until approved. */
+export const DELIVERY_CATEGORY_OPTIONS = ["medical_supplies", "equipment", "dme", "other"] as const;
+export const DELIVERY_CATEGORY_LABELS: Record<(typeof DELIVERY_CATEGORY_OPTIONS)[number], string> = {
+  medical_supplies: "Medical supplies",
+  equipment: "Medical equipment",
+  dme: "Durable medical equipment (DME)",
+  other: "Other non-urgent medical items",
+};
+
+export const deliveryRequestSchema = z
+  .object({
+    requestCategory: z.literal("medical_delivery"),
+    contactFirstName: z.string().trim().min(1).max(80),
+    contactLastName: z.string().trim().min(1).max(80),
+    contactPhone: z.string().trim().min(7).max(30),
+    contactEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
+    pickupAddress: z.string().trim().min(3).max(300),
+    pickupAddressDetails: z.string().trim().max(200).optional().or(z.literal("")),
+    pickupCity: z.string().trim().min(1).max(100),
+    dropoffAddress: z.string().trim().min(3).max(300),
+    dropoffCity: z.string().trim().min(1).max(100),
+    requestedDate: dateString,
+    requestedTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+    deliveryCategory: z.enum(DELIVERY_CATEGORY_OPTIONS),
+    deliveryInstructions: z.string().trim().max(500).optional().or(z.literal("")),
+    signatureRequired: z.boolean().default(false),
+  })
+  .strict();
+export type DeliveryRequestInput = z.infer<typeof deliveryRequestSchema>;
+
+export const submitDeliveryRequest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => deliveryRequestSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { resolveRequester, notifyNewRequest } = await import("@/lib/requests/request-service.server");
+    const requester = await resolveRequester();
+
+    const { error, data: row } = await supabaseAdmin
+      .from("ride_requests")
+      .insert({
+        trip_kind: "medical_delivery",
+        transport_type: "delivery",
+        trip_type: "one_way",
+        round_trip: false,
+        // Legacy column names: hold the requester CONTACT for delivery rows.
+        patient_first_name: data.contactFirstName,
+        patient_last_name: data.contactLastName,
+        patient_phone: data.contactPhone,
+        patient_email: data.contactEmail || null,
+        requester_phone: data.contactPhone,
+        requester_email: data.contactEmail || null,
+        pickup_address: data.pickupAddress,
+        pickup_address_details: data.pickupAddressDetails || null,
+        pickup_city: data.pickupCity,
+        pickup_date: data.requestedDate,
+        pickup_time: data.requestedTime,
+        dropoff_address: data.dropoffAddress,
+        dropoff_city: data.dropoffCity,
+        delivery_item_type: data.deliveryCategory,
+        delivery_instructions: data.deliveryInstructions || null,
+        delivery_signature_required: data.signatureRequired,
+        requester_user_id: requester.userId,
+        workspace_id: requester.workspaceId,
+      })
+      .select("id")
+      .single();
+
+    if (error || !row) {
+      console.error("submitDeliveryRequest insert failed", error?.code ?? "unknown");
+      return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
+    }
+
+    await notifyNewRequest({ id: row.id, category: "medical_delivery", requesterEmail: data.contactEmail || null });
+    return { ok: true as const, id: row.id };
   });
 
 export const contactSchema = z.object({
