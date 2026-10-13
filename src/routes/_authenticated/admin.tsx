@@ -1,18 +1,22 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getAccessState } from "@/lib/access.functions";
-import { AccountPlaceholder } from "@/components/auth/AccountPlaceholder";
+import { PortalShell } from "@/components/portal/PortalShell";
 
-// Placeholder admin area. Access is verified on the server; real admin data
-// must also verify the admin role inside each server function.
+const NAV = [
+  { to: "/admin", label: "Overview", exact: true },
+  { to: "/admin/requests", label: "Requests" },
+];
+
+// Verified MFN Admin only. Every admin server function re-checks the role server-side.
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Admin — MY FLORIDA NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async () => {
     const access = await getAccessState();
-    if (!access.isAdmin) throw redirect({ to: "/account-status" });
+    if (!access.isAdmin) throw redirect({ to: access.destination === "/admin" ? "/account-status" : access.destination });
   },
   component: () => (
-    <AccountPlaceholder title="Admin">
-      <p className="text-ds-text-2">The admin area is being rebuilt.</p>
-    </AccountPlaceholder>
+    <PortalShell nav={NAV} area="MFN Admin">
+      <Outlet />
+    </PortalShell>
   ),
 });

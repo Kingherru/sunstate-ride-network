@@ -1,27 +1,24 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getAccessState } from "@/lib/access.functions";
-import { AccountPlaceholder } from "@/components/auth/AccountPlaceholder";
+import { PortalShell } from "@/components/portal/PortalShell";
 
-const LABEL: Record<string, string> = { private_pay: "Private Pay", facility: "Facility", hospital: "Hospital", provider: "Provider" };
+const NAV = [
+  { to: "/portal", label: "Home", exact: true },
+  { to: "/portal/requests", label: "Requests" },
+  { to: "/portal/account", label: "Account" },
+];
 
 export const Route = createFileRoute("/_authenticated/portal")({
-  head: () => ({ meta: [{ title: "Portal — MY FLORIDA NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Portal — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async () => {
+    // Server-verified: training-only learners go to Training, suspended/pending to their status page.
     const access = await getAccessState();
     if (!access.isAdmin && access.destination !== "/portal") throw redirect({ to: access.destination });
     return { access };
   },
-  component: Portal,
+  component: () => (
+    <PortalShell nav={NAV} area="Portal">
+      <Outlet />
+    </PortalShell>
+  ),
 });
-
-function Portal() {
-  const { user, access } = Route.useRouteContext();
-  const ws = access.workspaces[0];
-  return (
-    <AccountPlaceholder title="Portal">
-      <p>Signed in as {user.email}.</p>
-      {ws && <p>{LABEL[ws.type] ?? ws.type} account · {ws.status === "pending" ? "Pending review" : "Active"}</p>}
-      <p className="text-ds-text-2">Your portal is being built. Check back soon.</p>
-    </AccountPlaceholder>
-  );
-}
