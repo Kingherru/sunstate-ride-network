@@ -422,19 +422,7 @@ function RequestRidePage() {
         </fieldset>
 
         {kind === "delivery" ? (
-          <div role="status" className="rounded-ds-lg bg-ds-sky p-6 sm:p-8">
-            <h2 className="ds-section-title uppercase text-ds-primary">Medical delivery requests</h2>
-            <p className="ds-body-lg mt-3">Online medical delivery requests aren’t available yet — the request system currently stores passenger trips only, so we won’t accept a delivery through this form. Please call or email us with:</p>
-            <ul className="ds-body-lg mt-3 list-disc space-y-1 pl-6">
-              <li>The pickup location</li>
-              <li>The delivery destination</li>
-              <li>Basic delivery instructions, such as handling needs and the deadline</li>
-            </ul>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a href={PUBLIC_PHONE_TEL} className="ds-button-text inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-ds-sm bg-ds-action px-6 uppercase text-ds-on-action hover:bg-ds-action-hover">Call us</a>
-              <a href={`mailto:${PUBLIC_EMAIL}?subject=${encodeURIComponent("Medical delivery request")}`} className="ds-button-text inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-ds-sm bg-ds-primary px-6 uppercase text-ds-on-primary hover:bg-ds-primary-hover">Email us</a>
-            </div>
-          </div>
+          <DeliveryRequestForm />
         ) : (
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
 
