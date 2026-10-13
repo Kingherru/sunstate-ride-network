@@ -3,7 +3,7 @@ import { getAccessState } from "@/lib/access.functions";
 import { AccountPlaceholder } from "@/components/auth/AccountPlaceholder";
 
 export const Route = createFileRoute("/_authenticated/account-status")({
-  head: () => ({ meta: [{ title: "Account Status — MY FLORIDA NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Account Status — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async () => ({ access: await getAccessState() }),
   component: Status,
 });

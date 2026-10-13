@@ -15,7 +15,7 @@ export const Route = createFileRoute("/create-account")({
       { property: "og:description", content: "Create a MY FLORIDA NEMT account for private pay, facility, hospital or provider use." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: CreateAccount,
