@@ -5,6 +5,11 @@ import { toast } from "sonner";
 import { z } from "zod";
 import {
   submitRideRequest,
+  submitDeliveryRequest,
+  deliveryRequestSchema,
+  type DeliveryRequestInput,
+  DELIVERY_CATEGORY_OPTIONS,
+  DELIVERY_CATEGORY_LABELS,
   rideRequestSchema,
   type RideRequestInput,
   type BillingContact,
@@ -303,7 +308,7 @@ function RequestRidePage() {
           }
         } catch { /* ignore — non-fatal */ }
         setDone({ id: res.id, ...enrichedInfo });
-        toast.success("Trip request submitted. It is not confirmed until a provider accepts it.");
+        toast.success("Request received for review. Availability and acceptance are not guaranteed.");
         router.invalidate();
 
       } else {
@@ -382,7 +387,7 @@ function RequestRidePage() {
           )}
 
           <p className="ds-body-lg mb-10 text-ds-text-2">
-            Your request has been submitted. It is <strong>not a confirmed trip</strong> until a participating independent provider reviews and accepts it. We'll contact you using the details you provided.
+            Your request was received for review. Submitting <strong>does not guarantee availability or acceptance</strong> — a participating independent provider must review and accept it. We'll contact you using the details you provided.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link to="/" className="ds-button-text inline-flex min-h-12 items-center rounded-ds-sm bg-ds-primary px-6 uppercase text-ds-on-primary hover:bg-ds-primary-hover">Back to home</Link>
@@ -891,5 +896,140 @@ function RequestRidePage() {
         )}
       </div>
     </section>
+  );
+}
+
+const emptyDelivery: DeliveryRequestInput = {
+  requestCategory: "medical_delivery",
+  contactFirstName: "",
+  contactLastName: "",
+  contactPhone: "",
+  contactEmail: "",
+  pickupAddress: "",
+  pickupAddressDetails: "",
+  pickupCity: "",
+  dropoffAddress: "",
+  dropoffCity: "",
+  requestedDate: "",
+  requestedTime: "",
+  deliveryCategory: "medical_supplies",
+  deliveryInstructions: "",
+  signatureRequired: false,
+};
+
+/** Medical Delivery request — kept separate from passenger fields. In-memory state only. */
+function DeliveryRequestForm() {
+  const submit = useServerFn(submitDeliveryRequest);
+  const [form, setForm] = useState<DeliveryRequestInput>(emptyDelivery);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [doneId, setDoneId] = useState<string | null>(null);
+  const upd = <K extends keyof DeliveryRequestInput>(k: K, v: DeliveryRequestInput[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrors({});
+    const parsed = deliveryRequestSchema.safeParse(form);
+    if (!parsed.success) {
+      const errs: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path.join(".");
+        errs[key] = /email/i.test(key) ? "Enter a valid email address."
+          : /phone/i.test(key) ? "Enter a valid phone number."
+          : /date/i.test(key) ? "Choose a valid date."
+          : /time/i.test(key) ? "Choose a time."
+          : "This field is required.";
+      }
+      setErrors(errs);
+      toast.error("Please fix the highlighted fields.");
+      requestAnimationFrame(() => document.querySelector("[data-field-error='true']")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await submit({ data: parsed.data });
+      if (res.ok) {
+        setDoneId(res.id);
+        setForm(emptyDelivery);
+      } else toast.error(res.error);
+    } catch {
+      toast.error("Something went wrong. Please try again or call us.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (doneId) {
+    return (
+      <div role="status" className="rounded-ds-lg bg-ds-sky p-8 text-center">
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-ds-accent-active">Request #{doneId.slice(0, 8).toUpperCase()}</p>
+        <h2 className="ds-section-title uppercase text-ds-primary">Delivery request received</h2>
+        <p className="ds-body-lg mx-auto mt-4 max-w-[40rem]">
+          Your medical delivery request was received for review. Submitting does not guarantee availability or acceptance. We'll contact you using the details you provided.
+        </p>
+        <Link to="/" className="ds-button-text mt-6 inline-flex min-h-12 items-center rounded-ds-sm bg-ds-primary px-6 uppercase text-ds-on-primary hover:bg-ds-primary-hover">Back to home</Link>
+      </div>
+    );
+  }
+
+  return (
+    <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-lg border border-ds-border bg-ds-surface p-8 md:p-12">
+      <div className="rounded-ds-sm bg-ds-membership p-4 text-ds-primary">
+        <p className="ds-body"><strong>Medical Delivery</strong> moves items, not passengers. Please don't include diagnoses, medication names or patient medical details.</p>
+      </div>
+
+      <fieldset className="space-y-6">
+        <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Your contact information</legend>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Field label="First name" required error={errors.contactFirstName}><input className={inputCls} autoComplete="given-name" value={form.contactFirstName} onChange={(e) => upd("contactFirstName", e.target.value)} maxLength={80} /></Field>
+          <Field label="Last name" required error={errors.contactLastName}><input className={inputCls} autoComplete="family-name" value={form.contactLastName} onChange={(e) => upd("contactLastName", e.target.value)} maxLength={80} /></Field>
+          <Field label="Phone" required error={errors.contactPhone}><input type="tel" className={inputCls} autoComplete="tel" value={form.contactPhone} onChange={(e) => upd("contactPhone", e.target.value)} maxLength={30} /></Field>
+          <Field label="Email" error={errors.contactEmail}><input type="email" className={inputCls} autoComplete="email" value={form.contactEmail} onChange={(e) => upd("contactEmail", e.target.value)} maxLength={200} /></Field>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-6">
+        <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Pickup location</legend>
+        <Field label="Pickup address" required error={errors.pickupAddress}><input className={inputCls} value={form.pickupAddress} onChange={(e) => upd("pickupAddress", e.target.value)} maxLength={300} /></Field>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Field label="City" required error={errors.pickupCity}><input className={inputCls} list="fl-cities-delivery" value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} maxLength={100} /></Field>
+          <Field label="Suite, building or entrance" error={errors.pickupAddressDetails}><input className={inputCls} value={form.pickupAddressDetails} onChange={(e) => upd("pickupAddressDetails", e.target.value)} maxLength={200} /></Field>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-6">
+        <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Delivery destination</legend>
+        <Field label="Delivery address" required error={errors.dropoffAddress}><input className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} maxLength={300} /></Field>
+        <Field label="City" required error={errors.dropoffCity}><input className={inputCls} list="fl-cities-delivery" value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} maxLength={100} /></Field>
+      </fieldset>
+
+      <fieldset className="space-y-6">
+        <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Timing and item</legend>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Field label="Requested date" required error={errors.requestedDate}><input type="date" className={inputCls} value={form.requestedDate} onChange={(e) => upd("requestedDate", e.target.value)} /></Field>
+          <Field label="Requested pickup time" required error={errors.requestedTime}><input type="time" className={inputCls} value={form.requestedTime} onChange={(e) => upd("requestedTime", e.target.value)} /></Field>
+        </div>
+        <Field label="Delivery category" required error={errors.deliveryCategory}>
+          <select className={inputCls} value={form.deliveryCategory} onChange={(e) => upd("deliveryCategory", e.target.value as DeliveryRequestInput["deliveryCategory"])}>
+            {DELIVERY_CATEGORY_OPTIONS.map((o) => <option key={o} value={o}>{DELIVERY_CATEGORY_LABELS[o]}</option>)}
+          </select>
+        </Field>
+        <Field label="Handling or delivery instructions" error={errors.deliveryInstructions}>
+          <textarea className={inputCls} rows={3} maxLength={500} placeholder="For example: fragile, keep upright, deliver to front desk." value={form.deliveryInstructions} onChange={(e) => upd("deliveryInstructions", e.target.value)} />
+        </Field>
+        <label className="flex items-center gap-3 text-sm">
+          <input type="checkbox" checked={form.signatureRequired} onChange={(e) => upd("signatureRequired", e.target.checked)} />
+          Signature required at delivery
+        </label>
+      </fieldset>
+
+      <datalist id="fl-cities-delivery">{CITY_LIST.map((c) => <option key={c.slug} value={c.name} />)}</datalist>
+
+      <button type="submit" disabled={submitting} className="w-full rounded-ds-sm bg-ds-action px-8 py-5 text-sm font-bold uppercase tracking-widest text-ds-on-action transition-all hover:bg-ds-action-hover disabled:opacity-60">
+        {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
+      </button>
+      <p className="text-center text-xs text-ds-text-2">Submitting is a request for review, not a confirmed booking. Availability and acceptance are not guaranteed.</p>
+    </form>
   );
 }
