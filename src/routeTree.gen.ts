@@ -46,6 +46,7 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
@@ -260,6 +261,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -448,6 +455,7 @@ export interface FileRoutesByFullPath {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -508,6 +516,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -574,6 +583,7 @@ export interface FileRoutesById {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/portal/account': typeof AuthenticatedPortalAccountRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -640,6 +650,7 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/admin/settings'
     | '/learn/$slug'
     | '/portal/account'
     | '/lovable/email/suppression'
@@ -700,6 +711,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/services'
     | '/shop'
+    | '/admin/settings'
     | '/learn/$slug'
     | '/portal/account'
     | '/lovable/email/suppression'
@@ -765,6 +777,7 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/portal/account'
     | '/lovable/email/suppression'
@@ -1103,6 +1116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/learn/': {
       id: '/_authenticated/learn/'
       path: '/'
@@ -1289,12 +1309,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
   AuthenticatedAdminRequestsIndexRoute: typeof AuthenticatedAdminRequestsIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
   AuthenticatedAdminRequestsIndexRoute: AuthenticatedAdminRequestsIndexRoute,
