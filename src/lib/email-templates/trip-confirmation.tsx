@@ -2,51 +2,38 @@ import React from 'react'
 import { Body, Container, Head, Heading, Hr, Html, Preview, Section, Text } from '@react-email/components'
 import type { TemplateEntry } from './registry'
 
+/**
+ * Requester confirmation. PRIVACY: this template intentionally accepts only
+ * the short request number and status. Never add addresses, dates, times,
+ * mobility/medical details, notes or delivery instructions.
+ */
 interface Props {
-  recipientName?: string
   tripShortId?: string
-  pickupAddress?: string
-  dropoffAddress?: string
-  pickupDate?: string
-  pickupTime?: string
-  tripType?: string
-  siteName?: string
+  status?: string
 }
 
-const TripConfirmation = ({
-  recipientName = 'there',
-  tripShortId = '',
-  pickupAddress = '',
-  dropoffAddress = '',
-  pickupDate = '',
-  pickupTime = '',
-  tripType = 'One-way',
-  siteName = 'My Florida NEMT',
-}: Props) => (
+const TripConfirmation = ({ tripShortId = '', status = 'Received — under review' }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Trip request received — #{tripShortId}</Preview>
+    <Preview>We received your request</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>We received your trip request</Heading>
-        <Text style={p}>Hi {recipientName},</Text>
-        <Text style={p}>
-          Thanks for booking with {siteName}. A dispatcher will review the request
-          shortly and follow up with confirmation and pricing.
-        </Text>
+        <Text style={brand}>MY FLORIDA <span style={{ color: '#E07A1F' }}>NEMT</span></Text>
+        <Heading style={h1}>We received your request</Heading>
         <Section style={panel}>
-          <Text style={row}><strong>Trip ID:</strong> {tripShortId}</Text>
-          <Text style={row}><strong>Trip type:</strong> {tripType}</Text>
-          <Text style={row}><strong>Date:</strong> {pickupDate}{pickupTime ? ` at ${pickupTime}` : ''}</Text>
-          <Text style={row}><strong>Pickup:</strong> {pickupAddress}</Text>
-          <Text style={row}><strong>Drop-off:</strong> {dropoffAddress}</Text>
+          <Text style={row}><strong>Request number:</strong> {tripShortId}</Text>
+          <Text style={row}><strong>Status:</strong> {status}</Text>
         </Section>
         <Text style={p}>
-          You'll receive a second email once the trip is accepted with an invoice
-          and secure payment link.
+          Your request was received for review. Submitting a request does not guarantee
+          availability or acceptance. A participating provider must review and accept it first.
+        </Text>
+        <Text style={p}>
+          For questions, reply to this email or call us using the number on our website.
+          Please reference your request number. Do not send medical information by email.
         </Text>
         <Hr style={hr} />
-        <Text style={muted}>{siteName} — Trip Confirmation</Text>
+        <Text style={muted}>MY FLORIDA NEMT — non-emergency transportation. In an emergency, call 911.</Text>
       </Container>
     </Body>
   </Html>
@@ -54,24 +41,17 @@ const TripConfirmation = ({
 
 export const template = {
   component: TripConfirmation,
-  subject: (d: Record<string, any>) => `Trip request received — #${d.tripShortId ?? ''}`.trim(),
-  displayName: 'Trip — Confirmation',
-  previewData: {
-    recipientName: 'Alex',
-    tripShortId: 'MFN-20260724-000123',
-    pickupAddress: '123 Main St, Orlando FL',
-    dropoffAddress: '400 Hospital Way, Orlando FL',
-    pickupDate: '2026-07-30',
-    pickupTime: '09:15',
-    tripType: 'Round Trip',
-  },
+  subject: 'We received your request — MY FLORIDA NEMT',
+  displayName: 'Request — Received',
+  previewData: { tripShortId: '1A2B3C4D', status: 'Received — under review' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
 const container = { padding: '24px 28px', maxWidth: '560px' }
-const h1 = { fontSize: '22px', margin: '0 0 12px', color: '#0b2447' }
-const p = { fontSize: '14px', lineHeight: '22px', color: '#1a1a1a', margin: '10px 0' }
-const panel = { background: '#f4f7fb', borderRadius: '4px', padding: '14px 16px', margin: '16px 0' }
-const row = { fontSize: '13px', color: '#0b2447', margin: '4px 0' }
-const hr = { borderColor: '#e5e7eb', margin: '20px 0' }
-const muted = { fontSize: '12px', color: '#64748b' }
+const brand = { fontSize: '14px', fontWeight: 700, letterSpacing: '0.08em', color: '#13335A', margin: '0 0 12px' }
+const h1 = { fontSize: '22px', margin: '0 0 12px', color: '#13335A' }
+const p = { fontSize: '14px', lineHeight: '22px', color: '#18202A', margin: '10px 0' }
+const panel = { background: '#F3F7FB', borderRadius: '4px', padding: '14px 16px', margin: '16px 0' }
+const row = { fontSize: '13px', color: '#13335A', margin: '4px 0' }
+const hr = { borderColor: '#DCE1E6', margin: '20px 0' }
+const muted = { fontSize: '12px', color: '#55616F' }
