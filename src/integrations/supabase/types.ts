@@ -2959,6 +2959,7 @@ export type Database = {
           canceled_at: string | null
           created_at: string
           delivery_hazmat: boolean
+          delivery_instructions: string | null
           delivery_item_description: string | null
           delivery_item_type:
             | Database["public"]["Enums"]["delivery_item_type"]
@@ -3037,6 +3038,7 @@ export type Database = {
           service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
           status: string
+          submitted_via: string
           transport_type: string
           trip_billing_email: string | null
           trip_billing_first_name: string | null
@@ -3046,6 +3048,7 @@ export type Database = {
           trip_kind: Database["public"]["Enums"]["trip_kind"]
           trip_type: string
           user_agent: string | null
+          workspace_id: string | null
         }
         Insert: {
           additional_stops?: Json
@@ -3062,6 +3065,7 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           delivery_hazmat?: boolean
+          delivery_instructions?: string | null
           delivery_item_description?: string | null
           delivery_item_type?:
             | Database["public"]["Enums"]["delivery_item_type"]
@@ -3140,6 +3144,7 @@ export type Database = {
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
+          submitted_via?: string
           transport_type: string
           trip_billing_email?: string | null
           trip_billing_first_name?: string | null
@@ -3149,6 +3154,7 @@ export type Database = {
           trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_type?: string
           user_agent?: string | null
+          workspace_id?: string | null
         }
         Update: {
           additional_stops?: Json
@@ -3165,6 +3171,7 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           delivery_hazmat?: boolean
+          delivery_instructions?: string | null
           delivery_item_description?: string | null
           delivery_item_type?:
             | Database["public"]["Enums"]["delivery_item_type"]
@@ -3243,6 +3250,7 @@ export type Database = {
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
+          submitted_via?: string
           transport_type?: string
           trip_billing_email?: string | null
           trip_billing_first_name?: string | null
@@ -3252,6 +3260,7 @@ export type Database = {
           trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_type?: string
           user_agent?: string | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -3301,6 +3310,13 @@ export type Database = {
             columns: ["promoted_trip_id"]
             isOneToOne: false
             referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -5249,6 +5265,10 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
+      can_manage_workspace_requests: {
+        Args: { _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       can_message: { Args: { _a: string; _b: string }; Returns: boolean }
       can_send_trips: { Args: { _user_id: string }; Returns: boolean }
       complete_account_setup: { Args: never; Returns: Json }
