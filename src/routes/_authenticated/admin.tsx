@@ -5,6 +5,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 const NAV = [
   { to: "/admin", label: "Overview", exact: true },
   { to: "/admin/requests", label: "Requests" },
+  { to: "/admin/settings", label: "Settings" },
 ];
 
 // Verified MFN Admin only. Every admin server function re-checks the role server-side.
