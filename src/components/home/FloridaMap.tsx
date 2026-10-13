@@ -135,7 +135,7 @@ export function FloridaMap({ page = false, motion = false }: { page?: boolean; m
               const isCounty = county === name;
               return (
                 <path key={name} d={d} strokeWidth={isCounty ? 1.6 : 0.6} strokeLinejoin="round"
-                  fill={isCounty ? "var(--ds-accent)" : inRegion ? (county ? "var(--ds-peach)" : "var(--ds-accent)") : "var(--ds-surface)"}
+                  fill={isCounty ? "var(--ds-accent)" : inRegion ? (county ? "var(--mfn-peach)" : "var(--ds-accent)") : "var(--ds-surface)"}
                   stroke="var(--ds-primary)" strokeOpacity={isCounty ? 1 : 0.45}
                   className="cursor-pointer transition-[fill,stroke,opacity] duration-300 hover:opacity-80"
                   onClick={() => { setRegion(COUNTY_REGION[name]); setCounty(name); setMarker(null); }}>
