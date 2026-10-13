@@ -197,9 +197,9 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
                 <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-primary-hover p-1">
                   {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
                     <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
-                      className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-2 rounded-ds-sm px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+                      className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-ds-sm px-2.5 sm:gap-2 sm:px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
                         view === v ? "bg-ds-surface text-ds-primary" : "text-ds-on-primary hover:bg-ds-primary-active")}>
-                      <Icon className="size-5" aria-hidden />{l}
+                      <Icon className="size-4 shrink-0 sm:size-5" aria-hidden />{l}
                     </button>
                   ))}
                 </div>

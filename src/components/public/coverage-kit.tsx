@@ -27,6 +27,11 @@ export const trailLd = (trail: Crumb[]) => ldScript({
 });
 
 /** Interior head with multi-level breadcrumbs. */
+/** Region, county and city pages under /florida-coverage/ are unverified until fact-checked. */
+export function isUnverifiedLocationPath(path: string) {
+  return path.startsWith("/florida-coverage/");
+}
+
 export function trailHead(path: string, title: string, description: string, trail: Crumb[], withCrumbLd = false) {
   return {
     meta: [
@@ -34,6 +39,8 @@ export function trailHead(path: string, title: string, description: string, trai
       { property: "og:title", content: title }, { property: "og:description", content: description },
       { property: "og:type", content: "website" }, { property: "og:url", content: `${SITE}${path}` },
       { name: "twitter:card", content: "summary_large_image" },
+      // Region/county/city pages await official fact-checking: keep out of search results for now.
+      ...(isUnverifiedLocationPath(path) ? [{ name: "robots", content: "noindex, follow" }] : []),
     ],
     links: [{ rel: "canonical", href: `${SITE}${path}` }],
     scripts: withCrumbLd ? [trailLd(trail)] : [],

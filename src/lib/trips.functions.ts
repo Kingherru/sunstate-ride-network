@@ -423,14 +423,14 @@ async function notifyTripWorkflowSafe(trip: any, callerUserId: string) {
       templateName: "staff-new-trip-review",
       recipients: staff.map((s) => ({ email: s.email, userId: s.userId })),
       baseIdempotencyKey: `staff-new-trip-review:${trip.id}`,
+      // Privacy: no addresses, dates, times or notes in staff email.
       templateData: {
-        ...summary,
-        sourceLabel: label,
-        reviewUrl: staffUrl,
+        tripShortId: String(trip.trip_number ?? String(trip.id).slice(0, 8)),
+        requestCategory: trip.trip_kind === "medical_delivery" ? "Medical Delivery" : "Passenger Transportation",
       },
     });
   } catch (e) {
-    console.error("notifyTripWorkflowSafe failed", e);
+    console.error("notifyTripWorkflowSafe failed");
   }
 }
 
@@ -443,14 +443,10 @@ async function sendTripConfirmationSafe(trip: any) {
       templateName: "trip-confirmation",
       recipientEmail: email,
       idempotencyKey: `trip-confirmation:${trip.id}`,
+      // Privacy: request number and status only.
       templateData: {
-        recipientName: [trip.patient_first_name, trip.patient_last_name].filter(Boolean).join(" ") || "there",
-        tripShortId: trip.trip_number ?? String(trip.id).slice(0, 8),
-        pickupAddress: [trip.pickup_address, trip.pickup_city].filter(Boolean).join(", "),
-        dropoffAddress: [trip.dropoff_address, trip.dropoff_city].filter(Boolean).join(", "),
-        pickupDate: trip.pickup_date ?? "",
-        pickupTime: trip.pickup_time ?? "",
-        tripType: trip.round_trip ? "Round Trip" : "One-way",
+        tripShortId: String(trip.trip_number ?? String(trip.id).slice(0, 8)),
+        status: "Received — under review",
       },
     });
   } catch (e) {

@@ -3,159 +3,21 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { signEnrichmentToken } from "@/lib/enrichment-token.server";
 
-export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
-export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
-
-export const TRIP_TYPE_OPTIONS = ["one_way", "round_trip", "multi_trip"] as const;
-export type TripTypeOption = (typeof TRIP_TYPE_OPTIONS)[number];
-
-export const BLACK_TIE_VEHICLE_OPTIONS = [
-  "black_suv",
-  "executive_sedan",
-  "luxury_sprinter_van",
-  "executive_shuttle_van",
-  "party_bus",
-  "mini_coach",
-  "motor_coach",
-  "charter_bus",
-  "limousine",
-] as const;
-export type BlackTieVehicleOption = (typeof BLACK_TIE_VEHICLE_OPTIONS)[number];
-
-export const BLACK_TIE_VEHICLE_LABELS: Record<BlackTieVehicleOption, string> = {
-  black_suv: "Black SUV",
-  executive_sedan: "Executive Sedan",
-  luxury_sprinter_van: "Luxury Sprinter Van",
-  executive_shuttle_van: "Executive Shuttle Van",
-  party_bus: "Party Bus",
-  mini_coach: "Mini Coach",
-  motor_coach: "Motor Coach",
-  charter_bus: "Charter Bus",
-  limousine: "Limousine",
-};
-
-export const BLACK_TIE_QUOTE_STATUSES = [
-  "awaiting_quote",
-  "quote_sent",
-  "quote_accepted",
-  "quote_declined",
-] as const;
-export type BlackTieQuoteStatus = (typeof BLACK_TIE_QUOTE_STATUSES)[number];
-
-export const additionalStopSchema = z.object({
-  address: z.string().trim().min(3).max(300),
-  city: z.string().trim().min(1).max(100),
-  pickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
-  note: z.string().trim().max(300).optional().or(z.literal("")),
-});
-export type AdditionalStop = z.infer<typeof additionalStopSchema>;
-
-export const billingContactSchema = z.object({
-  firstName: z.string().trim().min(1).max(80),
-  lastName: z.string().trim().min(1).max(80),
-  email: z.string().trim().email().max(200),
-  phone: z.string().trim().min(7).max(30),
-});
-export type BillingContact = z.infer<typeof billingContactSchema>;
-
-export const rideRequestSchema = z.object({
-  patientFirstName: z.string().trim().min(1).max(80),
-  patientLastName: z.string().trim().min(1).max(80),
-  patientPhone: z.string().trim().min(7).max(30),
-  patientEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
-  pickupAddress: z.string().trim().min(3).max(300),
-  pickupAddressDetails: z.string().trim().max(200).optional().or(z.literal("")),
-  pickupCity: z.string().trim().min(1).max(100),
-  pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  pickupTime: z.string().regex(/^\d{2}:\d{2}$/),
-  appointmentTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
-  dropoffAddress: z.string().trim().min(3).max(300),
-  dropoffCity: z.string().trim().min(1).max(100),
-  transportType: z.enum(["ambulatory", "wheelchair", "gurney"]),
-  tripType: z.enum(TRIP_TYPE_OPTIONS).default("one_way"),
-  roundTrip: z.boolean().default(false),
-  returnPickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
-  returnDropoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
-  returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
-  returnPickupBuilding: z.string().trim().max(120).optional().or(z.literal("")),
-  returnPickupDoctor: z.string().trim().max(120).optional().or(z.literal("")),
-  returnPickupSuite: z.string().trim().max(60).optional().or(z.literal("")),
-  additionalStops: z.array(additionalStopSchema).max(10).default([]),
-  mobilityNotes: z.string().trim().max(1000).optional().or(z.literal("")),
-  specialInstructions: z.string().trim().max(1000).optional().or(z.literal("")),
-  recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
-  recurrenceEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
-  embedToken: z.string().trim().min(6).max(64).optional().or(z.literal("")),
-  billingSource: z.enum(["account", "saved", "custom"]).default("account"),
-  billingContact: billingContactSchema.optional(),
-  createAccount: z.boolean().optional().default(false),
-  blackTie: z.boolean().default(false),
-  blackTieVehicle: z.enum(BLACK_TIE_VEHICLE_OPTIONS).optional(),
-}).superRefine((data, ctx) => {
-  if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["billingContact"],
-      message: "Billing contact is required.",
-    });
-  }
-  if (data.blackTie && !data.blackTieVehicle) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["blackTieVehicle"],
-      message: "Select a Black Tie vehicle type.",
-    });
-  }
-
-  if (data.tripType === "round_trip" && !data.returnPickupTime) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["returnPickupTime"],
-      message: "Return pickup time is required for round trips.",
-    });
-  }
-  if (data.tripType === "multi_trip") {
-    if (!data.additionalStops || data.additionalStops.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["additionalStops"],
-        message: "Add at least one stop for a multi-stop trip.",
-      });
-    }
-    data.additionalStops?.forEach((stop, i) => {
-      if (!stop.pickupTime) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["additionalStops", i, "pickupTime"],
-          message: "Pickup time is required for each stop.",
-        });
-      }
-    });
-  }
-});
+import {
+  rideRequestSchema,
+  deliveryRequestSchema,
+} from "@/lib/request-schemas";
+export * from "@/lib/request-schemas";
 
 
-
-export type RideRequestInput = z.infer<typeof rideRequestSchema>;
+const GENERIC_SUBMIT_ERROR = "We could not submit your request. Please try again or call us.";
 
 export const submitRideRequest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => rideRequestSchema.parse(input))
   .handler(async ({ data }) => {
-    // If the caller is signed in, tag the request with their user id so they can see it in /requests.
-    let requesterUserId: string | null = null;
-    try {
-      const { getRequestHeader } = await import("@tanstack/react-start/server");
-      const authHeader = getRequestHeader("authorization");
-      const token = authHeader?.replace(/^Bearer\s+/i, "");
-      if (token) {
-        const { data: userData } = await supabaseAdmin.auth.getUser(token);
-        requesterUserId = userData.user?.id ?? null;
-      }
-    } catch {
-      // anonymous submission is fine
-    }
+    const { resolveRequester, notifyNewRequest } = await import("@/lib/requests/request-service.server");
+    const requester = await resolveRequester();
 
-    // Resolve optional embed token to attribute the request to the provider whose website hosted the form.
     let embedProviderId: string | null = null;
     let embedTokenStored: string | null = null;
     if (data.embedToken) {
@@ -170,9 +32,11 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       }
     }
 
+    const isRound = data.tripType === "round_trip" || data.roundTrip;
     const { error, data: row } = await supabaseAdmin
       .from("ride_requests")
       .insert({
+        trip_kind: "passenger",
         patient_first_name: data.patientFirstName,
         patient_last_name: data.patientLastName,
         patient_phone: data.patientPhone,
@@ -187,24 +51,18 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         dropoff_city: data.dropoffCity,
         transport_type: data.transportType,
         trip_type: data.tripType,
-        is_black_tie: data.blackTie ?? false,
-        black_tie_vehicle: data.blackTie ? data.blackTieVehicle ?? null : null,
-        black_tie_quote_status: data.blackTie ? "awaiting_quote" : "awaiting_quote" as const,
-        round_trip: data.tripType === "round_trip" || data.roundTrip,
+        round_trip: isRound,
         return_pickup_time: data.returnPickupTime || null,
         return_dropoff_time: data.returnDropoffTime || null,
         return_pickup_building: data.returnPickupBuilding || null,
         return_pickup_doctor: data.returnPickupDoctor || null,
         return_pickup_suite: data.returnPickupSuite || null,
-        return_date:
-          data.tripType === "round_trip" || data.roundTrip
-            ? (data.returnDate || data.pickupDate)
-            : null,
-
+        return_date: isRound ? (data.returnDate || data.pickupDate) : null,
         additional_stops: data.additionalStops ?? [],
         mobility_notes: data.mobilityNotes || null,
         special_instructions: data.specialInstructions || null,
-        requester_user_id: requesterUserId,
+        requester_user_id: requester.userId,
+        workspace_id: requester.workspaceId,
         recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
         recurrence_end_date: data.recurrenceEndDate || null,
         embed_provider_id: embedProviderId,
@@ -218,91 +76,67 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       .select("id")
       .single();
 
-
-    if (error) {
-      console.error("submitRideRequest error", error);
-      return { ok: false as const, error: "Could not submit your request. Please call (800) 555-0199." };
+    if (error || !row) {
+      console.error("submitRideRequest insert failed", error?.code ?? "unknown");
+      return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
     }
 
-    // Fire-and-forget confirmation email (email #1 of 3 in trip lifecycle).
-    if (data.patientEmail) {
-      try {
-        const { sendTripEmail } = await import("@/lib/trips/notify.server");
-        await sendTripEmail({
-          templateName: "trip-confirmation",
-          recipientEmail: data.patientEmail,
-          idempotencyKey: `trip-confirmation:rr:${row.id}`,
-          templateData: {
-            recipientName: `${data.patientFirstName} ${data.patientLastName}`.trim() || "there",
-            tripShortId: String(row.id).slice(0, 8),
-            pickupAddress: [data.pickupAddress, data.pickupCity].filter(Boolean).join(", "),
-            dropoffAddress: [data.dropoffAddress, data.dropoffCity].filter(Boolean).join(", "),
-            pickupDate: data.pickupDate ?? "",
-            pickupTime: data.pickupTime ?? "",
-            tripType: data.tripType === "round_trip" || data.roundTrip ? "Round Trip" : "One-way",
-          },
-        });
-      } catch (e) {
-        console.error("trip-confirmation (ride_request) send failed", e);
-      }
-    }
-
-    // Role-aware workflow notification: route to embed provider if the request
-    // came from their widget, otherwise to MFN staff. Silent on failure.
-    try {
-      const {
-        getStaffRecipients,
-        getUserMailbox,
-        siteBase,
-        fanOut,
-      } = await import("@/lib/trips/notify.server");
-      const base = siteBase();
-      const summary = {
-        tripShortId: String(row.id).slice(0, 8),
-        pickupAddress: [data.pickupAddress, data.pickupCity].filter(Boolean).join(", "),
-        dropoffAddress: [data.dropoffAddress, data.dropoffCity].filter(Boolean).join(", "),
-        pickupDate: data.pickupDate ?? "",
-        pickupTime: data.pickupTime ?? "",
-        tripType: data.tripType === "round_trip" || data.roundTrip ? "Round Trip" : "One-way",
-        transportType: (data as any).transportType ?? "",
-      };
-      const label = "A new transportation request from a patient";
-      if (embedProviderId) {
-        const target = await getUserMailbox(embedProviderId);
-        if (target.email) {
-          await fanOut({
-            templateName: "staff-new-trip-review",
-            recipients: [{ email: target.email, name: target.name, userId: embedProviderId }],
-            baseIdempotencyKey: `staff-new-trip-review:rr:${row.id}`,
-            templateData: {
-              ...summary,
-              sourceLabel: label,
-              reviewUrl: `${base}/dashboard?tab=requests&request=${row.id}`,
-            },
-          });
-        }
-      } else {
-        const staff = await getStaffRecipients();
-        if (staff.length) {
-          await fanOut({
-            templateName: "staff-new-trip-review",
-            recipients: staff.map((s) => ({ email: s.email, userId: s.userId })),
-            baseIdempotencyKey: `staff-new-trip-review:rr:${row.id}`,
-            templateData: {
-              ...summary,
-              sourceLabel: label,
-              reviewUrl: `${base}/admin?tab=reservations&request=${row.id}`,
-            },
-          });
-        }
-      }
-    } catch (e) {
-      console.error("ride-request workflow notify failed", e);
-    }
-
-
+    await notifyNewRequest({
+      id: row.id,
+      category: "passenger_transport",
+      requesterEmail: data.patientEmail || null,
+      embedProviderId,
+    });
 
     return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
+  });
+
+// ---------- Medical Delivery ----------
+
+
+export const submitDeliveryRequest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => deliveryRequestSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { resolveRequester, notifyNewRequest } = await import("@/lib/requests/request-service.server");
+    const requester = await resolveRequester();
+
+    const { error, data: row } = await supabaseAdmin
+      .from("ride_requests")
+      .insert({
+        trip_kind: "medical_delivery",
+        transport_type: "delivery",
+        trip_type: "one_way",
+        round_trip: false,
+        // Legacy column names: hold the requester CONTACT for delivery rows.
+        patient_first_name: data.contactFirstName,
+        patient_last_name: data.contactLastName,
+        patient_phone: data.contactPhone,
+        patient_email: data.contactEmail || null,
+        requester_phone: data.contactPhone,
+        requester_email: data.contactEmail || null,
+        pickup_address: data.pickupAddress,
+        pickup_address_details: data.pickupAddressDetails || null,
+        pickup_city: data.pickupCity,
+        pickup_date: data.requestedDate,
+        pickup_time: data.requestedTime,
+        dropoff_address: data.dropoffAddress,
+        dropoff_city: data.dropoffCity,
+        delivery_item_type: data.deliveryCategory,
+        delivery_instructions: data.deliveryInstructions || null,
+        delivery_signature_required: data.signatureRequired,
+        requester_user_id: requester.userId,
+        workspace_id: requester.workspaceId,
+      })
+      .select("id")
+      .single();
+
+    if (error || !row) {
+      console.error("submitDeliveryRequest insert failed", error?.code ?? "unknown");
+      return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
+    }
+
+    await notifyNewRequest({ id: row.id, category: "medical_delivery", requesterEmail: data.contactEmail || null });
+    return { ok: true as const, id: row.id };
   });
 
 export const contactSchema = z.object({
