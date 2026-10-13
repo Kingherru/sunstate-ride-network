@@ -58,7 +58,21 @@ export const billingContactSchema = z.object({
 });
 export type BillingContact = z.infer<typeof billingContactSchema>;
 
+/** A real calendar date (YYYY-MM-DD) from today (UTC-1 day tolerance) up to 2 years ahead. */
+export const dateString = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((s) => {
+    const d = new Date(`${s}T00:00:00Z`);
+    if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== s) return false;
+    const now = Date.now();
+    return d.getTime() >= now - 2 * 86400000 && d.getTime() <= now + 730 * 86400000;
+  }, "Choose a valid date.");
+
+export const REQUEST_CATEGORIES = ["passenger_transport", "medical_delivery"] as const;
+
 export const rideRequestSchema = z.object({
+  requestCategory: z.literal("passenger_transport").optional(),
   patientFirstName: z.string().trim().min(1).max(80),
   patientLastName: z.string().trim().min(1).max(80),
   patientPhone: z.string().trim().min(7).max(30),
@@ -66,7 +80,7 @@ export const rideRequestSchema = z.object({
   pickupAddress: z.string().trim().min(3).max(300),
   pickupAddressDetails: z.string().trim().max(200).optional().or(z.literal("")),
   pickupCity: z.string().trim().min(1).max(100),
-  pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  pickupDate: dateString,
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/),
   appointmentTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   dropoffAddress: z.string().trim().min(3).max(300),
