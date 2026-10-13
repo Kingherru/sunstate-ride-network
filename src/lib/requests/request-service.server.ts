@@ -17,10 +17,12 @@ export type RequesterContext = {
   /** Set only when the signed-in user belongs to exactly one active workspace. */
   workspaceId: string | null;
   isAdmin: boolean;
+  /** Stored on ride_requests.submitted_via. */
+  submittedVia: "public_form" | "portal" | "admin";
 };
 
 export async function resolveRequester(): Promise<RequesterContext> {
-  const ctx: RequesterContext = { userId: null, workspaceId: null, isAdmin: false };
+  const ctx: RequesterContext = { userId: null, workspaceId: null, isAdmin: false, submittedVia: "public_form" };
   try {
     const { getRequestHeader } = await import("@tanstack/react-start/server");
     const token = getRequestHeader("authorization")?.replace(/^Bearer\s+/i, "");
@@ -34,14 +36,16 @@ export async function resolveRequester(): Promise<RequesterContext> {
       supabaseAdmin.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin"),
       supabaseAdmin
         .from("workspace_members")
-        .select("workspace_id, workspaces!inner(status)")
+        .select("workspace_id, role, can_create_requests, workspaces!inner(status)")
         .eq("user_id", uid)
         .eq("workspaces.status", "active"),
     ]);
     ctx.isAdmin = (roles ?? []).length > 0;
-    const ws = memberships ?? [];
-    // Training-only learners have no workspace → workspaceId stays null.
+    // Only memberships allowed to create requests count; training-only
+    // learners have none, so workspaceId stays null.
+    const ws = (memberships ?? []).filter((m: any) => m.role === "owner" || m.role === "admin" || m.can_create_requests);
     if (ws.length === 1) ctx.workspaceId = ws[0].workspace_id;
+    ctx.submittedVia = ctx.isAdmin ? "admin" : "portal";
   } catch {
     // Treat as anonymous; never leak the reason.
   }
