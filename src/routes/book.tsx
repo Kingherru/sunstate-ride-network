@@ -25,7 +25,7 @@ import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/R
 import { supabase } from "@/integrations/supabase/client";
 import { PublicPage } from "@/components/public/PublicPage";
 import { NonEmergencyNotice, pageHead } from "@/components/public/page-kit";
-import { LINKS, PUBLIC_EMAIL, PUBLIC_PHONE_TEL } from "@/lib/site-config";
+import { LINKS } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 
 
