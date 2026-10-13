@@ -45,10 +45,18 @@ import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
+import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
+import { Route as AuthenticatedPortalAccountRouteImport } from './routes/_authenticated/portal.account'
 import { Route as FloridaCoverageRegionIndexRouteImport } from './routes/florida-coverage.$region.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
+import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
+import { Route as AuthenticatedPortalRequestsIndexRouteImport } from './routes/_authenticated/portal.requests.index'
+import { Route as AuthenticatedPortalRequestsIdRouteImport } from './routes/_authenticated/portal.requests.$id'
+import { Route as AuthenticatedPortalRequestsNewRouteImport } from './routes/_authenticated/portal.requests.new'
 import { Route as ApiPublicHooksFinCashoutTickRouteImport } from './routes/api/public/hooks/fin-cashout-tick'
 import { Route as ApiPublicHooksFinReleaseTickRouteImport } from './routes/api/public/hooks/fin-release-tick'
 import { Route as ApiPublicHooksReleaseEligiblePayoutsRouteImport } from './routes/api/public/hooks/release-eligible-payouts'
@@ -247,6 +255,11 @@ const VerifyTokenRoute = VerifyTokenRouteImport.update({
   path: '/verify/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -257,6 +270,18 @@ const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AuthenticatedLearnRoute,
 } as any)
+const AuthenticatedPortalIndexRoute =
+  AuthenticatedPortalIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalAccountRoute =
+  AuthenticatedPortalAccountRouteImport.update({
+    id: '/account',
+    path: '/account',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
 const FloridaCoverageRegionIndexRoute =
   FloridaCoverageRegionIndexRouteImport.update({
     id: '/florida-coverage/$region/',
@@ -268,6 +293,36 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRequestsIndexRoute =
+  AuthenticatedAdminRequestsIndexRouteImport.update({
+    id: '/requests/',
+    path: '/requests/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRequestsIdRoute =
+  AuthenticatedAdminRequestsIdRouteImport.update({
+    id: '/requests/$id',
+    path: '/requests/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedPortalRequestsIndexRoute =
+  AuthenticatedPortalRequestsIndexRouteImport.update({
+    id: '/requests/',
+    path: '/requests/',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalRequestsIdRoute =
+  AuthenticatedPortalRequestsIdRouteImport.update({
+    id: '/requests/$id',
+    path: '/requests/$id',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalRequestsNewRoute =
+  AuthenticatedPortalRequestsNewRouteImport.update({
+    id: '/requests/new',
+    path: '/requests/new',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
 const ApiPublicHooksFinCashoutTickRoute =
   ApiPublicHooksFinCashoutTickRouteImport.update({
     id: '/api/public/hooks/fin-cashout-tick',
@@ -379,9 +434,9 @@ export interface FileRoutesByFullPath {
   '/training': typeof TrainingRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/learn': typeof AuthenticatedLearnRouteWithChildren
-  '/portal': typeof AuthenticatedPortalRoute
+  '/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
@@ -394,9 +449,15 @@ export interface FileRoutesByFullPath {
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
+  '/portal/account': typeof AuthenticatedPortalAccountRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
+  '/portal/': typeof AuthenticatedPortalIndexRoute
   '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
+  '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
+  '/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
+  '/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
@@ -408,6 +469,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
+  '/portal/requests/': typeof AuthenticatedPortalRequestsIndexRoute
   '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -434,8 +497,6 @@ export interface FileRoutesByTo {
   '/training': typeof TrainingRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/portal': typeof AuthenticatedPortalRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
@@ -448,9 +509,15 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
+  '/portal/account': typeof AuthenticatedPortalAccountRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
+  '/portal': typeof AuthenticatedPortalIndexRoute
   '/florida-coverage/$region': typeof FloridaCoverageRegionIndexRoute
+  '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
+  '/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
+  '/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
@@ -462,6 +529,8 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/admin/requests': typeof AuthenticatedAdminRequestsIndexRoute
+  '/portal/requests': typeof AuthenticatedPortalRequestsIndexRoute
   '/florida-coverage/$region/$county': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -491,9 +560,9 @@ export interface FileRoutesById {
   '/training': typeof TrainingRoute
   '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
   '/_authenticated/account-status': typeof AuthenticatedAccountStatusRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
-  '/_authenticated/portal': typeof AuthenticatedPortalRoute
+  '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
@@ -506,9 +575,15 @@ export interface FileRoutesById {
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
+  '/_authenticated/portal/account': typeof AuthenticatedPortalAccountRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
+  '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
   '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
+  '/_authenticated/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
+  '/_authenticated/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
+  '/_authenticated/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
@@ -520,6 +595,8 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/_authenticated/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
+  '/_authenticated/portal/requests/': typeof AuthenticatedPortalRequestsIndexRoute
   '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -564,9 +641,15 @@ export interface FileRouteTypes {
     | '/services/'
     | '/shop/'
     | '/learn/$slug'
+    | '/portal/account'
     | '/lovable/email/suppression'
+    | '/admin/'
     | '/learn/'
+    | '/portal/'
     | '/florida-coverage/$region/'
+    | '/admin/requests/$id'
+    | '/portal/requests/$id'
+    | '/portal/requests/new'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
@@ -578,6 +661,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/admin/requests/'
+    | '/portal/requests/'
     | '/florida-coverage/$region/$county/'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -604,8 +689,6 @@ export interface FileRouteTypes {
     | '/training'
     | '/account-setup'
     | '/account-status'
-    | '/admin'
-    | '/portal'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/resources/$slug'
@@ -618,9 +701,15 @@ export interface FileRouteTypes {
     | '/services'
     | '/shop'
     | '/learn/$slug'
+    | '/portal/account'
     | '/lovable/email/suppression'
+    | '/admin'
     | '/learn'
+    | '/portal'
     | '/florida-coverage/$region'
+    | '/admin/requests/$id'
+    | '/portal/requests/$id'
+    | '/portal/requests/new'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
@@ -632,6 +721,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/admin/requests'
+    | '/portal/requests'
     | '/florida-coverage/$region/$county'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -675,9 +766,15 @@ export interface FileRouteTypes {
     | '/services/'
     | '/shop/'
     | '/_authenticated/learn/$slug'
+    | '/_authenticated/portal/account'
     | '/lovable/email/suppression'
+    | '/_authenticated/admin/'
     | '/_authenticated/learn/'
+    | '/_authenticated/portal/'
     | '/florida-coverage/$region/'
+    | '/_authenticated/admin/requests/$id'
+    | '/_authenticated/portal/requests/$id'
+    | '/_authenticated/portal/requests/new'
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
@@ -689,6 +786,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/_authenticated/admin/requests/'
+    | '/_authenticated/portal/requests/'
     | '/florida-coverage/$region/$county/'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
@@ -997,6 +1096,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/learn/': {
       id: '/_authenticated/learn/'
       path: '/'
@@ -1011,6 +1117,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
       parentRoute: typeof AuthenticatedLearnRoute
     }
+    '/_authenticated/portal/': {
+      id: '/_authenticated/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof AuthenticatedPortalIndexRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/account': {
+      id: '/_authenticated/portal/account'
+      path: '/account'
+      fullPath: '/portal/account'
+      preLoaderRoute: typeof AuthenticatedPortalAccountRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
     '/florida-coverage/$region/': {
       id: '/florida-coverage/$region/'
       path: '/florida-coverage/$region'
@@ -1024,6 +1144,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/lovable/email/suppression'
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/requests/': {
+      id: '/_authenticated/admin/requests/'
+      path: '/requests'
+      fullPath: '/admin/requests/'
+      preLoaderRoute: typeof AuthenticatedAdminRequestsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/requests/$id': {
+      id: '/_authenticated/admin/requests/$id'
+      path: '/requests/$id'
+      fullPath: '/admin/requests/$id'
+      preLoaderRoute: typeof AuthenticatedAdminRequestsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/portal/requests/': {
+      id: '/_authenticated/portal/requests/'
+      path: '/requests'
+      fullPath: '/portal/requests/'
+      preLoaderRoute: typeof AuthenticatedPortalRequestsIndexRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/requests/$id': {
+      id: '/_authenticated/portal/requests/$id'
+      path: '/requests/$id'
+      fullPath: '/portal/requests/$id'
+      preLoaderRoute: typeof AuthenticatedPortalRequestsIdRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/requests/new': {
+      id: '/_authenticated/portal/requests/new'
+      path: '/requests/new'
+      fullPath: '/portal/requests/new'
+      preLoaderRoute: typeof AuthenticatedPortalRequestsNewRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
     }
     '/api/public/hooks/fin-cashout-tick': {
       id: '/api/public/hooks/fin-cashout-tick'
@@ -1133,6 +1288,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
+  AuthenticatedAdminRequestsIndexRoute: typeof AuthenticatedAdminRequestsIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
+  AuthenticatedAdminRequestsIndexRoute: AuthenticatedAdminRequestsIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedLearnRouteChildren {
   AuthenticatedLearnSlugRoute: typeof AuthenticatedLearnSlugRoute
   AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
@@ -1146,20 +1316,39 @@ const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
 const AuthenticatedLearnRouteWithChildren =
   AuthenticatedLearnRoute._addFileChildren(AuthenticatedLearnRouteChildren)
 
+interface AuthenticatedPortalRouteChildren {
+  AuthenticatedPortalAccountRoute: typeof AuthenticatedPortalAccountRoute
+  AuthenticatedPortalIndexRoute: typeof AuthenticatedPortalIndexRoute
+  AuthenticatedPortalRequestsIdRoute: typeof AuthenticatedPortalRequestsIdRoute
+  AuthenticatedPortalRequestsNewRoute: typeof AuthenticatedPortalRequestsNewRoute
+  AuthenticatedPortalRequestsIndexRoute: typeof AuthenticatedPortalRequestsIndexRoute
+}
+
+const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
+  AuthenticatedPortalAccountRoute: AuthenticatedPortalAccountRoute,
+  AuthenticatedPortalIndexRoute: AuthenticatedPortalIndexRoute,
+  AuthenticatedPortalRequestsIdRoute: AuthenticatedPortalRequestsIdRoute,
+  AuthenticatedPortalRequestsNewRoute: AuthenticatedPortalRequestsNewRoute,
+  AuthenticatedPortalRequestsIndexRoute: AuthenticatedPortalRequestsIndexRoute,
+}
+
+const AuthenticatedPortalRouteWithChildren =
+  AuthenticatedPortalRoute._addFileChildren(AuthenticatedPortalRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountSetupRoute: typeof AuthenticatedAccountSetupRoute
   AuthenticatedAccountStatusRoute: typeof AuthenticatedAccountStatusRoute
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
-  AuthenticatedPortalRoute: typeof AuthenticatedPortalRoute
+  AuthenticatedPortalRoute: typeof AuthenticatedPortalRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountSetupRoute: AuthenticatedAccountSetupRoute,
   AuthenticatedAccountStatusRoute: AuthenticatedAccountStatusRoute,
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
-  AuthenticatedPortalRoute: AuthenticatedPortalRoute,
+  AuthenticatedPortalRoute: AuthenticatedPortalRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
