@@ -50,7 +50,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
       <ul className="divide-y divide-ds-border md:hidden">
         {rows.map((r) => (
           <li key={r.id}>
-            <Link to={`${detailBase}/$id`} params={{ id: r.id }} className="block px-4 py-4 ds-transition hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ds-focus">
+            <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="block px-4 py-4 ds-transition hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ds-focus">
               <div className="flex items-start justify-between gap-3">
                 <span className="ds-label text-ds-primary">#{shortId(r.id)}</span>
                 <StatusBadge status={r.status} />
@@ -76,7 +76,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
           {rows.map((r) => (
             <tr key={r.id} className="border-b border-ds-border last:border-0">
               <td className="px-4 py-3">
-                <Link to={`${detailBase}/$id`} params={{ id: r.id }} className="font-semibold text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus rounded-ds-sm">#{shortId(r.id)}</Link>
+                <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="font-semibold text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus rounded-ds-sm">#{shortId(r.id)}</Link>
               </td>
               <td className="px-4 py-3">{categoryLabel(r)}</td>
               {!showSource && <td className="px-4 py-3">{serviceLabel(r)}</td>}
