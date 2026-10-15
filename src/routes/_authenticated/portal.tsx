@@ -13,6 +13,17 @@ const PROVIDER_NAV: NavItem[] = [
   { to: "/portal/training", label: "Training & Tests" },
   { to: "/portal/account", label: "Account" },
 ];
+const RESTRICTED_PROVIDER_NAV: NavItem[] = [
+  { to: "/portal", label: "Overview", exact: true },
+  { to: "/portal/trips", label: "My trips" },
+  { to: "/portal/training", label: "Training & Tests" },
+  { to: "/portal/account", label: "Account" },
+];
+const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers", "/portal/notifications"];
+const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers"];
+const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/upload-csv"];
+const under = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
+
 const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal", label: "Overview", exact: true },
   { to: "/portal/requests/new", label: "New trip" },
@@ -35,10 +46,16 @@ function identityFor(a: AccessState) {
 
 export const Route = createFileRoute("/_authenticated/portal")({
   head: () => ({ meta: [{ title: "Portal — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     // Server-verified: training-only learners go to Training, suspended/pending to their status page.
     const access = await getAccessState();
-    if (!access.isAdmin && access.destination !== "/portal") throw redirect({ to: access.destination });
+    // Only the Master Admin may preview portals without an account of their own.
+    if (!access.isMasterAdmin && access.destination !== "/portal") throw redirect({ to: access.destination });
+    const path = location.pathname;
+    const provider = access.portalKind === "provider";
+    if ((provider && under(path, CUSTOMER_ONLY)) || (!provider && under(path, PROVIDER_ONLY)) || (access.restricted && under(path, RESTRICTED_BLOCK))) {
+      if (!access.isMasterAdmin) throw redirect({ to: "/portal" });
+    }
     return { access };
   },
   component: PortalLayout,
@@ -48,7 +65,7 @@ function PortalLayout() {
   const { access } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
   return (
-    <PortalShell nav={provider ? PROVIDER_NAV : CUSTOMER_NAV} area={provider ? "Provider portal" : "Portal"} identity={identityFor(access)} changelogTo="/portal/changelog">
+    <PortalShell nav={provider ? (access.restricted ? RESTRICTED_PROVIDER_NAV : PROVIDER_NAV) : CUSTOMER_NAV} area={provider ? "Provider portal" : "Portal"} identity={identityFor(access)} changelogTo="/portal/changelog">
       <Outlet />
     </PortalShell>
   );
