@@ -8,7 +8,7 @@ import { ORGANIZATION_TYPES, organizationLabel } from "@/lib/account-types";
 
 type Kind = "provider" | "customer";
 
-export const Route = createFileRoute("/_authenticated/admin/preview/$kind")({
+export const Route = createFileRoute("/_authenticated/admin_/preview/$kind")({
   head: () => ({ meta: [{ title: "Portal Preview — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async ({ params }) => {
     if (params.kind !== "provider" && params.kind !== "customer") throw redirect({ to: "/admin/settings" });
