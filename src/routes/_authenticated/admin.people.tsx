@@ -12,7 +12,6 @@ import { SegTabs } from "@/components/portal/SegTabs";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { DsEmpty } from "@/components/ds/feedback";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
 const ORG_TYPES = new Set(["facility", "hospital"]);

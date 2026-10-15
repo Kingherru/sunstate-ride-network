@@ -8,7 +8,7 @@ import { ORGANIZATION_TYPES, organizationLabel } from "@/lib/account-types";
 
 type Kind = "provider" | "customer";
 
-export const Route = createFileRoute("/_authenticated/admin/preview/$kind")({
+export const Route = createFileRoute("/_authenticated/admin_/preview/$kind")({
   head: () => ({ meta: [{ title: "Portal Preview — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async ({ params }) => {
     if (params.kind !== "provider" && params.kind !== "customer") throw redirect({ to: "/admin/settings" });
@@ -41,7 +41,7 @@ function PortalPreview() {
   const activePage = search.page ?? "overview";
 
   const nav: NavItem[] = useMemo(
-    () => baseNav.map((n) => ({ to: previewTo, label: n.label, search: { page: pageKeyOf(n.to) } })),
+    () => baseNav.map((n) => ({ to: previewTo, label: n.label, iconFor: n.to, search: { page: pageKeyOf(n.to) } })),
     [baseNav, previewTo],
   );
 
@@ -103,6 +103,7 @@ const PROVIDER_PAGES: Record<string, { heading: string; body: React.ReactNode }>
   schedule: { heading: "Schedule", body: <DemoTable cols={["Driver", "Vehicle", "Shift"]} rows={[["D. Driverly", "Van 02", "8a–4p"], ["S. Sample", "Van 05", "10a–6p"]]} /> },
   vehicles: { heading: "Vehicles", body: <DemoTable cols={["Vehicle", "Type", "Status"]} rows={[["Van 02", "Wheelchair", "Active"], ["Van 05", "Ambulatory", "Active"]]} /> },
   drivers: { heading: "Drivers", body: <DemoTable cols={["Driver", "Status", "Training"]} rows={[["D. Driverly", "Active", "Complete"], ["S. Sample", "Active", "In progress"]]} /> },
+  network: { heading: "Network", body: <DemoTable cols={["Provider", "Counties", "Accepting"]} rows={[["Gulfside Rides (Demo)", "Pinellas", "Yes"], ["Bayline Medical Transit (Demo)", "Hillsborough", "No"]]} /> },
   training: { heading: "Training & Tests", body: <DemoTable cols={["Course", "Status"]} rows={[["Defensive Driving", "Complete"], ["HIPAA Basics", "In progress"]]} /> },
 };
 
@@ -111,7 +112,7 @@ const CUSTOMER_PAGES: Record<string, { heading: string; body: React.ReactNode }>
   "requests/new": { heading: "New trip", body: <p className="ds-body max-w-xl">A demo copy of the request form would appear here. Submitting is disabled in preview.</p> },
   requests: { heading: "Trip history", body: <DemoTable cols={["Request", "Status", "Date"]} rows={[["RQ-5581", "Completed", "Apr 29"], ["RQ-5602", "Scheduled", "May 2"]]} /> },
   "upload-csv": { heading: "Upload CSV", body: <p className="ds-body max-w-xl">A demo CSV upload panel would appear here. Uploading is disabled in preview.</p> },
-  "find-providers": { heading: "Find providers", body: <DemoTable cols={["Provider", "Coverage", "Rating"]} rows={[["Sunshine Coast Transport", "Tampa Bay", "4.8"], ["Gulfside Rides", "Pinellas", "4.6"]]} /> },
+  "find-providers": { heading: "Find providers", body: <DemoTable cols={["Provider", "Counties", "Accepting"]} rows={[["Sunshine Coast Transport (Demo)", "Pinellas", "Yes"], ["Gulfside Rides (Demo)", "Hillsborough", "Yes"]]} /> },
   "saved-providers": { heading: "Saved providers", body: <DemoTable cols={["Provider", "Saved on"]} rows={[["Sunshine Coast Transport", "Apr 2"]]} /> },
   contacts: { heading: "Contacts", body: <DemoTable cols={["Name", "Role"]} rows={[["J. Sample", "Scheduler"]]} /> },
   payers: { heading: "Payers", body: <DemoTable cols={["Payer", "Type"]} rows={[["Demo Insurance Co.", "Insurance"]]} /> },
