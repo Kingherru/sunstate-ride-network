@@ -70,6 +70,7 @@ function groupLabel(iso: string): string {
 const GROUP_ORDER = ["Today", "Yesterday", "Earlier this week", "Earlier this month", "Older"];
 
 export function NotificationsPanel() {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<Filter>("all");
@@ -93,7 +94,7 @@ export function NotificationsPanel() {
   });
 
   useEffect(() => {
-    if (!userId) return;
+    if (preview.active || !userId) return;
     const ch = supabase
       .channel(`notifications-panel-${userId}`)
       .on(
@@ -186,6 +187,7 @@ export function NotificationsPanel() {
   };
 
   const onOpen = (n: NotificationRow) => {
+    if (preview.active) { previewBlocked(); return; }
     if (!n.read_at) markFn({ data: { ids: [n.id] } }).then(invalidateAll);
     if (n.link) {
       if (/^https?:/i.test(n.link)) window.location.href = n.link;

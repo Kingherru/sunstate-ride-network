@@ -156,6 +156,7 @@ export function ReservationReviewDialog({
   onOpenChange: (v: boolean) => void;
   canApprove: boolean;
 }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const update = useServerFn(updateTripStatus);
   const saveDetails = useServerFn(updateTripDetails);
@@ -266,6 +267,7 @@ export function ReservationReviewDialog({
   });
 
   async function sendToMfn() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("refer");
     try {
       await refer({ data: { trip_id: row.id, target: "mfn" } });
@@ -279,6 +281,7 @@ export function ReservationReviewDialog({
   }
 
   async function sendToProvider(providerId: string) {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("refer");
     try {
       await refer({ data: { trip_id: row.id, target: providerId } });
@@ -293,6 +296,7 @@ export function ReservationReviewDialog({
   }
 
   async function respondReferral(accept: boolean, reason?: string) {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("respond");
     try {
       await respond({ data: { trip_id: row.id, accept, reason: reason ?? null } });
@@ -307,6 +311,7 @@ export function ReservationReviewDialog({
   }
 
   async function saveEdits() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("save");
     try {
       const patch: Record<string, unknown> = {};
@@ -337,6 +342,7 @@ export function ReservationReviewDialog({
   })();
 
   async function approve() {
+    if (preview.active) { previewBlocked(); return; }
     if (quoteInput.trim() !== "" && parsedQuoteCents == null) {
       toast.error("Enter a valid quote amount before confirming");
       return;
@@ -359,6 +365,7 @@ export function ReservationReviewDialog({
 
 
   async function complete() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("complete");
     try {
       await update({ data: { trip_id: row.id, status: "completed" } });
@@ -374,6 +381,7 @@ export function ReservationReviewDialog({
 
 
   async function decline() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("decline");
     try {
       await update({ data: { trip_id: row.id, status: "declined", reason: declineReason.trim() || null } });

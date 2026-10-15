@@ -66,6 +66,7 @@ import { Route as AuthenticatedPortalChangelogRouteImport } from './routes/_auth
 import { Route as AuthenticatedPortalContactsRouteImport } from './routes/_authenticated/portal.contacts'
 import { Route as AuthenticatedPortalDriversRouteImport } from './routes/_authenticated/portal.drivers'
 import { Route as AuthenticatedPortalFindProvidersRouteImport } from './routes/_authenticated/portal.find-providers'
+import { Route as AuthenticatedPortalMessagingRouteImport } from './routes/_authenticated/portal.messaging'
 import { Route as AuthenticatedPortalNetworkRouteImport } from './routes/_authenticated/portal.network'
 import { Route as AuthenticatedPortalNotificationsRouteImport } from './routes/_authenticated/portal.notifications'
 import { Route as AuthenticatedPortalPayersRouteImport } from './routes/_authenticated/portal.payers'
@@ -404,6 +405,12 @@ const AuthenticatedPortalFindProvidersRoute =
     path: '/find-providers',
     getParentRoute: () => AuthenticatedPortalRoute,
   } as any)
+const AuthenticatedPortalMessagingRoute =
+  AuthenticatedPortalMessagingRouteImport.update({
+    id: '/messaging',
+    path: '/messaging',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
 const AuthenticatedPortalNetworkRoute =
   AuthenticatedPortalNetworkRouteImport.update({
     id: '/network',
@@ -648,6 +655,7 @@ export interface FileRoutesByFullPath {
   '/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/portal/drivers': typeof AuthenticatedPortalDriversRoute
   '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/messaging': typeof AuthenticatedPortalMessagingRoute
   '/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
   '/portal/payers': typeof AuthenticatedPortalPayersRoute
@@ -734,6 +742,7 @@ export interface FileRoutesByTo {
   '/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/portal/drivers': typeof AuthenticatedPortalDriversRoute
   '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/messaging': typeof AuthenticatedPortalMessagingRoute
   '/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
   '/portal/payers': typeof AuthenticatedPortalPayersRoute
@@ -826,6 +835,7 @@ export interface FileRoutesById {
   '/_authenticated/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/_authenticated/portal/drivers': typeof AuthenticatedPortalDriversRoute
   '/_authenticated/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/_authenticated/portal/messaging': typeof AuthenticatedPortalMessagingRoute
   '/_authenticated/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/_authenticated/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
   '/_authenticated/portal/payers': typeof AuthenticatedPortalPayersRoute
@@ -918,6 +928,7 @@ export interface FileRouteTypes {
     | '/portal/contacts'
     | '/portal/drivers'
     | '/portal/find-providers'
+    | '/portal/messaging'
     | '/portal/network'
     | '/portal/notifications'
     | '/portal/payers'
@@ -1004,6 +1015,7 @@ export interface FileRouteTypes {
     | '/portal/contacts'
     | '/portal/drivers'
     | '/portal/find-providers'
+    | '/portal/messaging'
     | '/portal/network'
     | '/portal/notifications'
     | '/portal/payers'
@@ -1095,6 +1107,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/contacts'
     | '/_authenticated/portal/drivers'
     | '/_authenticated/portal/find-providers'
+    | '/_authenticated/portal/messaging'
     | '/_authenticated/portal/network'
     | '/_authenticated/portal/notifications'
     | '/_authenticated/portal/payers'
@@ -1581,6 +1594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortalFindProvidersRouteImport
       parentRoute: typeof AuthenticatedPortalRoute
     }
+    '/_authenticated/portal/messaging': {
+      id: '/_authenticated/portal/messaging'
+      path: '/messaging'
+      fullPath: '/portal/messaging'
+      preLoaderRoute: typeof AuthenticatedPortalMessagingRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
     '/_authenticated/portal/network': {
       id: '/_authenticated/portal/network'
       path: '/network'
@@ -1866,6 +1886,7 @@ interface AuthenticatedPortalRouteChildren {
   AuthenticatedPortalContactsRoute: typeof AuthenticatedPortalContactsRoute
   AuthenticatedPortalDriversRoute: typeof AuthenticatedPortalDriversRoute
   AuthenticatedPortalFindProvidersRoute: typeof AuthenticatedPortalFindProvidersRoute
+  AuthenticatedPortalMessagingRoute: typeof AuthenticatedPortalMessagingRoute
   AuthenticatedPortalNetworkRoute: typeof AuthenticatedPortalNetworkRoute
   AuthenticatedPortalNotificationsRoute: typeof AuthenticatedPortalNotificationsRoute
   AuthenticatedPortalPayersRoute: typeof AuthenticatedPortalPayersRoute
@@ -1887,6 +1908,7 @@ const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
   AuthenticatedPortalContactsRoute: AuthenticatedPortalContactsRoute,
   AuthenticatedPortalDriversRoute: AuthenticatedPortalDriversRoute,
   AuthenticatedPortalFindProvidersRoute: AuthenticatedPortalFindProvidersRoute,
+  AuthenticatedPortalMessagingRoute: AuthenticatedPortalMessagingRoute,
   AuthenticatedPortalNetworkRoute: AuthenticatedPortalNetworkRoute,
   AuthenticatedPortalNotificationsRoute: AuthenticatedPortalNotificationsRoute,
   AuthenticatedPortalPayersRoute: AuthenticatedPortalPayersRoute,

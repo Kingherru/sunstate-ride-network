@@ -10,6 +10,7 @@ export const PROVIDER_NAV: NavItem[] = [
   { to: "/portal/drivers", label: "Drivers" },
   { to: "/portal/network", label: "Network" },
   { to: "/portal/training", label: "Training & Tests" },
+  { to: "/portal/messaging", label: "Messaging" },
 ];
 
 export const RESTRICTED_PROVIDER_NAV: NavItem[] = [
@@ -28,6 +29,7 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal/contacts", label: "Contacts" },
   { to: "/portal/payers", label: "Payers" },
   { to: "/portal/notifications", label: "Notifications" },
+  { to: "/portal/messaging", label: "Messaging" },
 ];
 
 export const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers", "/portal/notifications"];

@@ -10,6 +10,7 @@ const price = (c: number) => `$${(c / 100).toFixed(0)}`;
 
 /** Real courses + the signed-in learner's own enrollments. No invented progress. */
 export function TrainingTests() {
+  const preview = usePortalPreview();
   const courses = usePortalQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
   const mine = usePortalQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
 
@@ -44,6 +45,10 @@ export function TrainingTests() {
                 <Link to="/learn/$slug" params={{ slug: c.slug }} className={actionCls}>
                   {done ? <><Award className="mr-2 size-4" aria-hidden />View certificate</> : <><PlayCircle className="mr-2 size-4" aria-hidden />Continue course</>}
                 </Link>
+              ) : preview.active ? (
+                <button type="button" onClick={previewBlocked} className={actionCls}>
+                  <ShoppingBag className="mr-2 size-4" aria-hidden />Buy course
+                </button>
               ) : (
                 <Link to="/shop/$slug" params={{ slug: c.slug }} className={actionCls}>
                   <ShoppingBag className="mr-2 size-4" aria-hidden />Buy course

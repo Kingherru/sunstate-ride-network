@@ -42,6 +42,7 @@ function ListEditor({ label, values, onChange, placeholder }: { label: string; v
 }
 
 export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const getFn = useServerFn(getMyNetworkProfile);
   const saveFn = useServerFn(saveNetworkProfile);
@@ -88,6 +89,7 @@ export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
+    if (preview.active) { previewBlocked(); return; }
     setBusy(true);
     try {
       const r = await saveFn({

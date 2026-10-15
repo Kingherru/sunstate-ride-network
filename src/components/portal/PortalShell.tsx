@@ -32,6 +32,7 @@ const NAV_ICONS: [string, React.ComponentType<{ className?: string }>][] = [
   ["/portal/vehicles", Truck],
   ["/portal/drivers", Users],
   ["/portal/training", GraduationCap],
+  ["/portal/messaging", MessageSquare],
   ["/portal/account", UserCircle2],
   ["/portal", LayoutDashboard],
   ["/admin/people", Users],

@@ -148,6 +148,7 @@ function isPendingReferralReservation(r: any, userId: string) {
  * (no invoice is sent) and the trip moves onto the Schedule Board.
  */
 function ReferralReservationsSection({ userId }: { userId: string }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const listFn = useServerFn(listReferralReservations);
   const confirmFn = useServerFn(confirmReferralReservation);
@@ -159,6 +160,7 @@ function ReferralReservationsSection({ userId }: { userId: string }) {
   });
 
   async function confirm(id: string) {
+    if (preview.active) { previewBlocked(); return; }
     setBusyId(id);
     try {
       await confirmFn({ data: { trip_id: id } });
@@ -265,6 +267,7 @@ export function ReservationsPanel({
   scope?: Scope;
   onResumeDraft?: (draft: TripDraft) => void;
 }) {
+  const preview = usePortalPreview();
   const [section, setSection] = useState<ResvSection>("unconfirmed");
   const state: ResvState = section === "drafts" ? "unconfirmed" : section;
   const qc = useQueryClient();
@@ -272,6 +275,7 @@ export function ReservationsPanel({
   const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   async function cancelReservation(id: string) {
+    if (preview.active) { previewBlocked(); return; }
     const reason = prompt("Cancel this reservation? Add an optional reason:", "");
     if (reason === null) return;
     setCancelingId(id);

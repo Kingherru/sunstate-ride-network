@@ -158,6 +158,7 @@ function groupKeyDaily(dateIso: string): string {
 }
 
 export function TripHistoryPanel({ userId }: { userId: string }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const [preset, setPreset] = useState<Preset>("30d");
   const initialRange = presetRange("30d")!;
@@ -208,6 +209,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
   // Keep history in step with status changes made in the Provider, Dispatch, or
   // Admin portals (assignment, completion, payment) without a manual refresh.
   useEffect(() => {
+    if (preview.active) return;
     const ch = supabase
       .channel(`trip-history-${userId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => {

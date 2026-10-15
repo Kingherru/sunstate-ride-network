@@ -26,7 +26,8 @@ export const Route = createFileRoute("/_authenticated/portal")({
     if (!access.isMasterAdmin && access.destination !== "/portal") throw redirect({ to: access.destination });
     const path = location.pathname;
     const provider = access.portalKind === "provider";
-    if ((provider && under(path, CUSTOMER_ONLY)) || (!provider && under(path, PROVIDER_ONLY)) || (access.restricted && under(path, RESTRICTED_BLOCK))) {
+    const restrictedWithoutMessaging = access.restricted && !access.canMessageForWorkspace && under(path, ["/portal/messaging"]);
+    if ((provider && under(path, CUSTOMER_ONLY)) || (!provider && under(path, PROVIDER_ONLY)) || (access.restricted && under(path, RESTRICTED_BLOCK)) || restrictedWithoutMessaging) {
       if (!access.isMasterAdmin) throw redirect({ to: "/portal" });
     }
     return { access };
@@ -37,7 +38,10 @@ export const Route = createFileRoute("/_authenticated/portal")({
 function PortalLayout() {
   const { access } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
-  const nav = provider ? (access.restricted ? RESTRICTED_PROVIDER_NAV : PROVIDER_NAV) : CUSTOMER_NAV;
+  const restrictedNav = access.canMessageForWorkspace
+    ? [...RESTRICTED_PROVIDER_NAV, { to: "/portal/messaging", label: "Messaging" }]
+    : RESTRICTED_PROVIDER_NAV;
+  const nav = provider ? (access.restricted ? restrictedNav : PROVIDER_NAV) : CUSTOMER_NAV;
   return (
     <PortalShell nav={nav} area={provider ? "Provider portal" : "Portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
       settingsTo="/portal/account" notificationsTo={!provider ? "/portal/notifications" : undefined}>

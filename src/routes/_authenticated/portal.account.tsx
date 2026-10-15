@@ -17,6 +17,8 @@ import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { ProviderBalancePanel } from "@/components/dashboard/ProviderBalancePanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { NetworkProfileForm } from "@/components/network/NetworkProfileForm";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { listWorkspaceMembersForMessaging, setMemberMessagingPermission } from "@/lib/workspace-messages.functions";
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "security";
@@ -52,7 +54,7 @@ function Account() {
         {tab === "integrations" && <IntegrationsPanel />}
         {tab === "payouts" && <div className="space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div>}
         {tab === "network" && canEditNetwork && ws && <NetworkProfileForm workspaceId={ws.id} />}
-        {tab === "membership" && <Membership />}
+        {tab === "membership" && <><Membership />{ws && (ws.role === "owner" || ws.role === "admin") && <TeamMessaging workspaceId={ws.id} />}</>}
         {tab === "security" && <Security />}
       </section>
     </>
@@ -134,4 +136,53 @@ function Membership() {
 function Security() {
   const { user } = Route.useRouteContext();
   return <PersonalSecurity email={user.email ?? null} />;
+}
+
+function TeamMessaging({ workspaceId }: { workspaceId: string }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listWorkspaceMembersForMessaging);
+  const setFn = useServerFn(setMemberMessagingPermission);
+  const q = useQuery({
+    queryKey: ["workspace-messaging-members", workspaceId],
+    queryFn: () => listFn({ data: { workspaceId } }),
+  });
+
+  async function toggle(userId: string, allowed: boolean) {
+    try {
+      await setFn({ data: { workspaceId, userId, allowed } });
+      qc.invalidateQueries({ queryKey: ["workspace-messaging-members", workspaceId] });
+      toast.success("Updated.");
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not update that member's permission.");
+    }
+  }
+
+  const members = q.data ?? [];
+  return (
+    <div className="mt-8 max-w-2xl space-y-3">
+      <h2 className="ds-subheading uppercase text-ds-primary">Team messaging</h2>
+      <p className="ds-support">Owners and workspace admins can always message other businesses. Let other team members send network messages for this workspace, too.</p>
+      {q.isLoading && <p className="ds-support">Loading…</p>}
+      {!q.isLoading && members.length === 0 && <p className="ds-support">No team members yet.</p>}
+      {members.length > 0 && (
+        <ul className="divide-y divide-ds-border rounded-ds-sm border border-ds-border">
+          {members.map((m) => (
+            <li key={m.userId} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <p className="ds-body truncate font-semibold">{m.name}</p>
+                <p className="ds-support">{ROLE[m.role] ?? "Member"}</p>
+              </div>
+              {m.role === "owner" || m.role === "admin" ? (
+                <span className="ds-support text-ds-on-bg/60">Always allowed</span>
+              ) : (
+                <label className="ds-support inline-flex items-center gap-2">
+                  <input type="checkbox" checked={!!m.canMessage} onChange={(e) => toggle(m.userId, e.target.checked)} /> Can message
+                </label>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
