@@ -98,3 +98,83 @@ export async function notifyNewRequest(opts: {
     console.error("request staff notification failed");
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Shared inserts — the ONLY code that writes ride_requests rows.       */
+/* Public form, portal, admin-on-behalf and CSV import all call these   */
+/* after validating with the same zod schemas.                          */
+/* ------------------------------------------------------------------ */
+import type { RideRequestInput, DeliveryRequestInput } from "@/lib/request-schemas";
+
+export type InsertOwnership = {
+  requesterUserId: string | null;
+  actorUserId: string | null;
+  workspaceId: string | null;
+  submittedVia: "public_form" | "portal" | "admin";
+  onBehalfOfUserId?: string | null;
+  importJobId?: string | null;
+  /** CSV imports never email; test rows never email (decided by DB flag). */
+  skipNotify?: boolean;
+};
+type InsertResult = { ok: true; id: string; mfnId: string | null; isTest: boolean } | { ok: false; code: string };
+
+async function finish(row: any, error: any, category: RequestCategory, email: string | null, own: InsertOwnership, embedProviderId?: string | null): Promise<InsertResult> {
+  if (error || !row) {
+    console.error("request insert failed", error?.code ?? "unknown");
+    return { ok: false, code: error?.code ?? "unknown" };
+  }
+  if (!row.is_test && !own.skipNotify) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
+  return { ok: true, id: row.id, mfnId: row.mfn_id ?? null, isTest: !!row.is_test };
+}
+
+export async function insertPassengerRequest(data: RideRequestInput, own: InsertOwnership): Promise<InsertResult> {
+  let embedProviderId: string | null = null;
+  let embedTokenStored: string | null = null;
+  if (data.embedToken) {
+    const { data: tok } = await supabaseAdmin.from("provider_embed_tokens").select("provider_user_id, revoked_at").eq("token", data.embedToken).maybeSingle();
+    if (tok && !tok.revoked_at) { embedProviderId = tok.provider_user_id; embedTokenStored = data.embedToken; }
+  }
+  const isRound = data.tripType === "round_trip" || data.roundTrip;
+  const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
+    trip_kind: "passenger",
+    patient_first_name: data.patientFirstName, patient_last_name: data.patientLastName,
+    patient_phone: data.patientPhone, patient_email: data.patientEmail || null,
+    pickup_address: data.pickupAddress, pickup_address_details: data.pickupAddressDetails || null,
+    pickup_city: data.pickupCity, pickup_date: data.pickupDate, pickup_time: data.pickupTime,
+    appointment_time: data.appointmentTime || null,
+    dropoff_address: data.dropoffAddress, dropoff_city: data.dropoffCity,
+    transport_type: data.transportType, trip_type: data.tripType, round_trip: isRound,
+    return_pickup_time: data.returnPickupTime || null, return_dropoff_time: data.returnDropoffTime || null,
+    return_pickup_building: data.returnPickupBuilding || null, return_pickup_doctor: data.returnPickupDoctor || null,
+    return_pickup_suite: data.returnPickupSuite || null,
+    return_date: isRound ? (data.returnDate || data.pickupDate) : null,
+    additional_stops: data.additionalStops ?? [],
+    mobility_notes: data.mobilityNotes || null, special_instructions: data.specialInstructions || null,
+    requester_user_id: own.requesterUserId, actor_user_id: own.actorUserId, workspace_id: own.workspaceId,
+    submitted_via: own.submittedVia, on_behalf_of_user_id: own.onBehalfOfUserId ?? null, import_job_id: own.importJobId ?? null,
+    recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
+    recurrence_end_date: data.recurrenceEndDate || null,
+    embed_provider_id: embedProviderId, embed_token: embedTokenStored,
+    trip_billing_source: data.billingSource,
+    trip_billing_first_name: data.billingContact?.firstName ?? null, trip_billing_last_name: data.billingContact?.lastName ?? null,
+    trip_billing_email: data.billingContact?.email ?? null, trip_billing_phone: data.billingContact?.phone ?? null,
+  } as any).select("id, mfn_id, is_test").single();
+  return finish(row, error, "passenger_transport", data.patientEmail || null, own, embedProviderId);
+}
+
+export async function insertDeliveryRequest(data: DeliveryRequestInput, own: InsertOwnership): Promise<InsertResult> {
+  const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
+    trip_kind: "medical_delivery", transport_type: "delivery", trip_type: "one_way", round_trip: false,
+    patient_first_name: data.contactFirstName, patient_last_name: data.contactLastName,
+    patient_phone: data.contactPhone, patient_email: data.contactEmail || null,
+    requester_phone: data.contactPhone, requester_email: data.contactEmail || null,
+    pickup_address: data.pickupAddress, pickup_address_details: data.pickupAddressDetails || null,
+    pickup_city: data.pickupCity, pickup_date: data.requestedDate, pickup_time: data.requestedTime,
+    dropoff_address: data.dropoffAddress, dropoff_city: data.dropoffCity,
+    delivery_item_type: data.deliveryCategory, delivery_instructions: data.deliveryInstructions || null,
+    delivery_signature_required: data.signatureRequired,
+    requester_user_id: own.requesterUserId, actor_user_id: own.actorUserId, workspace_id: own.workspaceId,
+    submitted_via: own.submittedVia, on_behalf_of_user_id: own.onBehalfOfUserId ?? null, import_job_id: own.importJobId ?? null,
+  } as any).select("id, mfn_id, is_test").single();
+  return finish(row, error, "medical_delivery", data.contactEmail || null, own);
+}
