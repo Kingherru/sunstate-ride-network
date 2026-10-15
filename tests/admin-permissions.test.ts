@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { PRESETS, canOpen } from "@/lib/admin-permissions";
 import { csvCell, parseCsv, validateRows, PASSENGER_COLUMNS, CSV_MAX_ROWS } from "@/lib/csv-import";
 
