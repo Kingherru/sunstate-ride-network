@@ -4,7 +4,22 @@
  * Hardcoded changelog. Add new entries at the TOP.
  * `date` is ISO; when the latest entry is < 7 days old, the chip turns light green.
  */
-export const CHANGELOG: { version: string; date: string; notes: string[] }[] = [
+export const CHANGELOG: { version: string; date: string; notes: string[]; important?: boolean; adminOnly?: boolean }[] = [
+  {
+    version: "0.16.0",
+    date: "2026-10-15",
+    adminOnly: true,
+    notes: [
+      "Regular administrators now start with no access; the Master Admin assigns sections and accounts.",
+      "Needs Review accounts can be classified one at a time with a confirmation step.",
+      "Admins with permission can submit a request for a specific customer account.",
+    ],
+  },
+  {
+    version: "0.15.1",
+    date: "2026-10-15",
+    notes: ["Customer and organization accounts can import requests from a CSV file with a full preview before anything is submitted."],
+  },
   {
     version: "0.15.0",
     date: "2026-10-15",
