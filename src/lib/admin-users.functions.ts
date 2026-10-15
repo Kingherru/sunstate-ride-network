@@ -64,7 +64,7 @@ export const listNonPatientUsers = createServerFn({ method: "GET" })
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
-    const isAdmin = (roles ?? []).some((r: any) => r.role === "admin");
+    const isAdmin = (roles ?? []).some((r: any) => r.role === "admin") && (await supabase.rpc("is_master_admin", { _user_id: userId })).data === true;
     if (!isAdmin) throw new Response("Forbidden", { status: 403 });
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -165,7 +165,7 @@ async function assertAdmin(context: any) {
     .from("user_roles")
     .select("role")
     .eq("user_id", context.userId);
-  const isAdmin = (roles ?? []).some((r: any) => r.role === "admin");
+  const isAdmin = (roles ?? []).some((r: any) => r.role === "admin") && (await context.supabase.rpc("is_master_admin", { _user_id: context.userId })).data === true;
   if (!isAdmin) throw new Response("Forbidden", { status: 403 });
 }
 

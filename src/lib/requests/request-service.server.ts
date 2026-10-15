@@ -40,7 +40,7 @@ export async function resolveRequester(): Promise<RequesterContext> {
         .eq("user_id", uid)
         .eq("workspaces.status", "active"),
     ]);
-    ctx.isAdmin = (roles ?? []).length > 0;
+    ctx.isAdmin = (roles ?? []).length > 0; // label only; on-behalf uses admin_can
     // Only memberships allowed to create requests count; training-only
     // learners have none, so workspaceId stays null.
     const ws = (memberships ?? []).filter((m: any) => m.role === "owner" || m.role === "admin" || m.can_create_requests);
