@@ -315,7 +315,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
             };
           }
         } catch { /* ignore — non-fatal */ }
-        setDone({ id: res.id, ...enrichedInfo });
+        setDone({ id: res.id, mfnId: (res as any).mfnId ?? null, ...enrichedInfo } as any);
         toast.success("Request received for review. Availability and acceptance are not guaranteed.");
         router.invalidate();
 
@@ -340,7 +340,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
       <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
-            Confirmation #{done.id.slice(0, 8).toUpperCase()}
+            Confirmation {(done as any).mfnId ?? `#${done.id.slice(0, 8).toUpperCase()}`}
           </p>
           <h1 className="ds-display mb-6 uppercase text-ds-primary">Trip request submitted</h1>
 
@@ -966,7 +966,7 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
-        setDoneId(res.id);
+        setDoneId((res as any).mfnId ?? `#${res.id.slice(0, 8).toUpperCase()}`);
         setForm(emptyDelivery);
       } else toast.error(res.error);
     } catch {
@@ -979,7 +979,7 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
   if (doneId) {
     return (
       <div role="status" className="rounded-ds-lg bg-ds-sky p-8 text-center">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-ds-accent-active">Request #{doneId.slice(0, 8).toUpperCase()}</p>
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-ds-accent-active">Request {doneId}</p>
         <h2 className="ds-section-title uppercase text-ds-primary">Delivery request received</h2>
         <p className="ds-body-lg mx-auto mt-4 max-w-[40rem]">
           Your medical delivery request was received for review. Submitting does not guarantee availability or acceptance. We'll contact you using the details you provided.
