@@ -17,6 +17,8 @@ import {
   PAYER_KIND_LABELS,
   bpsToPct,
 } from "@/lib/finance/constants";
+import { useAdminLevel } from "@/lib/use-admin-level";
+import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 type LedgerRow = {
   trip_id: string;
@@ -42,6 +44,8 @@ type LedgerRow = {
  */
 export function AdminFinanceConsole() {
   const qc = useQueryClient();
+  const level = useAdminLevel("payouts");
+  const readOnly = level !== "manage";
   const list = useServerFn(listFinLedger);
   const validate = useServerFn(validateTripPayment);
   const forceRelease = useServerFn(adminForceRelease);
@@ -86,7 +90,7 @@ export function AdminFinanceConsole() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl font-extrabold tracking-tight">Finance console</h2>
+          <div className="flex items-center gap-2"><h2 className="font-display text-2xl font-extrabold tracking-tight">Finance console</h2>{readOnly && <ReadOnlyBadge />}</div>
           <p className="text-sm text-muted-foreground">
             Platform fee: <strong>{bpsToPct(settingsQ.data?.platform_fee_bps ?? 200)}</strong>
             {" · "}Standard hold: <strong>{settingsQ.data?.standard_hold_days ?? 3} days</strong>
@@ -129,10 +133,10 @@ export function AdminFinanceConsole() {
               const holdReady = hold ? hold.getTime() <= Date.now() : false;
               const state = r.fin_payment_state ?? "none";
               const payout = r.fin_payout_state ?? "none";
-              const canValidate = state === "paid";
-              const canRelease = state === "validated" && payout === "holding";
-              const canRefund = state === "paid" || state === "validated";
-              const canMcd = r.fin_is_medicaid && !r.fin_medicaid_funds_received_at;
+              const canValidate = state === "paid" && !readOnly;
+              const canRelease = state === "validated" && payout === "holding" && !readOnly;
+              const canRefund = (state === "paid" || state === "validated") && !readOnly;
+              const canMcd = r.fin_is_medicaid && !r.fin_medicaid_funds_received_at && !readOnly;
               return (
                 <tr key={r.trip_id} className="hover:bg-muted/30">
                   <td className="px-3 py-2 font-mono text-xs">{r.trip_id.slice(0, 8)}</td>

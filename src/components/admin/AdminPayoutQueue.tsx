@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { adminReleaseTripPayout, listAdminPayoutQueue } from "@/lib/payouts.functions";
 import { formatUsd } from "@/lib/payouts";
+import { useAdminLevel } from "@/lib/use-admin-level";
+import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 type Row = {
   id: string; display_id: string | null; pickup_date: string | null;
@@ -30,6 +32,8 @@ function fmtWhen(iso: string | null): string {
 
 export function AdminPayoutQueue() {
   const qc = useQueryClient();
+  const level = useAdminLevel("payouts");
+  const readOnly = level !== "manage";
   const listFn = useServerFn(listAdminPayoutQueue);
   const releaseFn = useServerFn(adminReleaseTripPayout);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -70,7 +74,7 @@ export function AdminPayoutQueue() {
     <section className="bg-card border border-border rounded-sm p-5">
       <header className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-extrabold tracking-tight">Payout release queue</h3>
+          <div className="flex items-center gap-2"><h3 className="text-lg font-extrabold tracking-tight">Payout release queue</h3>{readOnly && <ReadOnlyBadge />}</div>
           <p className="text-xs text-muted-foreground">
             48-hour standard hold · Net-15 for Medicaid · auto-released by cron once eligible ·
             admin can override or clear holds.
@@ -150,25 +154,29 @@ export function AdminPayoutQueue() {
                       )}
                     </td>
                     <td className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {eligible && !isHeld && (
+                      {readOnly ? (
+                        <span className="text-[10px] font-bold uppercase text-muted-foreground">View only</span>
+                      ) : (
+                        <div className="flex justify-end gap-2">
+                          {eligible && !isHeld && (
+                            <button
+                              disabled={busyId === r.id}
+                              onClick={() => onRelease(r, false)}
+                              className="bg-primary text-primary-foreground font-bold text-xs uppercase px-3 py-1.5 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+                            >
+                              Release
+                            </button>
+                          )}
                           <button
                             disabled={busyId === r.id}
-                            onClick={() => onRelease(r, false)}
-                            className="bg-primary text-primary-foreground font-bold text-xs uppercase px-3 py-1.5 rounded-sm hover:bg-primary/90 disabled:opacity-50"
+                            onClick={() => onRelease(r, true)}
+                            className="bg-card border border-border font-bold text-xs uppercase px-3 py-1.5 rounded-sm hover:bg-muted/40 disabled:opacity-50"
+                            title="Bypass the hold window and attempt release now"
                           >
-                            Release
+                            Override
                           </button>
-                        )}
-                        <button
-                          disabled={busyId === r.id}
-                          onClick={() => onRelease(r, true)}
-                          className="bg-card border border-border font-bold text-xs uppercase px-3 py-1.5 rounded-sm hover:bg-muted/40 disabled:opacity-50"
-                          title="Bypass the hold window and attempt release now"
-                        >
-                          Override
-                        </button>
-                      </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

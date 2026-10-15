@@ -6,6 +6,8 @@ import {
   getPlatformPricingDefaults, savePlatformPricingDefaults,
   FL_MARKET_DEFAULTS, FL_MEDICAID_DEFAULTS, type MarketPricing,
 } from "@/lib/admin-pricing.functions";
+import { useAdminLevel } from "@/lib/use-admin-level";
+import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 const GROUPS: Array<{ label: string; fields: Array<{ key: keyof MarketPricing; label: string }> }> = [
   {
@@ -44,10 +46,10 @@ const GROUPS: Array<{ label: string; fields: Array<{ key: keyof MarketPricing; l
 ];
 
 function PricingColumn({
-  title, subtitle, values, onChange, onReset, accent,
+  title, subtitle, values, onChange, onReset, accent, readOnly,
 }: {
   title: string; subtitle: string; values: MarketPricing;
-  onChange: (v: MarketPricing) => void; onReset: () => void; accent: string;
+  onChange: (v: MarketPricing) => void; onReset: () => void; accent: string; readOnly: boolean;
 }) {
   return (
     <div className="bg-card border border-border rounded-sm p-5 space-y-4">
@@ -56,10 +58,10 @@ function PricingColumn({
           <h3 className={`text-lg font-extrabold tracking-tight ${accent}`}>{title}</h3>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <button type="button" onClick={onReset}
+        {!readOnly && <button type="button" onClick={onReset}
           className="text-xs font-bold uppercase tracking-wider border border-border rounded-sm px-3 py-1.5 hover:bg-secondary">
           Reset to FL avg
-        </button>
+        </button>}
       </div>
       {GROUPS.map((g) => (
         <div key={g.label} className="space-y-2">
@@ -70,10 +72,10 @@ function PricingColumn({
                 <span className="font-bold">{f.label}</span>
                 <div className="flex items-center border border-border rounded-sm bg-background overflow-hidden">
                   <span className="px-2 text-muted-foreground">$</span>
-                  <input type="number" min="0" step="0.01"
+                  <input type="number" min="0" step="0.01" disabled={readOnly}
                     value={String(values[f.key] ?? 0)}
                     onChange={(e) => onChange({ ...values, [f.key]: Number(e.target.value) || 0 })}
-                    className="flex-1 px-2 py-1.5 bg-transparent focus:outline-none text-sm" />
+                    className="flex-1 px-2 py-1.5 bg-transparent focus:outline-none text-sm disabled:opacity-60" />
                 </div>
               </label>
             ))}
@@ -86,6 +88,8 @@ function PricingColumn({
 
 export function AdminPricingPanel() {
   const qc = useQueryClient();
+  const level = useAdminLevel("pricing");
+  const readOnly = level !== "manage";
   const load = useServerFn(getPlatformPricingDefaults);
   const save = useServerFn(savePlatformPricingDefaults);
 
@@ -112,7 +116,7 @@ export function AdminPricingPanel() {
   return (
     <div className="space-y-5">
       <div className="bg-card border border-border rounded-sm p-5">
-        <h2 className="text-xl font-extrabold tracking-tight">Statewide pricing defaults</h2>
+        <div className="flex items-center gap-2"><h2 className="text-xl font-extrabold tracking-tight">Statewide pricing defaults</h2>{readOnly && <ReadOnlyBadge />}</div>
         <p className="text-sm text-muted-foreground mt-1">
           Recommended Florida market averages and Medicaid managed-care rates. These seed new
           provider pricing books and power quote estimates on public service pages.
@@ -127,6 +131,7 @@ export function AdminPricingPanel() {
           onChange={setMarket}
           onReset={() => setMarket(FL_MARKET_DEFAULTS)}
           accent="text-foreground"
+          readOnly={readOnly}
         />
         <PricingColumn
           title="Florida Medicaid"
@@ -135,10 +140,11 @@ export function AdminPricingPanel() {
           onChange={setMedicaid}
           onReset={() => setMedicaid(FL_MEDICAID_DEFAULTS)}
           accent="text-accent"
+          readOnly={readOnly}
         />
       </div>
 
-      <div className="flex justify-end">
+      {!readOnly && <div className="flex justify-end">
         <button
           type="button"
           disabled={m.isPending || q.isLoading}
@@ -146,7 +152,7 @@ export function AdminPricingPanel() {
           className="bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
           {m.isPending ? "Saving…" : "Save pricing defaults"}
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
