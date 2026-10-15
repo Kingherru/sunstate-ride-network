@@ -234,6 +234,14 @@ export const setUserPrimaryRole = createServerFn({ method: "POST" })
       throw new Error("You cannot remove your own Administrator role.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Master Admin protection (Pass 3C): the Master Admin can't be changed by anyone,
+    // and only the Master Admin may grant or remove the Administrator role.
+    const { data: master } = await supabaseAdmin.from("platform_master_admin").select("user_id").maybeSingle();
+    if (master?.user_id === data.user_id) throw new Error("The Master Admin account can't be changed.");
+    const { data: prevAdmin } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.user_id).eq("role", "admin").maybeSingle();
+    if ((data.role === "admin" || prevAdmin) && master?.user_id !== (context as any).userId) {
+      throw new Error("Only the Master Admin can grant or remove the Administrator role.");
+    }
     const sb = (context as any).supabase;
 
     // Snapshot previous state (admin client — RLS would hide other users' roles)

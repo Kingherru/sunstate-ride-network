@@ -11,6 +11,7 @@ const TRIP_TYPE: Record<string, string> = { one_way: "One way", round_trip: "Rou
 const DELIVERY_CAT: Record<string, string> = { medical_supplies: "Medical supplies", equipment: "Medical equipment", dme: "DME", other: "Other" };
 const SOURCE: Record<string, string> = { public_form: "Public form", portal: "Portal", admin: "Admin" };
 
+export const INTAKE: Record<string, string> = { platform_public_intake: "Platform public intake", signed_in_person: "Signed-in person", admin_on_behalf: "Admin on behalf of an account" };
 export const shortId = (id: string) => id.slice(0, 8).toUpperCase();
 export const isDelivery = (r: { trip_kind: string | null; transport_type: string | null }) =>
   r.trip_kind === "medical_delivery" || r.transport_type === "delivery";
@@ -52,7 +53,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
           <li key={r.id}>
             <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="block px-4 py-4 ds-transition hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ds-focus">
               <div className="flex items-start justify-between gap-3">
-                <span className="ds-label text-ds-primary">#{shortId(r.id)}</span>
+                <span className="ds-label text-ds-primary">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
                 <StatusBadge status={r.status} />
               </div>
               <p className="ds-body mt-1">{categoryLabel(r)}{!isDelivery(r) && ` · ${serviceLabel(r)}`}</p>
@@ -76,7 +77,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
           {rows.map((r) => (
             <tr key={r.id} className="border-b border-ds-border last:border-0">
               <td className="px-4 py-3">
-                <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="font-semibold text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus rounded-ds-sm">#{shortId(r.id)}</Link>
+                <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="font-semibold text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus rounded-ds-sm">{r.mfn_id ?? `#${shortId(r.id)}`}</Link>
               </td>
               <td className="px-4 py-3">{categoryLabel(r)}</td>
               {!showSource && <td className="px-4 py-3">{serviceLabel(r)}</td>}
@@ -110,13 +111,14 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
       <section className="rounded-ds bg-ds-surface p-5 shadow-[var(--ds-shadow)] sm:p-6">
         <h2 className="ds-subheading uppercase text-ds-primary">Request</h2>
         <dl className="mt-2 divide-y divide-ds-border">
-          <Row label="Request number" value={`#${shortId(r.id)}`} />
+          <Row label="Request number" value={r.mfn_id ?? `#${shortId(r.id)}`} />
           <Row label="Category" value={categoryLabel(r)} />
           {!d && <Row label="Service" value={serviceLabel(r)} />}
           {d && <Row label="Delivery category" value={DELIVERY_CAT[s("delivery_item_type") ?? ""] ?? s("delivery_item_type")} />}
           <Row label="Status" value={<StatusBadge status={r.status} />} />
           <Row label="Submitted" value={fmtDateTime(r.created_at)} />
           {showSource && <Row label="Source" value={sourceLabel(r.submitted_via)} />}
+          {showSource && <Row label="Intake" value={INTAKE[r.intake_source ?? ""] ?? "Not recorded"} />}
         </dl>
       </section>
       <section className="rounded-ds bg-ds-surface p-5 shadow-[var(--ds-shadow)] sm:p-6">

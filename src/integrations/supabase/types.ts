@@ -1840,6 +1840,24 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_master_admin: {
+        Row: {
+          designated_at: string
+          singleton: boolean
+          user_id: string
+        }
+        Insert: {
+          designated_at?: string
+          singleton?: boolean
+          user_id: string
+        }
+        Update: {
+          designated_at?: string
+          singleton?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           id: boolean
@@ -2945,6 +2963,7 @@ export type Database = {
       }
       ride_requests: {
         Row: {
+          actor_user_id: string | null
           additional_stops: Json
           appointment_time: string | null
           assigned_driver_id: string | null
@@ -2986,12 +3005,14 @@ export type Database = {
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
+          intake_source: string | null
           ip_address: string | null
           is_black_tie: boolean
           is_medicaid_patient: boolean
           last_updated_at: string
           medicaid_number: string | null
           medicaid_plan: string | null
+          mfn_id: string | null
           mobility_notes: string | null
           needs_assistance_to_vehicle: boolean
           needs_surgery_signin: boolean
@@ -3051,6 +3072,7 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          actor_user_id?: string | null
           additional_stops?: Json
           appointment_time?: string | null
           assigned_driver_id?: string | null
@@ -3092,12 +3114,14 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          intake_source?: string | null
           ip_address?: string | null
           is_black_tie?: boolean
           is_medicaid_patient?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
+          mfn_id?: string | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
           needs_surgery_signin?: boolean
@@ -3157,6 +3181,7 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          actor_user_id?: string | null
           additional_stops?: Json
           appointment_time?: string | null
           assigned_driver_id?: string | null
@@ -3198,12 +3223,14 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          intake_source?: string | null
           ip_address?: string | null
           is_black_tie?: boolean
           is_medicaid_patient?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
+          mfn_id?: string | null
           mobility_notes?: string | null
           needs_assistance_to_vehicle?: boolean
           needs_surgery_signin?: boolean
@@ -4704,6 +4731,7 @@ export type Database = {
           created_at: string
           display_name: string
           legacy_review_needed: boolean
+          mfn_id: string | null
           phone: string | null
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
@@ -4713,6 +4741,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           legacy_review_needed?: boolean
+          mfn_id?: string | null
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
@@ -4722,6 +4751,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           legacy_review_needed?: boolean
+          mfn_id?: string | null
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
@@ -4881,6 +4911,41 @@ export type Database = {
           },
         ]
       }
+      workspace_classification_log: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_type: string | null
+          old_type: string | null
+          workspace_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_type?: string | null
+          old_type?: string | null
+          workspace_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_type?: string | null
+          old_type?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_classification_log_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_members: {
         Row: {
           can_create_requests: boolean
@@ -4929,6 +4994,9 @@ export type Database = {
           created_by: string
           display_name: string
           id: string
+          legacy_backfilled: boolean
+          mfn_id: string | null
+          organization_type: string
           status: Database["public"]["Enums"]["workspace_status"]
           updated_at: string
         }
@@ -4938,6 +5006,9 @@ export type Database = {
           created_by: string
           display_name: string
           id?: string
+          legacy_backfilled?: boolean
+          mfn_id?: string | null
+          organization_type?: string
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
         }
@@ -4947,6 +5018,9 @@ export type Database = {
           created_by?: string
           display_name?: string
           id?: string
+          legacy_backfilled?: boolean
+          mfn_id?: string | null
+          organization_type?: string
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
         }
@@ -5554,6 +5628,7 @@ export type Database = {
         Returns: boolean
       }
       is_facility_or_provider: { Args: { _user_id: string }; Returns: boolean }
+      is_master_admin: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
       is_thread_participant: {
         Args: { _thread_id: string; _user_id: string }

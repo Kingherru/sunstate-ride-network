@@ -9,12 +9,12 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * Unknown and unauthorized IDs return the same "not found" result.
  */
 
-const LIST_COLS = "id, trip_kind, transport_type, trip_type, status, created_at, submitted_via";
+const LIST_COLS = "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, created_at, submitted_via";
 const DETAIL_COLS =
-  "id, trip_kind, transport_type, trip_type, status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, mobility_notes, special_instructions, delivery_item_type, delivery_instructions, delivery_signature_required";
+  "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, mobility_notes, special_instructions, delivery_item_type, delivery_instructions, delivery_signature_required";
 
 export type RequestListRow = {
-  id: string; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
+  id: string; mfn_id: string | null; intake_source: string | null; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
   status: string | null; created_at: string; submitted_via: string | null;
 };
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };

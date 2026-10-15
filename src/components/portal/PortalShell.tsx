@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, X } from "lucide-react";
+import { Menu, X, History, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 
 export type NavItem = { to: string; label: string; exact?: boolean };
+export type ShellIdentity = { name: string; mfnId: string | null; label: string; badge?: string };
 
 /** Quiet portal/admin frame: blue sidebar, pale-gray page, white workspace. No public header/footer. */
-export function PortalShell({ nav, area, children }: { nav: NavItem[]; area: string; children: React.ReactNode }) {
+export function PortalShell({ nav, area, identity, changelogTo, children }: { nav: NavItem[]; area: string; identity?: ShellIdentity; changelogTo: "/portal/changelog" | "/admin/changelog"; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
@@ -43,8 +44,25 @@ export function PortalShell({ nav, area, children }: { nav: NavItem[]; area: str
       ))}
     </nav>
   );
-  const signOutBtn = (
-    <button onClick={signOut} className="ds-button-text mx-3 rounded-ds-sm px-3 py-2.5 text-left uppercase text-ds-on-primary/85 ds-transition hover:bg-ds-primary-hover hover:text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">Sign out</button>
+  const footCls = "ds-button-text flex items-center gap-2 rounded-ds-sm px-3 py-2.5 text-left uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
+  const footer = (
+    <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
+      <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
+        className={cn(footCls, pathname === changelogTo ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
+        <History className="size-4" aria-hidden />Change log
+      </Link>
+      <button onClick={signOut} className={cn(footCls, "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
+        <LogOut className="size-4" aria-hidden />Sign out
+      </button>
+    </div>
+  );
+  const idCard = identity && (
+    <div className="mx-6 mb-6">
+      <p className="ds-body truncate font-semibold text-ds-on-primary" title={identity.name}>{identity.name}</p>
+      <p className="ds-support text-ds-on-primary/75">{identity.label}</p>
+      {identity.badge && <p className="ds-support mt-1 font-semibold uppercase tracking-[0.08em] text-ds-accent">{identity.badge}</p>}
+      {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/75">MFN ID: <span className="text-ds-on-primary">{identity.mfnId}</span></p>}
+    </div>
   );
 
   return (
@@ -54,9 +72,10 @@ export function PortalShell({ nav, area, children }: { nav: NavItem[]; area: str
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col bg-ds-primary py-6 lg:flex">
         <Link to="/" className="mx-6 mb-1 rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName on="blue" className="text-lg" /></Link>
-        <p className="ds-support mx-6 mb-6 uppercase tracking-[0.08em] text-ds-on-primary/70">{area}</p>
-        {links}
-        <div className="mt-auto">{signOutBtn}</div>
+        <p className="ds-support mx-6 mb-4 uppercase tracking-[0.08em] text-ds-on-primary/70">{area}</p>
+        {idCard}
+        <div className="min-h-0 flex-1 overflow-y-auto">{links}</div>
+        <div className="mt-3">{footer}</div>
       </aside>
 
       {/* Phone/tablet top bar + drawer */}
@@ -70,8 +89,9 @@ export function PortalShell({ nav, area, children }: { nav: NavItem[]; area: str
       {open && (
         <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[68px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary pb-6 pt-2 lg:hidden">
           <p className="ds-support mx-6 mb-3 uppercase tracking-[0.08em] text-ds-on-primary/70">{area}</p>
+          {idCard}
           {links}
-          <div className="mt-6">{signOutBtn}</div>
+          <div className="mt-6">{footer}</div>
         </div>
       )}
 
