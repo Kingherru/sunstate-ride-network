@@ -12,7 +12,7 @@ function AdminChangelog() {
     <>
       <PageHead title="Change Log" />
       <section className={`${panelCls} p-4 sm:p-6`}>
-        <ChangelogView />
+        <ChangelogView admin />
       </section>
     </>
   );

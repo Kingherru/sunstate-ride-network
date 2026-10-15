@@ -24,7 +24,8 @@ const idInput = (input: unknown) => z.object({ id: z.string().uuid() }).parse(in
 const NOT_FOUND = "not_found";
 
 async function requireAdmin(context: { supabase: any; userId: string }) {
-  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  // Master Admin, or a regular admin granted Requests (row-level rules then limit to their account scope).
+  const { data } = await context.supabase.rpc("admin_can", { _section: "requests", _level: "read" });
   if (!data) throw new Error("Forbidden");
 }
 

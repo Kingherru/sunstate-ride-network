@@ -5,6 +5,7 @@ import { Menu, X, History, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
+import { useChangelogIndicator } from "@/components/portal/changelog-state";
 
 export type NavItem = { to: string; label: string; exact?: boolean };
 export type ShellIdentity = { name: string; mfnId: string | null; label: string; badge?: string };
@@ -45,11 +46,17 @@ export function PortalShell({ nav, area, identity, changelogTo, children }: { na
     </nav>
   );
   const footCls = "ds-button-text flex items-center gap-2 rounded-ds-sm px-3 py-2.5 text-left uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
+  const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
         className={cn(footCls, pathname === changelogTo ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
         <History className="size-4" aria-hidden />Change log
+        {indicator !== "none" && (
+          <span className={cn("ml-auto size-2.5 rounded-full", indicator === "important" ? "bg-ds-error motion-safe:animate-[mfn-wiggle_0.5s_ease-in-out_1]" : "bg-ds-success-soft ring-1 ring-ds-success")}>
+            <span className="sr-only">{indicator === "important" ? "Important update" : "New update"}</span>
+          </span>
+        )}
       </Link>
       <button onClick={signOut} className={cn(footCls, "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
         <LogOut className="size-4" aria-hidden />Sign out

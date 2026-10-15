@@ -675,7 +675,7 @@ export const updateTripDetails = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
-    if (roleRow) isAdmin = true;
+    if (roleRow) isAdmin = (await supabase.rpc("is_master_admin", { _user_id: userId })).data === true;
 
     const isSender = trip.created_by === userId;
     const isRecipient = trip.assigned_to === userId;

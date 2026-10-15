@@ -13,7 +13,7 @@ async function getCallerRoles(context: any): Promise<StaffRole[]> {
 
 async function assertManager(context: any) {
   const roles = await getCallerRoles(context);
-  const isAdmin = roles.includes("admin");
+  const isAdmin = roles.includes("admin") && (await context.supabase.rpc("is_master_admin", { _user_id: context.userId })).data === true;
   const isAppManager = roles.includes("app_manager");
   if (!isAdmin && !isAppManager) {
     throw new Error("Permission denied: Administrator or App Manager role required.");

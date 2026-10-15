@@ -1,6 +1,7 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { adminSubmitRideRequest, adminSubmitDeliveryRequest } from "@/lib/admin-on-behalf.functions";
 import { toast } from "sonner";
 import {
   submitRideRequest,
@@ -44,6 +45,11 @@ export type RequestFormContext = "public" | "portal";
  * Validation and submission always go through the same schemas and server
  * functions; the server resolves the requester and workspace itself.
  */
+/** When set, the form submits for this customer through the admin-on-behalf
+ *  server functions (same schemas). The admin's own session is never replaced. */
+export type OnBehalfTarget = { targetUserId: string; workspaceId: string | null };
+export const OnBehalfContext = createContext<OnBehalfTarget | null>(null);
+
 export function RequestForm({ context = "public", initialService }: { context?: RequestFormContext; initialService?: string }) {
   return <RequestRidePage context={context} service={initialService} />;
 }
@@ -190,7 +196,11 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
   const router = useRouter();
   const portal = context === "portal";
   const [kind, setKind] = useState<"ride" | "delivery">(service === "medical-delivery" ? "delivery" : "ride");
-  const submit = useServerFn(submitRideRequest);
+  const submitSelf = useServerFn(submitRideRequest);
+  const submitAdmin = useServerFn(adminSubmitRideRequest);
+  const onBehalf = useContext(OnBehalfContext);
+  const submit = (a: { data: RideRequestInput }) =>
+    onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const enrich = useServerFn(enrichRideRequest);
   const [form, setForm] = useState<RideRequestInput>(() => (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [returnDateManual, setReturnDateManual] = useState(false);
@@ -305,7 +315,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
             };
           }
         } catch { /* ignore — non-fatal */ }
-        setDone({ id: res.id, ...enrichedInfo });
+        setDone({ id: res.id, mfnId: (res as any).mfnId ?? null, ...enrichedInfo } as any);
         toast.success("Request received for review. Availability and acceptance are not guaranteed.");
         router.invalidate();
 
@@ -330,7 +340,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
       <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
-            Confirmation #{done.id.slice(0, 8).toUpperCase()}
+            Confirmation {(done as any).mfnId ?? `#${done.id.slice(0, 8).toUpperCase()}`}
           </p>
           <h1 className="ds-display mb-6 uppercase text-ds-primary">Trip request submitted</h1>
 
@@ -921,7 +931,11 @@ const emptyDelivery: DeliveryRequestInput = {
 
 /** Medical Delivery request — kept separate from passenger fields. In-memory state only. */
 function DeliveryRequestForm({ portal }: { portal: boolean }) {
-  const submit = useServerFn(submitDeliveryRequest);
+  const submitSelf = useServerFn(submitDeliveryRequest);
+  const submitAdmin = useServerFn(adminSubmitDeliveryRequest);
+  const onBehalf = useContext(OnBehalfContext);
+  const submit = (a: { data: DeliveryRequestInput }) =>
+    onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const [form, setForm] = useState<DeliveryRequestInput>(emptyDelivery);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -952,7 +966,7 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
-        setDoneId(res.id);
+        setDoneId((res as any).mfnId ?? `#${res.id.slice(0, 8).toUpperCase()}`);
         setForm(emptyDelivery);
       } else toast.error(res.error);
     } catch {
@@ -965,7 +979,7 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
   if (doneId) {
     return (
       <div role="status" className="rounded-ds-lg bg-ds-sky p-8 text-center">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-ds-accent-active">Request #{doneId.slice(0, 8).toUpperCase()}</p>
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-ds-accent-active">Request {doneId}</p>
         <h2 className="ds-section-title uppercase text-ds-primary">Delivery request received</h2>
         <p className="ds-body-lg mx-auto mt-4 max-w-[40rem]">
           Your medical delivery request was received for review. Submitting does not guarantee availability or acceptance. We'll contact you using the details you provided.

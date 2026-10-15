@@ -53,7 +53,7 @@ async function assertDispatchAllowed(context: any, zoneId?: string | null) {
   const { data } = await context.supabase
     .from("user_roles").select("role").eq("user_id", context.userId);
   const roles = (data ?? []).map((r: any) => r.role as string);
-  const isAdmin = roles.includes("admin");
+  const isAdmin = roles.includes("admin") && (await context.supabase.rpc("is_master_admin", { _user_id: context.userId })).data === true;
   const isAppMgr = roles.includes("app_manager");
   const isDispatcher = roles.includes("dispatcher");
   const isZoneMgr = roles.includes("zone_manager");

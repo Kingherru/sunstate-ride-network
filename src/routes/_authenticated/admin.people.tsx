@@ -1,4 +1,9 @@
 import { useMemo, useState } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { classifyAccount } from "@/lib/admin-management.functions";
+import { ORGANIZATION_TYPES } from "@/lib/account-types";
 import { createFileRoute } from "@tanstack/react-router";
 import { listPeopleAndAccounts, type PersonRow } from "@/lib/portal-account.functions";
 import { organizationLabel } from "@/lib/account-types";
@@ -28,8 +33,48 @@ function matches(p: PersonRow, v: View) {
   }
 }
 
+const CLASS_OPTIONS = [
+  { value: "private_pay_patient", label: "Private Pay / Patient" },
+  { value: "provider", label: "Provider" } as const,
+  ...ORGANIZATION_TYPES.filter((o) => o.value !== "private_pay_patient"),
+  { value: "training_only", label: "Training-Only" },
+];
+
+function ClassifyControl({ p }: { p: PersonRow }) {
+  const router = useRouter();
+  const classify = useServerFn(classifyAccount);
+  const [type, setType] = useState("");
+  const [step, setStep] = useState<"pick" | "confirm">("pick");
+  const [busy, setBusy] = useState(false);
+  const id = `cls-${p.userId.slice(0, 8)}`;
+  const label = CLASS_OPTIONS.find((o) => o.value === type)?.label;
+  async function go() {
+    setBusy(true);
+    try { await classify({ data: { userId: p.userId, type } }); toast.success("Account classified."); router.invalidate(); }
+    catch (e) { toast.error((e as Error).message); } finally { setBusy(false); setStep("pick"); }
+  }
+  if (step === "confirm") return (
+    <div role="group" aria-label="Confirm classification" className="mt-2 rounded-ds-sm bg-ds-surface-muted p-3">
+      <p className="ds-support text-ds-on-surface">Classify <span className="font-mono">{p.mfnId}</span> as <strong>{label}</strong>? Their sign-in, MFN ID and records stay the same. This never grants provider verification or admin access.</p>
+      <div className="mt-2 flex flex-wrap gap-2"><button disabled={busy} onClick={go} className="portal-btn-primary">Confirm</button><button onClick={() => setStep("pick")} className="portal-btn-secondary">Cancel</button></div>
+    </div>
+  );
+  return (
+    <div className="mt-2 flex flex-wrap items-end gap-2">
+      <div><label htmlFor={id} className="sr-only">Classification</label>
+        <select id={id} value={type} onChange={(e) => setType(e.target.value)} className="portal-input py-1">
+          <option value="">Leave as Needs Review</option>
+          {CLASS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select></div>
+      <button disabled={!type} onClick={() => setStep("confirm")} className="portal-btn-secondary">Classify…</button>
+    </div>
+  );
+}
+
 function People() {
   const rows = Route.useLoaderData();
+  const { perms } = Route.useRouteContext() as any;
+  const canClassify = perms?.master || perms?.sections?.classify === "manage";
   const [view, setView] = useState<View>("all");
   const [q, setQ] = useState("");
   const list = useMemo(() => rows.filter((p) => matches(p, view)).filter((p) => {
@@ -65,6 +110,8 @@ function People() {
                   <p>{p.roles.length ? p.roles.map((r) => r.replace("_", " ")).join(", ") : "No staff role"}</p>
                   <p>{p.emailVerified ? "Email verified" : "Email not verified"}{p.status === "suspended" ? " · Suspended" : ""}</p>
                   {p.needsReview && <p className="font-semibold text-ds-warning">Needs classification</p>}
+                  {p.isTest && <p className="font-semibold">Test account</p>}
+                  {p.needsReview && canClassify && view === "review" && <ClassifyControl p={p} />}
                 </div>
                 <div className="ds-support min-w-0">
                   {p.accounts.length === 0 ? <p>No business account</p> : p.accounts.map((a) => (

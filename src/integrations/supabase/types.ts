@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_permission_scopes: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          workspace_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          workspace_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_permission_scopes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_permissions: {
+        Row: {
+          active: boolean
+          created_at: string
+          preset: string
+          scope: string
+          sections: Json
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          preset?: string
+          scope?: string
+          sections?: Json
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          preset?: string
+          scope?: string
+          sections?: Json
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -327,6 +386,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      csv_import_jobs: {
+        Row: {
+          created_at: string
+          failed_rows: number
+          id: string
+          idempotency_key: string
+          kind: string
+          status: string
+          submitted_rows: number
+          total_rows: number
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          failed_rows?: number
+          id?: string
+          idempotency_key: string
+          kind: string
+          status?: string
+          submitted_rows?: number
+          total_rows?: number
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          failed_rows?: number
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          status?: string
+          submitted_rows?: number
+          total_rows?: number
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csv_import_jobs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dispatch_zone_zips: {
         Row: {
@@ -3005,10 +3111,12 @@ export type Database = {
           has_passenger: boolean
           hipaa_ack_id: string | null
           id: string
+          import_job_id: string | null
           intake_source: string | null
           ip_address: string | null
           is_black_tie: boolean
           is_medicaid_patient: boolean
+          is_test: boolean
           last_updated_at: string
           medicaid_number: string | null
           medicaid_plan: string | null
@@ -3018,6 +3126,7 @@ export type Database = {
           needs_surgery_signin: boolean
           needs_surgery_signout: boolean
           needs_wheelchair: boolean
+          on_behalf_of_user_id: string | null
           patient_date_of_birth: string | null
           patient_email: string | null
           patient_first_name: string
@@ -3114,10 +3223,12 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          import_job_id?: string | null
           intake_source?: string | null
           ip_address?: string | null
           is_black_tie?: boolean
           is_medicaid_patient?: boolean
+          is_test?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
@@ -3127,6 +3238,7 @@ export type Database = {
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          on_behalf_of_user_id?: string | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name: string
@@ -3223,10 +3335,12 @@ export type Database = {
           has_passenger?: boolean
           hipaa_ack_id?: string | null
           id?: string
+          import_job_id?: string | null
           intake_source?: string | null
           ip_address?: string | null
           is_black_tie?: boolean
           is_medicaid_patient?: boolean
+          is_test?: boolean
           last_updated_at?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
@@ -3236,6 +3350,7 @@ export type Database = {
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          on_behalf_of_user_id?: string | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name?: string
@@ -4730,6 +4845,7 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string
+          is_test_account: boolean
           legacy_review_needed: boolean
           mfn_id: string | null
           phone: string | null
@@ -4740,6 +4856,7 @@ export type Database = {
         Insert: {
           created_at?: string
           display_name?: string
+          is_test_account?: boolean
           legacy_review_needed?: boolean
           mfn_id?: string | null
           phone?: string | null
@@ -4750,6 +4867,7 @@ export type Database = {
         Update: {
           created_at?: string
           display_name?: string
+          is_test_account?: boolean
           legacy_review_needed?: boolean
           mfn_id?: string | null
           phone?: string | null
@@ -4994,6 +5112,7 @@ export type Database = {
           created_by: string
           display_name: string
           id: string
+          is_test_account: boolean
           legacy_backfilled: boolean
           mfn_id: string | null
           organization_type: string
@@ -5006,6 +5125,7 @@ export type Database = {
           created_by: string
           display_name: string
           id?: string
+          is_test_account?: boolean
           legacy_backfilled?: boolean
           mfn_id?: string | null
           organization_type?: string
@@ -5018,6 +5138,7 @@ export type Database = {
           created_by?: string
           display_name?: string
           id?: string
+          is_test_account?: boolean
           legacy_backfilled?: boolean
           mfn_id?: string | null
           organization_type?: string
@@ -5330,6 +5451,11 @@ export type Database = {
         Returns: undefined
       }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
+      admin_can: {
+        Args: { _level: string; _section: string }
+        Returns: boolean
+      }
+      admin_can_account: { Args: { _workspace_id: string }; Returns: boolean }
       admin_extend_unconfirmed_reservation: {
         Args: { _days?: number; _trip_id: string }
         Returns: string
@@ -5622,6 +5748,7 @@ export type Database = {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number
       }
+      holds_admin_label: { Args: { _user_id: string }; Returns: boolean }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
       is_eligible_transport_provider: {
         Args: { _user_id: string }

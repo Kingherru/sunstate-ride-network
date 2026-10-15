@@ -3,7 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type AccessWorkspace = {
   id: string; type: string; status: "active" | "pending" | "suspended"; role: string;
-  name: string | null; mfn_id: string | null; organization_type: string | null;
+  name: string | null; mfn_id: string | null; organization_type: string | null; is_contractor?: boolean;
 };
 export type PortalKind = "provider" | "customer";
 export type AccessState = {
@@ -56,6 +56,8 @@ export const getAccessState = createServerFn({ method: "POST" })
       mfnId: s.mfn_id ?? null, displayName: s.display_name || null,
       workspaces, primary: portalKind === "provider" ? usableList.find((w) => w.type === "provider") ?? primary : primary,
       portalKind, setupIssue, destination,
+      // Contractor/restricted team member in every usable workspace: no business tools.
+      restricted: usableList.length > 0 && usableList.every((w) => w.is_contractor || (w.role !== "owner" && w.role !== "admin")),
     };
   });
 

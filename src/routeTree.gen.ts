@@ -46,10 +46,12 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminAdminsRouteImport } from './routes/_authenticated/admin.admins'
 import { Route as AuthenticatedAdminChangelogRouteImport } from './routes/_authenticated/admin.changelog'
 import { Route as AuthenticatedAdminIntegrationsRouteImport } from './routes/_authenticated/admin.integrations'
 import { Route as AuthenticatedAdminMessagingRouteImport } from './routes/_authenticated/admin.messaging'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
+import { Route as AuthenticatedAdminOnBehalfRouteImport } from './routes/_authenticated/admin.on-behalf'
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin.people'
 import { Route as AuthenticatedAdminPricingRouteImport } from './routes/_authenticated/admin.pricing'
@@ -281,6 +283,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminAdminsRoute =
+  AuthenticatedAdminAdminsRouteImport.update({
+    id: '/admins',
+    path: '/admins',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminChangelogRoute =
   AuthenticatedAdminChangelogRouteImport.update({
     id: '/changelog',
@@ -303,6 +311,12 @@ const AuthenticatedAdminNotificationsRoute =
   AuthenticatedAdminNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOnBehalfRoute =
+  AuthenticatedAdminOnBehalfRouteImport.update({
+    id: '/on-behalf',
+    path: '/on-behalf',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminPayoutsRoute =
@@ -595,10 +609,12 @@ export interface FileRoutesByFullPath {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/on-behalf': typeof AuthenticatedAdminOnBehalfRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/pricing': typeof AuthenticatedAdminPricingRoute
@@ -676,10 +692,12 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/on-behalf': typeof AuthenticatedAdminOnBehalfRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/pricing': typeof AuthenticatedAdminPricingRoute
@@ -763,10 +781,12 @@ export interface FileRoutesById {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/_authenticated/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/_authenticated/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/_authenticated/admin/messaging': typeof AuthenticatedAdminMessagingRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/_authenticated/admin/on-behalf': typeof AuthenticatedAdminOnBehalfRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/_authenticated/admin/pricing': typeof AuthenticatedAdminPricingRoute
@@ -850,10 +870,12 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/admin/admins'
     | '/admin/changelog'
     | '/admin/integrations'
     | '/admin/messaging'
     | '/admin/notifications'
+    | '/admin/on-behalf'
     | '/admin/payouts'
     | '/admin/people'
     | '/admin/pricing'
@@ -931,10 +953,12 @@ export interface FileRouteTypes {
     | '/resources'
     | '/services'
     | '/shop'
+    | '/admin/admins'
     | '/admin/changelog'
     | '/admin/integrations'
     | '/admin/messaging'
     | '/admin/notifications'
+    | '/admin/on-behalf'
     | '/admin/payouts'
     | '/admin/people'
     | '/admin/pricing'
@@ -1017,10 +1041,12 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/_authenticated/admin/admins'
     | '/_authenticated/admin/changelog'
     | '/_authenticated/admin/integrations'
     | '/_authenticated/admin/messaging'
     | '/_authenticated/admin/notifications'
+    | '/_authenticated/admin/on-behalf'
     | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/people'
     | '/_authenticated/admin/pricing'
@@ -1376,6 +1402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/admins': {
+      id: '/_authenticated/admin/admins'
+      path: '/admins'
+      fullPath: '/admin/admins'
+      preLoaderRoute: typeof AuthenticatedAdminAdminsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/changelog': {
       id: '/_authenticated/admin/changelog'
       path: '/changelog'
@@ -1402,6 +1435,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/admin/notifications'
       preLoaderRoute: typeof AuthenticatedAdminNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/on-behalf': {
+      id: '/_authenticated/admin/on-behalf'
+      path: '/on-behalf'
+      fullPath: '/admin/on-behalf'
+      preLoaderRoute: typeof AuthenticatedAdminOnBehalfRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/payouts': {
@@ -1709,10 +1749,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAdminsRoute: typeof AuthenticatedAdminAdminsRoute
   AuthenticatedAdminChangelogRoute: typeof AuthenticatedAdminChangelogRoute
   AuthenticatedAdminIntegrationsRoute: typeof AuthenticatedAdminIntegrationsRoute
   AuthenticatedAdminMessagingRoute: typeof AuthenticatedAdminMessagingRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
+  AuthenticatedAdminOnBehalfRoute: typeof AuthenticatedAdminOnBehalfRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
   AuthenticatedAdminPricingRoute: typeof AuthenticatedAdminPricingRoute
@@ -1724,10 +1766,12 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAdminsRoute: AuthenticatedAdminAdminsRoute,
   AuthenticatedAdminChangelogRoute: AuthenticatedAdminChangelogRoute,
   AuthenticatedAdminIntegrationsRoute: AuthenticatedAdminIntegrationsRoute,
   AuthenticatedAdminMessagingRoute: AuthenticatedAdminMessagingRoute,
   AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
+  AuthenticatedAdminOnBehalfRoute: AuthenticatedAdminOnBehalfRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
   AuthenticatedAdminPricingRoute: AuthenticatedAdminPricingRoute,
