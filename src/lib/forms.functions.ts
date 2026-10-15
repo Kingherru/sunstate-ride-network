@@ -15,132 +15,29 @@ const GENERIC_SUBMIT_ERROR = "We could not submit your request. Please try again
 export const submitRideRequest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => rideRequestSchema.parse(input))
   .handler(async ({ data }) => {
-    const { resolveRequester, notifyNewRequest } = await import("@/lib/requests/request-service.server");
-    const requester = await resolveRequester();
-
-    let embedProviderId: string | null = null;
-    let embedTokenStored: string | null = null;
-    if (data.embedToken) {
-      const { data: tok } = await supabaseAdmin
-        .from("provider_embed_tokens")
-        .select("provider_user_id, revoked_at")
-        .eq("token", data.embedToken)
-        .maybeSingle();
-      if (tok && !tok.revoked_at) {
-        embedProviderId = tok.provider_user_id;
-        embedTokenStored = data.embedToken;
-      }
-    }
-
-    const isRound = data.tripType === "round_trip" || data.roundTrip;
-    const { error, data: row } = await supabaseAdmin
-      .from("ride_requests")
-      .insert({
-        trip_kind: "passenger",
-        patient_first_name: data.patientFirstName,
-        patient_last_name: data.patientLastName,
-        patient_phone: data.patientPhone,
-        patient_email: data.patientEmail || null,
-        pickup_address: data.pickupAddress,
-        pickup_address_details: data.pickupAddressDetails || null,
-        pickup_city: data.pickupCity,
-        pickup_date: data.pickupDate,
-        pickup_time: data.pickupTime,
-        appointment_time: data.appointmentTime || null,
-        dropoff_address: data.dropoffAddress,
-        dropoff_city: data.dropoffCity,
-        transport_type: data.transportType,
-        trip_type: data.tripType,
-        round_trip: isRound,
-        return_pickup_time: data.returnPickupTime || null,
-        return_dropoff_time: data.returnDropoffTime || null,
-        return_pickup_building: data.returnPickupBuilding || null,
-        return_pickup_doctor: data.returnPickupDoctor || null,
-        return_pickup_suite: data.returnPickupSuite || null,
-        return_date: isRound ? (data.returnDate || data.pickupDate) : null,
-        additional_stops: data.additionalStops ?? [],
-        mobility_notes: data.mobilityNotes || null,
-        special_instructions: data.specialInstructions || null,
-        requester_user_id: requester.userId,
-        actor_user_id: requester.userId,
-        workspace_id: requester.workspaceId,
-        submitted_via: requester.submittedVia,
-        recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
-        recurrence_end_date: data.recurrenceEndDate || null,
-        embed_provider_id: embedProviderId,
-        embed_token: embedTokenStored,
-        trip_billing_source: data.billingSource,
-        trip_billing_first_name: data.billingContact?.firstName ?? null,
-        trip_billing_last_name: data.billingContact?.lastName ?? null,
-        trip_billing_email: data.billingContact?.email ?? null,
-        trip_billing_phone: data.billingContact?.phone ?? null,
-      })
-      .select("id")
-      .single();
-
-    if (error || !row) {
-      console.error("submitRideRequest insert failed", error?.code ?? "unknown");
-      return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
-    }
-
-    await notifyNewRequest({
-      id: row.id,
-      category: "passenger_transport",
-      requesterEmail: data.patientEmail || null,
-      embedProviderId,
+    const svc = await import("@/lib/requests/request-service.server");
+    const requester = await svc.resolveRequester();
+    const r = await svc.insertPassengerRequest(data, {
+      requesterUserId: requester.userId, actorUserId: requester.userId,
+      workspaceId: requester.workspaceId, submittedVia: requester.isAdmin ? "portal" : requester.submittedVia,
     });
-
-    return { ok: true as const, id: row.id, enrichmentToken: signEnrichmentToken(row.id) };
+    if (!r.ok) return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
+    return { ok: true as const, id: r.id, mfnId: r.mfnId, enrichmentToken: signEnrichmentToken(r.id) };
   });
 
 // ---------- Medical Delivery ----------
 
-
 export const submitDeliveryRequest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => deliveryRequestSchema.parse(input))
   .handler(async ({ data }) => {
-    const { resolveRequester, notifyNewRequest } = await import("@/lib/requests/request-service.server");
-    const requester = await resolveRequester();
-
-    const { error, data: row } = await supabaseAdmin
-      .from("ride_requests")
-      .insert({
-        trip_kind: "medical_delivery",
-        transport_type: "delivery",
-        trip_type: "one_way",
-        round_trip: false,
-        // Legacy column names: hold the requester CONTACT for delivery rows.
-        patient_first_name: data.contactFirstName,
-        patient_last_name: data.contactLastName,
-        patient_phone: data.contactPhone,
-        patient_email: data.contactEmail || null,
-        requester_phone: data.contactPhone,
-        requester_email: data.contactEmail || null,
-        pickup_address: data.pickupAddress,
-        pickup_address_details: data.pickupAddressDetails || null,
-        pickup_city: data.pickupCity,
-        pickup_date: data.requestedDate,
-        pickup_time: data.requestedTime,
-        dropoff_address: data.dropoffAddress,
-        dropoff_city: data.dropoffCity,
-        delivery_item_type: data.deliveryCategory,
-        delivery_instructions: data.deliveryInstructions || null,
-        delivery_signature_required: data.signatureRequired,
-        requester_user_id: requester.userId,
-        actor_user_id: requester.userId,
-        workspace_id: requester.workspaceId,
-        submitted_via: requester.submittedVia,
-      })
-      .select("id")
-      .single();
-
-    if (error || !row) {
-      console.error("submitDeliveryRequest insert failed", error?.code ?? "unknown");
-      return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
-    }
-
-    await notifyNewRequest({ id: row.id, category: "medical_delivery", requesterEmail: data.contactEmail || null });
-    return { ok: true as const, id: row.id };
+    const svc = await import("@/lib/requests/request-service.server");
+    const requester = await svc.resolveRequester();
+    const r = await svc.insertDeliveryRequest(data, {
+      requesterUserId: requester.userId, actorUserId: requester.userId,
+      workspaceId: requester.workspaceId, submittedVia: requester.isAdmin ? "portal" : requester.submittedVia,
+    });
+    if (!r.ok) return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
+    return { ok: true as const, id: r.id, mfnId: r.mfnId };
   });
 
 export const contactSchema = z.object({
