@@ -105,7 +105,12 @@ export function validateRows(kind: ImportKind, header: string[], body: string[][
     const mapped = mapRow(kind, rec);
     const p = schema.safeParse(mapped);
     const errors = extra.length ? [`Unknown column(s): ${extra.join(", ")}`] : [];
-    if (!p.success) for (const iss of p.error.issues) errors.push(`${FIELD_LABEL[String(iss.path[0])] ?? iss.path.join(".")}: ${iss.message}`);
+    if (!p.success) for (const iss of p.error.issues) {
+      const f = String(iss.path[0]);
+      const col = FIELD_LABEL[f] ?? f.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase()).replace(/^transport_type$/, "service");
+      const msg = /date/i.test(iss.message) ? "choose a real date within the next 2 years" : /too small|>=/i.test(iss.message) ? "missing or too short" : /email/i.test(iss.message) ? "not a valid email" : /pattern|invalid string|regex/i.test(iss.message) ? "wrong format (use HH:MM)" : "not valid";
+      errors.push(`${col}: ${msg}`);
+    }
     const m: any = mapped;
     const date = kind === "passenger" ? m.pickupDate : m.requestedDate;
     const key = [date, kind === "passenger" ? m.pickupTime : m.requestedTime, m.pickupAddress, m.patientLastName ?? m.contactLastName].join("|").toLowerCase();

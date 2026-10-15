@@ -15,7 +15,7 @@ function Detail() {
   return (
     <>
       <p className="mb-3"><Link to="/admin/requests" className="ds-support font-semibold text-ds-link underline-offset-4 hover:underline">← All requests</Link></p>
-      <PageHead title={`Request #${shortId(res.request.id)}`}>Read-only. Status changes are not enabled in this version.</PageHead>
+      <PageHead title={(res.request as any).mfn_id ? `Request ${(res.request as any).mfn_id}` : `Request #${shortId(res.request.id)}`}>Read-only. Status changes are not enabled in this version.</PageHead>
       <RequestDetail r={res.request} showSource />
     </>
   );

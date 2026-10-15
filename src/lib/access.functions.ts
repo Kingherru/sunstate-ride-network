@@ -8,6 +8,7 @@ export type AccessWorkspace = {
 export type PortalKind = "provider" | "customer";
 export type AccessState = {
   isAdmin: boolean;
+  restricted: boolean;
   isMasterAdmin: boolean;
   profileSuspended: boolean;
   mfnId: string | null;
