@@ -4,7 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { classifyAccount } from "@/lib/admin-management.functions";
 import { ORGANIZATION_TYPES } from "@/lib/account-types";
-import { canOpen } from "@/lib/admin-permissions";
 import { createFileRoute } from "@tanstack/react-router";
 import { listPeopleAndAccounts, type PersonRow } from "@/lib/portal-account.functions";
 import { organizationLabel } from "@/lib/account-types";
@@ -36,7 +35,7 @@ function matches(p: PersonRow, v: View) {
 
 const CLASS_OPTIONS = [
   { value: "private_pay_patient", label: "Private Pay / Patient" },
-  { value: "provider", label: "Provider" },
+  { value: "provider", label: "Provider" } as const,
   ...ORGANIZATION_TYPES.filter((o) => o.value !== "private_pay_patient"),
   { value: "training_only", label: "Training-Only" },
 ];
