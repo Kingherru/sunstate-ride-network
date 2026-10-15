@@ -22,25 +22,33 @@ export type PersonRow = {
   userId: string; mfnId: string | null; name: string; email: string | null; emailVerified: boolean;
   roles: string[]; isMasterAdmin: boolean; needsReview: boolean; status: string;
   accounts: { id: string; mfnId: string | null; name: string | null; type: string; status: string; orgType: string; role: string }[];
-  createdAt: string | null;
+  createdAt: string | null; isTest: boolean;
 };
 
 /** People & Accounts directory. Verified admins only. */
 export const listPeopleAndAccounts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PersonRow[]> => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "people", "read");
+    const [{ data: isMaster }, { data: myPerm }, { data: myScopes }] = await Promise.all([
+      context.supabase.rpc("is_master_admin", { _user_id: context.userId }),
+      context.supabase.from("admin_permissions").select("scope").eq("user_id", context.userId).maybeSingle(),
+      context.supabase.from("admin_permission_scopes").select("workspace_id").eq("admin_user_id", context.userId),
+    ]);
+    const scopeAll = isMaster === true || myPerm?.scope === "all";
+    const scoped = new Set((myScopes ?? []).map((s: any) => s.workspace_id));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: profiles }, { data: roles }, { data: members }, { data: master }, users] = await Promise.all([
-      supabaseAdmin.from("user_profiles").select("user_id, mfn_id, display_name, legacy_review_needed, status, created_at"),
+      supabaseAdmin.from("user_profiles").select("user_id, mfn_id, display_name, legacy_review_needed, status, created_at, is_test_account"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.from("workspace_members").select("user_id, role, workspaces!inner(id, mfn_id, display_name, account_type, status, organization_type)"),
       supabaseAdmin.from("platform_master_admin").select("user_id").maybeSingle(),
       supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
     ]);
     const authById = new Map((users.data?.users ?? []).map((u) => [u.id, u]));
-    return (profiles ?? []).map((p) => {
+    const visible = (profiles ?? []).filter((p) => scopeAll || (members ?? []).some((m: any) => m.user_id === p.user_id && scoped.has(m.workspaces.id)));
+    return visible.map((p) => {
       const u = authById.get(p.user_id);
       return {
         userId: p.user_id, mfnId: p.mfn_id, name: p.display_name || "", email: u?.email ?? null,
@@ -52,7 +60,7 @@ export const listPeopleAndAccounts = createServerFn({ method: "GET" })
           id: m.workspaces.id, mfnId: m.workspaces.mfn_id, name: m.workspaces.display_name, type: m.workspaces.account_type,
           status: m.workspaces.status, orgType: m.workspaces.organization_type, role: m.role,
         })),
-        createdAt: p.created_at,
+        createdAt: p.created_at, isTest: !!(p as any).is_test_account,
       };
     }).sort((a, b) => Number(b.isMasterAdmin) - Number(a.isMasterAdmin) || (a.mfnId ?? "").localeCompare(b.mfnId ?? ""));
   });
