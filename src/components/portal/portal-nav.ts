@@ -8,6 +8,7 @@ export const PROVIDER_NAV: NavItem[] = [
   { to: "/portal/schedule", label: "Schedule" },
   { to: "/portal/vehicles", label: "Vehicles" },
   { to: "/portal/drivers", label: "Drivers" },
+  { to: "/portal/network", label: "Network" },
   { to: "/portal/training", label: "Training & Tests" },
 ];
 
@@ -30,7 +31,7 @@ export const CUSTOMER_NAV: NavItem[] = [
 ];
 
 export const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers", "/portal/notifications"];
-export const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers"];
+export const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/network"];
 export const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/upload-csv"];
 export const under = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
 

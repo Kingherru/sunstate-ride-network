@@ -45,13 +45,13 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => filtersSchema.parse(i ?? {}))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase.rpc("list_network_providers", {
-      _search: data.search ?? null,
-      _service_type: data.service_type ?? null,
-      _county: data.county ?? null,
-      _city: data.city ?? null,
-      _zip: data.zip ?? null,
-      _medical_delivery: data.medical_delivery ?? null,
-      _accepting: data.accepting ?? null,
+      _search: data.search,
+      _service_type: data.service_type,
+      _county: data.county,
+      _city: data.city,
+      _zip: data.zip,
+      _medical_delivery: data.medical_delivery,
+      _accepting: data.accepting,
       _saved_only: data.saved_only ?? false,
     });
     if (error) return { ok: false as const, error: error.message };
@@ -93,7 +93,12 @@ export const getMyNetworkProfile = createServerFn({ method: "POST" })
       .eq("workspace_id", data.workspace_id)
       .maybeSingle();
     if (error) return { ok: false as const, error: error.message };
-    return { ok: true as const, profile: row };
+    const { data: ws } = await context.supabase
+      .from("workspaces")
+      .select("provider_verified")
+      .eq("id", data.workspace_id)
+      .maybeSingle();
+    return { ok: true as const, profile: row, verified: !!ws?.provider_verified };
   });
 
 const profileSchema = z.object({

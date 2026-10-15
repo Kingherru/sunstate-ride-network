@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
-import { FacilityProvidersPanel } from "@/components/dashboard/FacilityProvidersPanel";
+import { ProviderDirectory } from "@/components/network/ProviderDirectory";
 
 export const Route = createFileRoute("/_authenticated/portal/find-providers")({
   head: () => ({ meta: [{ title: "Find Providers — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -12,7 +12,7 @@ function PortalFindProviders() {
     <>
       <PageHead title="Find Providers">Network providers in your area. Only details providers publish for network discovery are shown.</PageHead>
       <section className={`${panelCls} p-4 sm:p-6`}>
-        <FacilityProvidersPanel initialMode="lookup" />
+        <ProviderDirectory />
       </section>
     </>
   );

@@ -289,6 +289,7 @@ export const validateTripPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { trip_id: string; is_medicaid_remit?: boolean }) => input)
   .handler(async ({ data, context }) => {
+    const { userId } = context;
     const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
     await requireAdminCan(context, "payouts", "manage");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

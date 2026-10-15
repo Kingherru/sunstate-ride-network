@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { classifyAccount } from "@/lib/admin-management.functions";
+import { classifyAccount, sendPeoplePasswordReset, getNeedsReviewCounts } from "@/lib/admin-management.functions";
 import { ORGANIZATION_TYPES } from "@/lib/account-types";
 import { createFileRoute } from "@tanstack/react-router";
 import { listPeopleAndAccounts, type PersonRow } from "@/lib/portal-account.functions";
@@ -11,6 +11,8 @@ import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { SegTabs } from "@/components/portal/SegTabs";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { DsEmpty } from "@/components/ds/feedback";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
 const ORG_TYPES = new Set(["facility", "hospital"]);
@@ -39,6 +41,22 @@ const CLASS_OPTIONS = [
   ...ORGANIZATION_TYPES.filter((o) => o.value !== "private_pay_patient"),
   { value: "training_only", label: "Training-Only" },
 ];
+
+function ResetControl({ p }: { p: PersonRow }) {
+  const resetFn = useServerFn(sendPeoplePasswordReset);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (confirming) return (
+    <div role="group" aria-label="Confirm password reset" className="mt-2 rounded-ds-sm bg-ds-surface-muted p-3">
+      <p className="ds-support text-ds-on-surface">Send a password reset link to <span className="font-mono">{p.mfnId}</span>? You will never see their new password.</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button disabled={busy} onClick={async () => { setBusy(true); try { await resetFn({ data: { userId: p.userId } }); toast.success("Reset link sent if the account has an email."); } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); setConfirming(false); } }} className="portal-btn-primary">Confirm</button>
+        <button onClick={() => setConfirming(false)} className="portal-btn-secondary">Cancel</button>
+      </div>
+    </div>
+  );
+  return <button onClick={() => setConfirming(true)} className="portal-btn-secondary mt-2">Send password reset link</button>;
+}
 
 function ClassifyControl({ p }: { p: PersonRow }) {
   const router = useRouter();
@@ -75,6 +93,9 @@ function People() {
   const rows = Route.useLoaderData();
   const { perms } = Route.useRouteContext() as any;
   const canClassify = perms?.master || perms?.sections?.classify === "manage";
+  const canManagePeople = perms?.master || perms?.sections?.people === "manage";
+  const reviewCountsFn = useServerFn(getNeedsReviewCounts);
+  const reviewCounts = useQuery({ queryKey: ["needs-review-counts"], queryFn: () => reviewCountsFn() });
   const [view, setView] = useState<View>("all");
   const [q, setQ] = useState("");
   const list = useMemo(() => rows.filter((p) => matches(p, view)).filter((p) => {
@@ -94,6 +115,13 @@ function People() {
         { value: "learners", label: `Training only (${counts("learners")})` },
         { value: "review", label: `Needs review (${counts("review")})` },
       ]} /></div>
+      {reviewCounts.data && (
+        <p className="ds-support mb-4 text-ds-text-2">
+          <span className="font-semibold">People needing review:</span> {reviewCounts.data.peopleNeedingReview}
+          {"  ·  "}
+          <span className="font-semibold">Accounts needing classification:</span> {reviewCounts.data.accountsNeedingClassification}
+        </p>
+      )}
       <label htmlFor="people-q" className="sr-only">Search people</label>
       <input id="people-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by MFN ID, email or account" className="portal-input mb-4 max-w-md" />
       <section className={panelCls}>
@@ -112,6 +140,7 @@ function People() {
                   {p.needsReview && <p className="font-semibold text-ds-warning">Needs classification</p>}
                   {p.isTest && <p className="font-semibold">Test account</p>}
                   {p.needsReview && canClassify && view === "review" && <ClassifyControl p={p} />}
+                  {canManagePeople && <ResetControl p={p} />}
                 </div>
                 <div className="ds-support min-w-0">
                   {p.accounts.length === 0 ? <p>No business account</p> : p.accounts.map((a) => (

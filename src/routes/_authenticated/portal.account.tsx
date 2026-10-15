@@ -7,6 +7,7 @@ import { setOrganizationType } from "@/lib/portal-account.functions";
 import { ORGANIZATION_TYPES, organizationLabel, type OrganizationType } from "@/lib/account-types";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
+import { PersonalSecurity } from "@/components/portal/PersonalSecurity";
 import { SegTabs } from "@/components/portal/SegTabs";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { BusinessInfoPanel } from "@/components/dashboard/BusinessInfoPanel";
@@ -15,9 +16,10 @@ import { RulesPanel } from "@/components/dashboard/RulesPanel";
 import { IntegrationsPanel } from "@/components/dashboard/IntegrationsPanel";
 import { ProviderBalancePanel } from "@/components/dashboard/ProviderBalancePanel";
 import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
+import { NetworkProfileForm } from "@/components/network/NetworkProfileForm";
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
-type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "membership" | "security";
+type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "security";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -29,10 +31,14 @@ function Account() {
   const s = Route.useLoaderData();
   const { access, user } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
+  const ws = access.primary;
+  const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>("profile");
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
-       { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" }, { value: "membership", label: "Membership" }, { value: "security", label: "Security" }]
+       { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
+       ...(canEditNetwork ? [{ value: "network" as Tab, label: "Network profile" }] : []),
+       { value: "membership", label: "Membership" }, { value: "security", label: "Security" }]
     : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" }];
 
   return (
@@ -45,6 +51,7 @@ function Account() {
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}
         {tab === "payouts" && <div className="space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div>}
+        {tab === "network" && canEditNetwork && ws && <NetworkProfileForm workspaceId={ws.id} />}
         {tab === "membership" && <Membership />}
         {tab === "security" && <Security />}
       </section>
@@ -125,25 +132,6 @@ function Membership() {
 }
 
 function Security() {
-  const [pw, setPw] = useState(""); const [pw2, setPw2] = useState(""); const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  async function submit(e: React.FormEvent) {
-    e.preventDefault(); setErr(null);
-    if (pw.length < 8) return setErr("Password must be at least 8 characters.");
-    if (pw !== pw2) return setErr("Passwords do not match.");
-    setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: pw });
-    setBusy(false);
-    if (error) return setErr(/weak|pwned|leaked/i.test(error.message) ? "Please choose a stronger password that hasn't appeared in a data breach." : "We couldn't update your password.");
-    setPw(""); setPw2(""); toast.success("Password updated.");
-  }
-  return (
-    <form onSubmit={submit} className="max-w-md space-y-4" noValidate>
-      <h2 className="ds-subheading uppercase text-ds-primary">Change password</h2>
-      <div><label htmlFor="npw" className="portal-label">New password</label><input id="npw" type="password" autoComplete="new-password" className="portal-input" value={pw} onChange={(e) => setPw(e.target.value)} /></div>
-      <div><label htmlFor="npw2" className="portal-label">Confirm new password</label><input id="npw2" type="password" autoComplete="new-password" className="portal-input" value={pw2} onChange={(e) => setPw2(e.target.value)} /></div>
-      {err && <p role="alert" className="ds-support text-ds-error">{err}</p>}
-      <button type="submit" disabled={busy} className={actionCls}>{busy ? "Updating…" : "Update password"}</button>
-    </form>
-  );
+  const { user } = Route.useRouteContext();
+  return <PersonalSecurity email={user.email ?? null} />;
 }
