@@ -16,7 +16,7 @@ function Detail() {
   return (
     <>
       <p className="mb-3"><Link to="/portal/requests" className="ds-support font-semibold text-ds-link underline-offset-4 hover:underline">← All requests</Link></p>
-      <PageHead title={`Request #${shortId(res.request.id)}`}>Submitted requests are reviewed by participating providers; submission is not a confirmation.</PageHead>
+      <PageHead title={(res.request as any).mfn_id ? `Request ${(res.request as any).mfn_id}` : `Request #${shortId(res.request.id)}`}>Submitted requests are reviewed by participating providers; submission is not a confirmation.</PageHead>
       <RequestDetail r={res.request} />
     </>
   );
