@@ -12,7 +12,7 @@ import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
 
-export type NavItem = { to: string; label: string; exact?: boolean; search?: Record<string, string> };
+export type NavItem = { to: string; label: string; exact?: boolean; search?: Record<string, string>; iconFor?: string };
 export type ShellIdentity = { name: string; mfnId: string | null; label: string };
 
 /** One icon per nav destination so the sidebar stays scannable. Keyed by
@@ -88,7 +88,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
-        const Icon = iconFor(i.to);
+        const Icon = iconFor(i.iconFor ?? i.to);
         return (
           <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",

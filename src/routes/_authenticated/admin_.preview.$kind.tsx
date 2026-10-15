@@ -41,7 +41,7 @@ function PortalPreview() {
   const activePage = search.page ?? "overview";
 
   const nav: NavItem[] = useMemo(
-    () => baseNav.map((n) => ({ to: previewTo, label: n.label, search: { page: pageKeyOf(n.to) } })),
+    () => baseNav.map((n) => ({ to: previewTo, label: n.label, iconFor: n.to, search: { page: pageKeyOf(n.to) } })),
     [baseNav, previewTo],
   );
 
