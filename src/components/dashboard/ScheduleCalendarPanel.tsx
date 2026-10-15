@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DriverDetailModal } from "./DriverDetailModal";
 
 export const RESV_DND_MIME = "application/x-reservation-id";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import {
   getMyWorkHours,
   listMyDrivers,
@@ -69,14 +70,14 @@ export function ScheduleCalendarPanel() {
   const resvFn = useServerFn(listReservationsForDay);
   const assignFn = useServerFn(assignDriverSlot);
 
-  const whQ = useQuery({ queryKey: ["work-hours"], queryFn: () => whFn() });
-  const driversQ = useQuery({ queryKey: ["my-drivers"], queryFn: () => driversFn() });
-  const resvQ = useQuery({
+  const whQ = usePortalQuery({ queryKey: ["work-hours"], queryFn: () => whFn() });
+  const driversQ = usePortalQuery({ queryKey: ["my-drivers"], queryFn: () => driversFn() });
+  const resvQ = usePortalQuery({
     queryKey: ["day-reservations", date],
     queryFn: () => resvFn({ data: { date } }),
   });
 
-  const mAssign = useMutation({
+  const mAssign = usePortalMutation({
     mutationFn: (v: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) =>
       assignFn({ data: v }),
     onSuccess: () => {

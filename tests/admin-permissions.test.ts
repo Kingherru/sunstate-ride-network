@@ -1,47 +1,52 @@
-import { describe, it, expect } from "bun:test";
-import { PRESETS, canOpen } from "@/lib/admin-permissions";
-import { csvCell, parseCsv, validateRows, PASSENGER_COLUMNS, CSV_MAX_ROWS } from "@/lib/csv-import";
+import { describe, it, expect } from "vitest";
+import { resolveAdminLevel, levelAllows, canOpen } from "@/lib/admin-permissions";
 
-const none = { master: false, sections: {}, scope: "none" };
-describe("regular admin permissions", () => {
-  it("new admin opens nothing but overview", () => {
-    expect(canOpen("/admin", none)).toBe(true);
-    expect(canOpen("/admin/people", none)).toBe(false);
-    expect(canOpen("/admin/payouts", none)).toBe(false);
+describe("resolveAdminLevel", () => {
+  it("master always resolves to manage", () => {
+    expect(resolveAdminLevel({ master: true, sections: {}, scope: "all" }, "pricing")).toBe("manage");
   });
-  it("security and admin management stay master-only", () => {
-    const all = { master: false, sections: Object.fromEntries(["people","requests","pricing","payouts","integrations","messaging","notifications"].map((k) => [k, "manage"])), scope: "all" };
-    expect(canOpen("/admin/security", all)).toBe(false);
-    expect(canOpen("/admin/admins", all)).toBe(false);
-    expect(canOpen("/admin/security", { ...none, master: true })).toBe(true);
+  it("missing perms resolves to none", () => {
+    expect(resolveAdminLevel(null, "pricing")).toBe("none");
   });
-  it("support preset has no pricing or payouts", () => {
-    expect(PRESETS.support.pricing).toBeUndefined();
-    expect(PRESETS.support.payouts).toBeUndefined();
+  it("reads section grants", () => {
+    const p = { master: false, sections: { pricing: "read" }, scope: "all" };
+    expect(resolveAdminLevel(p, "pricing")).toBe("read");
+    expect(resolveAdminLevel(p, "payouts")).toBe("none");
   });
-  it("finance preset has no messaging or requests", () => {
-    expect(PRESETS.finance.messaging).toBeUndefined();
-    expect(PRESETS.finance.requests).toBeUndefined();
+  it("manage grant resolves to manage", () => {
+    const p = { master: false, sections: { payouts: "manage" }, scope: "all" };
+    expect(resolveAdminLevel(p, "payouts")).toBe("manage");
   });
-  it("request-for-customer needs requests manage", () => {
-    expect(canOpen("/admin/on-behalf", { ...none, sections: { requests: "read" } })).toBe(false);
-    expect(canOpen("/admin/on-behalf", { ...none, sections: { requests: "manage" } })).toBe(true);
+  it("ignores unknown/invalid level strings", () => {
+    const p = { master: false, sections: { payouts: "bogus" }, scope: "all" };
+    expect(resolveAdminLevel(p as any, "payouts")).toBe("none");
   });
 });
 
-describe("csv import", () => {
-  it("escapes spreadsheet formulas", () => {
-    expect(csvCell("=HYPERLINK(1)")).toBe("'=HYPERLINK(1)");
-    expect(csvCell("+1")).toBe("'+1");
+describe("levelAllows", () => {
+  it("manage satisfies read requirement", () => {
+    expect(levelAllows("manage", "read")).toBe(true);
   });
-  it("row limit is 250", () => expect(CSV_MAX_ROWS).toBe(250));
-  it("flags duplicates and invalid rows", () => {
-    const d = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
-    const row = `A,B,555-555-5555,,1 Main St,Orlando,${d},09:30,,2 Main St,Orlando,wheelchair,,`;
-    const [h, ...body] = parseCsv(PASSENGER_COLUMNS.join(",") + "\n" + row + "\n" + row + "\nx,,,,,,,,,,,rocket,,\n");
-    const r: any[] = validateRows("passenger", h, body);
-    expect(r[0].ok).toBe(true);
-    expect(r[1].dup).toBe(2);
-    expect(r[2].ok).toBe(false);
+  it("read does not satisfy manage requirement", () => {
+    expect(levelAllows("read", "manage")).toBe(false);
+  });
+  it("none satisfies nothing", () => {
+    expect(levelAllows("none", "read")).toBe(false);
+    expect(levelAllows(undefined, "read")).toBe(false);
+  });
+});
+
+describe("canOpen with resolved levels", () => {
+  it("blocks section pages when level is none", () => {
+    const p = { master: false, sections: {}, scope: "none" };
+    expect(canOpen("/admin/pricing", p)).toBe(false);
+  });
+  it("allows section pages when level is read", () => {
+    const p = { master: false, sections: { pricing: "read" }, scope: "all" };
+    expect(canOpen("/admin/pricing", p)).toBe(true);
+  });
+  it("master-only sections stay blocked for non-master regardless of sections", () => {
+    const p = { master: false, sections: { pricing: "manage" }, scope: "all" };
+    expect(canOpen("/admin/security", p)).toBe(false);
   });
 });

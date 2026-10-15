@@ -61,3 +61,12 @@ export function canOpen(path: string, p: AdminPerms) {
   return path.startsWith("/admin/on-behalf") ? levelAllows(lvl, "manage") : levelAllows(lvl, "read");
 }
 
+
+/** Resolve an admin's effective access level for a section from route-context
+ *  perms. Master Admin always resolves to "manage". Pure helper, no I/O. */
+export function resolveAdminLevel(p: AdminPerms | null | undefined, section: AdminSection): AccessLevel {
+  if (!p) return "none";
+  if (p.master) return "manage";
+  const lvl = p.sections[section] as AccessLevel | undefined;
+  return lvl === "manage" ? "manage" : lvl === "read" ? "read" : "none";
+}

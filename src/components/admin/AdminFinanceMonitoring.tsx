@@ -9,6 +9,8 @@ import {
   adminFeeAdjust,
 } from "@/lib/finance/finance.functions";
 import { formatCents } from "@/lib/finance/constants";
+import { useAdminLevel } from "@/lib/use-admin-level";
+import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 type CronStatus = {
   job_name: string;
@@ -46,6 +48,8 @@ function since(v: string | null | undefined) {
  */
 export function AdminFinanceMonitoring() {
   const qc = useQueryClient();
+  const level = useAdminLevel("payouts");
+  const readOnly = level !== "manage";
   const cronQ = useQuery({
     queryKey: ["fin-cron-status"],
     queryFn: () => getFinCronStatus(),
@@ -110,7 +114,7 @@ export function AdminFinanceMonitoring() {
   return (
     <section className="space-y-6">
       <header>
-        <h3 className="font-display text-xl font-extrabold tracking-tight">Cron health</h3>
+        <div className="flex items-center gap-2"><h3 className="font-display text-xl font-extrabold tracking-tight">Cron health</h3>{readOnly && <ReadOnlyBadge />}</div>
         <p className="text-xs text-muted-foreground">Release-to-balance runs every 15 min. Cash-outs every 5 min.</p>
       </header>
 
@@ -144,11 +148,11 @@ export function AdminFinanceMonitoring() {
               {s?.last_error && (
                 <p className="mt-2 text-[11px] text-destructive break-words">{s.last_error}</p>
               )}
-              <button type="button" disabled={busy === job}
+              {!readOnly && <button type="button" disabled={busy === job}
                 onClick={() => rerun(job as "fin-release-tick" | "fin-cashout-tick")}
                 className="mt-3 text-[10px] font-bold uppercase px-3 py-1.5 rounded-sm bg-primary text-primary-foreground disabled:opacity-50">
                 {busy === job ? "Running…" : "Run now"}
-              </button>
+              </button>}
             </div>
           );
         })}
@@ -195,6 +199,7 @@ export function AdminFinanceMonitoring() {
         <p className="text-xs text-muted-foreground mb-3">
           Update the platform fee and/or referral fee on a trip. Provider net and any pending balance entry are updated automatically. An audit record is written for every change.
         </p>
+        <fieldset disabled={readOnly} className="contents">
         <form onSubmit={submitFeeAdjust} className="grid gap-3 md:grid-cols-4">
           <label className="md:col-span-2 text-xs">
             <span className="block font-bold uppercase text-muted-foreground mb-1">Trip ID</span>
@@ -217,12 +222,13 @@ export function AdminFinanceMonitoring() {
               placeholder="e.g. Referral fee waiver approved by admin" className="w-full border border-input bg-background rounded-sm px-3 py-1.5" />
           </label>
           <div className="md:col-span-1 flex items-end">
-            <button type="submit" disabled={feeBusy}
+            <button type="submit" disabled={feeBusy || readOnly}
               className="w-full text-xs font-bold uppercase px-4 py-2 rounded-sm bg-primary text-primary-foreground disabled:opacity-50">
               {feeBusy ? "Saving…" : "Apply adjustment"}
             </button>
           </div>
         </form>
+      </fieldset>
       </div>
 
       <div className="border border-border rounded-sm bg-card">

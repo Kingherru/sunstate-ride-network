@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listTripDrafts, deleteTripDraft } from "@/lib/trip-drafts.functions";
 import { formatTime12 } from "@/lib/time-format";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 export type TripDraft = {
   id: string;
@@ -31,7 +32,7 @@ export function SavedTripsPanel({
   const list = useServerFn(listTripDrafts);
   const del = useServerFn(deleteTripDraft);
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["trip-drafts"],
     queryFn: () => list(),
   });

@@ -4,13 +4,15 @@ import { Award, BookOpen, PlayCircle, ShoppingBag } from "lucide-react";
 import { listPublicCourses, listMyEnrollments } from "@/lib/courses.functions";
 import { DsEmpty } from "@/components/ds/feedback";
 import { actionCls, panelCls } from "@/components/portal/PortalShell";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 const price = (c: number) => `$${(c / 100).toFixed(0)}`;
 
 /** Real courses + the signed-in learner's own enrollments. No invented progress. */
 export function TrainingTests() {
-  const courses = useQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
-  const mine = useQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
+  const preview = usePortalPreview();
+  const courses = usePortalQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
+  const mine = usePortalQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
 
   if (courses.isLoading || mine.isLoading) return <p className="ds-support" role="status">Loading training…</p>;
   if (courses.error) return <DsEmpty title="Training is unavailable">Please try again in a moment.</DsEmpty>;
@@ -43,6 +45,10 @@ export function TrainingTests() {
                 <Link to="/learn/$slug" params={{ slug: c.slug }} className={actionCls}>
                   {done ? <><Award className="mr-2 size-4" aria-hidden />View certificate</> : <><PlayCircle className="mr-2 size-4" aria-hidden />Continue course</>}
                 </Link>
+              ) : preview.active ? (
+                <button type="button" onClick={previewBlocked} className={actionCls}>
+                  <ShoppingBag className="mr-2 size-4" aria-hidden />Buy course
+                </button>
               ) : (
                 <Link to="/shop/$slug" params={{ slug: c.slug }} className={actionCls}>
                   <ShoppingBag className="mr-2 size-4" aria-hidden />Buy course

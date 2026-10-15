@@ -15,6 +15,7 @@ import { formatTime12, formatDateLong, formatIsoDateTime12 } from "@/lib/time-fo
 import { TimeSelect } from "@/components/ui/time-picker-field";
 import { ManualCompletionDialog } from "@/components/dashboard/ManualCompletionDialog";
 import { TripSyncTimeline } from "@/components/dashboard/TripSyncTimeline";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 type Row = {
   id: string;
@@ -155,6 +156,7 @@ export function ReservationReviewDialog({
   onOpenChange: (v: boolean) => void;
   canApprove: boolean;
 }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const update = useServerFn(updateTripStatus);
   const saveDetails = useServerFn(updateTripDetails);
@@ -252,19 +254,20 @@ export function ReservationReviewDialog({
   const isReferralTarget = !!uid && !!row.referral_target_id && uid === row.referral_target_id;
   const canRoute = isSender && isUnconfirmed && !isPendingReferral && !row.assigned_provider_id;
 
-  const historyQ = useQuery({
+  const historyQ = usePortalQuery({
     queryKey: ["referral-history", row.id],
     queryFn: () => loadHistory({ data: { trip_id: row.id } }),
     enabled: open,
   });
 
-  const connectedQ = useQuery({
+  const connectedQ = usePortalQuery({
     queryKey: ["connected-providers"],
     queryFn: () => loadConnected(),
     enabled: open && providerPickerOpen,
   });
 
   async function sendToMfn() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("refer");
     try {
       await refer({ data: { trip_id: row.id, target: "mfn" } });
@@ -278,6 +281,7 @@ export function ReservationReviewDialog({
   }
 
   async function sendToProvider(providerId: string) {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("refer");
     try {
       await refer({ data: { trip_id: row.id, target: providerId } });
@@ -292,6 +296,7 @@ export function ReservationReviewDialog({
   }
 
   async function respondReferral(accept: boolean, reason?: string) {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("respond");
     try {
       await respond({ data: { trip_id: row.id, accept, reason: reason ?? null } });
@@ -306,6 +311,7 @@ export function ReservationReviewDialog({
   }
 
   async function saveEdits() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("save");
     try {
       const patch: Record<string, unknown> = {};
@@ -336,6 +342,7 @@ export function ReservationReviewDialog({
   })();
 
   async function approve() {
+    if (preview.active) { previewBlocked(); return; }
     if (quoteInput.trim() !== "" && parsedQuoteCents == null) {
       toast.error("Enter a valid quote amount before confirming");
       return;
@@ -358,6 +365,7 @@ export function ReservationReviewDialog({
 
 
   async function complete() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("complete");
     try {
       await update({ data: { trip_id: row.id, status: "completed" } });
@@ -373,6 +381,7 @@ export function ReservationReviewDialog({
 
 
   async function decline() {
+    if (preview.active) { previewBlocked(); return; }
     setBusy("decline");
     try {
       await update({ data: { trip_id: row.id, status: "declined", reason: declineReason.trim() || null } });

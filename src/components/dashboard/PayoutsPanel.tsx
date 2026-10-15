@@ -6,6 +6,7 @@ import { formatUsd, providerPayoutCents } from "@/lib/payouts";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
 import { createConnectOnboardingLink, refreshPayoutAccount } from "@/lib/payouts.functions";
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 type Trip = {
   id: string;
@@ -26,7 +27,7 @@ type PayoutAccount = {
 };
 
 export function PayoutsPanel({ userId }: { userId: string }) {
-  const acctQ = useQuery({
+  const acctQ = usePortalQuery({
     queryKey: ["payout-account", userId],
     queryFn: async (): Promise<PayoutAccount | null> => {
       const { data } = await supabase
@@ -38,7 +39,7 @@ export function PayoutsPanel({ userId }: { userId: string }) {
     },
   });
 
-  const tripsQ = useQuery({
+  const tripsQ = usePortalQuery({
     queryKey: ["payout-trips", userId],
     queryFn: async () => {
       const { data, error } = await supabase

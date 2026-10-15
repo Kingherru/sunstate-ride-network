@@ -50,6 +50,13 @@
       "when": 1792098356395,
       "tag": "0006_provider_network_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792102282994,
+      "tag": "0007_workspace_messaging",
+      "breakpoints": true
     }
   ]
 }

@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyProviderApplication } from "@/lib/provider-application.functions";
 import { getMyHipaaAckStatus, recordHipaaAck } from "@/lib/trips.functions";
 import { toast } from "sonner";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 export function BusinessInfoPanel() {
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["my-provider-application"],
     queryFn: () => getMyProviderApplication(),
   });
@@ -86,11 +87,11 @@ export function BusinessInfoPanel() {
 
 function HipaaAcknowledgmentCard() {
   const qc = useQueryClient();
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["hipaa-ack-status"],
     queryFn: () => getMyHipaaAckStatus(),
   });
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: async () => recordHipaaAck({ data: { context: "settings" } }),
     onSuccess: () => {
       toast.success("HIPAA acknowledgment recorded");

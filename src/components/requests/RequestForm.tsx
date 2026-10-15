@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NonEmergencyNotice } from "@/components/public/page-kit";
 import { LINKS } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
+import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -193,6 +194,7 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
 }
 
 function RequestRidePage({ context, service }: { context: RequestFormContext; service?: string }) {
+  const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
   const [kind, setKind] = useState<"ride" | "delivery">(service === "medical-delivery" ? "delivery" : "ride");
@@ -228,6 +230,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
 
   useEffect(() => {
+    if (preview.active) return;
     let cancelled = false;
     (async () => {
       const { data: u } = await supabase.auth.getUser();
@@ -249,6 +252,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (preview.active) { previewBlocked(); return; }
     setErrors({});
     const withBilling: RideRequestInput = {
       ...form,

@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CheckCircle2, X } from "lucide-react";
 import { getMyNetworkProfile, saveNetworkProfile } from "@/lib/facility-providers.functions";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 function ListEditor({ label, values, onChange, placeholder }: { label: string; values: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
   const [draft, setDraft] = useState("");
@@ -41,11 +42,12 @@ function ListEditor({ label, values, onChange, placeholder }: { label: string; v
 }
 
 export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const getFn = useServerFn(getMyNetworkProfile);
   const saveFn = useServerFn(saveNetworkProfile);
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["my-network-profile", workspaceId],
     queryFn: () => getFn({ data: { workspace_id: workspaceId } }),
   });
@@ -87,6 +89,7 @@ export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
+    if (preview.active) { previewBlocked(); return; }
     setBusy(true);
     try {
       const r = await saveFn({

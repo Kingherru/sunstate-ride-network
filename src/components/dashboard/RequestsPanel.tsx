@@ -12,6 +12,7 @@ import { formatMinutes } from "@/components/maps/RoutePreview";
 import { ReservationReviewDialog } from "@/components/dashboard/ReservationReviewDialog";
 import { listReferralReservations, confirmReferralReservation } from "@/lib/referrals.functions";
 import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@/lib/payment-gate";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 
 
@@ -147,17 +148,19 @@ function isPendingReferralReservation(r: any, userId: string) {
  * (no invoice is sent) and the trip moves onto the Schedule Board.
  */
 function ReferralReservationsSection({ userId }: { userId: string }) {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const listFn = useServerFn(listReferralReservations);
   const confirmFn = useServerFn(confirmReferralReservation);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["referral-reservations", userId],
     queryFn: () => listFn(),
   });
 
   async function confirm(id: string) {
+    if (preview.active) { previewBlocked(); return; }
     setBusyId(id);
     try {
       await confirmFn({ data: { trip_id: id } });
@@ -264,6 +267,7 @@ export function ReservationsPanel({
   scope?: Scope;
   onResumeDraft?: (draft: TripDraft) => void;
 }) {
+  const preview = usePortalPreview();
   const [section, setSection] = useState<ResvSection>("unconfirmed");
   const state: ResvState = section === "drafts" ? "unconfirmed" : section;
   const qc = useQueryClient();
@@ -271,6 +275,7 @@ export function ReservationsPanel({
   const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   async function cancelReservation(id: string) {
+    if (preview.active) { previewBlocked(); return; }
     const reason = prompt("Cancel this reservation? Add an optional reason:", "");
     if (reason === null) return;
     setCancelingId(id);
@@ -293,7 +298,7 @@ export function ReservationsPanel({
 
 
   // Counts across all three buckets so the tab pill shows totals.
-  const counts = useQuery({
+  const counts = usePortalQuery({
     queryKey: ["reservations-by-state", "counts", scope, userId],
     queryFn: async () => {
       const [u, b, p] = await Promise.all([
@@ -311,11 +316,11 @@ export function ReservationsPanel({
     },
   });
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["reservations-by-state", state === "canceled" ? "past" : state, scope, userId],
     queryFn: () => fn({ data: { state: state === "canceled" ? "past" : state, scope } }),
   });
-  const provider = useQuery({
+  const provider = usePortalQuery({
     queryKey: ["provider-profile-cms", userId],
     queryFn: async () => {
       const { data } = await supabase

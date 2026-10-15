@@ -4,12 +4,14 @@ import { toast } from "sonner";
 import { KeyRound, Mail, LogOut, SendHorizonal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { actionCls } from "@/components/portal/PortalShell";
+import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
 
 /** Shared personal security panel: profile email, change password, send
  *  reset link to self, sign out, sign out of other sessions. Reused behind
  *  every portal's top-header Settings action and the admin Security tab.
  *  Never displays or stores a password; uses Supabase Auth directly. */
 export function PersonalSecurity({ email }: { email?: string | null }) {
+  const preview = usePortalPreview();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
@@ -26,6 +28,7 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (preview.active) { previewBlocked(); return; }
     setErr(null);
     if (pw.length < 8) return setErr("Password must be at least 8 characters.");
     if (pw !== pw2) return setErr("Passwords do not match.");
@@ -37,6 +40,7 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   }
 
   async function sendResetLink() {
+    if (preview.active) { previewBlocked(); return; }
     if (!currentEmail) return;
     setResetBusy(true);
     await supabase.auth.resetPasswordForEmail(currentEmail, { redirectTo: `${window.location.origin}/reset-password` });
@@ -45,12 +49,14 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   }
 
   async function signOut() {
+    if (preview.active) { previewBlocked(); return; }
     setSignOutBusy(true);
     await supabase.auth.signOut();
     window.location.href = "/login";
   }
 
   async function signOutEverywhere() {
+    if (preview.active) { previewBlocked(); return; }
     setSignOutBusy(true);
     await supabase.auth.signOut({ scope: "global" });
     window.location.href = "/login";

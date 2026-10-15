@@ -17,6 +17,10 @@ export type AccessState = {
   /** The workspace the portal shows (first usable one). */
   primary: AccessWorkspace | null;
   portalKind: PortalKind;
+  /** Any usable workspace membership where the user is owner/admin, or is a
+   *  member explicitly flagged can_message_for_workspace. Additive — never
+   *  used to grant anything beyond showing/blocking the Messaging nav item. */
+  canMessageForWorkspace: boolean;
   setupIssue: string | null;
   destination: "/admin" | "/portal" | "/learn" | "/account-setup" | "/account-status";
 };
@@ -52,11 +56,19 @@ export const getAccessState = createServerFn({ method: "POST" })
     else if (workspaces.length > 0) destination = "/account-status";
     else if (s.pending_type) destination = "/account-setup";
     else destination = "/learn"; // training-only learner
+    let canMessageForWorkspace = usableList.some((w) => w.role === "owner" || w.role === "admin");
+    if (!canMessageForWorkspace) {
+      const memberWorkspaces = usableList.filter((w) => w.role !== "owner" && w.role !== "admin");
+      const checks = await Promise.all(
+        memberWorkspaces.map((w) => context.supabase.rpc("can_access_workspace_messages", { ws: w.id })),
+      );
+      canMessageForWorkspace = checks.some((c) => c.data === true);
+    }
     return {
       isAdmin: !!s.is_admin, isMasterAdmin: !!s.is_master_admin, profileSuspended,
       mfnId: s.mfn_id ?? null, displayName: s.display_name || null,
       workspaces, primary: portalKind === "provider" ? usableList.find((w) => w.type === "provider") ?? primary : primary,
-      portalKind, setupIssue, destination,
+      portalKind, setupIssue, destination, canMessageForWorkspace,
       // Contractor/restricted team member in every usable workspace: no business tools.
       restricted: usableList.length > 0 && usableList.every((w) => w.is_contractor || (w.role !== "owner" && w.role !== "admin")),
     };

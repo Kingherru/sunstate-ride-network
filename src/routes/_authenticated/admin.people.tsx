@@ -12,6 +12,8 @@ import { SegTabs } from "@/components/portal/SegTabs";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { DsEmpty } from "@/components/ds/feedback";
 import { useQuery } from "@tanstack/react-query";
+import { useAdminLevel } from "@/lib/use-admin-level";
+import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
 const ORG_TYPES = new Set(["facility", "hospital"]);
@@ -90,9 +92,11 @@ function ClassifyControl({ p }: { p: PersonRow }) {
 
 function People() {
   const rows = Route.useLoaderData();
-  const { perms } = Route.useRouteContext() as any;
-  const canClassify = perms?.master || perms?.sections?.classify === "manage";
-  const canManagePeople = perms?.master || perms?.sections?.people === "manage";
+  const peopleLevel = useAdminLevel("people");
+  const classifyLevel = useAdminLevel("classify");
+  const canClassify = classifyLevel === "manage";
+  const canManagePeople = peopleLevel === "manage";
+  const peopleReadOnly = peopleLevel === "read";
   const reviewCountsFn = useServerFn(getNeedsReviewCounts);
   const reviewCounts = useQuery({ queryKey: ["needs-review-counts"], queryFn: () => reviewCountsFn() });
   const [view, setView] = useState<View>("all");
@@ -105,7 +109,7 @@ function People() {
 
   return (
     <>
-      <PageHead title="People & Accounts">Everyone who can sign in, and the accounts they belong to.</PageHead>
+      <PageHead title="People & Accounts">Everyone who can sign in, and the accounts they belong to. {peopleReadOnly && <ReadOnlyBadge />}</PageHead>
       <div className="mb-4"><SegTabs label="People views" value={view} onChange={setView} options={[
         { value: "all", label: `Users (${rows.length})` },
         { value: "providers", label: `Providers (${counts("providers")})` },

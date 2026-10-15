@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import {
   Select,
   SelectContent,
@@ -69,6 +70,7 @@ function groupLabel(iso: string): string {
 const GROUP_ORDER = ["Today", "Yesterday", "Earlier this week", "Earlier this month", "Older"];
 
 export function NotificationsPanel() {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<Filter>("all");
@@ -86,13 +88,13 @@ export function NotificationsPanel() {
   const markAllFn = useServerFn(markAllNotificationsRead);
   const deleteFn = useServerFn(deleteNotification);
 
-  const query = useQuery({
+  const query = usePortalQuery({
     queryKey: ["notifications", filter],
     queryFn: () => listFn({ data: { filter, limit: 200, offset: 0 } }),
   });
 
   useEffect(() => {
-    if (!userId) return;
+    if (preview.active || !userId) return;
     const ch = supabase
       .channel(`notifications-panel-${userId}`)
       .on(
@@ -146,7 +148,7 @@ export function NotificationsPanel() {
     if (userId) qc.invalidateQueries({ queryKey: ["unread-counts", userId] });
   };
 
-  const markSelected = useMutation({
+  const markSelected = usePortalMutation({
     mutationFn: (ids: string[]) => markFn({ data: { ids } }),
     onSuccess: () => {
       setSelected(new Set());
@@ -156,7 +158,7 @@ export function NotificationsPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to mark read"),
   });
 
-  const markAll = useMutation({
+  const markAll = usePortalMutation({
     mutationFn: () => markAllFn(),
     onSuccess: () => {
       setSelected(new Set());
@@ -166,7 +168,7 @@ export function NotificationsPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to mark all read"),
   });
 
-  const removeOne = useMutation({
+  const removeOne = usePortalMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
     onSuccess: () => {
       invalidateAll();
@@ -185,6 +187,7 @@ export function NotificationsPanel() {
   };
 
   const onOpen = (n: NotificationRow) => {
+    if (preview.active) { previewBlocked(); return; }
     if (!n.read_at) markFn({ data: { ids: [n.id] } }).then(invalidateAll);
     if (n.link) {
       if (/^https?:/i.test(n.link)) window.location.href = n.link;
