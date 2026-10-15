@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { canOpen } from "@/lib/admin-permissions";
 import { listAdminRequests } from "@/lib/portal-requests.functions";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
 import { RequestTable } from "@/components/portal/request-display";
@@ -7,7 +8,6 @@ import { DsEmpty } from "@/components/ds/feedback";
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({ meta: [{ title: "Admin Overview — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: async ({ context }) => {
-    const { canOpen } = await import("./admin");
     if (!canOpen("/admin/requests", (context as any).perms)) return null;
     return listAdminRequests();
   },

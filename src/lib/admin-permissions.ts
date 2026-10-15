@@ -48,3 +48,16 @@ export const ADMIN_NAV_REQUIREMENT: Record<string, AdminSection | "master" | nul
   "/admin/security": "master",
   "/admin/admins": "master",
 };
+
+export type AdminPerms = { master: boolean; sections: Record<string, string>; scope: string };
+
+export function canOpen(path: string, p: AdminPerms) {
+  if (p.master) return true;
+  const key = Object.keys(ADMIN_NAV_REQUIREMENT).sort((a, b) => b.length - a.length).find((k) => path === k || path.startsWith(k + "/"));
+  const need = key ? ADMIN_NAV_REQUIREMENT[key] : "master";
+  if (need === null) return true;
+  if (need === "master") return false;
+  const lvl = p.sections[need] as AccessLevel | undefined;
+  return path.startsWith("/admin/on-behalf") ? levelAllows(lvl, "manage") : levelAllows(lvl, "read");
+}
+

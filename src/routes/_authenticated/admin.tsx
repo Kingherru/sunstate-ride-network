@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getAccessState } from "@/lib/access.functions";
 import { getMyAdminPermissions } from "@/lib/admin-management.functions";
-import { ADMIN_NAV_REQUIREMENT, levelAllows, type AccessLevel } from "@/lib/admin-permissions";
+import { canOpen } from "@/lib/admin-permissions";
 import { PortalShell } from "@/components/portal/PortalShell";
 
 const NAV = [
@@ -17,18 +17,6 @@ const NAV = [
   { to: "/admin/admins", label: "Administrators" },
   { to: "/admin/security", label: "Security" },
 ];
-
-export type AdminPerms = { master: boolean; sections: Record<string, string>; scope: string };
-
-export function canOpen(path: string, p: AdminPerms) {
-  if (p.master) return true;
-  const key = Object.keys(ADMIN_NAV_REQUIREMENT).sort((a, b) => b.length - a.length).find((k) => path === k || path.startsWith(k + "/"));
-  const need = key ? ADMIN_NAV_REQUIREMENT[key] : "master";
-  if (need === null) return true;
-  if (need === "master") return false;
-  const lvl = p.sections[need] as AccessLevel | undefined;
-  return path.startsWith("/admin/on-behalf") ? levelAllows(lvl, "manage") : levelAllows(lvl, "read");
-}
 
 // Verified admin label required; each section also needs a Master-Admin grant.
 // Every admin server function and row-level rule re-checks this server-side.
