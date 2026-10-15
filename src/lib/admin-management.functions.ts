@@ -159,3 +159,72 @@ export const classifyAccount = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/** Counts for the People & Accounts "Needs Review" views (separate axes). */
+export const getNeedsReviewCounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "people", "read");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ count: peopleCount }, { count: accountsCount }] = await Promise.all([
+      supabaseAdmin.from("user_profiles").select("user_id", { count: "exact", head: true })
+        .eq("legacy_review_needed", true).eq("is_test_account", false),
+      supabaseAdmin.from("workspaces").select("id", { count: "exact", head: true })
+        .eq("organization_type", "needs_review"),
+    ]);
+    return { peopleNeedingReview: peopleCount ?? 0, accountsNeedingClassification: accountsCount ?? 0 };
+  });
+
+/**
+ * Admin-initiated password reset link for a person on People & Accounts.
+ * Requires people:manage and account-scope over one of the target's workspaces
+ * (or Master Admin). Never targets the protected Master Admin unless the
+ * caller IS the Master Admin. Generic response either way; logged to the
+ * staff audit log. Does not send email during automated tests (no-op guard
+ * left to the caller / test harness; this function is never invoked by tests).
+ */
+export const sendPeoplePasswordReset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ userId: z.string().uuid() }).strict().parse(i))
+  .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "people", "manage");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: master } = await supabaseAdmin.from("platform_master_admin").select("user_id").maybeSingle();
+    if (master?.user_id === data.userId && context.userId !== data.userId) {
+      throw new Error("The Master Admin account is protected.");
+    }
+
+    const { data: mem } = await supabaseAdmin
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("user_id", data.userId);
+    const workspaceIds: (string | null)[] = (mem ?? []).map((m: any) => m.workspace_id);
+    if (workspaceIds.length === 0) workspaceIds.push(null);
+    let inScope = false;
+    for (const wsId of workspaceIds) {
+      if (await adminCanAccount(context, wsId)) { inScope = true; break; }
+    }
+    if (!inScope) throw new Error("That person isn't in your scope.");
+
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+    const email = authUser?.user?.email ?? null;
+
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const req = getRequest();
+    let origin = "https://localhost";
+    try { origin = req ? new URL(req.url).origin : origin; } catch { /* keep default */ }
+
+    if (email) {
+      await supabaseAdmin.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/reset-password` });
+    }
+
+    await context.supabase.rpc("log_staff_action", {
+      _action: "admin_password_reset_sent", _target_kind: "user", _target_id: data.userId, _metadata: {},
+    });
+
+    // Generic response regardless of whether the account/email exists.
+    return { ok: true as const };
+  });

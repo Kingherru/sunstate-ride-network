@@ -1,17 +1,64 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, X, History, LogOut } from "lucide-react";
+import {
+  Menu, X, History, LogOut, Settings, Bell, IdCard,
+  LayoutDashboard, Car, CalendarDays, Truck, Users, GraduationCap, UserCircle2,
+  PlusCircle, ListChecks, Upload, Search, Star, Contact2, Wallet, Network,
+  ShieldCheck, MessageSquare, DollarSign, Banknote, Plug, UserCog, Circle,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
 
-export type NavItem = { to: string; label: string; exact?: boolean };
-export type ShellIdentity = { name: string; mfnId: string | null; label: string; badge?: string };
+export type NavItem = { to: string; label: string; exact?: boolean; search?: Record<string, string> };
+export type ShellIdentity = { name: string; mfnId: string | null; label: string };
 
-/** Quiet portal/admin frame: blue sidebar, pale-gray page, white workspace. No public header/footer. */
-export function PortalShell({ nav, area, identity, changelogTo, children }: { nav: NavItem[]; area: string; identity?: ShellIdentity; changelogTo: "/portal/changelog" | "/admin/changelog"; children: React.ReactNode }) {
+/** One icon per nav destination so the sidebar stays scannable. Keyed by
+ *  longest-matching path prefix; unmatched items fall back to a plain dot. */
+const NAV_ICONS: [string, React.ComponentType<{ className?: string }>][] = [
+  ["/portal/requests/new", PlusCircle],
+  ["/portal/requests", ListChecks],
+  ["/portal/upload-csv", Upload],
+  ["/portal/find-providers", Search],
+  ["/portal/saved-providers", Star],
+  ["/portal/network", Network],
+  ["/portal/contacts", Contact2],
+  ["/portal/payers", Wallet],
+  ["/portal/notifications", Bell],
+  ["/portal/trips", Car],
+  ["/portal/schedule", CalendarDays],
+  ["/portal/vehicles", Truck],
+  ["/portal/drivers", Users],
+  ["/portal/training", GraduationCap],
+  ["/portal/account", UserCircle2],
+  ["/portal", LayoutDashboard],
+  ["/admin/people", Users],
+  ["/admin/requests", ListChecks],
+  ["/admin/on-behalf", PlusCircle],
+  ["/admin/messaging", MessageSquare],
+  ["/admin/pricing", DollarSign],
+  ["/admin/payouts", Banknote],
+  ["/admin/integrations", Plug],
+  ["/admin/notifications", Bell],
+  ["/admin/admins", UserCog],
+  ["/admin/security", ShieldCheck],
+  ["/admin/settings", Settings],
+  ["/admin", LayoutDashboard],
+  ["/learn", GraduationCap],
+];
+function iconFor(to: string) {
+  const hit = NAV_ICONS.filter(([p]) => to === p || to.startsWith(p + "/")).sort((a, b) => b[0].length - a[0].length)[0];
+  return hit?.[1] ?? Circle;
+}
+
+/** Quiet portal/admin frame: blue sidebar, slim blue top header, pale-gray
+ *  page, white workspace. No public header/footer. */
+export function PortalShell({ nav, area, identity, changelogTo, settingsTo, notificationsTo, title, children }: {
+  nav: NavItem[]; area: string; identity?: ShellIdentity; changelogTo: "/portal/changelog" | "/admin/changelog";
+  settingsTo?: string; notificationsTo?: string; title?: string; children: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
@@ -33,43 +80,74 @@ export function PortalShell({ nav, area, identity, changelogTo, children }: { na
     navigate({ to: "/login", replace: true });
   }
 
-  const isActive = (i: NavItem) => (i.exact ? pathname === i.to || pathname === i.to + "/" : pathname === i.to || pathname.startsWith(i.to + "/"));
+  const search = useRouterState({ select: (s) => s.location.search as Record<string, unknown> });
+  const isActive = (i: NavItem) => i.search
+    ? pathname === i.to && Object.entries(i.search).every(([k, v]) => String((search as Record<string, unknown>)?.[k] ?? "") === v)
+    : (i.exact ? pathname === i.to || pathname === i.to + "/" : pathname === i.to || pathname.startsWith(i.to + "/"));
+  const pageTitle = title ?? nav.find(isActive)?.label ?? area;
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
-      {nav.map((i) => (
-        <Link key={i.to} to={i.to as "/portal"} aria-current={isActive(i) ? "page" : undefined}
-          className={cn("ds-button-text rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
-            isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
-          {i.label}
-        </Link>
-      ))}
+      {nav.map((i) => {
+        const Icon = iconFor(i.to);
+        return (
+          <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
+            className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
+              isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
+            <Icon className="size-4 shrink-0" aria-hidden />
+            <span className="truncate">{i.label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
   const footCls = "ds-button-text flex items-center gap-2 rounded-ds-sm px-3 py-2.5 text-left uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
   const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
+      {identity?.mfnId && (
+        <p className="ds-support flex items-center gap-2 px-3 py-1 font-mono text-ds-on-primary/60">
+          <IdCard className="size-3.5 shrink-0" aria-hidden />MFN ID: <span className="text-ds-on-primary/80">{identity.mfnId}</span>
+        </p>
+      )}
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
-        className={cn(footCls, pathname === changelogTo ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
-        <History className="size-4" aria-hidden />Change log
+        className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
+        <History className="size-4 shrink-0" aria-hidden />Change log
         {indicator !== "none" && (
           <span className={cn("ml-auto size-2.5 rounded-full", indicator === "important" ? "bg-ds-error motion-safe:animate-[mfn-wiggle_0.5s_ease-in-out_1]" : "bg-ds-success-soft ring-1 ring-ds-success")}>
             <span className="sr-only">{indicator === "important" ? "Important update" : "New update"}</span>
           </span>
         )}
       </Link>
-      <button onClick={signOut} className={cn(footCls, "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
-        <LogOut className="size-4" aria-hidden />Sign out
+      <button onClick={signOut} className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
+        <LogOut className="size-4 shrink-0" aria-hidden />Sign out
       </button>
     </div>
   );
   const idCard = identity && (
     <div className="mx-6 mb-6">
       <p className="ds-body truncate font-semibold text-ds-on-primary" title={identity.name}>{identity.name}</p>
-      <p className="ds-support text-ds-on-primary/75">{identity.label}</p>
-      {identity.badge && <p className="ds-support mt-1 font-semibold uppercase tracking-[0.08em] text-ds-accent">{identity.badge}</p>}
-      {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/75">MFN ID: <span className="text-ds-on-primary">{identity.mfnId}</span></p>}
+      <p className="ds-support mt-1 font-semibold uppercase tracking-[0.08em] text-ds-on-primary/75">{identity.label}</p>
     </div>
+  );
+
+  const topHeader = (
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:ml-64 lg:px-10">
+      <h1 className="ds-body truncate font-semibold uppercase tracking-[0.04em] text-ds-on-primary">{pageTitle}</h1>
+      <div className="flex shrink-0 items-center gap-1.5">
+        {notificationsTo && (
+          <Link to={notificationsTo as "/portal/notifications"} aria-label="Notifications" title="Notifications"
+            className="inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+            <Bell className="size-5" aria-hidden />
+          </Link>
+        )}
+        {settingsTo && (
+          <Link to={settingsTo as "/portal/account"} aria-label="Settings" title="Settings"
+            className="inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+            <Settings className="size-5" aria-hidden />
+          </Link>
+        )}
+      </div>
+    </header>
   );
 
   return (
@@ -86,15 +164,31 @@ export function PortalShell({ nav, area, identity, changelogTo, children }: { na
       </aside>
 
       {/* Phone/tablet top bar + drawer */}
-      <header className="sticky top-0 z-30 flex items-center justify-between bg-ds-primary px-4 py-3 lg:hidden">
-        <Link to="/" className="rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName on="blue" className="text-base" /></Link>
-        <button ref={menuBtn} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="portal-drawer" aria-label={open ? "Close menu" : "Open menu"}
-          className="inline-flex size-11 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
-          {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
-        </button>
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 bg-ds-primary px-3 py-2.5 lg:hidden">
+        <div className="flex min-w-0 items-center gap-2">
+          <button ref={menuBtn} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="portal-drawer" aria-label={open ? "Close menu" : "Open menu"}
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+            {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
+          </button>
+          <h1 className="ds-support truncate font-semibold uppercase tracking-[0.04em] text-ds-on-primary">{pageTitle}</h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-0.5">
+          {notificationsTo && (
+            <Link to={notificationsTo as "/portal/notifications"} aria-label="Notifications" title="Notifications"
+              className="inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+              <Bell className="size-5" aria-hidden />
+            </Link>
+          )}
+          {settingsTo && (
+            <Link to={settingsTo as "/portal/account"} aria-label="Settings" title="Settings"
+              className="inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+              <Settings className="size-5" aria-hidden />
+            </Link>
+          )}
+        </div>
       </header>
       {open && (
-        <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[68px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary pb-6 pt-2 lg:hidden">
+        <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary pb-6 pt-2 lg:hidden">
           <p className="ds-support mx-6 mb-3 uppercase tracking-[0.08em] text-ds-on-primary/70">{area}</p>
           {idCard}
           {links}
@@ -102,6 +196,7 @@ export function PortalShell({ nav, area, identity, changelogTo, children }: { na
         </div>
       )}
 
+      <div className="lg:ml-64">{topHeader}</div>
       <main id="main" className="min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-10 lg:py-10">
         <div className="portal-enter mx-auto w-full max-w-6xl">{children}</div>
       </main>
@@ -113,7 +208,7 @@ export function PageHead({ title, action, children }: { title: string; action?: 
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="ds-section-title uppercase text-ds-primary">{title}</h1>
+        <h2 className="ds-section-title uppercase text-ds-primary">{title}</h2>
         {children && <div className="ds-body mt-1 text-ds-text-2">{children}</div>}
       </div>
       {action}
@@ -121,5 +216,5 @@ export function PageHead({ title, action, children }: { title: string; action?: 
   );
 }
 
-export const actionCls = "ds-button-text inline-flex min-h-12 items-center rounded-ds-sm bg-ds-action px-6 uppercase text-ds-on-action ds-transition hover:bg-ds-action-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
+export const actionCls = "ds-button-text inline-flex min-h-12 items-center gap-2 rounded-ds-sm bg-ds-action px-6 uppercase text-ds-on-action ds-transition hover:bg-ds-action-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
 export const panelCls = "rounded-ds bg-ds-surface shadow-[var(--ds-shadow)]";

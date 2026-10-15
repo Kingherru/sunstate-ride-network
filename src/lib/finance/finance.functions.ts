@@ -2,6 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/** Look up the workspace that owns a trip (via its ride request) for account-scope checks. */
+async function tripWorkspaceId(context: any, tripId: string): Promise<string | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: trip } = await supabaseAdmin.from("trips").select("ride_request_id").eq("id", tripId).maybeSingle();
+  if (!trip?.ride_request_id) return null;
+  const { data: rr } = await supabaseAdmin.from("ride_requests").select("workspace_id").eq("id", trip.ride_request_id).maybeSingle();
+  return (rr as any)?.workspace_id ?? null;
+}
+
 /**
  * FINANCE — Provider Balance model.
  * MFN collects all money → per-trip hold → released to Provider Balance → provider cashes out.
@@ -29,10 +38,10 @@ export const listFinLedger = createServerFn({ method: "POST" })
   .inputValidator((i: { limit?: number } | undefined) =>
     z.object({ limit: z.number().int().min(1).max(500).optional() }).parse(i ?? {}))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error } = await supabaseAdmin
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "read");
+    // security_invoker view; scope is enforced by is_ops_staff + RLS on the underlying trips.
+    const { data: rows, error } = await context.supabase
       .from("admin_fin_ledger").select("*").order("created_at", { ascending: false }).limit(data.limit ?? 100);
     if (error) throw new Error(error.message);
     return rows ?? [];
@@ -55,6 +64,9 @@ export const setTripAmounts = createServerFn({ method: "POST" })
     is_medicaid: z.boolean().optional(),
   }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    if (!(await adminCanAccount(context, await tripWorkspaceId(context, data.trip_id)))) throw new Error("That account isn't in your scope.");
     const { error } = await context.supabase.rpc("fin_set_amounts", {
       _trip_id: data.trip_id, _gross_cents: data.gross_cents,
       _referral_flat_cents: data.referral_flat_cents ?? 0,
@@ -72,6 +84,9 @@ export const validateTripPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { trip_id: string }) => z.object({ trip_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    if (!(await adminCanAccount(context, await tripWorkspaceId(context, data.trip_id)))) throw new Error("That account isn't in your scope.");
     const { error } = await context.supabase.rpc("fin_validate_payment", { _trip_id: data.trip_id } as never);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -82,6 +97,9 @@ export const adminForceRelease = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { trip_id: string }) => z.object({ trip_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    if (!(await adminCanAccount(context, await tripWorkspaceId(context, data.trip_id)))) throw new Error("That account isn't in your scope.");
     const { error } = await context.supabase.rpc("fin_admin_force_release", { _trip_id: data.trip_id } as never);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -93,6 +111,9 @@ export const refundTrip = createServerFn({ method: "POST" })
   .inputValidator((i: { trip_id: string; reason?: string }) =>
     z.object({ trip_id: z.string().uuid(), reason: z.string().max(500).optional() }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    if (!(await adminCanAccount(context, await tripWorkspaceId(context, data.trip_id)))) throw new Error("That account isn't in your scope.");
     const { error } = await context.supabase.rpc("fin_refund", {
       _trip_id: data.trip_id, _reason: data.reason ?? null,
     } as never);
@@ -106,6 +127,9 @@ export const adminMarkMedicaidFundsReceived = createServerFn({ method: "POST" })
   .inputValidator((i: { trip_id: string; received_at?: string }) =>
     z.object({ trip_id: z.string().uuid(), received_at: z.string().datetime().optional() }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    if (!(await adminCanAccount(context, await tripWorkspaceId(context, data.trip_id)))) throw new Error("That account isn't in your scope.");
     const { error } = await context.supabase.rpc("fin_mark_medicaid_received", {
       _trip_id: data.trip_id, _received_at: data.received_at ?? new Date().toISOString(),
     } as never);
@@ -123,6 +147,8 @@ export const adminAdjustBalance = createServerFn({ method: "POST" })
       note: z.string().min(1).max(500),
     }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
     const { error } = await context.supabase.rpc("fin_admin_adjust_balance", {
       _provider: data.provider_user_id, _amount_cents: data.amount_cents, _note: data.note,
     } as never);
@@ -170,8 +196,8 @@ export const requestCashout = createServerFn({ method: "POST" })
 export const getFinCronStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "read");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [status, recent] = await Promise.all([
       supabaseAdmin.from("admin_fin_cron_status").select("*"),
@@ -186,8 +212,8 @@ export const adminRunFinCron = createServerFn({ method: "POST" })
   .inputValidator((i: { job: "fin-release-tick" | "fin-cashout-tick" }) =>
     z.object({ job: z.enum(["fin-release-tick", "fin-cashout-tick"]) }).parse(i))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
     const base = process.env.SITE_URL ?? "https://myfloridanemt.com";
     const key = process.env.FIN_CRON_SECRET;
     if (!key) throw new Error("Missing FIN_CRON_SECRET");
@@ -214,6 +240,9 @@ export const adminFeeAdjust = createServerFn({ method: "POST" })
     reason: z.string().min(3).max(500),
   }).parse(i))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    if (!(await adminCanAccount(context, await tripWorkspaceId(context, data.trip_id)))) throw new Error("That account isn't in your scope.");
     const { error } = await context.supabase.rpc("fin_admin_fee_adjust", {
       _trip_id: data.trip_id,
       _new_platform_cents: data.new_platform_cents ?? null,
@@ -229,6 +258,8 @@ export const listAdminFinActions = createServerFn({ method: "POST" })
   .inputValidator((i: { limit?: number } | undefined) =>
     z.object({ limit: z.number().int().min(1).max(500).optional() }).parse(i ?? {}))
   .handler(async ({ data, context }) => {
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "read");
     const { data: rows, error } = await context.supabase.rpc("fin_admin_recent_actions",
       { _limit: data.limit ?? 100 } as never);
     if (error) throw new Error(error.message);

@@ -320,8 +320,12 @@
 .theme-portal .portal-btn-primary:disabled { opacity: .6; }
 .theme-portal .portal-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: 0 1.25rem; border-radius: 3px; background: var(--mfn-gray); color: var(--ds-primary); font-weight: 700; text-transform: uppercase; white-space: nowrap; }
 .theme-portal .portal-btn-secondary:hover { background: var(--ds-active); }
-.theme-portal .portal-input { width: 100%; min-height: 2.75rem; border: 1px solid #B9C2CC; border-radius: 3px; padding: .5rem .75rem; background: #fff; }
-.theme-portal .portal-label { display: block; font-weight: 600; font-size: .875rem; margin-bottom: .25rem; }
+.theme-portal .portal-input { width: 100%; min-height: 46px; border: 1px solid #B9C2CC; border-radius: 4px; padding: 12px 16px; background: #fff; }
+.theme-portal select.portal-input, .theme-portal select { padding-right: 2.5rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23475569'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 1rem; appearance: none; -webkit-appearance: none; }
+.theme-portal input, .theme-portal textarea, .theme-portal select { min-height: 46px; padding: 12px 16px; border-radius: 4px; }
+.theme-portal textarea { min-height: 96px; }
+.theme-portal label.portal-label, .theme-portal .portal-label { display: block; font-weight: 600; font-size: .875rem; margin-bottom: .375rem; }
+.theme-portal input:focus-visible, .theme-portal select:focus-visible, .theme-portal textarea:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 2px; }
 .theme-portal :where(button, a, input, select, textarea):focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 2px; }
 .theme-portal .rounded-full:not(.size-2):not([class*="h-2"]) { border-radius: 4px; }
 .theme-portal .rounded-lg, .theme-portal .rounded-xl, .theme-portal .rounded-2xl { border-radius: 5px; }

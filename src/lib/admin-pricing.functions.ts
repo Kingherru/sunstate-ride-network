@@ -35,14 +35,10 @@ export const FL_MEDICAID_DEFAULTS: MarketPricing = {
 export const getPlatformPricingDefaults = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId, _role: "admin",
-    });
-    const { data: isAppMgr } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId, _role: "app_manager",
-    });
-    if (!isAdmin && !isAppMgr) {
-      // Non-admin callers only receive the built-in defaults.
+    const { adminCan } = await import("@/lib/admin-guard.server");
+    const canRead = await adminCan(context, "pricing", "read");
+    if (!canRead) {
+      // Non-pricing-admin callers only receive the built-in defaults.
       return { market: FL_MARKET_DEFAULTS, medicaid: FL_MEDICAID_DEFAULTS };
     }
     const { data, error } = await context.supabase
@@ -60,13 +56,8 @@ export const savePlatformPricingDefaults = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { market: MarketPricing; medicaid: MarketPricing }) => input)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId, _role: "admin",
-    });
-    const { data: isAppMgr } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId, _role: "app_manager",
-    });
-    if (!isAdmin && !isAppMgr) throw new Error("Forbidden");
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "pricing", "manage");
     const { error } = await context.supabase
       .from("platform_settings")
       .upsert({ id: true, market_pricing: data.market as any, medicaid_pricing: data.medicaid as any }, { onConflict: "id" });

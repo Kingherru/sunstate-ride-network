@@ -38,7 +38,6 @@ export function AdminPayoutQueue() {
     queryKey: ["admin-payout-queue"],
     queryFn: async () => {
       const res = await listFn();
-      if (!res.ok) throw new Error(res.error ?? "Failed to load queue");
       return res.rows as Row[];
     },
     refetchInterval: 30_000,
