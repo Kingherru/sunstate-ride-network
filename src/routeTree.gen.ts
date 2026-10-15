@@ -59,12 +59,14 @@ import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
+import { Route as AuthenticatedLearnSettingsRouteImport } from './routes/_authenticated/learn.settings'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
 import { Route as AuthenticatedPortalAccountRouteImport } from './routes/_authenticated/portal.account'
 import { Route as AuthenticatedPortalChangelogRouteImport } from './routes/_authenticated/portal.changelog'
 import { Route as AuthenticatedPortalContactsRouteImport } from './routes/_authenticated/portal.contacts'
 import { Route as AuthenticatedPortalDriversRouteImport } from './routes/_authenticated/portal.drivers'
 import { Route as AuthenticatedPortalFindProvidersRouteImport } from './routes/_authenticated/portal.find-providers'
+import { Route as AuthenticatedPortalNetworkRouteImport } from './routes/_authenticated/portal.network'
 import { Route as AuthenticatedPortalNotificationsRouteImport } from './routes/_authenticated/portal.notifications'
 import { Route as AuthenticatedPortalPayersRouteImport } from './routes/_authenticated/portal.payers'
 import { Route as AuthenticatedPortalSavedProvidersRouteImport } from './routes/_authenticated/portal.saved-providers'
@@ -360,6 +362,12 @@ const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AuthenticatedLearnRoute,
 } as any)
+const AuthenticatedLearnSettingsRoute =
+  AuthenticatedLearnSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedLearnRoute,
+  } as any)
 const AuthenticatedPortalIndexRoute =
   AuthenticatedPortalIndexRouteImport.update({
     id: '/',
@@ -394,6 +402,12 @@ const AuthenticatedPortalFindProvidersRoute =
   AuthenticatedPortalFindProvidersRouteImport.update({
     id: '/find-providers',
     path: '/find-providers',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalNetworkRoute =
+  AuthenticatedPortalNetworkRouteImport.update({
+    id: '/network',
+    path: '/network',
     getParentRoute: () => AuthenticatedPortalRoute,
   } as any)
 const AuthenticatedPortalNotificationsRoute =
@@ -628,11 +642,13 @@ export interface FileRoutesByFullPath {
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
+  '/learn/settings': typeof AuthenticatedLearnSettingsRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
   '/portal/changelog': typeof AuthenticatedPortalChangelogRoute
   '/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/portal/drivers': typeof AuthenticatedPortalDriversRoute
   '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
   '/portal/payers': typeof AuthenticatedPortalPayersRoute
   '/portal/saved-providers': typeof AuthenticatedPortalSavedProvidersRoute
@@ -712,11 +728,13 @@ export interface FileRoutesByTo {
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
+  '/learn/settings': typeof AuthenticatedLearnSettingsRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
   '/portal/changelog': typeof AuthenticatedPortalChangelogRoute
   '/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/portal/drivers': typeof AuthenticatedPortalDriversRoute
   '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
   '/portal/payers': typeof AuthenticatedPortalPayersRoute
   '/portal/saved-providers': typeof AuthenticatedPortalSavedProvidersRoute
@@ -802,11 +820,13 @@ export interface FileRoutesById {
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
+  '/_authenticated/learn/settings': typeof AuthenticatedLearnSettingsRoute
   '/_authenticated/portal/account': typeof AuthenticatedPortalAccountRoute
   '/_authenticated/portal/changelog': typeof AuthenticatedPortalChangelogRoute
   '/_authenticated/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/_authenticated/portal/drivers': typeof AuthenticatedPortalDriversRoute
   '/_authenticated/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/_authenticated/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/_authenticated/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
   '/_authenticated/portal/payers': typeof AuthenticatedPortalPayersRoute
   '/_authenticated/portal/saved-providers': typeof AuthenticatedPortalSavedProvidersRoute
@@ -892,11 +912,13 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/settings'
     | '/learn/$slug'
+    | '/learn/settings'
     | '/portal/account'
     | '/portal/changelog'
     | '/portal/contacts'
     | '/portal/drivers'
     | '/portal/find-providers'
+    | '/portal/network'
     | '/portal/notifications'
     | '/portal/payers'
     | '/portal/saved-providers'
@@ -976,11 +998,13 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/settings'
     | '/learn/$slug'
+    | '/learn/settings'
     | '/portal/account'
     | '/portal/changelog'
     | '/portal/contacts'
     | '/portal/drivers'
     | '/portal/find-providers'
+    | '/portal/network'
     | '/portal/notifications'
     | '/portal/payers'
     | '/portal/saved-providers'
@@ -1065,11 +1089,13 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/settings'
     | '/_authenticated/learn/$slug'
+    | '/_authenticated/learn/settings'
     | '/_authenticated/portal/account'
     | '/_authenticated/portal/changelog'
     | '/_authenticated/portal/contacts'
     | '/_authenticated/portal/drivers'
     | '/_authenticated/portal/find-providers'
+    | '/_authenticated/portal/network'
     | '/_authenticated/portal/notifications'
     | '/_authenticated/portal/payers'
     | '/_authenticated/portal/saved-providers'
@@ -1506,6 +1532,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
       parentRoute: typeof AuthenticatedLearnRoute
     }
+    '/_authenticated/learn/settings': {
+      id: '/_authenticated/learn/settings'
+      path: '/settings'
+      fullPath: '/learn/settings'
+      preLoaderRoute: typeof AuthenticatedLearnSettingsRouteImport
+      parentRoute: typeof AuthenticatedLearnRoute
+    }
     '/_authenticated/portal/': {
       id: '/_authenticated/portal/'
       path: '/'
@@ -1546,6 +1579,13 @@ declare module '@tanstack/react-router' {
       path: '/find-providers'
       fullPath: '/portal/find-providers'
       preLoaderRoute: typeof AuthenticatedPortalFindProvidersRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/network': {
+      id: '/_authenticated/portal/network'
+      path: '/network'
+      fullPath: '/portal/network'
+      preLoaderRoute: typeof AuthenticatedPortalNetworkRouteImport
       parentRoute: typeof AuthenticatedPortalRoute
     }
     '/_authenticated/portal/notifications': {
@@ -1809,11 +1849,13 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedLearnRouteChildren {
   AuthenticatedLearnSlugRoute: typeof AuthenticatedLearnSlugRoute
+  AuthenticatedLearnSettingsRoute: typeof AuthenticatedLearnSettingsRoute
   AuthenticatedLearnIndexRoute: typeof AuthenticatedLearnIndexRoute
 }
 
 const AuthenticatedLearnRouteChildren: AuthenticatedLearnRouteChildren = {
   AuthenticatedLearnSlugRoute: AuthenticatedLearnSlugRoute,
+  AuthenticatedLearnSettingsRoute: AuthenticatedLearnSettingsRoute,
   AuthenticatedLearnIndexRoute: AuthenticatedLearnIndexRoute,
 }
 
@@ -1826,6 +1868,7 @@ interface AuthenticatedPortalRouteChildren {
   AuthenticatedPortalContactsRoute: typeof AuthenticatedPortalContactsRoute
   AuthenticatedPortalDriversRoute: typeof AuthenticatedPortalDriversRoute
   AuthenticatedPortalFindProvidersRoute: typeof AuthenticatedPortalFindProvidersRoute
+  AuthenticatedPortalNetworkRoute: typeof AuthenticatedPortalNetworkRoute
   AuthenticatedPortalNotificationsRoute: typeof AuthenticatedPortalNotificationsRoute
   AuthenticatedPortalPayersRoute: typeof AuthenticatedPortalPayersRoute
   AuthenticatedPortalSavedProvidersRoute: typeof AuthenticatedPortalSavedProvidersRoute
@@ -1846,6 +1889,7 @@ const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
   AuthenticatedPortalContactsRoute: AuthenticatedPortalContactsRoute,
   AuthenticatedPortalDriversRoute: AuthenticatedPortalDriversRoute,
   AuthenticatedPortalFindProvidersRoute: AuthenticatedPortalFindProvidersRoute,
+  AuthenticatedPortalNetworkRoute: AuthenticatedPortalNetworkRoute,
   AuthenticatedPortalNotificationsRoute: AuthenticatedPortalNotificationsRoute,
   AuthenticatedPortalPayersRoute: AuthenticatedPortalPayersRoute,
   AuthenticatedPortalSavedProvidersRoute:
