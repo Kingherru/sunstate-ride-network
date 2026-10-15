@@ -68,8 +68,8 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <Field label="Name">
               <div className="relative">
-                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Business name"
+                <Search className="pointer-events-none size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Business name" style={{ paddingLeft: "2.5rem" }}
                   className="w-full border border-border rounded-sm pl-8 pr-3 py-2 text-sm" />
               </div>
             </Field>
