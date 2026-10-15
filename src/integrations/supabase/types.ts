@@ -5155,9 +5155,64 @@ export type Database = {
           },
         ]
       }
+      workspace_conversations: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by_user_id: string
+          creation_source: string
+          id: string
+          is_test: boolean
+          last_message_at: string | null
+          updated_at: string
+          workspace_a_id: string
+          workspace_b_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by_user_id: string
+          creation_source: string
+          id?: string
+          is_test?: boolean
+          last_message_at?: string | null
+          updated_at?: string
+          workspace_a_id: string
+          workspace_b_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          creation_source?: string
+          id?: string
+          is_test?: boolean
+          last_message_at?: string | null
+          updated_at?: string
+          workspace_a_id?: string
+          workspace_b_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_conversations_workspace_a_id_fkey"
+            columns: ["workspace_a_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_conversations_workspace_b_id_fkey"
+            columns: ["workspace_b_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_members: {
         Row: {
           can_create_requests: boolean
+          can_message_for_workspace: boolean
           can_view_workspace_requests: boolean
           created_at: string
           id: string
@@ -5168,6 +5223,7 @@ export type Database = {
         }
         Insert: {
           can_create_requests?: boolean
+          can_message_for_workspace?: boolean
           can_view_workspace_requests?: boolean
           created_at?: string
           id?: string
@@ -5178,6 +5234,7 @@ export type Database = {
         }
         Update: {
           can_create_requests?: boolean
+          can_message_for_workspace?: boolean
           can_view_workspace_requests?: boolean
           created_at?: string
           id?: string
@@ -5190,6 +5247,64 @@ export type Database = {
           {
             foreignKeyName: "workspace_members_workspace_id_fkey"
             columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_test: boolean
+          read_at: string | null
+          recipient_workspace_id: string
+          sender_workspace_id: string
+          sent_by_user_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_test?: boolean
+          read_at?: string | null
+          recipient_workspace_id: string
+          sender_workspace_id: string
+          sent_by_user_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_test?: boolean
+          read_at?: string | null
+          recipient_workspace_id?: string
+          sender_workspace_id?: string
+          sent_by_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_messages_recipient_workspace_id_fkey"
+            columns: ["recipient_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_messages_sender_workspace_id_fkey"
+            columns: ["sender_workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
@@ -5568,6 +5683,7 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
+      can_access_workspace_messages: { Args: { ws: string }; Returns: boolean }
       can_create_workspace_requests: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
@@ -5786,6 +5902,15 @@ export type Database = {
         Returns: undefined
       }
       fin_validate_payment: { Args: { _trip_id: string }; Returns: undefined }
+      find_or_create_workspace_conversation: {
+        Args: {
+          _created_by: string
+          _sender_ws: string
+          _source: string
+          _target_ws: string
+        }
+        Returns: string
+      }
       fl_zip_zone_code: { Args: { _zip: string }; Returns: string }
       gen_webhook_secret: { Args: never; Returns: string }
       get_referral_fee_pct: { Args: never; Returns: number }
