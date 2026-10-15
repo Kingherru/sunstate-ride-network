@@ -2551,6 +2551,65 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_network_profiles: {
+        Row: {
+          accepting_connections: boolean
+          business_contact_email: string | null
+          business_contact_phone: string | null
+          cities: string[]
+          counties: string[]
+          description: string | null
+          hours: string | null
+          medical_delivery: boolean
+          service_types: string[]
+          updated_at: string
+          updated_by: string | null
+          visible: boolean
+          workspace_id: string
+          zips: string[]
+        }
+        Insert: {
+          accepting_connections?: boolean
+          business_contact_email?: string | null
+          business_contact_phone?: string | null
+          cities?: string[]
+          counties?: string[]
+          description?: string | null
+          hours?: string | null
+          medical_delivery?: boolean
+          service_types?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          visible?: boolean
+          workspace_id: string
+          zips?: string[]
+        }
+        Update: {
+          accepting_connections?: boolean
+          business_contact_email?: string | null
+          business_contact_phone?: string | null
+          cities?: string[]
+          counties?: string[]
+          description?: string | null
+          hours?: string | null
+          medical_delivery?: boolean
+          service_types?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          visible?: boolean
+          workspace_id?: string
+          zips?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_network_profiles_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_payout_accounts: {
         Row: {
           charges_enabled: boolean
@@ -3515,6 +3574,38 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_network_providers: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          provider_workspace_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          provider_workspace_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          provider_workspace_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_network_providers_provider_workspace_id_fkey"
+            columns: ["provider_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -5116,6 +5207,7 @@ export type Database = {
           legacy_backfilled: boolean
           mfn_id: string | null
           organization_type: string
+          provider_verified: boolean
           status: Database["public"]["Enums"]["workspace_status"]
           updated_at: string
         }
@@ -5129,6 +5221,7 @@ export type Database = {
           legacy_backfilled?: boolean
           mfn_id?: string | null
           organization_type?: string
+          provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
         }
@@ -5142,6 +5235,7 @@ export type Database = {
           legacy_backfilled?: boolean
           mfn_id?: string | null
           organization_type?: string
+          provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
         }
@@ -5757,6 +5851,10 @@ export type Database = {
       is_facility_or_provider: { Args: { _user_id: string }; Returns: boolean }
       is_master_admin: { Args: { _user_id: string }; Returns: boolean }
       is_ops_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_provider_workspace_manager: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
       is_thread_participant: {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
@@ -5803,6 +5901,34 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_network_providers: {
+        Args: {
+          _accepting?: boolean
+          _city?: string
+          _county?: string
+          _medical_delivery?: boolean
+          _saved_only?: boolean
+          _search?: string
+          _service_type?: string
+          _zip?: string
+        }
+        Returns: {
+          accepting_connections: boolean
+          business_contact_email: string
+          business_contact_phone: string
+          business_name: string
+          cities: string[]
+          counties: string[]
+          description: string
+          hours: string
+          is_saved: boolean
+          medical_delivery: boolean
+          mfn_id: string
+          service_types: string[]
+          workspace_id: string
+          zips: string[]
+        }[]
       }
       list_open_ride_requests: {
         Args: never

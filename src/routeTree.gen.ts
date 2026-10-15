@@ -75,6 +75,7 @@ import { Route as AuthenticatedPortalUploadCsvRouteImport } from './routes/_auth
 import { Route as AuthenticatedPortalVehiclesRouteImport } from './routes/_authenticated/portal.vehicles'
 import { Route as FloridaCoverageRegionIndexRouteImport } from './routes/florida-coverage.$region.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as AuthenticatedAdminPreviewKindRouteImport } from './routes/_authenticated/admin.preview.$kind'
 import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
 import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
 import { Route as AuthenticatedPortalRequestsIndexRouteImport } from './routes/_authenticated/portal.requests.index'
@@ -454,6 +455,12 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminPreviewKindRoute =
+  AuthenticatedAdminPreviewKindRouteImport.update({
+    id: '/preview/$kind',
+    path: '/preview/$kind',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminRequestsIndexRoute =
   AuthenticatedAdminRequestsIndexRouteImport.update({
     id: '/requests/',
@@ -639,6 +646,7 @@ export interface FileRoutesByFullPath {
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
   '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
+  '/admin/preview/$kind': typeof AuthenticatedAdminPreviewKindRoute
   '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
   '/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
@@ -722,6 +730,7 @@ export interface FileRoutesByTo {
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
   '/florida-coverage/$region': typeof FloridaCoverageRegionIndexRoute
+  '/admin/preview/$kind': typeof AuthenticatedAdminPreviewKindRoute
   '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
   '/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
@@ -811,6 +820,7 @@ export interface FileRoutesById {
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
   '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
+  '/_authenticated/admin/preview/$kind': typeof AuthenticatedAdminPreviewKindRoute
   '/_authenticated/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/_authenticated/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
   '/_authenticated/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
@@ -900,6 +910,7 @@ export interface FileRouteTypes {
     | '/learn/'
     | '/portal/'
     | '/florida-coverage/$region/'
+    | '/admin/preview/$kind'
     | '/admin/requests/$id'
     | '/portal/requests/$id'
     | '/portal/requests/new'
@@ -983,6 +994,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/portal'
     | '/florida-coverage/$region'
+    | '/admin/preview/$kind'
     | '/admin/requests/$id'
     | '/portal/requests/$id'
     | '/portal/requests/new'
@@ -1071,6 +1083,7 @@ export interface FileRouteTypes {
     | '/_authenticated/learn/'
     | '/_authenticated/portal/'
     | '/florida-coverage/$region/'
+    | '/_authenticated/admin/preview/$kind'
     | '/_authenticated/admin/requests/$id'
     | '/_authenticated/portal/requests/$id'
     | '/_authenticated/portal/requests/new'
@@ -1605,6 +1618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/preview/$kind': {
+      id: '/_authenticated/admin/preview/$kind'
+      path: '/preview/$kind'
+      fullPath: '/admin/preview/$kind'
+      preLoaderRoute: typeof AuthenticatedAdminPreviewKindRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/requests/': {
       id: '/_authenticated/admin/requests/'
       path: '/requests'
@@ -1761,6 +1781,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminSecurityRoute: typeof AuthenticatedAdminSecurityRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminPreviewKindRoute: typeof AuthenticatedAdminPreviewKindRoute
   AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
   AuthenticatedAdminRequestsIndexRoute: typeof AuthenticatedAdminRequestsIndexRoute
 }
@@ -1778,6 +1799,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminSecurityRoute: AuthenticatedAdminSecurityRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminPreviewKindRoute: AuthenticatedAdminPreviewKindRoute,
   AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
   AuthenticatedAdminRequestsIndexRoute: AuthenticatedAdminRequestsIndexRoute,
 }

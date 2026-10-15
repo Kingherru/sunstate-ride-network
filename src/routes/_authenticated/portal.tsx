@@ -1,47 +1,20 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getAccessState, type AccessState } from "@/lib/access.functions";
-import { PortalShell, type NavItem } from "@/components/portal/PortalShell";
+import { PortalShell } from "@/components/portal/PortalShell";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { organizationLabel } from "@/lib/account-types";
+import { PROVIDER_NAV, RESTRICTED_PROVIDER_NAV, CUSTOMER_NAV, CUSTOMER_ONLY, PROVIDER_ONLY, RESTRICTED_BLOCK, under } from "@/components/portal/portal-nav";
 
-const PROVIDER_NAV: NavItem[] = [
-  { to: "/portal", label: "Overview", exact: true },
-  { to: "/portal/trips", label: "Trips" },
-  { to: "/portal/schedule", label: "Schedule" },
-  { to: "/portal/vehicles", label: "Vehicles" },
-  { to: "/portal/drivers", label: "Drivers" },
-  { to: "/portal/training", label: "Training & Tests" },
-  { to: "/portal/account", label: "Account" },
-];
-const RESTRICTED_PROVIDER_NAV: NavItem[] = [
-  { to: "/portal", label: "Overview", exact: true },
-  { to: "/portal/trips", label: "My trips" },
-  { to: "/portal/training", label: "Training & Tests" },
-  { to: "/portal/account", label: "Account" },
-];
-const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers", "/portal/notifications"];
-const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers"];
-const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/upload-csv"];
-const under = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
-
-const CUSTOMER_NAV: NavItem[] = [
-  { to: "/portal", label: "Overview", exact: true },
-  { to: "/portal/requests/new", label: "New trip" },
-  { to: "/portal/requests", label: "Trip history", exact: true },
-  { to: "/portal/upload-csv", label: "Upload CSV" },
-  { to: "/portal/find-providers", label: "Find providers" },
-  { to: "/portal/saved-providers", label: "Saved providers" },
-  { to: "/portal/contacts", label: "Contacts" },
-  { to: "/portal/payers", label: "Payers" },
-  { to: "/portal/notifications", label: "Notifications" },
-  { to: "/portal/account", label: "Account" },
-];
+export { PROVIDER_NAV, RESTRICTED_PROVIDER_NAV, CUSTOMER_NAV };
 
 function identityFor(a: AccessState) {
   const ws = a.primary;
-  const kind = ws ? ACCOUNT_TYPE_LABEL[ws.type] ?? ws.type : a.isAdmin ? "MFN Admin" : "Account";
-  const label = ws && ws.type !== "provider" ? `${kind} · ${organizationLabel(ws.organization_type)}` : kind;
-  return { name: ws?.name || a.displayName || "Your account", mfnId: a.mfnId, label };
+  if (!ws) return { name: a.displayName || "Your account", mfnId: a.mfnId, label: a.isAdmin ? "Admin" : "Account" };
+  const kind = ACCOUNT_TYPE_LABEL[ws.type] ?? ws.type;
+  const label = ws.type === "provider" ? (ws.is_contractor ? "Contractor" : "Provider")
+    : ws.type === "private_pay" ? "Private Pay"
+    : organizationLabel(ws.organization_type) || kind;
+  return { name: ws.name || a.displayName || "Your account", mfnId: a.mfnId, label: label.toUpperCase() };
 }
 
 export const Route = createFileRoute("/_authenticated/portal")({
@@ -64,8 +37,10 @@ export const Route = createFileRoute("/_authenticated/portal")({
 function PortalLayout() {
   const { access } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
+  const nav = provider ? (access.restricted ? RESTRICTED_PROVIDER_NAV : PROVIDER_NAV) : CUSTOMER_NAV;
   return (
-    <PortalShell nav={provider ? (access.restricted ? RESTRICTED_PROVIDER_NAV : PROVIDER_NAV) : CUSTOMER_NAV} area={provider ? "Provider portal" : "Portal"} identity={identityFor(access)} changelogTo="/portal/changelog">
+    <PortalShell nav={nav} area={provider ? "Provider portal" : "Portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
+      settingsTo="/portal/account" notificationsTo={!provider ? "/portal/notifications" : undefined}>
       <Outlet />
     </PortalShell>
   );

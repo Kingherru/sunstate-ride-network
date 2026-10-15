@@ -217,9 +217,25 @@ export const adminReleaseTripPayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { trip_id: string; override_wait?: boolean }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) return { ok: false as const, error: "Admin only" };
+    const { userId } = context;
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: tripRow } = await supabaseAdmin
+      .from("trips")
+      .select("ride_request_id")
+      .eq("id", data.trip_id)
+      .maybeSingle();
+    let workspaceId: string | null = null;
+    if (tripRow?.ride_request_id) {
+      const { data: rr } = await supabaseAdmin
+        .from("ride_requests")
+        .select("workspace_id")
+        .eq("id", tripRow.ride_request_id)
+        .maybeSingle();
+      workspaceId = (rr as any)?.workspace_id ?? null;
+    }
+    if (!(await adminCanAccount(context, workspaceId))) return { ok: false as const, error: "That account isn't in your scope." };
     const { attemptTripPayoutRelease } = await import("@/lib/payouts.server");
     const res = await attemptTripPayoutRelease({
       tripId: data.trip_id,
@@ -238,17 +254,28 @@ export const adminReleaseTripPayout = createServerFn({ method: "POST" })
 export const listAdminPayoutQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) return { ok: false as const, error: "Admin only", rows: [] as any[] };
+    const { requireAdminCan, getAdminWorkspaceScope } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "read");
+    const scope = await getAdminWorkspaceScope(context);
+    if (!scope.all && scope.workspaceIds.length === 0) return { ok: true as const, rows: [] as any[] };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("trips")
-      .select("id, display_id, pickup_date, status, payment_status, payout_status, cost_total, provider_payout_cents, platform_fee_cents, assigned_to, created_by, payout_eligible_at, payout_hold_reasons, payout_is_medicaid, completed_at, payer")
+      .select("id, display_id, pickup_date, status, payment_status, payout_status, cost_total, provider_payout_cents, platform_fee_cents, assigned_to, created_by, payout_eligible_at, payout_hold_reasons, payout_is_medicaid, completed_at, payer, ride_request_id")
       .in("payout_status", ["pending", "held"])
       .order("payout_eligible_at", { ascending: true, nullsFirst: true })
       .limit(500);
-    return { ok: true as const, rows: data ?? [] };
+    let rows = data ?? [];
+    if (!scope.all) {
+      const rrIds = Array.from(new Set(rows.map((r: any) => r.ride_request_id).filter(Boolean)));
+      const { data: rrs } = rrIds.length
+        ? await supabaseAdmin.from("ride_requests").select("id, workspace_id").in("id", rrIds)
+        : { data: [] as any[] };
+      const wsByRr = new Map((rrs ?? []).map((r: any) => [r.id, r.workspace_id]));
+      const allowed = new Set(scope.workspaceIds);
+      rows = rows.filter((r: any) => r.ride_request_id && allowed.has(wsByRr.get(r.ride_request_id)));
+    }
+    return { ok: true as const, rows };
   });
 
 /**
@@ -262,10 +289,16 @@ export const validateTripPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { trip_id: string; is_medicaid_remit?: boolean }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) return { ok: false as const, error: "Admin only" };
+    const { requireAdminCan, adminCanAccount } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "manage");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: tripForScope } = await supabaseAdmin.from("trips").select("ride_request_id").eq("id", data.trip_id).maybeSingle();
+    let wsId: string | null = null;
+    if (tripForScope?.ride_request_id) {
+      const { data: rr } = await supabaseAdmin.from("ride_requests").select("workspace_id").eq("id", tripForScope.ride_request_id).maybeSingle();
+      wsId = (rr as any)?.workspace_id ?? null;
+    }
+    if (!(await adminCanAccount(context, wsId))) return { ok: false as const, error: "That account isn't in your scope." };
 
     const { data: trip } = await supabaseAdmin
       .from("trips")
@@ -295,8 +328,11 @@ export const validateTripPayment = createServerFn({ method: "POST" })
 export const listTripFinancialLedger = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
-    const { data, error } = await supabase
+    const { requireAdminCan } = await import("@/lib/admin-guard.server");
+    await requireAdminCan(context, "payouts", "read");
+    // The view is security_invoker and already gates rows by is_ops_staff; account
+    // scope for non-master admins is enforced on the queue/action endpoints above.
+    const { data, error } = await context.supabase
       .from("trip_financial_ledger" as any)
       .select("*")
       .order("created_at", { ascending: false })
