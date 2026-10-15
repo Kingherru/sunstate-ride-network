@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { listIntegrations, upsertIntegration, deleteIntegration } from "@/lib/integrations.functions";
 import { EmbedCodePanel } from "./EmbedCodePanel";
 import { ProviderWebhooksPanel } from "./ProviderWebhooksPanel";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 type Vendor = "hibambi" | "routegenie" | "duetride";
 
@@ -21,7 +22,7 @@ const DUET_EVENT_SLUGS = [
 
 export function IntegrationsPanel() {
   const qc = useQueryClient();
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["integrations"],
     queryFn: () => listIntegrations(),
   });
@@ -81,7 +82,7 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
   const [baseUrl, setBaseUrl] = useState(String(existing?.config?.baseUrl ?? ""));
   const [enabled, setEnabled] = useState(existing?.enabled ?? false);
 
-  const save = useMutation({
+  const save = usePortalMutation({
     mutationFn: () => upsertIntegration({
       data: {
         vendor,
@@ -100,7 +101,7 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
     onSuccess: () => { toast.success(`${label} saved`); setApiKey(""); setWebhookSecret(""); setApiSecret(""); onChange(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
   });
-  const remove = useMutation({
+  const remove = usePortalMutation({
     mutationFn: () => deleteIntegration({ data: { vendor } }),
     onSuccess: () => { toast.success(`${label} disconnected`); onChange(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),

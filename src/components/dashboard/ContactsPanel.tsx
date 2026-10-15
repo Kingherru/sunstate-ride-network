@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listContacts, upsertContact, deleteContact } from "@/lib/crm.functions";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
 
@@ -9,11 +10,11 @@ const TYPES = ["patient", "caregiver", "facility", "broker", "organization"] as 
 
 export function ContactsPanel() {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["contacts"], queryFn: () => listContacts() });
+  const q = usePortalQuery({ queryKey: ["contacts"], queryFn: () => listContacts() });
   const [editing, setEditing] = useState<Partial<Contact> | null>(null);
   const [filter, setFilter] = useState("");
 
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deleteContact({ data: { id } }),
     onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["contacts"] }); },
   });
@@ -100,7 +101,7 @@ function ContactDialog({ contact, onClose, onSaved }: { contact: Partial<Contact
     mobility_notes: contact.mobility_notes ?? "",
     notes: contact.notes ?? "",
   });
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: () => upsertContact({ data: { ...form, id: contact.id } }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),

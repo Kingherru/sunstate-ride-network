@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { getMyProviderBalanceDetailed, requestCashout, getFinSettings } from "@/lib/finance/finance.functions";
 import { formatCents } from "@/lib/finance/constants";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 /**
  * Provider Balance panel — the single money surface for providers.
@@ -17,8 +18,8 @@ export function ProviderBalancePanel() {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const settingsQ = useQuery({ queryKey: ["fin-settings"], queryFn: () => getFinSettings(), staleTime: 60_000 });
-  const q = useQuery({ queryKey: ["provider-balance-detailed"], queryFn: () => load(), refetchInterval: 30_000 });
+  const settingsQ = usePortalQuery({ queryKey: ["fin-settings"], queryFn: () => getFinSettings(), staleTime: 60_000 });
+  const q = usePortalQuery({ queryKey: ["provider-balance-detailed"], queryFn: () => load(), refetchInterval: 30_000 });
 
   const balance = q.data?.balance ?? { available_cents: 0, pending_cents: 0, lifetime_paid_out_cents: 0 };
   const entries = q.data?.entries ?? [];

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
   Select,
   SelectContent,
   SelectItem,
@@ -86,7 +87,7 @@ export function NotificationsPanel() {
   const markAllFn = useServerFn(markAllNotificationsRead);
   const deleteFn = useServerFn(deleteNotification);
 
-  const query = useQuery({
+  const query = usePortalQuery({
     queryKey: ["notifications", filter],
     queryFn: () => listFn({ data: { filter, limit: 200, offset: 0 } }),
   });
@@ -146,7 +147,7 @@ export function NotificationsPanel() {
     if (userId) qc.invalidateQueries({ queryKey: ["unread-counts", userId] });
   };
 
-  const markSelected = useMutation({
+  const markSelected = usePortalMutation({
     mutationFn: (ids: string[]) => markFn({ data: { ids } }),
     onSuccess: () => {
       setSelected(new Set());
@@ -156,7 +157,7 @@ export function NotificationsPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to mark read"),
   });
 
-  const markAll = useMutation({
+  const markAll = usePortalMutation({
     mutationFn: () => markAllFn(),
     onSuccess: () => {
       setSelected(new Set());
@@ -166,7 +167,7 @@ export function NotificationsPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to mark all read"),
   });
 
-  const removeOne = useMutation({
+  const removeOne = usePortalMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
     onSuccess: () => {
       invalidateAll();

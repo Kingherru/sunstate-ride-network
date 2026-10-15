@@ -4,13 +4,14 @@ import { Award, BookOpen, PlayCircle, ShoppingBag } from "lucide-react";
 import { listPublicCourses, listMyEnrollments } from "@/lib/courses.functions";
 import { DsEmpty } from "@/components/ds/feedback";
 import { actionCls, panelCls } from "@/components/portal/PortalShell";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 const price = (c: number) => `$${(c / 100).toFixed(0)}`;
 
 /** Real courses + the signed-in learner's own enrollments. No invented progress. */
 export function TrainingTests() {
-  const courses = useQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
-  const mine = useQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
+  const courses = usePortalQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
+  const mine = usePortalQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
 
   if (courses.isLoading || mine.isLoading) return <p className="ds-support" role="status">Loading training…</p>;
   if (courses.error) return <DsEmpty title="Training is unavailable">Please try again in a moment.</DsEmpty>;

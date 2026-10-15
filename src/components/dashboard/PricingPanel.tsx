@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { getMyPricing, saveMyPricing } from "@/lib/pricing.functions";
 import { calculateTripCost, DEFAULT_RATES, type PricingRates } from "@/lib/pricing";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: string }> = [
   { key: "base_pickup", label: "Base pickup fee" },
@@ -21,7 +22,7 @@ const NUMERIC_FIELDS: Array<{ key: keyof PricingRates; label: string; hint?: str
 
 export function PricingPanel() {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["pricing"], queryFn: () => getMyPricing() });
+  const q = usePortalQuery({ queryKey: ["pricing"], queryFn: () => getMyPricing() });
   const [form, setForm] = useState<PricingRates>(DEFAULT_RATES);
   const [tripKind, setTripKind] = useState<"one_way" | "round_trip">("one_way");
   const platformFeePct = usePlatformFeePct();
@@ -30,7 +31,7 @@ export function PricingPanel() {
     if (q.data) setForm({ ...DEFAULT_RATES, ...(q.data as any) });
   }, [q.data]);
 
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: () => saveMyPricing({ data: form }),
     onSuccess: () => { toast.success("Pricing saved"); qc.invalidateQueries({ queryKey: ["pricing"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),

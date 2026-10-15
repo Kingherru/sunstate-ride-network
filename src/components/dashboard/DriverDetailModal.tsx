@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { X, Mail, Calendar } from "lucide-react";
 import { emailDriverWeeklySchedule, listDriverUpcomingTrips } from "@/lib/schedule-board.functions";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 export function DriverDetailModal({
   driverId,

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import {
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
   listMyPayers,
   createPayer,
   updatePayer,
@@ -16,11 +17,11 @@ import {
 
 export function PayersPanel() {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers() });
+  const q = usePortalQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers() });
   const [openId, setOpenId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const create = useMutation({
+  const create = usePortalMutation({
     mutationFn: (input: any) => createPayer({ data: input }),
     onSuccess: (r: any) => {
       if ("error" in r) return toast.error(r.error);
@@ -31,7 +32,7 @@ export function PayersPanel() {
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deletePayer({ data: { id } }),
     onSuccess: () => { toast.success("Payer removed"); qc.invalidateQueries({ queryKey: ["my-payers"] }); },
     onError: (e: any) => toast.error(e.message),
@@ -160,11 +161,11 @@ function PayerForm({
 
 function PayerCards({ payerId, payerName }: { payerId: string; payerName: string }) {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["payer-cards", payerId], queryFn: () => listPayerCards({ data: { payer_id: payerId } }) });
+  const q = usePortalQuery({ queryKey: ["payer-cards", payerId], queryFn: () => listPayerCards({ data: { payer_id: payerId } }) });
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
-  const start = useMutation({
+  const start = usePortalMutation({
     mutationFn: async () => {
       const r = await createPayerSetupIntent({ data: { payer_id: payerId, environment: getStripeEnvironment() } });
       if ("error" in r) throw new Error(r.error);
@@ -174,7 +175,7 @@ function PayerCards({ payerId, payerName }: { payerId: string; payerName: string
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deletePayerCard({ data: { id } }),
     onSuccess: () => { toast.success("Card removed"); qc.invalidateQueries({ queryKey: ["payer-cards", payerId] }); },
     onError: (e: any) => toast.error(e.message),

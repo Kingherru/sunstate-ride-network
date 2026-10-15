@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Search, MapPin, BookmarkPlus, BookmarkCheck, Phone, Mail, Truck, CheckCircle2 } from "lucide-react";
 import {
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
   listNetworkProviders,
   saveNetworkProvider,
   unsaveNetworkProvider,
@@ -35,7 +36,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
     saved_only: savedOnly,
   };
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["network-providers", filters],
     queryFn: async () => {
       const r = await listFn({ data: filters });
