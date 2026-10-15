@@ -6,12 +6,22 @@ import { DsEmpty } from "@/components/ds/feedback";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({ meta: [{ title: "Admin Overview — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
-  loader: () => listAdminRequests(),
+  loader: async ({ context }) => {
+    const { canOpen } = await import("./admin");
+    if (!canOpen("/admin/requests", (context as any).perms)) return null;
+    return listAdminRequests();
+  },
   component: Overview,
 });
 
 function Overview() {
   const rows = Route.useLoaderData();
+  if (rows === null) return (
+    <>
+      <PageHead title="Admin">Your administrator account is active.</PageHead>
+      <section className={panelCls}><DsEmpty title="No sections assigned yet">The Master Admin hasn't given you access to any admin sections or accounts. Ask them to assign your permissions.</DsEmpty></section>
+    </>
+  );
   const recent = rows.slice(0, 5);
   return (
     <>
