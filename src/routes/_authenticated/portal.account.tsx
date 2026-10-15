@@ -30,7 +30,7 @@ function Account() {
   const { access, user } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
   const [tab, setTab] = useState<Tab>("profile");
-  const tabs: { value: Tab; label: string }[] = provider
+  const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" }, { value: "membership", label: "Membership" }, { value: "security", label: "Security" }]
     : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" }];
