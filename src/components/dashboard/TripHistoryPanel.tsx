@@ -10,6 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 /**
  * TripHistoryPanel
@@ -176,7 +177,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
   const fromIso = range?.from ? toIso(range.from) : null;
   const toIsoStr = range?.to ? toIso(range.to) : null;
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["trip-history", userId, fromIso, toIsoStr],
     enabled: !!userId,
     queryFn: async (): Promise<HistoryTrip[]> => {
@@ -224,7 +225,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
     () => Array.from(new Set(allTrips.map((t) => t.driver_id).filter(Boolean) as string[])),
     [allTrips],
   );
-  const driversQ = useQuery({
+  const driversQ = usePortalQuery({
     queryKey: ["trip-history-drivers", driverIds.sort().join(",")],
     enabled: driverIds.length > 0,
     queryFn: async () => {

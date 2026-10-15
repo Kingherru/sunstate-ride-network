@@ -13,6 +13,7 @@ import {
   listDriverEarningsReports,
 } from "@/lib/driver-earnings.functions";
 import {
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
   downloadDriverEarningsPdf,
   driverEarningsPdfBlobUrl,
   type DriverEarningsPdfInput,
@@ -64,7 +65,7 @@ function rangeFor(preset: Preset, custom: { start: string; end: string }): { sta
 
 export function DriverEarningsPanel() {
   const qc = useQueryClient();
-  const driversQ = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
+  const driversQ = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const drivers = (driversQ.data ?? []) as any[];
   const [driverId, setDriverId] = useState<string>("");
   const [preset, setPreset] = useState<Preset>("this_month");
@@ -77,13 +78,13 @@ export function DriverEarningsPanel() {
   // Auto-pick first driver when loaded
   const effectiveDriverId = driverId || drivers[0]?.id || "";
 
-  const report = useQuery({
+  const report = usePortalQuery({
     enabled: !!effectiveDriverId,
     queryKey: ["driver-earnings", effectiveDriverId, range.start, range.end],
     queryFn: () => getDriverEarnings({ data: { driver_id: effectiveDriverId, start: range.start, end: range.end } }),
   });
 
-  const history = useQuery({
+  const history = usePortalQuery({
     enabled: !!effectiveDriverId,
     queryKey: ["driver-payment-history", effectiveDriverId],
     queryFn: () => listDriverPaymentHistory({ data: { driver_id: effectiveDriverId } }),
@@ -252,7 +253,7 @@ function AdjustmentsCard({ driverId, adjustments, onChanged }: { driverId: strin
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [applied, setApplied] = useState(isoDay(new Date()));
-  const upsert = useMutation({
+  const upsert = usePortalMutation({
     mutationFn: () => upsertDriverAdjustment({ data: {
       driver_id: driverId, applied_on: applied,
       amount_cents: dollarsToCents(amount), reason: reason || null,
@@ -260,7 +261,7 @@ function AdjustmentsCard({ driverId, adjustments, onChanged }: { driverId: strin
     onSuccess: () => { toast.success("Adjustment added"); setAmount(""); setReason(""); onChanged(); },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deleteDriverAdjustment({ data: { id } }),
     onSuccess: () => { toast.success("Removed"); onChanged(); },
   });
@@ -312,7 +313,7 @@ function PaymentsCard({ driverId, range, grossCents, payments, onChanged }:
   const [status, setStatus] = useState<"paid" | "partial" | "unpaid">("paid");
   const [method, setMethod] = useState("");
   const [notes, setNotes] = useState("");
-  const upsert = useMutation({
+  const upsert = usePortalMutation({
     mutationFn: () => upsertDriverPayment({ data: {
       driver_id: driverId,
       period_start: range.start, period_end: range.end,
@@ -323,11 +324,11 @@ function PaymentsCard({ driverId, range, grossCents, payments, onChanged }:
     onSuccess: () => { toast.success("Payment recorded"); setAmount(""); setNotes(""); setMethod(""); onChanged(); },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deleteDriverPayment({ data: { id } }),
     onSuccess: () => { toast.success("Removed"); onChanged(); },
   });
-  const updateStatus = useMutation({
+  const updateStatus = usePortalMutation({
     mutationFn: (p: { id: string; status: "paid" | "partial" | "unpaid" }) =>
       upsertDriverPayment({ data: { id: p.id, driver_id: driverId, status: p.status } }),
     onSuccess: () => { toast.success("Updated"); onChanged(); },
@@ -398,7 +399,7 @@ function PaymentsCard({ driverId, range, grossCents, payments, onChanged }:
 /* -------- Full payment history for the selected driver -------- */
 function PaymentHistoryCard({ payments, loading, onChanged }:
   { payments: any[]; loading: boolean; onChanged: () => void }) {
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deleteDriverPayment({ data: { id } }),
     onSuccess: () => { toast.success("Removed"); onChanged(); },
   });
@@ -486,7 +487,7 @@ function EmailReportCard({
     setPreviewUrl(null);
   };
 
-  const send = useMutation({
+  const send = usePortalMutation({
     mutationFn: () => sendDriverEarningsReport({ data: {
       driver_id: driver.id,
       period_start: range.start,
@@ -596,7 +597,7 @@ function EmailReportCard({
 
 /* -------- Emailed reports history -------- */
 function EmailedReportsHistoryCard({ driverId }: { driverId: string }) {
-  const q = useQuery({
+  const q = usePortalQuery({
     enabled: !!driverId,
     queryKey: ["driver-earnings-reports", driverId],
     queryFn: () => listDriverEarningsReports({ data: { driver_id: driverId } }),

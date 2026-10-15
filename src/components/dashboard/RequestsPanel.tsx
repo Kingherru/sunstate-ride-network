@@ -12,6 +12,7 @@ import { formatMinutes } from "@/components/maps/RoutePreview";
 import { ReservationReviewDialog } from "@/components/dashboard/ReservationReviewDialog";
 import { listReferralReservations, confirmReferralReservation } from "@/lib/referrals.functions";
 import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@/lib/payment-gate";
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
 
 
@@ -152,7 +153,7 @@ function ReferralReservationsSection({ userId }: { userId: string }) {
   const confirmFn = useServerFn(confirmReferralReservation);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["referral-reservations", userId],
     queryFn: () => listFn(),
   });
@@ -293,7 +294,7 @@ export function ReservationsPanel({
 
 
   // Counts across all three buckets so the tab pill shows totals.
-  const counts = useQuery({
+  const counts = usePortalQuery({
     queryKey: ["reservations-by-state", "counts", scope, userId],
     queryFn: async () => {
       const [u, b, p] = await Promise.all([
@@ -311,11 +312,11 @@ export function ReservationsPanel({
     },
   });
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["reservations-by-state", state === "canceled" ? "past" : state, scope, userId],
     queryFn: () => fn({ data: { state: state === "canceled" ? "past" : state, scope } }),
   });
-  const provider = useQuery({
+  const provider = usePortalQuery({
     queryKey: ["provider-profile-cms", userId],
     queryFn: async () => {
       const { data } = await supabase

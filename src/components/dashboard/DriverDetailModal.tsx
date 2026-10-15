@@ -15,12 +15,12 @@ export function DriverDetailModal({
   const listFn = useServerFn(listDriverUpcomingTrips);
   const emailFn = useServerFn(emailDriverWeeklySchedule);
 
-  const q = useQuery({
+  const q = usePortalQuery({
     queryKey: ["driver-upcoming-trips", driverId],
     queryFn: () => listFn({ data: { driver_id: driverId, days: 7 } }),
   });
 
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: () => emailFn({ data: { driver_id: driverId } }),
     onSuccess: (r: any) => {
       toast.success(`Weekly schedule sent to ${r.recipient} (${r.trip_count} trip${r.trip_count === 1 ? "" : "s"})`);

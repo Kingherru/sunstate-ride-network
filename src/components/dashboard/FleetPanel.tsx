@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
   listDrivers, upsertDriver, deleteDriver,
   listVehicles, upsertVehicle, deleteVehicle,
   sendDriverWeeklySchedule,
@@ -20,11 +21,11 @@ export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
 
 function DriversCard() {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
-  const vq = useQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
+  const q = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
+  const vq = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const [editing, setEditing] = useState<any>(null);
   const [scheduling, setScheduling] = useState<any>(null);
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deleteDriver({ data: { id } }),
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); },
   });
@@ -210,7 +211,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   const isHourly = f.pay_type === "hourly";
   const isDaily = f.pay_type === "daily_salary";
   const isContractor = f.pay_type === "independent_contractor" || f.employment_type === "independent_contractor";
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: () => upsertDriver({ data: {
       id: d.id,
       first_name: f.first_name,
@@ -449,7 +450,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
   const today = new Date();
   const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
   const [weekStart, setWeekStart] = useState(monday.toISOString().slice(0, 10));
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: () => sendDriverWeeklySchedule({ data: { driver_id: d.id, week_start: weekStart } }),
     onSuccess: (r: any) => { toast.success(`Schedule queued — ${r.count} trip${r.count === 1 ? "" : "s"}`); onClose(); },
     onError: (e: any) => toast.error(e.message ?? "Failed to send"),
@@ -481,10 +482,10 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
 
 function VehiclesCard() {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
-  const dq = useQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
+  const q = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
+  const dq = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const [editing, setEditing] = useState<any>(null);
-  const del = useMutation({
+  const del = usePortalMutation({
     mutationFn: (id: string) => deleteVehicle({ data: { id } }),
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); },
   });
@@ -544,7 +545,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
     set({ ...f, service_capabilities: f.service_capabilities.includes(val)
       ? f.service_capabilities.filter(x => x !== val)
       : [...f.service_capabilities, val] });
-  const m = useMutation({
+  const m = usePortalMutation({
     mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity), assigned_driver_id: f.assigned_driver_id || null } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
