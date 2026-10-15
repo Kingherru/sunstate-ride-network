@@ -53,7 +53,7 @@ export function PortalShell({ nav, area, identity, changelogTo, children }: { na
         className={cn(footCls, pathname === changelogTo ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
         <History className="size-4" aria-hidden />Change log
         {indicator !== "none" && (
-          <span className={cn("ml-auto size-2.5 rounded-full", indicator === "important" ? "bg-ds-danger motion-safe:animate-[mfn-wiggle_0.5s_ease-in-out_1]" : "bg-ds-success")}>
+          <span className={cn("ml-auto size-2.5 rounded-full", indicator === "important" ? "bg-ds-error motion-safe:animate-[mfn-wiggle_0.5s_ease-in-out_1]" : "bg-ds-success-soft ring-1 ring-ds-success")}>
             <span className="sr-only">{indicator === "important" ? "Important update" : "New update"}</span>
           </span>
         )}
