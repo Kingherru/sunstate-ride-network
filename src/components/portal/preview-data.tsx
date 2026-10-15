@@ -107,9 +107,10 @@ export function usePortalMutation<TData = unknown, TError = unknown, TVariables 
           previewBlocked();
           throw new Error("__PREVIEW_BLOCKED__");
         },
-        onError: (err: TError, vars: TVariables, ctx: TContext | undefined) => {
+        onError: (...args: Parameters<NonNullable<typeof options.onError>>) => {
+          const err = args[0];
           if (err instanceof Error && err.message === "__PREVIEW_BLOCKED__") return;
-          options.onError?.(err, vars, ctx);
+          options.onError?.(...args);
         },
         onSuccess: undefined,
         onSettled: undefined,
