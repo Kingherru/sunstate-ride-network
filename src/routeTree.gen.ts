@@ -46,11 +46,31 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminChangelogRouteImport } from './routes/_authenticated/admin.changelog'
+import { Route as AuthenticatedAdminIntegrationsRouteImport } from './routes/_authenticated/admin.integrations'
+import { Route as AuthenticatedAdminMessagingRouteImport } from './routes/_authenticated/admin.messaging'
+import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
+import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
+import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin.people'
+import { Route as AuthenticatedAdminPricingRouteImport } from './routes/_authenticated/admin.pricing'
+import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin.security'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
 import { Route as AuthenticatedPortalAccountRouteImport } from './routes/_authenticated/portal.account'
+import { Route as AuthenticatedPortalChangelogRouteImport } from './routes/_authenticated/portal.changelog'
+import { Route as AuthenticatedPortalContactsRouteImport } from './routes/_authenticated/portal.contacts'
+import { Route as AuthenticatedPortalDriversRouteImport } from './routes/_authenticated/portal.drivers'
+import { Route as AuthenticatedPortalFindProvidersRouteImport } from './routes/_authenticated/portal.find-providers'
+import { Route as AuthenticatedPortalNotificationsRouteImport } from './routes/_authenticated/portal.notifications'
+import { Route as AuthenticatedPortalPayersRouteImport } from './routes/_authenticated/portal.payers'
+import { Route as AuthenticatedPortalSavedProvidersRouteImport } from './routes/_authenticated/portal.saved-providers'
+import { Route as AuthenticatedPortalScheduleRouteImport } from './routes/_authenticated/portal.schedule'
+import { Route as AuthenticatedPortalTrainingRouteImport } from './routes/_authenticated/portal.training'
+import { Route as AuthenticatedPortalTripsRouteImport } from './routes/_authenticated/portal.trips'
+import { Route as AuthenticatedPortalUploadCsvRouteImport } from './routes/_authenticated/portal.upload-csv'
+import { Route as AuthenticatedPortalVehiclesRouteImport } from './routes/_authenticated/portal.vehicles'
 import { Route as FloridaCoverageRegionIndexRouteImport } from './routes/florida-coverage.$region.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
@@ -261,6 +281,54 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminChangelogRoute =
+  AuthenticatedAdminChangelogRouteImport.update({
+    id: '/changelog',
+    path: '/changelog',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminIntegrationsRoute =
+  AuthenticatedAdminIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMessagingRoute =
+  AuthenticatedAdminMessagingRouteImport.update({
+    id: '/messaging',
+    path: '/messaging',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminNotificationsRoute =
+  AuthenticatedAdminNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPayoutsRoute =
+  AuthenticatedAdminPayoutsRouteImport.update({
+    id: '/payouts',
+    path: '/payouts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPeopleRoute =
+  AuthenticatedAdminPeopleRouteImport.update({
+    id: '/people',
+    path: '/people',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPricingRoute =
+  AuthenticatedAdminPricingRouteImport.update({
+    id: '/pricing',
+    path: '/pricing',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSecurityRoute =
+  AuthenticatedAdminSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -287,6 +355,78 @@ const AuthenticatedPortalAccountRoute =
   AuthenticatedPortalAccountRouteImport.update({
     id: '/account',
     path: '/account',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalChangelogRoute =
+  AuthenticatedPortalChangelogRouteImport.update({
+    id: '/changelog',
+    path: '/changelog',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalContactsRoute =
+  AuthenticatedPortalContactsRouteImport.update({
+    id: '/contacts',
+    path: '/contacts',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalDriversRoute =
+  AuthenticatedPortalDriversRouteImport.update({
+    id: '/drivers',
+    path: '/drivers',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalFindProvidersRoute =
+  AuthenticatedPortalFindProvidersRouteImport.update({
+    id: '/find-providers',
+    path: '/find-providers',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalNotificationsRoute =
+  AuthenticatedPortalNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalPayersRoute =
+  AuthenticatedPortalPayersRouteImport.update({
+    id: '/payers',
+    path: '/payers',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalSavedProvidersRoute =
+  AuthenticatedPortalSavedProvidersRouteImport.update({
+    id: '/saved-providers',
+    path: '/saved-providers',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalScheduleRoute =
+  AuthenticatedPortalScheduleRouteImport.update({
+    id: '/schedule',
+    path: '/schedule',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalTrainingRoute =
+  AuthenticatedPortalTrainingRouteImport.update({
+    id: '/training',
+    path: '/training',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalTripsRoute =
+  AuthenticatedPortalTripsRouteImport.update({
+    id: '/trips',
+    path: '/trips',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalUploadCsvRoute =
+  AuthenticatedPortalUploadCsvRouteImport.update({
+    id: '/upload-csv',
+    path: '/upload-csv',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalVehiclesRoute =
+  AuthenticatedPortalVehiclesRouteImport.update({
+    id: '/vehicles',
+    path: '/vehicles',
     getParentRoute: () => AuthenticatedPortalRoute,
   } as any)
 const FloridaCoverageRegionIndexRoute =
@@ -455,9 +595,29 @@ export interface FileRoutesByFullPath {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
+  '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/admin/people': typeof AuthenticatedAdminPeopleRoute
+  '/admin/pricing': typeof AuthenticatedAdminPricingRoute
+  '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
+  '/portal/changelog': typeof AuthenticatedPortalChangelogRoute
+  '/portal/contacts': typeof AuthenticatedPortalContactsRoute
+  '/portal/drivers': typeof AuthenticatedPortalDriversRoute
+  '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
+  '/portal/payers': typeof AuthenticatedPortalPayersRoute
+  '/portal/saved-providers': typeof AuthenticatedPortalSavedProvidersRoute
+  '/portal/schedule': typeof AuthenticatedPortalScheduleRoute
+  '/portal/training': typeof AuthenticatedPortalTrainingRoute
+  '/portal/trips': typeof AuthenticatedPortalTripsRoute
+  '/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
+  '/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
@@ -516,9 +676,29 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
+  '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/admin/people': typeof AuthenticatedAdminPeopleRoute
+  '/admin/pricing': typeof AuthenticatedAdminPricingRoute
+  '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
+  '/portal/changelog': typeof AuthenticatedPortalChangelogRoute
+  '/portal/contacts': typeof AuthenticatedPortalContactsRoute
+  '/portal/drivers': typeof AuthenticatedPortalDriversRoute
+  '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
+  '/portal/payers': typeof AuthenticatedPortalPayersRoute
+  '/portal/saved-providers': typeof AuthenticatedPortalSavedProvidersRoute
+  '/portal/schedule': typeof AuthenticatedPortalScheduleRoute
+  '/portal/training': typeof AuthenticatedPortalTrainingRoute
+  '/portal/trips': typeof AuthenticatedPortalTripsRoute
+  '/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
+  '/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
@@ -583,9 +763,29 @@ export interface FileRoutesById {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/_authenticated/admin/changelog': typeof AuthenticatedAdminChangelogRoute
+  '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/_authenticated/admin/messaging': typeof AuthenticatedAdminMessagingRoute
+  '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
+  '/_authenticated/admin/pricing': typeof AuthenticatedAdminPricingRoute
+  '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/portal/account': typeof AuthenticatedPortalAccountRoute
+  '/_authenticated/portal/changelog': typeof AuthenticatedPortalChangelogRoute
+  '/_authenticated/portal/contacts': typeof AuthenticatedPortalContactsRoute
+  '/_authenticated/portal/drivers': typeof AuthenticatedPortalDriversRoute
+  '/_authenticated/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/_authenticated/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
+  '/_authenticated/portal/payers': typeof AuthenticatedPortalPayersRoute
+  '/_authenticated/portal/saved-providers': typeof AuthenticatedPortalSavedProvidersRoute
+  '/_authenticated/portal/schedule': typeof AuthenticatedPortalScheduleRoute
+  '/_authenticated/portal/training': typeof AuthenticatedPortalTrainingRoute
+  '/_authenticated/portal/trips': typeof AuthenticatedPortalTripsRoute
+  '/_authenticated/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
+  '/_authenticated/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
@@ -650,9 +850,29 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/admin/changelog'
+    | '/admin/integrations'
+    | '/admin/messaging'
+    | '/admin/notifications'
+    | '/admin/payouts'
+    | '/admin/people'
+    | '/admin/pricing'
+    | '/admin/security'
     | '/admin/settings'
     | '/learn/$slug'
     | '/portal/account'
+    | '/portal/changelog'
+    | '/portal/contacts'
+    | '/portal/drivers'
+    | '/portal/find-providers'
+    | '/portal/notifications'
+    | '/portal/payers'
+    | '/portal/saved-providers'
+    | '/portal/schedule'
+    | '/portal/training'
+    | '/portal/trips'
+    | '/portal/upload-csv'
+    | '/portal/vehicles'
     | '/lovable/email/suppression'
     | '/admin/'
     | '/learn/'
@@ -711,9 +931,29 @@ export interface FileRouteTypes {
     | '/resources'
     | '/services'
     | '/shop'
+    | '/admin/changelog'
+    | '/admin/integrations'
+    | '/admin/messaging'
+    | '/admin/notifications'
+    | '/admin/payouts'
+    | '/admin/people'
+    | '/admin/pricing'
+    | '/admin/security'
     | '/admin/settings'
     | '/learn/$slug'
     | '/portal/account'
+    | '/portal/changelog'
+    | '/portal/contacts'
+    | '/portal/drivers'
+    | '/portal/find-providers'
+    | '/portal/notifications'
+    | '/portal/payers'
+    | '/portal/saved-providers'
+    | '/portal/schedule'
+    | '/portal/training'
+    | '/portal/trips'
+    | '/portal/upload-csv'
+    | '/portal/vehicles'
     | '/lovable/email/suppression'
     | '/admin'
     | '/learn'
@@ -777,9 +1017,29 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/_authenticated/admin/changelog'
+    | '/_authenticated/admin/integrations'
+    | '/_authenticated/admin/messaging'
+    | '/_authenticated/admin/notifications'
+    | '/_authenticated/admin/payouts'
+    | '/_authenticated/admin/people'
+    | '/_authenticated/admin/pricing'
+    | '/_authenticated/admin/security'
     | '/_authenticated/admin/settings'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/portal/account'
+    | '/_authenticated/portal/changelog'
+    | '/_authenticated/portal/contacts'
+    | '/_authenticated/portal/drivers'
+    | '/_authenticated/portal/find-providers'
+    | '/_authenticated/portal/notifications'
+    | '/_authenticated/portal/payers'
+    | '/_authenticated/portal/saved-providers'
+    | '/_authenticated/portal/schedule'
+    | '/_authenticated/portal/training'
+    | '/_authenticated/portal/trips'
+    | '/_authenticated/portal/upload-csv'
+    | '/_authenticated/portal/vehicles'
     | '/lovable/email/suppression'
     | '/_authenticated/admin/'
     | '/_authenticated/learn/'
@@ -1116,6 +1376,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/changelog': {
+      id: '/_authenticated/admin/changelog'
+      path: '/changelog'
+      fullPath: '/admin/changelog'
+      preLoaderRoute: typeof AuthenticatedAdminChangelogRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/integrations': {
+      id: '/_authenticated/admin/integrations'
+      path: '/integrations'
+      fullPath: '/admin/integrations'
+      preLoaderRoute: typeof AuthenticatedAdminIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/messaging': {
+      id: '/_authenticated/admin/messaging'
+      path: '/messaging'
+      fullPath: '/admin/messaging'
+      preLoaderRoute: typeof AuthenticatedAdminMessagingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/notifications': {
+      id: '/_authenticated/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AuthenticatedAdminNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/payouts': {
+      id: '/_authenticated/admin/payouts'
+      path: '/payouts'
+      fullPath: '/admin/payouts'
+      preLoaderRoute: typeof AuthenticatedAdminPayoutsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/people': {
+      id: '/_authenticated/admin/people'
+      path: '/people'
+      fullPath: '/admin/people'
+      preLoaderRoute: typeof AuthenticatedAdminPeopleRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/pricing': {
+      id: '/_authenticated/admin/pricing'
+      path: '/pricing'
+      fullPath: '/admin/pricing'
+      preLoaderRoute: typeof AuthenticatedAdminPricingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/security': {
+      id: '/_authenticated/admin/security'
+      path: '/security'
+      fullPath: '/admin/security'
+      preLoaderRoute: typeof AuthenticatedAdminSecurityRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
@@ -1149,6 +1465,90 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/portal/account'
       preLoaderRoute: typeof AuthenticatedPortalAccountRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/changelog': {
+      id: '/_authenticated/portal/changelog'
+      path: '/changelog'
+      fullPath: '/portal/changelog'
+      preLoaderRoute: typeof AuthenticatedPortalChangelogRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/contacts': {
+      id: '/_authenticated/portal/contacts'
+      path: '/contacts'
+      fullPath: '/portal/contacts'
+      preLoaderRoute: typeof AuthenticatedPortalContactsRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/drivers': {
+      id: '/_authenticated/portal/drivers'
+      path: '/drivers'
+      fullPath: '/portal/drivers'
+      preLoaderRoute: typeof AuthenticatedPortalDriversRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/find-providers': {
+      id: '/_authenticated/portal/find-providers'
+      path: '/find-providers'
+      fullPath: '/portal/find-providers'
+      preLoaderRoute: typeof AuthenticatedPortalFindProvidersRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/notifications': {
+      id: '/_authenticated/portal/notifications'
+      path: '/notifications'
+      fullPath: '/portal/notifications'
+      preLoaderRoute: typeof AuthenticatedPortalNotificationsRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/payers': {
+      id: '/_authenticated/portal/payers'
+      path: '/payers'
+      fullPath: '/portal/payers'
+      preLoaderRoute: typeof AuthenticatedPortalPayersRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/saved-providers': {
+      id: '/_authenticated/portal/saved-providers'
+      path: '/saved-providers'
+      fullPath: '/portal/saved-providers'
+      preLoaderRoute: typeof AuthenticatedPortalSavedProvidersRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/schedule': {
+      id: '/_authenticated/portal/schedule'
+      path: '/schedule'
+      fullPath: '/portal/schedule'
+      preLoaderRoute: typeof AuthenticatedPortalScheduleRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/training': {
+      id: '/_authenticated/portal/training'
+      path: '/training'
+      fullPath: '/portal/training'
+      preLoaderRoute: typeof AuthenticatedPortalTrainingRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/trips': {
+      id: '/_authenticated/portal/trips'
+      path: '/trips'
+      fullPath: '/portal/trips'
+      preLoaderRoute: typeof AuthenticatedPortalTripsRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/upload-csv': {
+      id: '/_authenticated/portal/upload-csv'
+      path: '/upload-csv'
+      fullPath: '/portal/upload-csv'
+      preLoaderRoute: typeof AuthenticatedPortalUploadCsvRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/vehicles': {
+      id: '/_authenticated/portal/vehicles'
+      path: '/vehicles'
+      fullPath: '/portal/vehicles'
+      preLoaderRoute: typeof AuthenticatedPortalVehiclesRouteImport
       parentRoute: typeof AuthenticatedPortalRoute
     }
     '/florida-coverage/$region/': {
@@ -1309,6 +1709,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminChangelogRoute: typeof AuthenticatedAdminChangelogRoute
+  AuthenticatedAdminIntegrationsRoute: typeof AuthenticatedAdminIntegrationsRoute
+  AuthenticatedAdminMessagingRoute: typeof AuthenticatedAdminMessagingRoute
+  AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
+  AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
+  AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
+  AuthenticatedAdminPricingRoute: typeof AuthenticatedAdminPricingRoute
+  AuthenticatedAdminSecurityRoute: typeof AuthenticatedAdminSecurityRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
@@ -1316,6 +1724,14 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminChangelogRoute: AuthenticatedAdminChangelogRoute,
+  AuthenticatedAdminIntegrationsRoute: AuthenticatedAdminIntegrationsRoute,
+  AuthenticatedAdminMessagingRoute: AuthenticatedAdminMessagingRoute,
+  AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
+  AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
+  AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
+  AuthenticatedAdminPricingRoute: AuthenticatedAdminPricingRoute,
+  AuthenticatedAdminSecurityRoute: AuthenticatedAdminSecurityRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
@@ -1340,6 +1756,18 @@ const AuthenticatedLearnRouteWithChildren =
 
 interface AuthenticatedPortalRouteChildren {
   AuthenticatedPortalAccountRoute: typeof AuthenticatedPortalAccountRoute
+  AuthenticatedPortalChangelogRoute: typeof AuthenticatedPortalChangelogRoute
+  AuthenticatedPortalContactsRoute: typeof AuthenticatedPortalContactsRoute
+  AuthenticatedPortalDriversRoute: typeof AuthenticatedPortalDriversRoute
+  AuthenticatedPortalFindProvidersRoute: typeof AuthenticatedPortalFindProvidersRoute
+  AuthenticatedPortalNotificationsRoute: typeof AuthenticatedPortalNotificationsRoute
+  AuthenticatedPortalPayersRoute: typeof AuthenticatedPortalPayersRoute
+  AuthenticatedPortalSavedProvidersRoute: typeof AuthenticatedPortalSavedProvidersRoute
+  AuthenticatedPortalScheduleRoute: typeof AuthenticatedPortalScheduleRoute
+  AuthenticatedPortalTrainingRoute: typeof AuthenticatedPortalTrainingRoute
+  AuthenticatedPortalTripsRoute: typeof AuthenticatedPortalTripsRoute
+  AuthenticatedPortalUploadCsvRoute: typeof AuthenticatedPortalUploadCsvRoute
+  AuthenticatedPortalVehiclesRoute: typeof AuthenticatedPortalVehiclesRoute
   AuthenticatedPortalIndexRoute: typeof AuthenticatedPortalIndexRoute
   AuthenticatedPortalRequestsIdRoute: typeof AuthenticatedPortalRequestsIdRoute
   AuthenticatedPortalRequestsNewRoute: typeof AuthenticatedPortalRequestsNewRoute
@@ -1348,6 +1776,19 @@ interface AuthenticatedPortalRouteChildren {
 
 const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
   AuthenticatedPortalAccountRoute: AuthenticatedPortalAccountRoute,
+  AuthenticatedPortalChangelogRoute: AuthenticatedPortalChangelogRoute,
+  AuthenticatedPortalContactsRoute: AuthenticatedPortalContactsRoute,
+  AuthenticatedPortalDriversRoute: AuthenticatedPortalDriversRoute,
+  AuthenticatedPortalFindProvidersRoute: AuthenticatedPortalFindProvidersRoute,
+  AuthenticatedPortalNotificationsRoute: AuthenticatedPortalNotificationsRoute,
+  AuthenticatedPortalPayersRoute: AuthenticatedPortalPayersRoute,
+  AuthenticatedPortalSavedProvidersRoute:
+    AuthenticatedPortalSavedProvidersRoute,
+  AuthenticatedPortalScheduleRoute: AuthenticatedPortalScheduleRoute,
+  AuthenticatedPortalTrainingRoute: AuthenticatedPortalTrainingRoute,
+  AuthenticatedPortalTripsRoute: AuthenticatedPortalTripsRoute,
+  AuthenticatedPortalUploadCsvRoute: AuthenticatedPortalUploadCsvRoute,
+  AuthenticatedPortalVehiclesRoute: AuthenticatedPortalVehiclesRoute,
   AuthenticatedPortalIndexRoute: AuthenticatedPortalIndexRoute,
   AuthenticatedPortalRequestsIdRoute: AuthenticatedPortalRequestsIdRoute,
   AuthenticatedPortalRequestsNewRoute: AuthenticatedPortalRequestsNewRoute,

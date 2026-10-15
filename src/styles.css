@@ -161,6 +161,17 @@
 
 /* Portal: quieter. Gray page, white workspace cards, fewer accents. */
 .theme-portal {
+  /* Bridge: restored portal screens use shadcn tokens; map them to the MFN palette. */
+  --background: #FFFFFF; --foreground: var(--mfn-text);
+  --card: #FFFFFF; --card-foreground: var(--mfn-text);
+  --popover: #FFFFFF; --popover-foreground: var(--mfn-text);
+  --primary: var(--mfn-blue); --primary-foreground: #FFFFFF;
+  --secondary: var(--mfn-gray); --secondary-foreground: var(--mfn-text);
+  --muted: var(--mfn-gray); --muted-foreground: var(--mfn-text-2);
+  --accent: #BE5200; --accent-foreground: #FFFFFF;
+  --destructive: #A5281B; --destructive-foreground: #FFFFFF;
+  --border: var(--mfn-line); --input: #B9C2CC; --ring: #1F6FB2;
+  --radius: 4px;
   --ds-bg: var(--mfn-gray);
   --ds-surface: var(--mfn-white);
   --ds-shadow: 0 1px 2px rgb(24 32 42 / 0.05);
@@ -301,3 +312,18 @@
   background-color: var(--ds-note);
   box-shadow: 0 1px 3px rgba(19, 51, 90, 0.12);
 }
+
+/* Restored portal screens: shared control styles (Pass 3C). */
+.theme-portal .portal-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: 0 1.25rem; border-radius: 3px; background: var(--ds-action); color: var(--ds-on-action); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+.theme-portal .portal-btn-primary:hover { background: var(--ds-action-hover); }
+.theme-portal .portal-btn-primary:disabled { opacity: .6; }
+.theme-portal .portal-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: 0 1.25rem; border-radius: 3px; background: var(--mfn-gray); color: var(--ds-primary); font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.theme-portal .portal-btn-secondary:hover { background: var(--ds-active); }
+.theme-portal .portal-input { width: 100%; min-height: 2.75rem; border: 1px solid #B9C2CC; border-radius: 3px; padding: .5rem .75rem; background: #fff; }
+.theme-portal .portal-label { display: block; font-weight: 600; font-size: .875rem; margin-bottom: .25rem; }
+.theme-portal :where(button, a, input, select, textarea):focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 2px; }
+.theme-portal .rounded-full:not(.size-2):not([class*="h-2"]) { border-radius: 4px; }
+.theme-portal .rounded-lg, .theme-portal .rounded-xl, .theme-portal .rounded-2xl { border-radius: 5px; }
+.theme-portal #main section { overflow-x: auto; }
+.theme-portal #main { overflow-wrap: anywhere; }
+.theme-portal #main [class*="max-w-[600px]"] { max-width: 100%; }

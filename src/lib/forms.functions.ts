@@ -62,6 +62,7 @@ export const submitRideRequest = createServerFn({ method: "POST" })
         mobility_notes: data.mobilityNotes || null,
         special_instructions: data.specialInstructions || null,
         requester_user_id: requester.userId,
+        actor_user_id: requester.userId,
         workspace_id: requester.workspaceId,
         submitted_via: requester.submittedVia,
         recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,
@@ -126,6 +127,7 @@ export const submitDeliveryRequest = createServerFn({ method: "POST" })
         delivery_instructions: data.deliveryInstructions || null,
         delivery_signature_required: data.signatureRequired,
         requester_user_id: requester.userId,
+        actor_user_id: requester.userId,
         workspace_id: requester.workspaceId,
         submitted_via: requester.submittedVia,
       })

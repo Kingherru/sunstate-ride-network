@@ -22,6 +22,20 @@
       "when": 1791857585013,
       "tag": "0002_scope_trip_access_and_workspace_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792090572962,
+      "tag": "0003_pass3c_mfn_ids_master_admin_classification",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792091082628,
+      "tag": "0004_pass3c_default_org_type",
+      "breakpoints": true
     }
   ]
 }
