@@ -131,7 +131,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   );
 
   const topHeader = (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:ml-64 lg:px-10">
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:px-10">
       <h1 className="ds-body truncate font-semibold uppercase tracking-[0.04em] text-ds-on-primary">{pageTitle}</h1>
       <div className="flex shrink-0 items-center gap-1.5">
         {notificationsTo && (
