@@ -22,9 +22,10 @@ export function columnsFor(kind: ImportKind): readonly string[] {
 
 export function templateCsv(kind: ImportKind) {
   const cols = columnsFor(kind);
+  const d = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
   const sample = kind === "passenger"
-    ? ["Jane", "Example", "555-555-5555", "", "100 Main St", "Orlando", "2030-01-15", "09:30", "10:00", "200 Clinic Ave", "Orlando", "wheelchair", "", ""]
-    : ["Sam", "Example", "555-555-5555", "", "100 Supply Rd", "Tampa", "200 Home St", "Tampa", "2030-01-15", "13:00", "medical_supplies", "Leave with front desk", "no"];
+    ? ["Jane", "Example", "555-555-5555", "", "100 Main St", "Orlando", d, "09:30", "10:00", "200 Clinic Ave", "Orlando", "wheelchair", "", ""]
+    : ["Sam", "Example", "555-555-5555", "", "100 Supply Rd", "Tampa", "200 Home St", "Tampa", d, "13:00", "medical_supplies", "Leave with front desk", "no"];
   return cols.join(",") + "\n" + sample.map(csvCell).join(",") + "\n";
 }
 
