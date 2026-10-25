@@ -37,7 +37,13 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
     const { data: activity } = await context.supabase.rpc('network_list_activity');
     const distributions = Array.isArray(activity) ? activity as any[] : [];
     const relevant = distributions.filter(d => data.kind === 'request' ? d.request_id === data.id : d.trip_id === data.id);
-    const history = relevant.flatMap(d => (d.events || []).map((e: any) => ({ action: String(e.event_type), at: String(e.created_at), actor: e.actor_mfn_id as string | null })));
+    const requestId = data.kind === 'request' ? data.id : r.ride_request_id;
+    const { data: storedHistory } = requestId ? await context.supabase.from('ride_request_history').select('action,created_at').eq('ride_request_id', requestId).order('created_at') : { data: [] };
+    const history: { action: string; at: string; actor: string | null }[] = [
+      { action: 'received', at: r.created_at, actor: null },
+      ...(storedHistory || []).map(h => ({ action: h.action, at: h.created_at, actor: null })),
+      ...relevant.flatMap(d => (d.events || []).map((e: any) => ({ action: String(e.event_type), at: String(e.created_at), actor: e.actor_mfn_id as string | null }))),
+    ];
     let assignment: string | null = r.network_provider_workspace_id ? 'Provider selected' : null;
     if (r.network_provider_workspace_id) {
       const { data: ws } = await context.supabase.from('workspaces').select('mfn_id,display_name').eq('id', r.network_provider_workspace_id).maybeSingle();

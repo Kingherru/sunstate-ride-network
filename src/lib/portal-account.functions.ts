@@ -56,7 +56,7 @@ export const listPeopleAndAccounts = createServerFn({ method: "GET" })
         roles: (roles ?? []).filter((r) => r.user_id === p.user_id).map((r) => r.role as string),
         isMasterAdmin: master?.user_id === p.user_id,
         needsReview: p.legacy_review_needed && !(roles ?? []).some((r) => r.user_id === p.user_id), status: p.status as string,
-        accounts: (members ?? []).filter((m) => m.user_id === p.user_id).map((m: any) => ({
+        accounts: (members ?? []).filter((m: any) => m.user_id === p.user_id && (scopeAll || scoped.has(m.workspaces.id))).map((m: any) => ({
           id: m.workspaces.id, mfnId: m.workspaces.mfn_id, name: m.workspaces.display_name, type: m.workspaces.account_type,
           status: m.workspaces.status, orgType: m.workspaces.organization_type, role: m.role,
         })),
