@@ -34,7 +34,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
       )}
       {view === "reservations" && <ReservationsPanel userId={userId} scope="provider" hideReferrals />}
       {view === "drafts" && (
-        <SavedTripsPanel variant="drafts" onResume={() => navigate({ to: "/portal/requests/new" })} />
+        <SavedTripsPanel variant="drafts" onResume={(draft) => navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
       )}
       {view === "history" && <TripHistoryPanel userId={userId} />}
     </div>

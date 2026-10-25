@@ -40,6 +40,7 @@ export function SavedTripsPanel({
   const rows = (q.data ?? []) as TripDraft[];
 
   async function remove(id: string) {
+    if (preview.active) { previewBlocked(); return; }
     if (!confirm("Delete this saved trip? This cannot be undone.")) return;
     try {
       await del({ data: { draft_id: id } });
