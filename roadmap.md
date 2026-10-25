@@ -1,16 +1,16 @@
 # Pass 3F completion and Build 1
-- [ ] Complete controlled-offer actions and narrow acceptance/access checks
-- [ ] Shared permission-filtered request/trip overlay throughout portal lists
-- [ ] Admin dashboard groups and Administrators layout
-- [ ] People search/filter/details, in-app messaging, protected removal controls
-- [ ] Small shared Contacts width adjustment
-- [ ] Verify current build signal and preserved record counts
+- [x] Controlled-offer actions wired; failed association rolls back, source/test-state checks and execution grants hardened
+- [x] Shared permission-filtered request/trip overlay, safe offer frame, related record entry points
+- [x] Admin dashboard groups and Administrators layout
+- [x] People search/activity/status/details, in-app messaging, protected removal controls (no real removal/message performed)
+- [x] Small shared Contacts width adjustment
+- [x] Current harness build OK; 15 focused tests pass; record totals unchanged at 28/13/7/5 and zero messages/offers
 - [x] Business workspace RLS and explicit team Read/Manage permissions; creator identity preserved
 - [x] Draft load/save/resume wiring, wheelchair capacity, schedule vehicle filter and conflict indications
 - [x] Reviewed distribution, manual distance waves and verified service-base eligibility controls
 - [x] Addressed offers, negotiation history, locked acceptance, reservation/schedule association and in-app event functions
 - [x] Provider/scoped admin controls, future timing settings (automation off), internal feature entries (partial; public approval false)
 - [x] Narrow rule tests, signed-in admin read check, current build result and unchanged record counts
-- [ ] Synthetic two-provider cross-workspace and atomic double-acceptance checks — blocked: sandbox database connection cannot create rollback-only fixtures; no real trips or disabled accounts may be used
-- [ ] Saved-draft and accepted-provider end-to-end UI checks — blocked: require authorized synthetic fixtures without altering real accounts/trips
-- [ ] Assignment-specific sharing controls and contractor assignment integration — not yet wired to resource permission screens
+- [ ] Two-provider concurrent acceptance and authenticated overlay readback — blocked: sandbox cannot assume authenticated role or execute protected network RPCs; no real trips or disabled accounts may be used
+- [ ] Saved-draft/accepted-provider UI readback — blocked: no approved synthetic authenticated fixture; broad browser review explicitly excluded
+- [ ] Contractor assignment-specific controls — deferred outside Build 1; requires approved assignment-sharing design

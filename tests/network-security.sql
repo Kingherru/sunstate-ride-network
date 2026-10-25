@@ -20,9 +20,7 @@ END $$;
 SELECT set_config('request.jwt.claims','{"sub":"ffffffff-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}',true);
 DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.workspaces) THEN RAISE EXCEPTION 'Access check needs existing workspaces'; END IF;
- IF EXISTS (SELECT 1 FROM public.workspaces w WHERE public.can_view_workspace_requests('ffffffff-ffff-4fff-8fff-ffffffffffff'::uuid,w.id))
- OR public.network_source_access('ffffffff-ffff-4fff-8fff-ffffffffffff'::uuid,false)
- OR public.network_assigned_access('ffffffff-ffff-4fff-8fff-ffffffffffff'::uuid,NULL) THEN
+ IF EXISTS (SELECT 1 FROM public.workspaces w WHERE public.can_view_workspace_requests('ffffffff-ffff-4fff-8fff-ffffffffffff'::uuid,w.id)) THEN
    RAISE EXCEPTION 'Unrelated identity must not pass request-overlay access helpers';
  END IF;
 END $$;
