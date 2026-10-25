@@ -16,6 +16,7 @@ import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 import { PersonDetails } from '@/components/admin/PersonDetails';
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
+import { matchesPeopleFilters } from '@/lib/people-filters';
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
 const ORG_TYPES = new Set(["facility", "hospital"]);
@@ -106,11 +107,14 @@ function People() {
   const [selected, setSelected] = useState<PersonRow | null>(null);
   const [status, setStatus] = useState('all');
   const [activity, setActivity] = useState('all');
+  const [accountType, setAccountType] = useState('all');
+  const [accountStatus, setAccountStatus] = useState('all');
+  const [verification, setVerification] = useState('all');
   const list = useMemo(() => rows.filter((p) => matches(p, view)).filter((p) => {
     const t = q.trim().toLowerCase();
     const recent = !!p.lastSignIn && Date.now() - Date.parse(p.lastSignIn) <= 30 * 86400000;
-    return (status === 'all' || (status === 'review' ? matches(p, 'review') : p.status === status)) && (activity === 'all' || (activity === 'recent' ? recent : activity === 'never' ? !p.lastSignIn : !recent)) && (!t || [p.mfnId, p.email, p.name, ...p.accounts.map((a) => `${a.name} ${a.mfnId} ${a.type} ${a.orgType}`)].some((x) => x?.toLowerCase().includes(t)));
-  }), [rows, view, q, status, activity]);
+    return matchesPeopleFilters(p, accountType, accountStatus, verification) && (status === 'all' || (status === 'review' ? matches(p, 'review') : p.status === status)) && (activity === 'all' || (activity === 'recent' ? recent : activity === 'never' ? !p.lastSignIn : !recent)) && (!t || [p.mfnId, p.email, p.name, ...p.accounts.map((a) => `${a.name} ${a.mfnId} ${a.type} ${a.orgType}`)].some((x) => x?.toLowerCase().includes(t)));
+  }), [rows, view, q, status, activity, accountType, accountStatus, verification]);
   const counts = (v: View) => rows.filter((p) => matches(p, v)).length;
 
   return (
@@ -132,6 +136,11 @@ function People() {
         </p>
       )}
       <div className="mb-5 grid gap-4 md:grid-cols-[2fr_1fr_1fr]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField></div>
+      <div className="mb-5 grid gap-4 md:grid-cols-3">
+        <DsField label="Account type">{p => <DsSelect {...p} value={accountType} onChange={e => setAccountType(e.target.value)}><option value="all">All account types</option>{Object.entries(ACCOUNT_TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DsSelect>}</DsField>
+        <DsField label="Account status">{p => <DsSelect {...p} value={accountStatus} onChange={e => setAccountStatus(e.target.value)}><option value="all">All account statuses</option><option value="active">Active</option><option value="pending">Pending</option><option value="suspended">Suspended</option></DsSelect>}</DsField>
+        <DsField label="Email verification">{p => <DsSelect {...p} value={verification} onChange={e => setVerification(e.target.value)}><option value="all">All verification statuses</option><option value="verified">Verified</option><option value="unverified">Not verified</option></DsSelect>}</DsField>
+      </div>
       <section className={panelCls}>
         {list.length === 0 ? <DsEmpty title="No one here">Nobody matches this view.</DsEmpty> : (
           <ul className="divide-y divide-ds-border">
