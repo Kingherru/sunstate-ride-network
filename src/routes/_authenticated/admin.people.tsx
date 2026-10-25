@@ -21,7 +21,7 @@ type View = "all" | "providers" | "private_pay" | "organizations" | "learners" |
 const ORG_TYPES = new Set(["facility", "hospital"]);
 
 export const Route = createFileRoute("/_authenticated/admin/people")({
-  head: () => ({ meta: [{ title: "People & Accounts — MY FLORIDA NEMT Admin" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "People & Accounts — MY FLORIDA NEMT Admin" }, { name: 'description', content: 'Scoped people, account details and login access management.' }, { property: 'og:title', content: 'People & Accounts — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Scoped people, account details and login access management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => listPeopleAndAccounts(),
   component: People,
 });
