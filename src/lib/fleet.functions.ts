@@ -66,25 +66,25 @@ export const upsertDriver = createServerFn({ method: "POST" })
       row.contractor_pricing = {};
     }
     const q = data.id
-      ? supabase.from("drivers").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
+      ? supabase.from("drivers").update(row).eq("id", data.id).select().single()
       : supabase.from("drivers").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
 
-    if (out && data.primary_vehicle_id !== undefined) {
+    if (out?.workspace_id && data.primary_vehicle_id !== undefined) {
       const driverId = (out as any).id as string;
       const vehId = data.primary_vehicle_id;
       if (vehId) {
         await supabase.from("vehicles")
           .update({ assigned_driver_id: null })
-          .eq("owner_id", userId).eq("assigned_driver_id", driverId).neq("id", vehId);
+          .eq("workspace_id", out.workspace_id).eq("assigned_driver_id", driverId).neq("id", vehId);
         await supabase.from("vehicles")
           .update({ assigned_driver_id: driverId })
-          .eq("id", vehId).eq("owner_id", userId);
+          .eq("id", vehId).eq("workspace_id", out.workspace_id);
       } else {
         await supabase.from("vehicles")
           .update({ assigned_driver_id: null })
-          .eq("owner_id", userId).eq("assigned_driver_id", driverId);
+          .eq("workspace_id", out.workspace_id).eq("assigned_driver_id", driverId);
       }
     }
     return out;
@@ -96,7 +96,7 @@ export const deleteDriver = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("drivers").delete().eq("id", data.id).eq("owner_id", context.userId);
+      .from("drivers").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
@@ -119,6 +119,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     plate?: string;
     vehicle_type?: "sedan" | "suv" | "van" | "wheelchair_van" | "stretcher_van" | "ambulance";
     capacity?: number;
+    wheelchair_capacity?: number;
     status?: "active" | "inactive" | "maintenance";
     notes?: string;
     assigned_driver_id?: string | null;
@@ -127,31 +128,32 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    if (data.wheelchair_capacity !== undefined && (!Number.isInteger(data.wheelchair_capacity) || data.wheelchair_capacity < 0)) throw new Error('Wheelchair positions must be a nonnegative whole number.');
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.assigned_driver_id === undefined) delete row.assigned_driver_id;
     const q = data.id
-      ? supabase.from("vehicles").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
+      ? supabase.from("vehicles").update(row).eq("id", data.id).select().single()
       : supabase.from("vehicles").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
 
-    if (out && data.assigned_driver_id !== undefined) {
+    if (out?.workspace_id && data.assigned_driver_id !== undefined) {
       const vehId = (out as any).id as string;
       const driverId = data.assigned_driver_id;
       if (driverId) {
         // Clear this vehicle from any other driver's primary_vehicle_id.
         await supabase.from("drivers")
           .update({ primary_vehicle_id: null })
-          .eq("owner_id", userId).eq("primary_vehicle_id", vehId).neq("id", driverId);
+          .eq("workspace_id", out.workspace_id).eq("primary_vehicle_id", vehId).neq("id", driverId);
         // Set primary_vehicle_id on the assigned driver.
         await supabase.from("drivers")
           .update({ primary_vehicle_id: vehId })
-          .eq("id", driverId).eq("owner_id", userId);
+          .eq("id", driverId).eq("workspace_id", out.workspace_id);
       } else {
         // Cleared: unlink any driver that had this vehicle as primary.
         await supabase.from("drivers")
           .update({ primary_vehicle_id: null })
-          .eq("owner_id", userId).eq("primary_vehicle_id", vehId);
+          .eq("workspace_id", out.workspace_id).eq("primary_vehicle_id", vehId);
       }
     }
     return out;
@@ -163,7 +165,7 @@ export const deleteVehicle = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("vehicles").delete().eq("id", data.id).eq("owner_id", context.userId);
+      .from("vehicles").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });

@@ -4,6 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DriverDetailModal } from "./DriverDetailModal";
+import { listVehicles } from "@/lib/fleet.functions";
+import { conflictingSlots } from "@/lib/trip-network-rules";
+import { DsField, DsSelect } from "@/components/ds/controls";
 
 export const RESV_DND_MIME = "application/x-reservation-id";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
@@ -62,6 +65,7 @@ export function ScheduleCalendarPanel() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [driverFilter, setDriverFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [vehicleFilter, setVehicleFilter] = useState("all");
   const [hideEmptyDrivers, setHideEmptyDrivers] = useState(false);
   const [openDriverId, setOpenDriverId] = useState<string | null>(null);
 
@@ -70,6 +74,7 @@ export function ScheduleCalendarPanel() {
   const resvFn = useServerFn(listReservationsForDay);
   const assignFn = useServerFn(assignDriverSlot);
 
+  const vehiclesQ = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const whQ = usePortalQuery({ queryKey: ["work-hours"], queryFn: () => whFn() });
   const driversQ = usePortalQuery({ queryKey: ["my-drivers"], queryFn: () => driversFn() });
   const resvQ = usePortalQuery({
@@ -81,7 +86,7 @@ export function ScheduleCalendarPanel() {
     mutationFn: (v: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) =>
       assignFn({ data: v }),
     onSuccess: () => {
-      toast.success("Schedule saved — driver notified");
+      toast.success("Schedule saved");
       qc.invalidateQueries({ queryKey: ["day-reservations"] });
       qc.invalidateQueries({ queryKey: ["my-reservations"] });
     },
@@ -97,6 +102,7 @@ export function ScheduleCalendarPanel() {
   const workEndH = Number(workEnd.slice(0, 2));
   const allDrivers = driversQ.data ?? [];
   const allReservations = resvQ.data ?? [];
+  const conflicts = useMemo(() => conflictingSlots(allReservations as any), [allReservations]);
 
   const statusOptions = useMemo(
     () => Array.from(new Set(allReservations.map((r: any) => r.status).filter(Boolean))) as string[],
@@ -106,11 +112,13 @@ export function ScheduleCalendarPanel() {
   const reservations = useMemo(
     () => allReservations.filter((r: any) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (vehicleFilter === "unassigned" && r.vehicle_id) return false;
+      if (vehicleFilter !== "all" && vehicleFilter !== "unassigned" && r.vehicle_id !== vehicleFilter) return false;
       if (driverFilter === "unassigned" && r.assigned_driver_id) return false;
       if (driverFilter !== "all" && driverFilter !== "unassigned" && r.assigned_driver_id !== driverFilter) return false;
       return true;
     }),
-    [allReservations, statusFilter, driverFilter],
+    [allReservations, statusFilter, driverFilter, vehicleFilter],
   );
 
   const drivers = useMemo(() => {
@@ -158,7 +166,7 @@ export function ScheduleCalendarPanel() {
       const t = (r.scheduled_start_time ?? r.pickup_time ?? "00:00").slice(0, 2);
       const key = `${r.assigned_driver_id ?? UNASSIGNED}__${t}:00`;
       if (!m.has(key)) m.set(key, []);
-      m.get(key)!.push(r);
+      m.get(key)?.push(r);
     });
     return m;
   }, [reservations]);
@@ -237,8 +245,10 @@ export function ScheduleCalendarPanel() {
         </button>
       </div>
 
+      {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
+        <DsField label="Vehicle">{p => <DsSelect {...p} value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)}><option value="all">All vehicles</option><option value="unassigned">No vehicle assigned</option>{(vehiclesQ.data ?? []).map(v => <option key={v.id} value={v.id}>{v.name}</option>)}</DsSelect>}</DsField>
         <select
           value={driverFilter}
           onChange={(e) => setDriverFilter(e.target.value)}

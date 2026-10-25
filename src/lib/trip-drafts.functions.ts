@@ -16,9 +16,9 @@ type DraftPayload = Record<string, any>;
 const draftPayload = z.record(z.string(), z.any());
 
 function summarize(p: DraftPayload): string {
-  const name = [p.patient_first_name, p.patient_last_name].filter(Boolean).join(" ").trim();
-  const route = [p.pickup_city, p.dropoff_city].filter(Boolean).join(" → ");
-  const when = [p.pickup_date, p.pickup_time].filter(Boolean).join(" ");
+  const name = [p.patientFirstName ?? p.patient_first_name, p.patientLastName ?? p.patient_last_name].filter(Boolean).join(" ").trim();
+  const route = [p.pickupCity ?? p.pickup_city, p.dropoffCity ?? p.dropoff_city].filter(Boolean).join(" → ");
+  const when = [p.pickupDate ?? p.pickup_date, p.pickupTime ?? p.pickup_time].filter(Boolean).join(" ");
   return [name || "Unnamed passenger", route, when].filter(Boolean).join(" · ").slice(0, 240);
 }
 
@@ -42,6 +42,15 @@ export const listTripDrafts = createServerFn({ method: "GET" })
       created_at: string;
       updated_at: string;
     }>;
+  });
+
+export const getTripDraft = createServerFn({ method: 'GET' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ draft_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase.from('trip_drafts').select('id,payload').eq('id', data.draft_id).eq('user_id', context.userId).is('submitted_trip_id', null).maybeSingle();
+    if (error || !row) throw new Error('Draft not available.');
+    return { id: row.id, payload: row.payload as DraftPayload };
   });
 
 export const saveTripDraft = createServerFn({ method: "POST" })

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Monitor, Users } from "lucide-react";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
 import { PersonalSecurity } from "@/components/portal/PersonalSecurity";
+import { NetworkTimingSettings } from '@/components/portal/TripNetwork';
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   head: () => ({ meta: [{ title: "Admin Settings — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -45,6 +46,7 @@ function AdminSettings() {
           </div>
         </section>
       )}
+      {access.isMasterAdmin && <section className={`${panelCls} mb-6 p-5`}><NetworkTimingSettings /></section>}
 
       <section className={`${panelCls} mb-6`} aria-labelledby="preview-h">
         <h2 id="preview-h" className="ds-subheading border-b border-ds-border px-4 py-3 uppercase text-ds-primary sm:px-5">Other page previews</h2>

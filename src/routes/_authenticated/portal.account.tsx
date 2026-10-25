@@ -19,12 +19,13 @@ import { PayoutsPanel } from "@/components/dashboard/PayoutsPanel";
 import { NetworkProfileForm } from "@/components/network/NetworkProfileForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listWorkspaceMembersForMessaging, setMemberMessagingPermission } from "@/lib/workspace-messages.functions";
+import { BusinessPermissions } from '@/components/portal/BusinessPermissions';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "security";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
-  head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => getPortalSummary(),
   component: Account,
 });
@@ -48,7 +49,7 @@ function Account() {
       <PageHead title="Account" />
       <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
       <section className={`${panelCls} p-5 sm:p-6`}>
-        {tab === "profile" && <Profile email={s.email} />}
+        {tab === "profile" && <><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}

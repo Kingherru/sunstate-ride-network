@@ -43,6 +43,8 @@ export const getAccessState = createServerFn({ method: "POST" })
       mfn_id: string | null; display_name: string | null; workspaces: AccessWorkspace[];
     };
     const workspaces = s.workspaces ?? [];
+    const { data: businessMemberships } = await context.supabase.from('workspace_members').select('workspace_id,record_permissions,can_manage_trips,is_contractor').eq('user_id',context.userId);
+    const businessTools = new Set((businessMemberships??[]).filter(m=>!m.is_contractor && (m.can_manage_trips || Object.values(m.record_permissions as Record<string,string>).some(v=>v==='read'||v==='manage'))).map(m=>m.workspace_id));
     const profileSuspended = s.profile_status === "suspended";
     const usableList = workspaces.filter((w) => w.status !== "suspended");
     const primary = usableList[0] ?? null;
@@ -70,7 +72,7 @@ export const getAccessState = createServerFn({ method: "POST" })
       workspaces, primary: portalKind === "provider" ? usableList.find((w) => w.type === "provider") ?? primary : primary,
       portalKind, setupIssue, destination, canMessageForWorkspace,
       // Contractor/restricted team member in every usable workspace: no business tools.
-      restricted: usableList.length > 0 && usableList.every((w) => w.is_contractor || (w.role !== "owner" && w.role !== "admin")),
+      restricted: usableList.length > 0 && usableList.every((w) => w.is_contractor || (w.role !== "owner" && w.role !== "admin" && !businessTools.has(w.id))),
     };
   });
 

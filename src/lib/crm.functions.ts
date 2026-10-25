@@ -32,7 +32,7 @@ export const upsertContact = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const row = { ...data, owner_id: userId };
     const q = data.id
-      ? supabase.from("provider_contacts").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
+      ? supabase.from("provider_contacts").update(row).eq("id", data.id).select().single()
       : supabase.from("provider_contacts").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
@@ -44,7 +44,7 @@ export const deleteContact = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("provider_contacts").delete().eq("id", data.id).eq("owner_id", context.userId);
+      .from("provider_contacts").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });

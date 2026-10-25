@@ -59,7 +59,6 @@ export const listMyPayers = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("payers")
       .select("id, name, email, phone, notes, created_at")
-      .eq("owner_user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -116,8 +115,7 @@ export const updatePayer = createServerFn({ method: "POST" })
         phone: data.phone || null,
         notes: data.notes || null,
       })
-      .eq("id", data.id)
-      .eq("owner_user_id", context.userId);
+      .eq("id", data.id);
     if (error) return { error: error.message };
     return { ok: true };
   });
@@ -129,8 +127,7 @@ export const deletePayer = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("payers")
       .delete()
-      .eq("id", data.id)
-      .eq("owner_user_id", context.userId);
+      .eq("id", data.id);
     if (error) return { error: error.message };
     return { ok: true };
   });

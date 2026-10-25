@@ -27,6 +27,9 @@ import { NonEmergencyNotice } from "@/components/public/page-kit";
 import { LINKS } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { saveTripDraft, deleteTripDraft } from '@/lib/trip-drafts.functions';
+import { restoreDraftFields } from '@/lib/draft-fields';
+import { DsButton } from '@/components/ds/controls';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -51,8 +54,8 @@ export type RequestFormContext = "public" | "portal";
 export type OnBehalfTarget = { targetUserId: string; workspaceId: string | null };
 export const OnBehalfContext = createContext<OnBehalfTarget | null>(null);
 
-export function RequestForm({ context = "public", initialService }: { context?: RequestFormContext; initialService?: string }) {
-  return <RequestRidePage context={context} service={initialService} />;
+export function RequestForm({ context = "public", initialService, initialDraft }: { context?: RequestFormContext; initialService?: string; initialDraft?: { id: string; payload: Record<string, unknown> } }) {
+  return <RequestRidePage context={context} service={initialService} initialDraft={initialDraft} />;
 }
 
 const empty: RideRequestInput = {
@@ -193,7 +196,7 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-function RequestRidePage({ context, service }: { context: RequestFormContext; service?: string }) {
+function RequestRidePage({ context, service, initialDraft }: { context: RequestFormContext; service?: string; initialDraft?: { id: string; payload: Record<string, unknown> } }) {
   const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
@@ -204,7 +207,18 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
   const submit = (a: { data: RideRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const enrich = useServerFn(enrichRideRequest);
-  const [form, setForm] = useState<RideRequestInput>(() => (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
+  const [form, setForm] = useState<RideRequestInput>(() => initialDraft ? { ...empty, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
+  const [draftId, setDraftId] = useState(initialDraft?.id);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const saveDraft = useServerFn(saveTripDraft);
+  const removeDraft = useServerFn(deleteTripDraft);
+  async function onSaveDraft() {
+    if (preview.active) { previewBlocked(); return; }
+    setSavingDraft(true);
+    try { const saved = await saveDraft({ data: { draft_id: draftId, payload: { ...form, billingContact: form.billingSource === 'custom' ? customBilling : undefined }, autosaved: false } }); setDraftId(saved.id); toast.success('Draft saved securely.'); }
+    catch { toast.error('Could not save draft.'); }
+    finally { setSavingDraft(false); }
+  }
   const [returnDateManual, setReturnDateManual] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -221,7 +235,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
     dropoffLng?: number | null;
   } | null>(null);
   const [savedBilling, setSavedBilling] = useState<BillingContact | null>(null);
-  const [customBilling, setCustomBilling] = useState<BillingContact>({
+  const [customBilling, setCustomBilling] = useState<BillingContact>((initialDraft?.payload.billingContact as BillingContact | undefined) ?? {
     firstName: "", lastName: "", email: "", phone: "",
   });
   // Autocomplete-derived location metadata used for live price estimate.
@@ -300,6 +314,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
+        if (draftId) { try { await removeDraft({ data: { draft_id: draftId } }); } catch { toast.error('Request received, but the saved draft could not be removed.'); } }
         // Geocode + compute miles, drive time, traffic-aware ETA & polyline in the background;
         // if it fails we still confirm the booking.
         let enrichedInfo: Partial<NonNullable<typeof done>> = {};
@@ -425,6 +440,7 @@ function RequestRidePage({ context, service }: { context: RequestFormContext; se
           <strong>We recommend submitting requests 48–72 hours in advance.</strong> Short-notice requests may be submitted for review, but availability and acceptance are not guaranteed.
         </div>
         <NonEmergencyNotice className="mb-10" />
+        {portal && !onBehalf && kind === 'ride' && <div className="mb-5 flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={onSaveDraft}>{savingDraft ? 'Saving…' : 'Save draft'}</DsButton></div>}
 
         <fieldset className="mb-8">
           <legend className="ds-label mb-3 block text-ds-on-surface">What do you need? <span className="text-ds-accent-active">*</span></legend>
