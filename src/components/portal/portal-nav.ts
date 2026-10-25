@@ -41,7 +41,7 @@ export const ADMIN_NAV: NavItem[] = [
   { to: "/admin", label: "Overview", exact: true },
   { to: "/admin/people", label: "People & accounts" },
   { to: "/admin/requests", label: "Requests" },
-  { to: "/admin/on-behalf", label: "Request for a customer" },
+  { to: "/admin/on-behalf", label: "Request for a patient" },
   { to: "/admin/messaging", label: "Messaging" },
   { to: "/admin/pricing", label: "Pricing" },
   { to: "/admin/payouts", label: "Payouts" },

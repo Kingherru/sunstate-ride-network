@@ -7,7 +7,7 @@ import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { DsEmpty } from "@/components/ds/feedback";
 
 export const Route = createFileRoute("/_authenticated/admin/on-behalf")({
-  head: () => ({ meta: [{ title: "Request for a Customer — MY FLORIDA NEMT Admin" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Request for a Patient or Organization — MY FLORIDA NEMT Admin" }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => listOnBehalfCandidates(),
   component: OnBehalf,
 });

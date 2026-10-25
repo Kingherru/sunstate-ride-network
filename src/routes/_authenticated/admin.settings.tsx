@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 });
 
 const PREVIEWS = [
-  { to: "/portal", title: "Customer Portal", body: "The signed-in area every approved account sees: account home, request list, new-request form and account page. You view it as yourself — accounts with their own workspaces see only their own requests." },
+  { to: "/portal", title: "Patient & Facility Portal", body: "The signed-in area every approved account sees: account home, request list, new-request form and account page. You view it as yourself — accounts with their own workspaces see only their own requests." },
   { to: "/portal/requests/new", title: "New Request Form (Portal)", body: "The same request form customers and facilities use inside the portal. Submitting here creates a real request — use the public Book a Trip page for look-only checks, or don't submit." },
   { to: "/portal/account", title: "Account Page", body: "The account details page each signed-in user sees: profile, workspace membership and contact information." },
   { to: "/learn", title: "Training / Learner Area", body: "What a training-only learner sees after sign-in: their enrolled courses, progress and certificates." },
@@ -32,14 +32,14 @@ function AdminSettings() {
           </h2>
           <div className="space-y-4 px-4 py-4 sm:px-5">
             <p className="ds-support text-ds-text-2">
-              View how the Provider and Customer/Facility portals look using real components and synthetic demo data. Nothing here submits a real form, sends a notification or changes your admin session.
+              View how the Provider and Patient & Facility portals look using real components and synthetic demo data. Nothing here submits a real form, sends a notification or changes your admin session.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/admin/preview/$kind" params={{ kind: "provider" }} className={actionCls}>
                 <Users className="size-4" aria-hidden />View provider portal
               </Link>
               <Link to="/admin/preview/$kind" params={{ kind: "customer" }} className={actionCls}>
-                <Users className="size-4" aria-hidden />View customer &amp; facility portal
+                <Users className="size-4" aria-hidden />View patient &amp; facility portal
               </Link>
             </div>
           </div>
