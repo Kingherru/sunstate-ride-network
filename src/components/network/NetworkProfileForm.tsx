@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { CheckCircle2, X } from "lucide-react";
 import { getMyNetworkProfile, saveNetworkProfile } from "@/lib/facility-providers.functions";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import { DsField, DsInput } from '@/components/ds/controls';
 
 function ListEditor({ label, values, onChange, placeholder }: { label: string; values: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
   const [draft, setDraft] = useState("");
@@ -53,6 +54,7 @@ export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
   });
 
   const [description, setDescription] = useState("");
+  const [serviceBase, setServiceBase] = useState('');
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [serviceTypes, setServiceTypes] = useState<string[]>([]);
@@ -70,6 +72,7 @@ export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
     const p = q.data.profile;
     if (!p) return;
     setDescription(p.description ?? "");
+    setServiceBase(p.service_base_address ?? '');
     setEmail(p.business_contact_email ?? "");
     setPhone(p.business_contact_phone ?? "");
     setServiceTypes(p.service_types ?? []);
@@ -95,6 +98,7 @@ export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
       const r = await saveFn({
         data: {
           workspace_id: workspaceId,
+          service_base_address: serviceBase || null,
           description: description || null,
           business_contact_email: email || null,
           business_contact_phone: phone || null,
@@ -151,6 +155,7 @@ export function NetworkProfileForm({ workspaceId }: { workspaceId: string }) {
       </div>
 
       <ListEditor label="Service types" values={serviceTypes} onChange={setServiceTypes} placeholder="e.g. Wheelchair van" />
+      <DsField label="Service-base location" hint="Distance offers require verified base coordinates and approved transportation capabilities.">{p=><DsInput {...p} maxLength={300} value={serviceBase} onChange={e=>setServiceBase(e.target.value)} />}</DsField>
       <ListEditor label="Counties served" values={counties} onChange={setCounties} placeholder="e.g. Duval" />
       <ListEditor label="Cities served" values={cities} onChange={setCities} placeholder="e.g. Jacksonville" />
       <ListEditor label="ZIP codes served" values={zips} onChange={setZips} placeholder="e.g. 32256" />

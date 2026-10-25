@@ -103,6 +103,7 @@ export const getMyNetworkProfile = createServerFn({ method: "POST" })
 
 const profileSchema = z.object({
   workspace_id: z.string().uuid(),
+  service_base_address: z.string().trim().max(300).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
   business_contact_email: z.string().email().max(254).optional().nullable().or(z.literal("")),
   business_contact_phone: z.string().max(32).optional().nullable(),

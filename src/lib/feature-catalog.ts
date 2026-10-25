@@ -9,6 +9,9 @@ export type PortalFeature = {
 };
 
 export const FEATURE_CATALOG: PortalFeature[] = [
+  { name: 'Controlled Trip Offers', audience: 'Provider', description: 'Workspace-addressed offers with protected general route details.', icon: 'Network', route: '/portal/trips', status: 'partial', publicApproved: false },
+  { name: 'Reviewed Distance Distribution', audience: 'Admin', description: 'Manual 20, 50, 100 and 200 mile distribution waves.', icon: 'Send', route: '/admin/network', status: 'partial', publicApproved: false },
+  { name: 'Trip Negotiation', audience: 'Shared', description: 'Counteroffers with append-only history and atomic provider selection.', icon: 'MessageSquare', route: '/portal/trips', status: 'partial', publicApproved: false },
   { name: "Smart Notes", audience: "Provider", description: "Private operational notes for your business, saved securely.", icon: "StickyNote", route: "/portal", status: "complete", publicApproved: false },
   { name: "Trips", audience: "Provider", description: "New trips, reservations, drafts and history for trips assigned or referred to your company.", icon: "Car", route: "/portal/trips", status: "complete", publicApproved: false },
   { name: "Schedule", audience: "Provider", description: "Plan the day across drivers and vehicles.", icon: "CalendarDays", route: "/portal/schedule", status: "complete", publicApproved: false },
