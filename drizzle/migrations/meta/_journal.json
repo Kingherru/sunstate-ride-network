@@ -57,6 +57,13 @@
       "when": 1792102282994,
       "tag": "0007_workspace_messaging",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792956623041,
+      "tag": "0008_smart_notes",
+      "breakpoints": true
     }
   ]
 }
