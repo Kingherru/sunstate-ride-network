@@ -53,7 +53,9 @@ export const removeUserAccess = createServerFn({ method: 'POST' }).middleware([r
     const { error: finalizeError } = await context.supabase.rpc('admin_finalize_user_removal', { _user: data.userId, _reason: data.reason, _mode: data.mode });
     if (finalizeError) throw new Error('Login disabled; profile cleanup needs to be retried.');
     if (data.mode === 'delete') {
-      const result = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+      // Auth's supported soft deletion destroys login credentials but preserves the UUID
+      // tombstone, preventing legacy auth foreign-key cascades even if a new reference races.
+      const result = await supabaseAdmin.auth.admin.deleteUser(data.userId, true);
       if (result.error) throw new Error('Account deactivated safely; permanent login removal could not finish.');
     }
     return { ok: true, mode: data.mode };
