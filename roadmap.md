@@ -1,6 +1,6 @@
 # Pass 3F completion and Build 1
-- [ ] Continue latest uploaded brief: complete remaining request-field and People filter gaps; retain existing completed work
-- [ ] Repeat only narrow acceptance/access/data-preservation checks and inspect current harness result
+- [x] Latest brief: payment responsibility acknowledgement, active wave recipients, shared conditional field layout, exact selected service/trip types, offer amounts/history, People account-status/type/email filters
+- [x] Ten focused tests pass; harness build OK; acceptance lock/rollback predicates confirmed; counts unchanged at 28/13/7/5, zero messages/offers, seven disabled tests
 - [x] Controlled-offer actions wired; failed association rolls back, source/test-state checks and execution grants hardened
 - [x] Shared permission-filtered request/trip overlay, safe offer frame, related record entry points
 - [x] Admin dashboard groups and Administrators layout
@@ -16,3 +16,4 @@
 - [ ] Two-provider concurrent acceptance and authenticated overlay readback — blocked: sandbox cannot assume authenticated role or execute protected network RPCs; no real trips or disabled accounts may be used
 - [ ] Saved-draft/accepted-provider UI readback — blocked: no approved synthetic authenticated fixture; broad browser review explicitly excluded
 - [ ] Contractor assignment-specific controls — deferred outside Build 1; requires approved assignment-sharing design
+- [ ] Direct authenticated cross-workspace check — blocked: read-only sandbox is denied execution of protected network access functions; no approved synthetic identity
