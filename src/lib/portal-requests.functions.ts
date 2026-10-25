@@ -15,7 +15,7 @@ const DETAIL_COLS =
 
 export type RequestListRow = {
   id: string; mfn_id: string | null; intake_source: string | null; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
-  status: string | null; created_at: string; submitted_via: string | null;
+  status: string | null; network_status?: string | null; created_at: string; submitted_via: string | null;
 };
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 export type RequestDetailRow = RequestListRow & { [k: string]: Json };

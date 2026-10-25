@@ -15,7 +15,7 @@ import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
 
 type Indicator = "none" | "update" | "important";
-const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend/i;
+const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
 /** Static dot: green = ordinary unread update, red = important. Never pulses. */
 function Dot({ kind, className }: { kind: Indicator; className?: string }) {
   if (kind === "none") return null;

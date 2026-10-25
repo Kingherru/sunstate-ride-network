@@ -83,3 +83,10 @@ export const getOfferHistory = createServerFn({method:'GET'}).middleware([requir
   const {data:history,error}=await context.supabase.rpc('network_offer_safe_history',{_offer:data.offer_id});
   if(error) throw new Error('Could not load history.'); return (history??[]) as unknown as {id:string;side:string;action:string;amount_cents:number|null;business_note:string|null;created_at:string}[];
  });
+export const listNetworkEligibility = createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+ const {data,error}=await context.supabase.rpc('network_list_eligibility'); if(error)throw new Error('Master Admin required.');
+ return (data??[]) as unknown as {workspace_id:string;business_name:string;mfn_id:string;address:string|null;lat:number|null;lng:number|null;services:string[];verified_at:string|null}[];
+});
+export const verifyNetworkBase = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+ .inputValidator((i:unknown)=>z.object({workspace_id:z.string().uuid(),address:z.string().trim().min(1).max(300),lat:z.number().min(-90).max(90),lng:z.number().min(-180).max(180),services:z.array(z.enum(['ambulatory','wheelchair','stretcher'])).min(1)}).parse(i))
+ .handler(async({data,context})=>{const {error}=await context.supabase.rpc('network_set_service_base',{_workspace:data.workspace_id,_address:data.address,_lat:data.lat,_lng:data.lng,_services:data.services});if(error)throw new Error(error.message);return {ok:true};});
