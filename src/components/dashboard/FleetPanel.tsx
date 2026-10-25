@@ -537,7 +537,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
   const [f, set] = useState({
     name: v.name ?? "", plate: v.plate ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
-    capacity: v.capacity ?? 4, status: v.status ?? "active", notes: v.notes ?? "",
+    capacity: v.capacity ?? 4, wheelchair_capacity: v.wheelchair_capacity ?? 0, status: v.status ?? "active", notes: v.notes ?? "",
     service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
     assigned_driver_id: (v.assigned_driver_id ?? "") as string,
   });
@@ -559,6 +559,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
         <I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} />
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />
+        <I l="Wheelchair positions" v={String(f.wheelchair_capacity)} on={(x) => set({ ...f, wheelchair_capacity: Math.max(0, Number(x) || 0) })} type="number" />
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold">Type</span>
           <select value={f.vehicle_type} onChange={(e) => set({ ...f, vehicle_type: e.target.value as any })}

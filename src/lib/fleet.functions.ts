@@ -119,6 +119,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     plate?: string;
     vehicle_type?: "sedan" | "suv" | "van" | "wheelchair_van" | "stretcher_van" | "ambulance";
     capacity?: number;
+    wheelchair_capacity?: number;
     status?: "active" | "inactive" | "maintenance";
     notes?: string;
     assigned_driver_id?: string | null;
@@ -127,6 +128,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    if (data.wheelchair_capacity !== undefined && (!Number.isInteger(data.wheelchair_capacity) || data.wheelchair_capacity < 0)) throw new Error('Wheelchair positions must be a nonnegative whole number.');
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.assigned_driver_id === undefined) delete row.assigned_driver_id;
     const q = data.id

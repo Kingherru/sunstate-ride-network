@@ -39,6 +39,7 @@ export const ADMIN_NAV_REQUIREMENT: Record<string, AdminSection | "master" | nul
   "/admin": null,
   "/admin/people": "people",
   "/admin/requests": "requests",
+  "/admin/network": "requests",
   "/admin/on-behalf": "requests",
   "/admin/messaging": "messaging",
   "/admin/pricing": "pricing",

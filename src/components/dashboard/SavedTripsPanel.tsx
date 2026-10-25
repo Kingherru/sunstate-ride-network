@@ -29,6 +29,7 @@ export function SavedTripsPanel({
   variant?: "saved" | "drafts";
 }) {
   const qc = useQueryClient();
+  const preview = usePortalPreview();
   const list = useServerFn(listTripDrafts);
   const del = useServerFn(deleteTripDraft);
 

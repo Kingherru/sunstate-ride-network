@@ -4,6 +4,7 @@ import { ReservationsPanel, ReferralReservationsSection } from "@/components/das
 import { TripHistoryPanel } from "@/components/dashboard/TripHistoryPanel";
 import { SavedTripsPanel } from "@/components/dashboard/SavedTripsPanel";
 import { SegTabs } from "@/components/portal/SegTabs";
+import { ProviderNetworkOffers, DistributionActivity } from '@/components/portal/TripNetwork';
 
 export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 
@@ -29,7 +30,9 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
           <p className="ds-support text-ds-muted">
             Trips assigned or referred to your company appear here for you to confirm. There is no open pool of other companies' trips.
           </p>
+          <ProviderNetworkOffers />
           <ReferralReservationsSection userId={userId} />
+          <DistributionActivity />
         </div>
       )}
       {view === "reservations" && <ReservationsPanel userId={userId} scope="provider" hideReferrals />}
