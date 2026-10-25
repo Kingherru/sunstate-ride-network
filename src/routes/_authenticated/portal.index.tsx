@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { getPortalSummary } from "@/lib/portal-requests.functions";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
 import { ACCOUNT_TYPE_LABEL, RequestTable } from "@/components/portal/request-display";
-import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
+import { ProviderOverview } from "@/components/portal/ProviderOverview";
 import { DsEmpty } from "@/components/ds/feedback";
 
 export const Route = createFileRoute("/_authenticated/portal/")({
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/portal/")({
 
 function PortalHome() {
   const s = Route.useLoaderData();
-  const { access } = Route.useRouteContext();
+  const { access, user } = Route.useRouteContext();
   const ws = access.primary;
   const provider = access.portalKind === "provider";
   return (
@@ -25,17 +25,7 @@ function PortalHome() {
         <p role="status" className="ds-body mb-5 rounded-ds bg-ds-warning-soft px-4 py-3">Your provider account is pending verification. Trips can be offered to you once verification is complete.</p>
       )}
       {provider ? (
-        <div className="grid gap-5 lg:grid-cols-2">
-          <section className={`${panelCls} p-4 sm:p-5`} aria-labelledby="trips-h">
-            <h2 id="trips-h" className="ds-subheading uppercase text-ds-primary">Trips &amp; schedule</h2>
-            <p className="ds-body mt-2 text-ds-text-2">See trips offered or assigned to your company and your upcoming schedule.</p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link to="/portal/trips" className={actionCls}>View trips</Link>
-              <Link to="/portal/schedule" className="portal-btn-secondary">Schedule</Link>
-            </div>
-          </section>
-          <section className={`${panelCls} p-4 sm:p-5`} aria-label="Notifications"><NotificationsPanel /></section>
-        </div>
+        <ProviderOverview workspaceId={ws?.status === "active" ? ws.id : null} userId={user.id} />
       ) : (
         <section className={panelCls} aria-labelledby="recent-h">
           <div className="flex items-center justify-between gap-3 border-b border-ds-border px-4 py-3 sm:px-5">
