@@ -52,8 +52,8 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
   const rows = (notes.data ?? []) as Note[];
 
   return (
-    <section aria-labelledby="notes-h" className="rounded-ds border border-ds-border bg-ds-note shadow-[var(--ds-shadow)]">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ds-note-line px-4 py-3 sm:px-5">
+    <section aria-labelledby="notes-h" className="rounded-ds ds-notepad border border-[color:var(--ds-note-line)]">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--ds-note-line)] px-4 py-3 sm:px-5">
         <h2 id="notes-h" className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><StickyNote className="size-4" aria-hidden />Smart notes</h2>
         <div className="flex items-center gap-1">
           {(["active", "archived"] as const).map((v) => (
@@ -85,7 +85,7 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
         </form>
       )}
 
-      <ul className="divide-y divide-ds-note-line px-4 pb-3 sm:px-5">
+      <ul className="divide-y divide-[color:var(--ds-note-line)] px-4 pb-3 sm:px-5">
         {!workspaceId && <li className="ds-support py-3 text-ds-text-2">Notes are available once your provider account is set up.</li>}
         {workspaceId && notes.isLoading && <li className="ds-support py-3" role="status">Loading notes…</li>}
         {workspaceId && !notes.isLoading && rows.length === 0 && <li className="ds-support py-3 text-ds-text-2">{view === "active" ? "No notes yet." : "No archived notes."}</li>}
