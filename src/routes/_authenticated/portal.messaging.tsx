@@ -18,7 +18,7 @@ function PortalMessaging() {
   return (
     <>
       <PageHead title="Account conversations" />
-      <section className={`${panelCls} mb-8 p-4 sm:p-6`}><MessagesPanel userId={user.id} portal={access.workspace?.accountType === 'provider' ? 'provider' : 'facility'} /></section>
+      <section className={`${panelCls} mb-8 p-4 sm:p-6`}><MessagesPanel userId={user.id} portal={access.portalKind === 'provider' ? 'provider' : 'facility'} /></section>
       <PageHead title="Messaging">Message other businesses in the Provider Network. Do not include patient or protected health information.</PageHead>
       <section className={`${panelCls} p-4 sm:p-6`}>
         <WorkspaceMessaging
