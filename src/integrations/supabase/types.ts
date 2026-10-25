@@ -6685,6 +6685,10 @@ export type Database = {
         Returns: number
       }
       my_access_state: { Args: never; Returns: Json }
+      network_accept_offer: {
+        Args: { _approve?: boolean; _offer: string }
+        Returns: Json
+      }
       network_audit: {
         Args: {
           _details?: Json
@@ -6694,6 +6698,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      network_create_distribution: {
+        Args: {
+          _amount?: number
+          _expires?: string
+          _request?: string
+          _trip?: string
+        }
+        Returns: string
+      }
+      network_list_activity: { Args: never; Returns: Json }
+      network_list_offers: { Args: never; Returns: Json }
       network_notify: {
         Args: {
           _important?: boolean
@@ -6704,6 +6719,18 @@ export type Database = {
         Returns: undefined
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
+      network_respond_offer: {
+        Args: {
+          _action: string
+          _amount?: number
+          _expires?: string
+          _note?: string
+          _offer: string
+          _reason?: string
+        }
+        Returns: Json
+      }
+      network_send_wave: { Args: { _distribution: string }; Returns: Json }
       network_source_access: {
         Args: { _id: string; _manage?: boolean }
         Returns: boolean
