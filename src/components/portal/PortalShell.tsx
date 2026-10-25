@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
 import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
+import { RequestDetailProvider } from './RequestDetailOverlay';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -209,7 +210,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 
       <div className="lg:ml-64">{topHeader}</div>
       <main id="main" className="min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-10 lg:py-10">
-        <div className="portal-enter mx-auto w-full max-w-6xl">{children}</div>
+        <div className="portal-enter mx-auto w-full max-w-6xl"><RequestDetailProvider>{children}</RequestDetailProvider></div>
       </main>
     </div>
   );
