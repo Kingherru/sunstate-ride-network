@@ -11,6 +11,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
+import { usePortalQuery } from "@/components/portal/preview-data";
+import { listMyNotifications } from "@/lib/notifications.functions";
+
+type Indicator = "none" | "update" | "important";
+const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend/i;
+/** Static dot: green = ordinary unread update, red = important. Never pulses. */
+function Dot({ kind, className }: { kind: Indicator; className?: string }) {
+  if (kind === "none") return null;
+  return (
+    <span className={cn("size-2.5 rounded-full", kind === "important" ? "bg-ds-error" : "bg-ds-success", className)}>
+      <span className="sr-only">{kind === "important" ? "Important update" : "New update"}</span>
+    </span>
+  );
+}
 
 export type NavItem = { to: string; label: string; exact?: boolean; search?: Record<string, string>; iconFor?: string };
 export type ShellIdentity = { name: string; mfnId: string | null; label: string };
@@ -102,6 +116,12 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     </nav>
   );
   const footCls = "ds-button-text flex items-center gap-2 rounded-ds-sm px-3 py-2.5 text-left uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
+  const unread = usePortalQuery({
+    queryKey: ["notifications", "shell-unread"], enabled: !!notificationsTo, staleTime: 60_000,
+    queryFn: () => listMyNotifications({ data: { filter: "unread", limit: 20, offset: 0 } }),
+  });
+  const unreadRows = (unread.data as { rows?: { type: string; title: string }[] } | undefined)?.rows ?? [];
+  const notifIndicator: Indicator = unreadRows.length === 0 ? "none" : unreadRows.some((r) => URGENT_TYPES.test(r.type + " " + r.title)) ? "important" : "update";
   const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
@@ -113,32 +133,25 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
         className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
         <History className="size-4 shrink-0" aria-hidden />Change log
-        {indicator !== "none" && (
-          <span className={cn("ml-auto size-2.5 rounded-full", indicator === "important" ? "bg-ds-error motion-safe:animate-[mfn-wiggle_0.5s_ease-in-out_1]" : "bg-ds-success-soft ring-1 ring-ds-success")}>
-            <span className="sr-only">{indicator === "important" ? "Important update" : "New update"}</span>
-          </span>
-        )}
+        <Dot kind={indicator} className="ml-auto" />
       </Link>
       <button onClick={signOut} className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
         <LogOut className="size-4 shrink-0" aria-hidden />Sign out
       </button>
     </div>
   );
-  const idCard = identity && (
-    <div className="mx-6 mb-6">
-      <p className="ds-body truncate font-semibold text-ds-on-primary" title={identity.name}>{identity.name}</p>
-      <p className="ds-support mt-1 font-semibold uppercase tracking-[0.08em] text-ds-on-primary/75">{identity.label}</p>
-    </div>
-  );
+  const idCard = identity?.label ? (
+    <p className="ds-support mx-6 mb-5 font-semibold uppercase tracking-[0.08em] text-ds-on-primary/75">{identity.label}</p>
+  ) : null;
 
   const topHeader = (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:px-10">
-      <h1 className="ds-body truncate font-semibold uppercase tracking-[0.04em] text-ds-on-primary">{pageTitle}</h1>
-      <div className="flex shrink-0 items-center gap-1.5">
+      <h1 className="sr-only">{pageTitle}</h1>
+      <div className="ml-auto flex shrink-0 items-center gap-1.5">
         {notificationsTo && (
           <Link to={notificationsTo as "/portal/notifications"} aria-label="Notifications" title="Notifications"
-            className="inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
-            <Bell className="size-5" aria-hidden />
+            className="relative inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+            <Bell className="size-5" aria-hidden /><Dot kind={notifIndicator} className="absolute right-2 top-2" />
           </Link>
         )}
         {settingsTo && (
@@ -152,13 +165,12 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   );
 
   return (
-    <div className="theme-portal min-h-screen bg-ds-bg text-ds-on-bg">
+    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-ds-sm focus:bg-ds-surface focus:px-4 focus:py-2">Skip to content</a>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col bg-ds-primary py-6 lg:flex">
-        <Link to="/" className="mx-6 mb-1 rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName on="blue" className="text-lg" /></Link>
-        <p className="ds-support mx-6 mb-4 uppercase tracking-[0.08em] text-ds-on-primary/70">{area}</p>
+      <aside className="portal-sidebar fixed inset-y-0 left-0 hidden w-64 flex-col bg-ds-primary py-6 lg:flex">
+        <Link to="/" className="mx-6 mb-3 rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName on="blue" className="text-lg" /></Link>
         {idCard}
         <div className="min-h-0 flex-1 overflow-y-auto">{links}</div>
         <div className="mt-3">{footer}</div>
@@ -171,13 +183,12 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
             className="inline-flex size-10 shrink-0 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
             {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
           </button>
-          <h1 className="ds-support truncate font-semibold uppercase tracking-[0.04em] text-ds-on-primary">{pageTitle}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
           {notificationsTo && (
             <Link to={notificationsTo as "/portal/notifications"} aria-label="Notifications" title="Notifications"
-              className="inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
-              <Bell className="size-5" aria-hidden />
+              className="relative inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+              <Bell className="size-5" aria-hidden /><Dot kind={notifIndicator} className="absolute right-2 top-2" />
             </Link>
           )}
           {settingsTo && (
@@ -190,7 +201,6 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </header>
       {open && (
         <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary pb-6 pt-2 lg:hidden">
-          <p className="ds-support mx-6 mb-3 uppercase tracking-[0.08em] text-ds-on-primary/70">{area}</p>
           {idCard}
           {links}
           <div className="mt-6">{footer}</div>

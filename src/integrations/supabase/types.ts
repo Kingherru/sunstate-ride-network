@@ -5311,6 +5311,56 @@ export type Database = {
           },
         ]
       }
+      workspace_notes: {
+        Row: {
+          archived_at: string | null
+          body: string
+          created_at: string
+          created_by: string
+          creator_mfn_id: string | null
+          id: string
+          title: string
+          updated_at: string
+          visibility: string
+          workspace_id: string
+          workspace_mfn_id: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string
+          creator_mfn_id?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+          workspace_id: string
+          workspace_mfn_id?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string
+          creator_mfn_id?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+          workspace_id?: string
+          workspace_mfn_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_notes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspaces: {
         Row: {
           account_type: Database["public"]["Enums"]["workspace_type"]
@@ -5968,6 +6018,10 @@ export type Database = {
         Returns: number
       }
       holds_admin_label: { Args: { _user_id: string }; Returns: boolean }
+      is_active_workspace_member: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
       is_approved_provider: { Args: { _user_id: string }; Returns: boolean }
       is_eligible_transport_provider: {
         Args: { _user_id: string }

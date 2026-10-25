@@ -1,8 +1,20 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { toast } from "sonner";
 import { getAccessState } from "@/lib/access.functions";
-import { PortalShell, actionCls, panelCls, type NavItem } from "@/components/portal/PortalShell";
+import { PortalShell, PageHead, actionCls, panelCls, type NavItem } from "@/components/portal/PortalShell";
+import { PortalPreviewContext } from "@/components/portal/preview-data";
+import { DsEmpty } from "@/components/ds/feedback";
+import { ProviderOverview } from "@/components/portal/ProviderOverview";
+import { ProviderTrips } from "@/components/portal/ProviderTrips";
+import { TrainingTests } from "@/components/portal/TrainingTests";
+import { ScheduleCalendarPanel } from "@/components/dashboard/ScheduleCalendarPanel";
+import { FleetPanel } from "@/components/dashboard/FleetPanel";
+import { DriverEarningsPanel } from "@/components/dashboard/DriverEarningsPanel";
+import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
+import { PayersPanel } from "@/components/dashboard/PayersPanel";
+import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
+import { ProviderDirectory } from "@/components/network/ProviderDirectory";
+import { RequestForm } from "@/components/requests/RequestForm";
 import { PROVIDER_NAV, CUSTOMER_NAV } from "@/components/portal/portal-nav";
 import { ORGANIZATION_TYPES, organizationLabel } from "@/lib/account-types";
 
@@ -26,10 +38,6 @@ function pageKeyOf(to: string) {
   return to === "/portal" || to === "/admin" ? "overview" : to.replace(/^\/(portal|admin)\//, "");
 }
 
-function demoAction() {
-  toast("Preview only — no information was saved");
-}
-
 function PortalPreview() {
   const { kind } = Route.useParams();
   const search = Route.useSearch();
@@ -46,8 +54,8 @@ function PortalPreview() {
   );
 
   const identity = isProvider
-    ? { name: "Sunshine Coast Transport (Demo)", mfnId: "MFN-P-DEMO01", label: "PROVIDER" }
-    : { name: `Demo ${organizationLabel(accountType)}`, mfnId: "MFN-R-DEMO01", label: organizationLabel(accountType).toUpperCase() };
+    ? { name: "Sunshine Coast Transport (Demo)", mfnId: "MFN-P-DEMO01", label: "" }
+    : { name: `Demo ${organizationLabel(accountType)}`, mfnId: "MFN-R-DEMO01", label: "" };
 
   function setAccountType(v: string) {
     navigate({ search: (prev) => ({ ...prev, accountType: v }) });
@@ -56,9 +64,10 @@ function PortalPreview() {
   const pageTitle = baseNav.find((n) => pageKeyOf(n.to) === activePage)?.label ?? "Overview";
 
   return (
-    <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle}>
+    <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
+    <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-ds border-2 border-ds-accent bg-ds-accent/10 px-4 py-3">
-        <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Demo portal preview — synthetic data only</p>
+        <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Preview mode — demo information only, nothing is saved</p>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
       </div>
 
@@ -71,64 +80,57 @@ function PortalPreview() {
         </div>
       )}
 
-      <DemoBody kind={kind as Kind} page={activePage} />
+      <DemoBody kind={kind as Kind} page={activePage} accountType={accountType} />
     </PortalShell>
+    </PortalPreviewContext.Provider>
   );
 }
 
-function DemoWriteButton({ children }: { children: React.ReactNode }) {
-  return <button type="button" onClick={demoAction} className={actionCls}>{children}</button>;
+const PREVIEW_USER = "00000000-0000-0000-0000-000000000000";
+
+function Panel({ children }: { children: React.ReactNode }) {
+  return <div className={`${panelCls} p-4 sm:p-6`}>{children}</div>;
 }
 
-function DemoTable({ cols, rows }: { cols: string[]; rows: string[][] }) {
-  return (
-    <div className={`${panelCls} overflow-x-auto`}>
-      <table className="w-full text-left">
-        <thead><tr className="border-b border-ds-border">{cols.map((c) => <th key={c} className="ds-support px-4 py-3 uppercase tracking-[0.06em]">{c}</th>)}</tr></thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} className="border-b border-ds-border last:border-0">
-              {r.map((v, j) => <td key={j} className="ds-body px-4 py-3">{v}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+function Unavailable({ what }: { what: string }) {
+  return <Panel><DsEmpty title={`${what} isn't shown in preview`}>This page reads live records that belong to real accounts, so the preview leaves it empty.</DsEmpty></Panel>;
 }
 
-const PROVIDER_PAGES: Record<string, { heading: string; body: React.ReactNode }> = {
-  overview: { heading: "Overview", body: <DemoTable cols={["Metric", "Value"]} rows={[["Trips this week", "24"], ["Active drivers", "6"], ["Vehicles", "8"], ["Balance", "$1,240.00"]]} /> },
-  trips: { heading: "Trips", body: <DemoTable cols={["Trip", "Rider", "Status", "Date"]} rows={[["TR-10231", "J. Sample", "Completed", "May 1"], ["TR-10244", "A. Example", "Scheduled", "May 3"]]} /> },
-  schedule: { heading: "Schedule", body: <DemoTable cols={["Driver", "Vehicle", "Shift"]} rows={[["D. Driverly", "Van 02", "8a–4p"], ["S. Sample", "Van 05", "10a–6p"]]} /> },
-  vehicles: { heading: "Vehicles", body: <DemoTable cols={["Vehicle", "Type", "Status"]} rows={[["Van 02", "Wheelchair", "Active"], ["Van 05", "Ambulatory", "Active"]]} /> },
-  drivers: { heading: "Drivers", body: <DemoTable cols={["Driver", "Status", "Training"]} rows={[["D. Driverly", "Active", "Complete"], ["S. Sample", "Active", "In progress"]]} /> },
-  network: { heading: "Network", body: <DemoTable cols={["Provider", "Counties", "Accepting"]} rows={[["Gulfside Rides (Demo)", "Pinellas", "Yes"], ["Bayline Medical Transit (Demo)", "Hillsborough", "No"]]} /> },
-  training: { heading: "Training & Tests", body: <DemoTable cols={["Course", "Status"]} rows={[["Defensive Driving", "Complete"], ["HIPAA Basics", "In progress"]]} /> },
-};
+/** Real portal components, fed by preview fixtures (usePortalQuery) and with
+ *  every write blocked (usePortalMutation). No real account is impersonated. */
+function realPage(kind: Kind, page: string): React.ReactNode {
+  if (kind === "provider") {
+    switch (page) {
+      case "trips": return <Panel><ProviderTrips userId={PREVIEW_USER} /></Panel>;
+      case "schedule": return <Panel><ScheduleCalendarPanel /></Panel>;
+      case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;
+      case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
+      case "network": return <Panel><ProviderDirectory /></Panel>;
+      case "training": return <TrainingTests />;
+      case "messaging": return <Unavailable what="Messaging" />;
+      default: return <ProviderOverview workspaceId="preview-ws" userId={PREVIEW_USER} />;
+    }
+  }
+  switch (page) {
+    case "requests/new": return <RequestForm context="portal" />;
+    case "requests": return <Panel><DsEmpty title="No requests yet">Requests this account submits appear here.</DsEmpty></Panel>;
+    case "upload-csv": return <Unavailable what="CSV upload" />;
+    case "find-providers": return <Panel><ProviderDirectory /></Panel>;
+    case "saved-providers": return <Panel><ProviderDirectory savedOnly /></Panel>;
+    case "contacts": return <Panel><ContactsPanel /></Panel>;
+    case "payers": return <Panel><PayersPanel /></Panel>;
+    case "notifications": return <Panel><NotificationsPanel /></Panel>;
+    case "messaging": return <Unavailable what="Messaging" />;
+    default: return <Panel><DsEmpty title="No requests yet">Recent requests for this account appear here.</DsEmpty></Panel>;
+  }
+}
 
-const CUSTOMER_PAGES: Record<string, { heading: string; body: React.ReactNode }> = {
-  overview: { heading: "Overview", body: <DemoTable cols={["Metric", "Value"]} rows={[["Open requests", "2"], ["Completed trips", "18"], ["Saved providers", "3"]]} /> },
-  "requests/new": { heading: "New trip", body: <p className="ds-body max-w-xl">A demo copy of the request form would appear here. Submitting is disabled in preview.</p> },
-  requests: { heading: "Trip history", body: <DemoTable cols={["Request", "Status", "Date"]} rows={[["RQ-5581", "Completed", "Apr 29"], ["RQ-5602", "Scheduled", "May 2"]]} /> },
-  "upload-csv": { heading: "Upload CSV", body: <p className="ds-body max-w-xl">A demo CSV upload panel would appear here. Uploading is disabled in preview.</p> },
-  "find-providers": { heading: "Find providers", body: <DemoTable cols={["Provider", "Counties", "Accepting"]} rows={[["Sunshine Coast Transport (Demo)", "Pinellas", "Yes"], ["Gulfside Rides (Demo)", "Hillsborough", "Yes"]]} /> },
-  "saved-providers": { heading: "Saved providers", body: <DemoTable cols={["Provider", "Saved on"]} rows={[["Sunshine Coast Transport", "Apr 2"]]} /> },
-  contacts: { heading: "Contacts", body: <DemoTable cols={["Name", "Role"]} rows={[["J. Sample", "Scheduler"]]} /> },
-  payers: { heading: "Payers", body: <DemoTable cols={["Payer", "Type"]} rows={[["Demo Insurance Co.", "Insurance"]]} /> },
-  notifications: { heading: "Notifications", body: <DemoTable cols={["Notification", "Date"]} rows={[["Trip RQ-5602 confirmed", "May 2"]]} /> },
-};
-
-function DemoBody({ kind, page }: { kind: Kind; page: string }) {
-  const table = kind === "provider" ? PROVIDER_PAGES : CUSTOMER_PAGES;
-  const entry = table[page] ?? table.overview;
+function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accountType: string }) {
+  const label = (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="ds-section-title uppercase text-ds-primary">{entry.heading}</h2>
-        <DemoWriteButton>New</DemoWriteButton>
-      </div>
-      {entry.body}
-    </div>
+    <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
+      <PageHead title={label} />
+      {realPage(kind, page)}
+    </PortalPreviewContext.Provider>
   );
 }

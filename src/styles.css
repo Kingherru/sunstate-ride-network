@@ -332,3 +332,16 @@
 .theme-portal #main section { overflow-x: auto; }
 .theme-portal #main { overflow-wrap: anywhere; }
 .theme-portal #main [class*="max-w-[600px]"] { max-width: 100%; }
+
+/* Smart Notes divider: a slightly deeper yellow, no ruled lines. */
+.ds-notepad { --ds-note-line: #EFE3A0; }
+
+/* Portal content: pale-gray workspace, white cards with a very light 1px edge. */
+.theme-portal { --ds-border: #E6EAEE; }
+.theme-portal main .rounded-ds.bg-ds-surface { border: 1px solid #E6EAEE; }
+.theme-portal .portal-input { padding: 12px 16px; line-height: 1.4; }
+.theme-portal select.portal-input { padding-right: 2.75rem; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Restrained 1px orange edge on the sidebar while focus/pointer is in the workspace. */
+.portal-sidebar::after { content: ""; position: absolute; top: 3.5rem; bottom: 0; right: -1px; width: 1px; background: var(--mfn-orange, #E07A1F); box-shadow: 0 0 6px rgb(224 122 31 / 0.45); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.portal-root:has(main:hover, main:focus-within) .portal-sidebar::after { opacity: 1; }
