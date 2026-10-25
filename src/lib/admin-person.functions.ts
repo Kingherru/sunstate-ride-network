@@ -50,7 +50,7 @@ export const removeUserAccess = createServerFn({ method: 'POST' }).middleware([r
     // Ban first: if later cleanup fails, access remains disabled rather than deleting history.
     const ban = await supabaseAdmin.auth.admin.updateUserById(data.userId, { ban_duration: '876000h' });
     if (ban.error) throw new Error('Login access could not be disabled. No records were removed.');
-    const { error: finalizeError } = await supabaseAdmin.rpc('admin_finalize_user_removal', { _user: data.userId, _actor: context.userId, _reason: data.reason, _mode: data.mode });
+    const { error: finalizeError } = await context.supabase.rpc('admin_finalize_user_removal', { _user: data.userId, _reason: data.reason, _mode: data.mode });
     if (finalizeError) throw new Error('Login disabled; profile cleanup needs to be retried.');
     if (data.mode === 'delete') {
       const result = await supabaseAdmin.auth.admin.deleteUser(data.userId);
