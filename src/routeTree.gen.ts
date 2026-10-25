@@ -78,6 +78,7 @@ import { Route as AuthenticatedPortalTripsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPortalUploadCsvRouteImport } from './routes/_authenticated/portal.upload-csv'
 import { Route as AuthenticatedPortalVehiclesRouteImport } from './routes/_authenticated/portal.vehicles'
 import { Route as FloridaCoverageRegionIndexRouteImport } from './routes/florida-coverage.$region.index'
+import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
 import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
@@ -478,6 +479,11 @@ const FloridaCoverageRegionIndexRoute =
     path: '/florida-coverage/$region/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
+  id: '/lovable/email/events',
+  path: '/lovable/email/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -673,6 +679,7 @@ export interface FileRoutesByFullPath {
   '/portal/trips': typeof AuthenticatedPortalTripsRoute
   '/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
   '/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
+  '/lovable/email/events': typeof LovableEmailEventsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
@@ -761,6 +768,7 @@ export interface FileRoutesByTo {
   '/portal/trips': typeof AuthenticatedPortalTripsRoute
   '/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
   '/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
+  '/lovable/email/events': typeof LovableEmailEventsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
@@ -855,6 +863,7 @@ export interface FileRoutesById {
   '/_authenticated/portal/trips': typeof AuthenticatedPortalTripsRoute
   '/_authenticated/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
   '/_authenticated/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
+  '/lovable/email/events': typeof LovableEmailEventsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
@@ -949,6 +958,7 @@ export interface FileRouteTypes {
     | '/portal/trips'
     | '/portal/upload-csv'
     | '/portal/vehicles'
+    | '/lovable/email/events'
     | '/lovable/email/suppression'
     | '/admin/'
     | '/learn/'
@@ -1037,6 +1047,7 @@ export interface FileRouteTypes {
     | '/portal/trips'
     | '/portal/upload-csv'
     | '/portal/vehicles'
+    | '/lovable/email/events'
     | '/lovable/email/suppression'
     | '/admin'
     | '/learn'
@@ -1130,6 +1141,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/trips'
     | '/_authenticated/portal/upload-csv'
     | '/_authenticated/portal/vehicles'
+    | '/lovable/email/events'
     | '/lovable/email/suppression'
     | '/_authenticated/admin/'
     | '/_authenticated/learn/'
@@ -1187,6 +1199,7 @@ export interface RootRouteChildren {
   FloridaCoverageIndexRoute: typeof FloridaCoverageIndexRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
+  LovableEmailEventsRoute: typeof LovableEmailEventsRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
@@ -1691,6 +1704,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FloridaCoverageRegionIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/events': {
+      id: '/lovable/email/events'
+      path: '/lovable/email/events'
+      fullPath: '/lovable/email/events'
+      preLoaderRoute: typeof LovableEmailEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -2014,6 +2034,7 @@ const rootRouteChildren: RootRouteChildren = {
   FloridaCoverageIndexRoute: FloridaCoverageIndexRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
+  LovableEmailEventsRoute: LovableEmailEventsRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
