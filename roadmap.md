@@ -1,4 +1,10 @@
-# Pass 3F
+# Pass 3F completion and Build 1
+- [ ] Complete controlled-offer actions and narrow acceptance/access checks
+- [ ] Shared permission-filtered request/trip overlay throughout portal lists
+- [ ] Admin dashboard groups and Administrators layout
+- [ ] People search/filter/details, in-app messaging, protected removal controls
+- [ ] Small shared Contacts width adjustment
+- [ ] Verify current build signal and preserved record counts
 - [x] Business workspace RLS and explicit team Read/Manage permissions; creator identity preserved
 - [x] Draft load/save/resume wiring, wheelchair capacity, schedule vehicle filter and conflict indications
 - [x] Reviewed distribution, manual distance waves and verified service-base eligibility controls
