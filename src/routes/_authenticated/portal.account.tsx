@@ -25,7 +25,7 @@ const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin",
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "security";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
-  head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => getPortalSummary(),
   component: Account,
 });

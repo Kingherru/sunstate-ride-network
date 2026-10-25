@@ -7,7 +7,7 @@ import { listBusinessMembers, setBusinessMemberPermissions } from '@/lib/busines
 export function BusinessPermissions({ workspaceId }: { workspaceId: string }) {
   const list = useServerFn(listBusinessMembers), save = useServerFn(setBusinessMemberPermissions), qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ['business-members',workspaceId], queryFn: () => list({data:{workspace_id:workspaceId}}) });
-  const m = usePortalMutation({ mutationFn: (data: Parameters<typeof save>[0]['data']) => save({data}), onSuccess: () => { qc.invalidateQueries({queryKey:['business-members']}); toast.success('Business permissions updated.'); }, onError:(e:Error)=>toast.error(e.message) });
+  const m = usePortalMutation({ mutationFn: (data: { workspace_id: string; user_id: string; permissions: Record<'vehicles'|'drivers'|'contacts'|'payers','none'|'read'|'manage'>; manage_trips: boolean }) => save({data}), onSuccess: () => { qc.invalidateQueries({queryKey:['business-members']}); toast.success('Business permissions updated.'); }, onError:(e:Error)=>toast.error(e.message) });
   return <div className="mt-8 space-y-4"><h2 className="ds-subheading text-ds-primary">Team record permissions</h2>{(q.data??[]).map(member=>{
     const permissions=member.record_permissions as Record<'vehicles'|'drivers'|'contacts'|'payers','none'|'read'|'manage'>;
     const fixed=member.role==='owner'||member.role==='admin'||member.is_contractor;

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { listTripDrafts, deleteTripDraft } from "@/lib/trip-drafts.functions";
 import { formatTime12 } from "@/lib/time-format";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import { DsButton } from '@/components/ds/controls';
 
 export type TripDraft = {
   id: string;
@@ -69,14 +70,14 @@ export function SavedTripsPanel({
       {!q.isLoading && rows.length === 0 && (
         <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
           Nothing saved yet. Start filling in the trip form and your progress is saved here
-          automatically, or use <strong>Save trip</strong> to finish it later.
+          when you choose <strong>Save draft</strong> to finish it later.
         </div>
       )}
 
       <div className="space-y-3">
         {rows.map((d) => {
           const p = d.payload ?? {};
-          const name = [p.patient_first_name, p.patient_last_name].filter(Boolean).join(" ").trim();
+          const name = [p.patientFirstName ?? p.patient_first_name, p.patientLastName ?? p.patient_last_name].filter(Boolean).join(" ").trim();
           return (
             <div
               key={d.id}
@@ -95,13 +96,13 @@ export function SavedTripsPanel({
                 </div>
                 <div className="font-extrabold">{name || "Untitled trip draft"}</div>
                 <div className="text-sm text-muted-foreground mt-1">
-                  {p.pickup_address || "No pickup yet"}
-                  {p.pickup_city ? `, ${p.pickup_city}` : ""} → {p.dropoff_address || "No drop-off yet"}
-                  {p.dropoff_city ? `, ${p.dropoff_city}` : ""}
+                  {p.pickupAddress || p.pickup_address || "No pickup yet"}
+                  {p.pickupCity || p.pickup_city ? `, ${p.pickupCity || p.pickup_city}` : ""} → {p.dropoffAddress || p.dropoff_address || "No drop-off yet"}
+                  {p.dropoffCity || p.dropoff_city ? `, ${p.dropoffCity || p.dropoff_city}` : ""}
                 </div>
                 <div className="text-xs text-foreground/80 mt-1">
-                  {p.pickup_date ? `Pickup ${p.pickup_date}` : "No pickup date"}
-                  {p.pickup_time ? ` at ${formatTime12(String(p.pickup_time))}` : ""} · Last saved{" "}
+                  {p.pickupDate || p.pickup_date ? `Pickup ${p.pickupDate || p.pickup_date}` : "No pickup date"}
+                  {p.pickupTime || p.pickup_time ? ` at ${formatTime12(String(p.pickupTime || p.pickup_time))}` : ""} · Last saved{" "}
                   {new Date(d.updated_at).toLocaleString(undefined, {
                     month: "short",
                     day: "numeric",
@@ -111,20 +112,18 @@ export function SavedTripsPanel({
                 </div>
               </div>
               <div className="flex flex-col gap-2 shrink-0">
-                <button
+                <DsButton
                   type="button"
-                  onClick={() => onResume(d)}
-                  className="text-xs font-bold bg-primary text-primary-foreground px-3 py-2 rounded-sm hover:bg-primary/90"
+                  onClick={() => { if (preview.active) { previewBlocked(); return; } onResume(d); }}
                 >
-                  Continue &amp; submit
-                </button>
-                <button
+                  Resume draft
+                </DsButton>
+                <DsButton variant="secondary"
                   type="button"
                   onClick={() => remove(d.id)}
-                  className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted"
                 >
                   Delete
-                </button>
+                </DsButton>
               </div>
             </div>
           );
