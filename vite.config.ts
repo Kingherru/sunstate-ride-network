@@ -12,18 +12,18 @@ import path from 'node:path';
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
 // MCP server intentionally disabled (see AGENTS.md). To rebuild: re-add
 // @lovable.dev/mcp-js + mcpPlugin() and restore the archived src/lib/mcp.
-export default defineConfig({
-  vite: ({ mode }) => {
-    Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
-    return {
+export default defineConfig(({ mode }) => {
+  Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
+  return {
+    vite: {
       resolve: { alias: {
         'entities/lib/decode.js': path.resolve(process.cwd(), 'node_modules/entities/lib/decode.js'),
         'entities/lib/encode.js': path.resolve(process.cwd(), 'node_modules/entities/lib/encode.js'),
         entities: path.resolve(process.cwd(), 'node_modules/entities'),
       } },
-    };
-  },
+    },
   tanstackStart: {
     server: { entry: "server" },
   },
+  };
 });
