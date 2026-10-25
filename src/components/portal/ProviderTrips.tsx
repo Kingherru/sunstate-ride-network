@@ -1,18 +1,42 @@
 import { useState } from "react";
-import { ReservationsPanel } from "@/components/dashboard/RequestsPanel";
+import { useNavigate } from "@tanstack/react-router";
+import { ReservationsPanel, ReferralReservationsSection } from "@/components/dashboard/RequestsPanel";
 import { TripHistoryPanel } from "@/components/dashboard/TripHistoryPanel";
+import { SavedTripsPanel } from "@/components/dashboard/SavedTripsPanel";
 import { SegTabs } from "@/components/portal/SegTabs";
 
-type View = "reservations" | "history";
+export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 
-/** Provider trips: reservations (incl. drafts/unconfirmed) and history. Row-level rules limit rows to trips offered or assigned to this provider. */
-export function ProviderTrips({ userId }: { userId: string }) {
-  const [view, setView] = useState<View>("reservations");
+/**
+ * Provider trips: NEW TRIPS (only trips assigned or referred to this provider —
+ * no open pool), RESERVATIONS, DRAFTS (own drafts only) and HISTORY.
+ * Row-level rules decide every row; nothing here widens access.
+ */
+export function ProviderTrips({ userId, initial = "new" }: { userId: string; initial?: ProviderTripView }) {
+  const [view, setView] = useState<ProviderTripView>(initial);
+  const navigate = useNavigate();
   return (
     <div className="space-y-5">
       <SegTabs label="Trip views" value={view} onChange={setView}
-        options={[{ value: "reservations", label: "Reservations" }, { value: "history", label: "Trip history" }]} />
-      {view === "reservations" ? <ReservationsPanel userId={userId} scope="provider" /> : <TripHistoryPanel userId={userId} />}
+        options={[
+          { value: "new", label: "New trips" },
+          { value: "reservations", label: "Reservations" },
+          { value: "drafts", label: "Drafts" },
+          { value: "history", label: "History" },
+        ]} />
+      {view === "new" && (
+        <div className="space-y-3">
+          <p className="ds-support text-ds-muted">
+            Trips assigned or referred to your company appear here for you to confirm. There is no open pool of other companies' trips.
+          </p>
+          <ReferralReservationsSection userId={userId} />
+        </div>
+      )}
+      {view === "reservations" && <ReservationsPanel userId={userId} scope="provider" hideReferrals />}
+      {view === "drafts" && (
+        <SavedTripsPanel variant="drafts" onResume={() => navigate({ to: "/portal/requests/new" })} />
+      )}
+      {view === "history" && <TripHistoryPanel userId={userId} />}
     </div>
   );
 }
