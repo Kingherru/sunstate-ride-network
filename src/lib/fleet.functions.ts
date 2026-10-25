@@ -66,7 +66,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
       row.contractor_pricing = {};
     }
     const q = data.id
-      ? supabase.from("drivers").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
+      ? supabase.from("drivers").update(row).eq("id", data.id).select().single()
       : supabase.from("drivers").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
@@ -96,7 +96,7 @@ export const deleteDriver = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("drivers").delete().eq("id", data.id).eq("owner_id", context.userId);
+      .from("drivers").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
@@ -132,7 +132,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.assigned_driver_id === undefined) delete row.assigned_driver_id;
     const q = data.id
-      ? supabase.from("vehicles").update(row).eq("id", data.id).eq("owner_id", userId).select().single()
+      ? supabase.from("vehicles").update(row).eq("id", data.id).select().single()
       : supabase.from("vehicles").insert(row).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
@@ -165,7 +165,7 @@ export const deleteVehicle = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("vehicles").delete().eq("id", data.id).eq("owner_id", context.userId);
+      .from("vehicles").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });

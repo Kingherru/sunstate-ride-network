@@ -65,7 +65,6 @@ export const listMyDrivers = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("drivers")
       .select("id, first_name, last_name, status, employment_type, availability, vacation_start, vacation_end")
-      .eq("owner_id", context.userId)
       .order("first_name");
     if (error) throw error;
     return data ?? [];
@@ -79,10 +78,9 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
     const uid = context.userId;
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, scheduled_start_time, status, reservation_state, assigned_to, created_by")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, status, reservation_state, assigned_to, created_by")
       .eq("pickup_date", data.date)
       .in("reservation_state", ["booked", "unconfirmed"])
-      .or(`assigned_to.eq.${uid},created_by.eq.${uid}`)
       .order("pickup_time");
     if (error) throw error;
     return (rows ?? []).map((r: any) => ({
@@ -104,9 +102,8 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
     const endIso = end.toISOString().slice(0, 10);
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, scheduled_start_time, status, reservation_state, assigned_to, created_by")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, status, reservation_state, assigned_to, created_by")
       .in("reservation_state", ["booked", "unconfirmed"])
-      .or(`assigned_to.eq.${uid},created_by.eq.${uid}`)
       .gte("pickup_date", data.week_start)
       .lte("pickup_date", endIso)
       .order("pickup_date")
