@@ -71,7 +71,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
     const { data: out, error } = await q;
     if (error) throw error;
 
-    if (out && data.primary_vehicle_id !== undefined) {
+    if (out?.workspace_id && data.primary_vehicle_id !== undefined) {
       const driverId = (out as any).id as string;
       const vehId = data.primary_vehicle_id;
       if (vehId) {
@@ -137,7 +137,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     const { data: out, error } = await q;
     if (error) throw error;
 
-    if (out && data.assigned_driver_id !== undefined) {
+    if (out?.workspace_id && data.assigned_driver_id !== undefined) {
       const vehId = (out as any).id as string;
       const driverId = data.assigned_driver_id;
       if (driverId) {

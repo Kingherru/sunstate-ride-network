@@ -810,6 +810,11 @@ export const listReservationsByState = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await q;
     if (error) throw error;
-    return rows ?? [];
+    const {data: memberships} = await supabase.from('workspace_members').select('workspace_id').eq('user_id',userId);
+    const ownedIds=(rows??[]).map(r=>r.requester_user_id).filter((id): id is string=>!!id);
+    const {data: sources} = ownedIds.length ? await supabase.from('workspace_members').select('user_id,workspace_id').in('user_id',ownedIds) : {data:[]};
+    const permissionEntries=await Promise.all((memberships??[]).map(async m=>{const {data:can}=await supabase.rpc('network_workspace_access',{_ws:m.workspace_id,_manage:true});return [m.workspace_id,can===true] as const;}));
+    const allowed=new Map(permissionEntries);
+    return (rows??[]).map(r=>{ const origin=(sources??[]).filter(m=>m.user_id===r.requester_user_id);return {...r,can_share_network:!r.network_distribution_id&&!r.network_provider_workspace_id&&origin.length===1&&allowed.get(origin[0].workspace_id)===true}; });
   });
 
