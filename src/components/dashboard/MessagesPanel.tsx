@@ -78,7 +78,7 @@ function relBadgeClass(rel: Relationship): string {
   return "bg-secondary text-secondary-foreground border border-border";
 }
 
-export function MessagesPanel({ userId, portal }: { userId: string; portal: PortalKind }) {
+export function MessagesPanel({ userId, portal, readOnly = false }: { userId: string; portal: PortalKind; readOnly?: boolean }) {
   const qc = useQueryClient();
   const caps = useCapabilities();
   const listFn = useServerFn(listThreads);
@@ -188,7 +188,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
 
   const send = useMutation({
     mutationFn: async () => {
-      if (!activeThread) return;
+      if (!activeThread || readOnly) return;
       const r = await sendFn({ data: { thread_id: activeThread, body: draft } });
       if (!r.ok) throw new Error(r.error);
     },
@@ -633,7 +633,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
                     : "Remove this conversation from your inbox?";
                   if (window.confirm(msg)) deleteThread.mutate(active.id);
                 }}
-                disabled={deleteThread.isPending}
+                disabled={readOnly || deleteThread.isPending}
                 className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
                 title={caps.isOps ? "Delete conversation" : "Leave conversation"}
               >
@@ -644,7 +644,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
               {messagesQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
               {messages.map((m: any) => {
                 const mine = m.sender_id === userId;
-                const canDelete = mine || caps.isOps;
+                const canDelete = !readOnly && (mine || caps.isOps);
                 return (
                   <div key={m.id} className={`group flex ${mine ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm relative ${mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
@@ -670,7 +670,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
             </div>
 
             <form
-              onSubmit={(e) => { e.preventDefault(); if (draft.trim()) send.mutate(); }}
+              onSubmit={(e) => { e.preventDefault(); if (!readOnly && draft.trim()) send.mutate(); }}
               className="border-t border-border p-3 flex gap-2"
             >
               <input
@@ -681,7 +681,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
               />
               <button
                 type="submit"
-                disabled={send.isPending || !draft.trim()}
+                disabled={readOnly || send.isPending || !draft.trim()}
                 className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
               >
                 Send
