@@ -318,7 +318,7 @@ export function MessagesPanel({ userId, portal }: { userId: string; portal: Port
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[340px,1fr] gap-4 min-h-[560px]">
+    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] gap-4 min-h-[560px]">
       <aside className="rounded-lg border border-border bg-card flex flex-col">
         <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-semibold text-sm">
