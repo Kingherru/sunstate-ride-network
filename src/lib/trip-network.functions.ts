@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { distributionInput } from '@/lib/trip-network-rules';
 
 export type NetworkOffer = { id: string; mfn_id: string; wave_id?: string; distribution_id: string; source_mfn_id: string; service_type: string; pickup_area: string; destination_area: string; pickup_date: string; pickup_time: string; trip_type: string; estimated_miles: number | null; amount_cents: number; capability: string; expires_at: string; status: string; provider_workspace_id: string };
 export type NetworkActivity = { id: string; request_id?: string; trip_id?: string; mfn_id: string; source_mfn_id: string; source_business: string | null; pickup_area: string; destination_area: string; pickup_date: string; pickup_time: string; capability: string; amount_cents: number; expires_at: string; status: string; current_radius: number | null; can_manage: boolean; offers: NetworkOffer[]; waves: { id: string; radius_miles: number; sent_at: string }[]; negotiations: { id: string; offer_id: string; side: string; action: string; amount_cents: number | null; business_note: string | null; created_at: string }[]; events: { id: string; event_type: string; created_at: string; actor_mfn_id: string | null }[] };
@@ -15,7 +16,7 @@ export const listNetworkActivity = createServerFn({ method: 'GET' }).middleware(
   return (data ?? []) as unknown as NetworkActivity[];
 });
 export const createNetworkDistribution = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ request_id: z.string().uuid().optional(), trip_id: z.string().uuid().optional(), amount_cents: z.number().int().positive(), expires_at: z.string().datetime() }).refine((i) => !!i.request_id !== !!i.trip_id).parse(i))
+  .inputValidator((i: unknown) => distributionInput.parse(i))
   .handler(async ({ data, context }) => {
     const { data: id, error } = await context.supabase.rpc('network_create_distribution', { _request: data.request_id, _trip: data.trip_id, _amount: data.amount_cents, _expires: data.expires_at });
     if (error) throw new Error(error.message);
