@@ -17,7 +17,7 @@ function AdminMessaging() {
     <>
       <PageHead title="Messaging">{level === "read" && <ReadOnlyBadge />}</PageHead>
       <section className={`${panelCls} p-4 sm:p-6`}>
-        <MessagesPanel userId={user.id} portal="facility" />
+        <MessagesPanel userId={user.id} portal="facility" readOnly={level !== 'manage'} />
       </section>
 
       <div className="mt-8">

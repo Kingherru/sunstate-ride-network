@@ -6,9 +6,10 @@ import { listRegularAdmins, promoteRegularAdmin, setRegularAdminPermissions, rev
 import { ADMIN_SECTIONS, PRESETS, PRESET_LABELS, type AdminPreset, type AccessLevel } from "@/lib/admin-permissions";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { DsEmpty } from "@/components/ds/feedback";
+import { DsButton } from '@/components/ds/controls';
 
 export const Route = createFileRoute("/_authenticated/admin/admins")({
-  head: () => ({ meta: [{ title: "Administrators — MY FLORIDA NEMT Admin" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Administrators — MY FLORIDA NEMT Admin" }, { name: 'description', content: 'Manage administrator permissions and account scope.' }, { property: 'og:title', content: 'Administrators — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Manage administrator permissions and account scope.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => listRegularAdmins(),
   component: AdminsPage,
 });
@@ -36,7 +37,7 @@ function AdminsPage() {
             <label htmlFor="promote-email" className="portal-label">Email of an existing account</label>
             <input id="promote-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="portal-input" />
           </div>
-          <button disabled={busy} className="portal-btn-primary whitespace-nowrap">Add administrator</button>
+          <DsButton type="submit" disabled={busy} className="whitespace-nowrap">Add administrator</DsButton>
         </form>
       </section>
       {admins.length === 0 ? <section className={panelCls}><DsEmpty title="No regular administrators" /></section> :
@@ -82,6 +83,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
     <section className={`${panelCls} p-4 sm:p-5`} aria-labelledby={`adm-${id}`}>
       <h2 id={`adm-${id}`} className="ds-subheading break-words text-ds-primary">{admin.name || admin.email}</h2>
       <p className="ds-support break-all">{admin.email} · <span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
+      <p className="ds-support mt-2 text-ds-text-2">{active ? 'Active' : 'Disabled'} · {scope === 'selected' ? `${ws.size} selected accounts` : scope === 'all' ? 'All eligible accounts' : 'No account access'} · {Object.values(eff).filter(v => v === 'manage').length} Manage / {Object.values(eff).filter(v => v === 'read').length} Read-only sections</p>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <div>
           <label htmlFor={`preset-${id}`} className="portal-label">Preset</label>
@@ -103,7 +105,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
           {ADMIN_SECTIONS.map((s) => (
             <div key={s.key} className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-surface-muted px-3 py-2">
               <label htmlFor={`${id}-${s.key}`} className="ds-support min-w-0 text-ds-on-surface">{s.label}</label>
-              <select id={`${id}-${s.key}`} disabled={preset !== "custom"} className="portal-input w-28 py-1" value={eff[s.key] ?? "none"}
+              <select id={`${id}-${s.key}`} disabled={preset !== "custom"} className="portal-input !w-32 shrink-0 py-1" value={eff[s.key] ?? "none"}
                 onChange={(e) => setSections((m) => ({ ...m, [s.key]: e.target.value as AccessLevel }))}>
                 <option value="none">No access</option><option value="read">Read-only</option><option value="manage">Manage</option>
               </select>
@@ -126,9 +128,9 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
         </fieldset>
       )}
       <div className="mt-4 flex flex-wrap gap-3">
-        <button onClick={onSave} className="portal-btn-primary">Save permissions</button>
-        {!confirmRevoke ? <button onClick={() => setConfirmRevoke(true)} className="portal-btn-secondary">Remove administrator</button>
-          : <><button onClick={onRevoke} className="portal-btn-primary">Confirm removal</button><button onClick={() => setConfirmRevoke(false)} className="portal-btn-secondary">Cancel</button></>}
+        <DsButton onClick={onSave}>Save permissions</DsButton>
+        {!confirmRevoke ? <DsButton variant="ghost" onClick={() => setConfirmRevoke(true)}>Remove administrator</DsButton>
+          : <><DsButton onClick={onRevoke}>Confirm removal</DsButton><DsButton variant="ghost" onClick={() => setConfirmRevoke(false)}>Cancel</DsButton></>}
       </div>
     </section>
   );

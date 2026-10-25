@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { DsBadge, type Status } from "@/components/ds/feedback";
 import type { RequestDetailRow, RequestListRow } from "@/lib/portal-requests.functions";
+import { useRequestDetails } from './request-detail-context';
+import { DsButton } from '@/components/ds/controls';
 
 export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
   private_pay: "Private Pay", facility: "Facility", hospital: "Hospital", provider: "Provider",
@@ -51,20 +53,21 @@ export const fmtDateTime = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 
 export function RequestTable({ rows, detailBase, showSource = false }: { rows: RequestListRow[]; detailBase: "/portal/requests" | "/admin/requests"; showSource?: boolean }) {
+  const open = useRequestDetails();
   return (
     <>
       {/* Phone: stacked list, no horizontal scrolling */}
       <ul className="divide-y divide-ds-border md:hidden">
         {rows.map((r) => (
           <li key={r.id}>
-            <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="block px-4 py-4 ds-transition hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ds-focus">
+            <DsButton variant="ghost" onClick={() => open({ kind: 'request', id: r.id })} className="!block w-full !px-4 !py-4 text-left !normal-case">
               <div className="flex items-start justify-between gap-3">
                 <span className="ds-label text-ds-primary">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
                 <StatusBadge status={r.network_status || r.status} />
               </div>
               <p className="ds-body mt-1">{categoryLabel(r)}{!isDelivery(r) && ` · ${serviceLabel(r)}`}</p>
               <p className="ds-support mt-0.5">{fmtDateTime(r.created_at)}{showSource && ` · ${sourceLabel(r.submitted_via)}`}</p>
-            </Link>
+            </DsButton>
           </li>
         ))}
       </ul>
@@ -81,9 +84,9 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
         </thead>
         <tbody className="ds-body">
           {rows.map((r) => (
-            <tr key={r.id} className="border-b border-ds-border last:border-0">
+            <tr key={r.id} tabIndex={0} role="button" aria-label={`Open request ${r.mfn_id || shortId(r.id)}`} onClick={() => open({ kind: 'request', id: r.id })} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open({ kind: 'request', id: r.id }); } }} className="cursor-pointer border-b border-ds-border hover:bg-ds-surface-muted focus-visible:outline-2 focus-visible:outline-ds-focus last:border-0">
               <td className="px-4 py-3">
-                <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="font-semibold text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus rounded-ds-sm">{r.mfn_id ?? `#${shortId(r.id)}`}</Link>
+                <span className="font-semibold text-ds-link">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
               </td>
               <td className="px-4 py-3">{categoryLabel(r)}</td>
               {!showSource && <td className="px-4 py-3">{serviceLabel(r)}</td>}
@@ -120,6 +123,10 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
           <Row label="Request number" value={r.mfn_id ?? `#${shortId(r.id)}`} />
           <Row label="Category" value={categoryLabel(r)} />
           {!d && <Row label="Service" value={serviceLabel(r)} />}
+          <Row label="Trip type" value={s('trip_type')?.replaceAll('_', ' ')} />
+          {!d && <Row label="Service level" value={s('service_level')?.replaceAll('_', ' ')} />}
+          {!d && <Row label="Wheelchair required" value={r.needs_wheelchair === true ? 'Yes' : null} />}
+          {!d && <Row label="Assistance to vehicle" value={r.needs_assistance_to_vehicle === true ? 'Required' : null} />}
           {d && <Row label="Delivery category" value={DELIVERY_CAT[s("delivery_item_type") ?? ""] ?? s("delivery_item_type")} />}
           <Row label="Status" value={<StatusBadge status={r.network_status || r.status} />} />
           <Row label="Submitted" value={fmtDateTime(r.created_at)} />
@@ -145,6 +152,9 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
         <h2 className="ds-subheading uppercase text-ds-primary">{d ? "Contact" : "Passenger"}</h2>
         <dl className="mt-2 divide-y divide-ds-border">
           <Row label="Name" value={[s("patient_first_name"), s("patient_last_name")].filter(Boolean).join(" ")} />
+          <Row label="Requester" value={s('requester_name')} />
+          <Row label="Requester phone" value={s('requester_phone')} />
+          <Row label="Requester email" value={s('requester_email')} />
           <Row label="Phone" value={s("patient_phone")} />
           <Row label="Email" value={s("patient_email")} />
           {!d && <Row label="Mobility notes" value={s("mobility_notes")} />}

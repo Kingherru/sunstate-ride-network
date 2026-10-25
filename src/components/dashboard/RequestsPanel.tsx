@@ -14,6 +14,7 @@ import { listReferralReservations, confirmReferralReservation } from "@/lib/refe
 import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@/lib/payment-gate";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { ShareTripControl } from '@/components/portal/TripNetwork';
+import { useRequestDetails } from '@/components/portal/request-detail-context';
 
 
 
@@ -149,6 +150,7 @@ function isPendingReferralReservation(r: any, userId: string) {
  * (no invoice is sent) and the trip moves onto the Schedule Board.
  */
 export function ReferralReservationsSection({ userId }: { userId: string }) {
+  const openDetails = useRequestDetails();
   const preview = usePortalPreview();
   const qc = useQueryClient();
   const listFn = useServerFn(listReferralReservations);
@@ -205,6 +207,9 @@ export function ReferralReservationsSection({ userId }: { userId: string }) {
           return (
             <div
               key={r.id}
+              tabIndex={0} role="button" aria-label="Open reservation details"
+              onClick={e => { if (!(e.target as HTMLElement).closest('button')) openDetails({ kind: 'trip', id: r.id }); }}
+              onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}
               className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap border ${
                 medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"
               }`}
@@ -271,6 +276,7 @@ export function ReservationsPanel({
   hideReferrals?: boolean;
 }) {
   const preview = usePortalPreview();
+  const openDetails = useRequestDetails();
   const [section, setSection] = useState<ResvSection>("unconfirmed");
   const state: ResvState = section === "drafts" ? "unconfirmed" : section;
   const qc = useQueryClient();
@@ -520,6 +526,9 @@ export function ReservationsPanel({
                 return (
                 <div
                   key={r.id}
+                  tabIndex={0} role="button" aria-label="Open trip details"
+                  onClick={e => { if (!(e.target as HTMLElement).closest('button,a,input,select')) openDetails({ kind: 'trip', id: r.id }); }}
+                  onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}
                   draggable={state === "booked"}
                   onDragStart={(e) => { if (state === "booked") { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; } }}
                   className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap border ${
@@ -567,7 +576,8 @@ export function ReservationsPanel({
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
-                    <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</button>
+                    <button type="button" onClick={() => openDetails({ kind: 'trip', id: r.id })} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">View details</button>
+                    {(scope === 'provider' || scope === 'ops') && <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Manage reservation</button>}
                     {scope==='provider' && r.can_share_network && <ShareTripControl tripId={r.id} />}
                     {(state === "unconfirmed" || state === "booked") && (
                       <button

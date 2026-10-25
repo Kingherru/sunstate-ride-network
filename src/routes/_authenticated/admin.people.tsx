@@ -14,12 +14,14 @@ import { DsEmpty } from "@/components/ds/feedback";
 import { useQuery } from "@tanstack/react-query";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
+import { PersonDetails } from '@/components/admin/PersonDetails';
+import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
 const ORG_TYPES = new Set(["facility", "hospital"]);
 
 export const Route = createFileRoute("/_authenticated/admin/people")({
-  head: () => ({ meta: [{ title: "People & Accounts — MY FLORIDA NEMT Admin" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "People & Accounts — MY FLORIDA NEMT Admin" }, { name: 'description', content: 'Scoped people, account details and login access management.' }, { property: 'og:title', content: 'People & Accounts — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Scoped people, account details and login access management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => listPeopleAndAccounts(),
   component: People,
 });
@@ -101,10 +103,14 @@ function People() {
   const reviewCounts = useQuery({ queryKey: ["needs-review-counts"], queryFn: () => reviewCountsFn() });
   const [view, setView] = useState<View>("all");
   const [q, setQ] = useState("");
+  const [selected, setSelected] = useState<PersonRow | null>(null);
+  const [status, setStatus] = useState('all');
+  const [activity, setActivity] = useState('all');
   const list = useMemo(() => rows.filter((p) => matches(p, view)).filter((p) => {
     const t = q.trim().toLowerCase();
-    return !t || [p.mfnId, p.email, p.name, ...p.accounts.map((a) => `${a.name} ${a.mfnId}`)].some((x) => x?.toLowerCase().includes(t));
-  }), [rows, view, q]);
+    const recent = !!p.lastSignIn && Date.now() - Date.parse(p.lastSignIn) <= 30 * 86400000;
+    return (status === 'all' || (status === 'review' ? matches(p, 'review') : p.status === status)) && (activity === 'all' || (activity === 'recent' ? recent : activity === 'never' ? !p.lastSignIn : !recent)) && (!t || [p.mfnId, p.email, p.name, ...p.accounts.map((a) => `${a.name} ${a.mfnId} ${a.type} ${a.orgType}`)].some((x) => x?.toLowerCase().includes(t)));
+  }), [rows, view, q, status, activity]);
   const counts = (v: View) => rows.filter((p) => matches(p, v)).length;
 
   return (
@@ -125,14 +131,14 @@ function People() {
           <span className="font-semibold">Accounts needing classification:</span> {reviewCounts.data.accountsNeedingClassification}
         </p>
       )}
-      <label htmlFor="people-q" className="sr-only">Search people</label>
-      <input id="people-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by MFN ID, email or account" className="portal-input mb-4 max-w-md" />
+      <div className="mb-5 grid gap-4 md:grid-cols-[2fr_1fr_1fr]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField></div>
       <section className={panelCls}>
         {list.length === 0 ? <DsEmpty title="No one here">Nobody matches this view.</DsEmpty> : (
           <ul className="divide-y divide-ds-border">
             {list.map((p) => (
               <li key={p.userId} className="grid gap-2 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.3fr)] md:gap-6">
                 <div className="min-w-0">
+                  <DsButton variant="ghost" className="!px-0 text-left" onClick={() => setSelected(p)}>{p.name || p.email || 'Account details'}</DsButton>
                   <p className="ds-body break-all font-semibold">{p.email ?? "No email"}</p>
                   {p.isMasterAdmin && <p className="ds-support font-semibold uppercase tracking-[0.08em] text-ds-action">Master Admin</p>}
                   <p className="ds-support font-mono">{p.mfnId}</p>
@@ -158,6 +164,7 @@ function People() {
           </ul>
         )}
       </section>
+      {selected && <PersonDetails person={selected} canManage={canManagePeople} onClose={() => setSelected(null)} />}
     </>
   );
 }

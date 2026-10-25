@@ -11,7 +11,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const LIST_COLS = "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via";
 const DETAIL_COLS =
-  "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, mobility_notes, special_instructions, delivery_item_type, delivery_instructions, delivery_signature_required";
+  "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, requester_phone, requester_email, workspace_id, needs_wheelchair, needs_assistance_to_vehicle, service_level, delivery_item_type, delivery_signature_required";
 
 export type RequestListRow = {
   id: string; mfn_id: string | null; intake_source: string | null; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
@@ -22,6 +22,40 @@ export type RequestDetailRow = RequestListRow & { [k: string]: Json };
 
 const idInput = (input: unknown) => z.object({ id: z.string().uuid() }).parse(input);
 const NOT_FOUND = "not_found";
+
+/** Never elevate this read: the same RLS boundary applies to every overlay entry point. */
+export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ kind: z.enum(['request', 'trip']), id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const tripCols = 'id,display_id,ride_request_id,trip_kind,transport_type,status,network_status,created_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id';
+    const { data: row, error } = data.kind === 'request'
+      ? await context.supabase.from('ride_requests').select(DETAIL_COLS).eq('id', data.id).maybeSingle()
+      : await context.supabase.from('trips').select(tripCols).eq('id', data.id).maybeSingle();
+    if (error || !row) return { ok: false as const };
+    const r = row as any;
+    const { data: activity } = await context.supabase.rpc('network_list_activity');
+    const distributions = Array.isArray(activity) ? activity as any[] : [];
+    const relevant = distributions.filter(d => data.kind === 'request' ? d.request_id === data.id : d.trip_id === data.id);
+    type DetailDistribution = { id: string; mfn_id: string; status: string; waves: { id: string; radius_miles: number; sent_at: string }[]; offers: { id: string; mfn_id: string; status: string }[] };
+    const detailDistributions: DetailDistribution[] = relevant.map(d => ({ id: String(d.id), mfn_id: String(d.mfn_id), status: String(d.status), waves: (d.waves || []).map((w: any) => ({ id: String(w.id), radius_miles: Number(w.radius_miles), sent_at: String(w.sent_at) })), offers: (d.offers || []).map((o: any) => ({ id: String(o.id), mfn_id: String(o.mfn_id), status: String(o.status) })) }));
+    const requestId = data.kind === 'request' ? data.id : r.ride_request_id;
+    const { data: storedHistory } = requestId ? await context.supabase.from('ride_request_history').select('action,created_at').eq('ride_request_id', requestId).order('created_at') : { data: [] };
+    const history: { action: string; at: string; actor: string | null }[] = [
+      { action: 'received', at: r.created_at, actor: null },
+      ...(storedHistory || []).map(h => ({ action: h.action, at: h.created_at, actor: null })),
+      ...relevant.flatMap(d => (d.events || []).map((e: any) => ({ action: String(e.event_type), at: String(e.created_at), actor: e.actor_mfn_id as string | null }))),
+    ];
+    let assignment: string | null = r.network_provider_workspace_id ? 'Provider selected' : null;
+    if (r.network_provider_workspace_id) {
+      const { data: ws } = await context.supabase.from('workspaces').select('mfn_id,display_name').eq('id', r.network_provider_workspace_id).maybeSingle();
+      if (ws) assignment = [ws.display_name, ws.mfn_id].filter(Boolean).join(' · ');
+    }
+    const { data: account } = r.workspace_id ? await context.supabase.from('workspaces').select('mfn_id,display_name,account_type').eq('id', r.workspace_id).maybeSingle() : { data: null };
+    const selected = relevant.find(d => d.status === 'provider_selected');
+    if (!assignment && selected) assignment = 'Provider selected';
+    return { ok: true as const, request: { ...r, additional_stops: Array.isArray(r.additional_stops) ? r.additional_stops.map((stop: any) => ({ address: String(stop.address || '') })) : [], mfn_id: r.mfn_id || r.display_id || null, trip_type: r.trip_type || (r.round_trip ? 'round_trip' : 'one_way'), intake_source: r.intake_source || null, submitted_via: r.submitted_via || null } as RequestDetailRow, account, assignment, history, distributions: detailDistributions };
+  });
 
 async function requireAdmin(context: { supabase: any; userId: string }) {
   // Master Admin, or a regular admin granted Requests (row-level rules then limit to their account scope).

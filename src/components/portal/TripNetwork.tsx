@@ -7,12 +7,14 @@ import { DsButton, DsField, DsInput, DsSelect, DsTextarea } from '@/components/d
 import { usePortalQuery, usePortalMutation } from '@/components/portal/preview-data';
 import { listNetworkOffers, listNetworkActivity, acceptNetworkOffer, respondNetworkOffer, createNetworkDistribution, sendNetworkWave, getDistributionReadiness, getNetworkSettings, saveNetworkSettings, markNetworkAttention, getOfferHistory, type NetworkOffer } from '@/lib/trip-network.functions';
 import { nextRadius } from '@/lib/trip-network-rules';
+import { DetailOverlayFrame } from './DetailOverlayFrame';
+import { useRequestDetails } from './request-detail-context';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
 const label = (s: string) => s.replaceAll('_', ' ');
 function useRefreshNetwork() {
   const qc = useQueryClient();
-  return () => ['network-offers', 'network-activity', 'reservations-by-state', 'day-reservations'].forEach(key => qc.invalidateQueries({ queryKey: [key] }));
+  return () => ['network-offers', 'network-activity', 'reservations-by-state', 'day-reservations', 'schedule-board', 'request-overlay'].forEach(key => qc.invalidateQueries({ queryKey: [key] }));
 }
 function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer; source?: boolean; onClose: () => void }) {
   const accept = useServerFn(acceptNetworkOffer), respond = useServerFn(respondNetworkOffer);
@@ -28,8 +30,8 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
     const r = action === 'accept' ? await accept({ data: { offer_id: offer.id, approve_counter: source } }) : await respond({ data: { offer_id: offer.id, action, ...(action === 'counter' || action === 'revise' ? { amount_cents: Math.round(Number(amount) * 100), expires_at: new Date(expires).toISOString() } : {}), business_note: note || undefined, reason: (reason || undefined) as 'no_driver' | undefined } });
     if (!r.ok) throw new Error(r.error || 'This offer is no longer available');
   }, onSuccess: () => { toast.success('Offer response recorded.'); refresh(); onClose(); }, onError: (e: Error) => toast.error(e.message) });
-  return <div role="dialog" aria-modal="true" aria-label="Review offer" className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/50 p-5">
-    <div className="w-full max-w-xl max-h-[85vh] overflow-auto rounded-ds bg-ds-surface p-6 space-y-5">
+  return <DetailOverlayFrame title="Offer details" onClose={onClose}>
+    <div className="space-y-5">
       <div className="flex justify-between gap-4"><h2 className="ds-subheading text-ds-primary">{offer.mfn_id}</h2><DsButton variant="ghost" size="sm" aria-label="Close offer review" onClick={onClose}><X className="size-4" /></DsButton></div>
       <dl className="grid grid-cols-2 gap-3 ds-body"><dt>Source</dt><dd className="break-all font-mono">{offer.source_mfn_id}</dd><dt>General route</dt><dd>{offer.pickup_area} → {offer.destination_area}</dd><dt>When</dt><dd>{offer.pickup_date} {offer.pickup_time}</dd><dt>Service / trip</dt><dd>{label(offer.service_type || offer.capability)} · {label(offer.trip_type || '')}</dd><dt>Capability</dt><dd>{offer.capability}</dd><dt>Compensation</dt><dd>{money(offer.amount_cents)}</dd><dt>Expires</dt><dd>{new Date(offer.expires_at).toLocaleString()}</dd></dl>
       <p className="ds-support text-ds-muted">Passenger identity and exact trip details remain protected until assignment.</p>
@@ -44,7 +46,7 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
         <DsButton disabled={m.isPending} type="submit"><Send className="size-4" />Submit response</DsButton>
       </form>}
     </div>
-  </div>;
+  </DetailOverlayFrame>;
 }
 export function ProviderNetworkOffers() {
   const list = useServerFn(listNetworkOffers);
@@ -54,7 +56,7 @@ export function ProviderNetworkOffers() {
     {q.isLoading && <p className="ds-body">Loading offers…</p>}
     {!!q.error && <p role="alert" className="text-ds-error">Could not load offers.</p>}
     {!q.isLoading && !q.error && !q.data?.length && <p className="ds-body text-ds-muted py-6">No offers addressed to your business yet.</p>}
-    <div className="grid gap-4 lg:grid-cols-2">{(q.data ?? []).map(o => <article key={o.id} className="rounded-ds bg-ds-surface border border-ds-border p-5 space-y-3">
+    <div className="grid gap-4 lg:grid-cols-2">{(q.data ?? []).map(o => <article key={o.id} role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }} className="cursor-pointer rounded-ds bg-ds-surface border border-ds-border p-5 space-y-3 focus-visible:outline-2 focus-visible:outline-ds-focus">
       <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span><span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
       <h3 className="ds-subheading text-ds-primary">{o.pickup_area} → {o.destination_area}</h3>
       <p className="ds-support font-mono">{o.source_mfn_id}</p><p className="ds-body">{o.pickup_date} · {o.pickup_time.slice(0,5)} · {label(o.trip_type)}</p>
@@ -66,6 +68,7 @@ export function ProviderNetworkOffers() {
   </div>;
 }
 export function DistributionActivity({ admin = false }: { admin?: boolean }) {
+  const openDetails = useRequestDetails();
   const list = useServerFn(listNetworkActivity), send = useServerFn(sendNetworkWave);
   const q = usePortalQuery({ queryKey: ['network-activity'], queryFn: () => list() });
   const [filter, setFilter] = useState('all');
@@ -81,6 +84,7 @@ export function DistributionActivity({ admin = false }: { admin?: boolean }) {
     {(q.data ?? []).filter(d => filter==='all' || d.status===filter).map(d => <details key={d.id} className="rounded-ds bg-ds-surface border border-ds-border p-5">
       <summary className="cursor-pointer ds-body font-semibold text-ds-primary">{d.status==='needs_attention' && <AlertTriangle className="inline size-4 mr-2 text-ds-error" />}{d.mfn_id} · {d.pickup_area} → {d.destination_area} · {label(d.status)}</summary>
       <div className="space-y-4 mt-4"><p className="ds-body">{d.source_business || 'Public request'} · {d.source_mfn_id} · {money(d.amount_cents)} · {d.pickup_date} {d.pickup_time}</p>
+        {(d.request_id || d.trip_id) && <DsButton variant="ghost" onClick={() => openDetails({ kind: d.request_id ? 'request' : 'trip', id: d.request_id || d.trip_id || '' })}>View request details</DsButton>}
         {admin && d.can_manage && nextRadius(d.current_radius) && !['provider_selected','closed','canceled','unavailable'].includes(d.status) && <DsButton disabled={m.isPending} onClick={() => { if(confirm(`Send this distribution to eligible providers within ${nextRadius(d.current_radius)} miles?`)) m.mutate(d.id); }}><Send className="size-4" />{d.current_radius ? `Expand to ${nextRadius(d.current_radius)} miles` : 'Send first wave — 20 miles'}</DsButton>}
         {admin && d.can_manage && d.status==='needs_attention' && <DsButton variant="secondary" disabled={attention.isPending} onClick={()=>attention.mutate()}><AlertTriangle className="size-4"/>Record attention alert</DsButton>}
         <div className="ds-support space-y-2">{d.waves.map(w => <p key={w.id}>{w.radius_miles}-mile wave · {new Date(w.sent_at).toLocaleString()} · {d.offers.filter(o => o.wave_id===w.id).length} recipients</p>)}</div>

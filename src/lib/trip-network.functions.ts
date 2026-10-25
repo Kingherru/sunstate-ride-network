@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
 export type NetworkOffer = { id: string; mfn_id: string; wave_id?: string; distribution_id: string; source_mfn_id: string; service_type: string; pickup_area: string; destination_area: string; pickup_date: string; pickup_time: string; trip_type: string; estimated_miles: number | null; amount_cents: number; capability: string; expires_at: string; status: string; provider_workspace_id: string };
-export type NetworkActivity = { id: string; mfn_id: string; source_mfn_id: string; source_business: string | null; pickup_area: string; destination_area: string; pickup_date: string; pickup_time: string; capability: string; amount_cents: number; expires_at: string; status: string; current_radius: number | null; can_manage: boolean; offers: NetworkOffer[]; waves: { id: string; radius_miles: number; sent_at: string }[]; negotiations: { id: string; offer_id: string; side: string; action: string; amount_cents: number | null; business_note: string | null; created_at: string }[]; events: { id: string; event_type: string; created_at: string; actor_mfn_id: string | null }[] };
+export type NetworkActivity = { id: string; request_id?: string; trip_id?: string; mfn_id: string; source_mfn_id: string; source_business: string | null; pickup_area: string; destination_area: string; pickup_date: string; pickup_time: string; capability: string; amount_cents: number; expires_at: string; status: string; current_radius: number | null; can_manage: boolean; offers: NetworkOffer[]; waves: { id: string; radius_miles: number; sent_at: string }[]; negotiations: { id: string; offer_id: string; side: string; action: string; amount_cents: number | null; business_note: string | null; created_at: string }[]; events: { id: string; event_type: string; created_at: string; actor_mfn_id: string | null }[] };
 export const listNetworkOffers = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const { data, error } = await context.supabase.rpc('network_list_offers');
   if (error) throw new Error('Could not load offers.');
@@ -68,7 +68,7 @@ export const getDistributionReadiness = createServerFn({ method: 'POST' }).middl
     if (data.trip_id) {
       const { data: trip } = await context.supabase.from('trips').select('ride_request_id,created_by').eq('id',data.trip_id).maybeSingle();
       if (trip?.ride_request_id) { const {data: source} = await context.supabase.from('ride_requests').select('workspace_id').eq('id',trip.ride_request_id).maybeSingle(); sourceWorkspace = source?.workspace_id ?? undefined; }
-      else if (trip?.created_by) { const {data: memberships} = await context.supabase.from('workspace_members').select('workspace_id').eq('user_id',trip.created_by); if(memberships?.length===1) sourceWorkspace=memberships[0].workspace_id; }
+      else if (trip?.created_by) { const {data: memberships} = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(status)').eq('user_id',trip.created_by).is('removed_at',null).eq('workspaces.status','active'); if(memberships?.length===1) sourceWorkspace=memberships[0].workspace_id; }
     }
     const { data: scope } = data.request_id ? await context.supabase.rpc('admin_can_account', { _workspace_id: r.workspace_id }) : sourceWorkspace ? await context.supabase.rpc('network_workspace_access',{_ws:sourceWorkspace,_manage:true}) : {data:false};
     if (!can || !scope) throw new Error('Distribution permission required.');
