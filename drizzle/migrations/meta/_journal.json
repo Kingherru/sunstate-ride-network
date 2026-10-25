@@ -120,6 +120,13 @@
       "when": 1792969609940,
       "tag": "0016_controlled_offer_source_and_retention_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792969777685,
+      "tag": "0017_network_rpc_and_active_membership_guards",
+      "breakpoints": true
     }
   ]
 }

@@ -6223,6 +6223,10 @@ export type Database = {
         Returns: undefined
       }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
+      admin_account_conversation_access: {
+        Args: { _thread: string; _write?: boolean }
+        Returns: boolean
+      }
       admin_can: {
         Args: { _level: string; _section: string }
         Returns: boolean
