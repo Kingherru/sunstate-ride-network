@@ -5,7 +5,7 @@ import { PersonalSecurity } from "@/components/portal/PersonalSecurity";
 import { NetworkTimingSettings } from '@/components/portal/TripNetwork';
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
-  head: () => ({ meta: [{ title: "Admin Settings — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Admin Settings — MY FLORIDA NEMT" }, { name: 'description', content: 'Admin preview tools and future distribution timing settings.' }, { property: 'og:title', content: 'Admin Settings — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Admin preview tools and future distribution timing settings.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AdminSettings,
 });
 
