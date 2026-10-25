@@ -12,8 +12,9 @@ async function authorize(context: any, userId: string, level: 'read' | 'manage')
   if (error) throw new Error('Account not available.');
   // Mutation requires all memberships in scope, not merely one matching workspace.
   const all = scope.all || (!!members?.length && members.every(m => scope.workspaceIds.includes(m.workspace_id)));
-  if (!all) throw new Error('Account not available in your scope.');
-  return { supabaseAdmin, members: members || [] };
+  const visible = (members || []).filter(m => scope.all || scope.workspaceIds.includes(m.workspace_id));
+  if (level === 'manage' ? !all : !scope.all && !visible.length) throw new Error('Account not available in your scope.');
+  return { supabaseAdmin, members: visible };
 }
 export const getAdminPerson = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).inputValidator(personInput)
   .handler(async ({ data, context }) => {

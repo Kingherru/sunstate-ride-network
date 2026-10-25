@@ -68,7 +68,7 @@ export const getDistributionReadiness = createServerFn({ method: 'POST' }).middl
     if (data.trip_id) {
       const { data: trip } = await context.supabase.from('trips').select('ride_request_id,created_by').eq('id',data.trip_id).maybeSingle();
       if (trip?.ride_request_id) { const {data: source} = await context.supabase.from('ride_requests').select('workspace_id').eq('id',trip.ride_request_id).maybeSingle(); sourceWorkspace = source?.workspace_id ?? undefined; }
-      else if (trip?.created_by) { const {data: memberships} = await context.supabase.from('workspace_members').select('workspace_id').eq('user_id',trip.created_by); if(memberships?.length===1) sourceWorkspace=memberships[0].workspace_id; }
+      else if (trip?.created_by) { const {data: memberships} = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(status)').eq('user_id',trip.created_by).is('removed_at',null).eq('workspaces.status','active'); if(memberships?.length===1) sourceWorkspace=memberships[0].workspace_id; }
     }
     const { data: scope } = data.request_id ? await context.supabase.rpc('admin_can_account', { _workspace_id: r.workspace_id }) : sourceWorkspace ? await context.supabase.rpc('network_workspace_access',{_ws:sourceWorkspace,_manage:true}) : {data:false};
     if (!can || !scope) throw new Error('Distribution permission required.');

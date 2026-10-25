@@ -330,7 +330,8 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
             )}
           </h3>
           <button
-            onClick={() => { setComposeError(null); setComposeOpen((v) => !v); }}
+            disabled={readOnly}
+            onClick={() => { if (!readOnly) { setComposeError(null); setComposeOpen((v) => !v); } }}
             className="rounded bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90"
           >
             {composeOpen ? "Close" : "New message"}
