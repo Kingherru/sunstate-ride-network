@@ -121,7 +121,8 @@ export const assignDriverSlot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) => input)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc('network_assign_driver_slot', { _trip: data.reservation_id, _driver: data.driver_id ?? undefined, _time: data.scheduled_start_time ?? undefined });
+    // The generated RPC types omit SQL's nullable arguments; null intentionally clears the slot.
+    const { error } = await context.supabase.rpc('network_assign_driver_slot', { _trip: data.reservation_id, _driver: data.driver_id as never, _time: data.scheduled_start_time as never });
     if (error) throw error;
     return { ok: true };
   });
