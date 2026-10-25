@@ -6708,6 +6708,7 @@ export type Database = {
         Returns: string
       }
       network_list_activity: { Args: never; Returns: Json }
+      network_list_eligibility: { Args: never; Returns: Json }
       network_list_offers: { Args: never; Returns: Json }
       network_notify: {
         Args: {
@@ -6719,6 +6720,11 @@ export type Database = {
         Returns: undefined
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
+      network_offer_safe_history: { Args: { _offer: string }; Returns: Json }
+      network_reservation_state: {
+        Args: { _state: string; _trip: string }
+        Returns: string
+      }
       network_respond_offer: {
         Args: {
           _action: string
@@ -6731,6 +6737,17 @@ export type Database = {
         Returns: Json
       }
       network_send_wave: { Args: { _distribution: string }; Returns: Json }
+      network_set_service_base: {
+        Args: {
+          _address: string
+          _expires?: string
+          _lat: number
+          _lng: number
+          _services: string[]
+          _workspace: string
+        }
+        Returns: undefined
+      }
       network_source_access: {
         Args: { _id: string; _manage?: boolean }
         Returns: boolean
@@ -6849,6 +6866,15 @@ export type Database = {
           user_id: string
           zone_name: string
         }[]
+      }
+      set_business_member_permissions: {
+        Args: {
+          _manage_trips: boolean
+          _permissions: Json
+          _user: string
+          _workspace: string
+        }
+        Returns: undefined
       }
       set_trip_payment_status: {
         Args: {
