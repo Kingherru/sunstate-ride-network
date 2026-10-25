@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Check, Network, Send, X, MessageSquare, AlertTriangle } from 'lucide-react';
 import { DsButton, DsField, DsInput, DsSelect, DsTextarea } from '@/components/ds/controls';
 import { usePortalQuery, usePortalMutation } from '@/components/portal/preview-data';
-import { listNetworkOffers, listNetworkActivity, acceptNetworkOffer, respondNetworkOffer, createNetworkDistribution, sendNetworkWave, getDistributionReadiness, getNetworkSettings, saveNetworkSettings, type NetworkOffer } from '@/lib/trip-network.functions';
+import { listNetworkOffers, listNetworkActivity, acceptNetworkOffer, respondNetworkOffer, createNetworkDistribution, sendNetworkWave, getDistributionReadiness, getNetworkSettings, saveNetworkSettings, markNetworkAttention, getOfferHistory, type NetworkOffer } from '@/lib/trip-network.functions';
 import { nextRadius } from '@/lib/trip-network-rules';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
@@ -17,6 +17,8 @@ function useRefreshNetwork() {
 function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer; source?: boolean; onClose: () => void }) {
   const accept = useServerFn(acceptNetworkOffer), respond = useServerFn(respondNetworkOffer);
   const refresh = useRefreshNetwork();
+  const historyFn=useServerFn(getOfferHistory);
+  const history=usePortalQuery({queryKey:['offer-history',offer.id],queryFn:()=>historyFn({data:{offer_id:offer.id}})});
   const [mode, setMode] = useState<'review' | 'counter' | 'decline' | 'revise'>('review');
   const [amount, setAmount] = useState(String(offer.amount_cents / 100));
   const [note, setNote] = useState('');
@@ -31,6 +33,7 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
       <div className="flex justify-between gap-4"><h2 className="ds-subheading text-ds-primary">{offer.mfn_id}</h2><DsButton variant="ghost" size="sm" aria-label="Close offer review" onClick={onClose}><X className="size-4" /></DsButton></div>
       <dl className="grid grid-cols-2 gap-3 ds-body"><dt>Source</dt><dd className="break-all font-mono">{offer.source_mfn_id}</dd><dt>General route</dt><dd>{offer.pickup_area} → {offer.destination_area}</dd><dt>When</dt><dd>{offer.pickup_date} {offer.pickup_time}</dd><dt>Service / trip</dt><dd>{label(offer.service_type || offer.capability)} · {label(offer.trip_type || '')}</dd><dt>Capability</dt><dd>{offer.capability}</dd><dt>Compensation</dt><dd>{money(offer.amount_cents)}</dd><dt>Expires</dt><dd>{new Date(offer.expires_at).toLocaleString()}</dd></dl>
       <p className="ds-support text-ds-muted">Passenger identity and exact trip details remain protected until assignment.</p>
+      <details><summary className="ds-label cursor-pointer">Negotiation history</summary>{(history.data??[]).map(h=><p className="ds-support mt-2" key={h.id}>{h.side} · {label(h.action)}{h.amount_cents?` · ${money(h.amount_cents)}`:''} · {h.business_note||'—'} · {new Date(h.created_at).toLocaleString()}</p>)}</details>
       {mode === 'review' ? <div className="flex flex-wrap gap-2">
         <DsButton disabled={m.isPending || (!source && offer.status === 'countered')} onClick={() => { if (confirm(source ? 'Approve this counteroffer and reserve the trip?' : 'Accept this compensation and reserve the trip for your business?')) m.mutate('accept'); }}><Check className="size-4" />{source ? 'Accept counteroffer' : 'Accept offer'}</DsButton>
         <DsButton variant="secondary" disabled={!source && offer.status === 'countered'} onClick={() => setMode(source ? 'revise' : 'counter')}><MessageSquare className="size-4" />{source ? 'Revise amount' : 'Counter offer'}</DsButton>
@@ -68,6 +71,8 @@ export function DistributionActivity({ admin = false }: { admin?: boolean }) {
   const [filter, setFilter] = useState('all');
   const [review, setReview] = useState<NetworkOffer | null>(null);
   const refresh = useRefreshNetwork();
+  const attentionFn=useServerFn(markNetworkAttention);
+  const attention=usePortalMutation({mutationFn:()=>attentionFn(),onSuccess:()=>{refresh();toast.success('Attention status recorded.');},onError:(e:Error)=>toast.error(e.message)});
   const m = usePortalMutation({ mutationFn: (id: string) => send({ data: { distribution_id: id } }), onSuccess: r => { toast.success(`${r.radius}-mile wave sent to ${r.recipients} eligible businesses.`); refresh(); }, onError: (e: Error) => toast.error(e.message) });
   return <div className="space-y-4">
     <DsField label="Distribution status">{p => <DsSelect {...p} className="max-w-sm" value={filter} onChange={e => setFilter(e.target.value)}>{['all','ready','offers_sent','negotiating','provider_selected','needs_attention','closed','unavailable'].map(s => <option value={s} key={s}>{label(s)}</option>)}</DsSelect>}</DsField>
@@ -77,7 +82,8 @@ export function DistributionActivity({ admin = false }: { admin?: boolean }) {
       <summary className="cursor-pointer ds-body font-semibold text-ds-primary">{d.status==='needs_attention' && <AlertTriangle className="inline size-4 mr-2 text-ds-error" />}{d.mfn_id} · {d.pickup_area} → {d.destination_area} · {label(d.status)}</summary>
       <div className="space-y-4 mt-4"><p className="ds-body">{d.source_business || 'Public request'} · {d.source_mfn_id} · {money(d.amount_cents)} · {d.pickup_date} {d.pickup_time}</p>
         {admin && d.can_manage && nextRadius(d.current_radius) && !['provider_selected','closed','canceled','unavailable'].includes(d.status) && <DsButton disabled={m.isPending} onClick={() => { if(confirm(`Send this distribution to eligible providers within ${nextRadius(d.current_radius)} miles?`)) m.mutate(d.id); }}><Send className="size-4" />{d.current_radius ? `Expand to ${nextRadius(d.current_radius)} miles` : 'Send first wave — 20 miles'}</DsButton>}
-        <div className="ds-support space-y-2">{d.waves.map(w => <p key={w.id}>{w.radius_miles}-mile wave · {new Date(w.sent_at).toLocaleString()} · {d.offers.filter(o => (o as any).wave_id===w.id).length} recipients</p>)}</div>
+        {admin && d.can_manage && d.status==='needs_attention' && <DsButton variant="secondary" disabled={attention.isPending} onClick={()=>attention.mutate()}><AlertTriangle className="size-4"/>Record attention alert</DsButton>}
+        <div className="ds-support space-y-2">{d.waves.map(w => <p key={w.id}>{w.radius_miles}-mile wave · {new Date(w.sent_at).toLocaleString()} · {d.offers.filter(o => o.wave_id===w.id).length} recipients</p>)}</div>
         <h3 className="ds-label text-ds-primary">Offers</h3>
         {d.offers.map(o => <div key={o.id} className="flex flex-wrap justify-between gap-2 border-t border-ds-border py-2 ds-body"><span>{o.mfn_id} · {money(o.amount_cents)} · {label(o.status)}</span>{o.status==='countered' && d.can_manage && <DsButton size="sm" variant="secondary" onClick={() => setReview({ ...o, source_mfn_id: d.source_mfn_id, pickup_area: d.pickup_area, destination_area: d.destination_area, pickup_date: d.pickup_date, pickup_time: d.pickup_time, capability: d.capability })}>Review counteroffer</DsButton>}</div>)}
         <h3 className="ds-label text-ds-primary">Negotiation history</h3>{d.negotiations.map(n => <p className="ds-support" key={n.id}>{n.side} · {label(n.action)}{n.amount_cents ? ` · ${money(n.amount_cents)}` : ''} · {n.business_note || '—'} · {new Date(n.created_at).toLocaleString()}</p>)}

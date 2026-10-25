@@ -13,6 +13,7 @@ import { ReservationReviewDialog } from "@/components/dashboard/ReservationRevie
 import { listReferralReservations, confirmReferralReservation } from "@/lib/referrals.functions";
 import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@/lib/payment-gate";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import { ShareTripControl } from '@/components/portal/TripNetwork';
 
 
 
@@ -567,6 +568,7 @@ export function ReservationsPanel({
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
                     <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Review Reservation</button>
+                    {scope==='provider' && r.can_share_network && <ShareTripControl tripId={r.id} />}
                     {(state === "unconfirmed" || state === "booked") && (
                       <button
                         type="button"

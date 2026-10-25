@@ -77,14 +77,14 @@ export const upsertDriver = createServerFn({ method: "POST" })
       if (vehId) {
         await supabase.from("vehicles")
           .update({ assigned_driver_id: null })
-          .eq("owner_id", userId).eq("assigned_driver_id", driverId).neq("id", vehId);
+          .eq("workspace_id", out.workspace_id).eq("assigned_driver_id", driverId).neq("id", vehId);
         await supabase.from("vehicles")
           .update({ assigned_driver_id: driverId })
-          .eq("id", vehId).eq("owner_id", userId);
+          .eq("id", vehId).eq("workspace_id", out.workspace_id);
       } else {
         await supabase.from("vehicles")
           .update({ assigned_driver_id: null })
-          .eq("owner_id", userId).eq("assigned_driver_id", driverId);
+          .eq("workspace_id", out.workspace_id).eq("assigned_driver_id", driverId);
       }
     }
     return out;
@@ -144,16 +144,16 @@ export const upsertVehicle = createServerFn({ method: "POST" })
         // Clear this vehicle from any other driver's primary_vehicle_id.
         await supabase.from("drivers")
           .update({ primary_vehicle_id: null })
-          .eq("owner_id", userId).eq("primary_vehicle_id", vehId).neq("id", driverId);
+          .eq("workspace_id", out.workspace_id).eq("primary_vehicle_id", vehId).neq("id", driverId);
         // Set primary_vehicle_id on the assigned driver.
         await supabase.from("drivers")
           .update({ primary_vehicle_id: vehId })
-          .eq("id", driverId).eq("owner_id", userId);
+          .eq("id", driverId).eq("workspace_id", out.workspace_id);
       } else {
         // Cleared: unlink any driver that had this vehicle as primary.
         await supabase.from("drivers")
           .update({ primary_vehicle_id: null })
-          .eq("owner_id", userId).eq("primary_vehicle_id", vehId);
+          .eq("workspace_id", out.workspace_id).eq("primary_vehicle_id", vehId);
       }
     }
     return out;

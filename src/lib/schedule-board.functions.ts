@@ -121,31 +121,7 @@ export const assignDriverSlot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) => input)
   .handler(async ({ data, context }) => {
-    const uid = context.userId;
-    const { data: t, error: tErr } = await context.supabase
-      .from("trips")
-      .select("id, assigned_to, created_by")
-      .eq("id", data.reservation_id)
-      .maybeSingle();
-    if (tErr) throw tErr;
-    if (!t || (t.assigned_to !== uid && t.created_by !== uid)) {
-      throw new Error("Trip not found or not yours");
-    }
-    if (data.driver_id) {
-      const { data: d } = await context.supabase
-        .from("drivers")
-        .select("id, owner_id")
-        .eq("id", data.driver_id)
-        .maybeSingle();
-      if (!d || d.owner_id !== uid) throw new Error("Driver not on your fleet");
-    }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const update: any = { driver_id: data.driver_id };
-    update.scheduled_start_time = data.scheduled_start_time ?? null;
-    const { error } = await supabaseAdmin
-      .from("trips")
-      .update(update)
-      .eq("id", data.reservation_id);
+    const { error } = await context.supabase.rpc('network_assign_driver_slot', { _trip: data.reservation_id, _driver: data.driver_id, _time: data.scheduled_start_time });
     if (error) throw error;
     return { ok: true };
   });
