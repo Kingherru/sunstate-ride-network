@@ -702,6 +702,8 @@ export type Database = {
           availability: Json
           contractor_pricing: Json
           created_at: string
+          created_by: string | null
+          creator_mfn_id: string | null
           email: string | null
           employment_type: string | null
           first_name: string
@@ -726,6 +728,8 @@ export type Database = {
           availability?: Json
           contractor_pricing?: Json
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           email?: string | null
           employment_type?: string | null
           first_name: string
@@ -750,6 +754,8 @@ export type Database = {
           availability?: Json
           contractor_pricing?: Json
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           email?: string | null
           employment_type?: string | null
           first_name?: string
@@ -1919,6 +1925,8 @@ export type Database = {
       payers: {
         Row: {
           created_at: string
+          created_by: string | null
+          creator_mfn_id: string | null
           email: string | null
           id: string
           name: string
@@ -1930,6 +1938,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           email?: string | null
           id?: string
           name: string
@@ -1941,6 +1951,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           email?: string | null
           id?: string
           name?: string
@@ -2391,6 +2403,8 @@ export type Database = {
           company_name: string | null
           contact_type: string
           created_at: string
+          created_by: string | null
+          creator_mfn_id: string | null
           default_dropoff_location_id: string | null
           default_pickup_location_id: string | null
           email: string | null
@@ -2409,6 +2423,8 @@ export type Database = {
           company_name?: string | null
           contact_type: string
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           default_dropoff_location_id?: string | null
           default_pickup_location_id?: string | null
           email?: string | null
@@ -2427,6 +2443,8 @@ export type Database = {
           company_name?: string | null
           contact_type?: string
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           default_dropoff_location_id?: string | null
           default_pickup_location_id?: string | null
           email?: string | null
@@ -5003,6 +5021,8 @@ export type Database = {
           assigned_driver_id: string | null
           capacity: number
           created_at: string
+          created_by: string | null
+          creator_mfn_id: string | null
           id: string
           insurance_doc_path: string | null
           insurance_expiry: string | null
@@ -5023,6 +5043,8 @@ export type Database = {
           assigned_driver_id?: string | null
           capacity?: number
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           id?: string
           insurance_doc_path?: string | null
           insurance_expiry?: string | null
@@ -5043,6 +5065,8 @@ export type Database = {
           assigned_driver_id?: string | null
           capacity?: number
           created_at?: string
+          created_by?: string | null
+          creator_mfn_id?: string | null
           id?: string
           insurance_doc_path?: string | null
           insurance_expiry?: string | null
@@ -5227,33 +5251,39 @@ export type Database = {
       workspace_members: {
         Row: {
           can_create_requests: boolean
+          can_manage_trips: boolean
           can_message_for_workspace: boolean
           can_view_workspace_requests: boolean
           created_at: string
           id: string
           is_contractor: boolean
+          record_permissions: Json
           role: Database["public"]["Enums"]["workspace_role"]
           user_id: string
           workspace_id: string
         }
         Insert: {
           can_create_requests?: boolean
+          can_manage_trips?: boolean
           can_message_for_workspace?: boolean
           can_view_workspace_requests?: boolean
           created_at?: string
           id?: string
           is_contractor?: boolean
+          record_permissions?: Json
           role?: Database["public"]["Enums"]["workspace_role"]
           user_id: string
           workspace_id: string
         }
         Update: {
           can_create_requests?: boolean
+          can_manage_trips?: boolean
           can_message_for_workspace?: boolean
           can_view_workspace_requests?: boolean
           created_at?: string
           id?: string
           is_contractor?: boolean
+          record_permissions?: Json
           role?: Database["public"]["Enums"]["workspace_role"]
           user_id?: string
           workspace_id?: string
@@ -5369,6 +5399,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "workspace_notes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_record_shares: {
+        Row: {
+          access_level: string
+          created_at: string
+          created_by: string
+          id: string
+          record_id: string
+          record_kind: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          record_id: string
+          record_kind: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          record_id?: string
+          record_kind?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_record_shares_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -5748,6 +5819,10 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
+      business_record_access: {
+        Args: { _id: string; _kind: string; _level: string; _ws: string }
+        Returns: boolean
+      }
       can_access_workspace_messages: { Args: { ws: string }; Returns: boolean }
       can_create_workspace_requests: {
         Args: { _user_id: string; _workspace_id: string }

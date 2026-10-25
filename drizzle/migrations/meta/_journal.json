@@ -71,6 +71,13 @@
       "when": 1792963716371,
       "tag": "0009_fleet_contacts_workspace_link",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792966756632,
+      "tag": "0010_business_workspace_record_access",
+      "breakpoints": true
     }
   ]
 }
