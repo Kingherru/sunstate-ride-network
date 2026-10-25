@@ -720,6 +720,7 @@ export type Database = {
           user_id: string | null
           vacation_end: string | null
           vacation_start: string | null
+          workspace_id: string | null
         }
         Insert: {
           availability?: Json
@@ -743,6 +744,7 @@ export type Database = {
           user_id?: string | null
           vacation_end?: string | null
           vacation_start?: string | null
+          workspace_id?: string | null
         }
         Update: {
           availability?: Json
@@ -766,6 +768,7 @@ export type Database = {
           user_id?: string | null
           vacation_end?: string | null
           vacation_start?: string | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -1923,6 +1926,7 @@ export type Database = {
           owner_user_id: string
           phone: string | null
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
@@ -1933,6 +1937,7 @@ export type Database = {
           owner_user_id: string
           phone?: string | null
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
@@ -1943,6 +1948,7 @@ export type Database = {
           owner_user_id?: string
           phone?: string | null
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -2397,6 +2403,7 @@ export type Database = {
           payer: string | null
           phone: string | null
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           company_name?: string | null
@@ -2414,6 +2421,7 @@ export type Database = {
           payer?: string | null
           phone?: string | null
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           company_name?: string | null
@@ -2431,6 +2439,7 @@ export type Database = {
           payer?: string | null
           phone?: string | null
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -5007,6 +5016,8 @@ export type Database = {
           status: string
           updated_at: string
           vehicle_type: string
+          wheelchair_capacity: number | null
+          workspace_id: string | null
         }
         Insert: {
           assigned_driver_id?: string | null
@@ -5025,6 +5036,8 @@ export type Database = {
           status?: string
           updated_at?: string
           vehicle_type?: string
+          wheelchair_capacity?: number | null
+          workspace_id?: string | null
         }
         Update: {
           assigned_driver_id?: string | null
@@ -5043,6 +5056,8 @@ export type Database = {
           status?: string
           updated_at?: string
           vehicle_type?: string
+          wheelchair_capacity?: number | null
+          workspace_id?: string | null
         }
         Relationships: [
           {

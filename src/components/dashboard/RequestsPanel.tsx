@@ -147,7 +147,7 @@ function isPendingReferralReservation(r: any, userId: string) {
  * Referral Reservations — approved referrals only. The provider confirms here
  * (no invoice is sent) and the trip moves onto the Schedule Board.
  */
-function ReferralReservationsSection({ userId }: { userId: string }) {
+export function ReferralReservationsSection({ userId }: { userId: string }) {
   const preview = usePortalPreview();
   const qc = useQueryClient();
   const listFn = useServerFn(listReferralReservations);
@@ -262,10 +262,12 @@ export function ReservationsPanel({
   userId,
   scope = "provider",
   onResumeDraft,
+  hideReferrals = false,
 }: {
   userId: string;
   scope?: Scope;
   onResumeDraft?: (draft: TripDraft) => void;
+  hideReferrals?: boolean;
 }) {
   const preview = usePortalPreview();
   const [section, setSection] = useState<ResvSection>("unconfirmed");
@@ -596,7 +598,7 @@ export function ReservationsPanel({
       </div>
       </>)}
 
-      {scope === "provider" && <ReferralReservationsSection userId={userId} />}
+      {scope === "provider" && !hideReferrals && <ReferralReservationsSection userId={userId} />}
 
       {reviewing && (
         <ReservationReviewDialog

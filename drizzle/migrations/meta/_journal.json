@@ -64,6 +64,13 @@
       "when": 1792956623041,
       "tag": "0008_smart_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792963716371,
+      "tag": "0009_fleet_contacts_workspace_link",
+      "breakpoints": true
     }
   ]
 }

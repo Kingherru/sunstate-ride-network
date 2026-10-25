@@ -10,10 +10,11 @@ export type PortalFeature = {
 
 export const FEATURE_CATALOG: PortalFeature[] = [
   { name: "Smart Notes", audience: "Provider", description: "Private operational notes for your business, saved securely.", icon: "StickyNote", route: "/portal", status: "complete", publicApproved: false },
-  { name: "Trips", audience: "Provider", description: "See trips offered or assigned to your company.", icon: "Car", route: "/portal/trips", status: "complete", publicApproved: false },
+  { name: "Trips", audience: "Provider", description: "New trips, reservations, drafts and history for trips assigned or referred to your company.", icon: "Car", route: "/portal/trips", status: "complete", publicApproved: false },
   { name: "Schedule", audience: "Provider", description: "Plan the day across drivers and vehicles.", icon: "CalendarDays", route: "/portal/schedule", status: "complete", publicApproved: false },
   { name: "Vehicles", audience: "Provider", description: "Keep your fleet list and vehicle types up to date.", icon: "Truck", route: "/portal/vehicles", status: "complete", publicApproved: false },
   { name: "Drivers", audience: "Provider", description: "Manage drivers, availability and earnings reports.", icon: "Users", route: "/portal/drivers", status: "complete", publicApproved: false },
+  { name: "Provider Overview Tools", audience: "Provider", description: "Quick links from the overview to schedule, fleet, team, training, network and messages.", icon: "LayoutGrid", route: "/portal", status: "complete", publicApproved: false },
   { name: "Provider Network", audience: "Shared", description: "Find verified providers by service area and service type.", icon: "Network", route: "/portal/network", status: "complete", publicApproved: false },
   { name: "Training & Tests", audience: "Provider", description: "Buy and continue driver training courses and view certificates.", icon: "GraduationCap", route: "/portal/training", status: "complete", publicApproved: false },
   { name: "Business Messaging", audience: "Shared", description: "Message other businesses in the network from one inbox.", icon: "MessageSquare", route: "/portal/messaging", status: "partial", publicApproved: false },
