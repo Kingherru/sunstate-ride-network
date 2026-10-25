@@ -9,7 +9,8 @@ export { PROVIDER_NAV, RESTRICTED_PROVIDER_NAV, CUSTOMER_NAV };
 
 function identityFor(a: AccessState) {
   const ws = a.primary;
-  if (!ws) return { name: a.displayName || "Your account", mfnId: a.mfnId, label: a.isAdmin ? "Admin" : "Account" };
+  if (a.isMasterAdmin) return { name: "", mfnId: a.mfnId, label: "MASTER ADMIN" };
+  if (!ws) return { name: "", mfnId: a.mfnId, label: "" };
   const kind = ACCOUNT_TYPE_LABEL[ws.type] ?? ws.type;
   const label = ws.type === "provider" ? (ws.is_contractor ? "Contractor" : "Provider")
     : ws.type === "private_pay" ? "Private Pay"
@@ -43,7 +44,7 @@ function PortalLayout() {
     : RESTRICTED_PROVIDER_NAV;
   const nav = provider ? (access.restricted ? restrictedNav : PROVIDER_NAV) : CUSTOMER_NAV;
   return (
-    <PortalShell nav={nav} area={provider ? "Provider portal" : "Portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
+    <PortalShell nav={nav} area={provider ? "Provider portal" : "Patient portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
       settingsTo="/portal/account" notificationsTo={!provider ? "/portal/notifications" : undefined}>
       <Outlet />
     </PortalShell>
