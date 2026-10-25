@@ -14,7 +14,7 @@ import { useRouteContext } from '@tanstack/react-router';
 
 export function PersonDetails({ person, canManage, onClose }: { person: PersonRow; canManage: boolean; onClose: () => void }) {
   const canMessage = useAdminLevel('messaging') === 'manage';
-  const master = useRouteContext({ from: '/_authenticated/admin', select: c => c.perms.isMaster });
+  const master = useRouteContext({ from: '/_authenticated/admin', select: c => c.perms.master });
   const get = useServerFn(getAdminPerson), prepare = useServerFn(prepareUserRemoval), remove = useServerFn(removeUserAccess), send = useServerFn(messageAdminPerson);
   const q = useQuery({ queryKey: ['admin-person', person.userId], queryFn: () => get({ data: { userId: person.userId } }), gcTime: 0 });
   const open = useRequestDetails();

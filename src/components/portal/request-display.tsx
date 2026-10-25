@@ -123,6 +123,10 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
           <Row label="Request number" value={r.mfn_id ?? `#${shortId(r.id)}`} />
           <Row label="Category" value={categoryLabel(r)} />
           {!d && <Row label="Service" value={serviceLabel(r)} />}
+          <Row label="Trip type" value={s('trip_type')?.replaceAll('_', ' ')} />
+          {!d && <Row label="Service level" value={s('service_level')?.replaceAll('_', ' ')} />}
+          {!d && <Row label="Wheelchair required" value={r.needs_wheelchair === true ? 'Yes' : null} />}
+          {!d && <Row label="Assistance to vehicle" value={r.needs_assistance_to_vehicle === true ? 'Required' : null} />}
           {d && <Row label="Delivery category" value={DELIVERY_CAT[s("delivery_item_type") ?? ""] ?? s("delivery_item_type")} />}
           <Row label="Status" value={<StatusBadge status={r.network_status || r.status} />} />
           <Row label="Submitted" value={fmtDateTime(r.created_at)} />
@@ -148,6 +152,9 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
         <h2 className="ds-subheading uppercase text-ds-primary">{d ? "Contact" : "Passenger"}</h2>
         <dl className="mt-2 divide-y divide-ds-border">
           <Row label="Name" value={[s("patient_first_name"), s("patient_last_name")].filter(Boolean).join(" ")} />
+          <Row label="Requester" value={s('requester_name')} />
+          <Row label="Requester phone" value={s('requester_phone')} />
+          <Row label="Requester email" value={s('requester_email')} />
           <Row label="Phone" value={s("patient_phone")} />
           <Row label="Email" value={s("patient_email")} />
           {!d && <Row label="Mobility notes" value={s("mobility_notes")} />}
