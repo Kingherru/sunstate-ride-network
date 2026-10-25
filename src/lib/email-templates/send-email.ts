@@ -2,6 +2,7 @@ import * as React from 'react'
 import { render } from '@react-email/render'
 import { EmailAPIError, sendLovableEmail } from '@lovable.dev/email-js'
 import { TEMPLATES } from './registry'
+import { recordSendOutcome } from './email-audit.server'
 
 // Server-only: reads LOVABLE_API_KEY. Never import from client components.
 
@@ -83,10 +84,13 @@ export async function sendTemplateEmail(
     )
   } catch (error) {
     if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
+      await recordSendOutcome(templateName, recipient, 'suppressed')
       return { sent: false, reason: 'recipient_suppressed' }
     }
+    await recordSendOutcome(templateName, recipient, 'failed', error instanceof Error ? error.message : 'Email send failed')
     throw error
   }
 
+  await recordSendOutcome(templateName, recipient, 'sent')
   return { sent: true }
 }

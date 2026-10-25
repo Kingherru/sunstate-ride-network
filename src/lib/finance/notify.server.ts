@@ -1,35 +1,26 @@
 /**
  * Server-only helper — sends a provider-facing finance email through the
- * internal transactional endpoint. Callable from server routes / cron routes
- * that already run with SUPABASE_SERVICE_ROLE_KEY in the environment.
+ * managed template helper. Callable only from authorized server routes.
  */
+import { sendTemplateEmail } from '@/lib/email-templates/send-email'
+import { EmailAPIError } from '@lovable.dev/email-js'
 export async function sendFinanceEmail(opts: {
   templateName: 'provider-funds-available' | 'provider-cashout-completed' | 'provider-cashout-failed'
   recipientEmail: string
   idempotencyKey: string
   templateData?: Record<string, unknown>
   origin?: string
-}): Promise<{ ok: boolean; error?: string }> {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey) return { ok: false, error: 'missing service key' }
-  const base = opts.origin
-    ?? process.env.SITE_URL
-    ?? process.env.VITE_SITE_URL
-    ?? 'https://myfloridanemt.com'
+}): Promise<{ ok: boolean; error?: string; reason?: 'recipient_suppressed' }> {
   try {
-    const res = await fetch(`${base.replace(/\/$/, '')}/lovable/email/transactional/send`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-internal-secret': serviceKey },
-      body: JSON.stringify({
-        templateName: opts.templateName,
-        recipientEmail: opts.recipientEmail,
-        idempotencyKey: opts.idempotencyKey,
-        templateData: opts.templateData ?? {},
-      }),
+    const result = await sendTemplateEmail(opts.templateName, opts.recipientEmail, {
+      idempotencyKey: opts.idempotencyKey,
+      templateData: opts.templateData ?? {},
     })
-    if (!res.ok) return { ok: false, error: `${res.status} ${await res.text().catch(() => '')}` }
-    return { ok: true }
+    return result.sent ? { ok: true } : { ok: false, reason: result.reason }
   } catch (e) {
+    if (e instanceof EmailAPIError && e.status === 429) {
+      await new Promise(resolve => setTimeout(resolve, (e.retryAfterSeconds ?? 60) * 1000))
+    }
     return { ok: false, error: e instanceof Error ? e.message : 'send failed' }
   }
 }

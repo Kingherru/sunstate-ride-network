@@ -1,4 +1,5 @@
 # Pass 3F completion and Build 1
+- [ ] Email update: replace Lovable queue sends, preserve templates/history, signed outcome receiver, remove replaced repo scaffolds, verify without real sends or publishing
 - [x] Latest brief: payment responsibility acknowledgement, active wave recipients, shared conditional field layout, exact selected service/trip types, offer amounts/history, People account-status/type/email filters
 - [x] Ten focused tests pass; harness build OK; acceptance lock/rollback predicates confirmed; counts unchanged at 28/13/7/5, zero messages/offers, seven disabled tests
 - [x] Controlled-offer actions wired; failed association rolls back, source/test-state checks and execution grants hardened
