@@ -12,13 +12,13 @@ export const Route = createFileRoute("/_authenticated/portal/messaging")({
 });
 
 function PortalMessaging() {
-  const { user, kind } = Route.useRouteContext();
+  const { user, access } = Route.useRouteContext();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   return (
     <>
       <PageHead title="Account conversations" />
-      <section className={`${panelCls} mb-8 p-4 sm:p-6`}><MessagesPanel userId={user.id} portal={kind} /></section>
+      <section className={`${panelCls} mb-8 p-4 sm:p-6`}><MessagesPanel userId={user.id} portal={access.workspace?.accountType === 'provider' ? 'provider' : 'facility'} /></section>
       <PageHead title="Messaging">Message other businesses in the Provider Network. Do not include patient or protected health information.</PageHead>
       <section className={`${panelCls} p-4 sm:p-6`}>
         <WorkspaceMessaging
