@@ -1676,6 +1676,8 @@ export type Database = {
           id: string
           kind: string
           last_message_at: string
+          related_person_id: string | null
+          related_workspace_id: string | null
           subject: string | null
           zone_id: string | null
         }
@@ -1686,6 +1688,8 @@ export type Database = {
           id?: string
           kind?: string
           last_message_at?: string
+          related_person_id?: string | null
+          related_workspace_id?: string | null
           subject?: string | null
           zone_id?: string | null
         }
@@ -1696,6 +1700,8 @@ export type Database = {
           id?: string
           kind?: string
           last_message_at?: string
+          related_person_id?: string | null
+          related_workspace_id?: string | null
           subject?: string | null
           zone_id?: string | null
         }
@@ -5377,6 +5383,7 @@ export type Database = {
       user_profiles: {
         Row: {
           created_at: string
+          deleted_at: string | null
           display_name: string
           is_test_account: boolean
           legacy_review_needed: boolean
@@ -5388,6 +5395,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           display_name?: string
           is_test_account?: boolean
           legacy_review_needed?: boolean
@@ -5399,6 +5407,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           display_name?: string
           is_test_account?: boolean
           legacy_review_needed?: boolean
@@ -5673,6 +5682,7 @@ export type Database = {
           id: string
           is_contractor: boolean
           record_permissions: Json
+          removed_at: string | null
           role: Database["public"]["Enums"]["workspace_role"]
           user_id: string
           workspace_id: string
@@ -5686,6 +5696,7 @@ export type Database = {
           id?: string
           is_contractor?: boolean
           record_permissions?: Json
+          removed_at?: string | null
           role?: Database["public"]["Enums"]["workspace_role"]
           user_id: string
           workspace_id: string
@@ -5699,6 +5710,7 @@ export type Database = {
           id?: string
           is_contractor?: boolean
           record_permissions?: Json
+          removed_at?: string | null
           role?: Database["public"]["Enums"]["workspace_role"]
           user_id?: string
           workspace_id?: string
@@ -6220,9 +6232,17 @@ export type Database = {
         Args: { _days?: number; _trip_id: string }
         Returns: string
       }
+      admin_finalize_user_removal: {
+        Args: { _mode: string; _reason: string; _user: string }
+        Returns: undefined
+      }
       admin_grant_free_membership: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      admin_message_person: {
+        Args: { _body: string; _user: string; _workspace: string }
+        Returns: string
       }
       admin_set_membership: {
         Args: {
@@ -6233,6 +6253,7 @@ export type Database = {
         Returns: undefined
       }
       admin_user_ids: { Args: never; Returns: string[] }
+      admin_user_removal_plan: { Args: { _user: string }; Returns: Json }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       business_record_access: {
         Args: { _id: string; _kind: string; _level: string; _ws: string }
