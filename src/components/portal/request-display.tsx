@@ -36,6 +36,12 @@ export function StatusBadge({ status }: { status: string | null }) {
     canceled: ["neutral", "Canceled"],
     cancelled: ["neutral", "Canceled"],
     declined: ["neutral", "Declined"],
+    ready_for_distribution: ['pending', 'Ready for distribution'],
+    offers_sent: ['info', 'Offers sent'],
+    negotiating: ['pending', 'Negotiating'],
+    reserved: ['info', 'Reserved'],
+    provider_selected: ['info', 'Provider selected'],
+    needs_attention: ['error', 'Needs attention'],
   };
   const [tone, label] = map[s] ?? ["neutral", s ? titleCase(s) : "Unknown"];
   return <DsBadge status={tone}>{label}</DsBadge>;
@@ -54,7 +60,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
             <Link to={`${detailBase}/$id` as "/portal/requests/$id"} params={{ id: r.id }} className="block px-4 py-4 ds-transition hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ds-focus">
               <div className="flex items-start justify-between gap-3">
                 <span className="ds-label text-ds-primary">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
-                <StatusBadge status={r.status} />
+                <StatusBadge status={r.network_status || r.status} />
               </div>
               <p className="ds-body mt-1">{categoryLabel(r)}{!isDelivery(r) && ` · ${serviceLabel(r)}`}</p>
               <p className="ds-support mt-0.5">{fmtDateTime(r.created_at)}{showSource && ` · ${sourceLabel(r.submitted_via)}`}</p>
@@ -83,7 +89,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
               {!showSource && <td className="px-4 py-3">{serviceLabel(r)}</td>}
               <td className="px-4 py-3">{fmtDateTime(r.created_at)}</td>
               {showSource && <td className="px-4 py-3">{sourceLabel(r.submitted_via)}</td>}
-              <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
+              <td className="px-4 py-3"><StatusBadge status={r.network_status || r.status} /></td>
             </tr>
           ))}
         </tbody>
@@ -115,7 +121,7 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
           <Row label="Category" value={categoryLabel(r)} />
           {!d && <Row label="Service" value={serviceLabel(r)} />}
           {d && <Row label="Delivery category" value={DELIVERY_CAT[s("delivery_item_type") ?? ""] ?? s("delivery_item_type")} />}
-          <Row label="Status" value={<StatusBadge status={r.status} />} />
+          <Row label="Status" value={<StatusBadge status={r.network_status || r.status} />} />
           <Row label="Submitted" value={fmtDateTime(r.created_at)} />
           {showSource && <Row label="Source" value={sourceLabel(r.submitted_via)} />}
           {showSource && <Row label="Intake" value={INTAKE[r.intake_source ?? ""] ?? "Not recorded"} />}
