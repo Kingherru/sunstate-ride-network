@@ -127,6 +127,13 @@
       "when": 1792969777685,
       "tag": "0017_network_rpc_and_active_membership_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792971848717,
+      "tag": "0018_active_provider_wave_recipients",
+      "breakpoints": true
     }
   ]
 }
