@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { nextRadius, needsDistributionAttention, conflictingSlots } from '../src/lib/trip-network-rules';
+import { nextRadius, needsDistributionAttention, conflictingSlots, distributionInput } from '../src/lib/trip-network-rules';
 describe('controlled distribution rules', () => {
+  it('requires payment responsibility acknowledgement for provider trip sharing', () => {
+    const input = { trip_id: '00000000-0000-4000-8000-000000000001', amount_cents: 10000, expires_at: '2026-11-01T12:00:00Z' };
+    expect(distributionInput.safeParse(input).success).toBe(false);
+    expect(distributionInput.safeParse({ ...input, payment_responsibility_confirmed: true }).success).toBe(true);
+  });
   it('expands only through 20, 50, 100 and 200 miles', () => {
     expect([nextRadius(null), nextRadius(20), nextRadius(50), nextRadius(100), nextRadius(200)]).toEqual([20, 50, 100, 200, null]);
   });

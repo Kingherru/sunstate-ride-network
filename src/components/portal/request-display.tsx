@@ -3,6 +3,7 @@ import { DsBadge, type Status } from "@/components/ds/feedback";
 import type { RequestDetailRow, RequestListRow } from "@/lib/portal-requests.functions";
 import { useRequestDetails } from './request-detail-context';
 import { DsButton } from '@/components/ds/controls';
+import { detailValue, selectedService, selectedTripType, NOT_AVAILABLE } from '@/lib/request-detail-fields';
 
 export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
   private_pay: "Private Pay", facility: "Facility", hospital: "Hospital", provider: "Provider",
@@ -102,67 +103,49 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  if (value == null || value === "" || value === false) return null;
-  return (
-    <div className="grid gap-1 py-3 sm:grid-cols-[12rem_1fr] sm:gap-4">
-      <dt className="ds-support font-semibold uppercase tracking-[0.06em]">{label}</dt>
-      <dd className="ds-body break-words">{value}</dd>
-    </div>
-  );
+  return <div className="min-w-0 py-3"><dt className="ds-support font-semibold uppercase">{label}</dt><dd className="ds-body mt-1 break-words">{value ?? NOT_AVAILABLE}</dd></div>;
 }
 
 export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; showSource?: boolean }) {
-  const d = isDelivery(r);
-  const s = (k: string) => (r[k] == null ? null : String(r[k]));
-  const stops = Array.isArray(r.additional_stops) ? (r.additional_stops as { address?: string }[]) : [];
-  return (
-    <div className="space-y-6">
-      <section className="rounded-ds bg-ds-surface p-5 shadow-[var(--ds-shadow)] sm:p-6">
-        <h2 className="ds-subheading uppercase text-ds-primary">Request</h2>
-        <dl className="mt-2 divide-y divide-ds-border">
-          <Row label="Request number" value={r.mfn_id ?? `#${shortId(r.id)}`} />
-          <Row label="Category" value={categoryLabel(r)} />
-          {!d && <Row label="Service" value={serviceLabel(r)} />}
-          <Row label="Trip type" value={s('trip_type')?.replaceAll('_', ' ')} />
-          {!d && <Row label="Service level" value={s('service_level')?.replaceAll('_', ' ')} />}
-          {!d && <Row label="Wheelchair required" value={r.needs_wheelchair === true ? 'Yes' : null} />}
-          {!d && <Row label="Assistance to vehicle" value={r.needs_assistance_to_vehicle === true ? 'Required' : null} />}
-          {d && <Row label="Delivery category" value={DELIVERY_CAT[s("delivery_item_type") ?? ""] ?? s("delivery_item_type")} />}
-          <Row label="Status" value={<StatusBadge status={r.network_status || r.status} />} />
-          <Row label="Submitted" value={fmtDateTime(r.created_at)} />
-          {showSource && <Row label="Source" value={sourceLabel(r.submitted_via)} />}
-          {showSource && <Row label="Intake" value={INTAKE[r.intake_source ?? ""] ?? "Not recorded"} />}
-        </dl>
-      </section>
-      <section className="rounded-ds bg-ds-surface p-5 shadow-[var(--ds-shadow)] sm:p-6">
-        <h2 className="ds-subheading uppercase text-ds-primary">{d ? "Pickup and delivery" : "Trip"}</h2>
-        <dl className="mt-2 divide-y divide-ds-border">
-          <Row label={d ? "Requested date" : "Pickup date"} value={s("pickup_date")} />
-          <Row label={d ? "Requested time" : "Pickup time"} value={s("pickup_time")?.slice(0, 5)} />
-          {!d && <Row label="Appointment time" value={s("appointment_time")} />}
-          <Row label="Pickup" value={[s("pickup_address"), s("pickup_address_details"), s("pickup_city")].filter(Boolean).join(", ")} />
-          {stops.length > 0 && <Row label="Additional stops" value={stops.map((x) => x.address).filter(Boolean).join(" → ")} />}
-          <Row label={d ? "Delivery destination" : "Drop-off"} value={[s("dropoff_address"), s("dropoff_city")].filter(Boolean).join(", ")} />
-          {!d && r.round_trip === true && <Row label="Return" value={[s("return_date"), s("return_pickup_time")].filter(Boolean).join(" ")} />}
-          {!d && <Row label="Repeats" value={s("recurrence_rule") ? `${s("recurrence_rule")}${s("recurrence_end_date") ? ` until ${s("recurrence_end_date")}` : ""}` : null} />}
-          {d && <Row label="Signature required" value={r.delivery_signature_required ? "Yes" : "No"} />}
-        </dl>
-      </section>
-      <section className="rounded-ds bg-ds-surface p-5 shadow-[var(--ds-shadow)] sm:p-6">
-        <h2 className="ds-subheading uppercase text-ds-primary">{d ? "Contact" : "Passenger"}</h2>
-        <dl className="mt-2 divide-y divide-ds-border">
-          <Row label="Name" value={[s("patient_first_name"), s("patient_last_name")].filter(Boolean).join(" ")} />
-          <Row label="Requester" value={s('requester_name')} />
-          <Row label="Requester phone" value={s('requester_phone')} />
-          <Row label="Requester email" value={s('requester_email')} />
-          <Row label="Phone" value={s("patient_phone")} />
-          <Row label="Email" value={s("patient_email")} />
-          {!d && <Row label="Mobility notes" value={s("mobility_notes")} />}
-          <Row label="Instructions" value={d ? s("delivery_instructions") : s("special_instructions")} />
-        </dl>
-      </section>
-    </div>
-  );
+  const delivery = isDelivery(r);
+  const value = (key: string, applicable = true) => detailValue(r, key, applicable);
+  const round = !delivery && (r.trip_type === 'round_trip' || r.round_trip === true);
+  const multi = !delivery && (r.trip_type === 'multi_trip' || r.trip_type === 'multi_stop');
+  const repeating = !delivery && !!r.recurrence_rule && r.recurrence_rule !== 'none';
+  const stops = Array.isArray(r.additional_stops) ? r.additional_stops as { address?: string; city?: string; pickupTime?: string }[] : [];
+  const name = [r.patient_first_name, r.patient_last_name].filter(Boolean).join(' ');
+  const fields = 'mt-2 grid gap-x-6 divide-y divide-ds-border sm:grid-cols-2 xl:grid-cols-3';
+  return <div className="space-y-6">
+    <section><h2 className="ds-subheading uppercase text-ds-primary">Request identity and status</h2><dl className={fields}>
+      <Row label="Request MFN ID" value={r.mfn_id || NOT_AVAILABLE} />
+      <Row label="Transportation service" value={selectedService(r)} />
+      <Row label="Trip type" value={selectedTripType(r)} />
+      <Row label="Status" value={<StatusBadge status={r.network_status || r.status} />} />
+      <Row label="Created" value={r.created_at ? fmtDateTime(r.created_at) : NOT_AVAILABLE} />
+      <Row label="Last updated" value={value('last_updated_at') === NOT_AVAILABLE ? value('updated_at') : value('last_updated_at')} />
+      {showSource && <><Row label="Request source" value={r.submitted_via ? sourceLabel(r.submitted_via) : NOT_AVAILABLE} /><Row label="Intake" value={r.intake_source ? INTAKE[r.intake_source] || r.intake_source : NOT_AVAILABLE} /></>}
+    </dl></section>
+    <section className="border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">{delivery ? 'Contact and requester' : 'Passenger and requester'}</h2><dl className={fields}>
+      <Row label={delivery ? 'Contact name' : 'Passenger name'} value={name || value('patient_first_name')} />
+      <Row label="Phone" value={value('patient_phone')} /><Row label="Email" value={value('patient_email')} />
+      <Row label="Requesting person" value={value('requester_name')} /><Row label="Person MFN ID" value={value('requester_mfn_id')} />
+      <Row label="Requester phone" value={value('requester_phone')} /><Row label="Requester email" value={value('requester_email')} />
+    </dl></section>
+    <section className="border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">{delivery ? 'Pickup and delivery' : 'Locations and times'}</h2><dl className={fields}>
+      <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup location details" value={value('pickup_address_details')} />
+      <Row label="Pickup date" value={value('pickup_date')} /><Row label="Requested pickup time" value={value('pickup_time')} />
+      <Row label={delivery ? 'Delivery destination' : 'Drop-off location'} value={value('dropoff_address')} /><Row label="Destination area" value={value('dropoff_city')} />
+      <Row label="Requested drop-off / appointment time" value={value('appointment_time', !delivery)} />
+      <Row label="Return date" value={value('return_date', round)} /><Row label="Return pickup time" value={value('return_pickup_time', round)} /><Row label="Return drop-off time" value={value('return_dropoff_time', round)} />
+      {round && <><Row label="Return pickup building" value={value('return_pickup_building')} /><Row label="Return pickup suite" value={value('return_pickup_suite')} /></>}
+    </dl>
+    {multi && <div className="mt-4"><h3 className="ds-label uppercase">Additional stops</h3>{stops.length ? stops.map((stop, i) => <dl key={i} className={fields}><Row label={`Stop ${i + 1}`} value={stop.address || 'NOT PROVIDED'} /><Row label="City" value={stop.city || 'NOT PROVIDED'} /><Row label="Pickup time" value={stop.pickupTime || 'NOT PROVIDED'} /><Row label="Stop notes" value={NOT_AVAILABLE} /></dl>) : <p className="ds-body">NOT PROVIDED</p>}</div>}
+    {repeating && <dl className={fields}><Row label="Recurrence" value={value('recurrence_rule')} /><Row label="Repeats until" value={value('recurrence_end_date')} /></dl>}
+    </section>
+    <section className="border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">{delivery ? 'Delivery handling' : 'Transportation requirements'}</h2><dl className={fields}>
+      {delivery ? <><Row label="Delivery category" value={DELIVERY_CAT[String(r.delivery_item_type || '')] || value('delivery_item_type')} /><Row label="Signature required" value={value('delivery_signature_required')} /><Row label="Handling instructions" value={value('delivery_instructions')} /></> : <><Row label="Service level" value={value('service_level')} /><Row label="Wheelchair required" value={value('needs_wheelchair')} /><Row label="Assistance to vehicle" value={value('needs_assistance_to_vehicle')} /><Row label="Additional information" value={value('special_instructions')} /><Row label="Mobility notes" value={value('mobility_notes')} /></>}
+    </dl></section>
+  </div>;
 }
 
 export function SafeNotFound({ backTo }: { backTo: "/portal/requests" | "/admin/requests" }) {

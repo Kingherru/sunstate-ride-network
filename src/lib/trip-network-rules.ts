@@ -1,4 +1,7 @@
 /** Business rules shared by controlled distribution and its narrow tests. */
+import { z } from 'zod';
+export const PAYMENT_RESPONSIBILITY_WARNING = 'Warning: You are responsible for paying for trips you send to other providers. Failure to pay may result in the loss of your verification status, account suspension, or removal from the platform.';
+export const distributionInput = z.object({ request_id: z.string().uuid().optional(), trip_id: z.string().uuid().optional(), amount_cents: z.number().int().positive(), expires_at: z.string().datetime(), payment_responsibility_confirmed: z.boolean().optional() }).refine(i => !!i.request_id !== !!i.trip_id).refine(i => !i.trip_id || i.payment_responsibility_confirmed === true, 'Confirm payment responsibility before sharing a trip.');
 export const DISTRIBUTION_RADII = [20, 50, 100, 200] as const;
 export const ATTENTION_AFTER_HOURS = 24;
 export function nextRadius(current: number | null): number | null {
