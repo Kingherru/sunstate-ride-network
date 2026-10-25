@@ -35,7 +35,6 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
-import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as FloridaCoverageIndexRouteImport } from './routes/florida-coverage.index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
@@ -79,7 +78,6 @@ import { Route as AuthenticatedPortalUploadCsvRouteImport } from './routes/_auth
 import { Route as AuthenticatedPortalVehiclesRouteImport } from './routes/_authenticated/portal.vehicles'
 import { Route as FloridaCoverageRegionIndexRouteImport } from './routes/florida-coverage.$region.index'
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
-import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
 import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
 import { Route as AuthenticatedAdminPreviewKindRouteImport } from './routes/_authenticated/admin_.preview.$kind'
@@ -95,9 +93,7 @@ import { Route as FloridaCoverageRegionCountyIndexRouteImport } from './routes/f
 import { Route as FloridaCoverageRegionCountyCityRouteImport } from './routes/florida-coverage.$region.$county.$city'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
 import { Route as ApiPublicIntegrationsDuetEventsEventRouteImport } from './routes/api/public/integrations/duet.events.$event'
@@ -232,11 +228,6 @@ const AuthenticatedPortalRoute = AuthenticatedPortalRouteImport.update({
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   id: '/checkout/return',
   path: '/checkout/return',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
-  id: '/email/unsubscribe',
-  path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FloridaCoverageIndexRoute = FloridaCoverageIndexRouteImport.update({
@@ -484,11 +475,6 @@ const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
   path: '/lovable/email/events',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedAdminRequestsIndexRoute =
   AuthenticatedAdminRequestsIndexRouteImport.update({
     id: '/requests/',
@@ -577,22 +563,10 @@ const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
   path: '/lovable/email/auth/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
     path: '/lovable/email/transactional/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicIntegrationsHibambiWebhookRoute =
@@ -640,7 +614,6 @@ export interface FileRoutesByFullPath {
   '/learn': typeof AuthenticatedLearnRouteWithChildren
   '/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -680,7 +653,6 @@ export interface FileRoutesByFullPath {
   '/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
   '/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
@@ -697,9 +669,7 @@ export interface FileRoutesByFullPath {
   '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
   '/portal/requests/': typeof AuthenticatedPortalRequestsIndexRoute
   '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
@@ -729,7 +699,6 @@ export interface FileRoutesByTo {
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
   '/checkout/return': typeof CheckoutReturnRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -769,7 +738,6 @@ export interface FileRoutesByTo {
   '/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
   '/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
@@ -786,9 +754,7 @@ export interface FileRoutesByTo {
   '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/admin/requests': typeof AuthenticatedAdminRequestsIndexRoute
   '/portal/requests': typeof AuthenticatedPortalRequestsIndexRoute
   '/florida-coverage/$region/$county': typeof FloridaCoverageRegionCountyIndexRoute
@@ -824,7 +790,6 @@ export interface FileRoutesById {
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
   '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -864,7 +829,6 @@ export interface FileRoutesById {
   '/_authenticated/portal/upload-csv': typeof AuthenticatedPortalUploadCsvRoute
   '/_authenticated/portal/vehicles': typeof AuthenticatedPortalVehiclesRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
@@ -881,9 +845,7 @@ export interface FileRoutesById {
   '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/_authenticated/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
   '/_authenticated/portal/requests/': typeof AuthenticatedPortalRequestsIndexRoute
   '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
@@ -919,7 +881,6 @@ export interface FileRouteTypes {
     | '/learn'
     | '/portal'
     | '/checkout/return'
-    | '/email/unsubscribe'
     | '/resources/$slug'
     | '/services/$service'
     | '/shop/$slug'
@@ -959,7 +920,6 @@ export interface FileRouteTypes {
     | '/portal/upload-csv'
     | '/portal/vehicles'
     | '/lovable/email/events'
-    | '/lovable/email/suppression'
     | '/admin/'
     | '/learn/'
     | '/portal/'
@@ -976,9 +936,7 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/$county/$city'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
     | '/admin/requests/'
     | '/portal/requests/'
     | '/florida-coverage/$region/$county/'
@@ -1008,7 +966,6 @@ export interface FileRouteTypes {
     | '/account-setup'
     | '/account-status'
     | '/checkout/return'
-    | '/email/unsubscribe'
     | '/resources/$slug'
     | '/services/$service'
     | '/shop/$slug'
@@ -1048,7 +1005,6 @@ export interface FileRouteTypes {
     | '/portal/upload-csv'
     | '/portal/vehicles'
     | '/lovable/email/events'
-    | '/lovable/email/suppression'
     | '/admin'
     | '/learn'
     | '/portal'
@@ -1065,9 +1021,7 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/$county/$city'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
     | '/admin/requests'
     | '/portal/requests'
     | '/florida-coverage/$region/$county'
@@ -1102,7 +1056,6 @@ export interface FileRouteTypes {
     | '/_authenticated/learn'
     | '/_authenticated/portal'
     | '/checkout/return'
-    | '/email/unsubscribe'
     | '/resources/$slug'
     | '/services/$service'
     | '/shop/$slug'
@@ -1142,7 +1095,6 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/upload-csv'
     | '/_authenticated/portal/vehicles'
     | '/lovable/email/events'
-    | '/lovable/email/suppression'
     | '/_authenticated/admin/'
     | '/_authenticated/learn/'
     | '/_authenticated/portal/'
@@ -1159,9 +1111,7 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/$county/$city'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
     | '/_authenticated/admin/requests/'
     | '/_authenticated/portal/requests/'
     | '/florida-coverage/$region/$county/'
@@ -1192,7 +1142,6 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TrainingRoute: typeof TrainingRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
-  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   ServicesServiceRoute: typeof ServicesServiceRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
@@ -1200,7 +1149,6 @@ export interface RootRouteChildren {
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
-  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
   ApiPublicHooksFinReleaseTickRoute: typeof ApiPublicHooksFinReleaseTickRoute
@@ -1210,9 +1158,7 @@ export interface RootRouteChildren {
   FloridaCoverageRegionCountyCityRoute: typeof FloridaCoverageRegionCountyCityRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
-  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
-  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   FloridaCoverageRegionCountyIndexRoute: typeof FloridaCoverageRegionCountyIndexRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
@@ -1401,13 +1347,6 @@ declare module '@tanstack/react-router' {
       path: '/checkout/return'
       fullPath: '/checkout/return'
       preLoaderRoute: typeof CheckoutReturnRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/florida-coverage/': {
@@ -1711,13 +1650,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/admin/requests/': {
       id: '/_authenticated/admin/requests/'
       path: '/requests'
@@ -1823,25 +1755,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
       fullPath: '/lovable/email/transactional/preview'
       preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/integrations/hibambi/webhook': {
@@ -2027,7 +1945,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TrainingRoute: TrainingRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
-  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   ServicesServiceRoute: ServicesServiceRoute,
   VerifyTokenRoute: VerifyTokenRoute,
@@ -2035,7 +1952,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesIndexRoute: ResourcesIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
-  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,
   ApiPublicHooksFinReleaseTickRoute: ApiPublicHooksFinReleaseTickRoute,
@@ -2046,9 +1962,7 @@ const rootRouteChildren: RootRouteChildren = {
   FloridaCoverageRegionCountyCityRoute: FloridaCoverageRegionCountyCityRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
-  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   FloridaCoverageRegionCountyIndexRoute: FloridaCoverageRegionCountyIndexRoute,
   ApiPublicIntegrationsHibambiWebhookRoute:
     ApiPublicIntegrationsHibambiWebhookRoute,
