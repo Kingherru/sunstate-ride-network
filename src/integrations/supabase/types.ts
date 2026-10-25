@@ -2581,13 +2581,19 @@ export type Database = {
       provider_network_profiles: {
         Row: {
           accepting_connections: boolean
+          approved_service_types: string[]
           business_contact_email: string | null
           business_contact_phone: string | null
           cities: string[]
           counties: string[]
           description: string | null
+          eligibility_expires_at: string | null
           hours: string | null
           medical_delivery: boolean
+          service_base_address: string | null
+          service_base_lat: number | null
+          service_base_lng: number | null
+          service_base_verified_at: string | null
           service_types: string[]
           updated_at: string
           updated_by: string | null
@@ -2597,13 +2603,19 @@ export type Database = {
         }
         Insert: {
           accepting_connections?: boolean
+          approved_service_types?: string[]
           business_contact_email?: string | null
           business_contact_phone?: string | null
           cities?: string[]
           counties?: string[]
           description?: string | null
+          eligibility_expires_at?: string | null
           hours?: string | null
           medical_delivery?: boolean
+          service_base_address?: string | null
+          service_base_lat?: number | null
+          service_base_lng?: number | null
+          service_base_verified_at?: string | null
           service_types?: string[]
           updated_at?: string
           updated_by?: string | null
@@ -2613,13 +2625,19 @@ export type Database = {
         }
         Update: {
           accepting_connections?: boolean
+          approved_service_types?: string[]
           business_contact_email?: string | null
           business_contact_phone?: string | null
           cities?: string[]
           counties?: string[]
           description?: string | null
+          eligibility_expires_at?: string | null
           hours?: string | null
           medical_delivery?: boolean
+          service_base_address?: string | null
+          service_base_lat?: number | null
+          service_base_lng?: number | null
+          service_base_verified_at?: string | null
           service_types?: string[]
           updated_at?: string
           updated_by?: string | null
@@ -2987,6 +3005,76 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_trip_offers: {
+        Row: {
+          accepted_by: string | null
+          amount_cents: number
+          approved_by: string | null
+          created_at: string
+          decline_reason: string | null
+          distribution_id: string
+          expires_at: string
+          id: string
+          mfn_id: string
+          provider_workspace_id: string
+          status: string
+          updated_at: string
+          wave_id: string
+        }
+        Insert: {
+          accepted_by?: string | null
+          amount_cents: number
+          approved_by?: string | null
+          created_at?: string
+          decline_reason?: string | null
+          distribution_id: string
+          expires_at: string
+          id?: string
+          mfn_id?: string
+          provider_workspace_id: string
+          status?: string
+          updated_at?: string
+          wave_id: string
+        }
+        Update: {
+          accepted_by?: string | null
+          amount_cents?: number
+          approved_by?: string | null
+          created_at?: string
+          decline_reason?: string | null
+          distribution_id?: string
+          expires_at?: string
+          id?: string
+          mfn_id?: string
+          provider_workspace_id?: string
+          status?: string
+          updated_at?: string
+          wave_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_trip_offers_distribution_id_fkey"
+            columns: ["distribution_id"]
+            isOneToOne: false
+            referencedRelation: "trip_distributions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_trip_offers_provider_workspace_id_fkey"
+            columns: ["provider_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_trip_offers_wave_id_fkey"
+            columns: ["wave_id"]
+            isOneToOne: false
+            referencedRelation: "trip_distribution_waves"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_webhook_endpoints: {
         Row: {
           created_at: string
@@ -3212,6 +3300,7 @@ export type Database = {
           needs_surgery_signin: boolean
           needs_surgery_signout: boolean
           needs_wheelchair: boolean
+          network_status: string | null
           on_behalf_of_user_id: string | null
           patient_date_of_birth: string | null
           patient_email: string | null
@@ -3324,6 +3413,7 @@ export type Database = {
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          network_status?: string | null
           on_behalf_of_user_id?: string | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
@@ -3436,6 +3526,7 @@ export type Database = {
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          network_status?: string | null
           on_behalf_of_user_id?: string | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
@@ -4085,6 +4176,189 @@ export type Database = {
           },
         ]
       }
+      trip_distribution_waves: {
+        Row: {
+          distribution_id: string
+          id: string
+          radius_miles: number
+          sent_at: string
+          sent_by: string
+        }
+        Insert: {
+          distribution_id: string
+          id?: string
+          radius_miles: number
+          sent_at?: string
+          sent_by: string
+        }
+        Update: {
+          distribution_id?: string
+          id?: string
+          radius_miles?: number
+          sent_at?: string
+          sent_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_distribution_waves_distribution_id_fkey"
+            columns: ["distribution_id"]
+            isOneToOne: false
+            referencedRelation: "trip_distributions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_distributions: {
+        Row: {
+          accepted_by: string | null
+          acting_person_id: string
+          acting_person_mfn_id: string | null
+          amount_cents: number
+          approved_by: string | null
+          capability: string
+          created_at: string
+          current_radius: number | null
+          destination_area: string
+          estimated_miles: number | null
+          expires_at: string
+          id: string
+          mfn_id: string
+          original_person_id: string | null
+          original_person_mfn_id: string | null
+          original_workspace_mfn_id: string | null
+          pickup_area: string
+          pickup_date: string
+          pickup_lat: number
+          pickup_lng: number
+          pickup_time: string
+          represented_person_id: string | null
+          request_id: string | null
+          selected_offer_id: string | null
+          selected_workspace_id: string | null
+          service_type: string
+          source_mfn_id: string
+          source_workspace_id: string | null
+          status: string
+          submission_source: string
+          trip_id: string | null
+          trip_type: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_by?: string | null
+          acting_person_id: string
+          acting_person_mfn_id?: string | null
+          amount_cents: number
+          approved_by?: string | null
+          capability: string
+          created_at?: string
+          current_radius?: number | null
+          destination_area: string
+          estimated_miles?: number | null
+          expires_at: string
+          id?: string
+          mfn_id?: string
+          original_person_id?: string | null
+          original_person_mfn_id?: string | null
+          original_workspace_mfn_id?: string | null
+          pickup_area: string
+          pickup_date: string
+          pickup_lat: number
+          pickup_lng: number
+          pickup_time: string
+          represented_person_id?: string | null
+          request_id?: string | null
+          selected_offer_id?: string | null
+          selected_workspace_id?: string | null
+          service_type: string
+          source_mfn_id: string
+          source_workspace_id?: string | null
+          status?: string
+          submission_source: string
+          trip_id?: string | null
+          trip_type: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_by?: string | null
+          acting_person_id?: string
+          acting_person_mfn_id?: string | null
+          amount_cents?: number
+          approved_by?: string | null
+          capability?: string
+          created_at?: string
+          current_radius?: number | null
+          destination_area?: string
+          estimated_miles?: number | null
+          expires_at?: string
+          id?: string
+          mfn_id?: string
+          original_person_id?: string | null
+          original_person_mfn_id?: string | null
+          original_workspace_mfn_id?: string | null
+          pickup_area?: string
+          pickup_date?: string
+          pickup_lat?: number
+          pickup_lng?: number
+          pickup_time?: string
+          represented_person_id?: string | null
+          request_id?: string | null
+          selected_offer_id?: string | null
+          selected_workspace_id?: string | null
+          service_type?: string
+          source_mfn_id?: string
+          source_workspace_id?: string | null
+          status?: string
+          submission_source?: string
+          trip_id?: string | null
+          trip_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_distributions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_distributions_selected_workspace_id_fkey"
+            columns: ["selected_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_distributions_source_workspace_id_fkey"
+            columns: ["source_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_distributions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "admin_fin_ledger"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_distributions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_distributions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_drafts: {
         Row: {
           autosaved: boolean
@@ -4117,6 +4391,131 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      trip_network_events: {
+        Row: {
+          actor_id: string | null
+          actor_mfn_id: string | null
+          created_at: string
+          details: Json
+          distribution_id: string
+          event_type: string
+          id: string
+          offer_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_mfn_id?: string | null
+          created_at?: string
+          details?: Json
+          distribution_id: string
+          event_type: string
+          id?: string
+          offer_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          actor_mfn_id?: string | null
+          created_at?: string
+          details?: Json
+          distribution_id?: string
+          event_type?: string
+          id?: string
+          offer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_network_events_distribution_id_fkey"
+            columns: ["distribution_id"]
+            isOneToOne: false
+            referencedRelation: "trip_distributions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_network_events_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "provider_trip_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_network_settings: {
+        Row: {
+          automatic_expansion: boolean
+          id: boolean
+          updated_at: string
+          updated_by: string | null
+          wave_100_delay_minutes: number | null
+          wave_200_delay_minutes: number | null
+          wave_50_delay_minutes: number | null
+        }
+        Insert: {
+          automatic_expansion?: boolean
+          id?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          wave_100_delay_minutes?: number | null
+          wave_200_delay_minutes?: number | null
+          wave_50_delay_minutes?: number | null
+        }
+        Update: {
+          automatic_expansion?: boolean
+          id?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          wave_100_delay_minutes?: number | null
+          wave_200_delay_minutes?: number | null
+          wave_50_delay_minutes?: number | null
+        }
+        Relationships: []
+      }
+      trip_offer_negotiations: {
+        Row: {
+          action: string
+          actor_id: string
+          actor_mfn_id: string | null
+          amount_cents: number | null
+          business_note: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          offer_id: string
+          side: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          actor_mfn_id?: string | null
+          amount_cents?: number | null
+          business_note?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          offer_id: string
+          side: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          actor_mfn_id?: string | null
+          amount_cents?: number | null
+          business_note?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          offer_id?: string
+          side?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_offer_negotiations_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "provider_trip_offers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trip_payments: {
         Row: {
@@ -4467,6 +4866,9 @@ export type Database = {
           needs_surgery_signin: boolean
           needs_surgery_signout: boolean
           needs_wheelchair: boolean
+          network_distribution_id: string | null
+          network_provider_workspace_id: string | null
+          network_status: string | null
           no_show_reason: string | null
           odometer_end: number | null
           odometer_start: number | null
@@ -4637,6 +5039,9 @@ export type Database = {
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          network_distribution_id?: string | null
+          network_provider_workspace_id?: string | null
+          network_status?: string | null
           no_show_reason?: string | null
           odometer_end?: number | null
           odometer_start?: number | null
@@ -4807,6 +5212,9 @@ export type Database = {
           needs_surgery_signin?: boolean
           needs_surgery_signout?: boolean
           needs_wheelchair?: boolean
+          network_distribution_id?: string | null
+          network_provider_workspace_id?: string | null
+          network_status?: string | null
           no_show_reason?: string | null
           odometer_end?: number | null
           odometer_start?: number | null
@@ -4927,6 +5335,13 @@ export type Database = {
             columns: ["hipaa_ack_id"]
             isOneToOne: false
             referencedRelation: "hipaa_acknowledgments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_network_provider_workspace_id_fkey"
+            columns: ["network_provider_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
           {
@@ -6270,6 +6685,33 @@ export type Database = {
         Returns: number
       }
       my_access_state: { Args: never; Returns: Json }
+      network_audit: {
+        Args: {
+          _details?: Json
+          _distribution: string
+          _offer: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      network_notify: {
+        Args: {
+          _important?: boolean
+          _offer: string
+          _type: string
+          _ws: string
+        }
+        Returns: undefined
+      }
+      network_offer_access: { Args: { _id: string }; Returns: boolean }
+      network_source_access: {
+        Args: { _id: string; _manage?: boolean }
+        Returns: boolean
+      }
+      network_workspace_access: {
+        Args: { _manage?: boolean; _ws: string }
+        Returns: boolean
+      }
       notify_expiring_unconfirmed_reservations: { Args: never; Returns: number }
       offer_trip_priority: {
         Args: { _provider_user_id: string; _trip_id: string }
