@@ -1,6 +1,7 @@
 # Architecture decisions
 
-- MCP server is disabled (no /mcp, /.mcp/*, /.well-known/oauth-protected-resource, /.lovable/oauth/consent routes; no @lovable.dev/mcp-js). Why: not needed now; rebuild later from the archived copy (Files → mcp-archive), reusing `src/lib/cities.ts` and `src/lib/contact-info.ts`.
+- MCP routes and package stay removed. Why: not needed; archive in Files → mcp-archive retains restoration sources.
+- App emails use the server-only managed helper; signed terminal events dedupe by delivery ID into retained history, never gate sends. Why: Lovable owns delivery. Independent Maps/driver-schedule notification_email_queue writers stay outside this update.
 - Design tokens are scoped under `.theme-public` / `.theme-portal` in `src/styles.css`; new UI uses `src/components/ds/*` + `src/components/brand/*`. Why: keeps the preserved training screens on neutral tokens and lets a future admin theme editor override one central token set.
 - Public pages use uppercase H1/H2 headings; one-column section heads center as a complete group, while two-column heads explicitly opt into left alignment. Why: keeps hierarchy and alignment consistent site-wide.
 - Transportation accounts use `workspaces` + `workspace_members` (owner/admin/member) with `user_profiles`; setup runs atomically in `complete_account_setup()` and post-sign-in routing comes from server fn `getAccessState` (src/lib/access.functions.ts). Why: server-verified access, training-only users need no workspace, platform admin stays in `user_roles`.

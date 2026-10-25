@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /* ------------ Types ------------ */
@@ -331,24 +330,8 @@ export const sendDriverEarningsReport = createServerFn({ method: "POST" })
 
     const driverName = `${(driver as any).first_name ?? ""} ${(driver as any).last_name ?? ""}`.trim() || "Driver";
 
-    // Fire the transactional email via the internal send route.
-    // The send route is now locked to internal callers via a shared secret
-    // (the Supabase service role key, only available to server-side code).
-    const req = getRequest();
-    const origin = req ? new URL(req.url).origin : "";
-    if (!origin) throw new Error("Could not resolve app origin");
-    const internalSecret = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!internalSecret) throw new Error("Server email secret is not configured");
-
-    const sendRes = await fetch(`${origin}/lovable/email/transactional/send`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-internal-secret": internalSecret,
-      },
-      body: JSON.stringify({
-        templateName: "driver-earnings-report",
-        recipientEmail: data.recipient_email,
+    const { sendTemplateEmail } = await import('@/lib/email-templates/send-email');
+    const sendResult = await sendTemplateEmail('driver-earnings-report', data.recipient_email, {
         idempotencyKey: `driver-earnings-${data.driver_id}-${data.period_start}-${data.period_end}-${Date.now()}`,
         templateData: {
           driverName,
@@ -367,13 +350,8 @@ export const sendDriverEarningsReport = createServerFn({ method: "POST" })
           amountPaidUsd: usdStr(report.amount_paid_cents),
           outstandingUsd: usdStr(report.outstanding_cents),
         },
-      }),
     });
-
-    const sendJson = await sendRes.json().catch(() => ({}));
-    if (!sendRes.ok || sendJson?.success === false) {
-      throw new Error(sendJson?.error || sendJson?.reason || `Email failed (${sendRes.status})`);
-    }
+    if (!sendResult.sent) return { sent: false, reason: sendResult.reason };
 
     // Log to history
     const { data: row, error: insErr } = await (supabase as any)
