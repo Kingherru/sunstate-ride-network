@@ -22,7 +22,7 @@ export type PersonRow = {
   userId: string; mfnId: string | null; name: string; email: string | null; emailVerified: boolean;
   roles: string[]; isMasterAdmin: boolean; needsReview: boolean; status: string;
   accounts: { id: string; mfnId: string | null; name: string | null; type: string; status: string; orgType: string; role: string }[];
-  createdAt: string | null; isTest: boolean;
+  createdAt: string | null; isTest: boolean; lastSignIn?: string | null;
 };
 
 /** People & Accounts directory. Verified admins only. */
@@ -60,7 +60,7 @@ export const listPeopleAndAccounts = createServerFn({ method: "GET" })
           id: m.workspaces.id, mfnId: m.workspaces.mfn_id, name: m.workspaces.display_name, type: m.workspaces.account_type,
           status: m.workspaces.status, orgType: m.workspaces.organization_type, role: m.role,
         })),
-        createdAt: p.created_at, isTest: !!(p as any).is_test_account,
+        createdAt: p.created_at, isTest: !!(p as any).is_test_account, lastSignIn: u?.last_sign_in_at || null,
       };
     }).sort((a, b) => Number(b.isMasterAdmin) - Number(a.isMasterAdmin) || (a.mfnId ?? "").localeCompare(b.mfnId ?? ""));
   });

@@ -108,7 +108,8 @@ function People() {
   const [activity, setActivity] = useState('all');
   const list = useMemo(() => rows.filter((p) => matches(p, view)).filter((p) => {
     const t = q.trim().toLowerCase();
-    return (status === 'all' || (status === 'review' ? p.needsReview : p.status === status)) && (activity === 'all' || (activity === 'test' ? p.isTest : !p.isTest)) && (!t || [p.mfnId, p.email, p.name, ...p.accounts.map((a) => `${a.name} ${a.mfnId} ${a.type} ${a.orgType}`)].some((x) => x?.toLowerCase().includes(t)));
+    const recent = !!p.lastSignIn && Date.now() - Date.parse(p.lastSignIn) <= 30 * 86400000;
+    return (status === 'all' || (status === 'review' ? matches(p, 'review') : p.status === status)) && (activity === 'all' || (activity === 'recent' ? recent : activity === 'never' ? !p.lastSignIn : !recent)) && (!t || [p.mfnId, p.email, p.name, ...p.accounts.map((a) => `${a.name} ${a.mfnId} ${a.type} ${a.orgType}`)].some((x) => x?.toLowerCase().includes(t)));
   }), [rows, view, q, status, activity]);
   const counts = (v: View) => rows.filter((p) => matches(p, v)).length;
 
@@ -130,7 +131,7 @@ function People() {
           <span className="font-semibold">Accounts needing classification:</span> {reviewCounts.data.accountsNeedingClassification}
         </p>
       )}
-      <div className="mb-5 grid gap-4 md:grid-cols-[2fr_1fr_1fr]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All accounts</option><option value="live">Non-test accounts</option><option value="test">Test accounts</option></DsSelect>}</DsField></div>
+      <div className="mb-5 grid gap-4 md:grid-cols-[2fr_1fr_1fr]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField></div>
       <section className={panelCls}>
         {list.length === 0 ? <DsEmpty title="No one here">Nobody matches this view.</DsEmpty> : (
           <ul className="divide-y divide-ds-border">
