@@ -6689,6 +6689,14 @@ export type Database = {
         Args: { _approve?: boolean; _offer: string }
         Returns: Json
       }
+      network_assign_driver_slot: {
+        Args: { _driver: string; _time: string; _trip: string }
+        Returns: undefined
+      }
+      network_assigned_access: {
+        Args: { _driver: string; _ws: string }
+        Returns: boolean
+      }
       network_audit: {
         Args: {
           _details?: Json
@@ -6710,6 +6718,7 @@ export type Database = {
       network_list_activity: { Args: never; Returns: Json }
       network_list_eligibility: { Args: never; Returns: Json }
       network_list_offers: { Args: never; Returns: Json }
+      network_mark_attention: { Args: never; Returns: number }
       network_notify: {
         Args: {
           _important?: boolean
