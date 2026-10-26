@@ -3,8 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Search, MapPin, BookmarkPlus, BookmarkCheck, Phone, Mail, Truck, CheckCircle2, MessageSquare } from "lucide-react";
-import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import { Search, MapPin, BookmarkPlus, BookmarkCheck, Phone, Mail, Truck, CheckCircle2, MessageSquare, ArrowLeft, Clock, IdCard } from "lucide-react";
+import { usePortalPreview, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import {
   listNetworkProviders,
   saveNetworkProvider,
@@ -12,7 +12,11 @@ import {
   type NetworkProviderRow,
 } from "@/lib/facility-providers.functions";
 import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorkspace } from "@/lib/workspace-messages.functions";
+import { cn } from "@/lib/utils";
 
+/** Two-panel Provider Network directory: list on the left, selected provider
+ *  profile on the right. On phones the list shows first and selecting a
+ *  provider opens the profile with a Back to Providers action. */
 export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }) {
   const qc = useQueryClient();
   const listFn = useServerFn(listNetworkProviders);
@@ -30,6 +34,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
   const [zip, setZip] = useState("");
   const [medicalDelivery, setMedicalDelivery] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messageTarget, setMessageTarget] = useState<NetworkProviderRow | null>(null);
 
   const filters = {
@@ -89,106 +94,93 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
   }
 
   const rows = q.data ?? [];
+  const selected = rows.find((r) => r.workspace_id === selectedId) ?? null;
 
-  return (
-    <div className="space-y-4">
+  const listPanel = (
+    <div className="min-w-0 space-y-2">
       {!savedOnly && (
-        <div className="bg-card border border-border rounded-sm p-4 space-y-3">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Field label="Name">
-              <div className="relative">
-                <Search className="pointer-events-none size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Business name" style={{ paddingLeft: "2.5rem" }}
-                  className="w-full border border-border rounded-sm pl-8 pr-3 py-2 text-sm" />
-              </div>
-            </Field>
-            <Field label="Service type"><input value={serviceType} onChange={(e) => setServiceType(e.target.value)} className="w-full border border-border rounded-sm px-3 py-2 text-sm" /></Field>
-            <Field label="County"><input value={county} onChange={(e) => setCounty(e.target.value)} className="w-full border border-border rounded-sm px-3 py-2 text-sm" /></Field>
-            <Field label="City"><input value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-border rounded-sm px-3 py-2 text-sm" /></Field>
-            <Field label="ZIP"><input value={zip} onChange={(e) => setZip(e.target.value)} maxLength={10} className="w-full border border-border rounded-sm px-3 py-2 text-sm" /></Field>
+        <div className="space-y-2 rounded-sm border border-border bg-card p-3">
+          <div className="portal-search">
+            <Search className="size-4" aria-hidden />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by company name" aria-label="Search by company name"
+              className="w-full rounded-sm border border-border py-2 pr-3 text-sm" />
           </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <label className="inline-flex items-center gap-2 text-sm font-bold">
+          <div className="grid grid-cols-2 gap-2">
+            <input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Service type" aria-label="Service type" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
+            <input value={county} onChange={(e) => setCounty(e.target.value)} placeholder="County" aria-label="County" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
+            <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" aria-label="City" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
+            <input value={zip} onChange={(e) => setZip(e.target.value)} maxLength={10} placeholder="ZIP" aria-label="ZIP code" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <label className="inline-flex items-center gap-2 text-xs font-bold">
               <input type="checkbox" checked={medicalDelivery} onChange={(e) => setMedicalDelivery(e.target.checked)} /> Medical delivery
             </label>
-            <label className="inline-flex items-center gap-2 text-sm font-bold">
+            <label className="inline-flex items-center gap-2 text-xs font-bold">
               <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
             </label>
           </div>
-          <p className="text-xs text-muted-foreground italic">Distance search isn't available yet — search by county, city or ZIP instead.</p>
+          <p className="text-[11px] italic text-muted-foreground">Distance search isn't available yet — search by county, city or ZIP instead.</p>
         </div>
       )}
 
-      {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
-
+      {q.isLoading && <div className="p-3 text-sm text-muted-foreground">Loading…</div>}
       {!q.isLoading && rows.length === 0 && (
-        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
+        <div className="rounded-sm border border-border bg-card p-6 text-sm text-muted-foreground">
           {savedOnly ? "No saved providers yet. Use Find providers to search the network and save the ones you want." : "No network providers match these filters yet."}
         </div>
       )}
 
-      {rows.length > 0 && (
-        <div className="space-y-2">
-          {rows.map((r) => {
-            const isOwnWorkspace = !!senderWorkspace && senderWorkspace.id === r.workspace_id;
-            const canMessage = !preview.active && !!senderWorkspace && !isOwnWorkspace;
-            return (
-              <div key={r.workspace_id} className="bg-card border border-border rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <div className="font-extrabold flex items-center gap-2 flex-wrap">
-                    {r.business_name}
-                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm border border-border inline-flex items-center gap-1">
-                      <CheckCircle2 className="size-3" /> Verified
-                    </span>
-                    {r.medical_delivery && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-muted text-foreground inline-flex items-center gap-1">
-                        <Truck className="size-3" /> Medical delivery
-                      </span>
-                    )}
-                    {!r.accepting_connections && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-muted text-foreground">Not accepting</span>
-                    )}
-                  </div>
-                  {r.description && <div className="text-xs text-foreground mt-1 max-w-2xl">{r.description}</div>}
-                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
-                    {(r.cities.length > 0 || r.counties.length > 0) && (
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="size-3" /> {[...r.cities, ...r.counties].slice(0, 4).join(", ") || "—"}
-                      </span>
-                    )}
-                    {r.business_contact_phone && (
-                      <a href={`tel:${r.business_contact_phone}`} className="inline-flex items-center gap-1 font-bold text-foreground hover:underline"><Phone className="size-3" /> {r.business_contact_phone}</a>
-                    )}
-                    {r.business_contact_email && (
-                      <a href={`mailto:${r.business_contact_email}`} className="inline-flex items-center gap-1 hover:underline"><Mail className="size-3" /> {r.business_contact_email}</a>
-                    )}
-                  </div>
-                  {r.service_types.length > 0 && (
-                    <div className="text-xs text-muted-foreground mt-1">Services: {r.service_types.join(", ")}</div>
-                  )}
-                  {r.hours && <div className="text-xs text-muted-foreground mt-1">Hours: {r.hours}</div>}
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {canMessage && (
-                    <button
-                      onClick={() => setMessageTarget(r)}
-                      className="text-xs font-bold px-3 py-2 rounded-sm inline-flex items-center gap-2 border border-border hover:bg-muted"
-                    >
-                      <MessageSquare className="size-4" /> Message provider
-                    </button>
-                  )}
-                  <button
-                    onClick={() => toggleSave(r)}
-                    className={`text-xs font-bold px-3 py-2 rounded-sm inline-flex items-center gap-2 shrink-0 ${r.is_saved ? "border border-border hover:bg-muted" : "bg-accent text-accent-foreground hover:bg-accent/90"}`}
-                  >
-                    {r.is_saved ? <><BookmarkCheck className="size-4" /> Saved</> : <><BookmarkPlus className="size-4" /> Save</>}
-                  </button>
-                </div>
+      <ul className="max-h-[36rem] divide-y divide-border overflow-y-auto rounded-sm border border-border bg-card">
+        {rows.map((r) => (
+          <li key={r.workspace_id}>
+            <button type="button" onClick={() => setSelectedId(r.workspace_id)}
+              aria-current={selectedId === r.workspace_id ? "true" : undefined}
+              className={cn("block w-full px-3 py-3 text-left hover:bg-muted/60", selectedId === r.workspace_id && "bg-muted")}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-sm font-extrabold">{r.business_name}</span>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-sm border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                    <CheckCircle2 className="size-3" /> Verified
+                  </span>
+                  {r.is_saved && <BookmarkCheck className="size-4 text-accent" aria-label="Saved" />}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      )}
+              {(r.cities.length > 0 || r.counties.length > 0) && (
+                <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                  <MapPin className="size-3 shrink-0" /> {[...r.cities, ...r.counties].slice(0, 3).join(", ")}
+                </p>
+              )}
+              {r.service_types.length > 0 && (
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{r.service_types.slice(0, 3).join(", ")}{r.medical_delivery ? " · Medical delivery" : ""}</p>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const profilePanel = selected ? (
+    <ProviderProfile
+      row={selected}
+      canMessage={!preview.active && !!senderWorkspace && senderWorkspace.id !== selected.workspace_id}
+      onMessage={() => setMessageTarget(selected)}
+      onToggleSave={() => toggleSave(selected)}
+      onBack={() => setSelectedId(null)}
+    />
+  ) : (
+    <div className="hidden rounded-sm border border-border bg-card p-8 text-sm text-muted-foreground lg:block">
+      Select a provider from the list to view their business profile.
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* Desktop: list left, profile right. Mobile: list first, profile replaces it. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+        <div className={cn(selected && "hidden lg:block")}>{listPanel}</div>
+        <div className={cn("min-w-0", !selected && "hidden lg:block")}>{profilePanel}</div>
+      </div>
 
       {messageTarget && senderWorkspace && (
         <MessageConfirmDialog
@@ -199,6 +191,81 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
         />
       )}
     </div>
+  );
+}
+
+/** Authorized public business profile only: no insurance files, policy
+ *  numbers, home addresses, private contacts, driver records, patient
+ *  information, internal pricing or payout data. */
+function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
+  row: NetworkProviderRow; canMessage: boolean; onMessage: () => void; onToggleSave: () => void; onBack: () => void;
+}) {
+  const services = [...row.service_types];
+  if (row.medical_delivery && !services.some((s) => /delivery/i.test(s))) services.push("Medical Delivery");
+  return (
+    <article className="rounded-sm border border-border bg-card p-5">
+      <button type="button" onClick={onBack} className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-primary hover:underline lg:hidden">
+        <ArrowLeft className="size-4" /> Back to Providers
+      </button>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-lg font-extrabold">{row.business_name}</h3>
+          {row.mfn_id && (
+            <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-muted-foreground"><IdCard className="size-3.5" /> {row.mfn_id}</p>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+              <CheckCircle2 className="size-3" /> Verified
+            </span>
+            {row.medical_delivery && (
+              <span className="inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground">
+                <Truck className="size-3" /> Medical delivery
+              </span>
+            )}
+            {!row.accepting_connections && (
+              <span className="rounded-sm bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground">Not accepting</span>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {canMessage && (
+            <button onClick={onMessage} className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-xs font-bold hover:bg-muted">
+              <MessageSquare className="size-4" /> Message provider
+            </button>
+          )}
+          <button onClick={onToggleSave}
+            className={cn("inline-flex items-center gap-2 rounded-sm px-3 py-2 text-xs font-bold", row.is_saved ? "border border-border hover:bg-muted" : "bg-accent text-accent-foreground hover:bg-accent/90")}>
+            {row.is_saved ? <><BookmarkCheck className="size-4" /> Remove from saved</> : <><BookmarkPlus className="size-4" /> Save provider</>}
+          </button>
+        </div>
+      </div>
+
+      <dl className="mt-5 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+        {(row.cities.length > 0 || row.counties.length > 0) && (
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Location</dt>
+            <dd className="mt-0.5 flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0" /> {[...row.cities, ...row.counties].slice(0, 4).join(", ")}</dd></div>
+        )}
+        {row.counties.length > 0 && (
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Service areas</dt><dd className="mt-0.5">{row.counties.join(", ")}</dd></div>
+        )}
+        {row.hours && (
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Operating days & hours</dt>
+            <dd className="mt-0.5 flex items-center gap-1.5"><Clock className="size-3.5 shrink-0" /> {row.hours}</dd></div>
+        )}
+        {services.length > 0 && (
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Services</dt><dd className="mt-0.5">{services.join(", ")}</dd></div>
+        )}
+        {row.business_contact_phone && (
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Business phone</dt>
+            <dd className="mt-0.5"><a href={`tel:${row.business_contact_phone}`} className="inline-flex items-center gap-1.5 font-bold hover:underline"><Phone className="size-3.5" /> {row.business_contact_phone}</a></dd></div>
+        )}
+        {row.business_contact_email && (
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Business email</dt>
+            <dd className="mt-0.5"><a href={`mailto:${row.business_contact_email}`} className="inline-flex items-center gap-1.5 break-all hover:underline"><Mail className="size-3.5 shrink-0" /> {row.business_contact_email}</a></dd></div>
+        )}
+      </dl>
+      {row.description && <p className="mt-4 border-t border-border pt-4 text-sm text-foreground">{row.description}</p>}
+    </article>
   );
 }
 
@@ -215,21 +282,14 @@ function MessageConfirmDialog({ sender, target, onCancel, onConfirm }: {
           You'll message as <span className="font-bold text-foreground">{sender.name}</span> to{" "}
           <span className="font-bold text-foreground">{target.business_name}</span>
           {target.mfn_id && <> (MFN ID: <span className="font-mono">{target.mfn_id}</span>)</>}.
+          If a conversation between your businesses already exists, it opens instead of creating a duplicate.
         </p>
+        <p className="mt-2 text-xs text-muted-foreground">Do not include patient or protected health information in network introduction messages.</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button autoFocus onClick={onCancel} className="text-xs font-bold px-3 py-2 rounded-sm border border-border hover:bg-muted">Cancel</button>
-          <button onClick={onConfirm} className="text-xs font-bold px-3 py-2 rounded-sm bg-accent text-accent-foreground hover:bg-accent/90">Start conversation</button>
+          <button autoFocus onClick={onCancel} className="rounded-sm border border-border px-3 py-2 text-xs font-bold hover:bg-muted">Cancel</button>
+          <button onClick={onConfirm} className="rounded-sm bg-accent px-3 py-2 text-xs font-bold text-accent-foreground hover:bg-accent/90">Start conversation</button>
         </div>
       </div>
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <div className="mt-1">{children}</div>
-    </label>
   );
 }
