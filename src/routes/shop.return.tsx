@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { claimEnrollmentFromSession } from "@/lib/courses.functions";
+import { getStripeEnvironment } from '@/lib/stripe';
 
 export const Route = createFileRoute("/shop/return")({
   validateSearch: (s: Record<string, unknown>) => ({
     session_id: typeof s.session_id === "string" ? s.session_id : undefined,
     course: typeof s.course === "string" ? s.course : undefined,
   }),
-  head: () => ({ meta: [{ title: "Purchase Complete | MY FLORIDA NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Training Purchase Status — MY FLORIDA NEMT" }, { name: 'description', content: 'Verify your training checkout and access purchased courses.' }, { property: 'og:title', content: 'Training Purchase Status — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Your training checkout status.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex" }] }),
   component: Return,
 });
 
@@ -18,9 +19,9 @@ function Return() {
   const [state, setState] = useState<"pending" | "ok" | "signin">("pending");
 
   useEffect(() => {
-    if (!session_id || !course) { setState("ok"); return; }
-    claimEnrollmentFromSession({ data: { sessionId: session_id, slug: course } })
-      .then(() => setState("ok"))
+    if (!session_id) { setState("signin"); return; }
+    claimEnrollmentFromSession({ data: { sessionId: session_id, slug: course, environment: getStripeEnvironment() } })
+      .then(r => setState('error' in r ? 'signin' : 'ok'))
       .catch(() => setState("signin"));
   }, [session_id, course]);
 

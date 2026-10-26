@@ -163,20 +163,31 @@ async function issueCertificate(
 
 export const claimEnrollmentFromSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { sessionId: string; slug: string }) => d)
+  .inputValidator((d: { sessionId: string; slug?: string; environment: 'sandbox' | 'live' }) => {
+    if (!/^cs_[a-zA-Z0-9_]+$/.test(d.sessionId) || !['sandbox', 'live'].includes(d.environment)) throw new Error('Invalid checkout');
+    return d;
+  })
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: course } = await supabaseAdmin.from("courses").select("id").eq("slug", data.slug).maybeSingle();
-    if (!course) throw new Error("Course not found");
-    const { error } = await supabaseAdmin
-      .from("course_enrollments")
-      .upsert(
-        { user_id: userId, course_id: course.id, stripe_session_id: data.sessionId, status: "active" },
-        { onConflict: "user_id,course_id" },
-      );
-    if (error) throw new Error(error.message);
-    return { ok: true };
+    try {
+      const { createStripeClient, getStripeErrorMessage } = await import('@/lib/stripe.server');
+      const session = await createStripeClient(data.environment).checkout.sessions.retrieve(data.sessionId);
+      if (session.metadata?.userId !== context.userId || session.payment_status !== 'paid' || session.mode !== 'payment') throw new Error('A completed purchase for your account was not found');
+      let slugs: string[] = session.metadata.course_slug ? [session.metadata.course_slug] : [];
+      if (session.metadata.course_slugs) {
+        const parsed: unknown = JSON.parse(session.metadata.course_slugs);
+        if (Array.isArray(parsed) && parsed.every(s => typeof s === 'string')) slugs = parsed;
+      }
+      if (!slugs.length || (data.slug && !slugs.includes(data.slug))) throw new Error('Course not included in this purchase');
+      const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+      const { data: courses } = await context.supabase.from('courses').select('id,slug').in('slug', slugs);
+      if (!courses?.length) throw new Error('Course not found');
+      const { error } = await supabaseAdmin.from('course_enrollments').upsert(courses.map(c => ({ user_id: context.userId, course_id: c.id, stripe_session_id: data.sessionId, status: 'active' })), { onConflict: 'user_id,course_id', ignoreDuplicates: true });
+      if (error) throw new Error(error.message);
+      return { ok: true as const };
+    } catch (error) {
+      const { getStripeErrorMessage } = await import('@/lib/stripe.server');
+      return { error: getStripeErrorMessage(error) };
+    }
   });
 
 // ---------- Exam submission ----------

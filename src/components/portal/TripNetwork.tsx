@@ -9,6 +9,7 @@ import { listNetworkOffers, listNetworkActivity, acceptNetworkOffer, respondNetw
 import { nextRadius, PAYMENT_RESPONSIBILITY_WARNING } from '@/lib/trip-network-rules';
 import { DetailOverlayFrame } from './DetailOverlayFrame';
 import { useRequestDetails } from './request-detail-context';
+import { DetailSection } from './DetailSection';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
 const label = (s: string) => s.replaceAll('_', ' ');
@@ -32,10 +33,11 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
   }, onSuccess: () => { toast.success('Offer response recorded.'); refresh(); onClose(); }, onError: (e: Error) => toast.error(e.message) });
   return <DetailOverlayFrame title="Offer details" onClose={onClose}>
     <div className="space-y-5">
-      <div className="flex justify-between gap-4"><h2 className="ds-subheading text-ds-primary">{offer.mfn_id}</h2><DsButton variant="ghost" size="sm" aria-label="Close offer review" onClick={onClose}><X className="size-4" /></DsButton></div>
-      <dl className="grid grid-cols-2 gap-3 ds-body"><dt>Source</dt><dd className="break-all font-mono">{offer.source_mfn_id}</dd><dt>General route</dt><dd>{offer.pickup_area} → {offer.destination_area}</dd><dt>When</dt><dd>{offer.pickup_date} {offer.pickup_time}</dd><dt>Service / trip</dt><dd>{label(offer.service_type || offer.capability)} · {label(offer.trip_type || '')}</dd><dt>Capability</dt><dd>{offer.capability}</dd><dt>Compensation</dt><dd>{money(offer.amount_cents)}</dd><dt>Expires</dt><dd>{new Date(offer.expires_at).toLocaleString()}</dd></dl>
+      <DetailSection title="Offer identity"><dl className="grid gap-3 sm:grid-cols-2 ds-body"><dt>Offer ID</dt><dd>{offer.mfn_id}</dd><dt>Source</dt><dd className="break-all font-mono">{offer.source_mfn_id}</dd></dl></DetailSection>
+      <DetailSection tone="trip" title="General route and service"><dl className="grid gap-3 sm:grid-cols-2 ds-body"><dt>General route</dt><dd>{offer.pickup_area} → {offer.destination_area}</dd><dt>When</dt><dd>{new Date(`${offer.pickup_date}T12:00:00`).toLocaleDateString()} · {new Date(`2000-01-01T${offer.pickup_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</dd><dt>Service / trip</dt><dd>{label(offer.service_type || offer.capability)} · {label(offer.trip_type || '')}</dd><dt>Capability</dt><dd>{offer.capability}</dd></dl></DetailSection>
+      <DetailSection tone="payment" title="Compensation"><dl className="grid gap-3 sm:grid-cols-2 ds-body"><dt>Compensation</dt><dd>{money(offer.amount_cents)}</dd><dt>Expires</dt><dd>{new Date(offer.expires_at).toLocaleString()}</dd></dl></DetailSection>
       <p className="ds-support text-ds-muted">Passenger identity and exact trip details remain protected until assignment.</p>
-      <details><summary className="ds-label cursor-pointer">Negotiation history</summary>{(history.data??[]).map(h=><p className="ds-support mt-2" key={h.id}>{h.side} · {label(h.action)}{h.amount_cents?` · ${money(h.amount_cents)}`:''} · {h.business_note||'—'} · {new Date(h.created_at).toLocaleString()}</p>)}</details>
+      <DetailSection tone="notes" title="Negotiation history"><details><summary className="ds-label cursor-pointer">View history</summary>{(history.data??[]).map(h=><p className="ds-support mt-2" key={h.id}>{h.side} · {label(h.action)}{h.amount_cents?` · ${money(h.amount_cents)}`:''} · {h.business_note||'—'} · {new Date(h.created_at).toLocaleString()}</p>)}</details></DetailSection>
       {mode === 'review' ? <div className="flex flex-wrap gap-2">
         <DsButton disabled={m.isPending || (!source && offer.status === 'countered')} onClick={() => { if (confirm(source ? 'Approve this counteroffer and reserve the trip?' : 'Accept this compensation and reserve the trip for your business?')) m.mutate('accept'); }}><Check className="size-4" />{source ? 'Accept counteroffer' : 'Accept offer'}</DsButton>
         <DsButton variant="secondary" disabled={!source && offer.status === 'countered'} onClick={() => setMode(source ? 'revise' : 'counter')}><MessageSquare className="size-4" />{source ? 'Revise amount' : 'Counter offer'}</DsButton>
