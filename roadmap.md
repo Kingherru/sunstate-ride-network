@@ -18,3 +18,17 @@
 - [ ] Saved-draft/accepted-provider UI readback — blocked: no approved synthetic authenticated fixture; broad browser review explicitly excluded
 - [ ] Contractor assignment-specific controls — deferred outside Build 1; requires approved assignment-sharing design
 - [ ] Direct authenticated cross-workspace check — blocked: read-only sandbox is denied execution of protected network access functions; no approved synthetic identity
+
+# Pass 3G — Provider Network, messaging, notes, shared portal UI
+- [ ] Shared toolbar-control style; Schedule toolbar alignment (remove visible Vehicle label, one aligned row, equal heights); search-icon padding fix across portals
+- [ ] Provider Network two-panel layout (list left, profile right; mobile back action); provider profile with safe public fields only; badge scaffolding without new statuses
+- [ ] Message Provider: single conversation per business pair, permission checks, safety notice
+- [ ] Shared email-style messaging layout (sidebar + conversation, mobile back), unread dot (green normal/red urgent), read-on-open, read-only admin controls hidden
+- [ ] Platform Requests: provider submission in Provider Settings, Admin Messaging REQUESTS tab, statuses + history, internal messaging infra, no external email
+- [ ] Notifications layout: category list, unread state, related-record overlay, shared search fix
+- [ ] Smart Notes sticky-note redesign (pale-yellow, click-to-type, save/archive/restore, list sidebar, mobile list-first), keep private-to-creator
+- [ ] Notes-to-trip: create draft from note, carry recognized fields, open form for review, never auto-submit, no local storage
+- [ ] Compact portal identity block (name, company, role icon, MFN ID; no email; no duplication)
+- [ ] Sidebar hover effect preserved (subtle light-orange right border, below header, no layout shift)
+- [ ] Contacts panel modest width increase, balanced columns
+- [ ] Minimal checks: type check, build, narrow cross-workspace messaging-access check, record counts unchanged
