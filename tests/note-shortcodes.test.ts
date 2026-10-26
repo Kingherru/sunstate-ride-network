@@ -47,12 +47,15 @@ describe("smart note shortcodes", () => {
     expect(payload.transportType).toBe("wheelchair");
   });
 
-  test("keeps a US state suffix inside the address instead of reading it as a code", () => {
+  test("keeps a US state suffix in the address instead of reading it as a code", () => {
     const { payload, held } = parseNoteShortcodes("PU: 123 Main St, Annapolis, MD");
-    expect(payload.pickupAddress).toBe("123 Main St, Annapolis");
-    expect(held).toContain("Medical delivery");
+    expect(payload.pickupAddress).toBe("123 Main St");
     expect(payload.pickupCity).toBe("Annapolis");
+    // ", MD" is Maryland here — it must not flip the note into a medical delivery.
+    expect(held.join(" ")).not.toContain("Medical delivery");
+    expect(String(payload.specialInstructions ?? "")).not.toContain("Medical delivery");
   });
+
 
   test("does not read an ordinary sentence as a drop-off address", () => {
     const { payload, held } = parseNoteShortcodes("do not call before arrival");
