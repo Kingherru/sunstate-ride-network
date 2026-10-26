@@ -705,7 +705,7 @@ export function parseNoteShortcodes(text: string): ParsedNote {
   if (special) payload.specialInstructions = special.slice(0, NOTE_LIMIT);
   if (mobility.length) payload.mobilityNotes = mobility.join("\n").slice(0, MOBILITY_LIMIT);
 
-  return { payload, placed, held: [...held, ...unreadable], unreadable };
+  return { payload, placed, held, unreadable };
 }
 
 function joinDetails(current: unknown, addition: string) {

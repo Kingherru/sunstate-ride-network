@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,6 +10,8 @@ import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-d
 import { cn } from "@/lib/utils";
 import { DsButton } from "@/components/ds/controls";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { COMMON_CODES, SHORTCODE_GUIDE, parseNoteShortcodes } from "@/lib/note-shortcodes";
+
 
 type Note = { id: string; title: string; body: string; archived_at: string | null; updated_at: string };
 
@@ -43,6 +45,9 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
   const rows = (notes.data ?? []) as Note[];
   const openNote = rows.find((n) => n.id === openId) ?? null;
   const editing = creating || openNote !== null;
+  /** Live read of the note so the editor can show what will be filled in. */
+  const parsed = useMemo(() => parseNoteShortcodes(draftBody), [draftBody]);
+
 
   const save = usePortalMutation({
     mutationFn: async (n: { id: string | null; body: string }) => {
@@ -75,21 +80,24 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
     setDraftBody(n?.body ?? "");
   }
 
-  /** Creates a secure trip-request draft carrying only the note text into
-   *  Special instructions — nothing is guessed or auto-submitted. The draft
-   *  form opens so the user reviews and completes every field. */
+  /** Reads the note's shortcodes and creates a secure trip-request draft with
+   *  each value in its own form field. Anything the parser cannot place is kept
+   *  inside Additional Information, so no typed text is lost. Nothing is
+   *  guessed and nothing is submitted — the draft form opens for review. */
   async function createTripFromNote() {
     if (preview.active) { previewBlocked(); return; }
     const body = draftBody.trim();
     if (!body) return;
     try {
-      const { id } = await saveDraftFn({ data: { payload: { specialInstructions: body }, autosaved: false } });
+      const { payload } = parseNoteShortcodes(body);
+      const { id } = await saveDraftFn({ data: { payload, autosaved: false } });
       closeEditor();
       navigate({ to: "/portal/requests/new", search: { draft: id } });
     } catch {
       toast.error("Couldn't start a trip draft from that note.");
     }
   }
+
 
   const listPanel = (
     <div className="min-w-0">
@@ -124,8 +132,12 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
         <ArrowLeft className="size-4" aria-hidden /> Back to notes
       </DsButton>
       <p className="ds-body font-semibold uppercase text-ds-primary">Write quick notes or create trips with note shortcodes</p>
-      <p className="ds-support mt-1 font-semibold text-ds-text">Type in the note → Save → Create trip from note</p>
-      <p className="ds-caption mt-0.5 mb-3 text-ds-text-2">Your note becomes Special instructions in a draft you review. Don't enter health information or diagnoses.</p>
+      <ul className="ds-caption mt-1 mb-3 flex flex-wrap gap-x-3 gap-y-0.5 text-ds-text-2">
+        {COMMON_CODES.map((c) => (
+          <li key={c.code}><span className="font-semibold text-ds-text">{c.code}</span> {c.label}</li>
+        ))}
+      </ul>
+
 
 
       <label htmlFor="note-body" className="sr-only">Note text</label>
