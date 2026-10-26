@@ -125,7 +125,7 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
       </DsButton>
       <p className="ds-body font-semibold uppercase text-ds-primary">Write quick notes or create trips with note shortcodes</p>
       <p className="ds-support mt-1 font-semibold text-ds-text">Type in the note → Save → Create trip from note</p>
-      <p className="ds-caption mt-0.5 mb-3 text-ds-text-2">Your note becomes Special instructions in a draft you review before submitting. Don't enter health information or diagnoses.</p>
+      <p className="ds-caption mt-0.5 mb-3 text-ds-text-2">Your note becomes Special instructions in a draft you review. Don't enter health information or diagnoses.</p>
 
 
       <label htmlFor="note-body" className="sr-only">Note text</label>
