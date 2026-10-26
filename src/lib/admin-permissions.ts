@@ -48,6 +48,7 @@ export const ADMIN_NAV_REQUIREMENT: Record<string, AdminSection | "master" | nul
   "/admin/notifications": "notifications",
   "/admin/security": "master",
   "/admin/admins": "master",
+  '/admin/training': 'master',
 };
 
 export type AdminPerms = { master: boolean; sections: Record<string, string>; scope: string };

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PersonalSecurity } from "@/components/portal/PersonalSecurity";
 
 export const Route = createFileRoute("/_authenticated/learn/settings")({
-  head: () => ({ meta: [{ title: "Settings — Training | My Florida NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Learner Settings — MY FLORIDA NEMT" }, { name: 'description', content: 'Personal learner account and security settings.' }, { property: 'og:title', content: 'Learner Settings — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Private learner account settings.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   component: LearnSettings,
 });
 

@@ -62,8 +62,11 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   "my-network-profile": { ok: true, verified: false, profile: null },
   "my-provider-application": null,
   "hipaa-ack-status": { acknowledged: false, acknowledged_at: null },
-  "public-courses": [],
-  "my-enrollments": [],
+  "public-courses": [
+    { id: 'demo-hipaa', slug: 'hipaa', title: 'HIPAA Training for NEMT', summary: 'Demo training — patient privacy and professional responsibilities.', duration_min: 30, price_cents: 5000, price_id: 'course_hipaa_v2', passing_score: 80, cert_validity_months: 12 },
+    { id: 'demo-nemt', slug: 'nemt-certification', title: 'Florida Basic NEMT Test', summary: 'Never abandon a patient, safety, communication and professionalism.', duration_min: 5, price_cents: 5000, price_id: 'course_nemt_v2', passing_score: 80, cert_validity_months: 12 },
+  ],
+  "my-enrollments": [{ id: 'demo-enrollment', course_id: 'demo-nemt', status: 'active', progress: null, courses: { slug: 'nemt-certification', title: 'Florida Basic NEMT Test', summary: 'Demo enrollment', duration_min: 5 } }],
 };
 
 export function previewFixtureFor(queryKey: readonly unknown[]): unknown {
@@ -84,6 +87,7 @@ export function usePortalQuery<TData = unknown, TError = unknown>(
   const effective = preview.active
     ? {
         ...options,
+        queryKey: ['portal-preview', ...options.queryKey],
         queryFn: async () => previewFixtureFor(options.queryKey) as TData,
         refetchInterval: false as const,
         refetchOnWindowFocus: false,

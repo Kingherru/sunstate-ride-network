@@ -1,3 +1,11 @@
+# Pass 3J — training integration and shared details
+- [x] Reused six source readings, 25 questions, sequential answer feedback, 80% pass and retake; existing ownership/certificates remain authoritative, no source accounts/secrets/storage
+- [x] Training views, materials, result history, safe isolated preview and authenticated multi-course cart; both existing $50 price mappings retained, missing mappings blocked
+- [x] Shared colored detail sections/frame for requests/trips/offers/drafts; schedule click wired, original RLS preserved, notes included and dates readable
+- [x] Narrow rule tests, signed-in safe preview/materials/cart/admin and authorized detail opening passed; automatic typecheck/build OK; record fingerprints unchanged (0 enrollments/certificates/attempts, 5 trips, 7 requests)
+- [ ] Blocker: purchase-to-completion/certificate readback intentionally untested because purchases/attempt writes are forbidden and no existing enrollments are available
+- Deferred: source has no question/material/visibility/attempt-rule editors or durable progress; adapted Master-only completion search, not a new management system. Checkout Stripe call was not exercised to avoid creating customer/session records. Source historical certificates require an export if requested.
+
 # Pass 3F completion and Build 1
 # Pass 3I — implementation
 - [x] Shared New Trip access and provider-created request history separate from incoming offers
@@ -12,7 +20,7 @@
 - [ ] Blocker: durable schedule audit/send requires approved live-write workflow; this pass intentionally retains audit only in session
 - [ ] Blocker: workspace-wide financial team access needs an approved financial permission model; legacy owner-only tools remain restricted
 - [ ] Blocker: saved MD draft authenticated readback not exercised because real-record writes are prohibited; parser/restoration and form opening checked
-- Deferred: Training until @basic test, distance search, dispatch/API/exports Settings, major Admin/security redesign, unrelated public polish, sizing controls
+- Deferred: distance search, dispatch/API/exports Settings, major Admin/security redesign, unrelated public polish, sizing controls
 # UI improvements — grouped continuation
 - [x] Pass 1: repaired Vehicles missing-type crash and fleet error states; explicit Training empty/error state (no training rebuild); restored live provider notification control; identity above Change Log; full-width compact notes and draft-only instructions; public Sign In icon/order; isolated opt-in removable conversation examples in both portals/previews. Two navigation tests and harness build pass; signed-in Master Admin live pages and preview note/example read-remove flows checked without saving/sending.
 - [x] Smart Notes copy addendum: removed "Operational business notes"/"Private to you"/team-sharing wording, instruction now "Write quick notes or create trips with note shortcodes", placeholder "Type your note here...", compact one-line workflow reference; typing/save/archive/restore/Back to notes/Create trip from note and private permissions unchanged, no stored-note or parser changes. This earlier copy-only stage was superseded by the approved shortcode parser below.
@@ -21,7 +29,7 @@
 
 - Deferred: Pricing/content polish, sizing settings and proximity search; Network reminder/capability labels completed in Pass 3I. Proximity needs authorized verified-location data.
 - Deferred: dispatch exports/API Settings and live schedule send/audit; safe schedule preparation completed in Pass 3I.
-- [ ] Training rebuild — waiting for the user to supply @basic test; cart only if the imported tests require it
+- [x] Training rebuild — source supplied and integrated in Pass 3J; checkout and completion verification limits listed above
 - [ ] Later build: Admin and shared Profile & Security redesign
 
 - [x] Email update: replaced Lovable queue sends, preserved templates/history, signed outcome receiver, removed five replaced repo files; 25 tests pass and harness build OK; sign-in renders and unsigned callbacks return 401. No real sends or publish. Independent Maps confirmation and driver assignment/schedule notification queue paths unchanged.

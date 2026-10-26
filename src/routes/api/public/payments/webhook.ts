@@ -134,14 +134,21 @@ async function handleCheckoutSessionCompleted(sess: any, env: StripeEnv) {
     }
   }
 
-  const courseSlug = meta.course_slug;
-  if (!userId || !courseSlug) return;
-  const { data: course } = await sb.from("courses").select("id").eq("slug", courseSlug).maybeSingle();
-  if (!course) return;
-  await sb.from("course_enrollments").upsert(
-    { user_id: userId, course_id: course.id, stripe_session_id: sess.id, status: "active" },
-    { onConflict: "user_id,course_id" },
-  );
+  if (!userId || sess.mode !== 'payment' || sess.payment_status !== 'paid') return;
+  let slugs: string[] = meta.course_slug ? [meta.course_slug] : [];
+  if (meta.course_slugs) {
+    const parsed: unknown = JSON.parse(meta.course_slugs);
+    if (Array.isArray(parsed) && parsed.every(s => typeof s === 'string')) slugs = parsed;
+  }
+  for (const slug of [...new Set(slugs)]) {
+    const { data: course } = await sb.from('courses').select('id').eq('slug', slug).maybeSingle();
+    if (!course) continue;
+    const { error } = await sb.from('course_enrollments').upsert(
+      { user_id: userId, course_id: course.id, stripe_session_id: sess.id, status: 'active' },
+      { onConflict: 'user_id,course_id', ignoreDuplicates: true },
+    );
+    if (error) throw new Error(error.message);
+  }
 }
 
 

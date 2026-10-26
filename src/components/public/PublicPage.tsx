@@ -5,7 +5,7 @@ import { PublicFooter } from "./PublicFooter";
 export const PUBLIC_SHELL_PATHS = ["/", "/book", "/join", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/privacy", "/terms", "/accessibility", "/sitemap", "/resources", "/frequently-asked-questions", "/login", "/create-account", "/forgot-password", "/reset-password", "/portal", "/admin", "/account-setup", "/account-status"];
 
 /** Prefix-aware check so nested public pages (services, coverage, resources) also use their own shell. */
-export const usesOwnShell = (path: string) => PUBLIC_SHELL_PATHS.includes(path) || ["/services/", "/florida-coverage/", "/resources/", "/training", "/book", "/portal", "/admin"].some((p) => path.startsWith(p));
+export const usesOwnShell = (path: string) => PUBLIC_SHELL_PATHS.includes(path) || ["/services/", "/florida-coverage/", "/resources/", "/training", "/book", "/portal", "/admin", "/learn"].some((p) => path.startsWith(p));
 
 export function PublicPage({ children }: { children: React.ReactNode }) {
   return (

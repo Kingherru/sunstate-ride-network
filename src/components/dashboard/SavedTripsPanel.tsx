@@ -1,10 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from 'react';
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listTripDrafts, deleteTripDraft } from "@/lib/trip-drafts.functions";
 import { formatTime12 } from "@/lib/time-format";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { DsButton } from '@/components/ds/controls';
+import { DetailOverlayFrame } from '@/components/portal/DetailOverlayFrame';
+import { DetailSection } from '@/components/portal/DetailSection';
 
 export type TripDraft = {
   id: string;
@@ -30,6 +33,7 @@ export function SavedTripsPanel({
   variant?: "saved" | "drafts";
 }) {
   const qc = useQueryClient();
+  const [detail, setDetail] = useState<TripDraft | null>(null);
   const preview = usePortalPreview();
   const list = useServerFn(listTripDrafts);
   const del = useServerFn(deleteTripDraft);
@@ -112,6 +116,7 @@ export function SavedTripsPanel({
                 </div>
               </div>
               <div className="flex flex-col gap-2 shrink-0">
+                <DsButton variant="ghost" onClick={() => setDetail(d)}>View draft</DsButton>
                 <DsButton
                   type="button"
                   onClick={() => { if (preview.active) { previewBlocked(); return; } onResume(d); }}
@@ -129,6 +134,7 @@ export function SavedTripsPanel({
           );
         })}
       </div>
+      {detail && <DetailOverlayFrame title="Draft — not submitted" onClose={() => setDetail(null)}><div className="space-y-5"><DetailSection title="Draft identity and status"><p>Not submitted · Last saved {new Date(detail.updated_at).toLocaleString()}</p></DetailSection><DetailSection tone="trip" title="Draft trip or delivery details"><dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(detail.payload).filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value)).map(([key, value]) => <div key={key} className="min-w-0"><dt className="ds-label uppercase">{key.replace(/([A-Z])/g, ' $1').replaceAll('_', ' ')}</dt><dd className="ds-body break-words">{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : /^\d{4}-\d{2}-\d{2}/.test(String(value)) ? new Date(`${String(value).slice(0, 10)}T12:00:00`).toLocaleDateString() : String(value) || 'NOT PROVIDED'}</dd></div>)}</dl></DetailSection><DsButton onClick={() => { if (preview.active) { previewBlocked(); return; } onResume(detail); }}>Edit draft</DsButton></div></DetailOverlayFrame>}
     </div>
   );
 }

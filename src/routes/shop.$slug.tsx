@@ -8,6 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Award, CheckCircle2, Clock, ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { useTrainingCart } from '@/components/training/TrainingCart';
+import { listMyEnrollments } from '@/lib/courses.functions';
+import { useQuery } from '@tanstack/react-query';
 
 const qo = (slug: string) => queryOptions({ queryKey: ["shop", "course", slug], queryFn: () => getPublicCourse({ data: { slug } }) });
 
@@ -61,6 +64,8 @@ function CourseDetail() {
   const [checkout, setCheckout] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [userId, setUserId] = useState<string | undefined>();
+  const cart = useTrainingCart();
+  const mine = useQuery({ queryKey: ['my-enrollments'], queryFn: () => listMyEnrollments(), enabled: !!userId });
   
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => { setUserEmail(data.user?.email); setUserId(data.user?.id); }); }, []);
@@ -111,9 +116,7 @@ function CourseDetail() {
                 <div className="flex items-center gap-2"><Award className="w-4 h-4 text-muted-foreground" />{course.cert_validity_months}-month certificate</div>
               </div>
               {!checkout ? (
-                <Button className="w-full" onClick={() => setCheckout(true)}>
-                  {userId ? "Enroll now" : "Buy now (guest checkout)"}
-                </Button>
+                mine.data?.some(e => e.course_id === course.id) ? <Button asChild className="w-full"><Link to="/learn/$slug" params={{ slug: course.slug }}>Continue course</Link></Button> : course.price_id ? <Button className="w-full" disabled={!!userId && mine.isPending} onClick={() => { cart.add(course, (mine.data ?? []).map(e => e.course_id)); cart.open(); }}>Add to cart</Button> : <p>Requires product setup</p>
               ) : null}
               {!userId && (
                 <p className="text-xs text-muted-foreground mt-3">
@@ -128,7 +131,7 @@ function CourseDetail() {
         {checkout && returnUrl && (
           <div className="mt-10 border border-border rounded-lg p-4 bg-background">
             <StripeEmbeddedCheckout
-              priceId={course.price_id!}
+              priceId={course.price_id ?? ''}
               customerEmail={userEmail}
               userId={userId}
               returnUrl={returnUrl}

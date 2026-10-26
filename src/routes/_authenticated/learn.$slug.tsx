@@ -5,9 +5,11 @@ import { getMyCoursePlayer, submitAttempt, downloadMyCertificate } from "@/lib/c
 import { Button } from "@/components/ui/button";
 import { Award, ArrowLeft, ArrowRight, CheckCircle2, XCircle, Download } from "lucide-react";
 import { toast } from "sonner";
+import { BasicNemtReading } from '@/components/training/BasicNemtReading';
+import { SequentialExam } from '@/components/training/SequentialExam';
 
 export const Route = createFileRoute("/_authenticated/learn/$slug")({
-  head: () => ({ meta: [{ title: "Course Player | My Florida NEMT" }, { name: "robots", content: "noindex" }] }),
+  head: ({ params }) => ({ meta: [{ title: `${params.slug === 'nemt-certification' ? 'Florida Basic NEMT Test' : 'HIPAA Course Player'} — MY FLORIDA NEMT` }, { name: 'description', content: 'Your purchased training, test results and certificate.' }, { property: 'og:title', content: 'Course Player — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Private learner course and test area.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex" }] }),
   component: Player,
 });
 
@@ -16,13 +18,14 @@ function Player() {
   const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({ queryKey: ["course-player", slug], queryFn: () => getMyCoursePlayer({ data: { slug } }) });
   const [step, setStep] = useState(0);
+  const [basicExam, setBasicExam] = useState(false);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<{ score: number; passed: boolean; correct: number; total: number } | null>(null);
 
   const submit = useMutation({
-    mutationFn: async (holderName: string) => {
+    mutationFn: async (input: { holderName: string; submittedAnswers?: Record<string, number> }) => {
       if (!data) throw new Error();
-      const r = await submitAttempt({ data: { enrollmentId: data.enrollment.id, answers, holderName } });
+      const r = await submitAttempt({ data: { enrollmentId: data.enrollment.id, answers: input.submittedAnswers ?? answers, holderName: input.holderName } });
       return r;
     },
     onSuccess: (r) => {
@@ -50,12 +53,14 @@ function Player() {
 
   const { course, modules, questions, enrollment, certificate } = data;
   const totalSteps = modules.length + 1; // modules + exam
-  const isExam = step >= modules.length;
+  const basic = course.slug === 'nemt-certification';
+  const isExam = basic ? basicExam : step >= modules.length;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Link to="/learn" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"><ArrowLeft className="w-4 h-4" />My Courses</Link>
       <h1 className="text-2xl md:text-3xl font-extrabold mb-2">{course.title}</h1>
+      {data.personMfnId && <p className="ds-support font-mono">{data.personMfnId}</p>}
       <div className="text-sm text-muted-foreground mb-6">Step {step + 1} of {totalSteps}</div>
 
       {enrollment.status === "completed" && certificate ? (
@@ -70,7 +75,7 @@ function Player() {
         </div>
       ) : null}
 
-      {!isExam ? (
+      {basic && !isExam ? <BasicNemtReading onExam={() => setBasicExam(true)} /> : !isExam ? (
         <article className="border border-border rounded-lg p-6 bg-card mb-6">
           <h2 className="text-xl font-bold mb-3">{modules[step].title}</h2>
           <div className="prose prose-sm max-w-none whitespace-pre-line">{modules[step].body_markdown}</div>
@@ -88,22 +93,23 @@ function Player() {
             <Button className="mt-4" onClick={() => { setResult(null); setAnswers({}); }}>Retake exam</Button>
           )}
         </div>
-      ) : (
+      ) : basic ? <SequentialExam enrollmentId={enrollment.id} questions={questions} onSubmit={(submittedAnswers, holderName) => submit.mutate({ holderName, submittedAnswers })} submitting={submit.isPending} /> : (
         <ExamForm
           questions={questions}
           answers={answers}
           setAnswers={setAnswers}
-          onSubmit={(name) => submit.mutate(name)}
+          onSubmit={(holderName) => submit.mutate({ holderName })}
           submitting={submit.isPending}
         />
       )}
 
-      {!isExam && (
+      {!isExam && !basic && (
         <div className="flex justify-between">
           <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}><ArrowLeft className="w-4 h-4 mr-1" />Previous</Button>
           <Button onClick={() => setStep((s) => Math.min(totalSteps - 1, s + 1))}>{step === modules.length - 1 ? "Take exam" : "Next"} <ArrowRight className="w-4 h-4 ml-1" /></Button>
         </div>
       )}
+      {!!data.attempts.length && <section className="mt-8 rounded-ds border border-ds-sky-border bg-ds-sky p-5"><h2 className="ds-subheading text-ds-primary">Test results</h2>{data.attempts.map(a => <p key={a.id} className="ds-body mt-2">{a.score}% · {a.passed ? 'Passed' : 'Not passed'} · {a.submitted_at ? new Date(a.submitted_at).toLocaleString() : 'Date not available'}</p>)}</section>}
     </div>
   );
 }

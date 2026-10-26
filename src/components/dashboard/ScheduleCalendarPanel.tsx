@@ -7,6 +7,7 @@ import { ScheduleEmailPreview } from "@/components/portal/ScheduleEmailPreview";
 import { DriverDetailModal } from "./DriverDetailModal";
 import { listVehicles } from "@/lib/fleet.functions";
 import { conflictingSlots } from "@/lib/trip-network-rules";
+import { useRequestDetails } from '@/components/portal/request-detail-context';
 
 export const RESV_DND_MIME = "application/x-reservation-id";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
@@ -473,10 +474,14 @@ function ReservationChip({
   dragging: boolean;
   small?: boolean;
 }) {
+  const openDetails = useRequestDetails();
   const t = (r.scheduled_start_time ?? r.pickup_time ?? "").toString().slice(0, 5);
   return (
     <div
       draggable
+      role="button" tabIndex={0} aria-label="Open scheduled trip"
+      onClick={() => openDetails({ kind: 'trip', id: r.id })}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}
       onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; onDragStart(r.id); }}
       className={`cursor-grab active:cursor-grabbing rounded-sm border border-primary/30 bg-primary/10 px-2 py-1 text-xs ${dragging ? "opacity-50" : ""}`}
       title={`${r.patient_first_name} ${r.patient_last_name}\n${r.pickup_address} → ${r.dropoff_address}`}
