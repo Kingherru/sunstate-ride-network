@@ -110,7 +110,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
 
   return (
     <div className="grid gap-4 md:grid-cols-[18rem_1fr]">
-      <div className="min-w-0 space-y-2">
+      <div className={`min-w-0 space-y-2 ${selected ? "hidden md:block" : ""}`}>
         <div className="flex items-center justify-between gap-2">
           <h3 className="ds-support font-semibold uppercase tracking-[0.06em]">Conversations</h3>
           {mode === "portal" && (
