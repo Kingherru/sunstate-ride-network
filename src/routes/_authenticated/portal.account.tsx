@@ -21,6 +21,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listWorkspaceMembersForMessaging, setMemberMessagingPermission } from "@/lib/workspace-messages.functions";
 import { BusinessPermissions } from '@/components/portal/BusinessPermissions';
 import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequests';
+import { ProviderSettings } from '@/components/portal/ProviderSettings';
+import { PersonalSettings } from '@/components/portal/PersonalSettings';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security";
@@ -38,6 +40,7 @@ function Account() {
   const ws = access.primary;
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>("profile");
+  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6"><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /></div></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
@@ -50,7 +53,7 @@ function Account() {
       <PageHead title="Account" />
       <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
       <section className={`${panelCls} p-5 sm:p-6`}>
-        {tab === "profile" && <><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+        {tab === "profile" && <><PersonalSettings /><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}
