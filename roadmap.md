@@ -1,3 +1,7 @@
+# Routing and security clarifications
+- [ ] Keep owned trips under Trips; move provider-to-provider offer/referral activity to Network without changing action permissions
+- [ ] Check manual Network confirmation, patient non-broadcast, preview-only fixtures and Stripe card privacy; retain read-only email settings until verified-change support is confirmed
+
 # Pass 3J — training integration and shared details
 - [x] Reused six source readings, 25 questions, sequential answer feedback, 80% pass and retake; existing ownership/certificates remain authoritative, no source accounts/secrets/storage
 - [x] Training views, materials, result history, safe isolated preview and authenticated multi-course cart; both existing $50 price mappings retained, missing mappings blocked
