@@ -1,6 +1,8 @@
 # Pass 3F completion and Build 1
 # UI improvements — grouped continuation
 - [x] Pass 1: repaired Vehicles missing-type crash and fleet error states; explicit Training empty/error state (no training rebuild); restored live provider notification control; identity above Change Log; full-width compact notes and draft-only instructions; public Sign In icon/order; isolated opt-in removable conversation examples in both portals/previews. Two navigation tests and harness build pass; signed-in Master Admin live pages and preview note/example read-remove flows checked without saving/sending.
+- [x] Smart Notes copy addendum: removed "Operational business notes"/"Private to you"/team-sharing wording, instruction now "Write quick notes or create trips with note shortcodes", placeholder "Type your note here...", compact one-line workflow reference; typing/save/archive/restore/Back to notes/Create trip from note and private permissions unchanged, no stored-note or parser changes. No shortcode parser exists in code, git history or any brief, so no commands were displayed or invented.
+
 - [ ] Pass 2 (next grouped prompt): Pricing/content polish, sizing settings, Network activity/banner/capability labels and proximity search; Drivers/fleet subtle blue treatment and Messaging red unread dot completed in Pass 1. Proximity needs authorized verified-location data; no invented shortcut-command parser was found.
 - [ ] Pass 3 (following grouped prompt): schedule one/multiple/all-driver email and dispatch exports/API settings; reuse existing single-driver weekly email, no test sends
 - [ ] Training rebuild — waiting for the user to supply @basic test; cart only if the imported tests require it
