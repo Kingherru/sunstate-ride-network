@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_security_audit: {
+        Row: {
+          created_at: string
+          driver_ids: string[]
+          event_type: string
+          id: string
+          range_end: string | null
+          range_start: string | null
+          result: string
+          sender_mfn_id: string | null
+          user_id: string
+          workspace_id: string | null
+          workspace_mfn_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          driver_ids?: string[]
+          event_type: string
+          id?: string
+          range_end?: string | null
+          range_start?: string | null
+          result: string
+          sender_mfn_id?: string | null
+          user_id: string
+          workspace_id?: string | null
+          workspace_mfn_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          driver_ids?: string[]
+          event_type?: string
+          id?: string
+          range_end?: string | null
+          range_start?: string | null
+          result?: string
+          sender_mfn_id?: string | null
+          user_id?: string
+          workspace_id?: string | null
+          workspace_mfn_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_security_audit_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_permission_scopes: {
         Row: {
           admin_user_id: string
@@ -2683,11 +2733,17 @@ export type Database = {
           description: string | null
           eligibility_expires_at: string | null
           hours: string | null
+          location_city: string | null
+          location_county: string | null
+          location_zip: string | null
           medical_delivery: boolean
+          public_center_lat: number | null
+          public_center_lng: number | null
           service_base_address: string | null
           service_base_lat: number | null
           service_base_lng: number | null
           service_base_verified_at: string | null
+          service_radius_miles: number | null
           service_types: string[]
           updated_at: string
           updated_by: string | null
@@ -2705,11 +2761,17 @@ export type Database = {
           description?: string | null
           eligibility_expires_at?: string | null
           hours?: string | null
+          location_city?: string | null
+          location_county?: string | null
+          location_zip?: string | null
           medical_delivery?: boolean
+          public_center_lat?: number | null
+          public_center_lng?: number | null
           service_base_address?: string | null
           service_base_lat?: number | null
           service_base_lng?: number | null
           service_base_verified_at?: string | null
+          service_radius_miles?: number | null
           service_types?: string[]
           updated_at?: string
           updated_by?: string | null
@@ -2727,11 +2789,17 @@ export type Database = {
           description?: string | null
           eligibility_expires_at?: string | null
           hours?: string | null
+          location_city?: string | null
+          location_county?: string | null
+          location_zip?: string | null
           medical_delivery?: boolean
+          public_center_lat?: number | null
+          public_center_lng?: number | null
           service_base_address?: string | null
           service_base_lat?: number | null
           service_base_lng?: number | null
           service_base_verified_at?: string | null
+          service_radius_miles?: number | null
           service_types?: string[]
           updated_at?: string
           updated_by?: string | null
@@ -3417,12 +3485,14 @@ export type Database = {
           promoted_at: string | null
           promoted_trip_id: string | null
           provider_notes: string | null
+          provider_selection_status: string | null
           recurrence_end_date: string | null
           recurrence_exceptions: string[]
           recurrence_rule: string | null
           requester_email: string | null
           requester_phone: string | null
           requester_user_id: string | null
+          requester_workspace_mfn_id: string | null
           reservation_state: string | null
           return_date: string | null
           return_dropoff_time: string | null
@@ -3434,6 +3504,8 @@ export type Database = {
           route_computed_at: string | null
           route_polyline: string | null
           scheduled_start_time: string | null
+          selected_provider_mfn_id: string | null
+          selected_provider_workspace_id: string | null
           service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
           status: string
@@ -3530,12 +3602,14 @@ export type Database = {
           promoted_at?: string | null
           promoted_trip_id?: string | null
           provider_notes?: string | null
+          provider_selection_status?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
           recurrence_rule?: string | null
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          requester_workspace_mfn_id?: string | null
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
@@ -3547,6 +3621,8 @@ export type Database = {
           route_computed_at?: string | null
           route_polyline?: string | null
           scheduled_start_time?: string | null
+          selected_provider_mfn_id?: string | null
+          selected_provider_workspace_id?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
@@ -3643,12 +3719,14 @@ export type Database = {
           promoted_at?: string | null
           promoted_trip_id?: string | null
           provider_notes?: string | null
+          provider_selection_status?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
           recurrence_rule?: string | null
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
+          requester_workspace_mfn_id?: string | null
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_time?: string | null
@@ -3660,6 +3738,8 @@ export type Database = {
           route_computed_at?: string | null
           route_polyline?: string | null
           scheduled_start_time?: string | null
+          selected_provider_mfn_id?: string | null
+          selected_provider_workspace_id?: string | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
@@ -3723,6 +3803,13 @@ export type Database = {
             columns: ["promoted_trip_id"]
             isOneToOne: false
             referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_selected_provider_workspace_id_fkey"
+            columns: ["selected_provider_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
           {
@@ -5473,9 +5560,12 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           display_name: string
+          first_name: string | null
           is_test_account: boolean
+          last_name: string | null
           legacy_review_needed: boolean
           mfn_id: string | null
+          notification_preferences: Json
           phone: string | null
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
@@ -5485,9 +5575,12 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           display_name?: string
+          first_name?: string | null
           is_test_account?: boolean
+          last_name?: string | null
           legacy_review_needed?: boolean
           mfn_id?: string | null
+          notification_preferences?: Json
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
@@ -5497,9 +5590,12 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           display_name?: string
+          first_name?: string | null
           is_test_account?: boolean
+          last_name?: string | null
           legacy_review_needed?: boolean
           mfn_id?: string | null
+          notification_preferences?: Json
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
@@ -6394,6 +6490,10 @@ export type Database = {
         }
         Returns: string
       }
+      confirm_schedule_email_preview: {
+        Args: { _drivers: string[]; _end: string; _start: string }
+        Returns: string
+      }
       decide_trip_quote: {
         Args: { _approve: boolean; _decision_note?: string; _quote_id: string }
         Returns: undefined
@@ -6765,6 +6865,19 @@ export type Database = {
           trip_type: string
         }[]
       }
+      list_targeted_patient_requests: {
+        Args: never
+        Returns: {
+          destination_area: string
+          id: string
+          mfn_id: string
+          pickup_area: string
+          pickup_date: string
+          pickup_time: string
+          selection_status: string
+          transport_type: string
+        }[]
+      }
       list_unmapped_zips: {
         Args: never
         Returns: {
@@ -6966,6 +7079,19 @@ export type Database = {
       }
       respond_priority_offer: {
         Args: { _accept: boolean; _trip_id: string }
+        Returns: undefined
+      }
+      respond_targeted_patient_request: {
+        Args: { _accept: boolean; _request: string }
+        Returns: undefined
+      }
+      save_personal_settings: {
+        Args: {
+          _first: string
+          _last: string
+          _phone: string
+          _preferences: Json
+        }
         Returns: undefined
       }
       search_providers_by_zip: {
