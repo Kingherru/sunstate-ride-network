@@ -42,7 +42,7 @@ function Account() {
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
        ...(canEditNetwork ? [{ value: "network" as Tab, label: "Network profile" }] : []),
-       { value: "membership", label: "Membership" }, { value: "security", label: "Security" }]
+       { value: "membership", label: "Membership" }, { value: "requests", label: "Platform requests" }, { value: "security", label: "Security" }]
     : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" }];
 
   return (
@@ -57,6 +57,7 @@ function Account() {
         {tab === "payouts" && <div className="space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div>}
         {tab === "network" && canEditNetwork && ws && <NetworkProfileForm workspaceId={ws.id} />}
         {tab === "membership" && <><Membership />{ws && (ws.role === "owner" || ws.role === "admin") && <TeamMessaging workspaceId={ws.id} />}</>}
+        {tab === "requests" && ws && <ProviderPlatformRequests workspaceId={ws.id} />}
         {tab === "security" && <Security />}
       </section>
     </>
