@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DriverDetailModal } from "./DriverDetailModal";
 import { listVehicles } from "@/lib/fleet.functions";
 import { conflictingSlots } from "@/lib/trip-network-rules";
-import { DsField, DsSelect } from "@/components/ds/controls";
 
 export const RESV_DND_MIME = "application/x-reservation-id";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
