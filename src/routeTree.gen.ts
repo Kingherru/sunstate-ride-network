@@ -57,6 +57,7 @@ import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminPricingRouteImport } from './routes/_authenticated/admin.pricing'
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin.security'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminTrainingRouteImport } from './routes/_authenticated/admin.training'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
 import { Route as AuthenticatedLearnSettingsRouteImport } from './routes/_authenticated/learn.settings'
@@ -354,6 +355,12 @@ const AuthenticatedAdminSettingsRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTrainingRoute =
+  AuthenticatedAdminTrainingRouteImport.update({
+    id: '/training',
+    path: '/training',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedLearnIndexRoute = AuthenticatedLearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -649,6 +656,7 @@ export interface FileRoutesByFullPath {
   '/admin/pricing': typeof AuthenticatedAdminPricingRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/training': typeof AuthenticatedAdminTrainingRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/learn/settings': typeof AuthenticatedLearnSettingsRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
@@ -736,6 +744,7 @@ export interface FileRoutesByTo {
   '/admin/pricing': typeof AuthenticatedAdminPricingRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/training': typeof AuthenticatedAdminTrainingRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/learn/settings': typeof AuthenticatedLearnSettingsRoute
   '/portal/account': typeof AuthenticatedPortalAccountRoute
@@ -829,6 +838,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/pricing': typeof AuthenticatedAdminPricingRoute
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/training': typeof AuthenticatedAdminTrainingRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/learn/settings': typeof AuthenticatedLearnSettingsRoute
   '/_authenticated/portal/account': typeof AuthenticatedPortalAccountRoute
@@ -922,6 +932,7 @@ export interface FileRouteTypes {
     | '/admin/pricing'
     | '/admin/security'
     | '/admin/settings'
+    | '/admin/training'
     | '/learn/$slug'
     | '/learn/settings'
     | '/portal/account'
@@ -1009,6 +1020,7 @@ export interface FileRouteTypes {
     | '/admin/pricing'
     | '/admin/security'
     | '/admin/settings'
+    | '/admin/training'
     | '/learn/$slug'
     | '/learn/settings'
     | '/portal/account'
@@ -1101,6 +1113,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/pricing'
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/training'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/learn/settings'
     | '/_authenticated/portal/account'
@@ -1529,6 +1542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/training': {
+      id: '/_authenticated/admin/training'
+      path: '/training'
+      fullPath: '/admin/training'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/learn/': {
       id: '/_authenticated/learn/'
       path: '/'
@@ -1839,6 +1859,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminPricingRoute: typeof AuthenticatedAdminPricingRoute
   AuthenticatedAdminSecurityRoute: typeof AuthenticatedAdminSecurityRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminTrainingRoute: typeof AuthenticatedAdminTrainingRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
   AuthenticatedAdminRequestsIndexRoute: typeof AuthenticatedAdminRequestsIndexRoute
@@ -1857,6 +1878,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminPricingRoute: AuthenticatedAdminPricingRoute,
   AuthenticatedAdminSecurityRoute: AuthenticatedAdminSecurityRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminTrainingRoute: AuthenticatedAdminTrainingRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
   AuthenticatedAdminRequestsIndexRoute: AuthenticatedAdminRequestsIndexRoute,
