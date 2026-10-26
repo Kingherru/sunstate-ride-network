@@ -13,7 +13,10 @@ export const listIntegrations = createServerFn({ method: "GET" })
       .select("id, vendor, enabled, last_sync_at, config, created_at")
       .eq("provider_id", userId);
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map(row => {
+      const config = (row.config ?? {}) as Record<string, unknown>;
+      return { ...row, config: { transportationProviderId: typeof config.transportationProviderId === 'string' ? config.transportationProviderId : '', baseUrl: typeof config.baseUrl === 'string' ? config.baseUrl : '', hasApiSecret: typeof config.apiSecretEncrypted === 'string' } };
+    });
   });
 
 export const upsertIntegration = createServerFn({ method: "POST" })

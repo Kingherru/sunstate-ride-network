@@ -14,6 +14,7 @@ import {
 import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorkspace } from "@/lib/workspace-messages.functions";
 import { cn } from "@/lib/utils";
 import { DsButton } from '@/components/ds/controls';
+import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -40,6 +41,9 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   const [accepting, setAccepting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messageTarget, setMessageTarget] = useState<NetworkProviderRow | null>(null);
+  const [originText, setOriginText] = useState('');
+  const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null);
+  const [radius, setRadius] = useState(50);
 
   const filters = {
     search: search.trim() || undefined,
@@ -50,6 +54,9 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
     medical_delivery: medicalDelivery || undefined,
     accepting: accepting || undefined,
     saved_only: savedOnly,
+    origin_lat: origin?.lat,
+    origin_lng: origin?.lng,
+    radius_miles: origin ? radius : undefined,
   };
 
   const q = usePortalQuery({
@@ -123,7 +130,11 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
             </label>
           </div>
-          <p className="text-[11px] italic text-muted-foreground">Distance search isn't available yet — search by county, city or ZIP instead.</p>
+          <div className="space-y-2"><label className="ds-label" htmlFor="provider-distance-origin">Search near city, ZIP or public business location</label>
+            <AddressAutocomplete inputId="provider-distance-origin" value={originText} onChange={v => { setOriginText(v); setOrigin(null); }} onSelect={v => { setOriginText(v.fullAddress); if (v.lat != null && v.lng != null) setOrigin({ lat: v.lat, lng: v.lng }); }} />
+            <label className="ds-caption block">Within <select aria-label="Provider search radius" className="portal-input" value={radius} onChange={e => setRadius(Number(e.target.value))}>{[20, 50, 100, 200].map(n => <option key={n} value={n}>{n} miles</option>)}</select></label>
+            <p className="ds-caption">Approximate straight-line distance from a public service-area center; not driving mileage. Select a suggested location to apply distance.</p>
+          </div>
         </div>
       )}
 
@@ -157,6 +168,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               {r.service_types.length > 0 && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">{capabilityLabels(r.service_types).slice(0, 3).join(", ")}{r.medical_delivery ? " · Medical delivery" : ""}</p>
               )}
+              {r.distance_miles != null && <p className="ds-caption mt-1">Approx. {r.distance_miles} mi · {r.compatibility}</p>}
             </button>
           </li>
         ))}
@@ -248,6 +260,7 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack, onS
       </div>
 
       <dl className="mt-5 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+        {row.distance_miles != null && <div><dt className="ds-label">Approximate distance</dt><dd>{row.distance_miles} miles · {row.compatibility}</dd></div>}
         {(row.cities.length > 0 || row.counties.length > 0) && (
           <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Location</dt>
             <dd className="mt-0.5 flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0" /> {[...row.cities, ...row.counties].slice(0, 4).join(", ")}</dd></div>
