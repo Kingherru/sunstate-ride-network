@@ -520,15 +520,25 @@ export function parseNoteShortcodes(text: string): ParsedNote {
       const code = m[1].toUpperCase();
       const def = BY_CODE.get(code);
       if (!def) continue;
-      const after = line[(m.index ?? 0) + m[1].length];
+      const start = m.index ?? 0;
+      const after = line[start + m[1].length];
       const colon = after === ":";
-      // "…, Annapolis, MD" — a comma means the word belongs to the value before it.
-      if (!colon) {
-        const before = line.slice(0, m.index).replace(/\s+$/, "");
-        if (before.endsWith(",")) continue;
+      if (colon) {
+        found.push({ def, start, end: start + m[1].length + 1, colon });
+        continue;
       }
-      found.push({ def, start: m.index ?? 0, end: (m.index ?? 0) + m[1].length + (colon ? 1 : 0), colon });
+      // A colonless code only counts when it is clearly a code: written in
+      // upper case, or starting the line. So "confirm the lift" and "do not
+      // call before arrival" stay the user's own wording.
+      const token = line.slice(start, start + m[1].length);
+      const upper = token === token.toUpperCase() && /[A-Z]/.test(token);
+      const atLineStart = line.slice(0, start).trim() === "";
+      if (!upper && !atLineStart) continue;
+      // "…, Annapolis, MD" — a comma means the word belongs to the value before it.
+      if (line.slice(0, start).replace(/\s+$/, "").endsWith(",")) continue;
+      found.push({ def, start, end: start + m[1].length, colon: false });
     }
+
 
     // Text before the first recognized code is the user's own wording.
     const lead = found.length ? line.slice(0, found[0].start) : line;
