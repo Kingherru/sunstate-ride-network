@@ -45,7 +45,7 @@ function PortalLayout() {
   const nav = provider ? (access.restricted ? restrictedNav : PROVIDER_NAV) : CUSTOMER_NAV;
   return (
     <PortalShell nav={nav} area={provider ? "Provider portal" : "Patient portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
-      settingsTo="/portal/account" notificationsTo={!provider ? "/portal/notifications" : undefined}>
+      settingsTo="/portal/account" notificationsTo="/portal/notifications">
       <Outlet />
     </PortalShell>
   );
