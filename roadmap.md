@@ -1,3 +1,9 @@
+# Pass 3J — training integration and shared details
+- [ ] Reuse source training workflows and connect existing learner ownership without importing accounts or secrets
+- [ ] Complete Training & Tests views, safe preview and purchase/cart integration where eligible
+- [ ] Apply shared colored detail sections and preserve permission-filtered entry points
+- [ ] Narrow ownership/preview/detail checks and unchanged-record confirmation; no writes, sends, purchases or publish
+
 # Pass 3F completion and Build 1
 # Pass 3I — implementation
 - [x] Shared New Trip access and provider-created request history separate from incoming offers
