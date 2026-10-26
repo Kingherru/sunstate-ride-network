@@ -4,6 +4,7 @@ import type { RequestDetailRow, RequestListRow } from "@/lib/portal-requests.fun
 import { useRequestDetails } from './request-detail-context';
 import { DsButton } from '@/components/ds/controls';
 import { detailValue, selectedService, selectedTripType, NOT_AVAILABLE } from '@/lib/request-detail-fields';
+import { DetailSection } from './DetailSection';
 
 export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
   private_pay: "Private Pay", facility: "Facility", hospital: "Hospital", provider: "Provider",
@@ -109,42 +110,49 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; showSource?: boolean }) {
   const delivery = isDelivery(r);
   const value = (key: string, applicable = true) => detailValue(r, key, applicable);
+  const readable = (key: string) => {
+    const raw = value(key);
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.includes('T') ? fmtDateTime(raw) : new Date(`${raw.slice(0, 10)}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (/^\d{2}:\d{2}/.test(raw)) return new Date(`2000-01-01T${raw}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return raw;
+  };
   const round = !delivery && (r.trip_type === 'round_trip' || r.round_trip === true);
   const multi = !delivery && (r.trip_type === 'multi_trip' || r.trip_type === 'multi_stop');
   const repeating = !delivery && !!r.recurrence_rule && r.recurrence_rule !== 'none';
   const stops = Array.isArray(r.additional_stops) ? r.additional_stops as { address?: string; city?: string; pickupTime?: string }[] : [];
   const name = [r.patient_first_name, r.patient_last_name].filter(Boolean).join(' ');
-  const fields = 'mt-2 grid gap-x-6 divide-y divide-ds-border sm:grid-cols-2 xl:grid-cols-3';
+  const fields = 'mt-2 grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3';
   return <div className="space-y-6">
-    <section><h2 className="ds-subheading uppercase text-ds-primary">Request identity and status</h2><dl className={fields}>
+    <DetailSection title="Request identity and status"><dl className={fields}>
       <Row label="Request MFN ID" value={r.mfn_id || NOT_AVAILABLE} />
       <Row label="Transportation service" value={selectedService(r)} />
       <Row label="Trip type" value={selectedTripType(r)} />
       <Row label="Status" value={<StatusBadge status={r.network_status || r.status} />} />
       <Row label="Created" value={r.created_at ? fmtDateTime(r.created_at) : NOT_AVAILABLE} />
-      <Row label="Last updated" value={value('last_updated_at') === NOT_AVAILABLE ? value('updated_at') : value('last_updated_at')} />
+      <Row label="Last updated" value={value('last_updated_at') === NOT_AVAILABLE ? readable('updated_at') : readable('last_updated_at')} />
       {showSource && <><Row label="Request source" value={r.submitted_via ? sourceLabel(r.submitted_via) : NOT_AVAILABLE} /><Row label="Intake" value={r.intake_source ? INTAKE[r.intake_source] || r.intake_source : NOT_AVAILABLE} /></>}
-    </dl></section>
-    <section className="border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">{delivery ? 'Contact and requester' : 'Passenger and requester'}</h2><dl className={fields}>
+    </dl></DetailSection>
+    <DetailSection tone="contact" title={delivery ? 'Contact and requester' : 'Passenger and requester'}><dl className={fields}>
       <Row label={delivery ? 'Contact name' : 'Passenger name'} value={name || value('patient_first_name')} />
       <Row label="Phone" value={value('patient_phone')} /><Row label="Email" value={value('patient_email')} />
       <Row label="Requesting person" value={value('requester_name')} /><Row label="Person MFN ID" value={value('requester_mfn_id')} />
       <Row label="Requester phone" value={value('requester_phone')} /><Row label="Requester email" value={value('requester_email')} />
-    </dl></section>
-    <section className="border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">{delivery ? 'Pickup and delivery' : 'Locations and times'}</h2><dl className={fields}>
+    </dl></DetailSection>
+    <DetailSection tone="trip" title={delivery ? 'Pickup and delivery' : 'Locations and times'}><dl className={fields}>
       <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup location details" value={value('pickup_address_details')} />
-      <Row label="Pickup date" value={value('pickup_date')} /><Row label="Requested pickup time" value={value('pickup_time')} />
+      <Row label="Pickup date" value={readable('pickup_date')} /><Row label="Requested pickup time" value={readable('pickup_time')} />
       <Row label={delivery ? 'Delivery destination' : 'Drop-off location'} value={value('dropoff_address')} /><Row label="Destination area" value={value('dropoff_city')} />
-      <Row label="Requested drop-off / appointment time" value={value('appointment_time', !delivery)} />
-      <Row label="Return date" value={value('return_date', round)} /><Row label="Return pickup time" value={value('return_pickup_time', round)} /><Row label="Return drop-off time" value={value('return_dropoff_time', round)} />
+      {!delivery && <Row label="Requested drop-off / appointment time" value={readable('appointment_time')} />}
+      {round && <><Row label="Return date" value={readable('return_date')} /><Row label="Return pickup time" value={readable('return_pickup_time')} /><Row label="Return drop-off time" value={readable('return_dropoff_time')} /></>}
       {round && <><Row label="Return pickup building" value={value('return_pickup_building')} /><Row label="Return pickup suite" value={value('return_pickup_suite')} /></>}
     </dl>
     {multi && <div className="mt-4"><h3 className="ds-label uppercase">Additional stops</h3>{stops.length ? stops.map((stop, i) => <dl key={i} className={fields}><Row label={`Stop ${i + 1}`} value={stop.address || 'NOT PROVIDED'} /><Row label="City" value={stop.city || 'NOT PROVIDED'} /><Row label="Pickup time" value={stop.pickupTime || 'NOT PROVIDED'} /><Row label="Stop notes" value={NOT_AVAILABLE} /></dl>) : <p className="ds-body">NOT PROVIDED</p>}</div>}
-    {repeating && <dl className={fields}><Row label="Recurrence" value={value('recurrence_rule')} /><Row label="Repeats until" value={value('recurrence_end_date')} /></dl>}
-    </section>
-    <section className="border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">{delivery ? 'Delivery handling' : 'Transportation requirements'}</h2><dl className={fields}>
-      {delivery ? <><Row label="Delivery category" value={DELIVERY_CAT[String(r.delivery_item_type || '')] || value('delivery_item_type')} /><Row label="Signature required" value={value('delivery_signature_required')} /><Row label="Handling instructions" value={value('delivery_instructions')} /></> : <><Row label="Service level" value={value('service_level')} /><Row label="Wheelchair required" value={value('needs_wheelchair')} /><Row label="Assistance to vehicle" value={value('needs_assistance_to_vehicle')} /><Row label="Additional information" value={value('special_instructions')} /><Row label="Mobility notes" value={value('mobility_notes')} /></>}
-    </dl></section>
+    {repeating && <dl className={fields}><Row label="Recurrence" value={value('recurrence_rule')} /><Row label="Repeats until" value={readable('recurrence_end_date')} /></dl>}
+    </DetailSection>
+    <DetailSection tone="service" title={delivery ? 'Delivery handling' : 'Transportation requirements'}><dl className={fields}>
+      {delivery ? <><Row label="Delivery category" value={DELIVERY_CAT[String(r.delivery_item_type || '')] || value('delivery_item_type')} /><Row label="Signature required" value={value('delivery_signature_required')} /></> : <><Row label="Service level" value={value('service_level')} /><Row label="Wheelchair required" value={value('needs_wheelchair')} /><Row label="Assistance to vehicle" value={value('needs_assistance_to_vehicle')} /><Row label="Mobility notes" value={value('mobility_notes')} /></>}
+    </dl></DetailSection>
+    <DetailSection tone="notes" title="Notes and special instructions"><dl className={fields}><Row label={delivery ? 'Handling instructions' : 'Additional information'} value={value(delivery ? 'delivery_instructions' : 'special_instructions')} /></dl></DetailSection>
   </div>;
 }
 
