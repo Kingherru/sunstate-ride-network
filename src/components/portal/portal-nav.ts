@@ -6,8 +6,8 @@ export const PROVIDER_NAV: NavItem[] = [
   { to: "/portal", label: "Overview", exact: true },
   { to: "/portal/trips", label: "Trips" },
   { to: "/portal/schedule", label: "Schedule" },
-  { to: "/portal/vehicles", label: "Vehicles" },
-  { to: "/portal/drivers", label: "Drivers" },
+  { to: "/portal/fleet", label: "Fleet & Drivers" },
+  { to: "/portal/earnings", label: "Earnings & Payments" },
   { to: "/portal/network", label: "Network" },
   { to: "/portal/training", label: "Training & Tests" },
   { to: "/portal/messaging", label: "Messaging" },
@@ -32,9 +32,9 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal/messaging", label: "Messaging" },
 ];
 
-export const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers"];
-export const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/network"];
-export const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/upload-csv"];
+export const CUSTOMER_ONLY = [ "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers"];
+export const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/fleet", "/portal/earnings", "/portal/network"];
+export const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/fleet", "/portal/earnings", "/portal/upload-csv"];
 export const under = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
 
 export const ADMIN_NAV: NavItem[] = [
