@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { parseNoteShortcodes, normalizeDate, normalizeTime, splitAddress } from "../src/lib/note-shortcodes";
-import { rideRequestSchema } from "../src/lib/request-schemas";
+import { deliveryRequestSchema, rideRequestSchema } from "../src/lib/request-schemas";
 
 
 /** The example the owner supplied, typed the way they wrote it. */
@@ -19,6 +19,27 @@ const EXAMPLE = [
 ].join("\n");
 
 describe("smart note shortcodes", () => {
+  test("MD creates only delivery fields, approved category and preserved source", () => {
+    const text = "md\nCONTACT: Demo Contact\nPHONE: 5555555555\nDATE: 11/05/2026\nPUT: 10:30 AM\nPU: 123 Main St, Tampa, FL\nDO: 456 Oak St, Tampa, FL\nCATEGORY: equipment\nSIGN: yes\nRIDER: Not Delivery Contact\nCUSTOM: Keep upright";
+    const { payload } = parseNoteShortcodes(text);
+    expect(payload.requestCategory).toBe("medical_delivery");
+    expect(payload.contactFirstName).toBe("Demo");
+    expect(payload.contactLastName).toBe("Contact");
+    expect(payload.requestedDate).toBe("2026-11-05");
+    expect(payload.requestedTime).toBe("10:30");
+    expect(payload.deliveryCategory).toBe("equipment");
+    expect(payload.signatureRequired).toBe(true);
+    expect(payload.deliveryInstructions).toBe(text);
+    expect(payload.patientFirstName).toBeUndefined();
+    expect(payload.transportType).toBeUndefined();
+    for (const key of Object.keys(payload)) expect(key in deliveryRequestSchema.shape).toBe(true);
+  });
+  test("delivery categories are never guessed or widened", () => {
+    expect(parseNoteShortcodes("MD\nCATEGORY: prescriptions").payload.deliveryCategory).toBeUndefined();
+    expect(parseNoteShortcodes("MD").payload.deliveryCategory).toBeUndefined();
+    expect(parseNoteShortcodes("MD\nDME").payload.deliveryCategory).toBe("dme");
+    expect(parseNoteShortcodes("MD\nRIDER: Passenger Name").payload.contactFirstName).toBeUndefined();
+  });
   test("maps the supplied example onto real trip-form fields", () => {
     const { payload } = parseNoteShortcodes(EXAMPLE);
     expect(payload.tripType).toBe("round_trip");

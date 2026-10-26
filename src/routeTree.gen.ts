@@ -65,7 +65,9 @@ import { Route as AuthenticatedPortalAccountRouteImport } from './routes/_authen
 import { Route as AuthenticatedPortalChangelogRouteImport } from './routes/_authenticated/portal.changelog'
 import { Route as AuthenticatedPortalContactsRouteImport } from './routes/_authenticated/portal.contacts'
 import { Route as AuthenticatedPortalDriversRouteImport } from './routes/_authenticated/portal.drivers'
+import { Route as AuthenticatedPortalEarningsRouteImport } from './routes/_authenticated/portal.earnings'
 import { Route as AuthenticatedPortalFindProvidersRouteImport } from './routes/_authenticated/portal.find-providers'
+import { Route as AuthenticatedPortalFleetRouteImport } from './routes/_authenticated/portal.fleet'
 import { Route as AuthenticatedPortalMessagingRouteImport } from './routes/_authenticated/portal.messaging'
 import { Route as AuthenticatedPortalNetworkRouteImport } from './routes/_authenticated/portal.network'
 import { Route as AuthenticatedPortalNotificationsRouteImport } from './routes/_authenticated/portal.notifications'
@@ -398,10 +400,22 @@ const AuthenticatedPortalDriversRoute =
     path: '/drivers',
     getParentRoute: () => AuthenticatedPortalRoute,
   } as any)
+const AuthenticatedPortalEarningsRoute =
+  AuthenticatedPortalEarningsRouteImport.update({
+    id: '/earnings',
+    path: '/earnings',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
 const AuthenticatedPortalFindProvidersRoute =
   AuthenticatedPortalFindProvidersRouteImport.update({
     id: '/find-providers',
     path: '/find-providers',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalFleetRoute =
+  AuthenticatedPortalFleetRouteImport.update({
+    id: '/fleet',
+    path: '/fleet',
     getParentRoute: () => AuthenticatedPortalRoute,
   } as any)
 const AuthenticatedPortalMessagingRoute =
@@ -641,7 +655,9 @@ export interface FileRoutesByFullPath {
   '/portal/changelog': typeof AuthenticatedPortalChangelogRoute
   '/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/portal/drivers': typeof AuthenticatedPortalDriversRoute
+  '/portal/earnings': typeof AuthenticatedPortalEarningsRoute
   '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/fleet': typeof AuthenticatedPortalFleetRoute
   '/portal/messaging': typeof AuthenticatedPortalMessagingRoute
   '/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
@@ -726,7 +742,9 @@ export interface FileRoutesByTo {
   '/portal/changelog': typeof AuthenticatedPortalChangelogRoute
   '/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/portal/drivers': typeof AuthenticatedPortalDriversRoute
+  '/portal/earnings': typeof AuthenticatedPortalEarningsRoute
   '/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/portal/fleet': typeof AuthenticatedPortalFleetRoute
   '/portal/messaging': typeof AuthenticatedPortalMessagingRoute
   '/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
@@ -817,7 +835,9 @@ export interface FileRoutesById {
   '/_authenticated/portal/changelog': typeof AuthenticatedPortalChangelogRoute
   '/_authenticated/portal/contacts': typeof AuthenticatedPortalContactsRoute
   '/_authenticated/portal/drivers': typeof AuthenticatedPortalDriversRoute
+  '/_authenticated/portal/earnings': typeof AuthenticatedPortalEarningsRoute
   '/_authenticated/portal/find-providers': typeof AuthenticatedPortalFindProvidersRoute
+  '/_authenticated/portal/fleet': typeof AuthenticatedPortalFleetRoute
   '/_authenticated/portal/messaging': typeof AuthenticatedPortalMessagingRoute
   '/_authenticated/portal/network': typeof AuthenticatedPortalNetworkRoute
   '/_authenticated/portal/notifications': typeof AuthenticatedPortalNotificationsRoute
@@ -908,7 +928,9 @@ export interface FileRouteTypes {
     | '/portal/changelog'
     | '/portal/contacts'
     | '/portal/drivers'
+    | '/portal/earnings'
     | '/portal/find-providers'
+    | '/portal/fleet'
     | '/portal/messaging'
     | '/portal/network'
     | '/portal/notifications'
@@ -993,7 +1015,9 @@ export interface FileRouteTypes {
     | '/portal/changelog'
     | '/portal/contacts'
     | '/portal/drivers'
+    | '/portal/earnings'
     | '/portal/find-providers'
+    | '/portal/fleet'
     | '/portal/messaging'
     | '/portal/network'
     | '/portal/notifications'
@@ -1083,7 +1107,9 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/changelog'
     | '/_authenticated/portal/contacts'
     | '/_authenticated/portal/drivers'
+    | '/_authenticated/portal/earnings'
     | '/_authenticated/portal/find-providers'
+    | '/_authenticated/portal/fleet'
     | '/_authenticated/portal/messaging'
     | '/_authenticated/portal/network'
     | '/_authenticated/portal/notifications'
@@ -1559,11 +1585,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortalDriversRouteImport
       parentRoute: typeof AuthenticatedPortalRoute
     }
+    '/_authenticated/portal/earnings': {
+      id: '/_authenticated/portal/earnings'
+      path: '/earnings'
+      fullPath: '/portal/earnings'
+      preLoaderRoute: typeof AuthenticatedPortalEarningsRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
     '/_authenticated/portal/find-providers': {
       id: '/_authenticated/portal/find-providers'
       path: '/find-providers'
       fullPath: '/portal/find-providers'
       preLoaderRoute: typeof AuthenticatedPortalFindProvidersRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/fleet': {
+      id: '/_authenticated/portal/fleet'
+      path: '/fleet'
+      fullPath: '/portal/fleet'
+      preLoaderRoute: typeof AuthenticatedPortalFleetRouteImport
       parentRoute: typeof AuthenticatedPortalRoute
     }
     '/_authenticated/portal/messaging': {
@@ -1845,7 +1885,9 @@ interface AuthenticatedPortalRouteChildren {
   AuthenticatedPortalChangelogRoute: typeof AuthenticatedPortalChangelogRoute
   AuthenticatedPortalContactsRoute: typeof AuthenticatedPortalContactsRoute
   AuthenticatedPortalDriversRoute: typeof AuthenticatedPortalDriversRoute
+  AuthenticatedPortalEarningsRoute: typeof AuthenticatedPortalEarningsRoute
   AuthenticatedPortalFindProvidersRoute: typeof AuthenticatedPortalFindProvidersRoute
+  AuthenticatedPortalFleetRoute: typeof AuthenticatedPortalFleetRoute
   AuthenticatedPortalMessagingRoute: typeof AuthenticatedPortalMessagingRoute
   AuthenticatedPortalNetworkRoute: typeof AuthenticatedPortalNetworkRoute
   AuthenticatedPortalNotificationsRoute: typeof AuthenticatedPortalNotificationsRoute
@@ -1867,7 +1909,9 @@ const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
   AuthenticatedPortalChangelogRoute: AuthenticatedPortalChangelogRoute,
   AuthenticatedPortalContactsRoute: AuthenticatedPortalContactsRoute,
   AuthenticatedPortalDriversRoute: AuthenticatedPortalDriversRoute,
+  AuthenticatedPortalEarningsRoute: AuthenticatedPortalEarningsRoute,
   AuthenticatedPortalFindProvidersRoute: AuthenticatedPortalFindProvidersRoute,
+  AuthenticatedPortalFleetRoute: AuthenticatedPortalFleetRoute,
   AuthenticatedPortalMessagingRoute: AuthenticatedPortalMessagingRoute,
   AuthenticatedPortalNetworkRoute: AuthenticatedPortalNetworkRoute,
   AuthenticatedPortalNotificationsRoute: AuthenticatedPortalNotificationsRoute,

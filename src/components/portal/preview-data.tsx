@@ -68,6 +68,7 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
 
 export function previewFixtureFor(queryKey: readonly unknown[]): unknown {
   const key = String(queryKey[0] ?? "");
+  if (key === "my-drivers") return PREVIEW_FIXTURES.drivers;
   if (key in PREVIEW_FIXTURES) return PREVIEW_FIXTURES[key];
   return [];
 }

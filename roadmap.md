@@ -1,12 +1,26 @@
 # Pass 3F completion and Build 1
+# Pass 3I — implementation
+- [x] Shared New Trip access and provider-created request history separate from incoming offers
+- [x] MD notes restore delivery-only secure drafts, original text retained; existing validation unchanged
+- [x] Messaging account/sender/subject/preview search, matching borders, combined unread indicator
+- [x] Fleet & Drivers reuses existing actions/capacity; legacy links redirect to correct tab
+- [x] Earnings & Payments reuses financial tools; single provider-owner access only, no fake preview finances
+- [x] Schedule one/multiple/all-driver date/range preparation, confirmation, session-only safe audit; no sends
+- [x] Shared header controls and bottom identity, no top identity repeat
+- [x] Network reminder and normalized capability labels
+- [x] 16 focused tests and six preview-page opening checks pass; automatic typecheck/production build clean; no publish or real writes
+- [ ] Blocker: durable schedule audit/send requires approved live-write workflow; this pass intentionally retains audit only in session
+- [ ] Blocker: workspace-wide financial team access needs an approved financial permission model; legacy owner-only tools remain restricted
+- [ ] Blocker: saved MD draft authenticated readback not exercised because real-record writes are prohibited; parser/restoration and form opening checked
+- Deferred: Training until @basic test, distance search, dispatch/API/exports Settings, major Admin/security redesign, unrelated public polish, sizing controls
 # UI improvements — grouped continuation
 - [x] Pass 1: repaired Vehicles missing-type crash and fleet error states; explicit Training empty/error state (no training rebuild); restored live provider notification control; identity above Change Log; full-width compact notes and draft-only instructions; public Sign In icon/order; isolated opt-in removable conversation examples in both portals/previews. Two navigation tests and harness build pass; signed-in Master Admin live pages and preview note/example read-remove flows checked without saving/sending.
-- [x] Smart Notes copy addendum: removed "Operational business notes"/"Private to you"/team-sharing wording, instruction now "Write quick notes or create trips with note shortcodes", placeholder "Type your note here...", compact one-line workflow reference; typing/save/archive/restore/Back to notes/Create trip from note and private permissions unchanged, no stored-note or parser changes. No shortcode parser exists in code, git history or any brief, so no commands were displayed or invented.
+- [x] Smart Notes copy addendum: removed "Operational business notes"/"Private to you"/team-sharing wording, instruction now "Write quick notes or create trips with note shortcodes", placeholder "Type your note here...", compact one-line workflow reference; typing/save/archive/restore/Back to notes/Create trip from note and private permissions unchanged, no stored-note or parser changes. This earlier copy-only stage was superseded by the approved shortcode parser below.
 - [x] Smart Notes shortcode parser (src/lib/note-shortcodes.ts): full owner-supplied dictionary, case-insensitive, colon or space, bare codes only when uppercase/line-start so prose like "confirm the lift" is not read as a code; maps only onto fields the New Trip form actually restores, everything else kept in Additional Information; compact common-code reference, collapsible full guide, live "what this note will fill" check. 10 bun tests pass, type check and build OK; form verified to open filled from a parsed draft (temporary draft deleted afterwards).
 
 
-- [ ] Pass 2 (next grouped prompt): Pricing/content polish, sizing settings, Network activity/banner/capability labels and proximity search; Drivers/fleet subtle blue treatment and Messaging red unread dot completed in Pass 1. Proximity needs authorized verified-location data; no invented shortcut-command parser was found.
-- [ ] Pass 3 (following grouped prompt): schedule one/multiple/all-driver email and dispatch exports/API settings; reuse existing single-driver weekly email, no test sends
+- Deferred: Pricing/content polish, sizing settings and proximity search; Network reminder/capability labels completed in Pass 3I. Proximity needs authorized verified-location data.
+- Deferred: dispatch exports/API Settings and live schedule send/audit; safe schedule preparation completed in Pass 3I.
 - [ ] Training rebuild — waiting for the user to supply @basic test; cart only if the imported tests require it
 - [ ] Later build: Admin and shared Profile & Security redesign
 

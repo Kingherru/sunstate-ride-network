@@ -362,3 +362,8 @@
 /* Restrained 1px orange edge on the sidebar while focus/pointer is in the workspace. */
 .portal-sidebar::after { content: ""; position: absolute; top: 3.5rem; bottom: 0; right: -1px; width: 1px; background: var(--mfn-orange, #E07A1F); box-shadow: 0 0 6px rgb(224 122 31 / 0.45); opacity: 0; transition: opacity .2s; pointer-events: none; }
 .portal-root:has(main:hover, main:focus-within) .portal-sidebar::after { opacity: 1; }
+
+/* Pass 3I: matching subtle edges on colored portal panels only. */
+.theme-portal :where(.bg-ds-sky, .bg-ds-info-soft) { border: 1px solid var(--ds-sky-border); }
+.theme-portal :where(.bg-ds-green, .bg-ds-success-soft) { border: 1px solid var(--ds-green-border); }
+.theme-portal :where(.bg-ds-peach, .bg-ds-membership, .bg-ds-warning-soft) { border: 1px solid var(--ds-peach-border); }

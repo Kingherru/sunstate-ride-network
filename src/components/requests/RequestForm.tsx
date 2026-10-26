@@ -200,14 +200,14 @@ function RequestRidePage({ context, service, initialDraft }: { context: RequestF
   const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
-  const [kind, setKind] = useState<"ride" | "delivery">(service === "medical-delivery" ? "delivery" : "ride");
+  const [kind, setKind] = useState<"ride" | "delivery">(initialDraft?.payload.requestCategory === "medical_delivery" || service === "medical-delivery" ? "delivery" : "ride");
   const submitSelf = useServerFn(submitRideRequest);
   const submitAdmin = useServerFn(adminSubmitRideRequest);
   const onBehalf = useContext(OnBehalfContext);
   const submit = (a: { data: RideRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const enrich = useServerFn(enrichRideRequest);
-  const [form, setForm] = useState<RideRequestInput>(() => initialDraft ? { ...empty, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
+  const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [draftId, setDraftId] = useState(initialDraft?.id);
   const [savingDraft, setSavingDraft] = useState(false);
   const saveDraft = useServerFn(saveTripDraft);
@@ -459,7 +459,7 @@ function RequestRidePage({ context, service, initialDraft }: { context: RequestF
         </fieldset>
 
         {kind === "delivery" ? (
-          <DeliveryRequestForm portal={portal} />
+          <DeliveryRequestForm portal={portal} initialDraft={initialDraft?.payload.requestCategory === "medical_delivery" ? initialDraft : undefined} />
         ) : (
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
 
@@ -950,13 +950,18 @@ const emptyDelivery: DeliveryRequestInput = {
 };
 
 /** Medical Delivery request — kept separate from passenger fields. In-memory state only. */
-function DeliveryRequestForm({ portal }: { portal: boolean }) {
+function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initialDraft?: { id: string; payload: Record<string, unknown> } }) {
+  const preview = usePortalPreview();
+  const saveDraft = useServerFn(saveTripDraft);
+  const removeDraft = useServerFn(deleteTripDraft);
+  const [draftId, setDraftId] = useState(initialDraft?.id);
+  const [savingDraft, setSavingDraft] = useState(false);
   const submitSelf = useServerFn(submitDeliveryRequest);
   const submitAdmin = useServerFn(adminSubmitDeliveryRequest);
   const onBehalf = useContext(OnBehalfContext);
   const submit = (a: { data: DeliveryRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
-  const [form, setForm] = useState<DeliveryRequestInput>(emptyDelivery);
+  const [form, setForm] = useState<DeliveryRequestInput>(() => initialDraft ? { ...emptyDelivery, deliveryCategory: "" as DeliveryRequestInput["deliveryCategory"], ...restoreDraftFields(initialDraft.payload, Object.keys(emptyDelivery)) } as DeliveryRequestInput : emptyDelivery);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [doneId, setDoneId] = useState<string | null>(null);
@@ -966,12 +971,13 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
+    if (preview.active) { previewBlocked(); return; }
     const parsed = deliveryRequestSchema.safeParse(form);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path.join(".");
-        errs[key] = /email/i.test(key) ? "Enter a valid email address."
+        errs[key] = key === "deliveryInstructions" ? "Keep delivery instructions within 500 characters. Your full note is retained here for review." : /email/i.test(key) ? "Enter a valid email address."
           : /phone/i.test(key) ? "Enter a valid phone number."
           : /date/i.test(key) ? "Choose a valid date."
           : /time/i.test(key) ? "Choose a time."
@@ -987,6 +993,7 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
         setDoneId((res as any).mfnId ?? `#${res.id.slice(0, 8).toUpperCase()}`);
+        if (draftId) await removeDraft({ data: { draft_id: draftId } }).catch(() => undefined);
         setForm(emptyDelivery);
       } else toast.error(res.error);
     } catch {
@@ -1011,6 +1018,12 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
 
   return (
     <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-lg border border-ds-border bg-ds-surface p-8 md:p-12">
+      {portal && !onBehalf && <div className="flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={async () => {
+        if (preview.active) { previewBlocked(); return; }
+        setSavingDraft(true);
+        try { const saved = await saveDraft({ data: { draft_id: draftId, payload: { ...form, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); toast.success("Draft saved securely."); }
+        catch { toast.error("Could not save draft."); } finally { setSavingDraft(false); }
+      }}>{savingDraft ? "Saving…" : "Save draft"}</DsButton></div>}
       <div className="rounded-ds-sm bg-ds-membership p-4 text-ds-primary">
         <p className="ds-body"><strong>Medical Delivery</strong> moves items, not passengers. Please don't include diagnoses, medication names or patient medical details.</p>
       </div>
@@ -1048,11 +1061,12 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
         </div>
         <Field label="Delivery category" required error={errors.deliveryCategory}>
           <select className={inputCls} value={form.deliveryCategory} onChange={(e) => upd("deliveryCategory", e.target.value as DeliveryRequestInput["deliveryCategory"])}>
+            <option value="">Choose a delivery category</option>
             {DELIVERY_CATEGORY_OPTIONS.map((o) => <option key={o} value={o}>{DELIVERY_CATEGORY_LABELS[o]}</option>)}
           </select>
         </Field>
-        <Field label="Handling or delivery instructions" error={errors.deliveryInstructions}>
-          <textarea className={inputCls} rows={3} maxLength={500} placeholder="For example: fragile, keep upright, deliver to front desk." value={form.deliveryInstructions} onChange={(e) => upd("deliveryInstructions", e.target.value)} />
+        <Field label="Additional Information / handling instructions" error={errors.deliveryInstructions}>
+          <textarea className={inputCls} rows={5} placeholder="For example: fragile, keep upright, deliver to front desk." value={form.deliveryInstructions} onChange={(e) => upd("deliveryInstructions", e.target.value)} />
         </Field>
         <label className="flex items-center gap-3 text-sm">
           <input type="checkbox" checked={form.signatureRequired} onChange={(e) => upd("signatureRequired", e.target.checked)} />
@@ -1062,9 +1076,7 @@ function DeliveryRequestForm({ portal }: { portal: boolean }) {
 
       <datalist id="fl-cities-delivery">{CITY_LIST.map((c) => <option key={c.slug} value={c.name} />)}</datalist>
 
-      <button type="submit" disabled={submitting} className="w-full rounded-ds-sm bg-ds-action px-8 py-5 text-sm font-bold uppercase tracking-widest text-ds-on-action transition-all hover:bg-ds-action-hover disabled:opacity-60">
-        {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
-      </button>
+      <DsButton type="submit" disabled={submitting} className="w-full">{submitting ? "Submitting…" : "Submit delivery request"}</DsButton>
       <p className="text-center text-xs text-ds-text-2">Submitting is a request for review, not a confirmed booking. Availability and acceptance are not guaranteed.</p>
     </form>
   );
