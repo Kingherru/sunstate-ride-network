@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
 import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
+import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
 
 type Indicator = "none" | "update" | "important";
