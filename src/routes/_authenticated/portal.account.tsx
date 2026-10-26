@@ -40,7 +40,7 @@ function Account() {
   const ws = access.primary;
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>("profile");
-  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6"><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /></div></div></>;
+  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6"><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8 space-y-6"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /><details><summary className="ds-label cursor-pointer text-ds-primary">Pricing rules</summary><div className="mt-4 space-y-8"><PricingPanel /><RulesPanel /></div></details>{ws.role === 'owner' && <details><summary className="ds-label cursor-pointer text-ds-primary">Payouts</summary><div className="mt-4 space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></details>}<details><summary className="ds-label cursor-pointer text-ds-primary">Membership & team messaging</summary><div className="mt-4"><Membership /><TeamMessaging workspaceId={ws.id} /></div></details></div></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },

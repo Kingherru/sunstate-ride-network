@@ -2,7 +2,10 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { Settings } from "lucide-react";
 import { TrainingCartIcon } from '@/components/training/TrainingCart';
 
-export const Route = createFileRoute("/_authenticated/learn")({ component: LearnLayout });
+export const Route = createFileRoute("/_authenticated/learn")({
+  head: () => ({ meta: [{ title: 'Learning Center — MY FLORIDA NEMT' }, { name: 'description', content: 'Your private MY FLORIDA NEMT training and certificates.' }, { property: 'og:title', content: 'Learning Center — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Private training and certificates.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex,nofollow' }] }),
+  component: LearnLayout,
+});
 
 function LearnLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

@@ -67,7 +67,7 @@ function PortalPreview() {
     navigate({ search: (prev) => ({ ...prev, accountType: v }) });
   }
 
-  const pageTitle = activePage === "requests/new" ? "New trip" : baseNav.find((n) => pageKeyOf(n.to) === activePage)?.label ?? "Overview";
+  const pageTitle = activePage === 'account' ? 'Settings' : activePage === "requests/new" ? "New trip" : baseNav.find((n) => pageKeyOf(n.to) === activePage)?.label ?? "Overview";
 
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
@@ -138,7 +138,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
 }
 
 function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accountType: string }) {
-  const label = page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
+  const label = page === 'account' ? 'Settings' : page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
       {!(kind === 'provider' && page === 'network') && <PageHead title={label} />}
