@@ -1,4 +1,11 @@
 # Pass 3F completion and Build 1
+# UI improvements — grouped continuation
+- [ ] Pass 1: diagnose Vehicles/Drivers/Messaging/Training blank pages; restore provider header controls and identity; compact full-width note editor; public Sign In icon/order; safe removable message examples
+- [ ] Pass 2: restrained Pricing/Drivers/content polish, interface sizing settings, consistent activity indicators, Network banner/capability labels and proximity search (requires verified location source)
+- [ ] Pass 3: reuse schedule email/export and Provider API integration; no test sends
+- [ ] Training rebuild — waiting for the user to supply @basic test; cart only if the imported tests require it
+- [ ] Later build: Admin and shared Profile & Security redesign
+
 - [x] Email update: replaced Lovable queue sends, preserved templates/history, signed outcome receiver, removed five replaced repo files; 25 tests pass and harness build OK; sign-in renders and unsigned callbacks return 401. No real sends or publish. Independent Maps confirmation and driver assignment/schedule notification queue paths unchanged.
 - [x] Latest brief: payment responsibility acknowledgement, active wave recipients, shared conditional field layout, exact selected service/trip types, offer amounts/history, People account-status/type/email filters
 - [x] Ten focused tests pass; harness build OK; acceptance lock/rollback predicates confirmed; counts unchanged at 28/13/7/5, zero messages/offers, seven disabled tests
