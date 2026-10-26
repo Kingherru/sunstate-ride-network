@@ -169,10 +169,50 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
           </DsButton>
         )}
       </div>
+      {draftBody.trim() !== "" && (
+        <details className="mt-3 rounded-ds-sm border border-[color:var(--ds-note-line)] bg-ds-surface px-3 py-2">
+          <summary className="ds-caption cursor-pointer font-semibold uppercase text-ds-primary">
+            What this note will fill ({parsed.placed.length})
+          </summary>
+          <div className="ds-caption mt-2 space-y-1 text-ds-text-2">
+            {parsed.placed.length === 0 && <p>No codes recognized yet — the whole note goes into Additional Information.</p>}
+            {parsed.placed.length > 0 && (
+              <ul className="grid gap-0.5 sm:grid-cols-2">
+                {parsed.placed.map((p, i) => (
+                  <li key={`${p.code}-${i}`}><span className="font-semibold text-ds-text">{p.label}</span></li>
+                ))}
+              </ul>
+            )}
+            {parsed.held.length > 0 && (
+              <p><span className="font-semibold text-ds-text">Kept in Additional Information:</span> {parsed.held.join(" · ")}</p>
+            )}
+            {parsed.unreadable.length > 0 && (
+              <p><span className="font-semibold text-ds-text">Couldn't read — check these:</span> {parsed.unreadable.join(" · ")}</p>
+            )}
+          </div>
+        </details>
+      )}
+      <details className="mt-3">
+        <summary className="ds-caption cursor-pointer font-semibold uppercase text-ds-primary">Shortcode guide</summary>
+        <div className="mt-2 grid gap-3 sm:grid-cols-2">
+          {SHORTCODE_GUIDE.map((g) => (
+            <div key={g.title}>
+              <p className="ds-caption font-semibold uppercase text-ds-text">{g.title}</p>
+              <ul className="ds-caption mt-0.5 space-y-0.5 text-ds-text-2">
+                {g.items.map((it) => (
+                  <li key={it.code}><span className="font-semibold text-ds-text">{it.code}</span> {it.label}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </details>
+      <p className="ds-caption mt-3 text-ds-text-2">A note never submits a trip, assigns a driver or changes a payment — the draft form opens for you to review. Don't enter health information or diagnoses.</p>
     </div>
   );
 
   return (
+
     <section aria-labelledby="notes-h" className="rounded-ds ds-notepad border border-[color:var(--ds-note-line)]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--ds-note-line)] px-4 py-3 sm:px-5">
         <h2 id="notes-h" className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><StickyNote className="size-4" aria-hidden />Smart notes</h2>
