@@ -56,9 +56,8 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
     return showArchived || mode === "admin" ? rows : rows.filter((r) => !r.archived);
   }, [convosQuery.data, showArchived, mode]);
 
-  useEffect(() => {
-    if (!selected && conversations.length > 0) setSelected(conversations[0].id);
-  }, [conversations, selected]);
+  // No auto-select: on phones the conversation list must show first, with a
+  // clear Back to Conversations action after opening one.
 
   const threadQuery = useQuery({
     queryKey: ["workspace-conversation", mode, effectiveWorkspaceId, selected],
@@ -110,7 +109,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
 
   return (
     <div className="grid gap-4 md:grid-cols-[18rem_1fr]">
-      <div className="min-w-0 space-y-2">
+      <div className={`min-w-0 space-y-2 ${selected ? "hidden md:block" : ""}`}>
         <div className="flex items-center justify-between gap-2">
           <h3 className="ds-support font-semibold uppercase tracking-[0.06em]">Conversations</h3>
           {mode === "portal" && (
@@ -137,13 +136,16 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         </div>
       </div>
 
-      <div className="min-w-0 rounded-ds-sm border border-ds-border">
+      <div className={`min-w-0 rounded-ds-sm border border-ds-border ${selected ? "" : "hidden md:block"}`}>
         {!selected && <p className="ds-support p-4">Select a conversation to view messages.</p>}
         {selected && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-2 border-b border-ds-border px-4 py-3">
               <div className="min-w-0">
+                <button onClick={() => setSelected(null)} className="ds-support mb-1 inline-flex items-center gap-1 font-semibold uppercase text-ds-primary hover:underline md:hidden">
+                  ← Back to conversations
+                </button>
                 <p className="ds-body truncate font-semibold">{thread.conversation.otherName}</p>
                 {thread.conversation.otherMfnId && <p className="ds-support font-mono">{thread.conversation.otherMfnId}</p>}
               </div>

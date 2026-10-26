@@ -201,6 +201,27 @@ export const archiveConversation = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Total unread business-conversation messages across the caller's messaging
+ *  workspaces — powers the static green dot on the Messaging nav item. */
+export const getMessagingUnreadCount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<number> => {
+    const { data: memberships } = await context.supabase
+      .from("workspace_members")
+      .select("workspace_id, role, can_message_for_workspace, workspaces!inner(status)")
+      .eq("user_id", context.userId);
+    const wsIds = (memberships ?? [])
+      .filter((r: any) => r.workspaces.status === "active" && (r.role === "owner" || r.role === "admin" || r.can_message_for_workspace))
+      .map((r: any) => r.workspace_id as string);
+    if (wsIds.length === 0) return 0;
+    const { count } = await context.supabase
+      .from("workspace_messages")
+      .select("id", { count: "exact", head: true })
+      .in("recipient_workspace_id", wsIds)
+      .is("read_at", null);
+    return count ?? 0;
+  });
+
 /* ---------------- Admin variants: admins read through RLS; manage requires messaging:manage ---------------- */
 
 const adminConvInput = z.object({ conversationId: z.string().uuid() }).strict();

@@ -1988,6 +1988,94 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_request_events: {
+        Row: {
+          actor_user_id: string | null
+          body: string | null
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: string
+          request_id: string
+          to_status: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          body?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          request_id: string
+          to_status?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          body?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          request_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_request_events_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_requests: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          mfn_id: string | null
+          status: string
+          subject: string
+          submitted_by: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          message: string
+          mfn_id?: string | null
+          status?: string
+          subject: string
+          submitted_by: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          mfn_id?: string | null
+          status?: string
+          subject?: string
+          submitted_by?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_requests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_settings: {
         Row: {
           id: boolean

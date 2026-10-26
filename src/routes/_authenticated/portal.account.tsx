@@ -20,9 +20,10 @@ import { NetworkProfileForm } from "@/components/network/NetworkProfileForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listWorkspaceMembersForMessaging, setMemberMessagingPermission } from "@/lib/workspace-messages.functions";
 import { BusinessPermissions } from '@/components/portal/BusinessPermissions';
+import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequests';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
-type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "security";
+type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -41,7 +42,7 @@ function Account() {
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
        ...(canEditNetwork ? [{ value: "network" as Tab, label: "Network profile" }] : []),
-       { value: "membership", label: "Membership" }, { value: "security", label: "Security" }]
+       { value: "membership", label: "Membership" }, { value: "requests", label: "Platform requests" }, { value: "security", label: "Security" }]
     : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" }];
 
   return (
@@ -56,6 +57,7 @@ function Account() {
         {tab === "payouts" && <div className="space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div>}
         {tab === "network" && canEditNetwork && ws && <NetworkProfileForm workspaceId={ws.id} />}
         {tab === "membership" && <><Membership />{ws && (ws.role === "owner" || ws.role === "admin") && <TeamMessaging workspaceId={ws.id} />}</>}
+        {tab === "requests" && ws && <ProviderPlatformRequests workspaceId={ws.id} />}
         {tab === "security" && <Security />}
       </section>
     </>

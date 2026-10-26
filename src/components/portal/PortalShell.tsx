@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
 import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
+import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
 
 type Indicator = "none" | "update" | "important";
@@ -101,16 +102,22 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     ? pathname === i.to && Object.entries(i.search).every(([k, v]) => String((search as Record<string, unknown>)?.[k] ?? "") === v)
     : (i.exact ? pathname === i.to || pathname === i.to + "/" : pathname === i.to || pathname.startsWith(i.to + "/"));
   const pageTitle = title ?? nav.find(isActive)?.label ?? area;
+  const msgUnread = usePortalQuery({
+    queryKey: ["messaging-unread"], staleTime: 60_000,
+    queryFn: () => getMessagingUnreadCount(),
+  });
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
         const Icon = iconFor(i.iconFor ?? i.to);
+        const showMsgDot = i.to === "/portal/messaging" && (msgUnread.data ?? 0) > 0;
         return (
           <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
               isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
             <Icon className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{i.label}</span>
+            {showMsgDot && <Dot kind="update" className="ml-auto" />}
           </Link>
         );
       })}
@@ -126,11 +133,6 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
-      {identity?.mfnId && (
-        <p className="ds-support flex items-center gap-2 px-3 py-1 font-mono text-ds-on-primary/60">
-          <IdCard className="size-3.5 shrink-0" aria-hidden />MFN ID: <span className="text-ds-on-primary/80">{identity.mfnId}</span>
-        </p>
-      )}
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
         className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
         <History className="size-4 shrink-0" aria-hidden />Change log
@@ -141,8 +143,16 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </button>
     </div>
   );
+  /* Compact identity block: name, account/company, role with icon, permanent
+   * MFN ID. No email, and the account type is not repeated elsewhere. */
   const idCard = identity?.label ? (
-    <p className="ds-support mx-6 mb-5 font-semibold uppercase tracking-[0.08em] text-ds-on-primary/75">{identity.label}</p>
+    <div className="mx-3 mb-4 rounded-ds-sm bg-ds-primary-hover/60 px-3 py-2.5">
+      {identity.name && <p className="ds-body truncate font-semibold text-ds-on-primary">{identity.name}</p>}
+      <p className="ds-support mt-0.5 flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-ds-on-primary/80">
+        <IdCard className="size-3.5 shrink-0" aria-hidden />{identity.label}
+      </p>
+      {identity.mfnId && <p className="ds-support mt-0.5 font-mono text-ds-on-primary/60">{identity.mfnId}</p>}
+    </div>
   ) : null;
 
   const topHeader = (
@@ -210,7 +220,8 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 
       <div className="lg:ml-64">{topHeader}</div>
       <main id="main" className="min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-10 lg:py-10">
-        <div className="portal-enter mx-auto w-full max-w-6xl"><RequestDetailProvider>{children}</RequestDetailProvider></div>
+        {/* Contacts pages get a modestly wider shared white panel; columns stay balanced. */}
+        <div className={cn("portal-enter mx-auto w-full", pathname.endsWith("/contacts") ? "max-w-7xl" : "max-w-6xl")}><RequestDetailProvider>{children}</RequestDetailProvider></div>
       </main>
     </div>
   );

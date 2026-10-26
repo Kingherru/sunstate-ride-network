@@ -309,7 +309,7 @@
 
 /* Smart Notes preview: clean yellow phone-notes surface. No ruled lines, grid, binding or texture. Yellow is limited to this feature. */
 .ds-notepad {
-  --ds-note: #FFF6C2;
+  --ds-note: #FFFADB;
   background-color: var(--ds-note);
   box-shadow: 0 1px 3px rgba(19, 51, 90, 0.12);
 }
@@ -341,6 +341,23 @@
 .theme-portal main .rounded-ds.bg-ds-surface { border: 1px solid #E6EAEE; }
 .theme-portal .portal-input { padding: 12px 16px; line-height: 1.4; }
 .theme-portal select.portal-input { padding-right: 2.75rem; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Shared portal toolbar controls (Pass 3G): one aligned row, equal heights,
+   consistent padding/gaps, clean wrapping on tablets and phones. */
+.theme-portal .portal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.theme-portal .portal-control {
+  display: inline-flex; align-items: center; gap: .5rem;
+  min-height: 46px; padding: 0 14px;
+  border: 1px solid var(--mfn-line); border-radius: 3px; background: #fff;
+  font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--mfn-text); line-height: 1;
+}
+.theme-portal select.portal-control { padding-right: 2.5rem; }
+.theme-portal .portal-control input[type="checkbox"] { min-height: 0; padding: 0; width: 1rem; height: 1rem; accent-color: var(--ds-primary); }
+/* Search fields: icon reserved space, vertically centered, never overlapping text. */
+.theme-portal .portal-search { position: relative; }
+.theme-portal .portal-search > svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--mfn-text-2); }
+.theme-portal .portal-search > input { padding-left: 2.5rem; }
 
 /* Restrained 1px orange edge on the sidebar while focus/pointer is in the workspace. */
 .portal-sidebar::after { content: ""; position: absolute; top: 3.5rem; bottom: 0; right: -1px; width: 1px; background: var(--mfn-orange, #E07A1F); box-shadow: 0 0 6px rgb(224 122 31 / 0.45); opacity: 0; transition: opacity .2s; pointer-events: none; }

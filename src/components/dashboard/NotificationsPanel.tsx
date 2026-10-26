@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import { useRequestDetails } from "@/components/portal/request-detail-context";
 import {
   Select,
   SelectContent,
@@ -186,10 +187,15 @@ export function NotificationsPanel() {
     });
   };
 
+  const openDetails = useRequestDetails();
   const onOpen = (n: NotificationRow) => {
     if (preview.active) { previewBlocked(); return; }
     if (!n.read_at) markFn({ data: { ids: [n.id] } }).then(invalidateAll);
     if (n.link) {
+      // Trip/request notifications open the shared permission-filtered detail
+      // overlay instead of navigating away.
+      const reqMatch = n.link.match(/\/requests\/([0-9a-f-]{36})/i);
+      if (reqMatch) { openDetails({ kind: "request", id: reqMatch[1] }); return; }
       if (/^https?:/i.test(n.link)) window.location.href = n.link;
       else navigate({ to: n.link as any });
     }

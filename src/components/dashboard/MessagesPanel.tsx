@@ -319,7 +319,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] gap-4 min-h-[560px]">
-      <aside className="rounded-lg border border-border bg-card flex flex-col">
+      <aside className={`rounded-lg border border-border bg-card flex flex-col ${activeThread || composeOpen ? "hidden md:flex" : ""}`}>
         <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-semibold text-sm">
             Conversations
@@ -329,13 +329,14 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
               </span>
             )}
           </h3>
-          <button
-            disabled={readOnly}
-            onClick={() => { if (!readOnly) { setComposeError(null); setComposeOpen((v) => !v); } }}
-            className="rounded bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90"
-          >
-            {composeOpen ? "Close" : "New message"}
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => { setComposeError(null); setComposeOpen((v) => !v); }}
+              className="rounded bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90"
+            >
+              {composeOpen ? "Close" : "New message"}
+            </button>
+          )}
         </div>
         <div className="p-2 border-b border-border space-y-2">
           <input
@@ -424,10 +425,11 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
         </ul>
       </aside>
 
-      <section className="rounded-lg border border-border bg-card flex flex-col">
+      <section className={`rounded-lg border border-border bg-card flex flex-col ${activeThread || composeOpen ? "" : "hidden md:flex"}`}>
         {composeOpen ? (
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border">
+              <button onClick={() => setComposeOpen(false)} className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary hover:underline md:hidden">← Back to conversations</button>
               <h3 className="font-semibold text-sm mb-2">Start a new conversation</h3>
               <div className="flex flex-wrap gap-2 mb-2">
                 {availableKinds.map((k) => (
@@ -610,6 +612,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border flex items-start justify-between gap-2">
               <div className="min-w-0">
+                <button onClick={() => setActiveThread(null)} className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary hover:underline md:hidden">← Back to conversations</button>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-sm">{threadTitle(active)}</h3>
                   <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
@@ -626,20 +629,22 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => {
-                  const isStaff = caps.isOps;
-                  const msg = isStaff
-                    ? "Delete this entire conversation for everyone? This cannot be undone."
-                    : "Remove this conversation from your inbox?";
-                  if (window.confirm(msg)) deleteThread.mutate(active.id);
-                }}
-                disabled={readOnly || deleteThread.isPending}
-                className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
-                title={caps.isOps ? "Delete conversation" : "Leave conversation"}
-              >
-                {caps.isOps ? "Delete" : "Leave"}
-              </button>
+              {!readOnly && (
+                <button
+                  onClick={() => {
+                    const isStaff = caps.isOps;
+                    const msg = isStaff
+                      ? "Delete this entire conversation for everyone? This cannot be undone."
+                      : "Remove this conversation from your inbox?";
+                    if (window.confirm(msg)) deleteThread.mutate(active.id);
+                  }}
+                  disabled={deleteThread.isPending}
+                  className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                  title={caps.isOps ? "Delete conversation" : "Leave conversation"}
+                >
+                  {caps.isOps ? "Delete" : "Leave"}
+                </button>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messagesQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
@@ -670,24 +675,26 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
               })}
             </div>
 
-            <form
-              onSubmit={(e) => { e.preventDefault(); if (!readOnly && draft.trim()) send.mutate(); }}
-              className="border-t border-border p-3 flex gap-2"
-            >
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Write a message…"
-                className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
-              />
-              <button
-                type="submit"
-                disabled={readOnly || send.isPending || !draft.trim()}
-                className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            {!readOnly && (
+              <form
+                onSubmit={(e) => { e.preventDefault(); if (draft.trim()) send.mutate(); }}
+                className="border-t border-border p-3 flex gap-2"
               >
-                Send
-              </button>
-            </form>
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Write a message…"
+                  className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={send.isPending || !draft.trim()}
+                  className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                >
+                  Send
+                </button>
+              </form>
+            )}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground p-8 text-center">
