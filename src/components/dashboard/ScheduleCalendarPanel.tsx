@@ -246,13 +246,22 @@ export function ScheduleCalendarPanel() {
       </div>
 
       {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <DsField label="Vehicle">{p => <DsSelect {...p} value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)}><option value="all">All vehicles</option><option value="unassigned">No vehicle assigned</option>{(vehiclesQ.data ?? []).map(v => <option key={v.id} value={v.id}>{v.name}</option>)}</DsSelect>}</DsField>
+      {/* Filters — one aligned row of equal-height shared toolbar controls */}
+      <div className="portal-toolbar">
+        <select
+          value={vehicleFilter}
+          onChange={(e) => setVehicleFilter(e.target.value)}
+          className="portal-control"
+          aria-label="Filter by vehicle"
+        >
+          <option value="all">All vehicles</option>
+          <option value="unassigned">No vehicle assigned</option>
+          {(vehiclesQ.data ?? []).map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+        </select>
         <select
           value={driverFilter}
           onChange={(e) => setDriverFilter(e.target.value)}
-          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+          className="portal-control"
           aria-label="Filter drivers on board"
         >
           <option value="all">All drivers</option>
@@ -264,7 +273,7 @@ export function ScheduleCalendarPanel() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
+          className="portal-control"
           aria-label="Filter reservations on board by status"
         >
           <option value="all">All statuses</option>
@@ -272,7 +281,7 @@ export function ScheduleCalendarPanel() {
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 bg-card border border-border rounded-sm px-3 py-2 cursor-pointer">
+        <label className="portal-control cursor-pointer">
           <input
             type="checkbox"
             checked={hideEmptyDrivers}

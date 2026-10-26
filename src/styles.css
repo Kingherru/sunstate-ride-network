@@ -309,7 +309,7 @@
 
 /* Smart Notes preview: clean yellow phone-notes surface. No ruled lines, grid, binding or texture. Yellow is limited to this feature. */
 .ds-notepad {
-  --ds-note: #FFF6C2;
+  --ds-note: #FFFADB;
   background-color: var(--ds-note);
   box-shadow: 0 1px 3px rgba(19, 51, 90, 0.12);
 }
