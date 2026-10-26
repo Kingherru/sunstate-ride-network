@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { ownsEnrollment } from '@/lib/training/cart-rules';
 
 type Course = Database["public"]["Tables"]["courses"]["Row"];
 type Module = Database["public"]["Tables"]["course_modules"]["Row"];
@@ -18,7 +19,7 @@ export const listPublicCourses = createServerFn({ method: "GET" }).handler(async
   const sb = publicClient();
   const { data, error } = await sb
     .from("courses")
-    .select("id,slug,title,summary,description,price_cents,duration_min,passing_score,cert_validity_months,cover_image,is_published")
+    .select("id,slug,title,summary,description,price_cents,price_id,duration_min,passing_score,cert_validity_months,cover_image,is_published")
     .eq("is_published", true)
     .order("price_cents", { ascending: true });
   if (error) throw new Error(error.message);
@@ -100,7 +101,25 @@ export const getMyCoursePlayer = createServerFn({ method: "GET" })
       .select("id,cert_number,verify_token,issued_at,expires_at,holder_name")
       .eq("enrollment_id", enrollment.id)
       .maybeSingle();
-    return { course, enrollment, modules: modules ?? [], questions: rawQuestions ?? [], certificate: cert };
+    const { data: attempts } = await supabase.from('course_attempts').select('id,score,passed,submitted_at').eq('enrollment_id', enrollment.id).eq('user_id', userId).order('submitted_at', { ascending: false });
+    const { data: person } = await supabase.from('user_profiles').select('mfn_id').eq('user_id', userId).maybeSingle();
+    const source = course.slug === 'nemt-certification' ? await import('@/lib/training/basic-nemt.server') : null;
+    const questions = source ? source.NEMT_QUESTIONS.map(q => ({ id: `basic-nemt-${q.id}`, ord: q.id, prompt: q.q, choices: q.choices })) : rawQuestions ?? [];
+    return { course, enrollment, modules: modules ?? [], questions, certificate: cert, attempts: attempts ?? [], personMfnId: person?.mfn_id ?? null };
+  });
+
+export const checkMyCourseAnswer = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { enrollmentId: string; questionId: string; answer: number }) => d)
+  .handler(async ({ data, context }) => {
+    const { data: enrollment } = await context.supabase.from('course_enrollments').select('user_id,course_id').eq('id', data.enrollmentId).eq('user_id', context.userId).maybeSingle();
+    if (!ownsEnrollment(enrollment, context.userId)) throw new Error('Enrollment not found');
+    const { data: course } = await context.supabase.from('courses').select('slug').eq('id', enrollment?.course_id ?? '').maybeSingle();
+    if (course?.slug !== 'nemt-certification') throw new Error('Answer review is unavailable for this course');
+    const { NEMT_QUESTIONS } = await import('@/lib/training/basic-nemt.server');
+    const q = NEMT_QUESTIONS.find(q => `basic-nemt-${q.id}` === data.questionId);
+    if (!q || !Number.isInteger(data.answer) || data.answer < 0 || data.answer >= q.choices.length) throw new Error('Invalid answer');
+    return { correct: q.answer === data.answer, explanation: q.explanation };
   });
 
 // ---------- Enrollment creation (fallback from return page) ----------
@@ -172,7 +191,7 @@ export const submitAttempt = createServerFn({ method: "POST" })
       .select("id,course_id,status,user_id")
       .eq("id", data.enrollmentId)
       .maybeSingle();
-    if (!enrollment || enrollment.user_id !== userId) throw new Error("Enrollment not found");
+    if (!enrollment || !ownsEnrollment(enrollment, userId)) throw new Error("Enrollment not found");
 
     const { data: course } = await supabase
       .from("courses")
@@ -182,11 +201,13 @@ export const submitAttempt = createServerFn({ method: "POST" })
 
     // correct_index is not readable via RLS; use service-role client for grading only.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: questions } = await supabaseAdmin
+    const { data: storedQuestions } = await supabaseAdmin
       .from("course_questions")
       .select("id,correct_index")
       .eq("course_id", enrollment.course_id);
 
+    const source = course?.slug === 'nemt-certification' ? await import('@/lib/training/basic-nemt.server') : null;
+    const questions = source ? source.NEMT_QUESTIONS.map(q => ({ id: `basic-nemt-${q.id}`, correct_index: q.answer })) : storedQuestions;
     if (!questions?.length) throw new Error("This course has no exam questions yet.");
 
     let correct = 0;
@@ -194,9 +215,9 @@ export const submitAttempt = createServerFn({ method: "POST" })
       if (data.answers[q.id] === q.correct_index) correct++;
     }
     const score = Math.round((correct / questions.length) * 100);
-    const passed = score >= (course?.passing_score ?? 80);
+    const passed = source ? correct / questions.length >= source.NEMT_PASS_THRESHOLD : score >= (course?.passing_score ?? 80);
 
-    await supabase.from("course_attempts").insert({
+    const { error: attemptError } = await supabaseAdmin.from("course_attempts").insert({
       enrollment_id: enrollment.id,
       user_id: userId,
       submitted_at: new Date().toISOString(),
@@ -204,6 +225,7 @@ export const submitAttempt = createServerFn({ method: "POST" })
       passed,
       answers: data.answers,
     });
+    if (attemptError) throw new Error(attemptError.message);
 
     let certificate: { id: string; cert_number: string; verify_token: string } | null = null;
     if (passed && course) {
