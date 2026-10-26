@@ -56,9 +56,8 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
     return showArchived || mode === "admin" ? rows : rows.filter((r) => !r.archived);
   }, [convosQuery.data, showArchived, mode]);
 
-  useEffect(() => {
-    if (!selected && conversations.length > 0) setSelected(conversations[0].id);
-  }, [conversations, selected]);
+  // No auto-select: on phones the conversation list must show first, with a
+  // clear Back to Conversations action after opening one.
 
   const threadQuery = useQuery({
     queryKey: ["workspace-conversation", mode, effectiveWorkspaceId, selected],
@@ -137,7 +136,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         </div>
       </div>
 
-      <div className="min-w-0 rounded-ds-sm border border-ds-border">
+      <div className={`min-w-0 rounded-ds-sm border border-ds-border ${selected ? "" : "hidden md:block"}`}>
         {!selected && <p className="ds-support p-4">Select a conversation to view messages.</p>}
         {selected && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && thread && (
