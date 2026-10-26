@@ -628,20 +628,22 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => {
-                  const isStaff = caps.isOps;
-                  const msg = isStaff
-                    ? "Delete this entire conversation for everyone? This cannot be undone."
-                    : "Remove this conversation from your inbox?";
-                  if (window.confirm(msg)) deleteThread.mutate(active.id);
-                }}
-                disabled={readOnly || deleteThread.isPending}
-                className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
-                title={caps.isOps ? "Delete conversation" : "Leave conversation"}
-              >
-                {caps.isOps ? "Delete" : "Leave"}
-              </button>
+              {!readOnly && (
+                <button
+                  onClick={() => {
+                    const isStaff = caps.isOps;
+                    const msg = isStaff
+                      ? "Delete this entire conversation for everyone? This cannot be undone."
+                      : "Remove this conversation from your inbox?";
+                    if (window.confirm(msg)) deleteThread.mutate(active.id);
+                  }}
+                  disabled={deleteThread.isPending}
+                  className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                  title={caps.isOps ? "Delete conversation" : "Leave conversation"}
+                >
+                  {caps.isOps ? "Delete" : "Leave"}
+                </button>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messagesQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
@@ -672,24 +674,26 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
               })}
             </div>
 
-            <form
-              onSubmit={(e) => { e.preventDefault(); if (!readOnly && draft.trim()) send.mutate(); }}
-              className="border-t border-border p-3 flex gap-2"
-            >
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Write a message…"
-                className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
-              />
-              <button
-                type="submit"
-                disabled={readOnly || send.isPending || !draft.trim()}
-                className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            {!readOnly && (
+              <form
+                onSubmit={(e) => { e.preventDefault(); if (draft.trim()) send.mutate(); }}
+                className="border-t border-border p-3 flex gap-2"
               >
-                Send
-              </button>
-            </form>
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Write a message…"
+                  className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={send.isPending || !draft.trim()}
+                  className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                >
+                  Send
+                </button>
+              </form>
+            )}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground p-8 text-center">
