@@ -71,6 +71,7 @@ export const REQUEST_CATEGORIES = ["passenger_transport", "medical_delivery"] as
 
 export const rideRequestSchema = z.object({
   requestCategory: z.literal("passenger_transport").optional(),
+  selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
   patientFirstName: z.string().trim().min(1).max(80),
   patientLastName: z.string().trim().min(1).max(80),
   patientPhone: z.string().trim().min(7).max(30),

@@ -30,6 +30,8 @@ import { usePortalPreview, previewBlocked } from "@/components/portal/preview-da
 import { saveTripDraft, deleteTripDraft } from '@/lib/trip-drafts.functions';
 import { restoreDraftFields } from '@/lib/draft-fields';
 import { DsButton } from '@/components/ds/controls';
+import { PatientProviderPicker } from '@/components/network/PatientProviderPicker';
+import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -54,8 +56,8 @@ export type RequestFormContext = "public" | "portal";
 export type OnBehalfTarget = { targetUserId: string; workspaceId: string | null };
 export const OnBehalfContext = createContext<OnBehalfTarget | null>(null);
 
-export function RequestForm({ context = "public", initialService, initialDraft }: { context?: RequestFormContext; initialService?: string; initialDraft?: { id: string; payload: Record<string, unknown> } }) {
-  return <RequestRidePage context={context} service={initialService} initialDraft={initialDraft} />;
+export function RequestForm({ context = "public", initialService, initialDraft, allowProviderSelection = false }: { context?: RequestFormContext; initialService?: string; initialDraft?: { id: string; payload: Record<string, unknown> }; allowProviderSelection?: boolean }) {
+  return <RequestRidePage context={context} service={initialService} initialDraft={initialDraft} allowProviderSelection={allowProviderSelection} />;
 }
 
 const empty: RideRequestInput = {
@@ -196,7 +198,7 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-function RequestRidePage({ context, service, initialDraft }: { context: RequestFormContext; service?: string; initialDraft?: { id: string; payload: Record<string, unknown> } }) {
+function RequestRidePage({ context, service, initialDraft, allowProviderSelection }: { context: RequestFormContext; service?: string; initialDraft?: { id: string; payload: Record<string, unknown> }; allowProviderSelection: boolean }) {
   const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
@@ -209,6 +211,7 @@ function RequestRidePage({ context, service, initialDraft }: { context: RequestF
   const enrich = useServerFn(enrichRideRequest);
   const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [draftId, setDraftId] = useState(initialDraft?.id);
+  const [selectedProvider, setSelectedProvider] = useState<NetworkProviderRow | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const saveDraft = useServerFn(saveTripDraft);
   const removeDraft = useServerFn(deleteTripDraft);
@@ -270,6 +273,7 @@ function RequestRidePage({ context, service, initialDraft }: { context: RequestF
     setErrors({});
     const withBilling: RideRequestInput = {
       ...form,
+      selectedProviderWorkspaceId: allowProviderSelection ? selectedProvider?.workspace_id ?? null : null,
       billingContact:
         form.billingSource === "saved" ? savedBilling ?? undefined
         : form.billingSource === "custom" ? customBilling
@@ -434,7 +438,7 @@ function RequestRidePage({ context, service, initialDraft }: { context: RequestF
       <div className="mx-auto max-w-3xl">
         {portal ? <h1 className="ds-section-title uppercase text-ds-primary">New request</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>}
         <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
-          Share the trip details below. Independent providers in the MY FLORIDA NEMT network review each request — submitting does not guarantee a ride until a provider accepts it.
+          Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.
         </p>
         <div role="note" className="ds-body-lg mx-auto mt-6 mb-6 max-w-[46rem] rounded-ds bg-ds-membership p-5 text-center text-ds-primary">
           <strong>We recommend submitting requests 48–72 hours in advance.</strong> Short-notice requests may be submitted for review, but availability and acceptance are not guaranteed.
@@ -462,6 +466,8 @@ function RequestRidePage({ context, service, initialDraft }: { context: RequestF
           <DeliveryRequestForm portal={portal} initialDraft={initialDraft?.payload.requestCategory === "medical_delivery" ? initialDraft : undefined} />
         ) : (
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
+
+          {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
 
           {/* Patient */}
           <fieldset className="space-y-6">

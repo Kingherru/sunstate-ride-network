@@ -11,5 +11,6 @@ export const Route = createFileRoute("/_authenticated/portal/requests/new")({
 });
 function NewRequest() {
   const draft = Route.useLoaderData();
-  return <RequestForm key={draft?.id ?? 'new'} context="portal" initialDraft={draft ?? undefined} />;
+  const { access } = Route.useRouteContext();
+  return <RequestForm key={draft?.id ?? 'new'} context="portal" allowProviderSelection={access.portalKind === 'customer' && !!access.primary} initialDraft={draft ?? undefined} />;
 }

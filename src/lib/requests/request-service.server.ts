@@ -38,6 +38,7 @@ export async function resolveRequester(): Promise<RequesterContext> {
         .from("workspace_members")
         .select("workspace_id, role, can_create_requests, workspaces!inner(status)")
         .eq("user_id", uid)
+        .is("removed_at", null)
         .eq("workspaces.status", "active"),
     ]);
     ctx.isAdmin = (roles ?? []).length > 0; // label only; on-behalf uses admin_can
@@ -123,7 +124,9 @@ async function finish(row: any, error: any, category: RequestCategory, email: st
     console.error("request insert failed", error?.code ?? "unknown");
     return { ok: false, code: error?.code ?? "unknown" };
   }
-  if (!row.is_test && !own.skipNotify) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
+  // Targeted intake is visible only in the chosen provider's Network inbox.
+  // Do not fan out staff or provider emails from this path.
+  if (!row.is_test && !own.skipNotify && !row.selected_provider_workspace_id) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
   return { ok: true, id: row.id, mfnId: row.mfn_id ?? null, isTest: !!row.is_test };
 }
 
@@ -137,6 +140,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
   const isRound = data.tripType === "round_trip" || data.roundTrip;
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
     trip_kind: "passenger",
+    selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
     patient_first_name: data.patientFirstName, patient_last_name: data.patientLastName,
     patient_phone: data.patientPhone, patient_email: data.patientEmail || null,
     pickup_address: data.pickupAddress, pickup_address_details: data.pickupAddressDetails || null,
@@ -158,7 +162,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     trip_billing_source: data.billingSource,
     trip_billing_first_name: data.billingContact?.firstName ?? null, trip_billing_last_name: data.billingContact?.lastName ?? null,
     trip_billing_email: data.billingContact?.email ?? null, trip_billing_phone: data.billingContact?.phone ?? null,
-  } as any).select("id, mfn_id, is_test").single();
+  } as any).select("id, mfn_id, is_test, selected_provider_workspace_id").single();
   return finish(row, error, "passenger_transport", data.patientEmail || null, own, embedProviderId);
 }
 

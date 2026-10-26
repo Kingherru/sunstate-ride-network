@@ -5,6 +5,8 @@ import { KeyRound, Mail, LogOut, SendHorizonal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { actionCls } from "@/components/portal/PortalShell";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { PersonalSettings } from './PersonalSettings';
+import { DsButton } from '@/components/ds/controls';
 
 /** Shared personal security panel: profile email, change password, send
  *  reset link to self, sign out, sign out of other sessions. Reused behind
@@ -58,12 +60,15 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   async function signOutEverywhere() {
     if (preview.active) { previewBlocked(); return; }
     setSignOutBusy(true);
-    await supabase.auth.signOut({ scope: "global" });
-    window.location.href = "/login";
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    setSignOutBusy(false);
+    if (error) toast.error('Could not sign out other devices.');
+    else toast.success('Other devices signed out. This session remains active.');
   }
 
   return (
     <div className="max-w-xl space-y-8">
+      <PersonalSettings />
       <section>
         <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><Mail className="size-4" aria-hidden />Profile</h2>
         <dl className="mt-3 divide-y divide-ds-border">
@@ -72,6 +77,12 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
             <dd className="ds-body break-words">{currentEmail ?? "—"}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="space-y-3 border border-ds-sky-border bg-ds-sky p-4 rounded-ds">
+        <h2 className="ds-subheading uppercase text-ds-primary">Verified email change</h2>
+        <p className="ds-support">Email changes are unavailable until secure email-change confirmation is verified in account security settings. Your current email remains active.</p>
+        <DsButton size="sm" variant="secondary" disabled>Change email unavailable</DsButton>
       </section>
 
       <form onSubmit={submit} className="space-y-4" noValidate>

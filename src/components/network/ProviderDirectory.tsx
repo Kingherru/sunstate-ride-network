@@ -13,6 +13,7 @@ import {
 } from "@/lib/facility-providers.functions";
 import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorkspace } from "@/lib/workspace-messages.functions";
 import { cn } from "@/lib/utils";
+import { DsButton } from '@/components/ds/controls';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -20,7 +21,7 @@ import { cn } from "@/lib/utils";
 function capabilityLabels(types: string[]) {
   return Array.from(new Set(types.map((s) => /ambulatory|^amb$/i.test(s) ? "Ambulatory" : /wheelchair|^wc$/i.test(s) ? "Wheelchair" : /gurney|stretcher|^str$/i.test(s) ? "Gurney/Stretcher" : /delivery/i.test(s) ? "Medical Delivery" : /pickup|drop.?off/i.test(s) ? "Pickup and Drop-off" : s)));
 }
-export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }) {
+export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?: boolean; onSelect?: (v: NetworkProviderRow) => void }) {
   const qc = useQueryClient();
   const listFn = useServerFn(listNetworkProviders);
   const saveFn = useServerFn(saveNetworkProvider);
@@ -166,7 +167,8 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
   const profilePanel = selected ? (
     <ProviderProfile
       row={selected}
-      canMessage={!preview.active && !!senderWorkspace && senderWorkspace.id !== selected.workspace_id}
+      canMessage={!onSelect && !preview.active && !!senderWorkspace && senderWorkspace.id !== selected.workspace_id}
+      onSelect={onSelect ? () => onSelect(selected) : undefined}
       onMessage={() => setMessageTarget(selected)}
       onToggleSave={() => toggleSave(selected)}
       onBack={() => setSelectedId(null)}
@@ -179,7 +181,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
 
   return (
     <div className="space-y-4">
-      <aside className="rounded-ds border border-ds-peach-border bg-ds-peach p-4 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network Communication & Payment Reminder</h3><p className="ds-body">Communicate professionally and accept only trips you intend to complete. Accepted trips are final and should not be returned. Mark completed trips promptly and complete all required payments. Following these rules helps providers earn Super Verification and avoid account suspension or removal.</p></aside>
+      {!onSelect && <aside className="rounded-ds border border-ds-peach-border bg-ds-peach p-4 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network Communication & Payment Reminder</h3><p className="ds-body">Communicate professionally and accept only trips you intend to complete. Accepted trips are final and should not be returned. Mark completed trips promptly and complete all required payments. Following these rules helps providers earn Super Verification and avoid account suspension or removal.</p></aside>}
       {/* Desktop: list left, profile right. Mobile: list first, profile replaces it. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <div className={cn(selected && "hidden lg:block")}>{listPanel}</div>
@@ -201,8 +203,8 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
 /** Authorized public business profile only: no insurance files, policy
  *  numbers, home addresses, private contacts, driver records, patient
  *  information, internal pricing or payout data. */
-function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
-  row: NetworkProviderRow; canMessage: boolean; onMessage: () => void; onToggleSave: () => void; onBack: () => void;
+function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack, onSelect }: {
+  row: NetworkProviderRow; canMessage: boolean; onMessage: () => void; onToggleSave: () => void; onBack: () => void; onSelect?: () => void;
 }) {
   const services = capabilityLabels(row.service_types);
   if (row.medical_delivery && !services.some((s) => /delivery/i.test(s))) services.push("Medical Delivery");
@@ -232,6 +234,7 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {onSelect && <DsButton type="button" size="sm" onClick={onSelect} disabled={!row.accepting_connections}>Select this provider</DsButton>}
           {canMessage && (
             <button onClick={onMessage} className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-xs font-bold hover:bg-muted">
               <MessageSquare className="size-4" /> Message provider
