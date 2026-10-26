@@ -100,7 +100,19 @@ describe("smart note shortcodes", () => {
     expect(noFreq.unreadable.join(" ")).toContain("needs a frequency");
   });
 
+  test("normalizes dates, times and addresses", () => {
+    expect(normalizeDate("11/5/26")).toBe("2026-11-05");
+    expect(normalizeDate("2026-11-05")).toBe("2026-11-05");
+    expect(normalizeDate("13/45/2026")).toBeNull();
+    expect(normalizeTime("9.05 AM")).toBe("09:05");
+    expect(normalizeTime("2:00 pm")).toBe("14:00");
+    expect(normalizeTime("25:00")).toBeNull();
+    expect(splitAddress("123 Main St, Jacksonville, FL")).toEqual({ address: "123 Main St", city: "Jacksonville" });
+    expect(splitAddress("123 Main St")).toEqual({ address: "123 Main St", city: "" });
+  });
+
   test("only ever writes fields the New Trip form actually restores", () => {
+
     const formFields = new Set(Object.keys(rideRequestSchema.shape));
     const { payload } = parseNoteShortcodes(
       [EXAMPLE, "REC", "FREQ: weekly", "END: 12/31/2026", "PUZIP: 32201", "STOP: 5 Elm St, Tampa, FL"].join("\n"),
