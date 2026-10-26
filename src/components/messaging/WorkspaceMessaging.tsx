@@ -143,6 +143,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-2 border-b border-ds-border px-4 py-3">
               <div className="min-w-0">
+                <button onClick={() => setSelected(null)} className="ds-support mb-1 inline-flex items-center gap-1 font-semibold uppercase text-ds-primary hover:underline md:hidden">
+                  ← Back to conversations
+                </button>
                 <p className="ds-body truncate font-semibold">{thread.conversation.otherName}</p>
                 {thread.conversation.otherMfnId && <p className="ds-support font-mono">{thread.conversation.otherMfnId}</p>}
               </div>
