@@ -123,13 +123,17 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
       <DsButton type="button" variant="ghost" size="sm" onClick={closeEditor} className="mb-2">
         <ArrowLeft className="size-4" aria-hidden /> Back to notes
       </DsButton>
-      <p className="ds-support mb-3 text-ds-text-2">Quick trip: write your operational instructions, then choose Create trip from note. Review and complete the trip draft before submitting. Your note becomes Special instructions.</p>
+      <p className="ds-body font-semibold uppercase text-ds-primary">Write quick notes or create trips with note shortcodes</p>
+      <p className="ds-support mt-1 font-semibold text-ds-text">Type in the note → Save → Create trip from note</p>
+      <p className="ds-caption mt-0.5 mb-3 text-ds-text-2">Your note becomes Special instructions in a draft you review. Don't enter health information or diagnoses.</p>
+
+
       <label htmlFor="note-body" className="sr-only">Note text</label>
       <textarea
         id="note-body"
         autoFocus
         className="min-h-56 w-full resize-y rounded-ds-sm border border-[color:var(--ds-note-line)] bg-[color:var(--ds-note)] p-4 ds-body text-ds-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus"
-        placeholder="Type your note here…"
+        placeholder="Type your note here..."
         maxLength={4000}
         value={draftBody}
         onChange={(e) => setDraftBody(e.target.value)}
@@ -167,7 +171,6 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
           </button>
         )}
       </div>
-      <p className="ds-caption px-4 pt-3 text-ds-text-2 sm:px-5">Operational business notes, private to you. Don't enter health information, diagnoses or unnecessary patient details. Team sharing isn't available yet.</p>
       {editing ? editorPanel : listPanel}
     </section>
   );
