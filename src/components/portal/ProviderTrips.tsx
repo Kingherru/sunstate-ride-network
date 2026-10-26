@@ -5,7 +5,6 @@ import { TripHistoryPanel } from "@/components/dashboard/TripHistoryPanel";
 import { SavedTripsPanel } from "@/components/dashboard/SavedTripsPanel";
 import { actionCls } from "@/components/portal/PortalShell";
 import { SegTabs } from "@/components/portal/SegTabs";
-import { ProviderNetworkOffers, DistributionActivity } from '@/components/portal/TripNetwork';
 
 export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 
@@ -32,10 +31,8 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
             <h3 className="ds-subheading text-ds-primary">Provider-created requests</h3>
             <div className="flex flex-wrap gap-2"><Link to="/portal/requests/new" className={actionCls}>New trip</Link><Link to="/portal/requests" className="ds-button-text inline-flex items-center px-3 text-ds-primary">View created requests</Link></div>
           </div>
-          <h3 className="ds-subheading pt-3 text-ds-primary">Incoming assigned & referred trips</h3>
-          <ProviderNetworkOffers />
+          <h3 className="ds-subheading pt-3 text-ds-primary">Accepted referrals awaiting confirmation</h3>
           <ReferralReservationsSection userId={userId} />
-          <DistributionActivity />
         </div>
       )}
       {view === "reservations" && <ReservationsPanel userId={userId} scope="provider" hideReferrals />}
