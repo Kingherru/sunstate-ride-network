@@ -18,8 +18,8 @@ const draftPayload = z.record(z.string(), z.any());
 function summarize(p: DraftPayload): string {
   const name = [p.patientFirstName ?? p.patient_first_name, p.patientLastName ?? p.patient_last_name].filter(Boolean).join(" ").trim();
   const route = [p.pickupCity ?? p.pickup_city, p.dropoffCity ?? p.dropoff_city].filter(Boolean).join(" → ");
-  const when = [p.pickupDate ?? p.pickup_date, p.pickupTime ?? p.pickup_time].filter(Boolean).join(" ");
-  return [name || "Unnamed passenger", route, when].filter(Boolean).join(" · ").slice(0, 240);
+  const when = [p.requestedDate ?? p.pickupDate ?? p.pickup_date, p.requestedTime ?? p.pickupTime ?? p.pickup_time].filter(Boolean).join(" ");
+  return [p.requestCategory === "medical_delivery" ? "Medical Delivery" : name || "Unnamed passenger", route, when].filter(Boolean).join(" · ").slice(0, 240);
 }
 
 export const listTripDrafts = createServerFn({ method: "GET" })
