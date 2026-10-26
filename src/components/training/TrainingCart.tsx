@@ -11,6 +11,7 @@ import { createTrainingCheckout } from '@/lib/training/cart.functions';
 import { getStripe, getStripeEnvironment } from '@/lib/stripe';
 import { supabase } from '@/integrations/supabase/client';
 import { usePortalPreview, previewBlocked } from '@/components/portal/preview-data';
+import { CheckoutErrorBoundary } from './CheckoutErrorBoundary';
 
 type CartState = { items: CartCourse[]; add: (item: CartCourse, ownedIds: string[]) => void; open: () => void; remove: (id: string) => void };
 const CartContext = createContext<CartState>({ items: [], add: () => {}, open: () => {}, remove: () => {} });
@@ -49,7 +50,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
           <p className="ds-subheading">Total: ${(items.reduce((s, c) => s + c.price_cents, 0) / 100).toFixed(2)}</p>
           {!signedIn ? <Link to="/login" className="text-ds-link underline">Sign in to purchase</Link> : !checkoutIds && <DsButton onClick={() => { try { getStripeEnvironment(); setCheckoutIds(items.map(c => c.id)); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } }}>Continue to checkout</DsButton>}
           {error && <p role="alert" className="text-ds-error">{error}</p>}
-          {checkoutIds && <><PaymentTestModeBanner /><Checkout ids={checkoutIds} /></>}
+          {checkoutIds && <><PaymentTestModeBanner /><CheckoutErrorBoundary><Checkout ids={checkoutIds} /></CheckoutErrorBoundary></>}
         </>}
       </DialogContent>
     </Dialog>

@@ -23,7 +23,7 @@ export function TrainingTests() {
 
   if (courses.isLoading || mine.isLoading) return <p className="ds-support" role="status">Loading training…</p>;
   if (courses.error || mine.error) return <DsEmpty title="Training is unavailable">Please try again in a moment.</DsEmpty>;
-  if (!courses.data?.length) return <DsEmpty title="No courses available right now">Your existing purchases and certificates remain in your learner area.</DsEmpty>;
+  if (!courses.data?.length && !mine.data?.length) return <DsEmpty title="No courses available right now">Your existing purchases and certificates remain in your learner area.</DsEmpty>;
   const byCourse = new Map((mine.data ?? []).map((e) => [e.course_id, e]));
   const tabs = ['Available Training', 'Available Tests', 'Tests to Take', 'In Progress', 'Completed Tests'];
   const rows = (courses.data ?? []).filter(c => {
