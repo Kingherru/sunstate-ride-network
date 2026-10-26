@@ -28,25 +28,16 @@ export const createTrainingCheckout = createServerFn({ method: 'POST' })
         lineItems.push({ price: price.id, quantity: 1 });
       }
       const email = typeof context.claims.email === 'string' ? context.claims.email : undefined;
-      // Resolve a searchable user-linked customer using the shared checkout pattern.
-      const found = await stripe.customers.search({ query: `metadata['userId']:'${context.userId}'`, limit: 1 });
-      let customerId = found.data[0]?.id;
-      if (!customerId && email) {
-        const existing = await stripe.customers.list({ email, limit: 1 });
-        const customer = existing.data[0];
-        if (customer) {
-          await stripe.customers.update(customer.id, { metadata: { ...customer.metadata, userId: context.userId } });
-          customerId = customer.id;
-        }
-      }
-      if (!customerId) customerId = (await stripe.customers.create({ ...(email ? { email } : {}), metadata: { userId: context.userId } })).id;
-      const session = await stripe.checkout.sessions.create({
+      const { resolveOrCreateCustomer } = await import('@/lib/training/customer.server');
+      const customerId = await resolveOrCreateCustomer(stripe, { email, userId: context.userId });
+      const params: Parameters<typeof stripe.checkout.sessions.create>[0] & { managed_payments: { enabled: boolean } } = {
         mode: 'payment', ui_mode: 'embedded_page', customer: customerId, line_items: lineItems,
         return_url: data.returnUrl,
         metadata: { userId: context.userId, course_slugs: JSON.stringify(courses.map(c => c.slug)) },
         payment_intent_data: { description: courses.map(c => c.title).join(' · ') },
         managed_payments: { enabled: true },
-      });
+      };
+      const session = await stripe.checkout.sessions.create(params);
       if (!session.client_secret) throw new Error('Stripe did not return checkout information');
       return { clientSecret: session.client_secret };
     } catch (error) { return { error: getStripeErrorMessage(error) }; }
