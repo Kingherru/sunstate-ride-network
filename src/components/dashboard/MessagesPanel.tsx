@@ -428,6 +428,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
         {composeOpen ? (
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border">
+              <button onClick={() => setComposeOpen(false)} className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary hover:underline md:hidden">← Back to conversations</button>
               <h3 className="font-semibold text-sm mb-2">Start a new conversation</h3>
               <div className="flex flex-wrap gap-2 mb-2">
                 {availableKinds.map((k) => (
@@ -610,6 +611,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border flex items-start justify-between gap-2">
               <div className="min-w-0">
+                <button onClick={() => setActiveThread(null)} className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary hover:underline md:hidden">← Back to conversations</button>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-sm">{threadTitle(active)}</h3>
                   <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${relBadgeClass(active.relationship)}`}>
