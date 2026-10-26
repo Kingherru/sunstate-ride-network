@@ -977,7 +977,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path.join(".");
-        errs[key] = /email/i.test(key) ? "Enter a valid email address."
+        errs[key] = key === "deliveryInstructions" ? "Keep delivery instructions within 500 characters. Your full note is retained here for review." : /email/i.test(key) ? "Enter a valid email address."
           : /phone/i.test(key) ? "Enter a valid phone number."
           : /date/i.test(key) ? "Choose a valid date."
           : /time/i.test(key) ? "Choose a time."

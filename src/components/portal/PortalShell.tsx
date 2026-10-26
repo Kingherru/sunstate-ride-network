@@ -14,6 +14,7 @@ import { useChangelogIndicator } from "@/components/portal/changelog-state";
 import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
 import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
+import { getUnreadMessageCount } from "@/lib/messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
 
 type Indicator = "none" | "update" | "important";
@@ -107,11 +108,13 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     queryKey: ["messaging-unread"], staleTime: 60_000,
     queryFn: () => getMessagingUnreadCount(),
   });
+  const directUnread = usePortalQuery({ queryKey: ["msg-unread-total"], staleTime: 30_000, queryFn: () => getUnreadMessageCount() });
+  const combinedUnread = Number(msgUnread.data ?? 0) + Number(directUnread.data?.count ?? 0);
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
         const Icon = iconFor(i.iconFor ?? i.to);
-        const showMsgDot = ["/portal/messaging", "/admin/messaging"].includes(i.iconFor ?? i.to) && Number(msgUnread.data ?? 0) > 0;
+        const showMsgDot = ["/portal/messaging", "/admin/messaging"].includes(i.iconFor ?? i.to) && combinedUnread > 0;
         return (
           <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
