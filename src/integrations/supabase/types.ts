@@ -6956,6 +6956,18 @@ export type Database = {
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
       network_offer_safe_history: { Args: { _offer: string }; Returns: Json }
+      network_public_service_centers: {
+        Args: never
+        Returns: {
+          city: string
+          county: string
+          lat: number
+          lng: number
+          radius_miles: number
+          workspace_id: string
+          zip: string
+        }[]
+      }
       network_reservation_state: {
         Args: { _state: string; _trip: string }
         Returns: string
