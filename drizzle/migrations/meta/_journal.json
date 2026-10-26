@@ -155,6 +155,13 @@
       "when": 1792986041760,
       "tag": "0021_pass3k_public_provider_proximity",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792986268415,
+      "tag": "0022_pass3k_settings_guardrails",
+      "breakpoints": true
     }
   ]
 }
