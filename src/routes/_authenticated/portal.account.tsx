@@ -20,9 +20,10 @@ import { NetworkProfileForm } from "@/components/network/NetworkProfileForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listWorkspaceMembersForMessaging, setMemberMessagingPermission } from "@/lib/workspace-messages.functions";
 import { BusinessPermissions } from '@/components/portal/BusinessPermissions';
+import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequests';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
-type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "security";
+type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
