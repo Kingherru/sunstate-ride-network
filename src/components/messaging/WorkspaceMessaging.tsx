@@ -120,6 +120,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         </div>
         <div className="max-h-[28rem] space-y-1 overflow-y-auto rounded-ds-sm border border-ds-border">
           {convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
+          {(wsQuery.isError || convosQuery.isError) && <p role="alert" className="ds-support p-3 text-ds-error">Conversations couldn't load. Please try again.</p>}
           {!convosQuery.isLoading && conversations.length === 0 && <p className="ds-support p-3">No conversations yet.</p>}
           {conversations.map((c) => (
             <button key={c.id} onClick={() => setSelected(c.id)}
@@ -139,6 +140,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
       <div className={`min-w-0 rounded-ds-sm border border-ds-border ${selected ? "" : "hidden md:block"}`}>
         {!selected && <p className="ds-support p-4">Select a conversation to view messages.</p>}
         {selected && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
+        {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-2 border-b border-ds-border px-4 py-3">

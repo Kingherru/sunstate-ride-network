@@ -1,4 +1,11 @@
 # Pass 3F completion and Build 1
+# UI improvements — grouped continuation
+- [x] Pass 1: repaired Vehicles missing-type crash and fleet error states; explicit Training empty/error state (no training rebuild); restored live provider notification control; identity above Change Log; full-width compact notes and draft-only instructions; public Sign In icon/order; isolated opt-in removable conversation examples in both portals/previews. Two navigation tests and harness build pass; signed-in Master Admin live pages and preview note/example read-remove flows checked without saving/sending.
+- [ ] Pass 2 (next grouped prompt): Pricing/content polish, sizing settings, Network activity/banner/capability labels and proximity search; Drivers/fleet subtle blue treatment and Messaging red unread dot completed in Pass 1. Proximity needs authorized verified-location data; no invented shortcut-command parser was found.
+- [ ] Pass 3 (following grouped prompt): schedule one/multiple/all-driver email and dispatch exports/API settings; reuse existing single-driver weekly email, no test sends
+- [ ] Training rebuild — waiting for the user to supply @basic test; cart only if the imported tests require it
+- [ ] Later build: Admin and shared Profile & Security redesign
+
 - [x] Email update: replaced Lovable queue sends, preserved templates/history, signed outcome receiver, removed five replaced repo files; 25 tests pass and harness build OK; sign-in renders and unsigned callbacks return 401. No real sends or publish. Independent Maps confirmation and driver assignment/schedule notification queue paths unchanged.
 - [x] Latest brief: payment responsibility acknowledgement, active wave recipients, shared conditional field layout, exact selected service/trip types, offer amounts/history, People account-status/type/email filters
 - [x] Ten focused tests pass; harness build OK; acceptance lock/rollback predicates confirmed; counts unchanged at 28/13/7/5, zero messages/offers, seven disabled tests

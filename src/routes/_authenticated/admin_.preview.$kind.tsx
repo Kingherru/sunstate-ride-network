@@ -17,11 +17,12 @@ import { ProviderDirectory } from "@/components/network/ProviderDirectory";
 import { RequestForm } from "@/components/requests/RequestForm";
 import { PROVIDER_NAV, CUSTOMER_NAV } from "@/components/portal/portal-nav";
 import { ORGANIZATION_TYPES, organizationLabel } from "@/lib/account-types";
+import { SampleConversations } from "@/components/messaging/SampleConversations";
 
 type Kind = "provider" | "customer";
 
 export const Route = createFileRoute("/_authenticated/admin_/preview/$kind")({
-  head: () => ({ meta: [{ title: "Portal Preview — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Portal Preview — MY FLORIDA NEMT" }, { name: "description", content: "Protected demonstration of MY FLORIDA NEMT provider and patient portals." }, { property: "og:title", content: "Portal Preview — MY FLORIDA NEMT" }, { property: "og:description", content: "Protected provider and patient portal demonstration." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async ({ params }) => {
     if (params.kind !== "provider" && params.kind !== "customer") throw redirect({ to: "/admin/settings" });
     const access = await getAccessState();
@@ -107,7 +108,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
       case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
       case "network": return <Panel><ProviderDirectory /></Panel>;
       case "training": return <TrainingTests />;
-      case "messaging": return <Unavailable what="Messaging" />;
+      case "messaging": return <SampleConversations initiallyOpen />;
       default: return <ProviderOverview workspaceId="preview-ws" userId={PREVIEW_USER} />;
     }
   }
@@ -120,7 +121,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
     case "contacts": return <Panel><ContactsPanel /></Panel>;
     case "payers": return <Panel><PayersPanel /></Panel>;
     case "notifications": return <Panel><NotificationsPanel /></Panel>;
-    case "messaging": return <Unavailable what="Messaging" />;
+    case "messaging": return <SampleConversations initiallyOpen />;
     default: return <Panel><DsEmpty title="No requests yet">Recent requests for this account appear here.</DsEmpty></Panel>;
   }
 }

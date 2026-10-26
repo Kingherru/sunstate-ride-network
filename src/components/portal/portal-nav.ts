@@ -32,7 +32,7 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal/messaging", label: "Messaging" },
 ];
 
-export const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers", "/portal/notifications"];
+export const CUSTOMER_ONLY = ["/portal/requests", "/portal/upload-csv", "/portal/find-providers", "/portal/saved-providers", "/portal/contacts", "/portal/payers"];
 export const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/network"];
 export const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/upload-csv"];
 export const under = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));

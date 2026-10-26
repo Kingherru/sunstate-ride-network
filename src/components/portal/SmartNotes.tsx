@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { saveTripDraft } from "@/lib/trip-drafts.functions";
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
 import { cn } from "@/lib/utils";
+import { DsButton } from "@/components/ds/controls";
+import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
 
 type Note = { id: string; title: string; body: string; archived_at: string | null; updated_at: string };
 
@@ -18,6 +20,7 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const saveDraftFn = useServerFn(saveTripDraft);
+  const preview = usePortalPreview();
   const [view, setView] = useState<"active" | "archived">("active");
   const [openId, setOpenId] = useState<string | null>(null);
   const [draftBody, setDraftBody] = useState("");
@@ -28,7 +31,8 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
     queryKey: key,
     enabled: !!workspaceId,
     queryFn: async () => {
-      let q = supabase.from("workspace_notes").select("id,title,body,archived_at,updated_at").eq("workspace_id", workspaceId!).order("updated_at", { ascending: false }).limit(50);
+      if (!workspaceId) return [];
+      let q = supabase.from("workspace_notes").select("id,title,body,archived_at,updated_at").eq("workspace_id", workspaceId).order("updated_at", { ascending: false }).limit(50);
       q = view === "active" ? q.is("archived_at", null) : q.not("archived_at", "is", null);
       const { data, error } = await q;
       if (error) throw error;
@@ -42,12 +46,13 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
 
   const save = usePortalMutation({
     mutationFn: async (n: { id: string | null; body: string }) => {
+      if (!workspaceId) throw new Error("Account not available");
       const body = n.body.slice(0, 4000);
       // First line doubles as the list label; no separate title field.
       const title = body.split("\n").map((l) => l.trim()).find(Boolean)?.slice(0, 120) ?? "";
       const { error } = n.id
         ? await supabase.from("workspace_notes").update({ title, body }).eq("id", n.id)
-        : await supabase.from("workspace_notes").insert({ title, body, workspace_id: workspaceId! });
+        : await supabase.from("workspace_notes").insert({ title, body, workspace_id: workspaceId });
       if (error) throw error;
     },
     onSuccess: () => { closeEditor(); toast.success("Note saved"); qc.invalidateQueries({ queryKey: ["smart-notes"] }); },
@@ -74,6 +79,7 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
    *  Special instructions — nothing is guessed or auto-submitted. The draft
    *  form opens so the user reviews and completes every field. */
   async function createTripFromNote() {
+    if (preview.active) { previewBlocked(); return; }
     const body = draftBody.trim();
     if (!body) return;
     try {
@@ -114,9 +120,10 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
 
   const editorPanel = (
     <div className="px-4 py-3 sm:px-5">
-      <button type="button" onClick={closeEditor} className="ds-support mb-2 inline-flex items-center gap-1.5 font-semibold uppercase text-ds-primary hover:underline">
+      <DsButton type="button" variant="ghost" size="sm" onClick={closeEditor} className="mb-2">
         <ArrowLeft className="size-4" aria-hidden /> Back to notes
-      </button>
+      </DsButton>
+      <p className="ds-support mb-3 text-ds-text-2">Quick trip: write your operational instructions, then choose Create trip from note. Review and complete the trip draft before submitting. Your note becomes Special instructions.</p>
       <label htmlFor="note-body" className="sr-only">Note text</label>
       <textarea
         id="note-body"
@@ -127,24 +134,24 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
         value={draftBody}
         onChange={(e) => setDraftBody(e.target.value)}
       />
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button type="button" className="portal-btn-primary" disabled={save.isPending || !draftBody.trim()}
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <DsButton type="button" size="sm" variant="secondary" disabled={save.isPending || !draftBody.trim()}
           onClick={() => save.mutate({ id: openNote?.id ?? null, body: draftBody })}>
           {save.isPending ? "Saving…" : "Save"}
-        </button>
+        </DsButton>
+        <DsButton type="button" size="sm" variant="ghost" onClick={closeEditor}>Cancel</DsButton>
         {view === "active" && (
-          <button type="button" className="portal-btn-secondary inline-flex items-center gap-1.5" disabled={!draftBody.trim()}
+          <DsButton type="button" size="sm" variant="ghost" className="col-span-2" disabled={!draftBody.trim()}
             onClick={createTripFromNote} title="Opens a trip draft with this note in Special instructions — nothing is submitted automatically">
             <CarFront className="size-4" aria-hidden /> Create trip from note
-          </button>
+          </DsButton>
         )}
         {openNote && (
-          <button type="button" className="portal-btn-secondary inline-flex items-center gap-1.5" disabled={archive.isPending}
+          <DsButton type="button" size="sm" variant="ghost" className="col-span-2" disabled={archive.isPending}
             onClick={() => archive.mutate({ id: openNote.id, archive: view === "active" })}>
             {view === "active" ? <><Archive className="size-4" aria-hidden /> Archive</> : <><ArchiveRestore className="size-4" aria-hidden /> Restore</>}
-          </button>
+          </DsButton>
         )}
-        <button type="button" className="portal-btn-secondary" onClick={closeEditor}>Cancel</button>
       </div>
     </div>
   );
@@ -161,11 +168,7 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
         )}
       </div>
       <p className="ds-caption px-4 pt-3 text-ds-text-2 sm:px-5">Operational business notes, private to you. Don't enter health information, diagnoses or unnecessary patient details. Team sharing isn't available yet.</p>
-      {/* Mobile: list first, editor replaces it. Desktop: side by side when editing. */}
-      <div className={cn(editing && "lg:grid lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:divide-x lg:divide-[color:var(--ds-note-line)]")}>
-        <div className={cn(editing && "hidden lg:block")}>{listPanel}</div>
-        {editing && <div className="min-w-0">{editorPanel}</div>}
-      </div>
+      {editing ? editorPanel : listPanel}
     </section>
   );
 }

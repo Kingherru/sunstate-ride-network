@@ -110,14 +110,14 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
         const Icon = iconFor(i.iconFor ?? i.to);
-        const showMsgDot = i.to === "/portal/messaging" && (msgUnread.data ?? 0) > 0;
+        const showMsgDot = (i.iconFor ?? i.to) === "/portal/messaging" && Number(msgUnread.data ?? 0) > 0;
         return (
           <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
               isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
             <Icon className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{i.label}</span>
-            {showMsgDot && <Dot kind="update" className="ml-auto" />}
+            {showMsgDot && <Dot kind="important" className="ml-auto" />}
           </Link>
         );
       })}
@@ -133,6 +133,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
+      {identity?.name && identity.name !== "MY FLORIDA NEMT" && <div className="px-3 pb-2"><p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>{identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80">{identity.mfnId}</p>}</div>}
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
         className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
         <History className="size-4 shrink-0" aria-hidden />Change log
@@ -147,16 +148,15 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
    * MFN ID. No email, and the account type is not repeated elsewhere. */
   const idCard = identity?.label ? (
     <div className="mx-3 mb-4 rounded-ds-sm bg-ds-primary-hover/60 px-3 py-2.5">
-      {identity.name && <p className="ds-body truncate font-semibold text-ds-on-primary">{identity.name}</p>}
       <p className="ds-support mt-0.5 flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-ds-on-primary/80">
         <IdCard className="size-3.5 shrink-0" aria-hidden />{identity.label}
       </p>
-      {identity.mfnId && <p className="ds-support mt-0.5 font-mono text-ds-on-primary/60">{identity.mfnId}</p>}
+      {!identity.name && identity.mfnId && <p className="ds-support mt-0.5 font-mono text-ds-on-primary/60">{identity.mfnId}</p>}
     </div>
   ) : null;
 
   const topHeader = (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:px-10">
+    <header className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:flex lg:px-10">
       <h1 className="sr-only">{pageTitle}</h1>
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         {notificationsTo && (

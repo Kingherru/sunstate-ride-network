@@ -19,7 +19,7 @@ function identityFor(a: AccessState) {
 }
 
 export const Route = createFileRoute("/_authenticated/portal")({
-  head: () => ({ meta: [{ title: "Portal — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Portal — MY FLORIDA NEMT" }, { name: "description", content: "Manage your MY FLORIDA NEMT account, transportation and training." }, { property: "og:title", content: "Portal — MY FLORIDA NEMT" }, { property: "og:description", content: "Your secure transportation and training account." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }] }),
   beforeLoad: async ({ location }) => {
     // Server-verified: training-only learners go to Training, suspended/pending to their status page.
     const access = await getAccessState();
@@ -45,7 +45,7 @@ function PortalLayout() {
   const nav = provider ? (access.restricted ? restrictedNav : PROVIDER_NAV) : CUSTOMER_NAV;
   return (
     <PortalShell nav={nav} area={provider ? "Provider portal" : "Patient portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
-      settingsTo="/portal/account" notificationsTo={!provider ? "/portal/notifications" : undefined}>
+      settingsTo="/portal/account" notificationsTo="/portal/notifications">
       <Outlet />
     </PortalShell>
   );
