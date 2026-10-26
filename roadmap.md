@@ -20,15 +20,15 @@
 - [ ] Direct authenticated cross-workspace check — blocked: read-only sandbox is denied execution of protected network access functions; no approved synthetic identity
 
 # Pass 3G — Provider Network, messaging, notes, shared portal UI
-- [ ] Shared toolbar-control style; Schedule toolbar alignment (remove visible Vehicle label, one aligned row, equal heights); search-icon padding fix across portals
-- [ ] Provider Network two-panel layout (list left, profile right; mobile back action); provider profile with safe public fields only; badge scaffolding without new statuses
-- [ ] Message Provider: single conversation per business pair, permission checks, safety notice
-- [ ] Shared email-style messaging layout (sidebar + conversation, mobile back), unread dot (green normal/red urgent), read-on-open, read-only admin controls hidden
-- [ ] Platform Requests: provider submission in Provider Settings, Admin Messaging REQUESTS tab, statuses + history, internal messaging infra, no external email
-- [ ] Notifications layout: category list, unread state, related-record overlay, shared search fix
-- [ ] Smart Notes sticky-note redesign (pale-yellow, click-to-type, save/archive/restore, list sidebar, mobile list-first), keep private-to-creator
-- [ ] Notes-to-trip: create draft from note, carry recognized fields, open form for review, never auto-submit, no local storage
-- [ ] Compact portal identity block (name, company, role icon, MFN ID; no email; no duplication)
-- [ ] Sidebar hover effect preserved (subtle light-orange right border, below header, no layout shift)
-- [ ] Contacts panel modest width increase, balanced columns
-- [ ] Minimal checks: type check, build, narrow cross-workspace messaging-access check, record counts unchanged
+- [x] Shared toolbar-control style (.portal-toolbar/.portal-control/.portal-search); Schedule toolbar on one aligned row, visible Vehicle label removed (aria-label kept), equal heights
+- [x] Provider Network two-panel layout (list left, profile right; mobile Back to Providers); profile shows safe public business fields only; verified badge from existing RPC, no new statuses
+- [x] Message Provider reuses find_or_create_workspace_conversation (no duplicates), permission-checked, safety notice in dialog
+- [x] Email-style messaging: sidebar + conversation with mobile list-first and Back to Conversations in WorkspaceMessaging and MessagesPanel; green static unread dot on Messaging nav; read-on-open kept; read-only admins no longer see send/compose/delete controls
+- [x] Platform Requests: platform_requests + platform_request_events (MFN-Q- IDs, RLS, grants) via migration 0019; provider tab in Account settings; Admin Messaging REQUESTS tab with reply + status changes + history; no external email
+- [x] Notifications: request links open the shared detail overlay; category/unread layout retained; search icon spacing via shared style
+- [x] Smart Notes sticky redesign: lighter pale yellow, click-to-type single field, Save/Archive/Restore, list sidebar, mobile list-first, private-to-creator kept
+- [x] Notes-to-trip: CREATE TRIP FROM NOTE saves a server-side draft carrying only the note text into Special instructions and opens the draft form; no auto-submit, no browser storage
+- [x] Compact identity block under logo (name, role with icon, MFN ID; no email; MFN removed from footer)
+- [x] Sidebar hover effect preserved (existing .portal-sidebar::after rule untouched)
+- [x] Contacts pages widened modestly (max-w-7xl) with balanced columns
+- [x] Checks: tsgo clean, harness build OK 00:19Z, record counts unchanged at 28/13/7/5 with zero messages/offers/platform requests; cross-workspace messaging guard unchanged (can_access_workspace_messages re-verified on every write; direct authenticated execution remains sandbox-blocked as before)
