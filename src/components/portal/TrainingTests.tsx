@@ -15,7 +15,8 @@ export function TrainingTests() {
   const mine = usePortalQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
 
   if (courses.isLoading || mine.isLoading) return <p className="ds-support" role="status">Loading training…</p>;
-  if (courses.error) return <DsEmpty title="Training is unavailable">Please try again in a moment.</DsEmpty>;
+  if (courses.error || mine.error) return <DsEmpty title="Training is unavailable">Please try again in a moment.</DsEmpty>;
+  if (!courses.data?.length) return <DsEmpty title="No courses available right now">Your existing purchases and certificates remain in your learner area.</DsEmpty>;
   const byCourse = new Map((mine.data ?? []).map((e) => [e.course_id, e]));
 
   return (

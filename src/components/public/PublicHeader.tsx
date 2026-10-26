@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { CalendarPlus, Menu, Phone, X } from "lucide-react";
+import { CalendarPlus, LogIn, Menu, Phone, X } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL } from "@/lib/site-config";
@@ -12,7 +12,6 @@ const NAV = [
   { label: "Facilities", to: "/for-facilities" },
   { label: "Coverage", to: "/florida-coverage" },
   { label: "Training", to: "/training" },
-  { label: "Sign In", to: "/login" },
 ] as const;
 
 const focus = "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-on-primary focus-visible:ring-offset-2 focus-visible:ring-offset-ds-primary";
@@ -28,6 +27,7 @@ function ActionBlocks({ className, full }: { className?: string; full?: boolean 
   );
   return (
     <div className={cn("items-center gap-5", full ? "flex flex-col items-start" : "flex", className)}>
+      <Link to="/login" className={cn(item, "text-ds-on-primary hover:opacity-80", focus)}><LogIn aria-hidden />Sign In</Link>
       {PUBLIC_PHONE ? (
         <a href={PUBLIC_PHONE_TEL} className={cn(item, "text-ds-on-primary hover:opacity-80", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
           <Phone aria-hidden />Call Us

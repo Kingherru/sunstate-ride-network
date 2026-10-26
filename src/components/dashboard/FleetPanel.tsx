@@ -31,22 +31,23 @@ function DriversCard() {
   });
 
   return (
-    <section className="bg-card border border-border rounded-sm p-5">
+    <section className="bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Drivers</h2>
         <button onClick={() => setEditing({ status: "active" })} className="text-xs font-bold text-primary hover:underline">+ Add driver</button>
       </div>
-      {q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
+      {q.isError ? <div role="alert" className="ds-support text-ds-error">Drivers couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
+       : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No drivers yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-          {q.data!.map((d: any) => {
+          {(q.data ?? []).map((d: any) => {
             const veh = (vq.data ?? []).find((v: any) => v.id === d.primary_vehicle_id);
             return (
             <li key={d.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="font-bold">{d.first_name} {d.last_name}
-                  <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{d.status.replace("_"," ")}</span>
+                  <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{String(d.status ?? "Not set").replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -490,23 +491,24 @@ function VehiclesCard() {
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); },
   });
   return (
-    <section className="bg-card border border-border rounded-sm p-5">
+    <section className="bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Vehicles</h2>
         <button onClick={() => setEditing({ vehicle_type: "sedan", status: "active", capacity: 4 })}
                 className="text-xs font-bold text-primary hover:underline">+ Add vehicle</button>
       </div>
-      {q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
+      {q.isError ? <div role="alert" className="ds-support text-ds-error">Vehicles couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
+       : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No vehicles yet.</p>
        : (
         <ul className="divide-y divide-border text-sm">
-          {q.data!.map((v: any) => {
+          {(q.data ?? []).map((v: any) => {
             const drv = (dq.data ?? []).find((d: any) => d.id === v.assigned_driver_id);
             return (
             <li key={v.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="font-bold">{v.name}
-                  <span className="ml-2 text-xs uppercase text-muted-foreground">{v.vehicle_type.replace("_"," ")}</span>
+                  <span className="ml-2 text-xs uppercase text-muted-foreground">{String(v.vehicle_type ?? v.type ?? "Not set").replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{v.plate ?? "no plate"} · cap {v.capacity} · {v.status}</div>
                 {(v.service_capabilities?.length ?? 0) > 0 && (
