@@ -101,16 +101,22 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     ? pathname === i.to && Object.entries(i.search).every(([k, v]) => String((search as Record<string, unknown>)?.[k] ?? "") === v)
     : (i.exact ? pathname === i.to || pathname === i.to + "/" : pathname === i.to || pathname.startsWith(i.to + "/"));
   const pageTitle = title ?? nav.find(isActive)?.label ?? area;
+  const msgUnread = usePortalQuery({
+    queryKey: ["messaging-unread"], staleTime: 60_000,
+    queryFn: () => getMessagingUnreadCount(),
+  });
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
         const Icon = iconFor(i.iconFor ?? i.to);
+        const showMsgDot = i.to === "/portal/messaging" && (msgUnread.data ?? 0) > 0;
         return (
           <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
               isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
             <Icon className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{i.label}</span>
+            {showMsgDot && <Dot kind="update" className="ml-auto" />}
           </Link>
         );
       })}
