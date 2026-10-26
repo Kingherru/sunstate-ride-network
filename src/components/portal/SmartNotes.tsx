@@ -124,12 +124,9 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
         <ArrowLeft className="size-4" aria-hidden /> Back to notes
       </DsButton>
       <p className="ds-body font-semibold uppercase text-ds-primary">Write quick notes or create trips with note shortcodes</p>
-      <ul className="ds-support mt-1 grid gap-0.5 text-ds-text-2">
-        <li>Type in the yellow note, then choose Save.</li>
-        <li>Choose Create trip from note to open a draft carrying your note into Special instructions.</li>
-        <li>The draft opens for review — nothing submits on its own.</li>
-      </ul>
-      <p className="ds-caption mt-1.5 mb-3 text-ds-text-2">Don't enter health information, diagnoses or unnecessary patient details.</p>
+      <p className="ds-support mt-1 font-semibold text-ds-text">Type in the note → Save → Create trip from note</p>
+      <p className="ds-caption mt-0.5 mb-3 text-ds-text-2">Your note becomes Special instructions in a draft you review before submitting. Don't enter health information or diagnoses.</p>
+
 
       <label htmlFor="note-body" className="sr-only">Note text</label>
       <textarea
