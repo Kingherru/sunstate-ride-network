@@ -145,7 +145,7 @@ function VendorCard({ vendor, label, blurb, existing, onChange }: {
                 type="password"
                 value={apiSecret}
                 onChange={(e) => setApiSecret(e.target.value)}
-                placeholder={existing?.config?.apiSecretEncrypted ? "•••••••• (saved)" : "Duet apiSecret"}
+                placeholder={existing?.config?.hasApiSecret ? "•••••••• (saved)" : "Duet apiSecret"}
                 className="mt-1 w-full border border-border rounded-sm px-3 py-2 bg-background"
               />
             </label>

@@ -27,6 +27,9 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'personal-settings': { first_name: 'Demo', last_name: 'Account', display_name: 'Demo Account', phone: '', mfn_id: 'MFN-P-DEMO', notification_preferences: { in_app: true, email: false }, status: 'active' },
+  'personal-security-audit': [],
+  'targeted-patient-requests': [],
   drivers: [
     { id: "preview-driver-1", first_name: "Dana", last_name: "Driverly (Demo)", phone: "(555) 010-0001", email: "dana.demo@example.com", status: "active", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "weekly", days: {} }, service_capabilities: ["wheelchair"], primary_vehicle_id: "preview-vehicle-1", contractor_pricing: {} },
     { id: "preview-driver-2", first_name: "Sam", last_name: "Sample (Demo)", phone: "(555) 010-0002", email: "", status: "active", employment_type: "independent_contractor", pay_type: "independent_contractor", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
@@ -47,7 +50,7 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   "driver-payment-history": [],
   "driver-earnings-reports": [],
   "network-providers": [
-    { workspace_id: "preview-ws-1", business_name: "Gulfside Rides (Demo)", description: "Demo listing for preview only.", cities: ["Clearwater"], counties: ["Pinellas"], service_types: ["Wheelchair"], medical_delivery: false, accepting_connections: true, is_saved: false, business_contact_email: "", business_contact_phone: "", hours: "" },
+    { workspace_id: "preview-ws-1", business_name: "Gulfside Rides (Demo)", mfn_id: 'MFN-A-DEMO01', description: "Demo listing for preview only.", cities: ["Clearwater"], counties: ["Pinellas"], zips: [], service_types: ["Wheelchair"], medical_delivery: false, accepting_connections: true, is_saved: false, business_contact_email: "", business_contact_phone: "", hours: "" },
   ],
   contacts: [],
   "my-payers": [],

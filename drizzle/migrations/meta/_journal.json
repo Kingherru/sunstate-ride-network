@@ -141,6 +141,27 @@
       "when": 1792973550201,
       "tag": "0019_platform_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792985870999,
+      "tag": "0020_pass3k_targeted_requests_personal_settings_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792986041760,
+      "tag": "0021_pass3k_public_provider_proximity",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792986268415,
+      "tag": "0022_pass3k_settings_guardrails",
+      "breakpoints": true
     }
   ]
 }

@@ -11,7 +11,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const LIST_COLS = "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via";
 const DETAIL_COLS =
-  "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, return_dropoff_time, return_pickup_building, return_pickup_suite, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, requester_phone, requester_email, requester_user_id, workspace_id, assigned_provider_id, last_updated_at, canceled_at, needs_wheelchair, needs_assistance_to_vehicle, service_level, delivery_item_type, delivery_signature_required, delivery_instructions, special_instructions, mobility_notes";
+  "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, return_dropoff_time, return_pickup_building, return_pickup_suite, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, requester_phone, requester_email, requester_user_id, workspace_id, assigned_provider_id, last_updated_at, canceled_at, needs_wheelchair, needs_assistance_to_vehicle, service_level, delivery_item_type, delivery_signature_required, delivery_instructions, special_instructions, mobility_notes,selected_provider_workspace_id,selected_provider_mfn_id,provider_selection_status,requester_workspace_mfn_id";
 
 export type RequestListRow = {
   id: string; mfn_id: string | null; intake_source: string | null; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
@@ -51,7 +51,7 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
       ...(storedHistory || []).map(h => ({ action: h.action, at: h.created_at, actor: null })),
       ...relevant.flatMap(d => (d.events || []).map((e: any) => ({ action: String(e.event_type), at: String(e.created_at), actor: e.actor_mfn_id as string | null }))),
     ];
-    let assignment: string | null = r.network_provider_workspace_id ? 'Provider selected' : null;
+    let assignment: string | null = r.selected_provider_mfn_id ? `${r.selected_provider_mfn_id} · ${r.provider_selection_status} · booking unconfirmed` : r.network_provider_workspace_id ? 'Provider selected' : null;
     if (r.network_provider_workspace_id) {
       const { data: ws } = await context.supabase.from('workspaces').select('mfn_id,display_name').eq('id', r.network_provider_workspace_id).maybeSingle();
       if (ws) assignment = [ws.display_name, ws.mfn_id].filter(Boolean).join(' · ');

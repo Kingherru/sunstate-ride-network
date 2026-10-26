@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { approximateMiles, serviceCompatibility } from './account-settings-rules';
 
 export type NetworkProviderRow = {
   workspace_id: string;
@@ -17,6 +18,8 @@ export type NetworkProviderRow = {
   medical_delivery: boolean;
   accepting_connections: boolean;
   is_saved: boolean;
+  distance_miles?: number | null;
+  compatibility?: string;
 };
 
 const filtersSchema = z.object({
@@ -28,6 +31,9 @@ const filtersSchema = z.object({
   medical_delivery: z.boolean().optional(),
   accepting: z.boolean().optional(),
   saved_only: z.boolean().optional(),
+  origin_lat: z.number().min(-90).max(90).optional(),
+  origin_lng: z.number().min(-180).max(180).optional(),
+  radius_miles: z.number().positive().max(1000).optional(),
 });
 export type NetworkProviderFilters = z.infer<typeof filtersSchema>;
 
@@ -55,7 +61,16 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
       _saved_only: data.saved_only ?? false,
     });
     if (error) return { ok: false as const, error: error.message };
-    return { ok: true as const, results: (rows ?? []) as NetworkProviderRow[] };
+    const { data: centers, error: centerError } = await context.supabase.rpc('network_public_service_centers');
+    if (centerError) return { ok: false as const, error: 'Provider service locations unavailable.' };
+    const origin = data.origin_lat !== undefined && data.origin_lng !== undefined ? { lat: data.origin_lat, lng: data.origin_lng } : null;
+    const results = ((rows ?? []) as NetworkProviderRow[]).map(row => {
+      const center = centers?.find(p => p.workspace_id === row.workspace_id);
+      const distance = origin && center?.lat != null && center?.lng != null ? approximateMiles(origin, { lat: center.lat, lng: center.lng }) : null;
+      return { ...row, distance_miles: distance == null ? null : Math.round(distance * 10) / 10, compatibility: serviceCompatibility(distance, center?.radius_miles ?? null, data.county, row.counties) };
+    }).filter(r => !origin || !data.radius_miles || (r.distance_miles != null && r.distance_miles <= data.radius_miles));
+    if (origin) results.sort((a, b) => (a.distance_miles ?? Infinity) - (b.distance_miles ?? Infinity));
+    return { ok: true as const, results };
   });
 
 export const saveNetworkProvider = createServerFn({ method: "POST" })
@@ -104,6 +119,12 @@ export const getMyNetworkProfile = createServerFn({ method: "POST" })
 const profileSchema = z.object({
   workspace_id: z.string().uuid(),
   service_base_address: z.string().trim().max(300).optional().nullable(),
+  location_city: z.string().trim().max(100).optional().nullable(),
+  location_county: z.string().trim().max(100).optional().nullable(),
+  location_zip: z.string().regex(/^\d{5}$/).optional().nullable(),
+  service_radius_miles: z.number().int().nonnegative().optional().nullable(),
+  public_center_lat: z.number().min(-90).max(90).optional().nullable(),
+  public_center_lng: z.number().min(-180).max(180).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
   business_contact_email: z.string().email().max(254).optional().nullable().or(z.literal("")),
   business_contact_phone: z.string().max(32).optional().nullable(),
@@ -123,6 +144,8 @@ export const saveNetworkProfile = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => profileSchema.parse(i))
   .handler(async ({ data, context }) => {
     const { workspace_id, ...rest } = data;
+    const { data: membership } = await context.supabase.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status)').eq('workspace_id', workspace_id).eq('user_id', context.userId).is('removed_at', null).maybeSingle();
+    if (!membership || membership.is_contractor || !['owner', 'admin'].includes(membership.role) || membership.workspaces.account_type !== 'provider' || membership.workspaces.status !== 'active') return { ok: false as const, error: 'Active provider manager required.' };
     const { error } = await context.supabase
       .from("provider_network_profiles")
       .upsert({ workspace_id, ...rest, business_contact_email: rest.business_contact_email || null }, { onConflict: "workspace_id" });

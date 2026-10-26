@@ -15,6 +15,11 @@ const delivery = {
 
 describe("passenger requests", () => {
   test("valid passenger request passes", () => expect(rideRequestSchema.safeParse(ride).success).toBe(true));
+  test('selected provider is a workspace UUID, not a display MFN ID', () => {
+    expect(rideRequestSchema.safeParse({ ...ride, selectedProviderWorkspaceId: '11111111-1111-4111-8111-111111111111' }).success).toBe(true);
+    expect(rideRequestSchema.safeParse({ ...ride, selectedProviderWorkspaceId: 'MFN-A-000001' }).success).toBe(false);
+  });
+  test('no selection remains valid for platform review', () => expect(rideRequestSchema.safeParse({ ...ride, selectedProviderWorkspaceId: null }).success).toBe(true));
   test("unknown service type rejected", () => expect(rideRequestSchema.safeParse({ ...ride, transportType: "helicopter" }).success).toBe(false));
   test("delivery-only field rejected on passenger", () => expect(rideRequestSchema.safeParse({ ...ride, deliveryCategory: "equipment" }).success).toBe(false));
   test("wrong category rejected", () => expect(rideRequestSchema.safeParse({ ...ride, requestCategory: "medical_delivery" }).success).toBe(false));
@@ -24,6 +29,7 @@ describe("passenger requests", () => {
 
 describe("medical delivery requests", () => {
   test("valid delivery passes", () => expect(deliveryRequestSchema.safeParse(delivery).success).toBe(true));
+  test('patient provider targeting never leaks into delivery', () => expect(deliveryRequestSchema.safeParse({ ...delivery, selectedProviderWorkspaceId: '11111111-1111-4111-8111-111111111111' }).success).toBe(false));
   test("unknown category rejected", () => expect(deliveryRequestSchema.safeParse({ ...delivery, requestCategory: "freight" }).success).toBe(false));
   test("passenger-only field rejected", () => expect(deliveryRequestSchema.safeParse({ ...delivery, mobilityNotes: "x" }).success).toBe(false));
   test("unapproved lab specimen category rejected", () => expect(deliveryRequestSchema.safeParse({ ...delivery, deliveryCategory: "lab_sample" }).success).toBe(false));

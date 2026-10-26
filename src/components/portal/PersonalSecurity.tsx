@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { KeyRound, Mail, LogOut, SendHorizonal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { actionCls } from "@/components/portal/PortalShell";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { PersonalSettings } from './PersonalSettings';
+import { DsButton } from '@/components/ds/controls';
 
 /** Shared personal security panel: profile email, change password, send
  *  reset link to self, sign out, sign out of other sessions. Reused behind
@@ -13,6 +14,7 @@ import { usePortalPreview, previewBlocked } from "@/components/portal/preview-da
 export function PersonalSecurity({ email }: { email?: string | null }) {
   const preview = usePortalPreview();
   const [pw, setPw] = useState("");
+  const [currentPw, setCurrentPw] = useState('');
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
@@ -32,7 +34,16 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
     setErr(null);
     if (pw.length < 8) return setErr("Password must be at least 8 characters.");
     if (pw !== pw2) return setErr("Passwords do not match.");
+    if (!currentPw || !currentEmail) return setErr('Enter your current password to verify your identity.');
     setBusy(true);
+    // Use an isolated client: reauthentication never replaces the app session.
+    const { createClient } = await import('@supabase/supabase-js');
+    const verifier = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+    const { data: verified, error: verificationError } = await verifier.auth.signInWithPassword({ email: currentEmail, password: currentPw });
+    const { data: original } = await supabase.auth.getUser();
+    setCurrentPw('');
+    if (verificationError || !original.user || verified.user?.id !== original.user.id) { setBusy(false); return setErr('Current password could not be verified.'); }
+    await verifier.auth.signOut({ scope: 'local' });
     const { error } = await supabase.auth.updateUser({ password: pw });
     setBusy(false);
     if (error) return setErr(/weak|pwned|leaked/i.test(error.message) ? "Please choose a stronger password that hasn't appeared in a data breach." : "We couldn't update your password.");
@@ -43,9 +54,10 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
     if (preview.active) { previewBlocked(); return; }
     if (!currentEmail) return;
     setResetBusy(true);
-    await supabase.auth.resetPasswordForEmail(currentEmail, { redirectTo: `${window.location.origin}/reset-password` });
+    const { error } = await supabase.auth.resetPasswordForEmail(currentEmail, { redirectTo: `${window.location.origin}/reset-password` });
     setResetBusy(false);
-    toast.success("If that email has an account, a reset link was sent.");
+    if (error) toast.error('Could not send your reset link.');
+    else toast.success("If that email has an account, a reset link was sent.");
   }
 
   async function signOut() {
@@ -58,12 +70,15 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   async function signOutEverywhere() {
     if (preview.active) { previewBlocked(); return; }
     setSignOutBusy(true);
-    await supabase.auth.signOut({ scope: "global" });
-    window.location.href = "/login";
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    setSignOutBusy(false);
+    if (error) toast.error('Could not sign out other devices.');
+    else toast.success('Other devices signed out. This session remains active.');
   }
 
   return (
     <div className="max-w-xl space-y-8">
+      <PersonalSettings />
       <section>
         <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><Mail className="size-4" aria-hidden />Profile</h2>
         <dl className="mt-3 divide-y divide-ds-border">
@@ -74,8 +89,15 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
         </dl>
       </section>
 
+      <section className="space-y-3 border border-ds-sky-border bg-ds-sky p-4 rounded-ds">
+        <h2 className="ds-subheading uppercase text-ds-primary">Verified email change</h2>
+        <p className="ds-support">Email changes are unavailable until secure email-change confirmation is verified in account security settings. Your current email remains active.</p>
+        <DsButton size="sm" variant="secondary" disabled>Change email unavailable</DsButton>
+      </section>
+
       <form onSubmit={submit} className="space-y-4" noValidate>
         <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><KeyRound className="size-4" aria-hidden />Change password</h2>
+        <div><label htmlFor="ps-current" className="portal-label">Current password</label><input id="ps-current" type="password" autoComplete="current-password" className="portal-input" value={currentPw} onChange={e => setCurrentPw(e.target.value)} /></div>
         <div>
           <label htmlFor="ps-npw" className="portal-label">New password</label>
           <input id="ps-npw" type="password" autoComplete="new-password" className="portal-input" value={pw} onChange={(e) => setPw(e.target.value)} />
@@ -85,22 +107,22 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
           <input id="ps-npw2" type="password" autoComplete="new-password" className="portal-input" value={pw2} onChange={(e) => setPw2(e.target.value)} />
         </div>
         {err && <p role="alert" className="ds-support text-ds-error">{err}</p>}
-        <button type="submit" disabled={busy} className={actionCls}>{busy ? "Updating…" : "Update password"}</button>
+        <DsButton type="submit" size="sm" disabled={busy}>{busy ? "Updating…" : "Update password"}</DsButton>
       </form>
 
       <section className="space-y-3">
         <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><SendHorizonal className="size-4" aria-hidden />Password reset link</h2>
         <p className="ds-support text-ds-text-2">Send a password reset link to your own email instead of typing a new password here.</p>
-        <button type="button" onClick={sendResetLink} disabled={resetBusy || !currentEmail} className={actionCls}>
+        <DsButton type="button" size="sm" onClick={sendResetLink} disabled={resetBusy || !currentEmail}>
           {resetBusy ? "Sending…" : "Send password reset link"}
-        </button>
+        </DsButton>
       </section>
 
       <section className="space-y-3">
         <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><LogOut className="size-4" aria-hidden />Sign out</h2>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={signOut} disabled={signOutBusy} className={actionCls}>Sign out</button>
-          <button type="button" onClick={signOutEverywhere} disabled={signOutBusy} className="portal-btn-secondary">Sign out of other sessions</button>
+          <DsButton type="button" size="sm" onClick={signOut} disabled={signOutBusy}>Sign out</DsButton>
+          <DsButton type="button" size="sm" variant="secondary" onClick={signOutEverywhere} disabled={signOutBusy}>Sign out of other devices</DsButton>
         </div>
       </section>
     </div>

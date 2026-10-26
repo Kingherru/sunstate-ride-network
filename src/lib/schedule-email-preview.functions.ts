@@ -10,7 +10,7 @@ export const previewScheduleEmails = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = context.supabase;
     const { data: memberships, error: memberError } = await db.from("workspace_members")
-      .select("workspace_id, role, workspaces!inner(account_type, status)").eq("user_id", context.userId);
+      .select("workspace_id, role, workspaces!inner(account_type, status)").eq("user_id", context.userId).is('removed_at', null).eq('is_contractor', false);
     if (memberError) throw new Error("Could not verify workspace access.");
     const allowed = (memberships ?? []).filter((m: any) => ["owner", "admin"].includes(m.role) && m.workspaces.account_type === "provider" && m.workspaces.status === "active");
     if (allowed.length !== 1) throw new Error("One authorized provider workspace is required.");
@@ -30,4 +30,12 @@ export const previewScheduleEmails = createServerFn({ method: "POST" })
       id: d.id, name: `${d.first_name} ${d.last_name}`.trim(), email: d.email,
       trips: (trips ?? []).filter((t) => t.driver_id === d.id).map((t) => ({ reference: t.id.slice(0, 8).toUpperCase(), date: t.pickup_date, time: t.pickup_time, pickup: [t.pickup_address, t.pickup_city].filter(Boolean).join(", "), destination: [t.dropoff_address, t.dropoff_city].filter(Boolean).join(", ") })),
     })) };
+  });
+
+export const confirmScheduleEmailPreview = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => input.parse(v)).handler(async ({ data, context }) => {
+    if (data.allDrivers) throw new Error('Confirm the reviewed driver list.');
+    const { data: id, error } = await context.supabase.rpc('confirm_schedule_email_preview', { _drivers: data.driverIds, _start: data.start, _end: data.end });
+    if (error) throw new Error('Could not record the authorized preview.');
+    return { id, result: 'preview_only_sent_0' };
   });

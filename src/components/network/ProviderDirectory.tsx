@@ -13,6 +13,8 @@ import {
 } from "@/lib/facility-providers.functions";
 import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorkspace } from "@/lib/workspace-messages.functions";
 import { cn } from "@/lib/utils";
+import { DsButton } from '@/components/ds/controls';
+import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -20,7 +22,7 @@ import { cn } from "@/lib/utils";
 function capabilityLabels(types: string[]) {
   return Array.from(new Set(types.map((s) => /ambulatory|^amb$/i.test(s) ? "Ambulatory" : /wheelchair|^wc$/i.test(s) ? "Wheelchair" : /gurney|stretcher|^str$/i.test(s) ? "Gurney/Stretcher" : /delivery/i.test(s) ? "Medical Delivery" : /pickup|drop.?off/i.test(s) ? "Pickup and Drop-off" : s)));
 }
-export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }) {
+export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?: boolean; onSelect?: (v: NetworkProviderRow) => void }) {
   const qc = useQueryClient();
   const listFn = useServerFn(listNetworkProviders);
   const saveFn = useServerFn(saveNetworkProvider);
@@ -39,6 +41,9 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
   const [accepting, setAccepting] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messageTarget, setMessageTarget] = useState<NetworkProviderRow | null>(null);
+  const [originText, setOriginText] = useState('');
+  const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null);
+  const [radius, setRadius] = useState(50);
 
   const filters = {
     search: search.trim() || undefined,
@@ -49,6 +54,9 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
     medical_delivery: medicalDelivery || undefined,
     accepting: accepting || undefined,
     saved_only: savedOnly,
+    origin_lat: origin?.lat,
+    origin_lng: origin?.lng,
+    radius_miles: origin ? radius : undefined,
   };
 
   const q = usePortalQuery({
@@ -122,7 +130,11 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
               <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
             </label>
           </div>
-          <p className="text-[11px] italic text-muted-foreground">Distance search isn't available yet — search by county, city or ZIP instead.</p>
+          <div className="space-y-2"><label className="ds-label" htmlFor="provider-distance-origin">Search near city, ZIP or public business location</label>
+            <AddressAutocomplete inputId="provider-distance-origin" value={originText} onChange={v => { setOriginText(v); setOrigin(null); }} onSelect={v => { setOriginText(v.fullAddress); if (v.lat != null && v.lng != null) setOrigin({ lat: v.lat, lng: v.lng }); }} />
+            <label className="ds-caption block">Within <select aria-label="Provider search radius" className="portal-input" value={radius} onChange={e => setRadius(Number(e.target.value))}>{[20, 50, 100, 200].map(n => <option key={n} value={n}>{n} miles</option>)}</select></label>
+            <p className="ds-caption">Approximate straight-line distance from a public service-area center; not driving mileage. Select a suggested location to apply distance.</p>
+          </div>
         </div>
       )}
 
@@ -156,6 +168,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
               {r.service_types.length > 0 && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">{capabilityLabels(r.service_types).slice(0, 3).join(", ")}{r.medical_delivery ? " · Medical delivery" : ""}</p>
               )}
+              {r.distance_miles != null && <p className="ds-caption mt-1">Approx. {r.distance_miles} mi · {r.compatibility}</p>}
             </button>
           </li>
         ))}
@@ -166,7 +179,8 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
   const profilePanel = selected ? (
     <ProviderProfile
       row={selected}
-      canMessage={!preview.active && !!senderWorkspace && senderWorkspace.id !== selected.workspace_id}
+      canMessage={!onSelect && !preview.active && !!senderWorkspace && senderWorkspace.id !== selected.workspace_id}
+      onSelect={onSelect ? () => onSelect(selected) : undefined}
       onMessage={() => setMessageTarget(selected)}
       onToggleSave={() => toggleSave(selected)}
       onBack={() => setSelectedId(null)}
@@ -179,7 +193,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
 
   return (
     <div className="space-y-4">
-      <aside className="rounded-ds border border-ds-peach-border bg-ds-peach p-4 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network Communication & Payment Reminder</h3><p className="ds-body">Communicate professionally and accept only trips you intend to complete. Accepted trips are final and should not be returned. Mark completed trips promptly and complete all required payments. Following these rules helps providers earn Super Verification and avoid account suspension or removal.</p></aside>
+      {!onSelect && <aside className="rounded-ds border border-ds-peach-border bg-ds-peach p-4 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network Communication & Payment Reminder</h3><p className="ds-body">Communicate professionally and accept only trips you intend to complete. Accepted trips are final and should not be returned. Mark completed trips promptly and complete all required payments. Following these rules helps providers earn Super Verification and avoid account suspension or removal.</p></aside>}
       {/* Desktop: list left, profile right. Mobile: list first, profile replaces it. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <div className={cn(selected && "hidden lg:block")}>{listPanel}</div>
@@ -201,8 +215,8 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
 /** Authorized public business profile only: no insurance files, policy
  *  numbers, home addresses, private contacts, driver records, patient
  *  information, internal pricing or payout data. */
-function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
-  row: NetworkProviderRow; canMessage: boolean; onMessage: () => void; onToggleSave: () => void; onBack: () => void;
+function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack, onSelect }: {
+  row: NetworkProviderRow; canMessage: boolean; onMessage: () => void; onToggleSave: () => void; onBack: () => void; onSelect?: () => void;
 }) {
   const services = capabilityLabels(row.service_types);
   if (row.medical_delivery && !services.some((s) => /delivery/i.test(s))) services.push("Medical Delivery");
@@ -232,6 +246,7 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {onSelect && <DsButton type="button" size="sm" onClick={onSelect} disabled={!row.accepting_connections}>Select this provider</DsButton>}
           {canMessage && (
             <button onClick={onMessage} className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-xs font-bold hover:bg-muted">
               <MessageSquare className="size-4" /> Message provider
@@ -245,6 +260,7 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
       </div>
 
       <dl className="mt-5 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+        {row.distance_miles != null && <div><dt className="ds-label">Approximate distance</dt><dd>{row.distance_miles} miles · {row.compatibility}</dd></div>}
         {(row.cities.length > 0 || row.counties.length > 0) && (
           <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Location</dt>
             <dd className="mt-0.5 flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0" /> {[...row.cities, ...row.counties].slice(0, 4).join(", ")}</dd></div>

@@ -21,6 +21,8 @@ import { FleetDrivers } from "@/components/portal/FleetDrivers";
 import { EarningsPayments } from "@/components/portal/EarningsPayments";
 import { SampleConversations } from "@/components/messaging/SampleConversations";
 import { ProviderNetworkPage } from '@/components/portal/ProviderNetworkPage';
+import { ProviderSettings } from '@/components/portal/ProviderSettings';
+import { PersonalSecurity } from '@/components/portal/PersonalSecurity';
 
 type Kind = "provider" | "customer";
 
@@ -65,7 +67,7 @@ function PortalPreview() {
     navigate({ search: (prev) => ({ ...prev, accountType: v }) });
   }
 
-  const pageTitle = activePage === "requests/new" ? "New trip" : baseNav.find((n) => pageKeyOf(n.to) === activePage)?.label ?? "Overview";
+  const pageTitle = activePage === 'account' ? 'Settings' : activePage === "requests/new" ? "New trip" : baseNav.find((n) => pageKeyOf(n.to) === activePage)?.label ?? "Overview";
 
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
@@ -111,7 +113,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
       case "earnings": return <EarningsPayments userId={PREVIEW_USER} />;
       case "requests/new": return <RequestForm context="portal" />;
       case "notifications": return <Panel><NotificationsPanel /></Panel>;
-      case "account": return <Panel><DsEmpty title="Demo account settings" /></Panel>;
+      case "account": return <Panel><ProviderSettings workspaceId="preview-ws" role="owner" email="demo@example.com" /></Panel>;
       case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;
       case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
       case "network": return <ProviderNetworkPage />;
@@ -121,7 +123,8 @@ function realPage(kind: Kind, page: string): React.ReactNode {
     }
   }
   switch (page) {
-    case "requests/new": return <RequestForm context="portal" />;
+    case "requests/new": return <RequestForm context="portal" allowProviderSelection />;
+    case "account": return <Panel><PersonalSecurity email="demo@example.com" /></Panel>;
     case "requests": return <Panel><DsEmpty title="No requests yet">Requests this account submits appear here.</DsEmpty></Panel>;
     case "upload-csv": return <Unavailable what="CSV upload" />;
     case "find-providers": return <Panel><ProviderDirectory /></Panel>;
@@ -135,7 +138,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
 }
 
 function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accountType: string }) {
-  const label = page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
+  const label = page === 'account' ? 'Settings' : page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
       {!(kind === 'provider' && page === 'network') && <PageHead title={label} />}
