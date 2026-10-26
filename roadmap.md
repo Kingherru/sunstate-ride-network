@@ -1,16 +1,19 @@
 # Pass 3K — account settings and patient routing
-- [ ] Target-only patient selection and authorized Network intake
-- [ ] Shared names/phone/notifications/security and verified email-change audit
-- [ ] Reuse provider settings tabs, private service location and distance search
-- [ ] Reuse secure integrations and available exports
-- [ ] Automatic verification under existing approved payment/document rules; no invented Super threshold
-- [ ] Permanent minimal schedule email preview audit, no sending
-- [ ] Narrow tests and unchanged-real-record confirmation
+- [x] Target-only patient selection with saved/find/inspect/change/remove UI; server trigger validates eligible recipient and stamps MFN IDs; safe Network patient inbox and accepted-follow-up details, never booking/charges/broadcast
+- [x] Shared first/last name, phone and saved notification preferences; password reauthentication; sign out other devices preserves current session; personal/verified-email audit storage
+- [x] Reused eleven provider settings tabs, contact/services/hours/service-area editor; public-center proximity separate from private verified offer bases
+- [x] Reused owner-scoped dispatch integration tools, masked projections, replacement/revocation; added authorized CSV/XLSX/PDF trip/date-range schedule export; kept Pricing/Payouts/Membership/team tools
+- [x] Permanent minimal schedule preview confirmation audit with MFN identities, driver IDs/date range and preview-only sent-zero result; no delivery path
+- [x] 36 narrow tests, signed-in settings read and denied empty/missing RPC checks, demo provider select/remove/settings tabs pass; harness typecheck/build OK; existing record fingerprints unchanged (7 requests, 5 trips, 28 profiles, 14 memberships), audit has zero rows
+- [ ] Email-change initiation blocked: hosted Secure email change setting cannot be verified with available tools; user must confirm it under More → Users → Auth settings → Email before enabling send action. Actual verification/expiration readback intentionally untested; no emails sent
+- [ ] Automatic verification blocked: legacy payment/document records are person-owned, not approved workspace-level entitlement evidence; no approved Super Verified successful-paid-network-trip numerical threshold. Existing directory verification remains unchanged, no invented grants
+- [ ] Preference delivery enforcement deferred: settings save preferences, but legacy queue/mail producers need category mapping before optional notices can be safely suppressed without blocking required/security notices
+- [ ] Authenticated create/save/accept/audit/export/proximity readback blocked: no permitted synthetic writes or populated public-center fixtures; tested UI choices in isolated demo only and safe live reads/denials, not a complete end-to-end workflow
 
 # Routing and security clarifications
 - [x] Owned trips remain Trips/Reservations/Schedule/History; provider offer/proposed-amount/sent activity moved to shared Network page in live and demo, accepted referral confirmation stays under Trips
 - [x] Request creation has no distribution creation; separate sharing/payment acknowledgement and wave confirmation retained. Card persistence projects only Stripe IDs/brand/last4/expiry; personal settings expose no role/account_type change. Demo reads remain isolated; 30 focused tests and preview navigation pass, automatic build OK, no writes/publish
-- [ ] Blocker: patient booking currently submits for review without broadcast, but saved/usual-provider selection is not connected to submission; requires an approved recipient-selection workflow before direct routing can be claimed
+- [x] Patient provider selection connected in Pass 3K; targeted request create/accept readback remains untested under real-write prohibition
 - Deferred: email changes remain unavailable/read-only; hosted secure-email-change setting not verified and no auth settings or email sends changed
 
 # Pass 3J — training integration and shared details
@@ -32,7 +35,7 @@
 - [x] Shared header controls and bottom identity, no top identity repeat
 - [x] Network reminder and normalized capability labels
 - [x] 16 focused tests and six preview-page opening checks pass; automatic typecheck/production build clean; no publish or real writes
-- [ ] Blocker: durable schedule audit/send requires approved live-write workflow; this pass intentionally retains audit only in session
+- [x] Durable preview-only audit added in Pass 3K; real sending remains disabled and requires an approved delivery workflow
 - [ ] Blocker: workspace-wide financial team access needs an approved financial permission model; legacy owner-only tools remain restricted
 - [ ] Blocker: saved MD draft authenticated readback not exercised because real-record writes are prohibited; parser/restoration and form opening checked
 - Deferred: distance search, dispatch/API/exports Settings, major Admin/security redesign, unrelated public polish, sizing controls
