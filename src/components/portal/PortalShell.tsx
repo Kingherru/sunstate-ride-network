@@ -16,6 +16,7 @@ import { listMyNotifications } from "@/lib/notifications.functions";
 import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
 import { getUnreadMessageCount } from "@/lib/messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
+import { TrainingCartIcon } from '@/components/training/TrainingCart';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -156,6 +157,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     <header className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:flex lg:px-10">
       <h1 className="sr-only">{pageTitle}</h1>
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        <TrainingCartIcon />
         {notificationsTo && (
           <Link to={notificationsTo as "/portal/notifications"} aria-label="Notifications" title="Notifications"
             className="relative inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary hover:bg-ds-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
@@ -192,6 +194,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
           </button>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
+          <TrainingCartIcon />
           {notificationsTo && (
             <Link to={notificationsTo as "/portal/notifications"} aria-label="Notifications" title="Notifications"
               className="relative inline-flex size-10 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">

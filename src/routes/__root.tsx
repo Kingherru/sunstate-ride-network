@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { BrandName } from "@/components/brand/BrandName";
 import { usesOwnShell } from "@/components/public/PublicPage";
+import { TrainingCartProvider, TrainingCartIcon } from '@/components/training/TrainingCart';
 
 function NotFoundComponent() {
   return (
@@ -86,6 +87,7 @@ function RootComponent() {
   const ownShell = usesOwnShell(pathname);
   return (
     <QueryClientProvider client={queryClient}>
+      <TrainingCartProvider>
       {ownShell ? (
         <Outlet />
       ) : (
@@ -93,6 +95,7 @@ function RootComponent() {
           <header className="border-b px-6 py-4 flex items-center justify-between">
             <Link to="/"><span className="theme-public"><BrandName /></span></Link>
             <nav className="flex gap-4 text-sm">
+              <span className="theme-portal"><TrainingCartIcon onBlue={false} /></span>
               <Link to="/shop">Training</Link>
               <Link to="/login">Sign in</Link>
             </nav>
@@ -101,6 +104,7 @@ function RootComponent() {
         </div>
       )}
       <Toaster position="top-center" />
+      </TrainingCartProvider>
     </QueryClientProvider>
   );
 }
