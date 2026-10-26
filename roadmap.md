@@ -1,8 +1,8 @@
 # Pass 3F completion and Build 1
 # UI improvements — grouped continuation
-- [ ] Pass 1: diagnose Vehicles/Drivers/Messaging/Training blank pages; restore provider header controls and identity; compact full-width note editor; public Sign In icon/order; safe removable message examples
-- [ ] Pass 2: restrained Pricing/Drivers/content polish, interface sizing settings, consistent activity indicators, Network banner/capability labels and proximity search (requires verified location source)
-- [ ] Pass 3: reuse schedule email/export and Provider API integration; no test sends
+- [x] Pass 1: repaired Vehicles missing-type crash and fleet error states; explicit Training empty/error state (no training rebuild); restored live provider notification control; identity above Change Log; full-width compact notes and draft-only instructions; public Sign In icon/order; isolated opt-in removable conversation examples in both portals/previews. Two navigation tests and harness build pass; signed-in Master Admin live pages and preview note/example read-remove flows checked without saving/sending.
+- [ ] Pass 2 (next grouped prompt): Pricing/content polish, sizing settings, Network activity/banner/capability labels and proximity search; Drivers/fleet subtle blue treatment and Messaging red unread dot completed in Pass 1. Proximity needs authorized verified-location data; no invented shortcut-command parser was found.
+- [ ] Pass 3 (following grouped prompt): schedule one/multiple/all-driver email and dispatch exports/API settings; reuse existing single-driver weekly email, no test sends
 - [ ] Training rebuild — waiting for the user to supply @basic test; cart only if the imported tests require it
 - [ ] Later build: Admin and shared Profile & Security redesign
 
