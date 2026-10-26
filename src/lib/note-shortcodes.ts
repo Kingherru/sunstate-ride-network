@@ -17,7 +17,7 @@
  *    With an explicit colon the value is always taken as written.
  */
 
-import { RECURRENCE_OPTIONS } from "@/lib/request-schemas";
+import { DELIVERY_CATEGORY_OPTIONS, DELIVERY_CATEGORY_LABELS, RECURRENCE_OPTIONS } from "@/lib/request-schemas";
 
 export type ShortcodeGroup = {
   title: string;
@@ -501,6 +501,8 @@ export function parseNoteShortcodes(text: string): ParsedNote {
   const notes: string[] = [];
   const mobility: string[] = [];
   const stops: { address: string; city: string; pickupTime: string; note: string }[] = [];
+  const values = new Map<string, string>();
+  let delivery = false;
   let recurrenceRequested = false;
   let recurrenceSet = false;
 
@@ -565,6 +567,8 @@ export function parseNoteShortcodes(text: string): ParsedNote {
   }
 
   function applyFlag(def: Def) {
+    if (def.code === "MD") delivery = true;
+    values.set(def.code, "true");
     const op = def.op;
     if (op.kind === "tripType") {
       payload.tripType = op.value;
@@ -585,6 +589,7 @@ export function parseNoteShortcodes(text: string): ParsedNote {
   }
 
   function applyValue(def: Def, value: string, colon: boolean) {
+    values.set(def.code, value);
     const op = def.op;
     if (!value) {
       unreadable.push(`${def.code}: (no value given)`);
@@ -705,6 +710,34 @@ export function parseNoteShortcodes(text: string): ParsedNote {
   if (special) payload.specialInstructions = special.slice(0, NOTE_LIMIT);
   if (mobility.length) payload.mobilityNotes = mobility.join("\n").slice(0, MOBILITY_LIMIT);
 
+  if (delivery) {
+    const deliveryPayload: Record<string, unknown> = { requestCategory: "medical_delivery" };
+    for (const key of ["pickupAddress", "pickupCity", "pickupAddressDetails", "dropoffAddress", "dropoffCity"]) {
+      if (payload[key] !== undefined) deliveryPayload[key] = payload[key];
+    }
+    if (payload.pickupDate) deliveryPayload.requestedDate = payload.pickupDate;
+    if (payload.pickupTime) deliveryPayload.requestedTime = payload.pickupTime;
+    if (payload.patientPhone) deliveryPayload.contactPhone = payload.patientPhone;
+    if (payload.patientEmail) deliveryPayload.contactEmail = payload.patientEmail;
+    const contact = values.get("CONTACT");
+    if (contact) {
+      const [first, ...last] = contact.trim().split(/\s+/);
+      deliveryPayload.contactFirstName = first;
+      if (last.length) deliveryPayload.contactLastName = last.join(" ");
+    }
+    const category = values.get("CATEGORY")?.trim().toLowerCase();
+    const approved = DELIVERY_CATEGORY_OPTIONS.find((c) => c === category || DELIVERY_CATEGORY_LABELS[c].toLowerCase() === category);
+    if (approved) deliveryPayload.deliveryCategory = approved;
+    else if (values.has("DME")) deliveryPayload.deliveryCategory = "dme";
+    else if (values.has("SUP")) deliveryPayload.deliveryCategory = "medical_supplies";
+    const signature = values.get("SIGN")?.toLowerCase();
+    if (signature === "true" || signature === "yes" || signature === "required") deliveryPayload.signatureRequired = true;
+    else if (signature === "false" || signature === "no") deliveryPayload.signatureRequired = false;
+    // Keep the complete source in the secure review draft; no truncation or
+    // passenger identity is silently promoted into delivery-contact fields.
+    deliveryPayload.deliveryInstructions = text;
+    return { payload: deliveryPayload, placed: placed.filter((p) => !["RIDER", "RT", "AMB", "WC", "STR"].includes(p.code)), held, unreadable };
+  }
   return { payload, placed, held, unreadable };
 }
 
