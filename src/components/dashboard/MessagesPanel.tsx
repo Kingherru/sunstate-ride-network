@@ -17,6 +17,8 @@ import {
 } from "@/lib/messages.functions";
 
 import type { PortalKind } from "@/components/portal/kinds";
+import { Search } from "lucide-react";
+import { DsButton } from "@/components/ds/controls";
 import { useCapabilities } from "@/lib/permissions";
 
 type Relationship =
@@ -69,13 +71,7 @@ type SortKey = "name" | "company" | "city";
 type ComposeKind = "dispatch" | "zone_manager" | "feedback" | "my_providers" | "providers" | "staff";
 
 function relBadgeClass(rel: Relationship): string {
-  if (rel === "staff" || rel === "dispatch") return "bg-blue-100 text-blue-800 border border-blue-200";
-  if (rel === "zone_manager") return "bg-indigo-100 text-indigo-800 border border-indigo-200";
-  if (rel === "feedback_admin") return "bg-rose-100 text-rose-800 border border-rose-200";
-  if (rel === "provider_network") return "bg-amber-100 text-amber-900 border border-amber-200";
-  if (rel === "prior_trip") return "bg-emerald-100 text-emerald-800 border border-emerald-200";
-  if (rel === "subscription") return "bg-violet-100 text-violet-800 border border-violet-200";
-  return "bg-secondary text-secondary-foreground border border-border";
+  return rel === "provider_network" ? "bg-ds-peach text-ds-primary border border-ds-peach-border" : "bg-ds-sky text-ds-primary border border-ds-sky-border";
 }
 
 export function MessagesPanel({ userId, portal, readOnly = false }: { userId: string; portal: PortalKind; readOnly?: boolean }) {
@@ -324,7 +320,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
           <h3 className="font-semibold text-sm">
             Conversations
             {(threadsQ.data?.total_unread ?? 0) > 0 && (
-              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white align-middle">
+              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-error px-1.5 text-[10px] font-bold text-ds-on-primary align-middle">
                 {threadsQ.data?.total_unread}
               </span>
             )}
@@ -339,12 +335,12 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
           )}
         </div>
         <div className="p-2 border-b border-border space-y-2">
-          <input
-            value={threadSearch}
+          <div className="portal-search"><Search className="size-4" aria-hidden /><input
+            aria-label="Search conversations" value={threadSearch}
             onChange={(e) => setThreadSearch(e.target.value)}
-            placeholder="Search by name, company, city, message…"
-            className="w-full rounded border border-border bg-background px-2.5 py-1.5 text-xs"
-          />
+            placeholder="Search accounts, senders, subjects, messages…"
+            className="portal-input w-full text-sm"
+          /></div>
           <div className="flex gap-1.5">
             <select
               value={kindFilter}
@@ -394,14 +390,14 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
             const isActive = t.id === activeThread;
             return (
               <li key={t.id}>
-                <button
+                <DsButton variant="ghost"
                   onClick={() => setActiveThread(t.id)}
-                  className={`w-full text-left p-3 hover:bg-accent transition ${isActive ? "bg-accent" : ""}`}
+                  className={`block h-auto w-full text-left p-3 hover:bg-ds-sky transition ${isActive ? "bg-ds-sky border-l-2 border-ds-primary" : t.unread_count > 0 ? "bg-ds-sky/40 font-semibold" : ""}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium">{threadTitle(t)}</span>
                     {t.unread_count > 0 && (
-                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
+                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-error px-1.5 text-[10px] font-bold text-ds-on-primary">
                         {t.unread_count}
                       </span>
                     )}
@@ -418,7 +414,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
                   <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
                     {new Date(t.last_message_at).toLocaleString()}
                   </p>
-                </button>
+                </DsButton>
               </li>
             );
           })}
@@ -646,7 +642,7 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
                 </button>
               )}
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto border-y border-ds-border p-3 space-y-2">
               {messagesQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
               {messages.map((m: any) => {
                 const mine = m.sender_id === userId;

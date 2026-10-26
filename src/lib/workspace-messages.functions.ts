@@ -15,7 +15,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export type MessagingWorkspace = { id: string; name: string; mfnId: string | null; accountType: string; role: string };
 export type ConversationRow = {
   id: string; otherWorkspaceId: string; otherName: string; otherMfnId: string | null;
-  lastMessage: string | null; lastMessageAt: string | null; unreadCount: number; archived: boolean; isTest: boolean;
+  lastSenderName?: string | null; lastMessage: string | null; lastMessageAt: string | null; unreadCount: number; archived: boolean; isTest: boolean;
 };
 export type MessageRow = {
   id: string; senderWorkspaceId: string; recipientWorkspaceId: string; senderFirstName: string | null;
@@ -106,13 +106,14 @@ export const listConversations = createServerFn({ method: "POST" })
       const otherId = c.workspace_a_id === data.workspaceId ? c.workspace_b_id : c.workspace_a_id;
       const other = otherMap.get(otherId);
       const { data: lastMsg } = await context.supabase
-        .from("workspace_messages").select("body, created_at").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+        .from("workspace_messages").select("body, created_at, sent_by_user_id").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: sender } = lastMsg ? await supabaseAdmin.from("user_profiles").select("first_name, last_name").eq("user_id", lastMsg.sent_by_user_id).maybeSingle() : { data: null };
       const { count } = await context.supabase
         .from("workspace_messages").select("id", { count: "exact", head: true })
         .eq("conversation_id", c.id).eq("recipient_workspace_id", data.workspaceId).is("read_at", null);
       results.push({
         id: c.id, otherWorkspaceId: otherId, otherName: other?.display_name ?? "Unknown business", otherMfnId: other?.mfn_id ?? null,
-        lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount: count ?? 0, archived: !!c.archived_at, isTest: !!c.is_test,
+        lastSenderName: sender ? `${sender.first_name ?? ""} ${sender.last_name ?? ""}`.trim() : null, lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount: count ?? 0, archived: !!c.archived_at, isTest: !!c.is_test,
       });
     }
     return results;
@@ -243,13 +244,14 @@ export const listAdminConversations = createServerFn({ method: "GET" })
     const map = new Map((wss ?? []).map((w: any) => [w.id, w]));
     const results: ConversationRow[] = [];
     for (const c of rows) {
-      const { data: lastMsg } = await context.supabase.from("workspace_messages").select("body, created_at").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: lastMsg } = await context.supabase.from("workspace_messages").select("body, created_at, sent_by_user_id").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: sender } = lastMsg ? await supabaseAdmin.from("user_profiles").select("first_name, last_name").eq("user_id", lastMsg.sent_by_user_id).maybeSingle() : { data: null };
       const a = map.get(c.workspace_a_id); const b = map.get(c.workspace_b_id);
       results.push({
         id: c.id, otherWorkspaceId: c.workspace_b_id,
         otherName: `${a?.display_name ?? "Unknown"} ↔ ${b?.display_name ?? "Unknown"}`,
         otherMfnId: [a?.mfn_id, b?.mfn_id].filter(Boolean).join(" / ") || null,
-        lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount: 0, archived: !!c.archived_at, isTest: !!c.is_test,
+        lastSenderName: sender ? `${sender.first_name ?? ""} ${sender.last_name ?? ""}`.trim() : null, lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount: 0, archived: !!c.archived_at, isTest: !!c.is_test,
       });
     }
     return results;

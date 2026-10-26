@@ -17,6 +17,9 @@ import { cn } from "@/lib/utils";
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
  *  provider opens the profile with a Back to Providers action. */
+function capabilityLabels(types: string[]) {
+  return Array.from(new Set(types.map((s) => /ambulatory|^amb$/i.test(s) ? "Ambulatory" : /wheelchair|^wc$/i.test(s) ? "Wheelchair" : /gurney|stretcher|^str$/i.test(s) ? "Gurney/Stretcher" : /delivery/i.test(s) ? "Medical Delivery" : /pickup|drop.?off/i.test(s) ? "Pickup and Drop-off" : s)));
+}
 export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }) {
   const qc = useQueryClient();
   const listFn = useServerFn(listNetworkProviders);
@@ -151,7 +154,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
                 </p>
               )}
               {r.service_types.length > 0 && (
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">{r.service_types.slice(0, 3).join(", ")}{r.medical_delivery ? " · Medical delivery" : ""}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{capabilityLabels(r.service_types).slice(0, 3).join(", ")}{r.medical_delivery ? " · Medical delivery" : ""}</p>
               )}
             </button>
           </li>
@@ -176,6 +179,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
 
   return (
     <div className="space-y-4">
+      <aside className="rounded-ds border border-ds-peach-border bg-ds-peach p-4 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network Communication & Payment Reminder</h3><p className="ds-body">Communicate professionally and accept only trips you intend to complete. Accepted trips are final and should not be returned. Mark completed trips promptly and complete all required payments. Following these rules helps providers earn Super Verification and avoid account suspension or removal.</p></aside>
       {/* Desktop: list left, profile right. Mobile: list first, profile replaces it. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <div className={cn(selected && "hidden lg:block")}>{listPanel}</div>
@@ -200,7 +204,7 @@ export function ProviderDirectory({ savedOnly = false }: { savedOnly?: boolean }
 function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
   row: NetworkProviderRow; canMessage: boolean; onMessage: () => void; onToggleSave: () => void; onBack: () => void;
 }) {
-  const services = [...row.service_types];
+  const services = capabilityLabels(row.service_types);
   if (row.medical_delivery && !services.some((s) => /delivery/i.test(s))) services.push("Medical Delivery");
   return (
     <article className="rounded-sm border border-border bg-card p-5">
@@ -253,8 +257,9 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack }: {
             <dd className="mt-0.5 flex items-center gap-1.5"><Clock className="size-3.5 shrink-0" /> {row.hours}</dd></div>
         )}
         {services.length > 0 && (
-          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Services</dt><dd className="mt-0.5">{services.join(", ")}</dd></div>
+          <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Services</dt><dd className="mt-1 flex flex-wrap gap-1.5">{services.map((service) => <span key={service} className="rounded-ds-sm border border-ds-sky-border bg-ds-sky px-2 py-1 ds-caption text-ds-primary">{service}</span>)}</dd></div>
         )}
+        <div><dt className="text-xs font-bold uppercase text-muted-foreground">Accepting Connections</dt><dd>{row.accepting_connections ? "Yes" : "No"}</dd></div>
         {row.business_contact_phone && (
           <div><dt className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Business phone</dt>
             <dd className="mt-0.5"><a href={`tel:${row.business_contact_phone}`} className="inline-flex items-center gap-1.5 font-bold hover:underline"><Phone className="size-3.5" /> {row.business_contact_phone}</a></dd></div>

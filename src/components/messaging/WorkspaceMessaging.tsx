@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, Send } from "lucide-react";
+import { Archive, ArchiveRestore, Send, Search } from "lucide-react";
+import { DsButton } from "@/components/ds/controls";
 import {
   listMyMessagingWorkspaces, listConversations, getConversation, sendMessage, markRead, archiveConversation,
   listAdminConversations, getAdminConversation, adminSendMessage, adminArchiveConversation,
@@ -35,6 +36,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   const [showArchived, setShowArchived] = useState(false);
   const [selected, setSelected] = useState<string | null>(initialConversationId ?? null);
   const [draft, setDraft] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => { onConversationChange?.(selected); }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -53,8 +55,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
 
   const conversations = useMemo(() => {
     const rows = (convosQuery.data ?? []) as ConversationRow[];
-    return showArchived || mode === "admin" ? rows : rows.filter((r) => !r.archived);
-  }, [convosQuery.data, showArchived, mode]);
+    const visible = showArchived || mode === "admin" ? rows : rows.filter((r) => !r.archived);
+    return visible.filter((r) => [r.otherName, r.otherMfnId, r.lastSenderName, r.lastMessage].filter(Boolean).join(" ").toLowerCase().includes(search.trim().toLowerCase()));
+  }, [convosQuery.data, showArchived, mode, search]);
 
   // No auto-select: on phones the conversation list must show first, with a
   // clear Back to Conversations action after opening one.
@@ -118,26 +121,27 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
             </label>
           )}
         </div>
+        <div className="portal-search"><Search className="size-4" aria-hidden /><input aria-label="Search workspace conversations" placeholder="Search accounts, senders, messages…" value={search} onChange={(e) => setSearch(e.target.value)} className="portal-input w-full" /></div>
         <div className="max-h-[28rem] space-y-1 overflow-y-auto rounded-ds-sm border border-ds-border">
           {convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
           {(wsQuery.isError || convosQuery.isError) && <p role="alert" className="ds-support p-3 text-ds-error">Conversations couldn't load. Please try again.</p>}
-          {!convosQuery.isLoading && conversations.length === 0 && <p className="ds-support p-3">No conversations yet.</p>}
+          {!convosQuery.isLoading && conversations.length === 0 && <p className="ds-support p-3">{search ? "No conversations match your search." : "No conversations yet."}</p>}
           {conversations.map((c) => (
-            <button key={c.id} onClick={() => setSelected(c.id)}
-              className={`block w-full border-b border-ds-border px-3 py-2.5 text-left last:border-b-0 ${selected === c.id ? "bg-ds-primary-soft" : "hover:bg-ds-bg"}`}>
+            <DsButton variant="ghost" key={c.id} onClick={() => setSelected(c.id)}
+              className={`block h-auto w-full border-b border-ds-border px-3 py-2.5 text-left last:border-b-0 ${selected === c.id ? "bg-ds-sky" : "hover:bg-ds-bg"}`}>
               <div className="flex items-center justify-between gap-2">
                 <span className="ds-body truncate font-semibold">{c.otherName}</span>
-                {c.unreadCount > 0 && <span className="ds-support shrink-0 rounded-full bg-ds-action px-2 py-0.5 text-ds-on-action">{c.unreadCount}</span>}
+                {c.unreadCount > 0 && <span className="ds-support shrink-0 rounded-ds-sm bg-ds-error px-2 py-0.5 text-ds-on-action">{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
               {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
               {c.archived && <p className="ds-support text-ds-on-bg/50">Archived</p>}
-            </button>
+            </DsButton>
           ))}
         </div>
       </div>
 
-      <div className={`min-w-0 rounded-ds-sm border border-ds-border ${selected ? "" : "hidden md:block"}`}>
+      <div className={`min-w-0 rounded-ds-sm border border-ds-sky-border bg-ds-surface ${selected ? "" : "hidden md:block"}`}>
         {!selected && <p className="ds-support p-4">Select a conversation to view messages.</p>}
         {selected && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
@@ -158,12 +162,12 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 </button>
               )}
             </div>
-            <div className="max-h-[22rem] min-h-[10rem] flex-1 space-y-3 overflow-y-auto px-4 py-3">
+            <div className="max-h-[22rem] min-h-[10rem] flex-1 space-y-3 overflow-y-auto border-y border-ds-border px-4 py-3">
               {thread.messages.length === 0 && <p className="ds-support">No messages yet.</p>}
               {thread.messages.map((m: MessageRow) => {
                 const mine = mode === "portal" && m.senderWorkspaceId === effectiveWorkspaceId;
                 return (
-                  <div key={m.id} className={`max-w-[32rem] rounded-ds-sm px-3 py-2 ${mine ? "ml-auto bg-ds-primary-soft" : "bg-ds-bg"}`}>
+                  <div key={m.id} className={`max-w-[32rem] rounded-ds-sm px-3 py-2 ${mine ? "ml-auto bg-ds-sky" : "bg-ds-bg"}`}>
                     <p className="ds-support font-semibold">{m.senderFirstName ?? "Team member"}</p>
                     <p className="ds-body whitespace-pre-wrap break-words">{m.body}</p>
                     <p className="ds-support mt-1 text-ds-on-bg/50">{new Date(m.createdAt).toLocaleString()}</p>

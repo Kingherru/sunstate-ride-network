@@ -17,6 +17,8 @@ import { ProviderDirectory } from "@/components/network/ProviderDirectory";
 import { RequestForm } from "@/components/requests/RequestForm";
 import { PROVIDER_NAV, CUSTOMER_NAV } from "@/components/portal/portal-nav";
 import { ORGANIZATION_TYPES, organizationLabel } from "@/lib/account-types";
+import { FleetDrivers } from "@/components/portal/FleetDrivers";
+import { EarningsPayments } from "@/components/portal/EarningsPayments";
 import { SampleConversations } from "@/components/messaging/SampleConversations";
 
 type Kind = "provider" | "customer";
@@ -55,8 +57,8 @@ function PortalPreview() {
   );
 
   const identity = isProvider
-    ? { name: "Sunshine Coast Transport (Demo)", mfnId: "MFN-P-DEMO01", label: "" }
-    : { name: `Demo ${organizationLabel(accountType)}`, mfnId: "MFN-R-DEMO01", label: "" };
+    ? { name: "Sunshine Coast Transport (Demo)", mfnId: "MFN-P-DEMO01", label: "Provider" }
+    : { name: `Demo ${organizationLabel(accountType)}`, mfnId: "MFN-R-DEMO01", label: organizationLabel(accountType) };
 
   function setAccountType(v: string) {
     navigate({ search: (prev) => ({ ...prev, accountType: v }) });
@@ -66,8 +68,8 @@ function PortalPreview() {
 
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
-    <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-ds border-2 border-ds-accent bg-ds-accent/10 px-4 py-3">
+    <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle} settingsTo={`${previewTo}?page=account`} notificationsTo={`${previewTo}?page=notifications`}>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-ds border border-ds-peach-border bg-ds-peach px-4 py-3">
         <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Preview mode — demo information only, nothing is saved</p>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
       </div>
@@ -104,6 +106,11 @@ function realPage(kind: Kind, page: string): React.ReactNode {
     switch (page) {
       case "trips": return <Panel><ProviderTrips userId={PREVIEW_USER} /></Panel>;
       case "schedule": return <Panel><ScheduleCalendarPanel /></Panel>;
+      case "fleet": return <FleetDrivers />;
+      case "earnings": return <EarningsPayments userId={PREVIEW_USER} />;
+      case "requests/new": return <RequestForm context="portal" />;
+      case "notifications": return <Panel><NotificationsPanel /></Panel>;
+      case "account": return <Panel><DsEmpty title="Demo account settings" /></Panel>;
       case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;
       case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
       case "network": return <Panel><ProviderDirectory /></Panel>;
