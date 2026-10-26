@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,6 +10,8 @@ import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-d
 import { cn } from "@/lib/utils";
 import { DsButton } from "@/components/ds/controls";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { COMMON_CODES, SHORTCODE_GUIDE, parseNoteShortcodes } from "@/lib/note-shortcodes";
+
 
 type Note = { id: string; title: string; body: string; archived_at: string | null; updated_at: string };
 
@@ -43,6 +45,9 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
   const rows = (notes.data ?? []) as Note[];
   const openNote = rows.find((n) => n.id === openId) ?? null;
   const editing = creating || openNote !== null;
+  /** Live read of the note so the editor can show what will be filled in. */
+  const parsed = useMemo(() => parseNoteShortcodes(draftBody), [draftBody]);
+
 
   const save = usePortalMutation({
     mutationFn: async (n: { id: string | null; body: string }) => {
@@ -75,21 +80,24 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
     setDraftBody(n?.body ?? "");
   }
 
-  /** Creates a secure trip-request draft carrying only the note text into
-   *  Special instructions — nothing is guessed or auto-submitted. The draft
-   *  form opens so the user reviews and completes every field. */
+  /** Reads the note's shortcodes and creates a secure trip-request draft with
+   *  each value in its own form field. Anything the parser cannot place is kept
+   *  inside Additional Information, so no typed text is lost. Nothing is
+   *  guessed and nothing is submitted — the draft form opens for review. */
   async function createTripFromNote() {
     if (preview.active) { previewBlocked(); return; }
     const body = draftBody.trim();
     if (!body) return;
     try {
-      const { id } = await saveDraftFn({ data: { payload: { specialInstructions: body }, autosaved: false } });
+      const { payload } = parseNoteShortcodes(body);
+      const { id } = await saveDraftFn({ data: { payload, autosaved: false } });
       closeEditor();
       navigate({ to: "/portal/requests/new", search: { draft: id } });
     } catch {
       toast.error("Couldn't start a trip draft from that note.");
     }
   }
+
 
   const listPanel = (
     <div className="min-w-0">
@@ -124,8 +132,12 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
         <ArrowLeft className="size-4" aria-hidden /> Back to notes
       </DsButton>
       <p className="ds-body font-semibold uppercase text-ds-primary">Write quick notes or create trips with note shortcodes</p>
-      <p className="ds-support mt-1 font-semibold text-ds-text">Type in the note → Save → Create trip from note</p>
-      <p className="ds-caption mt-0.5 mb-3 text-ds-text-2">Your note becomes Special instructions in a draft you review. Don't enter health information or diagnoses.</p>
+      <ul className="ds-caption mt-1 mb-3 flex flex-wrap gap-x-3 gap-y-0.5 text-ds-text-2">
+        {COMMON_CODES.map((c) => (
+          <li key={c.code}><span className="font-semibold text-ds-text">{c.code}</span> {c.label}</li>
+        ))}
+      </ul>
+
 
 
       <label htmlFor="note-body" className="sr-only">Note text</label>
@@ -157,10 +169,50 @@ export function SmartNotes({ workspaceId }: { workspaceId: string | null }) {
           </DsButton>
         )}
       </div>
+      {draftBody.trim() !== "" && (
+        <details className="mt-3 rounded-ds-sm border border-[color:var(--ds-note-line)] bg-ds-surface px-3 py-2">
+          <summary className="ds-caption cursor-pointer font-semibold uppercase text-ds-primary">
+            What this note will fill ({parsed.placed.length})
+          </summary>
+          <div className="ds-caption mt-2 space-y-1 text-ds-text-2">
+            {parsed.placed.length === 0 && <p>No codes recognized yet — the whole note goes into Additional Information.</p>}
+            {parsed.placed.length > 0 && (
+              <ul className="grid gap-0.5 sm:grid-cols-2">
+                {parsed.placed.map((p, i) => (
+                  <li key={`${p.code}-${i}`}><span className="font-semibold text-ds-text">{p.label}</span></li>
+                ))}
+              </ul>
+            )}
+            {parsed.held.length > 0 && (
+              <p><span className="font-semibold text-ds-text">Kept in Additional Information:</span> {parsed.held.join(" · ")}</p>
+            )}
+            {parsed.unreadable.length > 0 && (
+              <p><span className="font-semibold text-ds-text">Couldn't read — check these:</span> {parsed.unreadable.join(" · ")}</p>
+            )}
+          </div>
+        </details>
+      )}
+      <details className="mt-3">
+        <summary className="ds-caption cursor-pointer font-semibold uppercase text-ds-primary">Shortcode guide</summary>
+        <div className="mt-2 grid gap-3 sm:grid-cols-2">
+          {SHORTCODE_GUIDE.map((g) => (
+            <div key={g.title}>
+              <p className="ds-caption font-semibold uppercase text-ds-text">{g.title}</p>
+              <ul className="ds-caption mt-0.5 space-y-0.5 text-ds-text-2">
+                {g.items.map((it) => (
+                  <li key={it.code}><span className="font-semibold text-ds-text">{it.code}</span> {it.label}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </details>
+      <p className="ds-caption mt-3 text-ds-text-2">A note never submits a trip, assigns a driver or changes a payment — the draft form opens for you to review. Don't enter health information or diagnoses.</p>
     </div>
   );
 
   return (
+
     <section aria-labelledby="notes-h" className="rounded-ds ds-notepad border border-[color:var(--ds-note-line)]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--ds-note-line)] px-4 py-3 sm:px-5">
         <h2 id="notes-h" className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><StickyNote className="size-4" aria-hidden />Smart notes</h2>
