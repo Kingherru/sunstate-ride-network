@@ -18,6 +18,7 @@ function Player() {
   const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({ queryKey: ["course-player", slug], queryFn: () => getMyCoursePlayer({ data: { slug } }) });
   const [step, setStep] = useState(0);
+  const [basicExam, setBasicExam] = useState(false);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<{ score: number; passed: boolean; correct: number; total: number } | null>(null);
 
@@ -52,8 +53,8 @@ function Player() {
 
   const { course, modules, questions, enrollment, certificate } = data;
   const totalSteps = modules.length + 1; // modules + exam
-  const isExam = step >= modules.length;
   const basic = course.slug === 'nemt-certification';
+  const isExam = basic ? basicExam : step >= modules.length;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -74,7 +75,7 @@ function Player() {
         </div>
       ) : null}
 
-      {basic && !isExam ? <BasicNemtReading onExam={() => setStep(modules.length)} /> : !isExam ? (
+      {basic && !isExam ? <BasicNemtReading onExam={() => setBasicExam(true)} /> : !isExam ? (
         <article className="border border-border rounded-lg p-6 bg-card mb-6">
           <h2 className="text-xl font-bold mb-3">{modules[step].title}</h2>
           <div className="prose prose-sm max-w-none whitespace-pre-line">{modules[step].body_markdown}</div>

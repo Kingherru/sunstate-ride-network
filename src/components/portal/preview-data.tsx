@@ -87,6 +87,7 @@ export function usePortalQuery<TData = unknown, TError = unknown>(
   const effective = preview.active
     ? {
         ...options,
+        queryKey: ['portal-preview', ...options.queryKey],
         queryFn: async () => previewFixtureFor(options.queryKey) as TData,
         refetchInterval: false as const,
         refetchOnWindowFocus: false,
