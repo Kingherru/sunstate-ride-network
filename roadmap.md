@@ -1,3 +1,12 @@
+# Pass 3K — account settings and patient routing
+- [ ] Target-only patient selection and authorized Network intake
+- [ ] Shared names/phone/notifications/security and verified email-change audit
+- [ ] Reuse provider settings tabs, private service location and distance search
+- [ ] Reuse secure integrations and available exports
+- [ ] Automatic verification under existing approved payment/document rules; no invented Super threshold
+- [ ] Permanent minimal schedule email preview audit, no sending
+- [ ] Narrow tests and unchanged-real-record confirmation
+
 # Routing and security clarifications
 - [x] Owned trips remain Trips/Reservations/Schedule/History; provider offer/proposed-amount/sent activity moved to shared Network page in live and demo, accepted referral confirmation stays under Trips
 - [x] Request creation has no distribution creation; separate sharing/payment acknowledgement and wave confirmation retained. Card persistence projects only Stripe IDs/brand/last4/expiry; personal settings expose no role/account_type change. Demo reads remain isolated; 30 focused tests and preview navigation pass, automatic build OK, no writes/publish
