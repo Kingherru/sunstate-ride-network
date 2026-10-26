@@ -1,4 +1,14 @@
 # Pass 3F completion and Build 1
+# Pass 3I — current implementation
+- [ ] Shared New Trip access and separate provider-created requests
+- [ ] Medical Delivery notes restore secure delivery drafts
+- [ ] Shared messaging search/borders and colored panel treatment
+- [ ] Fleet & Drivers with legacy section links and capacity
+- [ ] Earnings & Payments reuse authorized financial tools
+- [ ] Schedule driver/date selection, preview confirmation and safe audit
+- [ ] Portal header controls and bottom identity
+- [ ] Network reminder and capability labels
+- [ ] Narrow tests and changed-page opening checks; no publish or real writes
 # UI improvements — grouped continuation
 - [x] Pass 1: repaired Vehicles missing-type crash and fleet error states; explicit Training empty/error state (no training rebuild); restored live provider notification control; identity above Change Log; full-width compact notes and draft-only instructions; public Sign In icon/order; isolated opt-in removable conversation examples in both portals/previews. Two navigation tests and harness build pass; signed-in Master Admin live pages and preview note/example read-remove flows checked without saving/sending.
 - [x] Smart Notes copy addendum: removed "Operational business notes"/"Private to you"/team-sharing wording, instruction now "Write quick notes or create trips with note shortcodes", placeholder "Type your note here...", compact one-line workflow reference; typing/save/archive/restore/Back to notes/Create trip from note and private permissions unchanged, no stored-note or parser changes. No shortcode parser exists in code, git history or any brief, so no commands were displayed or invented.
