@@ -1,6 +1,7 @@
 # Architecture decisions
 
-- MCP routes and package stay removed. Why: not needed; archive in Files → mcp-archive retains restoration sources.
+- MCP stays removed; restoration sources are in Files → mcp-archive. Why: unused.
+- Example conversations use isolated in-memory UI fixtures with no send actions. Why: removable demos never affect real messages.
 - App emails use the server-only managed helper; signed terminal events dedupe by delivery ID into retained history, never gate sends. Why: Lovable owns delivery. Independent Maps/driver-schedule notification_email_queue writers stay outside this update.
 - Design tokens are scoped under `.theme-public` / `.theme-portal` in `src/styles.css`; new UI uses `src/components/ds/*` + `src/components/brand/*`. Why: keeps the preserved training screens on neutral tokens and lets a future admin theme editor override one central token set.
 - Public pages use uppercase H1/H2 headings; one-column section heads center as a complete group, while two-column heads explicitly opt into left alignment. Why: keeps hierarchy and alignment consistent site-wide.

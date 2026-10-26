@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
-import { usePortalQuery, usePortalPreview } from "@/components/portal/preview-data";
+import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
 import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
@@ -77,7 +77,6 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   settingsTo?: string; notificationsTo?: string; title?: string; children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const preview = usePortalPreview();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
   const navigate = useNavigate();
