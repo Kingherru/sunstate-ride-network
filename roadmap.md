@@ -1,3 +1,9 @@
+# Routing and security clarifications
+- [x] Owned trips remain Trips/Reservations/Schedule/History; provider offer/proposed-amount/sent activity moved to shared Network page in live and demo, accepted referral confirmation stays under Trips
+- [x] Request creation has no distribution creation; separate sharing/payment acknowledgement and wave confirmation retained. Card persistence projects only Stripe IDs/brand/last4/expiry; personal settings expose no role/account_type change. Demo reads remain isolated; 30 focused tests and preview navigation pass, automatic build OK, no writes/publish
+- [ ] Blocker: patient booking currently submits for review without broadcast, but saved/usual-provider selection is not connected to submission; requires an approved recipient-selection workflow before direct routing can be claimed
+- Deferred: email changes remain unavailable/read-only; hosted secure-email-change setting not verified and no auth settings or email sends changed
+
 # Pass 3J — training integration and shared details
 - [x] Reused six source readings, 25 questions, sequential answer feedback, 80% pass and retake; existing ownership/certificates remain authoritative, no source accounts/secrets/storage
 - [x] Training views, materials, result history, safe isolated preview and authenticated multi-course cart; both existing $50 price mappings retained, missing mappings blocked

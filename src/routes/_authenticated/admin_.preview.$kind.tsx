@@ -20,6 +20,7 @@ import { ORGANIZATION_TYPES, organizationLabel } from "@/lib/account-types";
 import { FleetDrivers } from "@/components/portal/FleetDrivers";
 import { EarningsPayments } from "@/components/portal/EarningsPayments";
 import { SampleConversations } from "@/components/messaging/SampleConversations";
+import { ProviderNetworkPage } from '@/components/portal/ProviderNetworkPage';
 
 type Kind = "provider" | "customer";
 
@@ -113,7 +114,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
       case "account": return <Panel><DsEmpty title="Demo account settings" /></Panel>;
       case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;
       case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
-      case "network": return <Panel><ProviderDirectory /></Panel>;
+      case "network": return <ProviderNetworkPage />;
       case "training": return <TrainingTests />;
       case "messaging": return <SampleConversations initiallyOpen />;
       default: return <ProviderOverview workspaceId="preview-ws" userId={PREVIEW_USER} />;
@@ -137,7 +138,7 @@ function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accou
   const label = page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
-      <PageHead title={label} />
+      {!(kind === 'provider' && page === 'network') && <PageHead title={label} />}
       {realPage(kind, page)}
     </PortalPreviewContext.Provider>
   );
