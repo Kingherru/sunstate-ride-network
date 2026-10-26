@@ -213,7 +213,8 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 
       <div className="lg:ml-64">{topHeader}</div>
       <main id="main" className="min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-10 lg:py-10">
-        <div className="portal-enter mx-auto w-full max-w-6xl"><RequestDetailProvider>{children}</RequestDetailProvider></div>
+        {/* Contacts pages get a modestly wider shared white panel; columns stay balanced. */}
+        <div className={cn("portal-enter mx-auto w-full", pathname.endsWith("/contacts") ? "max-w-7xl" : "max-w-6xl")}><RequestDetailProvider>{children}</RequestDetailProvider></div>
       </main>
     </div>
   );
