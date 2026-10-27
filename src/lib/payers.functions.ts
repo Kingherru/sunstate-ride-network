@@ -76,8 +76,7 @@ const payerFields = {
 };
 
 function payerRow(data: z.infer<z.ZodObject<typeof payerFields>>, ownerUserId?: string) {
-  return {
-    ...(ownerUserId ? { owner_user_id: ownerUserId } : {}),
+  const row = {
     name: data.name,
     email: data.email || null,
     phone: data.phone || null,
