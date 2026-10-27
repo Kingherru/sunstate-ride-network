@@ -7211,6 +7211,7 @@ export type Database = {
         Returns: Json
       }
       provider_verification_lifecycle: { Args: never; Returns: Json }
+      provider_verification_scheduled_run: { Args: never; Returns: Json }
       provider_verification_summary: {
         Args: { _workspace: string }
         Returns: Json

@@ -2,7 +2,7 @@
 
 Prepared SQL-only function: `public.provider_verification_lifecycle()`.
 
-The existing database has pg_cron enabled and serves both preview and production. No new job was activated: the brief forbids changing real records. After owner authorization, run this through the database write tool (not a migration):
+The existing database has pg_cron enabled and serves both preview and production. ACTIVE (Pass 3L finalization): hourly job `provider-verification-lifecycle` runs `public.provider_verification_scheduled_run()`, which wraps the lifecycle and adds audit-only email-change expiry after 24h. Original activation SQL for reference:
 
 ```sql
 SELECT cron.schedule('provider-verification-lifecycle', '0 * * * *',
