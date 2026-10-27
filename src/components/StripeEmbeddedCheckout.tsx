@@ -8,9 +8,10 @@ interface Props {
   userId?: string;
   returnUrl?: string;
   metadata?: Record<string, string>;
+  includeNetworkAddon?: boolean;
 }
 
-export function StripeEmbeddedCheckout({ priceId, customerEmail, userId, returnUrl, metadata }: Props) {
+export function StripeEmbeddedCheckout({ priceId, customerEmail, userId, returnUrl, metadata, includeNetworkAddon }: Props) {
   const fetchClientSecret = async (): Promise<string> => {
     const result = await createCheckoutSession({
       data: {
@@ -20,6 +21,7 @@ export function StripeEmbeddedCheckout({ priceId, customerEmail, userId, returnU
         returnUrl: returnUrl || `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
         environment: getStripeEnvironment(),
         metadata,
+        includeNetworkAddon,
       },
     });
     if ("error" in result) throw new Error(result.error);
