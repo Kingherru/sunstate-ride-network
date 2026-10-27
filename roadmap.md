@@ -112,3 +112,12 @@
 - [x] Sidebar hover effect preserved (existing .portal-sidebar::after rule untouched)
 - [x] Contacts pages widened modestly (max-w-7xl) with balanced columns
 - [x] Checks: tsgo clean, harness build OK 00:19Z, record counts unchanged at 28/13/7/5 with zero messages/offers/platform requests; cross-workspace messaging guard unchanged (can_access_workspace_messages re-verified on every write; direct authenticated execution remains sandbox-blocked as before)
+
+# Pass 3M completion (Option 1)
+- [x] Shared overlay: blue top border, context titles, visible MFN ID, gray canvas/white cards, readable dates, ZIPs, deactivated warning; admin status/history and actions inside
+- [x] Admin actions: Edit/Save, Deny (reason, In Review only), Deactivate (soft, reason) via audited server function; Resend and Forward/Redistribute disabled with explanation
+- [x] People & Accounts: single email, ZIP/city/address, edit details, deactivate/restore with reason (Master Admin and disabled test accounts protected), Open in Messaging selects the conversation
+- [x] Provider Viewed recorded once on explicit live-portal open; database limits it to the selected provider while Distributed
+- [x] Messaging sidebar red dot includes unread website contacts; removable in-memory DEMO samples when lists are empty
+- [ ] Owner decision: Resend needs a chosen request-notification email (none exists to resend)
+- [ ] Owner decision: approve the provider-offer distribution build before Forward/Redistribute is enabled

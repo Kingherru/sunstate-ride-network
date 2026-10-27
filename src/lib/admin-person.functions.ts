@@ -20,8 +20,8 @@ export const getAdminPerson = createServerFn({ method: 'GET' }).middleware([requ
   .handler(async ({ data, context }) => {
     const { supabaseAdmin, members } = await authorize(context, data.userId, 'read');
     const [profile, legacy, auth, roles, requests, trips, training, certificates] = await Promise.all([
-      supabaseAdmin.from('user_profiles').select('user_id,mfn_id,display_name,phone,status,created_at,updated_at,deleted_at').eq('user_id', data.userId).maybeSingle(),
-      supabaseAdmin.from('member_profiles').select('phone,company_name,city,membership_status,membership_tier').eq('user_id', data.userId).maybeSingle(),
+      supabaseAdmin.from('user_profiles').select('user_id,mfn_id,display_name,first_name,last_name,phone,status,is_test_account,created_at,updated_at,deleted_at').eq('user_id', data.userId).maybeSingle(),
+      supabaseAdmin.from('member_profiles').select('phone,company_name,city,postal_code,business_address,membership_status,membership_tier').eq('user_id', data.userId).maybeSingle(),
       supabaseAdmin.auth.admin.getUserById(data.userId),
       supabaseAdmin.from('user_roles').select('role').eq('user_id', data.userId),
       context.supabase.from('ride_requests').select('id,mfn_id,status,created_at').eq('requester_user_id', data.userId).order('created_at', { ascending: false }).limit(20),
@@ -72,4 +72,21 @@ export const messageAdminPerson = createServerFn({ method: 'POST' }).middleware(
     const { data: thread, error } = await context.supabase.rpc('admin_message_person', { _user: data.userId, _workspace: data.workspaceId as never, _body: data.body });
     if (error) throw new Error('Message could not be sent.');
     return { threadId: thread as string };
+  });
+const reasonText = z.string().trim().min(3).max(500);
+export const updateAdminPerson = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ userId: z.string().uuid(), firstName: z.string().trim().max(80), lastName: z.string().trim().max(80), phone: z.string().trim().max(30), postal: z.string().trim().regex(/^(\d{5}(-\d{4})?)?$/, 'ZIP code must be 5 digits'), city: z.string().trim().max(80), reason: reasonText }).parse(i))
+  .handler(async ({ data, context }) => {
+    await authorize(context, data.userId, 'manage');
+    const { error } = await context.supabase.rpc('admin_update_person', { _user: data.userId, _first: data.firstName, _last: data.lastName, _phone: data.phone, _postal: data.postal, _city: data.city, _reason: data.reason });
+    if (error) throw new Error(/ZIP|not permitted|not found/i.test(error.message) ? error.message : 'Could not save account details.');
+    return { ok: true };
+  });
+export const setAdminPersonActive = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ userId: z.string().uuid(), active: z.boolean(), reason: reasonText }).parse(i))
+  .handler(async ({ data, context }) => {
+    await authorize(context, data.userId, 'manage');
+    const { error } = await context.supabase.rpc('admin_set_person_active', { _user: data.userId, _active: data.active, _reason: data.reason });
+    if (error) throw new Error(/test accounts|not permitted|not found|reason/i.test(error.message) ? error.message : 'Could not change account status.');
+    return { ok: true };
   });

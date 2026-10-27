@@ -34,3 +34,20 @@ export const markRequestViewed = createServerFn({ method: 'POST' })
     const { data: ok } = await context.supabase.rpc('record_request_provider_viewed', { _request: data.id });
     return { recorded: ok === true };
   });
+
+export const REQUEST_EDIT_FIELDS = ['pickup_address','pickup_address_details','pickup_city','pickup_zip','dropoff_address','dropoff_city','dropoff_zip','pickup_date','pickup_time','appointment_time','patient_phone','patient_email','special_instructions','delivery_instructions','mobility_notes'] as const;
+export const adminRequestAction = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid(),
+    action: z.enum(['edit', 'deny', 'deactivate']),
+    reason: z.string().trim().max(500).optional(),
+    patch: z.record(z.enum(REQUEST_EDIT_FIELDS), z.string().trim().max(500).nullable()).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    if (data.action !== 'edit' && (data.reason ?? '').length < 3) return { ok: false as const, error: 'A reason is required.' };
+    const patch = Object.fromEntries(Object.entries(data.patch ?? {}).map(([k, v]) => [k, v === '' ? null : v]));
+    const { error } = await context.supabase.rpc('admin_request_action', { _request: data.id, _action: data.action, _reason: data.reason ?? undefined, _patch: patch });
+    if (error) return { ok: false as const, error: /not allowed|not permitted|not found|reason|deactivated|No permitted/i.test(error.message) ? error.message : 'Could not complete the action.' };
+    return { ok: true as const };
+  });

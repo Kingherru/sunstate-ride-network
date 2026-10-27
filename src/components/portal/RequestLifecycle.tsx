@@ -21,7 +21,8 @@ export function RequestLifecycle({ requestId, canManage }: { requestId: string; 
   if (q.isPending) return <p role="status">Loading status…</p>;
   if (q.error || !q.data) return <p role="alert" className="text-ds-error">Status unavailable.</p>;
   const state = isLifecycleState(q.data.state) ? q.data.state : 'submitted';
-  const next = adminNextStates(state);
+  // Distribution is disconnected until a separately approved build; never claim an offer was sent.
+  const next = adminNextStates(state).filter((s) => s !== 'distributed');
 
   async function confirm() {
     if (!pending) return;
@@ -41,9 +42,10 @@ export function RequestLifecycle({ requestId, canManage }: { requestId: string; 
       </div>
       {canManage && next.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {next.map((s) => <DsButton key={s} size="sm" variant={s === 'cancelled' || s === 'declined' ? 'ghost' : 'secondary'} onClick={() => { setPending(s); setMsg(''); }}>{s === state ? 'Redistribute' : LIFECYCLE_LABEL[s]}</DsButton>)}
+          {next.map((s) => <DsButton key={s} size="sm" variant={s === 'cancelled' || s === 'declined' ? 'ghost' : 'secondary'} onClick={() => { setPending(s); setMsg(''); }}>{LIFECYCLE_LABEL[s]}</DsButton>)}
         </div>
       )}
+      {canManage && <p className="ds-support mt-2">Distributed: distribution connection pending — not available in this build.</p>}
       {pending && (
         <div role="dialog" aria-label="Confirm status change" className="mt-3 rounded-ds border border-ds-sky-border bg-ds-sky p-4">
           <p>Change status from <strong>{LIFECYCLE_LABEL[state]}</strong> to <strong>{LIFECYCLE_LABEL[pending]}</strong>? This is recorded with your MFN ID.</p>

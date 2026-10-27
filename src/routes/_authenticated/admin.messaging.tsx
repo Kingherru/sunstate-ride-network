@@ -6,6 +6,7 @@ import { AdminPlatformRequests } from "@/components/messaging/PlatformRequests";
 import { FrontendContacts } from "@/components/messaging/FrontendContacts";
 import { DistributionActivity } from "@/components/portal/TripNetwork";
 import { NetworkEligibility } from "@/components/portal/NetworkEligibility";
+import { DemoConversations } from "@/components/messaging/DemoConversations";
 import { SegTabs } from "@/components/portal/SegTabs";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/admin/messaging")({
 function AdminMessaging() {
   const { user, access } = Route.useRouteContext() as any;
   const level = useAdminLevel("messaging");
-  const { tab = "messages" } = Route.useSearch();
+  const { tab = "messages", to } = Route.useSearch();
   const navigate = Route.useNavigate();
   const readOnly = level !== "manage";
   return (
@@ -39,7 +40,7 @@ function AdminMessaging() {
       </div>
       <section className={`${panelCls} p-4 sm:p-6`}>
         {tab === "requests" && <AdminPlatformRequests canManage={!readOnly} />}
-        {tab === "messages" && <MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} />}
+        {tab === "messages" && <>{to && <p className="ds-support mb-3 border-b border-ds-border pb-3">Opened from People &amp; Accounts — the conversation with this person is selected when one exists. Start one from their account details if none appears.</p>}<MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} focusUserId={to} emptyFallback={<DemoConversations kind="messages" />} /></>}
         {tab === "contacts" && <FrontendContacts canManage={!readOnly} />}
         {tab === "business" && (
           <>
