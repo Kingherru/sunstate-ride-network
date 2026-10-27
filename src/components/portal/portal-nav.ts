@@ -24,10 +24,9 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal/requests/new", label: "New trip" },
   { to: "/portal/requests", label: "Trip history", exact: true },
   { to: "/portal/upload-csv", label: "Upload CSV" },
-  { to: "/portal/find-providers", label: "Find providers" },
   { to: "/portal/saved-providers", label: "Saved providers" },
-  { to: "/portal/contacts", label: "Contacts" },
-  { to: "/portal/payers", label: "Payers" },
+  { to: "/portal/find-providers", label: "Find providers" },
+  { to: "/portal/contacts", label: "Contacts & payers" },
   { to: "/portal/notifications", label: "Notifications" },
   { to: "/portal/messaging", label: "Messaging" },
 ];
