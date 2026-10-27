@@ -3,7 +3,7 @@ import { getAccessState, type AccessState } from "@/lib/access.functions";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { organizationLabel } from "@/lib/account-types";
-import { PROVIDER_NAV, RESTRICTED_PROVIDER_NAV, CUSTOMER_NAV, CUSTOMER_ONLY, PROVIDER_ONLY, RESTRICTED_BLOCK, under } from "@/components/portal/portal-nav";
+import { PROVIDER_NAV, RESTRICTED_PROVIDER_NAV, CUSTOMER_NAV, isPortalPathBlocked, portalNavigation } from "@/components/portal/portal-nav";
 
 export { PROVIDER_NAV, RESTRICTED_PROVIDER_NAV, CUSTOMER_NAV };
 
@@ -25,10 +25,7 @@ export const Route = createFileRoute("/_authenticated/portal")({
     const access = await getAccessState();
     // Only the Master Admin may preview portals without an account of their own.
     if (!access.isMasterAdmin && access.destination !== "/portal") throw redirect({ to: access.destination });
-    const path = location.pathname;
-    const provider = access.portalKind === "provider";
-    const restrictedWithoutMessaging = access.restricted && !access.canMessageForWorkspace && under(path, ["/portal/messaging"]);
-    if ((provider && under(path, CUSTOMER_ONLY)) || (!provider && under(path, PROVIDER_ONLY)) || (access.restricted && under(path, RESTRICTED_BLOCK)) || restrictedWithoutMessaging) {
+    if (isPortalPathBlocked(location.pathname, access)) {
       if (!access.isMasterAdmin) throw redirect({ to: "/portal" });
     }
     return { access };
@@ -39,10 +36,7 @@ export const Route = createFileRoute("/_authenticated/portal")({
 function PortalLayout() {
   const { access } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
-  const restrictedNav = access.canMessageForWorkspace
-    ? [...RESTRICTED_PROVIDER_NAV, { to: "/portal/messaging", label: "Messaging" }]
-    : RESTRICTED_PROVIDER_NAV;
-  const nav = provider ? (access.restricted ? restrictedNav : PROVIDER_NAV) : CUSTOMER_NAV;
+  const nav = portalNavigation(access);
   return (
     <PortalShell nav={nav} area={provider ? "Provider portal" : "Patient portal"} identity={identityFor(access)} changelogTo="/portal/changelog"
       settingsTo="/portal/account" notificationsTo="/portal/notifications">
