@@ -25,7 +25,7 @@ export function NetworkPayments() {
     <h2 className="ds-subheading text-ds-primary uppercase">Network payments</h2>
     <p className="ds-support">Payment is due within three business days after completed service and required completion information are recorded. Times use New York time; Stripe processing is separate.</p>
     {q.isLoading && <p className="ds-body">Loading payments…</p>}
-    {q.error && <p role="alert" className="ds-body text-ds-error">Could not load Network payments.</p>}
+    {!!q.error && <p role="alert" className="ds-body text-ds-error">Could not load Network payments.</p>}
     {!q.isLoading && !q.error && !q.data?.length && <p className="ds-body text-ds-muted">No accepted provider-to-provider Network trips.</p>}
     {(q.data ?? []).map(row => <article key={row.id} className="space-y-3 border-b border-ds-border py-4">
       <div className="flex flex-wrap justify-between gap-2"><h3 className="ds-label font-mono">{row.mfn_id}</h3><strong className={`ds-label ${row.state === 'overdue' || row.state === 'disputed' ? 'text-ds-error' : 'text-ds-primary'}`}>{NETWORK_PAYMENT_LABELS[row.state]}</strong></div>
