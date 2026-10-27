@@ -6814,6 +6814,10 @@ export type Database = {
       }
       fl_zip_zone_code: { Args: { _zip: string }; Returns: string }
       gen_webhook_secret: { Args: never; Returns: string }
+      get_provider_verification_details: {
+        Args: { _workspace: string }
+        Returns: Json
+      }
       get_referral_fee_pct: { Args: never; Returns: number }
       get_trips_admin_metadata: {
         Args: never
@@ -7240,6 +7244,17 @@ export type Database = {
         Args: { _workspace: string }
         Returns: undefined
       }
+      record_network_stripe_evidence: {
+        Args: {
+          _distribution: string
+          _environment: string
+          _initiated?: string
+          _intent: string
+          _paid?: string
+          _state: string
+        }
+        Returns: undefined
+      }
       refer_next_eligible_provider: {
         Args: { _trip_id: string }
         Returns: string
@@ -7268,6 +7283,10 @@ export type Database = {
           _phone: string
           _preferences: Json
         }
+        Returns: undefined
+      }
+      save_provider_verification_details: {
+        Args: { _details: Json; _workspace: string }
         Returns: undefined
       }
       search_providers_by_zip: {
