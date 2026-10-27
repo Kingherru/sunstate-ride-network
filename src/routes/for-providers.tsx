@@ -9,7 +9,7 @@ export const Route = createFileRoute("/for-providers")({
   head: () => pageHead(
     "/for-providers",
     "Florida NEMT Provider Network — Partners, Contractors & Trip Sharing | MY FLORIDA NEMT",
-    "Join a peer-to-peer Florida NEMT provider network: share trips, connect business to business, manage NEMT team members and contractors. 30 days free, then $10/month.",
+    "Join a peer-to-peer Florida NEMT provider network: share trips, connect business to business, manage NEMT team members and contractors. 30 days free, then $15/month base; optional $10/month Referral Network add-on.",
     "Providers",
   ),
   component: ProvidersPage,
@@ -113,13 +113,13 @@ function ProvidersPage() {
         <div className="mfn-container grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-16">
           <div>
                         <h2 id="member-title" className="mt-4 font-heading text-6xl font-bold uppercase leading-none sm:text-7xl">30 days <span className="text-ds-accent-active">free</span></h2>
-            <p className="ds-section-title mt-5">Then $10 per month. Cancel anytime.</p>
+            <p className="ds-section-title mt-5">Then $15 per month base membership. Optional $10 per month Referral Network add-on ($25 with both). Cancel anytime.</p>
             <p className="ds-body-lg mfn-read mt-4">Membership gives you access to the provider network and its core tools — sharing trips, reviewing opportunities and following trips to completion.</p>
             <div className="mt-7"><a href={LINKS.join} className={btnBlue}><Network aria-hidden />Join the Provider Network</a></div>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
             {[
-              { i: LayoutGrid, t: "30 days free, then $10 per month" },
+              { i: LayoutGrid, t: "30 days free, then $15 per month base" },
               { i: BadgePercent, t: "2% MY FLORIDA NEMT platform fee on completed trips received through the provider network" },
               { i: CreditCard, t: "Payment-processing fees may apply" },
               { i: CalendarX, t: "No long-term contract — cancel anytime" },

@@ -2,7 +2,7 @@ import { BadgeCheck } from 'lucide-react';
 import { useServerFn } from '@tanstack/react-start';
 import { listProviderBadges, type ProviderBadgeLevel } from '@/lib/provider-verification.functions';
 import { usePortalPreview, usePortalQuery } from './preview-data';
-const meanings = { semi: 'Current membership following the first successful $10 payment; not full business verification.', blue: 'Completed platform business, service, Stripe and applicable document requirements; not government endorsement or guaranteed authenticity.', gold: 'Verified with five qualifying Network trips paid in full on time and no overdue payment or active dispute.', none: 'Automatic verification requirements are not currently met.' };
+const meanings = { semi: 'Current membership following the first successful $15 Base Provider Membership payment; not full business verification.', blue: 'Completed platform business, service, Stripe and applicable document requirements; not government endorsement or guaranteed authenticity.', gold: 'Verified with five qualifying Network trips paid in full on time and no overdue payment or active dispute.', none: 'Automatic verification requirements are not currently met.' };
 export function ProviderVerificationBadge({ workspaceId, legacyVerified = false, level }: { workspaceId: string; legacyVerified?: boolean; level?: ProviderBadgeLevel }) {
   const preview = usePortalPreview(); const list = useServerFn(listProviderBadges);
   const q = usePortalQuery({ queryKey: ['provider-badges', workspaceId], queryFn: () => list({ data: { workspaceIds: [workspaceId] } }), enabled: level === undefined });

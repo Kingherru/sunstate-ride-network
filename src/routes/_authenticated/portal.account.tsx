@@ -132,7 +132,7 @@ function Membership() {
       <h2 className="ds-subheading uppercase text-ds-primary">Provider membership</h2>
       <ul className="list-disc space-y-1 pl-5">
         <li>30 days free</li>
-        <li>$10 per company per month after that</li>
+        <li>$15 per month Base Provider Membership after the shared trial</li><li>Optional $10 per month Referral Network add-on ($25 per month with both)</li>
         <li>2% MY FLORIDA NEMT platform fee on completed network trips</li>
         <li>Payment processing fees are shown separately where they apply</li>
       </ul>
