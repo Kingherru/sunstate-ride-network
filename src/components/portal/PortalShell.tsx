@@ -18,6 +18,7 @@ import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
 import { getUnreadMessageCount } from "@/lib/messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
 import { TrainingCartIcon } from '@/components/training/TrainingCart';
+import { getPortalPreferences } from '@/lib/portal-preferences.functions';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -178,7 +179,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   );
 
   return (
-    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg">
+    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg" data-density={density}>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-ds-sm focus:bg-ds-surface focus:px-4 focus:py-2">Skip to content</a>
 
       {/* Desktop sidebar */}
