@@ -23,6 +23,7 @@ import { BusinessPermissions } from '@/components/portal/BusinessPermissions';
 import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequests';
 import { ProviderSettings } from '@/components/portal/ProviderSettings';
 import { PersonalSettings } from '@/components/portal/PersonalSettings';
+import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security";
@@ -91,6 +92,7 @@ function Profile({ email }: { email: string | null }) {
     ["Account MFN ID", <span className="font-mono">{ws?.mfn_id ?? "—"}</span>],
     ["Account kind", ws ? ACCOUNT_TYPE_LABEL[ws.type] ?? ws.type : access.isAdmin ? "MFN Admin" : "—"],
     ["Account status", ws ? (ws.status === "active" ? "Active" : ws.status === "pending" ? "Pending review" : "Suspended") : "—"],
+    ...(ws?.type === 'provider' ? [["Provider verification", <ProviderVerificationBadge workspaceId={ws.id} />] as [string, React.ReactNode]] : []),
     ["Your access", ws ? ROLE[ws.role] ?? "Member" : "—"],
   ];
   return (

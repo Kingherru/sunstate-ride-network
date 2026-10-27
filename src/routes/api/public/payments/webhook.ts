@@ -165,11 +165,26 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
         try {
           const event = await verifyWebhook(request, env);
           switch (event.type) {
+            case 'invoice.paid':
+            case 'invoice.payment_failed': {
+              const { reconcileMembershipInvoice } = await import('@/lib/membership-evidence.server');
+              await reconcileMembershipInvoice(event.data.object, env);
+              break;
+            }
+            case 'charge.refunded':
+            case 'charge.dispute.created':
+            case 'charge.dispute.closed': {
+              const { reconcileMembershipCharge } = await import('@/lib/membership-evidence.server');
+              await reconcileMembershipCharge(event.data.object, env);
+              break;
+            }
             case "customer.subscription.created":
               await handleSubscriptionCreated(event.data.object, env);
+              await (await import('@/lib/membership-evidence.server')).reconcileLatestMembershipInvoice(event.data.object, env);
               break;
             case "customer.subscription.updated":
               await handleSubscriptionUpdated(event.data.object, env);
+              await (await import('@/lib/membership-evidence.server')).reconcileLatestMembershipInvoice(event.data.object, env);
               break;
             case "customer.subscription.deleted":
               await handleSubscriptionDeleted(event.data.object, env);

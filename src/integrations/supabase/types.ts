@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       account_security_audit: {
         Row: {
+          correlation_id: string | null
           created_at: string
           driver_ids: string[]
           event_type: string
@@ -29,6 +30,7 @@ export type Database = {
           workspace_mfn_id: string | null
         }
         Insert: {
+          correlation_id?: string | null
           created_at?: string
           driver_ids?: string[]
           event_type: string
@@ -42,6 +44,7 @@ export type Database = {
           workspace_mfn_id?: string | null
         }
         Update: {
+          correlation_id?: string | null
           created_at?: string
           driver_ids?: string[]
           event_type?: string
@@ -4182,6 +4185,11 @@ export type Database = {
           current_period_start: string | null
           environment: string
           id: string
+          membership_currency: string | null
+          membership_invoice_id: string | null
+          membership_paid_at: string | null
+          membership_paid_cents: number | null
+          membership_payment_state: string | null
           price_id: string
           product_id: string
           status: string
@@ -4189,6 +4197,7 @@ export type Database = {
           stripe_subscription_id: string
           updated_at: string | null
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           cancel_at_period_end?: boolean | null
@@ -4197,6 +4206,11 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          membership_currency?: string | null
+          membership_invoice_id?: string | null
+          membership_paid_at?: string | null
+          membership_paid_cents?: number | null
+          membership_payment_state?: string | null
           price_id: string
           product_id: string
           status?: string
@@ -4204,6 +4218,7 @@ export type Database = {
           stripe_subscription_id: string
           updated_at?: string | null
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           cancel_at_period_end?: boolean | null
@@ -4212,6 +4227,11 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          membership_currency?: string | null
+          membership_invoice_id?: string | null
+          membership_paid_at?: string | null
+          membership_paid_cents?: number | null
+          membership_payment_state?: string | null
           price_id?: string
           product_id?: string
           status?: string
@@ -4219,8 +4239,17 @@ export type Database = {
           stripe_subscription_id?: string
           updated_at?: string | null
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
@@ -4397,16 +4426,25 @@ export type Database = {
           amount_cents: number
           approved_by: string | null
           capability: string
+          completion_information_submitted_at: string | null
           created_at: string
           current_radius: number | null
           destination_area: string
+          dispute_opened_at: string | null
+          dispute_reason_code: string | null
+          dispute_resolved_at: string | null
           estimated_miles: number | null
           expires_at: string
           id: string
           mfn_id: string
+          network_completed_at: string | null
+          network_payment_state: string
           original_person_id: string | null
           original_person_mfn_id: string | null
           original_workspace_mfn_id: string | null
+          payment_completed_at: string | null
+          payment_due_at: string | null
+          payment_initiated_at: string | null
           pickup_area: string
           pickup_date: string
           pickup_lat: number
@@ -4432,16 +4470,25 @@ export type Database = {
           amount_cents: number
           approved_by?: string | null
           capability: string
+          completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
           destination_area: string
+          dispute_opened_at?: string | null
+          dispute_reason_code?: string | null
+          dispute_resolved_at?: string | null
           estimated_miles?: number | null
           expires_at: string
           id?: string
           mfn_id?: string
+          network_completed_at?: string | null
+          network_payment_state?: string
           original_person_id?: string | null
           original_person_mfn_id?: string | null
           original_workspace_mfn_id?: string | null
+          payment_completed_at?: string | null
+          payment_due_at?: string | null
+          payment_initiated_at?: string | null
           pickup_area: string
           pickup_date: string
           pickup_lat: number
@@ -4467,16 +4514,25 @@ export type Database = {
           amount_cents?: number
           approved_by?: string | null
           capability?: string
+          completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
           destination_area?: string
+          dispute_opened_at?: string | null
+          dispute_reason_code?: string | null
+          dispute_resolved_at?: string | null
           estimated_miles?: number | null
           expires_at?: string
           id?: string
           mfn_id?: string
+          network_completed_at?: string | null
+          network_payment_state?: string
           original_person_id?: string | null
           original_person_mfn_id?: string | null
           original_workspace_mfn_id?: string | null
+          payment_completed_at?: string | null
+          payment_due_at?: string | null
+          payment_initiated_at?: string | null
           pickup_area?: string
           pickup_date?: string
           pickup_lat?: number
@@ -6061,6 +6117,7 @@ export type Database = {
       workspaces: {
         Row: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          automatic_verification_level: string | null
           created_at: string
           created_by: string
           display_name: string
@@ -6072,9 +6129,12 @@ export type Database = {
           provider_verified: boolean
           status: Database["public"]["Enums"]["workspace_status"]
           updated_at: string
+          verification_paused_reason: string | null
+          verification_updated_at: string | null
         }
         Insert: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          automatic_verification_level?: string | null
           created_at?: string
           created_by: string
           display_name: string
@@ -6086,9 +6146,12 @@ export type Database = {
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
+          verification_paused_reason?: string | null
+          verification_updated_at?: string | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["workspace_type"]
+          automatic_verification_level?: string | null
           created_at?: string
           created_by?: string
           display_name?: string
@@ -6100,6 +6163,8 @@ export type Database = {
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
+          verification_paused_reason?: string | null
+          verification_updated_at?: string | null
         }
         Relationships: []
       }
@@ -6432,6 +6497,15 @@ export type Database = {
         Args: { _body: string; _user: string; _workspace: string }
         Returns: string
       }
+      admin_pause_provider_badge: {
+        Args: {
+          _category: string
+          _confirmed: boolean
+          _reason: string
+          _workspace: string
+        }
+        Returns: undefined
+      }
       admin_set_membership: {
         Args: {
           _status?: string
@@ -6442,6 +6516,10 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       admin_user_removal_plan: { Args: { _user: string }; Returns: Json }
+      audit_email_change_failure: {
+        Args: { _expired?: boolean; _user: string }
+        Returns: undefined
+      }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       business_record_access: {
         Args: { _id: string; _kind: string; _level: string; _ws: string }
@@ -6944,6 +7022,7 @@ export type Database = {
       network_list_activity: { Args: never; Returns: Json }
       network_list_eligibility: { Args: never; Returns: Json }
       network_list_offers: { Args: never; Returns: Json }
+      network_list_payments: { Args: never; Returns: Json }
       network_mark_attention: { Args: never; Returns: number }
       network_notify: {
         Args: {
@@ -6956,6 +7035,11 @@ export type Database = {
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
       network_offer_safe_history: { Args: { _offer: string }; Returns: Json }
+      network_open_payment_dispute: {
+        Args: { _confirmed: boolean; _distribution: string; _reason: string }
+        Returns: undefined
+      }
+      network_payment_due_at: { Args: { _completed: string }; Returns: string }
       network_public_service_centers: {
         Args: never
         Returns: {
@@ -6968,9 +7052,17 @@ export type Database = {
           zip: string
         }[]
       }
+      network_record_completion: {
+        Args: { _confirmed: boolean; _distribution: string }
+        Returns: undefined
+      }
       network_reservation_state: {
         Args: { _state: string; _trip: string }
         Returns: string
+      }
+      network_resolve_payment_dispute: {
+        Args: { _confirmed: boolean; _distribution: string; _reason: string }
+        Returns: undefined
       }
       network_respond_offer: {
         Args: {
@@ -7051,6 +7143,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      provider_verification_badges: {
+        Args: { _workspaces: string[] }
+        Returns: Json
+      }
       rank_auto_providers: {
         Args: {
           _created_by: string
@@ -7075,6 +7171,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      recalculate_membership_verification: {
+        Args: { _workspace: string }
+        Returns: undefined
       }
       refer_next_eligible_provider: {
         Args: { _trip_id: string }

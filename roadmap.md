@@ -1,3 +1,10 @@
+# Pass 3L — connected payments, verification and email audit
+- [ ] Finish secure email-change request and permanent lifecycle using owner-confirmed secure setting; no real emails.
+- [ ] Connect reusable authoritative membership/document/Network evidence, automatic badge calculation and safe audit where evidence exists.
+- [ ] Add New York three-business-day payment deadlines, 24-hour dispute pause and narrow rule tests.
+- [ ] Consistent badge/status UI and scoped suspension controls where authoritative data exists.
+- [ ] Narrow tests and harness validation; record evidence blockers without real actions or publishing.
+
 # Pass 3K completion — email security and automatic verification
 - [x] Hosted Secure email change cannot be read/changed with supported tools; feature remains disabled. Owner action: More → Users → Auth settings → Email → Secure email change = ON. Lifecycle requested/confirmed/expired/canceled remains blocked, not claimed complete; deployed trigger only records actual email mutations.
 - [x] Saved approved $10 membership/30-day trial, five-trip Gold, three-business-day sender initiation and 24-hour dispute rules; added pure fail-closed eligibility checks and replaced outdated verification copy with approved checklist and explicit inactive status. Existing membership product/directory badges/records/guidance unchanged.
