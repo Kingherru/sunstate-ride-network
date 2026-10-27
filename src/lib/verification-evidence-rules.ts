@@ -6,6 +6,8 @@ export const verificationDetailsInput = z.object({
   dba: z.string().trim().max(200),
   business_type: z.enum(['corporation', 'llc', 'partnership', 'sole_proprietor', 'independent_contractor']),
   representative: z.string().trim().min(2).max(200),
+  business_address: z.string().trim().min(6).max(300),
+  service_location: z.string().trim().min(2).max(300),
   registration_number: z.string().trim().max(100),
   after_hours: z.boolean(),
   minimum_notice_hours: z.number().int().min(0).max(720),
