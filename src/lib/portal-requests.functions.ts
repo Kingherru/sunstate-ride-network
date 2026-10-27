@@ -9,7 +9,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * Unknown and unauthorized IDs return the same "not found" result.
  */
 
-const LIST_COLS = "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via";
+const LIST_COLS = "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, patient_first_name, patient_last_name, pickup_city, dropoff_city, pickup_date, pickup_time, selected_provider_mfn_id";
 const DETAIL_COLS =
   "id, mfn_id, lifecycle_state, deactivated_at, pickup_zip, dropoff_zip, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, return_dropoff_time, return_pickup_building, return_pickup_suite, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, requester_phone, requester_email, requester_user_id, workspace_id, assigned_provider_id, last_updated_at, canceled_at, needs_wheelchair, needs_assistance_to_vehicle, service_level, delivery_item_type, delivery_signature_required, delivery_instructions, special_instructions, mobility_notes,selected_provider_workspace_id,selected_provider_mfn_id,provider_selection_status,requester_workspace_mfn_id";
 
@@ -93,9 +93,80 @@ export const listPortalRequests = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
-      .from("ride_requests").select(LIST_COLS).order("created_at", { ascending: false }).limit(200);
+      .from("ride_requests").select(LIST_COLS).order("created_at", { ascending: false }).limit(500);
     if (error) throw new Error("Could not load requests.");
     return (data ?? []) as RequestListRow[];
+  });
+
+const ACCEPTED_STATES = new Set(["accepted", "assigned", "in_progress", "completed", "provider_selected", "reserved"]);
+
+/** Patient/Facility overview: accurate counts, recent requests, recent notifications.
+ *  Every read runs as the signed-in user, so row-level rules scope the data. */
+export const getCustomerOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("ride_requests").select(LIST_COLS).order("created_at", { ascending: false }).limit(500);
+    if (error) throw new Error("Could not load requests.");
+    const all = (rows ?? []) as RequestListRow[];
+    const stateOf = (r: RequestListRow) => (r.network_status || r.status || "").toLowerCase();
+    const counts = {
+      sent: all.length,
+      accepted: all.filter((r) => ACCEPTED_STATES.has(stateOf(r))).length,
+      declined: all.filter((r) => stateOf(r) === "declined").length,
+    };
+    const { data: notes } = await context.supabase
+      .from("notifications")
+      .select("id, title, body, link, read_at, created_at")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    return { counts, recent: all.slice(0, 5), notifications: notes ?? [] };
+  });
+
+/** Copies an authorized request into a new editable draft. Never submits. */
+export const copyRequestToDraft = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(idInput)
+  .handler(async ({ data, context }) => {
+    const { data: row } = await context.supabase.from("ride_requests").select(DETAIL_COLS).eq("id", data.id).maybeSingle();
+    if (!row) return { ok: false as const, error: NOT_FOUND };
+    const r = row as any;
+    const delivery = r.trip_kind === "medical_delivery" || r.transport_type === "delivery";
+    const payload = delivery
+      ? {
+          requestCategory: "medical_delivery",
+          contactFirstName: r.patient_first_name ?? "", contactLastName: r.patient_last_name ?? "",
+          contactPhone: r.patient_phone ?? "", contactEmail: r.patient_email ?? "",
+          pickupAddress: r.pickup_address ?? "", pickupAddressDetails: r.pickup_address_details ?? "", pickupCity: r.pickup_city ?? "",
+          dropoffAddress: r.dropoff_address ?? "", dropoffCity: r.dropoff_city ?? "",
+          requestedDate: r.pickup_date ?? "", requestedTime: r.pickup_time ?? "",
+          deliveryCategory: r.delivery_item_type ?? "", deliveryInstructions: r.delivery_instructions ?? "",
+          signatureRequired: r.delivery_signature_required === true,
+        }
+      : {
+          patientFirstName: r.patient_first_name ?? "", patientLastName: r.patient_last_name ?? "",
+          patientPhone: r.patient_phone ?? "", patientEmail: r.patient_email ?? "",
+          pickupAddress: r.pickup_address ?? "", pickupAddressDetails: r.pickup_address_details ?? "", pickupCity: r.pickup_city ?? "",
+          pickupDate: "", pickupTime: "", appointmentTime: "",
+          dropoffAddress: r.dropoff_address ?? "", dropoffCity: r.dropoff_city ?? "",
+          transportType: r.transport_type ?? "ambulatory",
+          tripType: r.trip_type ?? "one_way", roundTrip: r.trip_type === "round_trip",
+          returnPickupTime: "", returnDropoffTime: "", returnDate: "",
+          returnPickupBuilding: r.return_pickup_building ?? "", returnPickupSuite: r.return_pickup_suite ?? "",
+          additionalStops: Array.isArray(r.additional_stops) ? r.additional_stops : [],
+          mobilityNotes: r.mobility_notes ?? "", specialInstructions: r.special_instructions ?? "",
+          recurrence: "none", recurrenceEndDate: "", billingSource: "account",
+        };
+    const name = [r.patient_first_name, r.patient_last_name].filter(Boolean).join(" ").trim();
+    const summary = [delivery ? "Medical Delivery" : name || "Unnamed passenger", [r.pickup_city, r.dropoff_city].filter(Boolean).join(" → ")].filter(Boolean).join(" · ").slice(0, 240);
+    const { data: created, error } = await context.supabase
+      .from("trip_drafts")
+      .insert({ user_id: context.userId, payload: payload as never, summary, autosaved: false })
+      .select("id")
+      .single();
+    if (error) throw new Error("Could not copy this request.");
+    return { ok: true as const, draftId: created.id as string };
   });
 
 export const getPortalRequest = createServerFn({ method: "GET" })
