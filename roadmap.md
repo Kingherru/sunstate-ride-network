@@ -1,7 +1,8 @@
 # Pass 3K completion — email security and automatic verification
-- [ ] Confirm hosted secure email-change setting; keep disabled when unverified and report exact owner action
-- [ ] Check authoritative membership, required information/documents, Network payment-window/payment/dispute evidence for automatic levels with five-trip gold threshold; implement only supported rules without touching existing records
-- [ ] Run narrow verification/access checks and inspect automatic type/build results; no sends, purchases, real-record changes or publishing
+- [x] Hosted Secure email change cannot be read/changed with supported tools; feature remains disabled. Owner action: More → Users → Auth settings → Email → Secure email change = ON. Lifecycle requested/confirmed/expired/canceled remains blocked, not claimed complete; deployed trigger only records actual email mutations.
+- [x] Saved approved $10 membership/30-day trial, five-trip Gold, three-business-day sender initiation and 24-hour dispute rules; added pure fail-closed eligibility checks and replaced outdated verification copy with approved checklist and explicit inactive status. Existing membership product/directory badges/records/guidance unchanged.
+- [ ] Automatic audited levels blocked: authoritative business billing/invoice entitlement, full applicable business/document checklist with business-name match/Stripe linkage, and Network obligation/payment-initiation/settlement/dispute/deadline evidence are absent; must connect these before enabling real badge writes. No invented evidence, no manual approval requirement.
+- [x] 16 narrow tests/64 assertions pass; deployed audit/credential/membership/profile access policies inspected read-only; automatic type/production build OK. No broad roles/browser checks, sends, purchases, migrations, real-record changes or publishing.
 
 # Team menu access finding
 - [x] CSV uses server-derived single eligible active customer membership capability; sidebar and page guards share checks, Messaging hidden without capability; existing server authorization unchanged. Eight tests/51 assertions pass; signed-in Master Admin CSV/template-upload opens without runtime errors, automatic build OK. Actual member-account browser check unavailable without authorized member identity; no real writes or publishing.
@@ -14,7 +15,7 @@
 - [x] Permanent minimal schedule preview confirmation audit with MFN identities, driver IDs/date range and preview-only sent-zero result; no delivery path
 - [x] 36 narrow tests, signed-in settings read and denied empty/missing RPC checks, demo provider select/remove/settings tabs pass; harness typecheck/build OK; existing record fingerprints unchanged (7 requests, 5 trips, 28 profiles, 14 memberships), audit has zero rows
 - [ ] Email-change initiation blocked: hosted Secure email change setting cannot be verified with available tools; user must confirm it under More → Users → Auth settings → Email before enabling send action. Actual verification/expiration readback intentionally untested; no emails sent
-- [ ] Automatic verification blocked: legacy payment/document records are person-owned, not approved workspace-level entitlement evidence; no approved Super Verified successful-paid-network-trip numerical threshold. Existing directory verification remains unchanged, no invented grants
+- [ ] Automatic verification blocked: legacy payment/documents remain person-owned with no authoritative business entitlement/Network settlement-dispute-deadline linkage. Five-trip threshold and detailed requirements now approved and covered by pure policy checks above; live directory verification unchanged.
 - [ ] Preference delivery enforcement deferred: settings save preferences, but legacy queue/mail producers need category mapping before optional notices can be safely suppressed without blocking required/security notices
 - [ ] Authenticated create/save/accept/audit/export/proximity readback blocked: no permitted synthetic writes or populated public-center fixtures; tested UI choices in isolated demo only and safe live reads/denials, not a complete end-to-end workflow
 
