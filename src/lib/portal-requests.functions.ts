@@ -16,6 +16,10 @@ const DETAIL_COLS =
 export type RequestListRow = {
   id: string; mfn_id: string | null; intake_source: string | null; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
   status: string | null; network_status?: string | null; created_at: string; submitted_via: string | null;
+  patient_first_name?: string | null; patient_last_name?: string | null;
+  pickup_city?: string | null; dropoff_city?: string | null;
+  pickup_date?: string | null; pickup_time?: string | null;
+  selected_provider_mfn_id?: string | null;
 };
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 export type RequestDetailRow = RequestListRow & { [k: string]: Json };
