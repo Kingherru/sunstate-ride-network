@@ -21,26 +21,21 @@ const TASKS: Record<AiTask, string> = {
 };
 
 export async function runAssistant(task: AiTask, input: string) {
-  // Prefer the owner's own OpenAI key when saved; otherwise use built-in AI.
-  const ownKey = process.env['OPENAI_API_KEY'];
-  const key = ownKey || process.env['LOVABLE_API_KEY'];
+  const key = process.env['LOVABLE_API_KEY'];
   if (!key) throw new Error('AI is not configured.');
   let runId: string | undefined;
-  const openai = ownKey
-    ? createOpenAI({ apiKey: ownKey })
-    : createOpenAI({
-        baseURL: 'https://ai.gateway.lovable.dev/v1',
-        apiKey: key,
-        headers: { 'Lovable-API-Key': key, 'X-Lovable-AIG-SDK': 'vercel-ai-sdk' },
-        fetch: async (url, init) => {
-          const h = new Headers(init?.headers);
-          if (runId) h.set(RUN_ID, runId);
-          const res = await fetch(url, { ...init, headers: h });
-          runId ??= res.headers.get(RUN_ID) ?? undefined;
-          return res;
-        },
-      });
-  const modelId = ownKey ? AI_MODEL.replace(/^openai\//, '') : AI_MODEL;
+  const openai = createOpenAI({
+    baseURL: 'https://ai.gateway.lovable.dev/v1',
+    apiKey: key,
+    headers: { 'Lovable-API-Key': key, 'X-Lovable-AIG-SDK': 'vercel-ai-sdk' },
+    fetch: async (url, init) => {
+      const h = new Headers(init?.headers);
+      if (runId) h.set(RUN_ID, runId);
+      const res = await fetch(url, { ...init, headers: h });
+      runId ??= res.headers.get(RUN_ID) ?? undefined;
+      return res;
+    },
+  });
   let failure: unknown;
   const result = streamText({
     model: openai.responses(AI_MODEL),
