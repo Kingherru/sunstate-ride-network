@@ -139,9 +139,9 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
       <Row label="Requester phone" value={value('requester_phone')} /><Row label="Requester email" value={value('requester_email')} />
     </dl></DetailSection>
     <DetailSection tone="trip" title={delivery ? 'Pickup and delivery' : 'Locations and times'}><dl className={fields}>
-      <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup location details" value={value('pickup_address_details')} />
+      <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup ZIP" value={value('pickup_zip')} /><Row label="Pickup location details" value={value('pickup_address_details')} />
       <Row label="Pickup date" value={readable('pickup_date')} /><Row label="Requested pickup time" value={readable('pickup_time')} />
-      <Row label={delivery ? 'Delivery destination' : 'Drop-off location'} value={value('dropoff_address')} /><Row label="Destination area" value={value('dropoff_city')} />
+      <Row label={delivery ? 'Delivery destination' : 'Drop-off location'} value={value('dropoff_address')} /><Row label="Destination area" value={value('dropoff_city')} /><Row label="Destination ZIP" value={value('dropoff_zip')} />
       {!delivery && <Row label="Requested drop-off / appointment time" value={readable('appointment_time')} />}
       {round && <><Row label="Return date" value={readable('return_date')} /><Row label="Return pickup time" value={readable('return_pickup_time')} /><Row label="Return drop-off time" value={readable('return_dropoff_time')} /></>}
       {round && <><Row label="Return pickup building" value={value('return_pickup_building')} /><Row label="Return pickup suite" value={value('return_pickup_suite')} /></>}
