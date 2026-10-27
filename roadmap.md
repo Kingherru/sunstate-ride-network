@@ -1,3 +1,9 @@
+# Pass 3L completion — automatic evidence and lifecycle
+- [ ] Connect one server-side evidence calculation to existing membership, Connect, profiles, protected documents, Network payments/disputes and suspension events.
+- [ ] Add protected evidence entry/checklist and shared provider/admin summary; no manual badge approval.
+- [ ] Prepare idempotent time-based lifecycle handling and verify scheduler availability without changing real records.
+- [ ] Run only new narrow checks; preserve disabled users, no sends/charges/live events/publishing.
+
 # Pass 3L — connected payments, verification and email audit
 - [x] Owner-confirmed secure setting enables server recent-AMR/password reauthentication and standard Auth update; requested/confirmed/canceled triggers and sanitized failed/expired code outcomes audit permanently. Signed-in personal settings panel verified without submission.
 - [x] Extended subscriptions/workspaces rather than duplicate products/tables; existing nemt_membership_monthly_v2 price and current Stripe invoice/charge evidence drive audited Semi only for explicitly linked business entitlement. NULL retains legacy directory status; no existing membership linked or modified.
