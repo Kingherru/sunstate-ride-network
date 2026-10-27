@@ -1,8 +1,11 @@
 # Pass 3L completion — automatic evidence and lifecycle
-- [ ] Connect one server-side evidence calculation to existing membership, Connect, profiles, protected documents, Network payments/disputes and suspension events.
-- [ ] Add protected evidence entry/checklist and shared provider/admin summary; no manual badge approval.
-- [ ] Prepare idempotent time-based lifecycle handling and verify scheduler availability without changing real records.
-- [ ] Run only new narrow checks; preserve disabled users, no sends/charges/live events/publishing.
+- [x] One database evaluator reads existing live membership invoices, approved services/business evidence, protected owner-attested documents, explicit Connect linkage, Network settlement/disputes and suspension; event triggers recalculate without browser writes. Future membership/Connect onboarding stamps server-validated company linkage; no existing accounts changed.
+- [x] Protected business requirement entry and credential effective-date/name/attestation fields; shared provider/admin safe checklist. Signed-in administrator opened real provider summary: missing requirements shown honestly, no private files/amounts exposed.
+- [x] Prepared locked idempotent SQL lifecycle for document expiration/30-day warnings, overdue audit/in-app notices and affected badge recalculation; pg_cron already available. No job activated because shared production records must remain unchanged. Exact hourly activation in docs/verification-lifecycle-activation.md.
+- [x] Five new narrow tests/22 assertions passed; latest automatic typecheck/production build OK. Counts unchanged: 7 requests, 5 trips, 28 profiles, 14 memberships, zero audit rows and seven suspended test profiles. Test webhook added only account.updated and three intent events; prior events retained.
+- [ ] Owner configuration: authorize hourly SQL lifecycle activation (24 runs/day, up to one-hour notification delay); publishing/live events remain explicitly outside this pass.
+- [ ] Genuine blocker: hosted Auth TTL/expiration callback with supported pending-change invalidation remains unavailable; no guessed expiration or managed Auth token edits. New lifecycle does not claim unattended email expiration.
+- [ ] Financial evidence: legacy Connect environment/company and existing membership entitlement remain unlinked; new Network intent reconciliation requires an explicit server-created obligation/recipient link from an authorized payment flow. No charge flow invented and no ordinary trip payout treated as Network payment. Full evidence writes/scheduled transitions untested under real-write prohibition.
 
 # Pass 3L — connected payments, verification and email audit
 - [x] Owner-confirmed secure setting enables server recent-AMR/password reauthentication and standard Auth update; requested/confirmed/canceled triggers and sanitized failed/expired code outcomes audit permanently. Signed-in personal settings panel verified without submission.
@@ -10,8 +13,8 @@
 - [x] Extended trip_distributions with scoped locked completion-information/dispute/resolution actions, New York three-weekday deadline, pause duration, safe timestamps/audit and completion/dispute in-app notices. Payments tab displays safe states; no charging path or real actions exercised.
 - [x] Shared badge labels/explanations on directory list/profile, account identity, admin provider rows and detail overlay; scoped billing admin reason/confirmation pause, Master protection, no normal manual approval.
 - [x] 42 focused tests/123 assertions pass, anonymous financial RPCs denied and direct badge recalculation denied to authenticated users; harness type/production build OK. Signed-in settings and admin badges read-only checked. Counts unchanged: 7 requests, 5 trips, 28 profiles, 14 memberships, zero audit entries.
-- [ ] Blocked: existing membership has no authoritative workspace entitlement; owner-approved linkage needed before live Semi. Full Blue/Gold require structured applicable document/name/compliance evidence and verified Stripe Connect business linkage; not inferred from uploads or legacy labels.
-- [ ] Blocked: Network payment initiation/full recipient settlement/refund evidence and serious compliance state are absent; no false Paid/Gold, charging or payout changes. Persisted overdue audit/notifications and automatic expiry recalculation need an authorized scheduler, not page-load writes.
+- [x] Superseded by completion: automatic evidence calculations/entry/event connections now built; legacy unlinked records still do not qualify.
+- [x] Superseded by completion: explicit Network Stripe reconciliation and prepared SQL lifecycle built; activation and authorized payment obligation linkage remain separately listed above.
 - [ ] Blocked: live refund/dispute webhook subscriptions deliberately not enabled under no-real-account-change rule; test webhook expanded only. Live setup needs explicit authorization, no publishing performed.
 - [ ] Blocked: explicit cancellation and unattended expiration of pending Auth changes need authoritative hosted lifecycle support; current code audits actual pending removal and provider-reported expired code, never treats dismissal/time alone as cancellation/expiration. Full email/payment end-to-end untested under no-real-action restriction.
 
