@@ -10,6 +10,7 @@ import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequest
 import { ProviderExports } from './ProviderExports';
 import { usePortalPreview } from './preview-data';
 import { PROVIDER_VERIFICATION_POLICY } from '@/lib/account-settings-rules';
+import { ProviderVerificationBadge } from './ProviderVerificationBadge';
 
 const sections = [
   { value: 'business', label: 'Business Information' }, { value: 'contact', label: 'Contact Information' },
@@ -28,8 +29,8 @@ export function ProviderSettings({ workspaceId, role, email }: { workspaceId: st
     {tab === 'documents' && (preview.active ? <p className="ds-support">No demo documents.</p> : owner ? <ProviderCredentialsPanel /> : <p className="ds-support">Legacy documents are available to their owner only.</p>)}
     {tab === 'verification' && <section className="space-y-5">
       <h2 className="ds-subheading uppercase text-ds-primary">Business verification</h2>
-      <p className="ds-body font-semibold">Automatic verification is not active.</p>
-      <p className="ds-support">Your existing directory status is unchanged. Membership payments, business documents and Network payment history are not yet securely linked to your business account for automatic checks.</p>
+      <ProviderVerificationBadge workspaceId={workspaceId} />
+      <p className="ds-support">Membership verification requires an explicitly linked business membership and a confirmed paid Stripe invoice. Full business/document verification and Gold remain unavailable until their required evidence is connected.</p>
       <div className="space-y-2">
         <h3 className="ds-label text-ds-primary">Semi-Verified — Light Blue</h3>
         <p className="ds-body">Requires the first successful ${PROVIDER_VERIFICATION_POLICY.membershipCents / 100} monthly Provider Membership payment after the {PROVIDER_VERIFICATION_POLICY.trialDays}-day free trial, with membership current and in good standing.</p>

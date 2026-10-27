@@ -1,0 +1,39 @@
+import { type StripeEnv, createStripeClient } from './stripe.server';
+import { isQualifyingMembershipInvoice, PROVIDER_MEMBERSHIP_PRICE } from './membership-invoice-rules';
+
+/** Read-only Stripe reconciliation; never creates customers, charges or subscriptions. */
+export async function reconcileMembershipInvoice(invoiceObject: any, env: StripeEnv) {
+  if (env !== 'live' || !invoiceObject?.id) return;
+  const stripe = createStripeClient(env);
+  // Retrieve current state so replays/older deliveries cannot revive a refunded invoice.
+  const invoice = await stripe.invoices.retrieve(invoiceObject.id, { expand: ['payments.data.payment.payment_intent'] });
+  const subRef = invoice.parent?.subscription_details?.subscription;
+  const subscriptionId = typeof subRef === 'string' ? subRef : subRef?.id;
+  if (!subscriptionId) return;
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const item = subscription.items.data[0];
+  if (!item || item.price.lookup_key !== PROVIDER_MEMBERSHIP_PRICE || item.price.unit_amount !== 1000 || item.price.currency !== 'usd' || item.price.recurring?.interval !== 'month' || item.price.recurring.interval_count !== 1 || subscription.items.data.length !== 1) return;
+  const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+  const { data: existing, error: readError } = await supabaseAdmin.from('subscriptions').select('id,user_id,workspace_id,membership_paid_at').eq('stripe_subscription_id', subscriptionId).eq('environment', env).maybeSingle();
+  if (readError) throw new Error('Membership evidence read failed.');
+  if (!existing) return; // Retries after subscription delivery establish the row; never guess a person.
+  const claimedWorkspace = existing.workspace_id || subscription.metadata.workspaceId;
+  if (!claimedWorkspace) return; // Legacy person-only membership is not company entitlement.
+  const { data: member } = await supabaseAdmin.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status,is_test_account)').eq('user_id', existing.user_id).eq('workspace_id', claimedWorkspace).is('removed_at', null).maybeSingle();
+  if (!member || member.role !== 'owner' || member.is_contractor || member.workspaces.account_type !== 'provider' || member.workspaces.is_test_account) return;
+  const paidAt = invoice.status_transitions.paid_at;
+  if (paidAt && existing.membership_paid_at && paidAt * 1000 < Date.parse(existing.membership_paid_at)) return;
+  let refunded = false;
+  let confirmedCharge = false;
+  for (const payment of invoice.payments?.data ?? []) {
+    const ref = payment.payment.payment_intent;
+    const intent = typeof ref === 'string' ? await stripe.paymentIntents.retrieve(ref) : ref;
+    if (!intent || intent.status !== 'succeeded' || !intent.latest_charge) continue;
+    const charge = typeof intent.latest_charge === 'string' ? await stripe.charges.retrieve(intent.latest_charge) : intent.latest_charge;
+    confirmedCharge = true;
+    if (charge.refunded || charge.amount_refunded > 0 || charge.disputed) refunded = true;
+  }
+  const qualifies = confirmedCharge && !refunded && isQualifyingMembershipInvoice(invoice, { status: subscription.status, trial_end: subscription.trial_end, current_period_end: item.current_period_end }, Date.now() / 1000);
+  const { error } = await supabaseAdmin.from('subscriptions').update({ workspace_id: claimedWorkspace, membership_invoice_id: invoice.id, membership_paid_cents: invoice.amount_paid, membership_currency: invoice.currency, membership_payment_state: refunded ? 'refunded' : qualifies ? 'succeeded' : invoice.status === 'paid' ? 'pending' : 'failed', membership_paid_at: paidAt ? new Date(paidAt * 1000).toISOString() : null, status: subscription.status, current_period_end: new Date(item.current_period_end * 1000).toISOString() }).eq('id', existing.id).eq('environment', env);
+  if (error) throw new Error('Membership evidence could not be saved.');
+}

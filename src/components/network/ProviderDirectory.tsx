@@ -15,6 +15,7 @@ import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorks
 import { cn } from "@/lib/utils";
 import { DsButton } from '@/components/ds/controls';
 import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
+import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -154,9 +155,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm font-extrabold">{r.business_name}</span>
                 <span className="flex shrink-0 items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-sm border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                    <CheckCircle2 className="size-3" /> Verified
-                  </span>
+                  <ProviderVerificationBadge workspaceId={r.workspace_id} legacyVerified />
                   {r.is_saved && <BookmarkCheck className="size-4 text-accent" aria-label="Saved" />}
                 </span>
               </div>
@@ -232,9 +231,7 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack, onS
             <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-muted-foreground"><IdCard className="size-3.5" /> {row.mfn_id}</p>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-              <CheckCircle2 className="size-3" /> Verified
-            </span>
+            <ProviderVerificationBadge workspaceId={row.workspace_id} legacyVerified />
             {row.medical_delivery && (
               <span className="inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground">
                 <Truck className="size-3" /> Medical delivery
