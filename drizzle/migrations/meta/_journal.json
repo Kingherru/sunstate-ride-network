@@ -183,6 +183,20 @@
       "when": 1793068654234,
       "tag": "0025_pass3l_automatic_evidence_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793068982053,
+      "tag": "0026_pass3l_network_settlement_and_profile_entry",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793069263105,
+      "tag": "0027_pass3l_event_linkage_hardening",
+      "breakpoints": true
     }
   ]
 }

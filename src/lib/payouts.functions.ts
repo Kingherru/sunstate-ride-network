@@ -27,6 +27,11 @@ export const createConnectOnboardingLink = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const env = pickEnv();
 
+    const { data: memberships } = await supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
+    const providers = (memberships ?? []).filter(m => m.workspaces.account_type === 'provider' && m.workspaces.status === 'active' && !m.workspaces.is_test_account);
+    const workspaceId = providers.length === 1 ? providers[0]?.workspace_id : undefined;
+    if (!workspaceId) return { ok: false as const, error: 'One active provider business is required for Connect onboarding.' };
+
     const { data: existing } = await supabase
       .from("provider_payout_accounts")
       .select("stripe_account_id, status")
@@ -46,11 +51,11 @@ export const createConnectOnboardingLink = createServerFn({ method: "POST" })
           email: (claims as any)?.email ?? undefined,
           capabilities: { transfers: { requested: true }, card_payments: { requested: true } },
           business_type: "individual",
-          metadata: { lovable_user_id: userId },
+          metadata: { lovable_user_id: userId, workspaceId },
         });
         accountId = acct.id;
         await supabaseAdmin.from("provider_payout_accounts").upsert(
-          { user_id: userId, stripe_account_id: accountId, status: "pending", updated_at: new Date().toISOString() },
+          { user_id: userId, stripe_account_id: accountId, workspace_id: workspaceId, environment: env, status: "pending", updated_at: new Date().toISOString() },
           { onConflict: "user_id" },
         );
       }
@@ -60,8 +65,8 @@ export const createConnectOnboardingLink = createServerFn({ method: "POST" })
       const link = await stripe.accountLinks.create({
         account: accountId,
         type: "account_onboarding",
-        refresh_url: `${origin}/dashboard?tab=payouts&refresh=1`,
-        return_url: `${origin}/dashboard?tab=payouts&connected=1`,
+        refresh_url: `${origin}/portal/earnings?refresh=1`,
+        return_url: `${origin}/portal/earnings?connected=1`,
       });
       return { ok: true as const, url: link.url };
     } catch (e) {
@@ -83,7 +88,6 @@ export const refreshPayoutAccount = createServerFn({ method: "POST" })
     if (!row?.stripe_account_id) return { ok: false as const, error: "No connected account" };
 
     const { createStripeClient, getStripeErrorMessage } = await import("@/lib/stripe.server");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const stripe = createStripeClient(env);
     try {
       const acct = await stripe.accounts.retrieve(row.stripe_account_id);
@@ -91,17 +95,7 @@ export const refreshPayoutAccount = createServerFn({ method: "POST" })
         acct.charges_enabled && acct.payouts_enabled
           ? "active"
           : (acct.requirements?.disabled_reason ? "restricted" : "pending");
-      await supabaseAdmin
-        .from("provider_payout_accounts")
-        .update({
-          status,
-          payouts_enabled: !!acct.payouts_enabled,
-          charges_enabled: !!acct.charges_enabled,
-          details_submitted: !!acct.details_submitted,
-          requirements_due: (acct.requirements as any) ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+      await (await import('@/lib/verification-evidence.server')).reconcileConnectEvidence({ id: acct.id }, env);
       return { ok: true as const, status };
     } catch (e) {
       return { ok: false as const, error: getStripeErrorMessage(e) };

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { credentialEvidenceInput } from './verification-evidence-rules';
 
 // ─────────────────────── Medicaid Contacts ───────────────────────
 
@@ -75,17 +76,14 @@ export const listMyCredentials = createServerFn({ method: "GET" })
 
 export const saveCredential = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: {
-    id?: string;
-    kind: string;
-    label: string;
-    expires_at?: string | null;
-    doc_path?: string | null;
-    required?: boolean;
-    notes?: string | null;
-  }) => input)
+  .inputValidator((input: unknown) => credentialEvidenceInput.parse(input))
   .handler(async ({ data, context }) => {
     if (!data.kind?.trim() || !data.label?.trim()) throw new Error("Kind and label are required");
+    const { data: memberships, error: memberError } = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', context.userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
+    if (memberError) throw new Error('Document business ownership unavailable.');
+    const owners = (memberships ?? []).filter(m => m.workspaces.account_type === 'provider' && m.workspaces.status === 'active' && !m.workspaces.is_test_account);
+    if (data.accuracy_attested && owners.length !== 1) throw new Error('One active provider business is required to link document evidence.');
+    if (data.doc_path && !data.doc_path.startsWith(`credentials/${context.userId}/`)) throw new Error('Upload a document owned by your account.');
     const payload = {
       provider_user_id: context.userId,
       kind: data.kind.trim(),
@@ -94,6 +92,10 @@ export const saveCredential = createServerFn({ method: "POST" })
       doc_path: data.doc_path ?? null,
       required: data.required ?? true,
       notes: data.notes ?? null,
+      workspace_id: owners.length === 1 ? owners[0]?.workspace_id : null,
+      business_name: data.business_name ?? null,
+      effective_at: data.effective_at || null,
+      accuracy_attested_at: data.accuracy_attested ? new Date().toISOString() : null,
     };
     if (data.id) {
       const { error } = await context.supabase

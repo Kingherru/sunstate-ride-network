@@ -50,6 +50,7 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
     .from("subscriptions")
     .select("id")
     .eq("stripe_subscription_id", sub.id)
+      .eq("environment", env)
     .maybeSingle();
 
   // If we never saw the `created` event, insert the row now so membership syncs.
@@ -80,25 +81,6 @@ async function handleSubscriptionDeleted(sub: any, env: StripeEnv) {
     .update({ status: "canceled", updated_at: new Date().toISOString() })
     .eq("stripe_subscription_id", sub.id)
     .eq("environment", env);
-}
-
-async function handleAccountUpdated(acct: any) {
-  if (!acct?.id) return;
-  const status: "pending" | "active" | "restricted" =
-    acct.charges_enabled && acct.payouts_enabled
-      ? "active"
-      : (acct.requirements?.disabled_reason ? "restricted" : "pending");
-  await getSupabase()
-    .from("provider_payout_accounts")
-    .update({
-      status,
-      payouts_enabled: !!acct.payouts_enabled,
-      charges_enabled: !!acct.charges_enabled,
-      details_submitted: !!acct.details_submitted,
-      requirements_due: acct.requirements ?? null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("stripe_account_id", acct.id);
 }
 
 async function handleTransferUpdated(tr: any) {
@@ -176,6 +158,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case 'charge.dispute.closed': {
               const { reconcileMembershipCharge } = await import('@/lib/membership-evidence.server');
               await reconcileMembershipCharge(event.data.object, env);
+              await (await import('@/lib/verification-evidence.server')).reconcileNetworkCharge(event.data.object, env);
               break;
             }
             case "customer.subscription.created":
@@ -190,7 +173,12 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await handleSubscriptionDeleted(event.data.object, env);
               break;
             case "account.updated":
-              await handleAccountUpdated(event.data.object);
+              await (await import('@/lib/verification-evidence.server')).reconcileConnectEvidence(event.data.object, env);
+              break;
+            case 'payment_intent.succeeded':
+            case 'payment_intent.payment_failed':
+            case 'payment_intent.canceled':
+              await (await import('@/lib/verification-evidence.server')).reconcileNetworkIntent(event.data.object, env);
               break;
             case "transfer.created":
             case "transfer.updated":
