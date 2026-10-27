@@ -140,7 +140,7 @@ export const updatePayer = createServerFn({ method: "POST" })
     }
     const { error } = await context.supabase
       .from("payers")
-      .update(payerRow(data))
+      .update(payerRow(data, context.userId))
       .eq("id", data.id);
     if (error) return { error: error.message };
     return { ok: true };
