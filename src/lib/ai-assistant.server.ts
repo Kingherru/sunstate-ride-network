@@ -10,7 +10,7 @@ export type AiTask = 'note_to_trip' | 'summarize' | 'training' | 'draft_message'
 const BASE = `You assist the Master Admin of MY FLORIDA NEMT, a Florida non-emergency medical transportation network.
 Rules: never invent facts, phone numbers, prices, names or dates; say when information is missing.
 You only produce text for the admin to review. You cannot submit requests, assign drivers, charge payments, send messages or change records — never claim you did.
-Keep answers short, plain and scannable.`;
+Keep answers short, plain and scannable. Use plain text with simple dashes for lists; no markdown symbols like ** or #.`;
 
 const TASKS: Record<AiTask, string> = {
   note_to_trip: 'Turn the note into a draft trip checklist: trip type, date/time, pickup, drop-off, service level (ambulatory/wheelchair/stretcher), rider needs, return trip, payer. Mark anything not stated as "Missing". End with questions to confirm.',
