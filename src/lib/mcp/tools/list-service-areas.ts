@@ -10,6 +10,6 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: () => ({
     content: [{ type: "text", text: JSON.stringify(CITY_LIST) }],
-    structuredContent: { cities: CITY_LIST },
+    structuredContent: { cities: CITY_LIST.map((c) => ({ slug: c.slug, name: c.name, region: c.region, blurb: c.blurb })) },
   }),
 });
