@@ -54,7 +54,7 @@ export function PublicHeader() {
           {NAV.map((n) => <Link key={n.to} to={n.to} className={navLink}>{n.label}</Link>)}
         </nav>
         <div className="flex items-center gap-3">
-          <ActionBlocks className="ds-nudge hidden lg:flex" />
+          <ActionBlocks className="hidden 2xl:flex" />
           <button
             type="button"
             className={cn("inline-flex size-11 items-center justify-center rounded-ds-sm hover:opacity-80 2xl:hidden", focus)}
@@ -72,7 +72,7 @@ export function PublicHeader() {
           <ul className="mfn-container flex flex-col gap-1 pt-2">
             {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
-          <ActionBlocks full className="mfn-container mt-4 lg:hidden" />
+          <ActionBlocks full className="mfn-container mt-4" />
         </nav>
       )}
     </header>
