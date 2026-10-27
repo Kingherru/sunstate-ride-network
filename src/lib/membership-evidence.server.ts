@@ -6,7 +6,14 @@ export async function reconcileMembershipInvoice(invoiceObject: any, env: Stripe
   if (env !== 'live' || !invoiceObject?.id) return;
   const stripe = createStripeClient(env);
   // Retrieve current state so replays/older deliveries cannot revive a refunded invoice.
-  const invoice = await stripe.invoices.retrieve(invoiceObject.id, { expand: ['payments.data.payment.payment_intent'] });
+  const incomingInvoice = await stripe.invoices.retrieve(invoiceObject.id);
+  const incomingSub = incomingInvoice.parent?.subscription_details?.subscription;
+  const incomingSubId = typeof incomingSub === 'string' ? incomingSub : incomingSub?.id;
+  if (!incomingSubId) return;
+  const currentSubscription = await stripe.subscriptions.retrieve(incomingSubId);
+  const latestInvoice = currentSubscription.latest_invoice;
+  const latestInvoiceId = typeof latestInvoice === 'string' ? latestInvoice : latestInvoice?.id;
+  const invoice = await stripe.invoices.retrieve(latestInvoiceId ?? incomingInvoice.id, { expand: ['payments.data.payment.payment_intent'] });
   const subRef = invoice.parent?.subscription_details?.subscription;
   const subscriptionId = typeof subRef === 'string' ? subRef : subRef?.id;
   if (!subscriptionId) return;
