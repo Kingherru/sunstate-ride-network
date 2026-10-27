@@ -53,12 +53,56 @@ async function ensurePayerCustomer(env: StripeEnv, payerId: string): Promise<str
 
 /* ---------- CRUD ---------- */
 
+const PAYER_TYPES = ["broker", "private_patient", "insurance"] as const;
+const VEHICLE_PREFS = ["car", "suv", "van", "wheelchair_van", "stretcher_van", "provider_choice"] as const;
+
+const payerFields = {
+  name: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(200).optional().or(z.literal("")),
+  phone: z.string().trim().max(30).optional().or(z.literal("")),
+  notes: z.string().trim().max(1000).optional().or(z.literal("")),
+  billing_address: z.string().trim().max(400).optional().or(z.literal("")),
+  ein: z.string().trim().max(20).optional().or(z.literal("")),
+  payer_type: z.enum(PAYER_TYPES).nullish(),
+  active: z.boolean().optional(),
+  linked_contact_id: z.string().uuid().nullish(),
+  multi_load_ok: z.boolean().optional(),
+  preferred_driver: z.string().trim().max(120).optional().or(z.literal("")),
+  vehicle_preference: z.enum(VEHICLE_PREFS).nullish(),
+  pickup_signature_required: z.boolean().optional(),
+  dropoff_signature_required: z.boolean().optional(),
+  early_late_preference: z.enum(["early", "late"]).nullish(),
+  early_late_minutes: z.number().int().min(0).max(240).nullish(),
+};
+
+function payerRow(data: z.infer<z.ZodObject<typeof payerFields>>, ownerUserId?: string) {
+  return {
+    ...(ownerUserId ? { owner_user_id: ownerUserId } : {}),
+    name: data.name,
+    email: data.email || null,
+    phone: data.phone || null,
+    notes: data.notes || null,
+    billing_address: data.billing_address || null,
+    ein: data.ein || null,
+    payer_type: data.payer_type ?? null,
+    active: data.active ?? true,
+    linked_contact_id: data.linked_contact_id ?? null,
+    multi_load_ok: data.multi_load_ok ?? false,
+    preferred_driver: data.preferred_driver || null,
+    vehicle_preference: data.vehicle_preference ?? null,
+    pickup_signature_required: data.pickup_signature_required ?? false,
+    dropoff_signature_required: data.dropoff_signature_required ?? false,
+    early_late_preference: data.early_late_preference ?? null,
+    early_late_minutes: data.early_late_minutes ?? null,
+  };
+}
+
 export const listMyPayers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("payers")
-      .select("id, name, email, phone, notes, created_at")
+      .select("id, name, email, phone, notes, billing_address, ein, payer_type, active, linked_contact_id, multi_load_ok, preferred_driver, vehicle_preference, pickup_signature_required, dropoff_signature_required, early_late_preference, early_late_minutes, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -66,29 +110,20 @@ export const listMyPayers = createServerFn({ method: "GET" })
 
 export const createPayer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) =>
-    z.object({
-      name: z.string().trim().min(1).max(120),
-      email: z.string().trim().email().max(200).optional().or(z.literal("")),
-      phone: z.string().trim().max(30).optional().or(z.literal("")),
-      notes: z.string().trim().max(1000).optional().or(z.literal("")),
-    }).parse(i),
-  )
+  .inputValidator((i: unknown) => z.object(payerFields).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true; id: string } | { error: string }> => {
     try {
       await requireFacilityOrProvider(context);
     } catch (e: any) {
       return { error: e.message };
     }
+    if (data.linked_contact_id) {
+      const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).maybeSingle();
+      if (!c) return { error: "Linked contact not found" };
+    }
     const { data: row, error } = await context.supabase
       .from("payers")
-      .insert({
-        owner_user_id: context.userId,
-        name: data.name,
-        email: data.email || null,
-        phone: data.phone || null,
-        notes: data.notes || null,
-      })
+      .insert(payerRow(data, context.userId))
       .select("id")
       .single();
     if (error) return { error: error.message };
@@ -97,24 +132,15 @@ export const createPayer = createServerFn({ method: "POST" })
 
 export const updatePayer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) =>
-    z.object({
-      id: z.string().uuid(),
-      name: z.string().trim().min(1).max(120),
-      email: z.string().trim().email().max(200).optional().or(z.literal("")),
-      phone: z.string().trim().max(30).optional().or(z.literal("")),
-      notes: z.string().trim().max(1000).optional().or(z.literal("")),
-    }).parse(i),
-  )
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), ...payerFields }).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    if (data.linked_contact_id) {
+      const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).maybeSingle();
+      if (!c) return { error: "Linked contact not found" };
+    }
     const { error } = await context.supabase
       .from("payers")
-      .update({
-        name: data.name,
-        email: data.email || null,
-        phone: data.phone || null,
-        notes: data.notes || null,
-      })
+      .update(payerRow(data))
       .eq("id", data.id);
     if (error) return { error: error.message };
     return { ok: true };
