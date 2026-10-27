@@ -21,6 +21,7 @@ const COLS: { title: string; items: Item[] }[] = [
 const LEGAL: Item[] = [
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
+  { label: "Contact Us", href: "/contact" },
   { label: "Accessibility", href: "/accessibility" },
   { label: "Sitemap", href: "/sitemap" },
 ];
