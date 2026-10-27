@@ -2820,6 +2820,110 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_membership_transitions: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          activated_by_mfn_id: string | null
+          current_cents: number | null
+          environment: string
+          id: string
+          prepared_at: string
+          prepared_by: string | null
+          prepared_by_mfn_id: string | null
+          proposed_cents: number
+          reason: string | null
+          renewal_at: string | null
+          status: string
+          subscription_row_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          activated_by_mfn_id?: string | null
+          current_cents?: number | null
+          environment: string
+          id?: string
+          prepared_at?: string
+          prepared_by?: string | null
+          prepared_by_mfn_id?: string | null
+          proposed_cents?: number
+          reason?: string | null
+          renewal_at?: string | null
+          status?: string
+          subscription_row_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          activated_by_mfn_id?: string | null
+          current_cents?: number | null
+          environment?: string
+          id?: string
+          prepared_at?: string
+          prepared_by?: string | null
+          prepared_by_mfn_id?: string | null
+          proposed_cents?: number
+          reason?: string | null
+          renewal_at?: string | null
+          status?: string
+          subscription_row_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_membership_transitions_subscription_row_id_fkey"
+            columns: ["subscription_row_id"]
+            isOneToOne: true
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_membership_transitions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_membership_trials: {
+        Row: {
+          created_at: string
+          ends_at: string
+          environment: string
+          source_subscription_id: string | null
+          started_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          environment: string
+          source_subscription_id?: string | null
+          started_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          environment?: string
+          source_subscription_id?: string | null
+          started_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_membership_trials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_network_profiles: {
         Row: {
           accepting_connections: boolean
@@ -4077,13 +4181,59 @@ export type Database = {
           },
         ]
       }
+      saved_patient_events: {
+        Row: {
+          action: string
+          actor_mfn_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          patient_id: string
+          reason: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_mfn_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          patient_id: string
+          reason?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_mfn_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          patient_id?: string
+          reason?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_patient_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "saved_patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_patients: {
         Row: {
+          active: boolean
           address_line1: string | null
           address_line2: string | null
+          assistance_needs: string | null
           authorization_number: string | null
           city: string | null
+          communication_needs: string | null
           created_at: string
+          deactivated_at: string | null
+          deactivation_reason: string | null
           default_dropoff_address: string | null
           default_dropoff_city: string | null
           default_payer_id: string | null
@@ -4101,20 +4251,31 @@ export type Database = {
           medicaid_number: string | null
           medicaid_plan: string | null
           mobility: string | null
+          mobility_device: string | null
           notes: string | null
           owner_id: string
+          oxygen_required: boolean
           payer: string | null
           phone: string | null
+          service_requirements: string | null
           state: string | null
           updated_at: string
+          weight_lbs: number | null
+          wheelchair_type: string | null
+          workspace_id: string | null
           zip: string | null
         }
         Insert: {
+          active?: boolean
           address_line1?: string | null
           address_line2?: string | null
+          assistance_needs?: string | null
           authorization_number?: string | null
           city?: string | null
+          communication_needs?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivation_reason?: string | null
           default_dropoff_address?: string | null
           default_dropoff_city?: string | null
           default_payer_id?: string | null
@@ -4132,20 +4293,31 @@ export type Database = {
           medicaid_number?: string | null
           medicaid_plan?: string | null
           mobility?: string | null
+          mobility_device?: string | null
           notes?: string | null
           owner_id: string
+          oxygen_required?: boolean
           payer?: string | null
           phone?: string | null
+          service_requirements?: string | null
           state?: string | null
           updated_at?: string
+          weight_lbs?: number | null
+          wheelchair_type?: string | null
+          workspace_id?: string | null
           zip?: string | null
         }
         Update: {
+          active?: boolean
           address_line1?: string | null
           address_line2?: string | null
+          assistance_needs?: string | null
           authorization_number?: string | null
           city?: string | null
+          communication_needs?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivation_reason?: string | null
           default_dropoff_address?: string | null
           default_dropoff_city?: string | null
           default_payer_id?: string | null
@@ -4163,12 +4335,18 @@ export type Database = {
           medicaid_number?: string | null
           medicaid_plan?: string | null
           mobility?: string | null
+          mobility_device?: string | null
           notes?: string | null
           owner_id?: string
+          oxygen_required?: boolean
           payer?: string | null
           phone?: string | null
+          service_requirements?: string | null
           state?: string | null
           updated_at?: string
+          weight_lbs?: number | null
+          wheelchair_type?: string | null
+          workspace_id?: string | null
           zip?: string | null
         }
         Relationships: [
@@ -4177,6 +4355,13 @@ export type Database = {
             columns: ["default_payer_id"]
             isOneToOne: false
             referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_patients_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -4344,6 +4529,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          base_price_cents: number | null
           cancel_at_period_end: boolean | null
           created_at: string | null
           current_period_end: string | null
@@ -4355,16 +4541,20 @@ export type Database = {
           membership_paid_at: string | null
           membership_paid_cents: number | null
           membership_payment_state: string | null
+          network_addon_cancel_at: string | null
+          network_addon_status: string
           price_id: string
           product_id: string
           status: string
           stripe_customer_id: string
           stripe_subscription_id: string
+          trial_end: string | null
           updated_at: string | null
           user_id: string
           workspace_id: string | null
         }
         Insert: {
+          base_price_cents?: number | null
           cancel_at_period_end?: boolean | null
           created_at?: string | null
           current_period_end?: string | null
@@ -4376,16 +4566,20 @@ export type Database = {
           membership_paid_at?: string | null
           membership_paid_cents?: number | null
           membership_payment_state?: string | null
+          network_addon_cancel_at?: string | null
+          network_addon_status?: string
           price_id: string
           product_id: string
           status?: string
           stripe_customer_id: string
           stripe_subscription_id: string
+          trial_end?: string | null
           updated_at?: string | null
           user_id: string
           workspace_id?: string | null
         }
         Update: {
+          base_price_cents?: number | null
           cancel_at_period_end?: boolean | null
           created_at?: string | null
           current_period_end?: string | null
@@ -4397,11 +4591,14 @@ export type Database = {
           membership_paid_at?: string | null
           membership_paid_cents?: number | null
           membership_payment_state?: string | null
+          network_addon_cancel_at?: string | null
+          network_addon_status?: string
           price_id?: string
           product_id?: string
           status?: string
           stripe_customer_id?: string
           stripe_subscription_id?: string
+          trial_end?: string | null
           updated_at?: string | null
           user_id?: string
           workspace_id?: string | null
@@ -5788,6 +5985,48 @@ export type Database = {
           },
         ]
       }
+      user_portal_preferences: {
+        Row: {
+          default_payer_id: string | null
+          default_payment_method_id: string | null
+          interface_density: string
+          pay_by_invoice: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          default_payer_id?: string | null
+          default_payment_method_id?: string | null
+          interface_density?: string
+          pay_by_invoice?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          default_payer_id?: string | null
+          default_payment_method_id?: string | null
+          interface_density?: string
+          pay_by_invoice?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_portal_preferences_default_payer_id_fkey"
+            columns: ["default_payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_portal_preferences_default_payment_method_id_fkey"
+            columns: ["default_payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "saved_payment_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           created_at: string
@@ -6719,6 +6958,10 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       admin_user_removal_plan: { Args: { _user: string }; Returns: Json }
+      approve_membership_transition: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       audit_email_change_failure: {
         Args: { _expired?: boolean; _user: string }
         Returns: undefined
@@ -7321,6 +7564,7 @@ export type Database = {
         }
         Returns: string
       }
+      prepare_membership_transitions: { Args: never; Returns: number }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
@@ -7351,6 +7595,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      provider_network_entitled: { Args: { _ws: string }; Returns: boolean }
       provider_verification_badges: {
         Args: { _workspaces: string[] }
         Returns: Json
