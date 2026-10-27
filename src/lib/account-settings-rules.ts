@@ -24,7 +24,7 @@ export function serviceCompatibility(distance: number | null, radius: number | n
  * Inputs must eventually come from authoritative workspace evidence, never forms.
  */
 export const PROVIDER_VERIFICATION_POLICY = {
-  membershipCents: 1000,
+  membershipCents: 1500,
   trialDays: 30,
   goldTrips: 5,
   paymentBusinessDays: 3,
@@ -44,7 +44,7 @@ export type MembershipVerificationEvidence = {
 
 export function qualifiesForSemiVerified(e: MembershipVerificationEvidence, now: number): boolean {
   return Number.isFinite(now) && e.workspaceLinked && e.requiredMembership && e.environment === 'live' &&
-    e.amountPaidCents === PROVIDER_VERIFICATION_POLICY.membershipCents && e.paymentStatus === 'succeeded' &&
+    (e.amountPaidCents === PROVIDER_VERIFICATION_POLICY.membershipCents || e.amountPaidCents === 2500) && e.paymentStatus === 'succeeded' &&
     e.subscriptionStatus === 'active' && e.goodStanding && e.currentPeriodEnd !== null && e.currentPeriodEnd > now;
 }
 
