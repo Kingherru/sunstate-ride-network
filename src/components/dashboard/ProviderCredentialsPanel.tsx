@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { DsButton, DsCheckbox } from '@/components/ds/controls';
 import {
   listMyCredentials, saveCredential, deleteCredential, myCredentialStatus,
 } from "@/lib/medicaid.functions";
@@ -12,6 +13,12 @@ const KIND_OPTIONS = [
   { value: "auto_insurance", label: "Auto/Commercial Insurance" },
   { value: "workers_comp", label: "Workers' Compensation" },
   { value: "business_license", label: "Business License" },
+  { value: "w9", label: "W-9" },
+  { value: "vehicle_registration", label: "Vehicle Registration" },
+  { value: "transport_permit", label: "Transportation / Local Permit" },
+  { value: "professional_liability", label: "Professional Liability" },
+  { value: "cargo_insurance", label: "Cargo Coverage" },
+  { value: "program_credential", label: "Program Credential" },
   { value: "background_check", label: "Background Check" },
   { value: "drug_screening", label: "Drug Screening" },
   { value: "first_aid_cpr", label: "First Aid / CPR" },
@@ -46,12 +53,14 @@ export function ProviderCredentialsPanel() {
   const [uploading, setUploading] = useState(false);
 
   const saveMut = useMutation({
-    mutationFn: (payload: any) => save({ data: payload }),
+    mutationFn: (payload: any) => save({ data: { id: payload.id, kind: payload.kind, label: payload.label, expires_at: payload.expires_at || null, effective_at: payload.effective_at || null, business_name: payload.business_name ?? '', accuracy_attested: payload.accuracy_attested === true, doc_path: payload.doc_path ?? null, required: payload.required ?? true, notes: payload.notes ?? null } }),
     onSuccess: () => {
       toast.success("Credential saved");
       setEditing(null);
       qc.invalidateQueries({ queryKey: ["my-credentials"] });
       qc.invalidateQueries({ queryKey: ["my-credential-status"] });
+      qc.invalidateQueries({ queryKey: ['verification-evidence'] });
+      qc.invalidateQueries({ queryKey: ['provider-badges'] });
     },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
   });
@@ -135,6 +144,9 @@ export function ProviderCredentialsPanel() {
             <span className="portal-label">Expiration date</span>
             <input type="date" className="portal-input" value={editing.expires_at ?? ""} onChange={(e) => setEditing({ ...editing, expires_at: e.target.value })} />
           </label>
+          <label className="block"><span className="portal-label">Effective date (when applicable)</span><input type="date" className="portal-input" value={editing.effective_at ?? ''} onChange={e => setEditing({ ...editing, effective_at: e.target.value })} /></label>
+          <label className="block col-span-2"><span className="portal-label">Business name on document</span><input className="portal-input" maxLength={200} value={editing.business_name ?? ''} onChange={e => setEditing({ ...editing, business_name: e.target.value })} /></label>
+          <div className="col-span-2"><DsCheckbox label="I attest that the document and entered business details are accurate." checked={editing.accuracy_attested === true} onChange={e => setEditing({ ...editing, accuracy_attested: e.target.checked })} /></div>
           <label className="block">
             <span className="portal-label">Required for dispatch?</span>
             <select className="portal-input" value={editing.required ? "yes" : "no"} onChange={(e) => setEditing({ ...editing, required: e.target.value === "yes" })}>
@@ -158,10 +170,10 @@ export function ProviderCredentialsPanel() {
             <textarea className="portal-input" rows={2} value={editing.notes ?? ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />
           </label>
           <div className="col-span-2 flex gap-2">
-            <button className="portal-btn-primary px-4 py-2 text-sm" disabled={saveMut.isPending}
+            <DsButton disabled={saveMut.isPending}
               onClick={() => saveMut.mutate(editing)}>
               {saveMut.isPending ? "Saving…" : "Save"}
-            </button>
+            </DsButton>
             <button className="text-sm font-bold text-muted-foreground" onClick={() => setEditing(null)}>Cancel</button>
           </div>
         </div>
