@@ -1995,42 +1995,78 @@ export type Database = {
       }
       payers: {
         Row: {
+          active: boolean
+          billing_address: string | null
           created_at: string
           created_by: string | null
           creator_mfn_id: string | null
+          dropoff_signature_required: boolean
+          early_late_minutes: number | null
+          early_late_preference: string | null
+          ein: string | null
           email: string | null
           id: string
+          linked_contact_id: string | null
+          multi_load_ok: boolean
           name: string
           notes: string | null
           owner_user_id: string
+          payer_type: string | null
           phone: string | null
+          pickup_signature_required: boolean
+          preferred_driver: string | null
           updated_at: string
+          vehicle_preference: string | null
           workspace_id: string | null
         }
         Insert: {
+          active?: boolean
+          billing_address?: string | null
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
+          dropoff_signature_required?: boolean
+          early_late_minutes?: number | null
+          early_late_preference?: string | null
+          ein?: string | null
           email?: string | null
           id?: string
+          linked_contact_id?: string | null
+          multi_load_ok?: boolean
           name: string
           notes?: string | null
           owner_user_id: string
+          payer_type?: string | null
           phone?: string | null
+          pickup_signature_required?: boolean
+          preferred_driver?: string | null
           updated_at?: string
+          vehicle_preference?: string | null
           workspace_id?: string | null
         }
         Update: {
+          active?: boolean
+          billing_address?: string | null
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
+          dropoff_signature_required?: boolean
+          early_late_minutes?: number | null
+          early_late_preference?: string | null
+          ein?: string | null
           email?: string | null
           id?: string
+          linked_contact_id?: string | null
+          multi_load_ok?: boolean
           name?: string
           notes?: string | null
           owner_user_id?: string
+          payer_type?: string | null
           phone?: string | null
+          pickup_signature_required?: boolean
+          preferred_driver?: string | null
           updated_at?: string
+          vehicle_preference?: string | null
           workspace_id?: string | null
         }
         Relationships: []
@@ -2595,6 +2631,7 @@ export type Database = {
           notes: string | null
           owner_id: string
           payer: string | null
+          payer_id: string | null
           phone: string | null
           updated_at: string
           workspace_id: string | null
@@ -2615,6 +2652,7 @@ export type Database = {
           notes?: string | null
           owner_id: string
           payer?: string | null
+          payer_id?: string | null
           phone?: string | null
           updated_at?: string
           workspace_id?: string | null
@@ -2635,6 +2673,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           payer?: string | null
+          payer_id?: string | null
           phone?: string | null
           updated_at?: string
           workspace_id?: string | null
