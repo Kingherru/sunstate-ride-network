@@ -74,7 +74,7 @@ function relBadgeClass(rel: Relationship): string {
   return rel === "provider_network" ? "bg-ds-peach text-ds-primary border border-ds-peach-border" : "bg-ds-sky text-ds-primary border border-ds-sky-border";
 }
 
-export function MessagesPanel({ userId, portal, readOnly = false }: { userId: string; portal: PortalKind; readOnly?: boolean }) {
+export function MessagesPanel({ userId, portal, readOnly = false, focusUserId }: { userId: string; portal: PortalKind; readOnly?: boolean; focusUserId?: string }) {
   const qc = useQueryClient();
   const caps = useCapabilities();
   const listFn = useServerFn(listThreads);
@@ -301,6 +301,11 @@ export function MessagesPanel({ userId, portal, readOnly = false }: { userId: st
     });
   }, [threads, threadSearch, kindFilter, zoneFilter]);
 
+  useEffect(() => {
+    if (!focusUserId || activeThread) return;
+    const t = threads.find((x) => x.participants.some((p) => p.user_id === focusUserId));
+    if (t) setActiveThread(t.id);
+  }, [focusUserId, threads, activeThread]);
   const active = useMemo(() => threads.find((t) => t.id === activeThread) ?? null, [threads, activeThread]);
   const messages = messagesQ.data ?? [];
 
