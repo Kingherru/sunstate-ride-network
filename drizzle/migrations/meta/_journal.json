@@ -162,6 +162,13 @@
       "when": 1792986268415,
       "tag": "0022_pass3k_settings_guardrails",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793065969976,
+      "tag": "0023_pass3l_email_lifecycle_network_payment_foundation",
+      "breakpoints": true
     }
   ]
 }

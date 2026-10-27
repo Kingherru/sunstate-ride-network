@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       account_security_audit: {
         Row: {
+          correlation_id: string | null
           created_at: string
           driver_ids: string[]
           event_type: string
@@ -29,6 +30,7 @@ export type Database = {
           workspace_mfn_id: string | null
         }
         Insert: {
+          correlation_id?: string | null
           created_at?: string
           driver_ids?: string[]
           event_type: string
@@ -42,6 +44,7 @@ export type Database = {
           workspace_mfn_id?: string | null
         }
         Update: {
+          correlation_id?: string | null
           created_at?: string
           driver_ids?: string[]
           event_type?: string
@@ -4397,16 +4400,25 @@ export type Database = {
           amount_cents: number
           approved_by: string | null
           capability: string
+          completion_information_submitted_at: string | null
           created_at: string
           current_radius: number | null
           destination_area: string
+          dispute_opened_at: string | null
+          dispute_reason_code: string | null
+          dispute_resolved_at: string | null
           estimated_miles: number | null
           expires_at: string
           id: string
           mfn_id: string
+          network_completed_at: string | null
+          network_payment_state: string
           original_person_id: string | null
           original_person_mfn_id: string | null
           original_workspace_mfn_id: string | null
+          payment_completed_at: string | null
+          payment_due_at: string | null
+          payment_initiated_at: string | null
           pickup_area: string
           pickup_date: string
           pickup_lat: number
@@ -4432,16 +4444,25 @@ export type Database = {
           amount_cents: number
           approved_by?: string | null
           capability: string
+          completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
           destination_area: string
+          dispute_opened_at?: string | null
+          dispute_reason_code?: string | null
+          dispute_resolved_at?: string | null
           estimated_miles?: number | null
           expires_at: string
           id?: string
           mfn_id?: string
+          network_completed_at?: string | null
+          network_payment_state?: string
           original_person_id?: string | null
           original_person_mfn_id?: string | null
           original_workspace_mfn_id?: string | null
+          payment_completed_at?: string | null
+          payment_due_at?: string | null
+          payment_initiated_at?: string | null
           pickup_area: string
           pickup_date: string
           pickup_lat: number
@@ -4467,16 +4488,25 @@ export type Database = {
           amount_cents?: number
           approved_by?: string | null
           capability?: string
+          completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
           destination_area?: string
+          dispute_opened_at?: string | null
+          dispute_reason_code?: string | null
+          dispute_resolved_at?: string | null
           estimated_miles?: number | null
           expires_at?: string
           id?: string
           mfn_id?: string
+          network_completed_at?: string | null
+          network_payment_state?: string
           original_person_id?: string | null
           original_person_mfn_id?: string | null
           original_workspace_mfn_id?: string | null
+          payment_completed_at?: string | null
+          payment_due_at?: string | null
+          payment_initiated_at?: string | null
           pickup_area?: string
           pickup_date?: string
           pickup_lat?: number
@@ -6442,6 +6472,10 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       admin_user_removal_plan: { Args: { _user: string }; Returns: Json }
+      audit_email_change_failure: {
+        Args: { _expired?: boolean; _user: string }
+        Returns: undefined
+      }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       business_record_access: {
         Args: { _id: string; _kind: string; _level: string; _ws: string }
@@ -6944,6 +6978,7 @@ export type Database = {
       network_list_activity: { Args: never; Returns: Json }
       network_list_eligibility: { Args: never; Returns: Json }
       network_list_offers: { Args: never; Returns: Json }
+      network_list_payments: { Args: never; Returns: Json }
       network_mark_attention: { Args: never; Returns: number }
       network_notify: {
         Args: {
@@ -6956,6 +6991,11 @@ export type Database = {
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
       network_offer_safe_history: { Args: { _offer: string }; Returns: Json }
+      network_open_payment_dispute: {
+        Args: { _confirmed: boolean; _distribution: string; _reason: string }
+        Returns: undefined
+      }
+      network_payment_due_at: { Args: { _completed: string }; Returns: string }
       network_public_service_centers: {
         Args: never
         Returns: {
@@ -6968,9 +7008,17 @@ export type Database = {
           zip: string
         }[]
       }
+      network_record_completion: {
+        Args: { _confirmed: boolean; _distribution: string }
+        Returns: undefined
+      }
       network_reservation_state: {
         Args: { _state: string; _trip: string }
         Returns: string
+      }
+      network_resolve_payment_dispute: {
+        Args: { _confirmed: boolean; _distribution: string; _reason: string }
+        Returns: undefined
       }
       network_respond_offer: {
         Args: {
