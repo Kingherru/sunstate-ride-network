@@ -5,8 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthShell, AuthMessage, PasswordInput, authField, authLabel } from "@/components/auth/AuthShell";
 import { btnAction } from "@/components/home/buttons";
 import { cn } from "@/lib/utils";
+import { safeReturnPath } from "@/lib/access.functions";
 
 export const Route = createFileRoute("/create-account")({
+  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: safeReturnPath(s.redirect) ?? undefined }),
   head: () => ({
     meta: [
       { title: "Create Account — MY FLORIDA NEMT" },
@@ -65,7 +67,7 @@ function CreateAccount() {
       email: f.email.trim(),
       password: f.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login?verified=1`,
+        emailRedirectTo: `${window.location.origin}/login?verified=1${returnTo ? `&redirect=${encodeURIComponent(returnTo)}` : ""}`,
         data: { display_name: f.name.trim(), phone: f.phone.trim(), account_type: type, organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
       },
     });
