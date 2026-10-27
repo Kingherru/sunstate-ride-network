@@ -44,6 +44,9 @@ export const confirmSecureEmailChange = createServerFn({ method: 'POST' }).middl
     if (!current.user || current.user.id !== context.userId) return { error: 'Sign in before confirming an email change.' };
     const { data: profile } = await context.supabase.from('user_profiles').select('status,deleted_at').eq('user_id', context.userId).maybeSingle();
     if (profile?.status !== 'active' || profile.deleted_at) return { error: 'An active account is required.' };
+    const { supabaseAdmin: pendingReader } = await import('@/integrations/supabase/client.server');
+    const { data: pending, error: pendingError } = await pendingReader.auth.admin.getUserById(context.userId);
+    if (pendingError || !pending.user || pending.user.new_email?.toLowerCase() !== data.email.toLowerCase()) return { error: 'This email does not match your pending email change.' };
     // The standard Auth process validates the code and secure dual confirmation.
     const { data: confirmed, error } = await context.supabase.auth.verifyOtp({ email: data.email, token: data.code, type: 'email_change' });
     if (error) {

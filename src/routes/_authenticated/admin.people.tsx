@@ -17,6 +17,7 @@ import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 import { PersonDetails } from '@/components/admin/PersonDetails';
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 import { matchesPeopleFilters } from '@/lib/people-filters';
+import { ProviderBadgeControl } from '@/components/admin/ProviderBadgeControl';
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
 const ORG_TYPES = new Set(["facility", "hospital"]);
@@ -162,10 +163,11 @@ function People() {
                 </div>
                 <div className="ds-support min-w-0">
                   {p.accounts.length === 0 ? <p>No business account</p> : p.accounts.map((a) => (
-                    <p key={a.id} className="break-words">
+                    <div key={a.id} className="break-words">
                       <span className="font-semibold text-ds-on-surface">{a.name || "Unnamed"}</span>{a.name !== (ACCOUNT_TYPE_LABEL[a.type] ?? a.type) && ` · ${ACCOUNT_TYPE_LABEL[a.type] ?? a.type}`}
                       {a.type !== "provider" && organizationLabel(a.orgType) !== (ACCOUNT_TYPE_LABEL[a.type] ?? a.type) && ` · ${organizationLabel(a.orgType)}`} · {a.status} · <span className="font-mono">{a.mfnId}</span>
-                    </p>
+                      {a.type === 'provider' && <ProviderBadgeControl workspaceId={a.id} protectedAccount={p.isMasterAdmin} />}
+                    </div>
                   ))}
                 </div>
               </li>
