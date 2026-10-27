@@ -1,6 +1,6 @@
 # Architecture decisions
 
-- MCP stays removed; restoration sources are in Files → mcp-archive. Why: unused.
+- The app MCP server (src/lib/mcp) is OAuth-protected and exposes only public info tools; consent at /.lovable/oauth/consent returns through /login and /create-account `redirect`. Why: owner asked to connect ChatGPT without exposing private data.
 - Example conversations use isolated in-memory UI fixtures with no send actions. Why: removable demos never affect real messages.
 - Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal permanent account_security_audit confirmation, never sends. Why: preview is not delivery.
 - Design tokens live under .theme-public/.theme-portal; new UI uses ds/brand components. Why: neutral training and central overrides remain intact.

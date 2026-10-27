@@ -42,6 +42,7 @@ const schema = z.object({
 });
 
 function CreateAccount() {
+  const { redirect: returnTo } = Route.useSearch();
   const [type, setType] = useState<AccountType | null>(null);
   const [f, setF] = useState({ name: "", email: "", phone: "", org: "", password: "", confirm: "", terms: false });
   const [errors, setErrors] = useState<Record<string, string>>({});

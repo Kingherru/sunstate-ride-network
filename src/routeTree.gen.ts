@@ -44,6 +44,7 @@ import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAdminsRouteImport } from './routes/_authenticated/admin.admins'
 import { Route as AuthenticatedAdminChangelogRouteImport } from './routes/_authenticated/admin.changelog'
@@ -276,6 +277,11 @@ const ShopReturnRoute = ShopReturnRouteImport.update({
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
   id: '/verify/$token',
   path: '/verify/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -644,6 +650,7 @@ export interface FileRoutesByFullPath {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
@@ -732,6 +739,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesIndexRoute
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
@@ -826,6 +834,7 @@ export interface FileRoutesById {
   '/resources/': typeof ResourcesIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/_authenticated/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
@@ -920,6 +929,7 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/.lovable/oauth/consent'
     | '/admin/admins'
     | '/admin/changelog'
     | '/admin/integrations'
@@ -1008,6 +1018,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/services'
     | '/shop'
+    | '/.lovable/oauth/consent'
     | '/admin/admins'
     | '/admin/changelog'
     | '/admin/integrations'
@@ -1101,6 +1112,7 @@ export interface FileRouteTypes {
     | '/resources/'
     | '/services/'
     | '/shop/'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/admin/admins'
     | '/_authenticated/admin/changelog'
     | '/_authenticated/admin/integrations'
@@ -1187,6 +1199,7 @@ export interface RootRouteChildren {
   FloridaCoverageIndexRoute: typeof FloridaCoverageIndexRoute
   ResourcesIndexRoute: typeof ResourcesIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
   FloridaCoverageRegionIndexRoute: typeof FloridaCoverageRegionIndexRoute
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
@@ -1449,6 +1462,13 @@ declare module '@tanstack/react-router' {
       path: '/verify/$token'
       fullPath: '/verify/$token'
       preLoaderRoute: typeof VerifyTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -2017,6 +2037,7 @@ const rootRouteChildren: RootRouteChildren = {
   FloridaCoverageIndexRoute: FloridaCoverageIndexRoute,
   ResourcesIndexRoute: ResourcesIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
   FloridaCoverageRegionIndexRoute: FloridaCoverageRegionIndexRoute,
   ApiPublicHooksFinCashoutTickRoute: ApiPublicHooksFinCashoutTickRoute,

@@ -49,7 +49,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     <main className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-md rounded-ds bg-ds-sky border border-ds-sky-border p-6">
         <h1 className="text-lg font-extrabold mb-2">Authorization error</h1>
-        <p className="text-sm text-ds-text-muted">{String((error as Error)?.message ?? error)}</p>
+        <p className="text-sm text-ds-text-2">{String((error as Error)?.message ?? error)}</p>
       </div>
     </main>
   ),
@@ -84,7 +84,7 @@ function Consent() {
           <h1 className="text-2xl font-extrabold tracking-tight">
             Connect {clientName} to MY FLORIDA NEMT
           </h1>
-          <p className="text-sm text-ds-text-muted mt-2">
+          <p className="text-sm text-ds-text-2 mt-2">
             {clientName} will be able to call this app's enabled tools while you are signed in.
             This does not bypass this app's permissions or backend policies.
           </p>
@@ -92,7 +92,7 @@ function Consent() {
         {scopes.length > 0 && (
           <ul className="text-sm space-y-1 border-t border-ds-sky-border pt-3">
             {scopes.map((s: string) => (
-              <li key={s} className="text-ds-text-muted">
+              <li key={s} className="text-ds-text-2">
                 {s === "openid" || s === "profile" ? "Share your basic profile"
                   : s === "email" ? "Share your email address"
                   : `Additional permission requested: ${s}`}
