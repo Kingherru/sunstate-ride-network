@@ -94,7 +94,7 @@ function payerRow(data: z.infer<z.ZodObject<typeof payerFields>>, ownerUserId: s
     early_late_preference: data.early_late_preference ?? null,
     early_late_minutes: data.early_late_minutes ?? null,
   };
-  return ownerUserId ? { ...row, owner_user_id: ownerUserId } : row;
+  return { ...row, owner_user_id: ownerUserId };
 }
 
 export const listMyPayers = createServerFn({ method: "GET" })
