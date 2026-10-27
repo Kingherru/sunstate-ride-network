@@ -2625,42 +2625,65 @@ export type Database = {
       }
       provider_credentials: {
         Row: {
+          accuracy_attested_at: string | null
+          business_name: string | null
           created_at: string
           doc_path: string | null
+          effective_at: string | null
           expires_at: string | null
           id: string
           kind: string
           label: string
+          lifecycle_state: string | null
           notes: string | null
           provider_user_id: string
           required: boolean
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
+          accuracy_attested_at?: string | null
+          business_name?: string | null
           created_at?: string
           doc_path?: string | null
+          effective_at?: string | null
           expires_at?: string | null
           id?: string
           kind: string
           label: string
+          lifecycle_state?: string | null
           notes?: string | null
           provider_user_id: string
           required?: boolean
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
+          accuracy_attested_at?: string | null
+          business_name?: string | null
           created_at?: string
           doc_path?: string | null
+          effective_at?: string | null
           expires_at?: string | null
           id?: string
           kind?: string
           label?: string
+          lifecycle_state?: string | null
           notes?: string | null
           provider_user_id?: string
           required?: boolean
           updated_at?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "provider_credentials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_embed_tokens: {
         Row: {
@@ -2750,6 +2773,7 @@ export type Database = {
           service_types: string[]
           updated_at: string
           updated_by: string | null
+          verification_details: Json
           visible: boolean
           workspace_id: string
           zips: string[]
@@ -2778,6 +2802,7 @@ export type Database = {
           service_types?: string[]
           updated_at?: string
           updated_by?: string | null
+          verification_details?: Json
           visible?: boolean
           workspace_id: string
           zips?: string[]
@@ -2806,6 +2831,7 @@ export type Database = {
           service_types?: string[]
           updated_at?: string
           updated_by?: string | null
+          verification_details?: Json
           visible?: boolean
           workspace_id?: string
           zips?: string[]
@@ -2825,36 +2851,53 @@ export type Database = {
           charges_enabled: boolean
           created_at: string
           details_submitted: boolean
+          environment: string | null
+          identity_ready: boolean
           payouts_enabled: boolean
           requirements_due: Json | null
           status: Database["public"]["Enums"]["payout_account_status"]
           stripe_account_id: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           charges_enabled?: boolean
           created_at?: string
           details_submitted?: boolean
+          environment?: string | null
+          identity_ready?: boolean
           payouts_enabled?: boolean
           requirements_due?: Json | null
           status?: Database["public"]["Enums"]["payout_account_status"]
           stripe_account_id?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           charges_enabled?: boolean
           created_at?: string
           details_submitted?: boolean
+          environment?: string | null
+          identity_ready?: boolean
           payouts_enabled?: boolean
           requirements_due?: Json | null
           status?: Database["public"]["Enums"]["payout_account_status"]
           stripe_account_id?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "provider_payout_accounts_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_payout_transfers: {
         Row: {
@@ -4438,7 +4481,11 @@ export type Database = {
           id: string
           mfn_id: string
           network_completed_at: string | null
+          network_payment_environment: string | null
+          network_payment_observed_at: string | null
           network_payment_state: string
+          network_recipient_account_id: string | null
+          network_stripe_payment_intent_id: string | null
           original_person_id: string | null
           original_person_mfn_id: string | null
           original_workspace_mfn_id: string | null
@@ -4482,7 +4529,11 @@ export type Database = {
           id?: string
           mfn_id?: string
           network_completed_at?: string | null
+          network_payment_environment?: string | null
+          network_payment_observed_at?: string | null
           network_payment_state?: string
+          network_recipient_account_id?: string | null
+          network_stripe_payment_intent_id?: string | null
           original_person_id?: string | null
           original_person_mfn_id?: string | null
           original_workspace_mfn_id?: string | null
@@ -4526,7 +4577,11 @@ export type Database = {
           id?: string
           mfn_id?: string
           network_completed_at?: string | null
+          network_payment_environment?: string | null
+          network_payment_observed_at?: string | null
           network_payment_state?: string
+          network_recipient_account_id?: string | null
+          network_stripe_payment_intent_id?: string | null
           original_person_id?: string | null
           original_person_mfn_id?: string | null
           original_workspace_mfn_id?: string | null
@@ -7147,6 +7202,15 @@ export type Database = {
         Args: { _workspaces: string[] }
         Returns: Json
       }
+      provider_verification_evidence_internal: {
+        Args: { _workspace: string }
+        Returns: Json
+      }
+      provider_verification_lifecycle: { Args: never; Returns: Json }
+      provider_verification_summary: {
+        Args: { _workspace: string }
+        Returns: Json
+      }
       rank_auto_providers: {
         Args: {
           _created_by: string
@@ -7282,6 +7346,7 @@ export type Database = {
         }[]
       }
       sync_reservation_states: { Args: never; Returns: undefined }
+      verification_normalize_name: { Args: { _name: string }; Returns: string }
       verify_course_certificate: {
         Args: { _token: string }
         Returns: {
