@@ -81,6 +81,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   async function toggleSave(row: NetworkProviderRow) {
     try {
       if (row.is_saved) {
+        if (!window.confirm(`Remove ${row.business_name} from your saved providers?`)) return;
         await unsaveFn({ data: { provider_workspace_id: row.workspace_id } });
         toast.success("Removed from saved");
       } else {

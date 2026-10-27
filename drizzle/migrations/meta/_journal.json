@@ -225,6 +225,13 @@
       "when": 1793129394682,
       "tag": "0031_pass3m_admin_detail_actions",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793130469684,
+      "tag": "0032_expand_payers_and_contact_links",
+      "breakpoints": true
     }
   ]
 }

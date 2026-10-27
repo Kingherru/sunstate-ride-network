@@ -17,25 +17,25 @@ const NAV = [
 const focus = "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-on-primary focus-visible:ring-offset-2 focus-visible:ring-offset-ds-primary";
 
 /** Uppercase nav links: no background blocks, no underline, subtle hover. */
-const navLink = cn("ds-button-text ds-transition inline-flex items-center rounded-ds-sm px-2.5 py-2.5 text-[0.9375rem] uppercase tracking-[0.08em] hover:opacity-80 data-[status=active]:text-ds-accent", focus);
+const navLink = cn("ds-button-text ds-transition inline-flex items-center whitespace-nowrap rounded-ds-sm px-2 py-2.5 text-[0.8125rem] uppercase tracking-[0.07em] hover:text-ds-accent data-[status=active]:text-ds-accent", focus);
 
 /** Header actions: icon + text only on the blue header. No background, no border, no underline. */
 function ActionBlocks({ className, full }: { className?: string; full?: boolean }) {
   const item = cn(
-    "ds-button-text ds-transition inline-flex min-h-12 items-center gap-2.5 px-2 text-[1.0625rem] uppercase tracking-[0.04em] [&_svg]:size-5 [&_svg]:shrink-0",
+    "ds-button-text ds-transition inline-flex min-h-12 items-center gap-2 whitespace-nowrap px-1.5 text-[0.9375rem] uppercase tracking-[0.04em] [&_svg]:size-[1.125rem] [&_svg]:shrink-0",
     full && "w-full",
   );
   return (
-    <div className={cn("items-center gap-5", full ? "flex flex-col items-start" : "flex", className)}>
-      <Link to="/login" className={cn(item, "text-ds-on-primary hover:opacity-80", focus)}><LogIn aria-hidden />Sign In</Link>
+    <div className={cn("items-center gap-3", full ? "flex flex-col items-start" : "flex", className)}>
+      <Link to="/login" className={cn(item, "text-ds-on-primary hover:text-ds-accent", focus)}><LogIn aria-hidden />Sign In</Link>
       {PUBLIC_PHONE ? (
-        <a href={PUBLIC_PHONE_TEL} className={cn(item, "text-ds-on-primary hover:opacity-80", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
+        <a href={PUBLIC_PHONE_TEL} className={cn(item, "text-ds-on-primary hover:text-ds-accent", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
           <Phone aria-hidden />Call Us
         </a>
       ) : (
         <span className={cn(item, "text-ds-on-primary")}><Phone aria-hidden />Call Us</span>
       )}
-      <a href={BOOKING_ROUTE} className={cn(item, "ds-nudge text-ds-accent hover:opacity-80", focus)}>
+      <a href={BOOKING_ROUTE} className={cn(item, "text-ds-accent hover:text-ds-on-primary", focus)}>
         <CalendarPlus aria-hidden />Book a Trip
       </a>
     </div>
@@ -54,7 +54,7 @@ export function PublicHeader() {
           {NAV.map((n) => <Link key={n.to} to={n.to} className={navLink}>{n.label}</Link>)}
         </nav>
         <div className="flex items-center gap-3">
-          <ActionBlocks className="ds-nudge hidden lg:flex" />
+          <ActionBlocks className="hidden 2xl:flex" />
           <button
             type="button"
             className={cn("inline-flex size-11 items-center justify-center rounded-ds-sm hover:opacity-80 2xl:hidden", focus)}
@@ -72,7 +72,7 @@ export function PublicHeader() {
           <ul className="mfn-container flex flex-col gap-1 pt-2">
             {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
-          <ActionBlocks full className="mfn-container mt-4 lg:hidden" />
+          <ActionBlocks full className="mfn-container mt-4" />
         </nav>
       )}
     </header>
