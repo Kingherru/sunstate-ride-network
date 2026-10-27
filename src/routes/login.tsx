@@ -39,6 +39,11 @@ function friendly(msg: string) {
 function Login() {
   const navigate = useNavigate();
   const { redirect, verified } = Route.useSearch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(verified ? "Your email is verified. Please sign in." : null);
   const [busy, setBusy] = useState(false);
 
   /** Shared routing once a session exists (password or Google sign-in). */
