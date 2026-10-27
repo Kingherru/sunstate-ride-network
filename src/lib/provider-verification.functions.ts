@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { verificationDetailsInput } from './verification-evidence-rules';
+import type { Json } from '@/integrations/supabase/types';
 export type ProviderBadgeLevel = 'semi' | 'blue' | 'gold' | 'none' | null;
 export type ProviderBadge = { workspace_id: string; level: ProviderBadgeLevel; legacy_verified: boolean; paused_reason: string | null };
 export type VerificationSummary = { workspace_id: string; level: ProviderBadgeLevel; paused_reason: string | null; requirements: { label: string; complete: boolean }[]; documents: { kind: string; label: string; status: string }[] };
@@ -17,7 +18,7 @@ export const getVerificationDetails = createServerFn({ method: 'POST' }).middlew
   .handler(async ({ data, context }) => {
     const { data: result, error } = await context.supabase.rpc('get_provider_verification_details', { _workspace: data.workspaceId });
     if (error) throw new Error('Business details are unavailable.');
-    return result as Record<string, unknown>;
+    return result as { [key: string]: Json | undefined };
   });
 export const saveVerificationDetails = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => verificationDetailsInput.parse(v))

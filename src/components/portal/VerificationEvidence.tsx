@@ -13,7 +13,7 @@ export function VerificationEvidence({ workspaceId, editable = false }: { worksp
   if (preview.active) return <p className="ds-support">No evidence in this preview.</p>;
   return <section className="space-y-4">
     {q.isLoading && <p className="ds-support">Loading requirements…</p>}
-    {q.error && <p role="alert" className="ds-support text-ds-error">{q.error.message}</p>}
+    {!!q.error && <p role="alert" className="ds-support text-ds-error">{q.error instanceof Error ? q.error.message : 'Verification evidence unavailable.'}</p>}
     {q.data && <>
       <p className="ds-support">{q.data.paused_reason ? `Requirements: ${q.data.paused_reason.replaceAll('_', ' ')}` : 'All verification requirements complete.'}</p>
       <ul className="grid gap-2 sm:grid-cols-2">{q.data.requirements.map(r => <li key={r.label} className="flex items-start gap-2 ds-body">{r.complete ? <Check className="size-4 shrink-0 text-ds-primary mt-1" /> : <AlertCircle className="size-4 shrink-0 text-ds-warning mt-1" />}<span>{r.label}<span className="block ds-caption">{r.complete ? 'Complete' : 'Missing'}</span></span></li>)}</ul>
@@ -45,6 +45,6 @@ function BusinessEvidenceEditor({ workspaceId }: { workspaceId: string }) {
       {([['local_permit_required','Transportation / local permit applies'],['professional_liability_required','Professional liability required by service or contract'],['cargo_required','Cargo coverage required by service or contract'],['program_credentials_required','Medicaid / AHCA / broker or other program participation claimed']] as const).map(([name,label]) => <DsCheckbox key={name} name={name} label={label} defaultChecked={q.data?.[name] !== false} />)}
       <div className="sm:col-span-2 space-y-3"><DsCheckbox required name="network_rules_acknowledged" label="I acknowledge Network payment, completion and conduct rules." /><DsCheckbox required name="attested" label="I attest that these details and applicability selections are accurate." /><DsButton type="submit" disabled={busy}><Save className="size-4" />{busy ? 'Saving…' : 'Save requirement details'}</DsButton></div>
     </form>}
-    {q.error && <p className="ds-support text-ds-error">Business details unavailable.</p>}
+    {!!q.error && <p className="ds-support text-ds-error">Business details unavailable.</p>}
   </details>;
 }

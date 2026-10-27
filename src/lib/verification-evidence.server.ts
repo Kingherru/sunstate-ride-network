@@ -1,5 +1,6 @@
 import { createStripeClient, type StripeEnv } from './stripe.server';
 import { qualifiesNetworkSettlement } from './verification-evidence-rules';
+import type { Json } from '@/integrations/supabase/types';
 
 /** Read current Stripe evidence only. Never charge, transfer, refund or create accounts. */
 export async function reconcileConnectEvidence(object: { id?: string }, env: StripeEnv) {
@@ -18,7 +19,7 @@ export async function reconcileConnectEvidence(object: { id?: string }, env: Str
   const requirements = account.requirements;
   const identityReady = !!account.details_submitted && !!account.charges_enabled && !!account.payouts_enabled &&
     !requirements?.disabled_reason && (requirements?.currently_due?.length ?? 0) === 0 && (requirements?.past_due?.length ?? 0) === 0 && (requirements?.pending_verification?.length ?? 0) === 0;
-  const { error: writeError } = await supabaseAdmin.from('provider_payout_accounts').update({ workspace_id: workspaceId, identity_ready: identityReady, status: identityReady ? 'active' : requirements?.disabled_reason ? 'restricted' : 'pending', payouts_enabled: !!account.payouts_enabled, charges_enabled: !!account.charges_enabled, details_submitted: !!account.details_submitted, requirements_due: requirements ?? null, updated_at: new Date().toISOString() }).eq('user_id', existing.user_id).eq('stripe_account_id', account.id).eq('environment', env);
+  const { error: writeError } = await supabaseAdmin.from('provider_payout_accounts').update({ workspace_id: workspaceId, identity_ready: identityReady, status: identityReady ? 'active' : requirements?.disabled_reason ? 'restricted' : 'pending', payouts_enabled: !!account.payouts_enabled, charges_enabled: !!account.charges_enabled, details_submitted: !!account.details_submitted, requirements_due: requirements as unknown as Json ?? null, updated_at: new Date().toISOString() }).eq('user_id', existing.user_id).eq('stripe_account_id', account.id).eq('environment', env);
   if (writeError) throw new Error('Connect evidence could not be saved.');
 }
 
