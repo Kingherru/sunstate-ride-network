@@ -6644,6 +6644,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_person_scope_ok: { Args: { _user: string }; Returns: boolean }
+      admin_request_action: {
+        Args: {
+          _action: string
+          _patch?: Json
+          _reason?: string
+          _request: string
+        }
+        Returns: string
+      }
       admin_set_membership: {
         Args: {
           _status?: string
@@ -6651,6 +6661,22 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      admin_set_person_active: {
+        Args: { _active: boolean; _reason: string; _user: string }
+        Returns: boolean
+      }
+      admin_update_person: {
+        Args: {
+          _city: string
+          _first: string
+          _last: string
+          _phone: string
+          _postal: string
+          _reason: string
+          _user: string
+        }
+        Returns: boolean
       }
       admin_user_ids: { Args: never; Returns: string[] }
       admin_user_removal_plan: { Args: { _user: string }; Returns: Json }

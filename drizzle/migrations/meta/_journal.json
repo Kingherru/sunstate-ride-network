@@ -218,6 +218,13 @@
       "when": 1793129009681,
       "tag": "0030_pass3m_history_write_lockdown",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793129394682,
+      "tag": "0031_pass3m_admin_detail_actions",
+      "breakpoints": true
     }
   ]
 }
