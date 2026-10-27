@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getAccessState, safeReturnPath } from "@/lib/access.functions";
+import { safeReturnPath } from "@/lib/access.functions";
+import { routeAfterSignIn } from "@/lib/sign-in-routing";
+import { GoogleSignInButton, consumePostLoginPath } from "@/components/auth/GoogleSignInButton";
 import { setRememberPreference } from "@/lib/session-persistence";
 import { AuthMessage, PasswordInput, authField, authLabel } from "@/components/auth/AuthShell";
 import { btnAction } from "@/components/home/buttons";
@@ -37,13 +39,32 @@ function friendly(msg: string) {
 function Login() {
   const navigate = useNavigate();
   const { redirect, verified } = Route.useSearch();
-  const access = getAccessState;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(verified ? "Your email is verified. Please sign in." : null);
   const [busy, setBusy] = useState(false);
+
+  /** Shared routing once a session exists (password or Google sign-in). */
+  async function finishSignIn(path?: string | null) {
+    try {
+      await routeAfterSignIn(navigate, path);
+    } catch {
+      setBusy(false);
+      setError("Signed in, but we couldn't load your account. Please refresh and try again.");
+    }
+  }
+
+  // Completes routing after a full-page Google OAuth redirect back to the origin.
+  useEffect(() => {
+    const pending = consumePostLoginPath();
+    if (!pending) return;
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) void finishSignIn(pending);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,14 +73,7 @@ function Login() {
     setRememberPreference(remember);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) { setBusy(false); return setError(friendly(error.message)); }
-    try {
-      const state = await access();
-      const target = redirect && (state.isAdmin || !redirect.startsWith("/admin")) && state.destination !== "/account-status" ? redirect : state.destination;
-      navigate({ to: target as "/portal", replace: true });
-    } catch {
-      setBusy(false);
-      setError("Signed in, but we couldn't load your account. Please refresh and try again.");
-    }
+    await finishSignIn(redirect);
   }
 
   async function resend() {
@@ -93,6 +107,10 @@ function Login() {
             <button type="button" onClick={resend} className="font-semibold underline">Resend verification email</button>
           </AuthMessage>
         ) : error ? <AuthMessage tone="error">{error}</AuthMessage> : null}
+        <GoogleSignInButton intendedPath={redirect} onError={(m) => setError(friendly(m))} onSignedIn={() => finishSignIn(redirect)} />
+        <div className="ds-caption flex items-center gap-3 text-ds-text-2" aria-hidden>
+          <span className="h-px flex-1 bg-ds-border" />OR<span className="h-px flex-1 bg-ds-border" />
+        </div>
         <div>
           <label htmlFor="email" className={authLabel}>Email</label>
           <input id="email" className={authField} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
