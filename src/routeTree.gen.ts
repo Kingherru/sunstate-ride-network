@@ -46,6 +46,7 @@ import { Route as ShopReturnRouteImport } from './routes/shop.return'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAdminsRouteImport } from './routes/_authenticated/admin.admins'
+import { Route as AuthenticatedAdminAssistantRouteImport } from './routes/_authenticated/admin.assistant'
 import { Route as AuthenticatedAdminChangelogRouteImport } from './routes/_authenticated/admin.changelog'
 import { Route as AuthenticatedAdminIntegrationsRouteImport } from './routes/_authenticated/admin.integrations'
 import { Route as AuthenticatedAdminMessagingRouteImport } from './routes/_authenticated/admin.messaging'
@@ -287,6 +288,12 @@ const AuthenticatedAdminAdminsRoute =
   AuthenticatedAdminAdminsRouteImport.update({
     id: '/admins',
     path: '/admins',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAssistantRoute =
+  AuthenticatedAdminAssistantRouteImport.update({
+    id: '/assistant',
+    path: '/assistant',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminChangelogRoute =
@@ -645,6 +652,7 @@ export interface FileRoutesByFullPath {
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/admin/admins': typeof AuthenticatedAdminAdminsRoute
+  '/admin/assistant': typeof AuthenticatedAdminAssistantRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
@@ -733,6 +741,7 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesIndexRoute
   '/shop': typeof ShopIndexRoute
   '/admin/admins': typeof AuthenticatedAdminAdminsRoute
+  '/admin/assistant': typeof AuthenticatedAdminAssistantRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
@@ -827,6 +836,7 @@ export interface FileRoutesById {
   '/services/': typeof ServicesIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/_authenticated/admin/admins': typeof AuthenticatedAdminAdminsRoute
+  '/_authenticated/admin/assistant': typeof AuthenticatedAdminAssistantRoute
   '/_authenticated/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/_authenticated/admin/messaging': typeof AuthenticatedAdminMessagingRoute
@@ -921,6 +931,7 @@ export interface FileRouteTypes {
     | '/services/'
     | '/shop/'
     | '/admin/admins'
+    | '/admin/assistant'
     | '/admin/changelog'
     | '/admin/integrations'
     | '/admin/messaging'
@@ -1009,6 +1020,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/shop'
     | '/admin/admins'
+    | '/admin/assistant'
     | '/admin/changelog'
     | '/admin/integrations'
     | '/admin/messaging'
@@ -1102,6 +1114,7 @@ export interface FileRouteTypes {
     | '/services/'
     | '/shop/'
     | '/_authenticated/admin/admins'
+    | '/_authenticated/admin/assistant'
     | '/_authenticated/admin/changelog'
     | '/_authenticated/admin/integrations'
     | '/_authenticated/admin/messaging'
@@ -1463,6 +1476,13 @@ declare module '@tanstack/react-router' {
       path: '/admins'
       fullPath: '/admin/admins'
       preLoaderRoute: typeof AuthenticatedAdminAdminsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/assistant': {
+      id: '/_authenticated/admin/assistant'
+      path: '/assistant'
+      fullPath: '/admin/assistant'
+      preLoaderRoute: typeof AuthenticatedAdminAssistantRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/changelog': {
@@ -1848,6 +1868,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAdminsRoute: typeof AuthenticatedAdminAdminsRoute
+  AuthenticatedAdminAssistantRoute: typeof AuthenticatedAdminAssistantRoute
   AuthenticatedAdminChangelogRoute: typeof AuthenticatedAdminChangelogRoute
   AuthenticatedAdminIntegrationsRoute: typeof AuthenticatedAdminIntegrationsRoute
   AuthenticatedAdminMessagingRoute: typeof AuthenticatedAdminMessagingRoute
@@ -1867,6 +1888,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAdminsRoute: AuthenticatedAdminAdminsRoute,
+  AuthenticatedAdminAssistantRoute: AuthenticatedAdminAssistantRoute,
   AuthenticatedAdminChangelogRoute: AuthenticatedAdminChangelogRoute,
   AuthenticatedAdminIntegrationsRoute: AuthenticatedAdminIntegrationsRoute,
   AuthenticatedAdminMessagingRoute: AuthenticatedAdminMessagingRoute,
