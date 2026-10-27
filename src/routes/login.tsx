@@ -47,6 +47,26 @@ function Login() {
   const [notice, setNotice] = useState<string | null>(verified ? "Your email is verified. Please sign in." : null);
   const [busy, setBusy] = useState(false);
 
+  /** Shared routing once a session exists (password or Google sign-in). */
+  async function finishSignIn(path?: string | null) {
+    try {
+      await routeAfterSignIn(navigate, path);
+    } catch {
+      setBusy(false);
+      setError("Signed in, but we couldn't load your account. Please refresh and try again.");
+    }
+  }
+
+  // Completes routing after a full-page Google OAuth redirect back to the origin.
+  useEffect(() => {
+    const pending = consumePostLoginPath();
+    if (!pending) return;
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) void finishSignIn(pending);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;
@@ -54,14 +74,7 @@ function Login() {
     setRememberPreference(remember);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) { setBusy(false); return setError(friendly(error.message)); }
-    try {
-      const state = await access();
-      const target = redirect && (state.isAdmin || !redirect.startsWith("/admin")) && state.destination !== "/account-status" ? redirect : state.destination;
-      navigate({ to: target as "/portal", replace: true });
-    } catch {
-      setBusy(false);
-      setError("Signed in, but we couldn't load your account. Please refresh and try again.");
-    }
+    await finishSignIn(redirect);
   }
 
   async function resend() {
