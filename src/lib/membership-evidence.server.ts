@@ -16,7 +16,7 @@ export async function reconcileMembershipInvoice(invoiceObject: any, env: Stripe
   const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
   const { data: existing, error: readError } = await supabaseAdmin.from('subscriptions').select('id,user_id,workspace_id,membership_paid_at').eq('stripe_subscription_id', subscriptionId).eq('environment', env).maybeSingle();
   if (readError) throw new Error('Membership evidence read failed.');
-  if (!existing) return; // Retries after subscription delivery establish the row; never guess a person.
+  if (!existing) throw new Error('Awaiting authoritative subscription delivery.');
   const claimedWorkspace = existing.workspace_id || subscription.metadata.workspaceId;
   if (!claimedWorkspace) return; // Legacy person-only membership is not company entitlement.
   const { data: member } = await supabaseAdmin.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status,is_test_account)').eq('user_id', existing.user_id).eq('workspace_id', claimedWorkspace).is('removed_at', null).maybeSingle();
@@ -36,4 +36,28 @@ export async function reconcileMembershipInvoice(invoiceObject: any, env: Stripe
   const qualifies = confirmedCharge && !refunded && isQualifyingMembershipInvoice(invoice, { status: subscription.status, trial_end: subscription.trial_end, current_period_end: item.current_period_end }, Date.now() / 1000);
   const { error } = await supabaseAdmin.from('subscriptions').update({ workspace_id: claimedWorkspace, membership_invoice_id: invoice.id, membership_paid_cents: invoice.amount_paid, membership_currency: invoice.currency, membership_payment_state: refunded ? 'refunded' : qualifies ? 'succeeded' : invoice.status === 'paid' ? 'pending' : 'failed', membership_paid_at: paidAt ? new Date(paidAt * 1000).toISOString() : null, status: subscription.status, current_period_end: new Date(item.current_period_end * 1000).toISOString() }).eq('id', existing.id).eq('environment', env);
   if (error) throw new Error('Membership evidence could not be saved.');
+}
+
+export async function reconcileMembershipCharge(object: any, env: StripeEnv) {
+  if (env !== 'live') return;
+  const stripe = createStripeClient(env);
+  const chargeRef = object?.charge ?? object?.id;
+  if (typeof chargeRef !== 'string') return;
+  const charge = await stripe.charges.retrieve(chargeRef);
+  const intentRef = charge.payment_intent;
+  const intentId = typeof intentRef === 'string' ? intentRef : intentRef?.id;
+  if (!intentId) return;
+  const invoices = await stripe.invoicePayments.list({ payment: { type: 'payment_intent', payment_intent: intentId }, limit: 100 });
+  for (const payment of invoices.data) {
+    const invoiceId = typeof payment.invoice === 'string' ? payment.invoice : payment.invoice.id;
+    await reconcileMembershipInvoice({ id: invoiceId }, env);
+  }
+}
+
+export async function reconcileLatestMembershipInvoice(subscriptionObject: any, env: StripeEnv) {
+  if (env !== 'live' || !subscriptionObject?.id) return;
+  const stripe = createStripeClient(env);
+  const subscription = await stripe.subscriptions.retrieve(subscriptionObject.id);
+  const latest = subscription.latest_invoice;
+  if (latest) await reconcileMembershipInvoice({ id: typeof latest === 'string' ? latest : latest.id }, env);
 }
