@@ -40,7 +40,7 @@ function AdminMessaging() {
       </div>
       <section className={`${panelCls} p-4 sm:p-6`}>
         {tab === "requests" && <AdminPlatformRequests canManage={!readOnly} />}
-        {tab === "messages" && <>{to && <p className="ds-support mb-3 border-b border-ds-border pb-3">Opened from People &amp; Accounts — the conversation with this person is selected when one exists. Start one from their account details if none appears.</p>}<MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} focusUserId={to} /><DemoConversations kind="messages" /></>}
+        {tab === "messages" && <>{to && <p className="ds-support mb-3 border-b border-ds-border pb-3">Opened from People &amp; Accounts — the conversation with this person is selected when one exists. Start one from their account details if none appears.</p>}<MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} focusUserId={to} emptyFallback={<DemoConversations kind="messages" />} /></>}
         {tab === "contacts" && <FrontendContacts canManage={!readOnly} />}
         {tab === "business" && (
           <>

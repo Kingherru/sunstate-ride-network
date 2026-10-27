@@ -74,7 +74,7 @@ function relBadgeClass(rel: Relationship): string {
   return rel === "provider_network" ? "bg-ds-peach text-ds-primary border border-ds-peach-border" : "bg-ds-sky text-ds-primary border border-ds-sky-border";
 }
 
-export function MessagesPanel({ userId, portal, readOnly = false, focusUserId }: { userId: string; portal: PortalKind; readOnly?: boolean; focusUserId?: string }) {
+export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, emptyFallback }: { userId: string; portal: PortalKind; readOnly?: boolean; focusUserId?: string; emptyFallback?: React.ReactNode }) {
   const qc = useQueryClient();
   const caps = useCapabilities();
   const listFn = useServerFn(listThreads);
@@ -318,7 +318,7 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId }:
     return t.participants.map((p) => p.name).join(", ") || "Direct message";
   }
 
-  return (
+  return (<>
     <div className="grid grid-cols-1 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] gap-4 min-h-[560px]">
       <aside className={`rounded-lg border border-border bg-card flex flex-col ${activeThread || composeOpen ? "hidden md:flex" : ""}`}>
         <div className="flex items-center justify-between p-3 border-b border-border">
@@ -704,5 +704,6 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId }:
         )}
       </section>
     </div>
+    {threadsQ.isSuccess && threads.length === 0 && emptyFallback}</>
   );
 }
