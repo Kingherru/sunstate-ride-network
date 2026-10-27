@@ -1,3 +1,6 @@
+# Team menu access finding
+- [x] CSV uses server-derived single eligible active customer membership capability; sidebar and page guards share checks, Messaging hidden without capability; existing server authorization unchanged. Eight tests/51 assertions pass; signed-in Master Admin CSV/template-upload opens without runtime errors, automatic build OK. Actual member-account browser check unavailable without authorized member identity; no real writes or publishing.
+
 # Pass 3K — account settings and patient routing
 - [x] Target-only patient selection with saved/find/inspect/change/remove UI; server trigger validates eligible recipient and stamps MFN IDs; safe Network patient inbox and accepted-follow-up details, never booking/charges/broadcast
 - [x] Shared first/last name, phone and saved notification preferences; password reauthentication; sign out other devices preserves current session; personal/verified-email audit storage

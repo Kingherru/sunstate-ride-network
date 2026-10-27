@@ -37,6 +37,29 @@ export const PROVIDER_ONLY = ["/portal/trips", "/portal/schedule", "/portal/vehi
 export const RESTRICTED_BLOCK = ["/portal/schedule", "/portal/vehicles", "/portal/drivers", "/portal/fleet", "/portal/earnings", "/portal/upload-csv"];
 export const under = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
 
+type PortalNavigationAccess = {
+  portalKind: 'provider' | 'customer';
+  restricted: boolean;
+  canMessageForWorkspace: boolean;
+  canUploadCsvRequests: boolean;
+};
+
+/** Use identical page checks for sidebar visibility and direct navigation. */
+export function isPortalPathBlocked(path: string, access: PortalNavigationAccess): boolean {
+  const provider = access.portalKind === 'provider';
+  if ((provider && under(path, CUSTOMER_ONLY)) || (!provider && under(path, PROVIDER_ONLY))) return true;
+  if (under(path, ['/portal/upload-csv'])) return !access.canUploadCsvRequests;
+  if (under(path, ['/portal/messaging'])) return !access.canMessageForWorkspace;
+  return access.restricted && under(path, RESTRICTED_BLOCK);
+}
+
+export function portalNavigation(access: PortalNavigationAccess): NavItem[] {
+  const nav = access.portalKind === 'provider'
+    ? (access.restricted ? [...RESTRICTED_PROVIDER_NAV, { to: '/portal/messaging', label: 'Messaging' }] : PROVIDER_NAV)
+    : CUSTOMER_NAV;
+  return nav.filter((item) => !isPortalPathBlocked(item.to, access));
+}
+
 export const ADMIN_NAV: NavItem[] = [
   { to: "/admin", label: "Overview", exact: true },
   { to: "/admin/people", label: "People & accounts" },

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { canUploadCsvRequests } from '@/lib/csv-access';
 
 export type AccessWorkspace = {
   id: string; type: string; status: "active" | "pending" | "suspended"; role: string;
@@ -21,6 +22,7 @@ export type AccessState = {
    *  member explicitly flagged can_message_for_workspace. Additive — never
    *  used to grant anything beyond showing/blocking the Messaging nav item. */
   canMessageForWorkspace: boolean;
+  canUploadCsvRequests: boolean;
   setupIssue: string | null;
   destination: "/admin" | "/portal" | "/learn" | "/account-setup" | "/account-status";
 };
@@ -43,7 +45,7 @@ export const getAccessState = createServerFn({ method: "POST" })
       mfn_id: string | null; display_name: string | null; workspaces: AccessWorkspace[];
     };
     const workspaces = s.workspaces ?? [];
-    const { data: businessMemberships } = await context.supabase.from('workspace_members').select('workspace_id,record_permissions,can_manage_trips,is_contractor').eq('user_id',context.userId);
+    const { data: businessMemberships } = await context.supabase.from('workspace_members').select('workspace_id,role,can_create_requests,record_permissions,can_manage_trips,is_contractor').eq('user_id',context.userId);
     const businessTools = new Set((businessMemberships??[]).filter(m=>!m.is_contractor && (m.can_manage_trips || Object.values(m.record_permissions as Record<string,string>).some(v=>v==='read'||v==='manage'))).map(m=>m.workspace_id));
     const profileSuspended = s.profile_status === "suspended";
     const usableList = workspaces.filter((w) => w.status !== "suspended");
@@ -71,6 +73,10 @@ export const getAccessState = createServerFn({ method: "POST" })
       mfnId: s.mfn_id ?? null, displayName: s.display_name || null,
       workspaces, primary: portalKind === "provider" ? usableList.find((w) => w.type === "provider") ?? primary : primary,
       portalKind, setupIssue, destination, canMessageForWorkspace,
+      canUploadCsvRequests: canUploadCsvRequests(workspaces.flatMap((w) => {
+        const membership = businessMemberships?.find((m) => m.workspace_id === w.id);
+        return membership ? [{ ...w, role: membership.role, is_contractor: membership.is_contractor, can_create_requests: membership.can_create_requests }] : [];
+      })),
       // Contractor/restricted team member in every usable workspace: no business tools.
       restricted: usableList.length > 0 && usableList.every((w) => w.is_contractor || (w.role !== "owner" && w.role !== "admin" && !businessTools.has(w.id))),
     };

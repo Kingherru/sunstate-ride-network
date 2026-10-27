@@ -7,7 +7,7 @@ import { CSV_MAX_BYTES, CSV_MAX_ROWS, errorReport, fileKey, parseCsv, templateCs
 import { importCsvRequests } from "@/lib/csv-import.functions";
 
 export const Route = createFileRoute("/_authenticated/portal/upload-csv")({
-  head: () => ({ meta: [{ title: "Upload CSV — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Upload CSV — MY FLORIDA NEMT" }, { name: "description", content: "Review and upload authorized transportation or medical delivery requests for your MY FLORIDA NEMT account." }, { property: "og:title", content: "Upload CSV — MY FLORIDA NEMT" }, { property: "og:description", content: "Review transportation and medical delivery requests before submitting your CSV." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: PortalUploadCsv,
 });
 
