@@ -436,7 +436,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   return (
     <section className={portal ? "" : "bg-ds-bg px-5 py-16 sm:px-6 lg:py-20"}>
       <div className="mx-auto max-w-3xl">
-        {portal ? <h1 className="ds-section-title uppercase text-ds-primary">New request</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>}
+        {portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>}
         <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
           Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.
         </p>
@@ -920,13 +920,20 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             Want to track requests and save details for next time? <a href={LINKS.createAccount} className="font-semibold text-ds-link underline underline-offset-4">Create an account</a> — it's optional.
           </p>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full px-8 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-widest uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
-          >
-            {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
-          </button>
+          <div className="flex flex-wrap items-stretch gap-3">
+            {portal && !onBehalf && (
+              <DsButton type="button" variant="secondary" disabled={savingDraft || submitting} onClick={onSaveDraft} className="whitespace-nowrap">
+                {savingDraft ? "Saving…" : "Save draft"}
+              </DsButton>
+            )}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="min-w-0 flex-1 whitespace-nowrap px-8 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-widest uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
+            >
+              {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
+            </button>
+          </div>
           <p className="text-xs text-ds-text-2 text-center">
             By submitting you agree to be contacted about this trip. Submitting is a request, not a confirmed booking.
           </p>
@@ -1082,7 +1089,17 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
 
       <datalist id="fl-cities-delivery">{CITY_LIST.map((c) => <option key={c.slug} value={c.name} />)}</datalist>
 
-      <DsButton type="submit" disabled={submitting} className="w-full">{submitting ? "Submitting…" : "Submit delivery request"}</DsButton>
+      <div className="flex flex-wrap items-stretch gap-3">
+        {portal && !onBehalf && (
+          <DsButton type="button" variant="secondary" disabled={savingDraft || submitting} className="whitespace-nowrap" onClick={async () => {
+            if (preview.active) { previewBlocked(); return; }
+            setSavingDraft(true);
+            try { const saved = await saveDraft({ data: { draft_id: draftId, payload: { ...form, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); toast.success("Draft saved securely."); }
+            catch { toast.error("Could not save draft."); } finally { setSavingDraft(false); }
+          }}>{savingDraft ? "Saving…" : "Save draft"}</DsButton>
+        )}
+        <DsButton type="submit" disabled={submitting} className="min-w-0 flex-1 whitespace-nowrap">{submitting ? "Submitting…" : "Submit delivery request"}</DsButton>
+      </div>
       <p className="text-center text-xs text-ds-text-2">Submitting is a request for review, not a confirmed booking. Availability and acceptance are not guaranteed.</p>
     </form>
   );
