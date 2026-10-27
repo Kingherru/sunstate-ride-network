@@ -4185,6 +4185,11 @@ export type Database = {
           current_period_start: string | null
           environment: string
           id: string
+          membership_currency: string | null
+          membership_invoice_id: string | null
+          membership_paid_at: string | null
+          membership_paid_cents: number | null
+          membership_payment_state: string | null
           price_id: string
           product_id: string
           status: string
@@ -4192,6 +4197,7 @@ export type Database = {
           stripe_subscription_id: string
           updated_at: string | null
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           cancel_at_period_end?: boolean | null
@@ -4200,6 +4206,11 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          membership_currency?: string | null
+          membership_invoice_id?: string | null
+          membership_paid_at?: string | null
+          membership_paid_cents?: number | null
+          membership_payment_state?: string | null
           price_id: string
           product_id: string
           status?: string
@@ -4207,6 +4218,7 @@ export type Database = {
           stripe_subscription_id: string
           updated_at?: string | null
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           cancel_at_period_end?: boolean | null
@@ -4215,6 +4227,11 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          membership_currency?: string | null
+          membership_invoice_id?: string | null
+          membership_paid_at?: string | null
+          membership_paid_cents?: number | null
+          membership_payment_state?: string | null
           price_id?: string
           product_id?: string
           status?: string
@@ -4222,8 +4239,17 @@ export type Database = {
           stripe_subscription_id?: string
           updated_at?: string | null
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
@@ -6091,6 +6117,7 @@ export type Database = {
       workspaces: {
         Row: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          automatic_verification_level: string | null
           created_at: string
           created_by: string
           display_name: string
@@ -6102,9 +6129,12 @@ export type Database = {
           provider_verified: boolean
           status: Database["public"]["Enums"]["workspace_status"]
           updated_at: string
+          verification_paused_reason: string | null
+          verification_updated_at: string | null
         }
         Insert: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          automatic_verification_level?: string | null
           created_at?: string
           created_by: string
           display_name: string
@@ -6116,9 +6146,12 @@ export type Database = {
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
+          verification_paused_reason?: string | null
+          verification_updated_at?: string | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["workspace_type"]
+          automatic_verification_level?: string | null
           created_at?: string
           created_by?: string
           display_name?: string
@@ -6130,6 +6163,8 @@ export type Database = {
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
+          verification_paused_reason?: string | null
+          verification_updated_at?: string | null
         }
         Relationships: []
       }
@@ -6461,6 +6496,15 @@ export type Database = {
       admin_message_person: {
         Args: { _body: string; _user: string; _workspace: string }
         Returns: string
+      }
+      admin_pause_provider_badge: {
+        Args: {
+          _category: string
+          _confirmed: boolean
+          _reason: string
+          _workspace: string
+        }
+        Returns: undefined
       }
       admin_set_membership: {
         Args: {
@@ -7099,6 +7143,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      provider_verification_badges: {
+        Args: { _workspaces: string[] }
+        Returns: Json
+      }
       rank_auto_providers: {
         Args: {
           _created_by: string
@@ -7123,6 +7171,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      recalculate_membership_verification: {
+        Args: { _workspace: string }
+        Returns: undefined
       }
       refer_next_eligible_provider: {
         Args: { _trip_id: string }
