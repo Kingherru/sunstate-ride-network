@@ -35,6 +35,7 @@ async function resolveOrCreateCustomer(
 }
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: {
     priceId: string;
     customerEmail?: string;
@@ -46,20 +47,31 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
     return data;
   })
-  .handler(async ({ data }): Promise<CheckoutResult> => {
+  .handler(async ({ data, context }): Promise<CheckoutResult> => {
     try {
+      if (data.environment !== 'sandbox' && data.environment !== 'live') return { error: 'Choose a valid payment environment.' };
+      if (data.userId && data.userId !== context.userId) return { error: 'Checkout must belong to the signed-in account.' };
       const stripe = createStripeClient(data.environment);
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
       if (!prices.data.length) throw new Error("Price not found");
       const stripePrice = prices.data[0];
       const isRecurring = stripePrice.type === "recurring";
+      let membershipWorkspace: string | undefined;
+      if (data.priceId === 'nemt_membership_monthly_v2') {
+        const { data: memberships } = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', context.userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
+        const owners = (memberships ?? []).filter(m => m.workspaces.account_type === 'provider' && m.workspaces.status === 'active' && !m.workspaces.is_test_account);
+        if (owners.length !== 1) return { error: 'One active provider business is required for membership checkout.' };
+        membershipWorkspace = owners[0]?.workspace_id;
+      }
 
       const customerId = (data.customerEmail || data.userId)
         ? await resolveOrCreateCustomer(stripe, { email: data.customerEmail, userId: data.userId })
         : undefined;
 
       const metadata: Record<string, string> = { ...(data.metadata ?? {}) };
-      if (data.userId) metadata.userId = data.userId;
+      metadata.userId = context.userId;
+      delete metadata.workspaceId;
+      if (membershipWorkspace) metadata.workspaceId = membershipWorkspace;
 
       let productDescription: string | undefined;
       if (!isRecurring) {
@@ -77,7 +89,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         return_url: data.returnUrl,
         ...(customerId && { customer: customerId }),
         ...(Object.keys(metadata).length && { metadata }),
-        ...(isRecurring && data.userId && { subscription_data: { metadata: { userId: data.userId } } }),
+        ...(isRecurring && { subscription_data: { metadata: { userId: context.userId, ...(membershipWorkspace && { workspaceId: membershipWorkspace }) }, ...(membershipWorkspace && { trial_period_days: 30 }) } }),
         ...(!isRecurring && productDescription && { payment_intent_data: { description: productDescription } }),
         managed_payments: { enabled: true },
       } as any);
