@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAccessState, safeReturnPath } from "@/lib/access.functions";
+import { routeAfterSignIn } from "@/lib/sign-in-routing";
+import { GoogleSignInButton, consumePostLoginPath } from "@/components/auth/GoogleSignInButton";
 import { setRememberPreference } from "@/lib/session-persistence";
 import { AuthMessage, PasswordInput, authField, authLabel } from "@/components/auth/AuthShell";
 import { btnAction } from "@/components/home/buttons";
