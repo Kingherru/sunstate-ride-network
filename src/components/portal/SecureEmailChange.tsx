@@ -16,7 +16,7 @@ export function SecureEmailChange() {
     setBusy(true); setError('');
     try {
       const result = await request({ data: { newEmail, currentPassword: password || undefined } });
-      if ('error' in result) { setError(result.error); return; }
+      if ('error' in result) { setError(result.error ?? 'Email change failed.'); return; }
       setRequested(true); toast.success('Confirm the change using the messages sent to your old and new email addresses.');
       await qc.invalidateQueries({ queryKey: ['personal-security-audit'] });
     } catch { setError('Email change is unavailable. Your current email remains active.'); }
@@ -27,7 +27,7 @@ export function SecureEmailChange() {
     setBusy(true); setError('');
     try {
       const result = await confirm({ data: { email: newEmail, code } });
-      if ('error' in result) setError(result.error);
+      if ('error' in result) setError(result.error ?? 'Confirmation failed.');
       else { toast.success(result.confirmed ? 'Email confirmed. Sign in again with your updated email.' : 'Confirmation received. Complete confirmation from both email addresses.'); await qc.invalidateQueries(); }
     } catch { setError('Confirmation could not be completed.'); }
     finally { setCode(''); setBusy(false); }
