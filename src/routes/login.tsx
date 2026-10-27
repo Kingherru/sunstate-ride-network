@@ -107,6 +107,10 @@ function Login() {
             <button type="button" onClick={resend} className="font-semibold underline">Resend verification email</button>
           </AuthMessage>
         ) : error ? <AuthMessage tone="error">{error}</AuthMessage> : null}
+        <GoogleSignInButton intendedPath={redirect} onError={(m) => setError(friendly(m))} onSignedIn={() => finishSignIn(redirect)} />
+        <div className="ds-caption flex items-center gap-3 text-ds-text-2" aria-hidden>
+          <span className="h-px flex-1 bg-ds-border" />OR<span className="h-px flex-1 bg-ds-border" />
+        </div>
         <div>
           <label htmlFor="email" className={authLabel}>Email</label>
           <input id="email" className={authField} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
