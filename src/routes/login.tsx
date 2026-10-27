@@ -113,7 +113,7 @@ function Login() {
         </label>
         <button className={`${btnAction} w-full`} disabled={busy} aria-busy={busy}>{busy ? "SIGNING IN…" : "SIGN IN"}</button>
         <p className="ds-body text-center text-ds-text-2">
-          New here? <Link to="/create-account" className="font-semibold text-ds-link underline underline-offset-4">Create an account</Link>
+          New here? <Link to="/create-account" search={redirect ? { redirect } : {}} className="font-semibold text-ds-link underline underline-offset-4">Create an account</Link>
         </p>
       </form>
           </div>
