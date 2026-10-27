@@ -52,7 +52,12 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       if (data.environment !== 'sandbox' && data.environment !== 'live') return { error: 'Choose a valid payment environment.' };
       if (data.userId && data.userId !== context.userId) return { error: 'Checkout must belong to the signed-in account.' };
       const stripe = createStripeClient(data.environment);
-      const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
+      // Only current, known products: published Training Shop courses or Provider Membership.
+      if (data.priceId !== 'nemt_membership_monthly_v2') {
+        const { data: course } = await context.supabase.from('courses').select('id').eq('price_id', data.priceId).eq('is_published', true).maybeSingle();
+        if (!course) return { error: 'This payment link is no longer available.' };
+      }
+      const prices = await stripe.prices.list({ lookup_keys: [data.priceId], active: true });
       if (!prices.data.length) throw new Error("Price not found");
       const stripePrice = prices.data[0];
       const isRecurring = stripePrice.type === "recurring";
