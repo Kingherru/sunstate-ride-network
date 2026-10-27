@@ -1,10 +1,10 @@
 # Architecture decisions
 
-- The app MCP server (src/lib/mcp) is OAuth-protected and exposes only public info tools; consent at /.lovable/oauth/consent returns through /login and /create-account `redirect`. Why: owner asked to connect ChatGPT without exposing private data.
+- App MCP (src/lib/mcp) is OAuth-only with public-info tools; consent returns via login/create-account `redirect`. Why: no private data to ChatGPT.
 - Example conversations use isolated in-memory UI fixtures with no send actions. Why: removable demos never affect real messages.
 - Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal permanent account_security_audit confirmation, never sends. Why: preview is not delivery.
 - Design tokens live under .theme-public/.theme-portal; new UI uses ds/brand components. Why: neutral training and central overrides remain intact.
-- Public pages use uppercase H1/H2 headings; one-column section heads center as a complete group, while two-column heads explicitly opt into left alignment. Why: keeps hierarchy and alignment consistent site-wide.
+- Public pages use uppercase H1/H2 headings; one-column section heads center as a complete group, while two-column heads explicitly opt into left alignment. Why: consistent hierarchy.
 - Transportation uses workspaces/members/profiles, atomic `complete_account_setup()` and server-verified `getAccessState`; platform roles stay in `user_roles`. Sidebar/guards share `isPortalPathBlocked`; CSV matches existing single active eligible customer membership. Why: links work without broader permissions; learners need no workspace.
 - Coverage/services/resources use shared content modules; regions mirror FloridaMap and counties require cities. Why: consistent links without thin duplicate pages.
 - All request writes (public, portal, admin-on-behalf, CSV) use insertPassengerRequest/insertDeliveryRequest in request-service.server.ts and shared schemas; client INSERT is revoked, workspace resolution server-side, delivery separate. Triggers validate/stamp patient targets and flag test rows; tests never become trips or emails. Network exposes general fields until accepted follow-up, never books/charges. Why: one boundary, no broadcast or live test data.
