@@ -80,7 +80,7 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
   const { data: existing } = await getSupabase()
     .from("subscriptions")
-    .select("id")
+    .select("id, network_addon_cancel_at")
     .eq("stripe_subscription_id", sub.id)
       .eq("environment", env)
     .maybeSingle();
@@ -91,6 +91,12 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
     return;
   }
 
+  // A removed add-on keeps paid access until its recorded boundary.
+  if (extra.network_addon_status === "not_selected" && existing.network_addon_cancel_at) {
+    const future = Date.parse(existing.network_addon_cancel_at) > Date.now();
+    extra.network_addon_status = future ? "canceling" : "canceled";
+    extra.network_addon_cancel_at = future ? existing.network_addon_cancel_at : null;
+  }
   await getSupabase()
     .from("subscriptions")
     .update({
