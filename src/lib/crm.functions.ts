@@ -12,17 +12,21 @@ export const listContacts = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const CONTACT_TYPES = ["personal", "facility", "business", "payer"] as const;
+export type ContactType = (typeof CONTACT_TYPES)[number];
+
 export const upsertContact = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
     id?: string;
-    contact_type: "patient" | "caregiver" | "facility" | "broker" | "organization";
+    contact_type: ContactType;
     first_name?: string;
     last_name?: string;
     company_name?: string;
     phone?: string;
     email?: string;
     payer?: string;
+    payer_id?: string | null;
     mobility_notes?: string;
     notes?: string;
     default_pickup_location_id?: string | null;
@@ -30,6 +34,10 @@ export const upsertContact = createServerFn({ method: "POST" })
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    if (data.payer_id) {
+      const { data: p } = await supabase.from("payers").select("id").eq("id", data.payer_id).eq("owner_user_id", userId).maybeSingle();
+      if (!p) throw new Error("Linked payer not found");
+    }
     const row = { ...data, owner_id: userId };
     const q = data.id
       ? supabase.from("provider_contacts").update(row).eq("id", data.id).select().single()
