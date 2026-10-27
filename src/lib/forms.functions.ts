@@ -40,30 +40,43 @@ export const submitDeliveryRequest = createServerFn({ method: "POST" })
     return { ok: true as const, id: r.id, mfnId: r.mfnId };
   });
 
+export const CONTACT_CATEGORIES = ["business_inquiry", "website_problem", "general_question"] as const;
 export const contactSchema = z.object({
+  category: z.enum(CONTACT_CATEGORIES),
   name: z.string().trim().min(1).max(120),
+  businessName: z.string().trim().max(160).optional().or(z.literal("")),
   email: z.string().trim().email().max(200),
-  phone: z.string().trim().max(30).optional().or(z.literal("")),
-  subject: z.string().trim().max(200).optional().or(z.literal("")),
+  phone: z.string().trim().max(30).regex(/^[0-9+().\-\s]*$/).optional().or(z.literal("")),
+  subject: z.string().trim().min(1).max(200),
   message: z.string().trim().min(5).max(2000),
+  website: z.string().max(0).optional().or(z.literal("")), // honeypot: must stay empty
 });
 export type ContactInput = z.infer<typeof contactSchema>;
+const CONTACT_GENERIC_OK = { ok: true as const };
+const CONTACT_GENERIC_ERR = { ok: false as const, error: "Could not send your message. Please try again later." };
 
 export const submitContact = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => contactSchema.parse(input))
+  .inputValidator((input: unknown) => {
+    const r = contactSchema.safeParse(input);
+    if (!r.success) throw new Error("Please check the form and try again.");
+    return r.data;
+  })
   .handler(async ({ data }) => {
+    if (data.website) return CONTACT_GENERIC_OK; // bots get a silent success
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
+    const ipRaw = getRequestHeader("cf-connecting-ip") ?? getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() ?? "";
+    const digest = ipRaw ? Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ipRaw)))).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32) : null;
+    const since = new Date(Date.now() - 3600_000).toISOString();
+    const orFilter = digest ? `email.eq.${data.email},ip_address.eq.${digest}` : `email.eq.${data.email}`;
+    const { count } = await supabaseAdmin.from("contact_messages").select("id", { count: "exact", head: true }).gte("created_at", since).or(orFilter);
+    if ((count ?? 0) >= 3) return CONTACT_GENERIC_ERR;
     const { error } = await supabaseAdmin.from("contact_messages").insert({
-      name: data.name,
-      email: data.email,
-      phone: data.phone || null,
-      subject: data.subject || null,
-      message: data.message,
+      category: data.category, name: data.name, business_name: data.businessName || null,
+      email: data.email, phone: data.phone || null, subject: data.subject, message: data.message,
+      source: "public_contact_form", ip_address: digest,
     });
-    if (error) {
-      console.error("submitContact error", error);
-      return { ok: false as const, error: "Could not send your message. Please try again." };
-    }
-    return { ok: true as const };
+    if (error) { console.error("submitContact error", error.code); return CONTACT_GENERIC_ERR; }
+    return CONTACT_GENERIC_OK;
   });
 
 export const REGION_BY_CITY: Record<string, string> = {
