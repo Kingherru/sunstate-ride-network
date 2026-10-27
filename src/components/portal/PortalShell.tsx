@@ -82,6 +82,8 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   settingsTo?: string; notificationsTo?: string; title?: string; children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const prefs = usePortalQuery({ queryKey: ['portal-preferences'], queryFn: () => getPortalPreferences() });
+  const density = (prefs.data as { interface_density?: string } | undefined)?.interface_density ?? 'standard';
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
   const navigate = useNavigate();
