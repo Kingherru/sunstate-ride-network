@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
@@ -121,6 +122,11 @@ const AccessibilityRoute = AccessibilityRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateAccountRoute = CreateAccountRouteImport.update({
@@ -632,6 +638,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/for-facilities': typeof ForFacilitiesRoute
@@ -727,6 +734,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/for-facilities': typeof ForFacilitiesRoute
@@ -820,6 +828,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/for-facilities': typeof ForFacilitiesRoute
@@ -917,6 +926,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/book'
+    | '/contact'
     | '/create-account'
     | '/design-system'
     | '/for-facilities'
@@ -1012,6 +1022,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/book'
+    | '/contact'
     | '/create-account'
     | '/design-system'
     | '/for-facilities'
@@ -1104,6 +1115,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/accessibility'
     | '/book'
+    | '/contact'
     | '/create-account'
     | '/design-system'
     | '/for-facilities'
@@ -1201,6 +1213,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AccessibilityRoute: typeof AccessibilityRoute
   BookRoute: typeof BookRoute
+  ContactRoute: typeof ContactRoute
   CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
   ForFacilitiesRoute: typeof ForFacilitiesRoute
@@ -1272,6 +1285,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-account': {
@@ -2055,6 +2075,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AccessibilityRoute: AccessibilityRoute,
   BookRoute: BookRoute,
+  ContactRoute: ContactRoute,
   CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
   ForFacilitiesRoute: ForFacilitiesRoute,

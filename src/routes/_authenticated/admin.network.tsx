@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { PageHead } from '@/components/portal/PortalShell';
-import { DistributionActivity } from '@/components/portal/TripNetwork';
-import { NetworkEligibility } from '@/components/portal/NetworkEligibility';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+
+// Network activity now lives in Admin Messaging → Business Conversations.
 export const Route = createFileRoute('/_authenticated/admin/network')({
-  head: () => ({ meta: [{ title: 'Network Activity — MY FLORIDA NEMT Admin' }, { name: 'description', content: 'Review controlled distributions, addressed offers and negotiations.' }, { property: 'og:title', content: 'Network Activity — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Review controlled distributions, addressed offers and negotiations.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex, nofollow' }] }),
-  component: NetworkPage,
+  beforeLoad: () => { throw redirect({ to: '/admin/messaging', search: { tab: 'business' } }); },
 });
-function NetworkPage(){const {access}=Route.useRouteContext();return <><PageHead title="Network activity"/><DistributionActivity admin/>{access.isMasterAdmin&&<NetworkEligibility/>}</>;}

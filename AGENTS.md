@@ -1,16 +1,16 @@
 # Architecture decisions
 
 - App MCP (src/lib/mcp) is OAuth-only with public-info tools; consent returns via login/create-account `redirect`. Why: no private data to ChatGPT.
-- Example conversations use isolated in-memory UI fixtures with no send actions. Why: removable demos never affect real messages.
+- Example conversations are in-memory UI fixtures without sends. Why: demos never touch real messages.
 - Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal permanent account_security_audit confirmation, never sends. Why: preview is not delivery.
 - Design tokens live under .theme-public/.theme-portal; new UI uses ds/brand components. Why: neutral training and central overrides remain intact.
 - Public pages use uppercase H1/H2 headings; one-column section heads center as a complete group, while two-column heads explicitly opt into left alignment. Why: consistent hierarchy.
-- Transportation uses workspaces/members/profiles, atomic `complete_account_setup()` and server-verified `getAccessState`; platform roles stay in `user_roles`. Sidebar/guards share `isPortalPathBlocked`; CSV matches existing single active eligible customer membership. Why: links work without broader permissions; learners need no workspace.
+- Transportation uses workspaces/members/profiles, atomic `complete_account_setup()` and server-verified `getAccessState`; platform roles stay in `user_roles`. Sidebar/guards share `isPortalPathBlocked`; CSV matches existing single active eligible customer membership. Why: no broader permissions; learners need no workspace.
 - Coverage/services/resources use shared content modules; regions mirror FloridaMap and counties require cities. Why: consistent links without thin duplicate pages.
 - All request writes (public, portal, admin-on-behalf, CSV) use insertPassengerRequest/insertDeliveryRequest in request-service.server.ts and shared schemas; client INSERT is revoked, workspace resolution server-side, delivery separate. Triggers validate/stamp patient targets and flag test rows; tests never become trips or emails. Network exposes general fields until accepted follow-up, never books/charges. Why: one boundary, no broadcast or live test data.
-- Request emails carry only the short request number, status/category and safe contact text. Why: request details are viewable only after authorized sign-in.
+- Request emails carry only the short request number, status/category and safe contact text. Why: details need authorized sign-in.
 - Portal/admin request reads go through `src/lib/portal-requests.functions.ts` as the signed-in user so row-level rules decide visibility; workspace-wide viewing needs owner/admin or `workspace_members.can_view_workspace_requests` (contractors never), and `trips` has no role-title-only access. Why: dispatcher/zone titles must never grant statewide data.
-- RequestForm serves /book and /portal/requests/new; delivery never becomes a passenger trip. Why: one intake path with separate workflows.
+- RequestForm serves /book, portal and admin customer intake; delivery never becomes a trip. Lifecycle moves only via transition_request_lifecycle (append-only history); auto-distribution waits on platform_launch_flags (missing=off). Why: no skipping; shared live DB.
 - Permanent MFN IDs (`MFN-P-`/`MFN-A-`/`MFN-R-`) are assigned and frozen by database triggers on user_profiles/workspaces/ride_requests; they are display IDs only, never used for authorization. Why: non-PII, immutable references while UUIDs + RLS stay the security authority.
 - The single Master Admin lives in `platform_master_admin`; only it may grant/remove the admin role (RLS + trigger + server checks in admin-users.functions.ts). Why: regular admins must never alter or demote the owner.
 - `workspaces.organization_type` is a business label only (src/lib/account-types.ts); portal kind (provider vs customer) comes from `account_type` via getAccessState. Why: classification must never grant permissions.
@@ -26,7 +26,7 @@
 - Controlled distribution actions live in authenticated trip-network.functions.ts wrappers and database RPCs; prospective-provider reads project safe general fields, and negotiation/event history is append-only. Why: permissions and atomic selection remain authoritative even when UI is bypassed.
 - Draft resume uses only UUID URLs and owner-scoped payloads; Medical Delivery restores delivery-only fields and source text for review. Why: no browser persistence, passenger mixing or auto-submit.
 - Shared request/trip overlays enforce RLS; offers use safe fields, drafts owner payloads; detail fields distinguish missing/inapplicable/unavailable. Why: consistent details never broaden access.
-- Provider trip sharing validates payment-responsibility acknowledgement before invoking distribution creation. Why: showing a warning alone must not allow unacknowledged sharing.
+- Provider trip sharing requires server-checked payment-responsibility acknowledgement. Why: a warning alone is not consent.
 - User removal uses credential-destroying Auth soft deletion only for dependency-free Master-Admin removals, otherwise bans login and retains profile/membership tombstones; database preflight scans UUID relationships. Why: legacy Auth foreign keys must never cascade-delete history.
 - Training reuses local Basic Nemt Test materials and server-only keys with existing user-scoped enrollments/attempts/certificates; memory-only cart checkout verifies ownership and replay never resets enrollments. Why: one identity/payment system, no source secrets or public issuance.
 - Preview queries use a separate cache namespace. Why: synthetic fixtures never enter live reads.

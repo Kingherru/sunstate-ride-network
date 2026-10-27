@@ -10,7 +10,7 @@ export type PortalFeature = {
 
 export const FEATURE_CATALOG: PortalFeature[] = [
   { name: 'Controlled Trip Offers', audience: 'Provider', description: 'Workspace-addressed offers with protected general route details.', icon: 'Network', route: '/portal/trips', status: 'partial', publicApproved: false },
-  { name: 'Reviewed Distance Distribution', audience: 'Admin', description: 'Manual 20, 50, 100 and 200 mile distribution waves.', icon: 'Send', route: '/admin/network', status: 'partial', publicApproved: false },
+  { name: 'Reviewed Distance Distribution', audience: 'Admin', description: 'Manual 20, 50, 100 and 200 mile distribution waves.', icon: 'Send', route: '/admin/messaging', status: 'partial', publicApproved: false },
   { name: 'Trip Negotiation', audience: 'Shared', description: 'Counteroffers with append-only history and atomic provider selection.', icon: 'MessageSquare', route: '/portal/trips', status: 'partial', publicApproved: false },
   { name: "Smart Notes", audience: "Provider", description: "Private operational notes for your business, saved securely.", icon: "StickyNote", route: "/portal", status: "complete", publicApproved: false },
   { name: "Trips", audience: "Provider", description: "New trips, reservations, drafts and history for trips assigned or referred to your company.", icon: "Car", route: "/portal/trips", status: "complete", publicApproved: false },
@@ -35,7 +35,7 @@ export const FEATURE_CATALOG: PortalFeature[] = [
   { name: "Notifications", audience: "Shared", description: "Status updates for your requests and trips.", icon: "Bell", route: "/portal/notifications", status: "complete", publicApproved: false },
   { name: "Account & Security", audience: "Shared", description: "Profile, password and sign-out of other devices.", icon: "ShieldCheck", route: "/portal/account", status: "complete", publicApproved: false },
   { name: "Scoped Administrators", audience: "Admin", description: "Give each admin only the sections and accounts they need.", icon: "UserCog", route: "/admin/admins", status: "complete", publicApproved: false },
-  { name: "Request on Behalf", audience: "Admin", description: "Submit a request for a patient or organization you support.", icon: "PlusCircle", route: "/admin/on-behalf", status: "complete", publicApproved: false },
+  { name: "Request on Behalf", audience: "Admin", description: "Submit a request for a patient or organization you support.", icon: "PlusCircle", route: "/admin/requests", status: "complete", publicApproved: false },
 ];
 
 /** Only owner-approved, finished features may ever be shown publicly. */

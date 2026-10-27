@@ -128,6 +128,8 @@ export type Database = {
       }
       contact_messages: {
         Row: {
+          business_name: string | null
+          category: string | null
           created_at: string
           email: string
           id: string
@@ -135,10 +137,14 @@ export type Database = {
           message: string
           name: string
           phone: string | null
+          read_at: string | null
+          source: string
           subject: string | null
           user_agent: string | null
         }
         Insert: {
+          business_name?: string | null
+          category?: string | null
           created_at?: string
           email: string
           id?: string
@@ -146,10 +152,14 @@ export type Database = {
           message: string
           name: string
           phone?: string | null
+          read_at?: string | null
+          source?: string
           subject?: string | null
           user_agent?: string | null
         }
         Update: {
+          business_name?: string | null
+          category?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -157,6 +167,8 @@ export type Database = {
           message?: string
           name?: string
           phone?: string | null
+          read_at?: string | null
+          source?: string
           subject?: string | null
           user_agent?: string | null
         }
@@ -2023,6 +2035,27 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_launch_flags: {
+        Row: {
+          enabled: boolean
+          key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       platform_master_admin: {
         Row: {
           designated_at: string
@@ -3325,6 +3358,50 @@ export type Database = {
         }
         Relationships: []
       }
+      request_status_events: {
+        Row: {
+          action: string
+          actor_mfn_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          from_state: string | null
+          id: string
+          note: string | null
+          ride_request_id: string
+          to_state: string | null
+        }
+        Insert: {
+          action: string
+          actor_mfn_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          from_state?: string | null
+          id?: string
+          note?: string | null
+          ride_request_id: string
+          to_state?: string | null
+        }
+        Update: {
+          action?: string
+          actor_mfn_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          from_state?: string | null
+          id?: string
+          note?: string | null
+          ride_request_id?: string
+          to_state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_status_events_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requester_saved_locations: {
         Row: {
           address: string
@@ -3465,6 +3542,7 @@ export type Database = {
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
+          deactivated_at: string | null
           delivery_hazmat: boolean
           delivery_instructions: string | null
           delivery_item_description: string | null
@@ -3500,6 +3578,7 @@ export type Database = {
           is_medicaid_patient: boolean
           is_test: boolean
           last_updated_at: string
+          lifecycle_state: string
           medicaid_number: string | null
           medicaid_plan: string | null
           mfn_id: string | null
@@ -3582,6 +3661,7 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
           delivery_item_description?: string | null
@@ -3617,6 +3697,7 @@ export type Database = {
           is_medicaid_patient?: boolean
           is_test?: boolean
           last_updated_at?: string
+          lifecycle_state?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
           mfn_id?: string | null
@@ -3699,6 +3780,7 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
           delivery_item_description?: string | null
@@ -3734,6 +3816,7 @@ export type Database = {
           is_medicaid_patient?: boolean
           is_test?: boolean
           last_updated_at?: string
+          lifecycle_state?: string
           medicaid_number?: string | null
           medicaid_plan?: string | null
           mfn_id?: string | null
@@ -6893,6 +6976,7 @@ export type Database = {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
       }
+      launch_flag_enabled: { Args: { _key: string }; Returns: boolean }
       list_eligible_providers: {
         Args: never
         Returns: {
@@ -7256,9 +7340,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_request_provider_viewed: {
+        Args: { _request: string }
+        Returns: boolean
+      }
       refer_next_eligible_provider: {
         Args: { _trip_id: string }
         Returns: string
+      }
+      request_lifecycle_allowed: {
+        Args: { _from: string; _to: string }
+        Returns: boolean
       }
       reservation_scheduled_at: {
         Args: {
@@ -7366,6 +7458,10 @@ export type Database = {
         }[]
       }
       sync_reservation_states: { Args: never; Returns: undefined }
+      transition_request_lifecycle: {
+        Args: { _note?: string; _request: string; _to: string }
+        Returns: string
+      }
       verification_normalize_name: { Args: { _name: string }; Returns: string }
       verify_course_certificate: {
         Args: { _token: string }
