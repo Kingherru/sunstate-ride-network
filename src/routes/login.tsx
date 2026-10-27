@@ -45,7 +45,7 @@ function Login() {
   const [notice, setNotice] = useState<string | null>(verified ? "Your email is verified. Please sign in." : null);
   const [busy, setBusy] = useState(false);
 
-  /** Shared routing once a session exists (password or Google sign-in). */
+  /** Shared routing once a session exists (email/password sign-in). */
   async function finishSignIn(path?: string | null) {
     try {
       await routeAfterSignIn(navigate, path);
