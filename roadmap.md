@@ -1,3 +1,6 @@
+# Team menu access finding
+- [ ] Align CSV and Messaging sidebar links with page access; preserve server authorization and verify focused navigation regressions without real writes
+
 # Pass 3K — account settings and patient routing
 - [x] Target-only patient selection with saved/find/inspect/change/remove UI; server trigger validates eligible recipient and stamps MFN IDs; safe Network patient inbox and accepted-follow-up details, never booking/charges/broadcast
 - [x] Shared first/last name, phone and saved notification preferences; password reauthentication; sign out other devices preserves current session; personal/verified-email audit storage
