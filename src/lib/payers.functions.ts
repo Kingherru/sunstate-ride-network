@@ -75,7 +75,7 @@ const payerFields = {
   early_late_minutes: z.number().int().min(0).max(240).nullish(),
 };
 
-function payerRow(data: z.infer<z.ZodObject<typeof payerFields>>, ownerUserId?: string) {
+function payerRow(data: z.infer<z.ZodObject<typeof payerFields>>, ownerUserId: string) {
   const row = {
     name: data.name,
     email: data.email || null,
