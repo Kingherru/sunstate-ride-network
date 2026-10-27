@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getAccessState, safeReturnPath } from "@/lib/access.functions";
+import { safeReturnPath } from "@/lib/access.functions";
 import { routeAfterSignIn } from "@/lib/sign-in-routing";
 import { GoogleSignInButton, consumePostLoginPath } from "@/components/auth/GoogleSignInButton";
 import { setRememberPreference } from "@/lib/session-persistence";
@@ -39,12 +39,6 @@ function friendly(msg: string) {
 function Login() {
   const navigate = useNavigate();
   const { redirect, verified } = Route.useSearch();
-  const access = getAccessState;
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(verified ? "Your email is verified. Please sign in." : null);
   const [busy, setBusy] = useState(false);
 
   /** Shared routing once a session exists (password or Google sign-in). */
