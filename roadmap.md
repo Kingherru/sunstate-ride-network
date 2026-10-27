@@ -1,3 +1,8 @@
+# Pass 3K completion — email security and automatic verification
+- [ ] Confirm hosted secure email-change setting; keep disabled when unverified and report exact owner action
+- [ ] Check authoritative membership, required information/documents, Network payment-window/payment/dispute evidence for automatic levels with five-trip gold threshold; implement only supported rules without touching existing records
+- [ ] Run narrow verification/access checks and inspect automatic type/build results; no sends, purchases, real-record changes or publishing
+
 # Team menu access finding
 - [x] CSV uses server-derived single eligible active customer membership capability; sidebar and page guards share checks, Messaging hidden without capability; existing server authorization unchanged. Eight tests/51 assertions pass; signed-in Master Admin CSV/template-upload opens without runtime errors, automatic build OK. Actual member-account browser check unavailable without authorized member identity; no real writes or publishing.
 
