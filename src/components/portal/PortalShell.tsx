@@ -18,6 +18,7 @@ import { getMessagingUnreadCount } from "@/lib/workspace-messages.functions";
 import { getUnreadMessageCount } from "@/lib/messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
 import { TrainingCartIcon } from '@/components/training/TrainingCart';
+import { getPortalPreferences } from '@/lib/portal-preferences.functions';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -81,6 +82,8 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   settingsTo?: string; notificationsTo?: string; title?: string; children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const prefs = usePortalQuery({ queryKey: ['portal-preferences'], queryFn: () => getPortalPreferences() });
+  const density = (prefs.data as { interface_density?: string } | undefined)?.interface_density ?? 'standard';
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -178,7 +181,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   );
 
   return (
-    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg">
+    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg" data-density={density}>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-ds-sm focus:bg-ds-surface focus:px-4 focus:py-2">Skip to content</a>
 
       {/* Desktop sidebar */}

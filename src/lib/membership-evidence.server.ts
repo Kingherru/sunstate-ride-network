@@ -1,5 +1,6 @@
 import { type StripeEnv, createStripeClient } from './stripe.server';
 import { isQualifyingMembershipInvoice, PROVIDER_MEMBERSHIP_PRICE } from './membership-invoice-rules';
+import { MEMBERSHIP_PRICING, NETWORK_ADDON_PRICE } from './membership-pricing';
 
 /** Read-only Stripe reconciliation; never creates customers, charges or subscriptions. */
 export async function reconcileMembershipInvoice(invoiceObject: any, env: StripeEnv) {
@@ -18,8 +19,10 @@ export async function reconcileMembershipInvoice(invoiceObject: any, env: Stripe
   const subscriptionId = typeof subRef === 'string' ? subRef : subRef?.id;
   if (!subscriptionId) return;
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  const item = subscription.items.data[0];
-  if (!item || item.price.lookup_key !== PROVIDER_MEMBERSHIP_PRICE || item.price.unit_amount !== 1000 || item.price.currency !== 'usd' || item.price.recurring?.interval !== 'month' || item.price.recurring.interval_count !== 1 || subscription.items.data.length !== 1) return;
+  const item = subscription.items.data.find(i => i.price.lookup_key === PROVIDER_MEMBERSHIP_PRICE);
+  const others = subscription.items.data.filter(i => i !== item);
+  if (!item || item.price.unit_amount !== MEMBERSHIP_PRICING.baseCents || item.price.currency !== 'usd' || item.price.recurring?.interval !== 'month' || item.price.recurring.interval_count !== 1) return;
+  if (others.length > 1 || (others[0] && (others[0].price.lookup_key !== NETWORK_ADDON_PRICE || others[0].price.unit_amount !== MEMBERSHIP_PRICING.networkCents))) return;
   const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
   const { data: existing, error: readError } = await supabaseAdmin.from('subscriptions').select('id,user_id,workspace_id,membership_paid_at').eq('stripe_subscription_id', subscriptionId).eq('environment', env).maybeSingle();
   if (readError) throw new Error('Membership evidence read failed.');

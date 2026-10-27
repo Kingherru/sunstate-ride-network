@@ -232,6 +232,20 @@
       "when": 1793130469684,
       "tag": "0032_expand_payers_and_contact_links",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793131937756,
+      "tag": "0033_membership_addon_patients_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793131996192,
+      "tag": "0034_verification_base_membership_15",
+      "breakpoints": true
     }
   ]
 }

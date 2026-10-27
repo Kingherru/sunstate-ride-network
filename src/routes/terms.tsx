@@ -25,7 +25,7 @@ export const Route = createFileRoute("/terms")({
         { id: "availability", h: "Availability and no guarantee of acceptance", body: <p>Submitting a request does not guarantee that a provider will accept it. Availability depends on location, timing, equipment needs and participating providers.</p> },
         { id: "prices", h: "Prices, payments and provider terms", body: <p>Trip-specific pricing, payment timing and cancellation terms may vary by provider and trip. They should be presented to you before a booking is confirmed.</p> },
         { id: "membership", h: "Provider membership and platform fees", body: <ul>
-          <li>Provider membership currently includes 30 days free, then $10 per month.</li>
+          <li>Provider membership currently includes 30 days free, then $15 per month for the Base Provider Membership; the optional Referral Network add-on is $10 per month ($25 per month with both).</li>
           <li>A 2% platform fee applies to completed trips received through the provider network.</li>
           <li>Payment-processing fees may apply.</li>
         </ul> },

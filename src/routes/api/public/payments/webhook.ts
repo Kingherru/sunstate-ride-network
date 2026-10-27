@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
+import { BASE_MEMBERSHIP_PRICE, NETWORK_ADDON_PRICE, addonStatusFromStripe } from "@/lib/membership-pricing";
 
 let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 function getSupabase() {
@@ -11,14 +12,44 @@ function getSupabase() {
   return _supabase;
 }
 
+
+/** Base item first so the row's price_id reflects the membership, not the add-on. */
+function membershipFields(sub: any) {
+  const items: any[] = sub.items?.data ?? [];
+  const key = (i: any) => i?.price?.lookup_key || i?.price?.metadata?.lovable_external_id;
+  const item = items.find((i) => key(i) === BASE_MEMBERSHIP_PRICE) ?? items[0];
+  const addon = items.find((i) => key(i) === NETWORK_ADDON_PRICE);
+  const addonCancelAt = addon?.metadata?.cancel_at ? Number(addon.metadata.cancel_at) : null;
+  return {
+    item,
+    priceId: key(item) || item?.price?.id,
+    extra: {
+      base_price_cents: key(item) === BASE_MEMBERSHIP_PRICE ? item?.price?.unit_amount ?? null : null,
+      network_addon_status: addonStatusFromStripe(sub, addon, addonCancelAt),
+      network_addon_cancel_at: addonCancelAt ? new Date(addonCancelAt * 1000).toISOString() : null,
+      trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+    },
+  };
+}
+
+/** Records the one-time shared trial; existing rows are never extended or re-granted. */
+async function recordSharedTrial(sub: any, env: StripeEnv) {
+  const workspaceId = sub.metadata?.workspaceId;
+  if (!workspaceId || sub.status !== 'trialing' || !sub.trial_end) return;
+  await getSupabase().from('provider_membership_trials').upsert({
+    workspace_id: workspaceId, environment: env,
+    started_at: new Date((sub.trial_start ?? sub.created) * 1000).toISOString(),
+    ends_at: new Date(sub.trial_end * 1000).toISOString(), source_subscription_id: sub.id,
+  }, { onConflict: 'workspace_id', ignoreDuplicates: true });
+}
+
 async function handleSubscriptionCreated(sub: any, env: StripeEnv) {
   const userId = sub.metadata?.userId;
   if (!userId) {
     console.error("No userId in subscription metadata");
     return;
   }
-  const item = sub.items?.data?.[0];
-  const priceId = item?.price?.lookup_key || item?.price?.metadata?.lovable_external_id || item?.price?.id;
+  const { item, priceId, extra } = membershipFields(sub);
   const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? sub.current_period_start;
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
@@ -33,22 +64,23 @@ async function handleSubscriptionCreated(sub: any, env: StripeEnv) {
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: sub.cancel_at_period_end || false,
+      ...extra,
       environment: env,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "stripe_subscription_id" },
   );
+  await recordSharedTrial(sub, env);
 }
 
 async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
-  const item = sub.items?.data?.[0];
-  const priceId = item?.price?.lookup_key || item?.price?.metadata?.lovable_external_id || item?.price?.id;
+  const { item, priceId, extra } = membershipFields(sub);
   const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? sub.current_period_start;
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
   const { data: existing } = await getSupabase()
     .from("subscriptions")
-    .select("id")
+    .select("id, network_addon_cancel_at")
     .eq("stripe_subscription_id", sub.id)
       .eq("environment", env)
     .maybeSingle();
@@ -59,6 +91,12 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
     return;
   }
 
+  // A removed add-on keeps paid access until its recorded boundary.
+  if (extra.network_addon_status === "not_selected" && existing.network_addon_cancel_at) {
+    const future = Date.parse(existing.network_addon_cancel_at) > Date.now();
+    extra.network_addon_status = future ? "canceling" : "canceled";
+    extra.network_addon_cancel_at = future ? existing.network_addon_cancel_at : null;
+  }
   await getSupabase()
     .from("subscriptions")
     .update({
@@ -68,6 +106,7 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: sub.cancel_at_period_end || false,
+      ...extra,
       updated_at: new Date().toISOString(),
     })
     .eq("stripe_subscription_id", sub.id)

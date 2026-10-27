@@ -23,6 +23,9 @@ import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TimePickerField, TimeSelect } from "@/components/ui/time-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
+import { listSavedPatients } from "@/lib/saved-patients.functions";
+import { listMyPayers } from "@/lib/payers.functions";
+import { getPortalPreferences } from "@/lib/portal-preferences.functions";
 import { NonEmergencyNotice } from "@/components/public/page-kit";
 import { LINKS } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
@@ -267,6 +270,42 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
+  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
+  const [payers, setPayers] = useState<{ id: string; name: string; email: string | null; phone: string | null; active: boolean | null }[]>([]);
+  const [patientChoice, setPatientChoice] = useState("");
+  const [payerNote, setPayerNote] = useState<string | null>(null);
+  const applyPayer = (payerId: string | null | undefined, list = payers) => {
+    const p = list.find((x) => x.id === payerId && x.active !== false);
+    if (!p) return;
+    const [first, ...rest] = p.name.trim().split(/\s+/);
+    setCustomBilling({ firstName: first ?? "", lastName: rest.join(" ") || first || "", email: p.email ?? "", phone: p.phone ?? "" });
+    setForm((f) => ({ ...f, billingSource: "custom" }));
+    setPayerNote(`Billing prefilled from payer “${p.name}”. Review before submitting.`);
+  };
+  useEffect(() => {
+    if (preview.active || !portal) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [pts, pys, prefs] = await Promise.all([listSavedPatients(), listMyPayers(), getPortalPreferences()]);
+        if (cancelled) return;
+        setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
+        setPayers(pys as any[]);
+        if (!initialDraft && prefs.default_payer_id) applyPayer(prefs.default_payer_id, pys as any[]);
+      } catch { /* optional helpers only */ }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [portal]);
+  const choosePatient = (id: string) => {
+    setPatientChoice(id);
+    const p = patients.find((x) => x.id === id);
+    if (!p) return;
+    setForm((f) => ({ ...f, patientFirstName: p.first_name, patientLastName: p.last_name, patientPhone: p.phone ?? f.patientPhone, patientEmail: p.email ?? f.patientEmail }));
+    if (p.default_payer_id) applyPayer(p.default_payer_id);
+  };
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (preview.active) { previewBlocked(); return; }
@@ -474,6 +513,15 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Patient
             </legend>
+            {portal && patients.length > 0 && (
+              <Field label="Saved patient">
+                <select className={inputCls} value={patientChoice} onChange={(e) => choosePatient(e.target.value)}>
+                  <option value="">Choose a saved patient (optional)…</option>
+                  {patients.map((p) => <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>)}
+                </select>
+              </Field>
+            )}
+            {payerNote && <p className="ds-support rounded-ds-sm border border-ds-border bg-ds-bg px-3 py-2">{payerNote}</p>}
             <div className="grid md:grid-cols-2 gap-6">
               <Field label="First name" required error={errors.patientFirstName}>
                 <input className={inputCls} value={form.patientFirstName} onChange={(e) => upd("patientFirstName", e.target.value)} />

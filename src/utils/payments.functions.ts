@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+import { BASE_MEMBERSHIP_PRICE, NETWORK_ADDON_PRICE } from "@/lib/membership-pricing";
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
@@ -43,6 +44,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     returnUrl: string;
     environment: StripeEnv;
     metadata?: Record<string, string>;
+    includeNetworkAddon?: boolean;
   }) => {
     if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
     return data;
@@ -53,7 +55,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       if (data.userId && data.userId !== context.userId) return { error: 'Checkout must belong to the signed-in account.' };
       const stripe = createStripeClient(data.environment);
       // Only current, known products: published Training Shop courses or Provider Membership.
-      if (data.priceId !== 'nemt_membership_monthly_v2') {
+      const isMembership = data.priceId === BASE_MEMBERSHIP_PRICE;
+      if (!isMembership) {
         const { data: course } = await context.supabase.from('courses').select('id').eq('price_id', data.priceId).eq('is_published', true).maybeSingle();
         if (!course) return { error: 'This payment link is no longer available.' };
       }
@@ -62,11 +65,26 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const stripePrice = prices.data[0];
       const isRecurring = stripePrice.type === "recurring";
       let membershipWorkspace: string | undefined;
-      if (data.priceId === 'nemt_membership_monthly_v2') {
+      let grantTrial = false;
+      let addonPriceId: string | undefined;
+      if (isMembership) {
         const { data: memberships } = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', context.userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
         const owners = (memberships ?? []).filter(m => m.workspaces.account_type === 'provider' && m.workspaces.status === 'active' && !m.workspaces.is_test_account);
         if (owners.length !== 1) return { error: 'One active provider business is required for membership checkout.' };
         membershipWorkspace = owners[0]?.workspace_id;
+        // No duplicate subscriptions; the 30-day trial is granted once per business.
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const [{ data: current }, { data: trial }] = await Promise.all([
+          supabaseAdmin.from('subscriptions').select('id').eq('workspace_id', membershipWorkspace!).in('status', ['active', 'trialing', 'past_due', 'incomplete']).limit(1),
+          supabaseAdmin.from('provider_membership_trials').select('workspace_id').eq('workspace_id', membershipWorkspace!).maybeSingle(),
+        ]);
+        if (current?.length) return { error: 'This business already has a membership. Manage it from Settings → Membership.' };
+        grantTrial = !trial;
+        if (data.includeNetworkAddon) {
+          const addon = await stripe.prices.list({ lookup_keys: [NETWORK_ADDON_PRICE], active: true });
+          if (!addon.data[0]) return { error: 'The Referral Network add-on is not available yet.' };
+          addonPriceId = addon.data[0].id;
+        }
       }
 
       const customerId = (data.customerEmail || data.userId)
@@ -88,13 +106,13 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       }
 
       const session = await stripe.checkout.sessions.create({
-        line_items: [{ price: stripePrice.id, quantity: 1 }],
+        line_items: [{ price: stripePrice.id, quantity: 1 }, ...(addonPriceId ? [{ price: addonPriceId, quantity: 1 }] : [])],
         mode: isRecurring ? "subscription" : "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         ...(customerId && { customer: customerId }),
         ...(Object.keys(metadata).length && { metadata }),
-        ...(isRecurring && { subscription_data: { metadata: { userId: context.userId, ...(membershipWorkspace && { workspaceId: membershipWorkspace }) }, ...(membershipWorkspace && { trial_period_days: 30 }) } }),
+        ...(isRecurring && { subscription_data: { metadata: { userId: context.userId, ...(membershipWorkspace && { workspaceId: membershipWorkspace }) }, ...(membershipWorkspace && grantTrial && { trial_period_days: 30 }) } }),
         ...(!isRecurring && productDescription && { payment_intent_data: { description: productDescription } }),
         managed_payments: { enabled: true },
       } as any);
