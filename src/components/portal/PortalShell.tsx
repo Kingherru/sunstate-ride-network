@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
+import { countUnreadFrontendContacts } from "@/lib/admin-contacts.functions";
 import { useChangelogIndicator } from "@/components/portal/changelog-state";
 import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyNotifications } from "@/lib/notifications.functions";
@@ -110,7 +111,9 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     queryFn: () => getMessagingUnreadCount(),
   });
   const directUnread = usePortalQuery({ queryKey: ["msg-unread-total"], staleTime: 30_000, queryFn: () => getUnreadMessageCount() });
-  const combinedUnread = Number(msgUnread.data ?? 0) + Number(directUnread.data?.count ?? 0);
+  const hasAdminMessaging = nav.some((i) => i.to === "/admin/messaging");
+  const contactUnread = usePortalQuery({ queryKey: ["frontend-contacts-unread"], enabled: hasAdminMessaging, staleTime: 60_000, queryFn: () => countUnreadFrontendContacts() });
+  const combinedUnread = Number(msgUnread.data ?? 0) + Number(directUnread.data?.count ?? 0) + Number(contactUnread.data?.count ?? 0);
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
