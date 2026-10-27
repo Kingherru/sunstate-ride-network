@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { adminNextStates, canTransition, noProviderDue } from '../src/lib/request-lifecycle';
 
 describe('request lifecycle', () => {
