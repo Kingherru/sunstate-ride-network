@@ -74,5 +74,4 @@ export const ADMIN_NAV: NavItem[] = [
   { to: "/admin/admins", label: "Administrators" },
   { to: "/admin/security", label: "Security" },
   { to: '/admin/training', label: 'Training', iconFor: '/portal/training' },
-  { to: '/admin/assistant', label: 'AI assistant' },
 ];
