@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
 import { PersonalSettings } from './PersonalSettings';
 import { DsButton } from '@/components/ds/controls';
+import { SecureEmailChange } from './SecureEmailChange';
 
 /** Shared personal security panel: profile email, change password, send
  *  reset link to self, sign out, sign out of other sessions. Reused behind
@@ -89,11 +90,7 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
         </dl>
       </section>
 
-      <section className="space-y-3 border border-ds-sky-border bg-ds-sky p-4 rounded-ds">
-        <h2 className="ds-subheading uppercase text-ds-primary">Verified email change</h2>
-        <p className="ds-support">Email changes are unavailable until secure email-change confirmation is verified in account security settings. Your current email remains active.</p>
-        <DsButton size="sm" variant="secondary" disabled>Change email unavailable</DsButton>
-      </section>
+      <SecureEmailChange />
 
       <form onSubmit={submit} className="space-y-4" noValidate>
         <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><KeyRound className="size-4" aria-hidden />Change password</h2>
