@@ -246,6 +246,13 @@
       "when": 1793131996192,
       "tag": "0034_verification_base_membership_15",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793311085098,
+      "tag": "0035_allow_current_and_legacy_contact_types",
+      "breakpoints": true
     }
   ]
 }
