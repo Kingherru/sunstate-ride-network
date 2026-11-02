@@ -12,6 +12,7 @@ import { StatusBadge, categoryLabel, fmtDateTime, isDelivery, serviceLabel, shor
 import { useRequestDetails } from "@/components/portal/request-detail-context";
 import { usePortalMutation, usePortalQuery, previewBlocked, usePortalPreview } from "@/components/portal/preview-data";
 import { DsButton } from "@/components/ds/controls";
+import { exportTable, readableDate, type ExportFormat } from "@/lib/table-export";
 import { DsEmpty } from "@/components/ds/feedback";
 
 export const Route = createFileRoute("/_authenticated/portal/requests/")({
@@ -62,6 +63,25 @@ function History({ rows }: { rows: RequestListRow[] }) {
   }, [rows, search, includeOlder]);
 
   const visible = filtered.slice(0, shown);
+  const [format, setFormat] = useState<ExportFormat>("csv");
+  async function onExport() {
+    if (preview.active) { previewBlocked(); return; }
+    if (!filtered.length) { toast("Nothing to export with the current filters."); return; }
+    try {
+      await exportTable(filtered, [
+        { label: "Request ID", value: (r) => r.mfn_id ?? shortId(r.id) },
+        { label: "Submitted", value: (r) => readableDate(r.created_at) },
+        { label: "Rider", value: (r) => [r.patient_first_name, r.patient_last_name].filter(Boolean).join(" ") },
+        { label: "Category", value: (r) => categoryLabel(r) },
+        { label: "Service", value: (r) => serviceLabel(r) },
+        { label: "Pickup date", value: (r) => readableDate(r.pickup_date) },
+        { label: "Pickup time", value: (r) => r.pickup_time ?? "" },
+        { label: "From", value: (r) => r.pickup_city ?? "" },
+        { label: "To", value: (r) => r.dropoff_city ?? "" },
+        { label: "Status", value: (r) => r.status ?? "" },
+      ], "Trip history", format, `trip-history-${new Date().toISOString().slice(0, 10)}`);
+    } catch { toast.error("Could not export trip history."); }
+  }
 
   async function copyToNewTrip(r: RequestListRow) {
     if (preview.active) { previewBlocked(); return; }
@@ -95,6 +115,13 @@ function History({ rows }: { rows: RequestListRow[] }) {
           <input type="checkbox" checked={includeOlder} onChange={(e) => { setIncludeOlder(e.target.checked); setShown(PAGE); }} />
           Include history older than 60 days
         </label>
+        <div className="flex shrink-0 items-center gap-2">
+          <label htmlFor="th-format" className="sr-only">Export format</label>
+          <select id="th-format" value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)} className="h-9 rounded-sm border border-ds-border bg-ds-surface px-2 text-sm">
+            <option value="csv">CSV</option><option value="xlsx">Excel</option><option value="pdf">PDF</option>
+          </select>
+          <DsButton size="sm" variant="secondary" className="h-9 whitespace-nowrap" onClick={onExport}>Export</DsButton>
+        </div>
       </div>
 
       {visible.length === 0 ? (
