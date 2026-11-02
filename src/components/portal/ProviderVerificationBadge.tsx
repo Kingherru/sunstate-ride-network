@@ -13,5 +13,5 @@ export function ProviderVerificationBadge({ workspaceId, legacyVerified = false,
   if (!value && legacy) return <span className="inline-flex items-center gap-1 ds-caption text-ds-primary" title="Existing directory status; automatic business and document verification has not been established."><BadgeCheck className="size-4" />Directory verified</span>;
   if (!value || value === 'none') return <span className="ds-caption text-ds-muted">Not automatically verified</span>;
   const label = value === 'semi' ? 'Semi-Verified' : value === 'blue' ? 'Verified' : 'Super Verified';
-  return <span title={meanings[value]} className={`inline-flex items-center gap-1 rounded-ds-sm px-2 py-1 ds-caption ${value === 'gold' ? 'bg-ds-warning-soft text-ds-warning' : value === 'blue' ? 'bg-ds-primary text-ds-on-primary' : 'bg-ds-sky text-ds-primary'}`}><BadgeCheck className="size-4" aria-hidden />{label}</span>;
+  return <span title={meanings[value]} className={`inline-flex items-center gap-1 rounded-ds-sm px-2 py-1 ds-caption ${value === 'gold' ? 'ds-badge-gold' : value === 'blue' ? 'bg-ds-primary text-ds-on-primary' : 'bg-ds-sky text-ds-primary'}`}><BadgeCheck className="size-4" aria-hidden />{label}</span>;
 }
