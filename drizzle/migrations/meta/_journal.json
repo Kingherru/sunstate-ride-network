@@ -295,6 +295,13 @@
       "when": 1793661306501,
       "tag": "0041_provider_operations_status_keys_schedule_email",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793661545587,
+      "tag": "0042_fix_fleet_status_actor_lookup",
+      "breakpoints": true
     }
   ]
 }
