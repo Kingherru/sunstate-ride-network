@@ -12,12 +12,15 @@ import { usePortalPreview } from './preview-data';
 import { PROVIDER_VERIFICATION_POLICY } from '@/lib/account-settings-rules';
 import { ProviderVerificationBadge } from './ProviderVerificationBadge';
 import { VerificationEvidence } from './VerificationEvidence';
+import { MembershipBilling } from './MembershipBilling';
+import { BillingDefaults } from './CustomerBilling';
+import { InterfaceSize } from './InterfaceSize';
 
 const sections = [
   { value: 'business', label: 'Business Information' }, { value: 'contact', label: 'Contact Information' },
   { value: 'services', label: 'Services & Operating Hours' }, { value: 'areas', label: 'Service Areas' },
   { value: 'documents', label: 'Insurance & Documents' }, { value: 'verification', label: 'Business Verification' },
-  { value: 'notifications', label: 'Notifications' }, { value: 'requests', label: 'Platform Requests' },
+  { value: 'membership', label: 'Membership & Billing' }, { value: 'notifications', label: 'Notifications' }, { value: 'requests', label: 'Platform Requests' },
   { value: 'integrations', label: 'API & Dispatch Integration' }, { value: 'account', label: 'Account Settings' },
   { value: 'security', label: 'Security' },
 ];
@@ -59,9 +62,11 @@ export function ProviderSettings({ workspaceId, role, email }: { workspaceId: st
         <p className="ds-support">Canceled, declined, refunded, test and demo trips do not count. Gold pauses for overdue payments and returns when eligibility is restored. Automatic level changes will be permanently audited; no administrator approval is required.</p>
       </div>
     </section>}
+    {tab === 'membership' && <div className="space-y-5"><MembershipBilling workspaceId={workspaceId} role={role} /><BillingDefaults showPaymentMethod={false} /></div>}
     {tab === 'notifications' && <PersonalSettings />}
     {tab === 'requests' && <ProviderPlatformRequests workspaceId={workspaceId} />}
     {tab === 'integrations' && <div className="space-y-6">{owner ? <IntegrationsPanel /> : <p className="ds-support">Legacy API connections remain owner-only.</p>}<ProviderExports /></div>}
+    {tab === 'account' && <div className="mb-6"><InterfaceSize /></div>}
     {(tab === 'account' || tab === 'security') && <PersonalSecurity email={email} />}
   </div>;
 }

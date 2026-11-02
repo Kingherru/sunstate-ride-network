@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 import { PersonDetails } from '@/components/admin/PersonDetails';
+import { MembershipTransitionsList } from '@/components/admin/AdminMembership';
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 import { matchesPeopleFilters } from '@/lib/people-filters';
 import { ProviderBadgeControl } from '@/components/admin/ProviderBadgeControl';
@@ -175,6 +176,7 @@ function People() {
           </ul>
         )}
       </section>
+      <div className="mt-6"><MembershipTransitionsList /></div>
       {selected && <PersonDetails person={selected} canManage={canManagePeople} onClose={() => setSelected(null)} />}
     </>
   );

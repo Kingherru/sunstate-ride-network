@@ -24,9 +24,14 @@ import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequest
 import { ProviderSettings } from '@/components/portal/ProviderSettings';
 import { PersonalSettings } from '@/components/portal/PersonalSettings';
 import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
+import { MembershipBilling } from '@/components/portal/MembershipBilling';
+import { CustomerBilling } from '@/components/portal/CustomerBilling';
+import { PatientManagement } from '@/components/portal/PatientManagement';
+import { InterfaceSize } from '@/components/portal/InterfaceSize';
+import { Link } from '@tanstack/react-router';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
-type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security";
+type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -41,28 +46,34 @@ function Account() {
   const ws = access.primary;
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>("profile");
-  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6"><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8 space-y-6"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /><details><summary className="ds-label cursor-pointer text-ds-primary">Pricing rules</summary><div className="mt-4 space-y-8"><PricingPanel /><RulesPanel /></div></details>{ws.role === 'owner' && <details><summary className="ds-label cursor-pointer text-ds-primary">Payouts</summary><div className="mt-4 space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></details>}<details><summary className="ds-label cursor-pointer text-ds-primary">Membership & team messaging</summary><div className="mt-4"><Membership /><TeamMessaging workspaceId={ws.id} /></div></details></div></div></>;
+  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6"><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8 space-y-6"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /><details><summary className="ds-label cursor-pointer text-ds-primary">Pricing rules</summary><div className="mt-4 space-y-8"><PricingPanel /><RulesPanel /></div></details>{ws.role === 'owner' && <details><summary className="ds-label cursor-pointer text-ds-primary">Payouts</summary><div className="mt-4 space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></details>}<details><summary className="ds-label cursor-pointer text-ds-primary">Team messaging</summary><div className="mt-4"><TeamMessaging workspaceId={ws.id} /></div></details></div></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
        ...(canEditNetwork ? [{ value: "network" as Tab, label: "Network profile" }] : []),
        { value: "membership", label: "Membership" }, { value: "requests", label: "Platform requests" }, { value: "security", label: "Security" }]
-    : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" }];
+    : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" },
+       ...(!provider && ws && !access.restricted ? [{ value: "patients" as Tab, label: "Patients" }] : []),
+       ...(!provider && ws ? [{ value: "billing" as Tab, label: "Billing" }] : []),
+       { value: "notifications", label: "Notifications" }];
 
   return (
     <>
       <PageHead title="Account" />
       <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
       <section className={`${panelCls} p-5 sm:p-6`}>
-        {tab === "profile" && <><PersonalSettings /><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+        {tab === "profile" && <><PersonalSettings /><div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}
         {tab === "payouts" && <div className="space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div>}
         {tab === "network" && canEditNetwork && ws && <NetworkProfileForm workspaceId={ws.id} />}
-        {tab === "membership" && <><Membership />{ws && (ws.role === "owner" || ws.role === "admin") && <TeamMessaging workspaceId={ws.id} />}</>}
+        {tab === "membership" && <>{ws && <MembershipBilling workspaceId={ws.id} role={ws.role} />}{ws && (ws.role === "owner" || ws.role === "admin") && <TeamMessaging workspaceId={ws.id} />}</>}
         {tab === "requests" && ws && <ProviderPlatformRequests workspaceId={ws.id} />}
         {tab === "security" && <Security />}
+        {tab === "patients" && <PatientManagement />}
+        {tab === "billing" && <CustomerBilling />}
+        {tab === "notifications" && <div className="space-y-4"><PersonalSettings /><Link to="/portal/notifications" className="ds-support font-semibold text-ds-link underline">Open notifications inbox</Link></div>}
       </section>
     </>
   );
@@ -123,21 +134,6 @@ function Profile({ email }: { email: string | null }) {
         )}
       </dl>
     </>
-  );
-}
-
-function Membership() {
-  return (
-    <div className="ds-body max-w-2xl space-y-3">
-      <h2 className="ds-subheading uppercase text-ds-primary">Provider membership</h2>
-      <ul className="list-disc space-y-1 pl-5">
-        <li>30 days free</li>
-        <li>$15 per month Base Provider Membership after the shared trial</li><li>Optional $10 per month Referral Network add-on ($25 per month with both)</li>
-        <li>2% MY FLORIDA NEMT platform fee on completed network trips</li>
-        <li>Payment processing fees are shown separately where they apply</li>
-      </ul>
-      <p className="ds-support">Membership billing isn't changed from this page yet.</p>
-    </div>
   );
 }
 
