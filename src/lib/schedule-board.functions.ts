@@ -240,3 +240,23 @@ export const emailDriverWeeklySchedule = createServerFn({ method: "POST" })
     return { ok: true, trip_count: trips.length, recipient: driver.email };
   });
 
+
+/** Day/week/month board range (max 42 days). RLS decides which trips are visible. */
+export const listReservationsForRange = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { start: string; end: string }) => {
+    const re = /^\d{4}-\d{2}-\d{2}$/;
+    if (!re.test(input.start) || !re.test(input.end) || input.end < input.start) throw new Error("Invalid date range");
+    if ((Date.parse(input.end) - Date.parse(input.start)) / 86400000 > 42) throw new Error("Range too long");
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("trips")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_city, dropoff_city, needs_wheelchair, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, status, reservation_state")
+      .in("reservation_state", ["booked", "unconfirmed"])
+      .gte("pickup_date", data.start).lte("pickup_date", data.end)
+      .order("pickup_date").order("pickup_time");
+    if (error) throw error;
+    return (rows ?? []).map((r: any) => ({ ...r, assigned_driver_id: r.driver_id, scheduled_start_time: r.scheduled_start_time ?? r.pickup_time }));
+  });
