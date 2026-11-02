@@ -94,6 +94,7 @@ import { Route as AuthenticatedPortalRequestsNewRouteImport } from './routes/_au
 import { Route as ApiPublicHooksFinCashoutTickRouteImport } from './routes/api/public/hooks/fin-cashout-tick'
 import { Route as ApiPublicHooksFinReleaseTickRouteImport } from './routes/api/public/hooks/fin-release-tick'
 import { Route as ApiPublicHooksReleaseEligiblePayoutsRouteImport } from './routes/api/public/hooks/release-eligible-payouts'
+import { Route as ApiPublicPaymentsConnectWebhookRouteImport } from './routes/api/public/payments/connect-webhook'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicWebhooksDispatchRouteImport } from './routes/api/public/webhooks/dispatch'
 import { Route as FloridaCoverageRegionCountyIndexRouteImport } from './routes/florida-coverage.$region.$county.index'
@@ -575,6 +576,12 @@ const ApiPublicHooksReleaseEligiblePayoutsRoute =
     path: '/api/public/hooks/release-eligible-payouts',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsConnectWebhookRoute =
+  ApiPublicPaymentsConnectWebhookRouteImport.update({
+    id: '/api/public/payments/connect-webhook',
+    path: '/api/public/payments/connect-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -717,6 +724,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
+  '/api/public/payments/connect-webhook': typeof ApiPublicPaymentsConnectWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
   '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
@@ -809,6 +817,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
+  '/api/public/payments/connect-webhook': typeof ApiPublicPaymentsConnectWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
   '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
@@ -907,6 +916,7 @@ export interface FileRoutesById {
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
   '/api/public/hooks/fin-release-tick': typeof ApiPublicHooksFinReleaseTickRoute
   '/api/public/hooks/release-eligible-payouts': typeof ApiPublicHooksReleaseEligiblePayoutsRoute
+  '/api/public/payments/connect-webhook': typeof ApiPublicPaymentsConnectWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/webhooks/dispatch': typeof ApiPublicWebhooksDispatchRoute
   '/florida-coverage/$region/$county/$city': typeof FloridaCoverageRegionCountyCityRoute
@@ -1005,6 +1015,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
+    | '/api/public/payments/connect-webhook'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
     | '/florida-coverage/$region/$county/$city'
@@ -1097,6 +1108,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
+    | '/api/public/payments/connect-webhook'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
     | '/florida-coverage/$region/$county/$city'
@@ -1194,6 +1206,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/fin-cashout-tick'
     | '/api/public/hooks/fin-release-tick'
     | '/api/public/hooks/release-eligible-payouts'
+    | '/api/public/payments/connect-webhook'
     | '/api/public/payments/webhook'
     | '/api/public/webhooks/dispatch'
     | '/florida-coverage/$region/$county/$city'
@@ -1245,6 +1258,7 @@ export interface RootRouteChildren {
   ApiPublicHooksFinCashoutTickRoute: typeof ApiPublicHooksFinCashoutTickRoute
   ApiPublicHooksFinReleaseTickRoute: typeof ApiPublicHooksFinReleaseTickRoute
   ApiPublicHooksReleaseEligiblePayoutsRoute: typeof ApiPublicHooksReleaseEligiblePayoutsRoute
+  ApiPublicPaymentsConnectWebhookRoute: typeof ApiPublicPaymentsConnectWebhookRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicWebhooksDispatchRoute: typeof ApiPublicWebhooksDispatchRoute
   FloridaCoverageRegionCountyCityRoute: typeof FloridaCoverageRegionCountyCityRoute
@@ -1854,6 +1868,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksReleaseEligiblePayoutsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/connect-webhook': {
+      id: '/api/public/payments/connect-webhook'
+      path: '/api/public/payments/connect-webhook'
+      fullPath: '/api/public/payments/connect-webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsConnectWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -2109,6 +2130,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksFinReleaseTickRoute: ApiPublicHooksFinReleaseTickRoute,
   ApiPublicHooksReleaseEligiblePayoutsRoute:
     ApiPublicHooksReleaseEligiblePayoutsRoute,
+  ApiPublicPaymentsConnectWebhookRoute: ApiPublicPaymentsConnectWebhookRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicWebhooksDispatchRoute: ApiPublicWebhooksDispatchRoute,
   FloridaCoverageRegionCountyCityRoute: FloridaCoverageRegionCountyCityRoute,
