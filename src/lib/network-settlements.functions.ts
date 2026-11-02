@@ -37,5 +37,5 @@ export const listAdminDisputes = createServerFn({ method: 'GET' }).middleware([r
 /** Own payout-account readiness only (RLS-scoped); never returns the Stripe account id. */
 export const getConnectReadiness = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const { data } = await context.supabase.from('provider_payout_accounts').select('status,payouts_enabled,charges_enabled,details_submitted,requirements_due,environment').eq('user_id', context.userId).maybeSingle();
-  return data ? { status: data.status as string, payouts_enabled: !!data.payouts_enabled, charges_enabled: !!data.charges_enabled, details_submitted: !!data.details_submitted, requirements_due: (data.requirements_due ?? []) as unknown, environment: data.environment as string | null } : null;
+  return data ? { status: data.status as string, payouts_enabled: !!data.payouts_enabled, charges_enabled: !!data.charges_enabled, details_submitted: !!data.details_submitted, requirements_due: Array.isArray(data.requirements_due) ? data.requirements_due.map(String) : [], environment: data.environment as string | null } : null;
 });

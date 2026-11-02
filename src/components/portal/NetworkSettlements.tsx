@@ -54,8 +54,8 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
     </div>}
 
     <div className="flex flex-wrap items-end gap-3">
-      <DsField label="From"><DsInput type="date" value={from} onChange={e => setFrom(e.target.value)} /></DsField>
-      <DsField label="To"><DsInput type="date" value={to} onChange={e => setTo(e.target.value)} /></DsField>
+      <DsField label="From">{(fp) => <DsInput {...fp} type="date" value={from} onChange={e => setFrom(e.target.value)} /></DsField>
+      <DsField label="To">{(fp) => <DsInput {...fp} type="date" value={to} onChange={e => setTo(e.target.value)} /></DsField>
     </div>
 
     <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
@@ -90,8 +90,8 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
             {open.events.length ? open.events.map((e, i) => <p key={i}>{when(e.created_at)} — {e.event_type.replace(/_/g, ' ')}{e.actor_mfn_id ? ` · ${e.actor_mfn_id}` : ''}</p>) : <p>No events yet.</p>}</section>
         </div>
         {open.side === 'sender' && !admin && effectiveSettlementState(open) === 'under_review' && <section className="rounded-ds border border-ds-border p-3 space-y-2"><p className="ds-label uppercase">Open dispute (24-hour window)</p>
-          <DsField label="Category"><DsSelect value={cat} onChange={e => setCat(e.target.value)}><option value="completion_missing">Completion information missing</option><option value="service_not_completed">Service not completed</option><option value="amount_incorrect">Amount incorrect</option><option value="security_issue">Safety or security issue</option></DsSelect></DsField>
-          <DsField label="Explanation (no medical details)"><DsTextarea value={why} maxLength={1000} onChange={e => setWhy(e.target.value)} /></DsField>
+          <DsField label="Category">{(fp) => <DsSelect {...fp} value={cat} onChange={e => setCat(e.target.value)}><option value="completion_missing">Completion information missing</option><option value="service_not_completed">Service not completed</option><option value="amount_incorrect">Amount incorrect</option><option value="security_issue">Safety or security issue</option></DsSelect>}</DsField>
+          <DsField label="Explanation (no medical details)">{(fp) => <DsTextarea {...fp} value={why} maxLength={1000} onChange={e => setWhy(e.target.value)} /></DsField>
           <DsButton disabled={m.isPending} onClick={() => m.mutate(open.id)}>{m.isPending ? 'Opening…' : 'Open dispute'}</DsButton></section>}
         <p className="ds-caption text-ds-on-subtle">No charge, transfer or payout happens in this version. Test mode only.</p>
       </div></div>}
