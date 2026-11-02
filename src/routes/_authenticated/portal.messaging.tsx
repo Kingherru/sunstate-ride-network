@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { WorkspaceMessaging } from "@/components/messaging/WorkspaceMessaging";
 import { MessagesPanel } from '@/components/dashboard/MessagesPanel';
-import { SampleConversations } from '@/components/messaging/SampleConversations';
 
 export const Route = createFileRoute("/_authenticated/portal/messaging")({
   head: () => ({ meta: [{ title: "Messaging — MY FLORIDA NEMT Portal" }, { name: "description", content: "Secure account and business conversations in your MY FLORIDA NEMT portal." }, { property: "og:title", content: "Messaging — MY FLORIDA NEMT Portal" }, { property: "og:description", content: "Secure account and business conversations." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -18,17 +17,16 @@ function PortalMessaging() {
   const navigate = Route.useNavigate();
   return (
     <>
-      <SampleConversations />
-      <PageHead title="Account conversations" />
-      <section className={`${panelCls} mb-8 p-4 sm:p-6`}><MessagesPanel userId={user.id} portal={access.portalKind === 'provider' ? 'provider' : 'facility'} /></section>
-      <PageHead title="Messaging">Message other businesses in the Provider Network. Do not include patient or protected health information.</PageHead>
-      <section className={`${panelCls} p-4 sm:p-6`}>
+      <PageHead title={access.portalKind === 'provider' ? "Provider Network Messaging" : "Messaging"}>In-platform messages between businesses. No email or text messages are sent.</PageHead>
+      <section className={`${panelCls} mb-8 p-4 sm:p-6`}>
         <WorkspaceMessaging
           mode="portal"
           initialConversationId={search.c ?? null}
           onConversationChange={(id) => navigate({ search: (prev) => ({ ...prev, c: id ?? undefined }), replace: true })}
         />
       </section>
+      <PageHead title="Account conversations" />
+      <section className={`${panelCls} p-4 sm:p-6`}><MessagesPanel userId={user.id} portal={access.portalKind === 'provider' ? 'provider' : 'facility'} /></section>
     </>
   );
 }
