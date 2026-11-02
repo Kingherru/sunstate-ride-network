@@ -160,7 +160,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
       <div className="mt-4 flex flex-wrap gap-3">
         <DsButton onClick={onSave}>Save permissions</DsButton>
         {!confirmRevoke ? <DsButton variant="ghost" onClick={() => setConfirmRevoke(true)}>Remove administrator</DsButton>
-          : <><DsButton onClick={onRevoke}>Confirm removal</DsButton><DsButton variant="ghost" onClick={() => setConfirmRevoke(false)}>Cancel</DsButton></>}
+          : <div role="alertdialog" aria-label="Confirm administrator removal" className="flex w-full flex-wrap items-center gap-3 rounded-ds-sm ds-status-yellow px-3 py-2"><span className="ds-support font-semibold">Remove this administrator's access? History is kept.</span><DsButton onClick={onRevoke}>Confirm removal</DsButton><DsButton variant="ghost" onClick={() => setConfirmRevoke(false)}>Cancel</DsButton></div>}
       </div>
     </section>
   );
