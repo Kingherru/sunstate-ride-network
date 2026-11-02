@@ -88,7 +88,7 @@ function newSecret() {
 }
 async function actorMfn(userId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("user_profiles").select("mfn_id").eq("id", userId).maybeSingle();
+  const { data } = await supabaseAdmin.from("user_profiles").select("mfn_id").eq("user_id", userId).maybeSingle();
   return { admin: supabaseAdmin as Db, mfn: (data?.mfn_id as string | null) ?? null };
 }
 

@@ -46,7 +46,7 @@ export const confirmScheduleEmailPreview = createServerFn({ method: 'POST' }).mi
       const raw = `${own[0].workspace_id}|${sorted.join(',')}|${data.start}|${data.end}`;
       const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw)))).map((b) => b.toString(16).padStart(2, '0')).join('');
       const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-      const { data: prof } = await supabaseAdmin.from('user_profiles').select('mfn_id').eq('id', context.userId).maybeSingle();
+      const { data: prof } = await supabaseAdmin.from('user_profiles').select('mfn_id').eq('user_id', context.userId).maybeSingle();
       await supabaseAdmin.from('driver_schedule_email_batches').upsert({ workspace_id: own[0].workspace_id, idempotency_key: `driver-schedule:${digest}`, driver_ids: sorted, range_start: data.start, range_end: data.end, actor_user_id: context.userId, actor_mfn_id: prof?.mfn_id ?? null }, { onConflict: 'idempotency_key', ignoreDuplicates: true });
     }
     const { data: flag } = await context.supabase.from('platform_launch_flags').select('enabled').eq('key', 'driver_schedule_email').maybeSingle();
