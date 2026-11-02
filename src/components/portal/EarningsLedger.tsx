@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { DsButton } from "@/components/ds/controls";
 import { listEarningsLedger, type LedgerRow } from "@/lib/provider-ops.functions";
 import { exportTable, readableDate, type ExportFormat } from "@/lib/table-export";
-import { usePortalQuery } from "./preview-data";
+import { usePortalQuery, usePortalPreview } from "./preview-data";
 
 const usd = (c: number) => (c / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -15,11 +15,14 @@ export function EarningsLedger() {
   const [f, setF] = useState({ start: monthStart(), end: today(), driverId: "", category: "all" as "all" | "adjustment" | "payment", status: "all" });
   const [format, setFormat] = useState<ExportFormat>("csv"); const [busy, setBusy] = useState(false);
   const valid = f.end >= f.start;
-  const q = usePortalQuery({ queryKey: ["earnings-ledger", f], enabled: valid, queryFn: () => listEarningsLedger({ data: { ...f, driverId: f.driverId || null } }) });
+  const preview = usePortalPreview();
+  const q = usePortalQuery({ queryKey: ["earnings-ledger", f] as const, enabled: valid, queryFn: () => listEarningsLedger({ data: { ...f, driverId: f.driverId || null } }) });
   const d = q.data as Awaited<ReturnType<typeof listEarningsLedger>> | undefined;
   const statuses = Array.from(new Set((d?.rows ?? []).map((r) => r.status)));
   async function doExport() {
-    if (!d) return; setBusy(true);
+    if (!d) return;
+    if (preview.active) { toast("Preview only — no file was created or downloaded."); return; }
+    setBusy(true);
     try {
       const who = f.driverId ? d.drivers.find((x) => x.id === f.driverId)?.name ?? "Selected" : "All drivers";
       const title = `Earnings — ${d.workspaceMfn ?? "Workspace"} — generated ${new Date().toLocaleString("en-US", { timeZone: "America/New_York" })} — ${f.start} to ${f.end} · ${who} · ${f.category} · ${f.status}`;
@@ -31,6 +34,7 @@ export function EarningsLedger() {
   }
   return <section className="space-y-4 rounded-ds border border-ds-sky-border bg-ds-sky p-4 sm:p-5">
     <h2 className="ds-subheading uppercase text-ds-primary">Earnings records & exports</h2>
+    {preview.active && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Operational driver earnings only; Network settlements and Membership & Billing are separate.</p>}
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
       <label className="ds-label">From<input type="date" value={f.start} onChange={(e) => setF({ ...f, start: e.target.value })} className="portal-input mt-1" /></label>
       <label className="ds-label">Through<input type="date" value={f.end} onChange={(e) => setF({ ...f, end: e.target.value })} className="portal-input mt-1" /></label>
