@@ -82,8 +82,8 @@ function mobilityLabel(r: Row) {
 function StatusBadge({ state, status }: { state?: string | null; status: string }) {
   const s = (state || status).toLowerCase();
   const map: Record<string, string> = {
-    unconfirmed: "bg-amber-100 text-amber-900 border-amber-300",
-    booked: "bg-emerald-100 text-emerald-900 border-emerald-300",
+    unconfirmed: "ds-status-yellow",
+    booked: "ds-status-green",
     past: "bg-slate-100 text-slate-700 border-slate-300",
     history: "bg-slate-100 text-slate-700 border-slate-300",
   };

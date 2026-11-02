@@ -297,10 +297,10 @@ function StatusBadge({ status }: { status: string }) {
     draft: "bg-muted text-muted-foreground",
     ready: "bg-accent/15 text-accent",
     submitted: "bg-blue-100 text-blue-700",
-    awaiting_response: "bg-yellow-100 text-yellow-800",
-    approved: "bg-emerald-100 text-emerald-700",
-    accepted: "bg-emerald-100 text-emerald-700",
-    rejected: "bg-red-100 text-red-700",
+    awaiting_response: "ds-status-yellow",
+    approved: "ds-status-green",
+    accepted: "ds-status-green",
+    rejected: "ds-status-red",
   };
   return <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${map[status] ?? map.draft}`}>{labelForStatus(status)}</span>;
 }
