@@ -10,6 +10,7 @@ export type SettlementRow = {
   payment_deadline_at: string | null; payment_succeeded_at: string | null; verification_tier_snapshot: string | null;
   hold_days: number | null; release_eligible_at: string | null; dispute_opened_at: string | null; dispute_resolved_at: string | null;
   transferred: boolean; paid_out: boolean; stripe_environment: string; state: string; created_at: string;
+  payout_status?: string | null; transfer_status?: string | null; completion_confirmed_at?: string | null; refunded_at?: string | null; attempt_status?: string | null;
   events: { event_type: string; actor_mfn_id: string | null; created_at: string }[];
 };
 

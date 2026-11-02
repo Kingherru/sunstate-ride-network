@@ -184,8 +184,14 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
         }
         const env: StripeEnv = rawEnv;
         try {
-          const event = await verifyWebhook(request, env);
+          const event = await verifyWebhook(request, env) as { id?: string; type: string; account?: string; data: { object: any } };
+          const np = await import('@/lib/network-payments.server');
+          if (await np.alreadyProcessed(event.id)) return Response.json({ received: true, duplicate: true });
           switch (event.type) {
+            case 'payout.paid':
+            case 'payout.failed':
+              await np.reconcileSettlementPayout(event.data.object, event.type, event.account);
+              break;
             case 'invoice.paid':
             case 'invoice.payment_failed': {
               const { reconcileMembershipInvoice } = await import('@/lib/membership-evidence.server');
@@ -198,6 +204,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               const { reconcileMembershipCharge } = await import('@/lib/membership-evidence.server');
               await reconcileMembershipCharge(event.data.object, env);
               await (await import('@/lib/verification-evidence.server')).reconcileNetworkCharge(event.data.object, env);
+              await np.reconcileSettlementCharge(event.data.object, event.type, env);
               break;
             }
             case "customer.subscription.created":
@@ -218,11 +225,13 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case 'payment_intent.payment_failed':
             case 'payment_intent.canceled':
               await (await import('@/lib/verification-evidence.server')).reconcileNetworkIntent(event.data.object, env);
+              await np.reconcileSettlementIntent(event.data.object, event.type, env);
               break;
             case "transfer.created":
             case "transfer.updated":
             case "transfer.reversed":
               await handleTransferUpdated(event.data.object);
+              await np.reconcileSettlementTransfer(event.data.object, event.type);
               break;
             case "checkout.session.completed":
               await handleCheckoutSessionCompleted(event.data.object, env);
@@ -230,6 +239,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             default:
               console.log("Unhandled event:", event.type);
           }
+          await np.markProcessed(event.id, event.type, env);
           return Response.json({ received: true });
         } catch (e) {
           console.error("Webhook error:", e);

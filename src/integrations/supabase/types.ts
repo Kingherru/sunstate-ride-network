@@ -1849,6 +1849,10 @@ export type Database = {
           explanation: string | null
           id: string
           opened_by_mfn_id: string | null
+          resolution: string | null
+          resolution_reason: string | null
+          resolved_at: string | null
+          resolved_by_mfn_id: string | null
           settlement_id: string
           status: string
         }
@@ -1859,6 +1863,10 @@ export type Database = {
           explanation?: string | null
           id?: string
           opened_by_mfn_id?: string | null
+          resolution?: string | null
+          resolution_reason?: string | null
+          resolved_at?: string | null
+          resolved_by_mfn_id?: string | null
           settlement_id: string
           status?: string
         }
@@ -1869,12 +1877,206 @@ export type Database = {
           explanation?: string | null
           id?: string
           opened_by_mfn_id?: string | null
+          resolution?: string | null
+          resolution_reason?: string | null
+          resolved_at?: string | null
+          resolved_by_mfn_id?: string | null
           settlement_id?: string
           status?: string
         }
         Relationships: [
           {
             foreignKeyName: "network_disputes_settlement_id_fkey"
+            columns: ["settlement_id"]
+            isOneToOne: false
+            referencedRelation: "network_settlements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      network_distribution_exclusions: {
+        Row: {
+          created_at: string
+          distribution_id: string
+          id: string
+          provider_workspace_id: string
+          provider_workspace_mfn_id: string | null
+          reason_code: string
+        }
+        Insert: {
+          created_at?: string
+          distribution_id: string
+          id?: string
+          provider_workspace_id: string
+          provider_workspace_mfn_id?: string | null
+          reason_code: string
+        }
+        Update: {
+          created_at?: string
+          distribution_id?: string
+          id?: string
+          provider_workspace_id?: string
+          provider_workspace_mfn_id?: string | null
+          reason_code?: string
+        }
+        Relationships: []
+      }
+      network_fee_policies: {
+        Row: {
+          active: boolean
+          cap_cents: number | null
+          created_at: string
+          environment: string
+          fixed_cents: number
+          method_category: string
+          note: string | null
+          percent_bps: number
+          sandbox_estimate: boolean
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          cap_cents?: number | null
+          created_at?: string
+          environment: string
+          fixed_cents?: number
+          method_category: string
+          note?: string | null
+          percent_bps: number
+          sandbox_estimate?: boolean
+          version: number
+        }
+        Update: {
+          active?: boolean
+          cap_cents?: number | null
+          created_at?: string
+          environment?: string
+          fixed_cents?: number
+          method_category?: string
+          note?: string | null
+          percent_bps?: number
+          sandbox_estimate?: boolean
+          version?: number
+        }
+        Relationships: []
+      }
+      network_payment_attempt_events: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_payment_attempt_events_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "network_payment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      network_payment_attempts: {
+        Row: {
+          acting_user_mfn_id: string | null
+          canceled_at: string | null
+          charge_ref: string | null
+          confirmed_at: string | null
+          created_at: string
+          error_code: string | null
+          failed_at: string | null
+          fee_policy_version: number
+          id: string
+          idempotency_key: string
+          method_category: string
+          mfn_id: string
+          network_fee_cents: number
+          payment_intent_ref: string | null
+          processing_fee_cents: number
+          receiver_payout_cents: number
+          refunded_at: string | null
+          sender_workspace_id: string
+          sender_workspace_mfn_id: string | null
+          settlement_id: string
+          settlement_mfn_id: string
+          status: string
+          stripe_environment: string
+          total_cents: number
+          updated_at: string
+        }
+        Insert: {
+          acting_user_mfn_id?: string | null
+          canceled_at?: string | null
+          charge_ref?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          failed_at?: string | null
+          fee_policy_version: number
+          id?: string
+          idempotency_key: string
+          method_category: string
+          mfn_id?: string
+          network_fee_cents: number
+          payment_intent_ref?: string | null
+          processing_fee_cents: number
+          receiver_payout_cents: number
+          refunded_at?: string | null
+          sender_workspace_id: string
+          sender_workspace_mfn_id?: string | null
+          settlement_id: string
+          settlement_mfn_id: string
+          status?: string
+          stripe_environment: string
+          total_cents: number
+          updated_at?: string
+        }
+        Update: {
+          acting_user_mfn_id?: string | null
+          canceled_at?: string | null
+          charge_ref?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          failed_at?: string | null
+          fee_policy_version?: number
+          id?: string
+          idempotency_key?: string
+          method_category?: string
+          mfn_id?: string
+          network_fee_cents?: number
+          payment_intent_ref?: string | null
+          processing_fee_cents?: number
+          receiver_payout_cents?: number
+          refunded_at?: string | null
+          sender_workspace_id?: string
+          sender_workspace_mfn_id?: string | null
+          settlement_id?: string
+          settlement_mfn_id?: string
+          status?: string
+          stripe_environment?: string
+          total_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_payment_attempts_settlement_id_fkey"
             columns: ["settlement_id"]
             isOneToOne: false
             referencedRelation: "network_settlements"
@@ -1959,13 +2161,16 @@ export type Database = {
         Row: {
           acting_sender_mfn_id: string | null
           charge_ref: string | null
+          chargeback_status: string | null
           completed_at: string | null
+          completion_confirmed_at: string | null
           created_at: string
           currency: string
           dispute_opened_at: string | null
           dispute_ref: string | null
           dispute_resolved_at: string | null
           distribution_id: string
+          fee_policy_version: number | null
           gross_amount_cents: number | null
           hold_days: number | null
           hold_started_at: string | null
@@ -1974,17 +2179,20 @@ export type Database = {
           network_fee_bps: number
           network_fee_cents: number
           offer_id: string | null
+          paid_out_at: string | null
           payment_deadline_at: string | null
           payment_idempotency_key: string
           payment_intent_ref: string | null
           payment_succeeded_at: string | null
           payout_ref: string | null
+          payout_status: string | null
           processing_fee_cents: number | null
           processing_fee_rule: string
           receiver_payout_cents: number
           receiver_workspace_id: string
           receiver_workspace_mfn_id: string | null
           refund_ref: string | null
+          refunded_at: string | null
           release_eligible_at: string | null
           review_window_ends_at: string | null
           sender_retained_cents: number | null
@@ -1994,9 +2202,12 @@ export type Database = {
           source_mfn_id: string | null
           state: string
           stripe_environment: string
+          transfer_created_at: string | null
           transfer_group: string | null
           transfer_idempotency_key: string
           transfer_ref: string | null
+          transfer_reversed_at: string | null
+          transfer_status: string | null
           trip_id: string | null
           updated_at: string
           verification_tier_snapshot: string | null
@@ -2004,13 +2215,16 @@ export type Database = {
         Insert: {
           acting_sender_mfn_id?: string | null
           charge_ref?: string | null
+          chargeback_status?: string | null
           completed_at?: string | null
+          completion_confirmed_at?: string | null
           created_at?: string
           currency?: string
           dispute_opened_at?: string | null
           dispute_ref?: string | null
           dispute_resolved_at?: string | null
           distribution_id: string
+          fee_policy_version?: number | null
           gross_amount_cents?: number | null
           hold_days?: number | null
           hold_started_at?: string | null
@@ -2019,17 +2233,20 @@ export type Database = {
           network_fee_bps?: number
           network_fee_cents: number
           offer_id?: string | null
+          paid_out_at?: string | null
           payment_deadline_at?: string | null
           payment_idempotency_key?: string
           payment_intent_ref?: string | null
           payment_succeeded_at?: string | null
           payout_ref?: string | null
+          payout_status?: string | null
           processing_fee_cents?: number | null
           processing_fee_rule?: string
           receiver_payout_cents: number
           receiver_workspace_id: string
           receiver_workspace_mfn_id?: string | null
           refund_ref?: string | null
+          refunded_at?: string | null
           release_eligible_at?: string | null
           review_window_ends_at?: string | null
           sender_retained_cents?: number | null
@@ -2039,9 +2256,12 @@ export type Database = {
           source_mfn_id?: string | null
           state?: string
           stripe_environment?: string
+          transfer_created_at?: string | null
           transfer_group?: string | null
           transfer_idempotency_key?: string
           transfer_ref?: string | null
+          transfer_reversed_at?: string | null
+          transfer_status?: string | null
           trip_id?: string | null
           updated_at?: string
           verification_tier_snapshot?: string | null
@@ -2049,13 +2269,16 @@ export type Database = {
         Update: {
           acting_sender_mfn_id?: string | null
           charge_ref?: string | null
+          chargeback_status?: string | null
           completed_at?: string | null
+          completion_confirmed_at?: string | null
           created_at?: string
           currency?: string
           dispute_opened_at?: string | null
           dispute_ref?: string | null
           dispute_resolved_at?: string | null
           distribution_id?: string
+          fee_policy_version?: number | null
           gross_amount_cents?: number | null
           hold_days?: number | null
           hold_started_at?: string | null
@@ -2064,17 +2287,20 @@ export type Database = {
           network_fee_bps?: number
           network_fee_cents?: number
           offer_id?: string | null
+          paid_out_at?: string | null
           payment_deadline_at?: string | null
           payment_idempotency_key?: string
           payment_intent_ref?: string | null
           payment_succeeded_at?: string | null
           payout_ref?: string | null
+          payout_status?: string | null
           processing_fee_cents?: number | null
           processing_fee_rule?: string
           receiver_payout_cents?: number
           receiver_workspace_id?: string
           receiver_workspace_mfn_id?: string | null
           refund_ref?: string | null
+          refunded_at?: string | null
           release_eligible_at?: string | null
           review_window_ends_at?: string | null
           sender_retained_cents?: number | null
@@ -2084,14 +2310,97 @@ export type Database = {
           source_mfn_id?: string | null
           state?: string
           stripe_environment?: string
+          transfer_created_at?: string | null
           transfer_group?: string | null
           transfer_idempotency_key?: string
           transfer_ref?: string | null
+          transfer_reversed_at?: string | null
+          transfer_status?: string | null
           trip_id?: string | null
           updated_at?: string
           verification_tier_snapshot?: string | null
         }
         Relationships: []
+      }
+      network_stripe_events: {
+        Row: {
+          environment: string
+          event_id: string
+          event_type: string
+          processed_at: string
+        }
+        Insert: {
+          environment: string
+          event_id: string
+          event_type: string
+          processed_at?: string
+        }
+        Update: {
+          environment?: string
+          event_id?: string
+          event_type?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
+      network_transfers: {
+        Row: {
+          actor_mfn_id: string | null
+          amount_cents: number
+          created_at: string
+          destination_ref: string | null
+          error_code: string | null
+          failed_at: string | null
+          id: string
+          idempotency_key: string
+          reversed_at: string | null
+          settlement_id: string
+          status: string
+          stripe_environment: string
+          transfer_ref: string | null
+          transferred_at: string | null
+        }
+        Insert: {
+          actor_mfn_id?: string | null
+          amount_cents: number
+          created_at?: string
+          destination_ref?: string | null
+          error_code?: string | null
+          failed_at?: string | null
+          id?: string
+          idempotency_key: string
+          reversed_at?: string | null
+          settlement_id: string
+          status?: string
+          stripe_environment: string
+          transfer_ref?: string | null
+          transferred_at?: string | null
+        }
+        Update: {
+          actor_mfn_id?: string | null
+          amount_cents?: number
+          created_at?: string
+          destination_ref?: string | null
+          error_code?: string | null
+          failed_at?: string | null
+          id?: string
+          idempotency_key?: string
+          reversed_at?: string | null
+          settlement_id?: string
+          status?: string
+          stripe_environment?: string
+          transfer_ref?: string | null
+          transferred_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_transfers_settlement_id_fkey"
+            columns: ["settlement_id"]
+            isOneToOne: true
+            referencedRelation: "network_settlements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_email_queue: {
         Row: {
@@ -7791,6 +8100,23 @@ export type Database = {
         Args: { _distribution: string }
         Returns: undefined
       }
+      network_admin_exclusion_reasons: {
+        Args: { _distribution: string }
+        Returns: Json
+      }
+      network_admin_resolve_dispute: {
+        Args: {
+          _adjust_cents: number
+          _dispute: string
+          _outcome: string
+          _reason: string
+        }
+        Returns: Json
+      }
+      network_admin_settlement_detail: {
+        Args: { _settlement: string }
+        Returns: Json
+      }
       network_assign_driver_slot: {
         Args: { _driver: string; _time: string; _trip: string }
         Returns: undefined
@@ -7806,6 +8132,18 @@ export type Database = {
           _offer: string
           _type: string
         }
+        Returns: undefined
+      }
+      network_claim_transfer: {
+        Args: { _actor: string; _env: string; _settlement: string }
+        Returns: Json
+      }
+      network_compute_quote: {
+        Args: { _env: string; _method: string; _settlement: string }
+        Returns: Json
+      }
+      network_confirm_completion: {
+        Args: { _settlement: string }
         Returns: undefined
       }
       network_create_distribution: {
@@ -7844,6 +8182,14 @@ export type Database = {
         Returns: undefined
       }
       network_payment_due_at: { Args: { _completed: string }; Returns: string }
+      network_payment_quote: {
+        Args: { _env: string; _method: string; _settlement: string }
+        Returns: Json
+      }
+      network_prepare_payment_attempt: {
+        Args: { _env: string; _method: string; _settlement: string }
+        Returns: Json
+      }
       network_public_service_centers: {
         Args: never
         Returns: {
@@ -7856,8 +8202,50 @@ export type Database = {
           zip: string
         }[]
       }
+      network_receiver_hold_tier: {
+        Args: { _workspace: string }
+        Returns: Json
+      }
+      network_record_attempt_result: {
+        Args: {
+          _amount_received: number
+          _charge: string
+          _env: string
+          _error: string
+          _intent: string
+          _status: string
+        }
+        Returns: undefined
+      }
+      network_record_charge_state: {
+        Args: {
+          _charge: string
+          _dispute: string
+          _env: string
+          _refunded: boolean
+        }
+        Returns: undefined
+      }
       network_record_completion: {
         Args: { _confirmed: boolean; _distribution: string }
+        Returns: undefined
+      }
+      network_record_payout: {
+        Args: {
+          _account: string
+          _payout: string
+          _payout_created: string
+          _status: string
+        }
+        Returns: undefined
+      }
+      network_record_transfer: {
+        Args: {
+          _error: string
+          _settlement_mfn: string
+          _status: string
+          _transfer_ref: string
+        }
         Returns: undefined
       }
       network_reservation_state: {
