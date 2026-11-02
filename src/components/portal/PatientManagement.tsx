@@ -111,11 +111,11 @@ export function PatientManagement() {
             </div>
           </div>
           {statusFor?.id === p.id && <div role="alertdialog" aria-label="Confirm status change" className="space-y-3 rounded-ds bg-ds-surface-muted p-4">
-            <DsField label={`Reason to ${statusFor.active ? 'restore' : 'deactivate'}`}>{f => <DsTextarea {...f} minLength={3} maxLength={300} value={reason} onChange={e => setReason(e.target.value)} />}</DsField>
-            <div className="flex gap-2"><DsButton size="sm" disabled={busy || reason.trim().length < 3} onClick={changeStatus}>Confirm {statusFor.active ? 'restore' : 'deactivation'}</DsButton><DsButton size="sm" variant="ghost" onClick={() => setStatusFor(null)}>Cancel</DsButton></div>
+            <DsField label={`Reason to ${statusFor!.active ? 'restore' : 'deactivate'}`}>{f => <DsTextarea {...f} minLength={3} maxLength={300} value={reason} onChange={e => setReason(e.target.value)} />}</DsField>
+            <div className="flex gap-2"><DsButton size="sm" disabled={busy || reason.trim().length < 3} onClick={changeStatus}>Confirm {statusFor!.active ? 'restore' : 'deactivation'}</DsButton><DsButton size="sm" variant="ghost" onClick={() => setStatusFor(null)}>Cancel</DsButton></div>
           </div>}
           {history?.id === p.id && <div className="rounded-ds bg-ds-surface-muted p-4"><div className="flex justify-between"><h3 className="ds-label text-ds-primary">Audit history</h3><button className="ds-support underline" onClick={() => setHistory(null)}>Close</button></div>
-            {history.rows.length ? <ul className="ds-support mt-2 space-y-1">{history.rows.map(h => <li key={h.id}>{new Date(h.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} · {h.action} · {h.actor_mfn_id ?? '—'}{h.reason ? ` · ${h.reason}` : ''}</li>)}</ul> : <p className="ds-support mt-2">No history recorded.</p>}</div>}
+            {history!.rows.length ? <ul className="ds-support mt-2 space-y-1">{history!.rows.map(h => <li key={h.id}>{new Date(h.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} · {h.action} · {h.actor_mfn_id ?? '—'}{h.reason ? ` · ${h.reason}` : ''}</li>)}</ul> : <p className="ds-support mt-2">No history recorded.</p>}</div>}
         </li>)}</ul>
       )}
     </section>

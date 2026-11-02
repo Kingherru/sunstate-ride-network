@@ -26,7 +26,7 @@ export function BillingDefaults({ showPaymentMethod = true }: { showPaymentMetho
   const payers = usePortalQuery({ queryKey: ['my-payers'], queryFn: () => getPayers() });
   const cards = usePortalQuery({ queryKey: ['saved-cards'], queryFn: () => getCards(), enabled: showPaymentMethod });
   const p = prefs.data as PortalPreferences | undefined;
-  async function update(patch: Parameters<typeof save>[0]['data']) {
+  async function update(patch: { default_payer_id?: string | null; default_payment_method_id?: string | null; pay_by_invoice?: boolean }) {
     if (preview.active) return previewBlocked();
     try { await save({ data: patch }); await qc.invalidateQueries({ queryKey: ['portal-preferences'] }); toast.success('Billing preference saved.'); }
     catch (e) { toast.error(e instanceof Error ? e.message : 'Could not save.'); }
