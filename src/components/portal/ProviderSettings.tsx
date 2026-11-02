@@ -8,6 +8,7 @@ import { ProviderCredentialsPanel } from '@/components/dashboard/ProviderCredent
 import { IntegrationsPanel } from '@/components/dashboard/IntegrationsPanel';
 import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequests';
 import { ProviderExports } from './ProviderExports';
+import { ApiCredentials } from './ApiCredentials';
 import { usePortalPreview } from './preview-data';
 import { PROVIDER_VERIFICATION_POLICY } from '@/lib/account-settings-rules';
 import { ProviderVerificationBadge } from './ProviderVerificationBadge';
@@ -64,7 +65,7 @@ export function ProviderSettings({ workspaceId, role, email }: { workspaceId: st
     {tab === 'membership' && <div className="space-y-5"><MembershipBilling workspaceId={workspaceId} role={role} /><BillingDefaults showPaymentMethod={false} /></div>}
     {tab === 'notifications' && <PersonalSettings />}
     {tab === 'requests' && <ProviderPlatformRequests workspaceId={workspaceId} />}
-    {tab === 'integrations' && <div className="space-y-6"><ProviderExports /><section className="space-y-3 rounded-ds border border-ds-sky-border bg-ds-sky p-4"><h2 className="ds-subheading uppercase text-ds-primary">Dispatch software integrations</h2><p className="ds-support">Vendor connections are not configured unless saved below by the account owner. Saving credentials does not verify a live connection; no vendor is connected in this release.</p>{owner ? <IntegrationsPanel /> : <p className="ds-support">Integration setup is limited to the account owner.</p>}</section></div>}
+    {tab === 'integrations' && <div className="space-y-6"><ProviderExports /><ApiCredentials /><section className="space-y-3 rounded-ds border border-ds-sky-border bg-ds-sky p-4"><h2 className="ds-subheading uppercase text-ds-primary">Dispatch software integrations</h2><p className="ds-support">Vendor connections are not configured unless saved below by the account owner. Saving credentials does not verify a live connection; no vendor is connected in this release.</p>{owner ? <IntegrationsPanel /> : <p className="ds-support">Integration setup is limited to the account owner.</p>}</section></div>}
     {tab === 'account' && <div className="mb-6"><InterfaceSize /></div>}
     {tab === 'account' && <PersonalSecurity email={email} />}
   </div>;
