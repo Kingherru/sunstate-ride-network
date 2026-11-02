@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Check, Network, Send, X, MessageSquare, AlertTriangle } from 'lucide-react';
 import { DsButton, DsCheckbox, DsField, DsInput, DsSelect, DsTextarea } from '@/components/ds/controls';
 import { usePortalQuery, usePortalMutation } from '@/components/portal/preview-data';
-import { listNetworkOffers, listNetworkActivity, acceptNetworkOffer, respondNetworkOffer, createNetworkDistribution, sendNetworkWave, getDistributionReadiness, getNetworkSettings, saveNetworkSettings, markNetworkAttention, getOfferHistory, type NetworkOffer } from '@/lib/trip-network.functions';
+import { listNetworkOffers, listNetworkActivity, acceptNetworkOffer, respondNetworkOffer, createNetworkDistribution, sendNetworkWave, getDistributionReadiness, getNetworkSettings, saveNetworkSettings, markNetworkAttention, getOfferHistory, getOfferSafeDetail, type NetworkOffer, type OfferSafeDetail } from '@/lib/trip-network.functions';
 import { nextRadius, PAYMENT_RESPONSIBILITY_WARNING } from '@/lib/trip-network-rules';
 import { DetailOverlayFrame } from './DetailOverlayFrame';
 import { useRequestDetails } from './request-detail-context';
@@ -13,6 +13,18 @@ import { DetailSection } from './DetailSection';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
 const label = (s: string) => s.replaceAll('_', ' ');
+const NA = (v: unknown, empty = 'Not Provided') => v == null || v === '' ? empty : String(v);
+const tierLabel = (t: string | null) => !t || t === 'none' ? 'Not Verified' : t === 'super_verified' ? 'Super Verified' : label(t);
+const stageLabel = (m: number | null) => m ? `${m}-mile stage` : 'Not Sent';
+function useOfferDetail(offerId: string) {
+  const fn = useServerFn(getOfferSafeDetail);
+  return usePortalQuery({ queryKey: ['offer-safe-detail', offerId], queryFn: () => fn({ data: { offer_id: offerId } }) });
+}
+function OfferCardMeta({ offerId }: { offerId: string }) {
+  const q = useOfferDetail(offerId); const d = q.data as OfferSafeDetail | undefined;
+  if (!d) return null;
+  return <p className="ds-support text-ds-muted">{stageLabel(d.distribution_stage_miles)} · {tierLabel(d.verification_tier)}{d.latest_negotiation ? ` · Latest: ${d.latest_negotiation.side} ${label(d.latest_negotiation.action)}${d.latest_negotiation.amount_cents ? ` ${money(d.latest_negotiation.amount_cents)}` : ''}` : ' · No negotiation'}</p>;
+}
 function useRefreshNetwork() {
   const qc = useQueryClient();
   return () => ['network-offers', 'network-activity', 'reservations-by-state', 'day-reservations', 'schedule-board', 'request-overlay'].forEach(key => qc.invalidateQueries({ queryKey: [key] }));
@@ -22,6 +34,8 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
   const refresh = useRefreshNetwork();
   const historyFn=useServerFn(getOfferHistory);
   const history=usePortalQuery({queryKey:['offer-history',offer.id],queryFn:()=>historyFn({data:{offer_id:offer.id}})});
+  const safe = useOfferDetail(offer.id); const sd = safe.data as OfferSafeDetail | undefined;
+  const can = sd?.actions ?? { accept: false, counter: false, decline: false };
   const [mode, setMode] = useState<'review' | 'counter' | 'decline' | 'revise'>('review');
   const [amount, setAmount] = useState(String(offer.amount_cents / 100));
   const [note, setNote] = useState('');
@@ -36,13 +50,21 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
       <DetailSection title="Offer identity"><dl className="grid gap-3 sm:grid-cols-2 ds-body"><dt>Offer ID</dt><dd>{offer.mfn_id}</dd><dt>Source</dt><dd className="break-all font-mono">{offer.source_mfn_id}</dd></dl></DetailSection>
       <DetailSection tone="trip" title="General route and service"><dl className="grid gap-3 sm:grid-cols-2 ds-body"><dt>General route</dt><dd>{offer.pickup_area} → {offer.destination_area}</dd><dt>When</dt><dd>{new Date(`${offer.pickup_date}T12:00:00`).toLocaleDateString()} · {new Date(`2000-01-01T${offer.pickup_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</dd><dt>Service / trip</dt><dd>{label(offer.service_type || offer.capability)} · {label(offer.trip_type || '')}</dd><dt>Capability</dt><dd>{offer.capability}</dd></dl></DetailSection>
       <DetailSection tone="payment" title="Compensation"><dl className="grid gap-3 sm:grid-cols-2 ds-body"><dt>Compensation</dt><dd>{money(offer.amount_cents)}</dd><dt>Expires</dt><dd>{new Date(offer.expires_at).toLocaleString()}</dd></dl></DetailSection>
+      {sd && <div className="grid gap-4 lg:grid-cols-3">
+        <DetailSection tone="payment" title="Referral economics"><dl className="grid gap-2 grid-cols-2 ds-body"><dt>Receiver payout</dt><dd>{money(sd.receiver_payout_cents)}</dd><dt>2% Network fee (sender)</dt><dd>{money(sd.network_fee_cents)}</dd><dt>Processing fee</dt><dd>{sd.processing_fee_rule}</dd><dt>Sender total before processing</dt><dd>{money(sd.sender_total_before_processing_cents)}</dd><dt>Sender retained amount</dt><dd>Not Available</dd></dl></DetailSection>
+        <DetailSection tone="trip" title="Distribution"><dl className="grid gap-2 grid-cols-2 ds-body"><dt>Current stage</dt><dd>{stageLabel(sd.distribution_stage_miles)}</dd><dt>Status</dt><dd>{label(sd.status)}</dd><dt>Verification</dt><dd>{tierLabel(sd.verification_tier)}</dd><dt>Miles</dt><dd>{NA(offer.estimated_miles)}</dd>{sd.viewer === 'sender' && <><dt>Payment responsibility</dt><dd>{sd.payment_ack_at ? `Acknowledged ${new Date(sd.payment_ack_at).toLocaleString()}` : 'Not Provided'}</dd></>}</dl>
+          {sd.stages.map(w => <p key={w.sent_at} className="ds-support">{w.radius_miles} miles · {new Date(w.sent_at).toLocaleString()}</p>)}</DetailSection>
+        <DetailSection tone="notes" title="Offer versions & events">{sd.versions.length ? sd.versions.map(v => <p key={v.created_at} className="ds-support">{v.side} · {label(v.action)}{v.amount_cents ? ` · ${money(v.amount_cents)}` : ''} · {new Date(v.created_at).toLocaleString()}</p>) : <p className="ds-support">No counteroffers.</p>}
+          {sd.events.map(e => <p key={e.created_at + e.event_type} className="ds-support text-ds-muted">{label(e.event_type)} · {new Date(e.created_at).toLocaleString()}</p>)}</DetailSection>
+      </div>}
       {source && <p className="ds-body font-semibold text-ds-warning">{PAYMENT_RESPONSIBILITY_WARNING}</p>}
       <p className="ds-support text-ds-muted">Passenger identity and exact trip details remain protected until assignment.</p>
       <DetailSection tone="notes" title="Negotiation history"><details><summary className="ds-label cursor-pointer">View history</summary>{(history.data??[]).map(h=><p className="ds-support mt-2" key={h.id}>{h.side} · {label(h.action)}{h.amount_cents?` · ${money(h.amount_cents)}`:''} · {h.business_note||'—'} · {new Date(h.created_at).toLocaleString()}</p>)}</details></DetailSection>
       {mode === 'review' ? <div className="flex flex-wrap gap-2">
-        <DsButton disabled={m.isPending || (!source && offer.status === 'countered')} onClick={() => { if (confirm(source ? 'Approve this counteroffer and reserve the trip?' : 'Accept this compensation and reserve the trip for your business?')) m.mutate('accept'); }}><Check className="size-4" />{source ? 'Accept counteroffer' : 'Accept offer'}</DsButton>
-        <DsButton variant="secondary" disabled={!source && offer.status === 'countered'} onClick={() => setMode(source ? 'revise' : 'counter')}><MessageSquare className="size-4" />{source ? 'Revise amount' : 'Counter offer'}</DsButton>
-        <DsButton variant="ghost" onClick={() => setMode('decline')}><X className="size-4" />{source ? 'Decline counteroffer' : 'Decline'}</DsButton>
+        {can.accept && <DsButton disabled={m.isPending} onClick={() => { if (confirm(source ? 'Approve this counteroffer and reserve the trip?' : 'Accept this compensation and reserve the trip for your business?')) m.mutate('accept'); }}><Check className="size-4" />{source ? 'Accept counteroffer' : 'Accept offer'}</DsButton>}
+        {can.counter && <DsButton variant="secondary" onClick={() => setMode(source ? 'revise' : 'counter')}><MessageSquare className="size-4" />{source ? 'Revise amount' : 'Counter offer'}</DsButton>}
+        {can.decline && <DsButton variant="ghost" onClick={() => setMode('decline')}><X className="size-4" />{source ? 'Decline counteroffer' : 'Decline'}</DsButton>}
+        {sd && !can.accept && !can.counter && !can.decline && <p className="ds-support text-ds-muted">No actions are available for this offer right now.</p>}
       </div> : <form className="space-y-4" onSubmit={e => { e.preventDefault(); m.mutate(mode === 'decline' && source ? 'reject_counter' : mode === 'decline' ? 'decline' : mode); }}>
         {mode !== 'decline' ? <><DsField label="Proposed amount ($)">{p => <DsInput {...p} type="number" min="0.01" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} />}</DsField><DsField label="Counteroffer expiration">{p => <DsInput {...p} type="datetime-local" required value={expires} onChange={e => setExpires(e.target.value)} />}</DsField></> : !source && <DsField label="Reason (optional)">{p => <DsSelect {...p} value={reason} onChange={e => setReason(e.target.value)}><option value="">No reason</option><option value="no_driver">No driver</option><option value="no_vehicle">No appropriate vehicle</option><option value="schedule">Schedule conflict</option><option value="distance">Distance</option><option value="rate">Rate</option><option value="other">Other</option></DsSelect>}</DsField>}
         <DsField label="Business note (optional)" hint="Do not include passenger, medical or payer information.">{p => <DsTextarea {...p} maxLength={300} value={note} onChange={e => setNote(e.target.value)} />}</DsField>
@@ -63,7 +85,8 @@ export function ProviderNetworkOffers() {
       <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span><span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
       <h3 className="ds-subheading text-ds-primary">{o.pickup_area} → {o.destination_area}</h3>
       <p className="ds-support font-mono">{o.source_mfn_id}</p><p className="ds-body">{o.pickup_date} · {o.pickup_time.slice(0,5)} · {label(o.trip_type)}</p>
-      <p className="ds-body">{label(o.service_type)} · {o.capability}{o.estimated_miles != null ? ` · ${o.estimated_miles} miles` : ''}</p>
+      <p className="ds-body">{label(o.service_type)} · {o.capability}{` · ${o.estimated_miles != null ? `about ${o.estimated_miles} miles` : 'Miles Not Provided'}`}</p>
+      <OfferCardMeta offerId={o.id} />
       <div className="flex justify-between gap-3"><strong className="ds-body">{money(o.amount_cents)}</strong><span className="ds-support text-ds-muted">{Math.max(0, Math.ceil((Date.parse(o.expires_at)-Date.now())/3600000))} hours remaining</span></div>
       <DsButton variant="secondary" onClick={() => setReview(o)} disabled={!['pending','revised','countered'].includes(o.status)}>Review offer</DsButton>
     </article>)}</div>

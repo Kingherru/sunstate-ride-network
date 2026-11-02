@@ -2001,7 +2001,11 @@ export type Database = {
           created_at: string
           error_code: string | null
           failed_at: string | null
+          fee_cap_cents: number | null
+          fee_fixed_cents: number | null
+          fee_percent_bps: number | null
           fee_policy_version: number
+          fee_sandbox_estimate: boolean | null
           id: string
           idempotency_key: string
           method_category: string
@@ -2009,14 +2013,17 @@ export type Database = {
           network_fee_cents: number
           payment_intent_ref: string | null
           processing_fee_cents: number
+          processor_fee_variance_cents: number | null
           receiver_payout_cents: number
           refunded_at: string | null
+          reported_processor_fee_cents: number | null
           sender_workspace_id: string
           sender_workspace_mfn_id: string | null
           settlement_id: string
           settlement_mfn_id: string
           status: string
           stripe_environment: string
+          subtotal_cents: number | null
           total_cents: number
           updated_at: string
         }
@@ -2028,7 +2035,11 @@ export type Database = {
           created_at?: string
           error_code?: string | null
           failed_at?: string | null
+          fee_cap_cents?: number | null
+          fee_fixed_cents?: number | null
+          fee_percent_bps?: number | null
           fee_policy_version: number
+          fee_sandbox_estimate?: boolean | null
           id?: string
           idempotency_key: string
           method_category: string
@@ -2036,14 +2047,17 @@ export type Database = {
           network_fee_cents: number
           payment_intent_ref?: string | null
           processing_fee_cents: number
+          processor_fee_variance_cents?: number | null
           receiver_payout_cents: number
           refunded_at?: string | null
+          reported_processor_fee_cents?: number | null
           sender_workspace_id: string
           sender_workspace_mfn_id?: string | null
           settlement_id: string
           settlement_mfn_id: string
           status?: string
           stripe_environment: string
+          subtotal_cents?: number | null
           total_cents: number
           updated_at?: string
         }
@@ -2055,7 +2069,11 @@ export type Database = {
           created_at?: string
           error_code?: string | null
           failed_at?: string | null
+          fee_cap_cents?: number | null
+          fee_fixed_cents?: number | null
+          fee_percent_bps?: number | null
           fee_policy_version?: number
+          fee_sandbox_estimate?: boolean | null
           id?: string
           idempotency_key?: string
           method_category?: string
@@ -2063,14 +2081,17 @@ export type Database = {
           network_fee_cents?: number
           payment_intent_ref?: string | null
           processing_fee_cents?: number
+          processor_fee_variance_cents?: number | null
           receiver_payout_cents?: number
           refunded_at?: string | null
+          reported_processor_fee_cents?: number | null
           sender_workspace_id?: string
           sender_workspace_mfn_id?: string | null
           settlement_id?: string
           settlement_mfn_id?: string
           status?: string
           stripe_environment?: string
+          subtotal_cents?: number | null
           total_cents?: number
           updated_at?: string
         }
@@ -2328,18 +2349,21 @@ export type Database = {
           event_id: string
           event_type: string
           processed_at: string
+          source: string
         }
         Insert: {
           environment: string
           event_id: string
           event_type: string
           processed_at?: string
+          source?: string
         }
         Update: {
           environment?: string
           event_id?: string
           event_type?: string
           processed_at?: string
+          source?: string
         }
         Relationships: []
       }
@@ -8100,6 +8124,10 @@ export type Database = {
         Args: { _distribution: string }
         Returns: undefined
       }
+      network_admin_attempt_fees: {
+        Args: { _settlement: string }
+        Returns: Json
+      }
       network_admin_exclusion_reasons: {
         Args: { _distribution: string }
         Returns: Json
@@ -8176,6 +8204,7 @@ export type Database = {
         Returns: undefined
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
+      network_offer_safe_detail: { Args: { _offer: string }; Returns: Json }
       network_offer_safe_history: { Args: { _offer: string }; Returns: Json }
       network_open_payment_dispute: {
         Args: { _confirmed: boolean; _distribution: string; _reason: string }
@@ -8237,6 +8266,10 @@ export type Database = {
           _payout_created: string
           _status: string
         }
+        Returns: undefined
+      }
+      network_record_processor_fee: {
+        Args: { _env: string; _fee: number; _intent: string }
         Returns: undefined
       }
       network_record_transfer: {

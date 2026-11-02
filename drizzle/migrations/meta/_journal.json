@@ -274,6 +274,20 @@
       "when": 1793656175326,
       "tag": "0038_network_settlement_payments_transfers",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793659275752,
+      "tag": "0039_network_fee_recovery_and_connect_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793659379956,
+      "tag": "0040_network_offer_safe_detail",
+      "breakpoints": true
     }
   ]
 }

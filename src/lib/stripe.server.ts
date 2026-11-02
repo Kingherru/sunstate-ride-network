@@ -47,12 +47,19 @@ export function getStripeErrorMessage(error: unknown): string {
   return "Stripe request failed";
 }
 
-export async function verifyWebhook(req: Request, env: StripeEnv): Promise<{ type: string; data: { object: any } }> {
+/** Connected-account events use their own signing secret; never fall back to the platform secret. */
+export function connectWebhookSecretConfigured(env: StripeEnv): boolean {
+  return !!process.env[env === "sandbox" ? "STRIPE_CONNECT_SANDBOX_WEBHOOK_SECRET" : "STRIPE_CONNECT_LIVE_WEBHOOK_SECRET"];
+}
+
+export async function verifyWebhook(req: Request, env: StripeEnv, source: "platform" | "connect" = "platform"): Promise<{ type: string; data: { object: any } }> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
-  const secret = env === "sandbox"
-    ? getEnv("PAYMENTS_SANDBOX_WEBHOOK_SECRET")
-    : getEnv("PAYMENTS_LIVE_WEBHOOK_SECRET");
+  const secret = source === "connect"
+    ? getEnv(env === "sandbox" ? "STRIPE_CONNECT_SANDBOX_WEBHOOK_SECRET" : "STRIPE_CONNECT_LIVE_WEBHOOK_SECRET")
+    : env === "sandbox"
+      ? getEnv("PAYMENTS_SANDBOX_WEBHOOK_SECRET")
+      : getEnv("PAYMENTS_LIVE_WEBHOOK_SECRET");
 
   if (!signature || !body) throw new Error("Missing signature or body");
 

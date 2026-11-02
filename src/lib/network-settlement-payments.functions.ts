@@ -127,3 +127,17 @@ export const processEligibleTestSettlement = createServerFn({ method: 'POST' }).
       return { error: msg } as const;
     }
   });
+
+export type AdminAttemptFees = {
+  attempts: { mfn_id: string; method: string; policy_version: number; sandbox_estimate: boolean | null; subtotal_cents: number; receiver_payout_cents: number; network_fee_cents: number; processing_fee_cents: number; total_cents: number; percent_bps: number | null; fixed_cents: number | null; cap_cents: number | null; reported_processor_fee_cents: number | null; variance_cents: number | null; status: string }[];
+  platform_webhook_last: string | null; connect_webhook_last: string | null; connect_secret_configured: boolean;
+};
+/** Read-only fee recovery and webhook readiness for scoped admins. Never exposes secrets, only whether one is configured. */
+export const getAdminAttemptFees = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => z.object({ settlementId: z.string().uuid() }).strict().parse(v))
+  .handler(async ({ data, context }) => {
+    const { data: d, error } = await context.supabase.rpc('network_admin_attempt_fees', { _settlement: data.settlementId });
+    if (error || !d) throw new Error('Not available');
+    const { connectWebhookSecretConfigured } = await import('@/lib/stripe.server');
+    return { ...(d as unknown as Omit<AdminAttemptFees, 'connect_secret_configured'>), connect_secret_configured: connectWebhookSecretConfigured('sandbox') } as AdminAttemptFees;
+  });
