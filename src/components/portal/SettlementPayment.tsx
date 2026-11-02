@@ -5,7 +5,7 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import { toast } from 'sonner';
 import { DsButton } from '@/components/ds/controls';
 import { getStripe, getStripeEnvironment } from '@/lib/stripe';
-import { getSettlementPaymentQuote, startSettlementPayment, confirmSettlementCompletion, ACH_AVAILABLE, type PaymentQuote } from '@/lib/network-payments.functions';
+import { getSettlementPaymentQuote, startSettlementPayment, confirmSettlementCompletion, ACH_AVAILABLE, type PaymentQuote } from '@/lib/network-settlement-payments.functions';
 import type { SettlementRow } from '@/lib/network-settlements.functions';
 import { usePortalPreview } from './preview-data';
 

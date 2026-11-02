@@ -3,7 +3,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { DsButton, DsField, DsInput, DsSelect, DsTextarea } from '@/components/ds/controls';
-import { getAdminSettlementDetail, resolveNetworkDispute, processEligibleTestSettlement, getExclusionReasons } from '@/lib/network-payments.functions';
+import { getAdminSettlementDetail, resolveNetworkDispute, processEligibleTestSettlement, getExclusionReasons } from '@/lib/network-settlement-payments.functions';
 import { usePortalPreview } from '@/components/portal/preview-data';
 
 const money = (c: number) => `$${(c / 100).toFixed(2)}`;
