@@ -7,6 +7,10 @@ import { ADMIN_SECTIONS, PRESETS, PRESET_LABELS, type AdminPreset, type AccessLe
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { DsEmpty } from "@/components/ds/feedback";
 import { DsButton } from '@/components/ds/controls';
+import { StatusPill, humanStatus } from '@/components/ds/status';
+
+const groupCls = 'rounded-ds-sm border border-ds-border bg-ds-sky/40 p-4';
+const headCls = 'ds-subheading uppercase text-ds-primary';
 
 export const Route = createFileRoute("/_authenticated/admin/admins")({
   head: () => ({ meta: [{ title: "Administrators — MY FLORIDA NEMT Admin" }, { name: 'description', content: 'Manage administrator permissions and account scope.' }, { property: 'og:title', content: 'Administrators — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Manage administrator permissions and account scope.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -31,26 +35,34 @@ function AdminsPage() {
   return (
     <>
       <PageHead title="Administrators">Only you, the Master Admin, can add, change or remove regular administrators. New administrators start with no sections and no accounts.</PageHead>
-      <section className={`${panelCls} mb-6 p-4 sm:p-5`}>
-        <form onSubmit={onPromote} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="promote-email" className="portal-label">Email of an existing account</label>
-            <input id="promote-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="portal-input" />
-          </div>
-          <DsButton type="submit" disabled={busy} className="whitespace-nowrap">Add administrator</DsButton>
-        </form>
-      </section>
-      {admins.length === 0 ? <section className={panelCls}><DsEmpty title="No regular administrators" /></section> :
-        <div className="space-y-4">{admins.map((a) => <AdminCard key={a.userId} admin={a} workspaces={workspaces as any[]} />)}</div>}
-      <section className={`${panelCls} mt-6`}>
-        <h2 className="ds-subheading border-b border-ds-border px-4 py-3 uppercase text-ds-primary sm:px-5">Permission history</h2>
-        {audit.length === 0 ? <DsEmpty title="No changes yet" /> : (
-          <ul className="divide-y divide-ds-border">{audit.map((r: any) => (
-            <li key={r.id} className="ds-support px-4 py-2 sm:px-5"><span className="font-semibold text-ds-on-surface">{r.action.replace(/_/g, " ")}</span> · {new Date(r.created_at).toLocaleString()}
-              {r.metadata?.new && <span className="block break-words font-mono text-xs">{JSON.stringify(r.metadata.new)}</span>}</li>
-          ))}</ul>
-        )}
-      </section>
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <section aria-labelledby="current-admins" className="min-w-0 space-y-4">
+          <h2 id="current-admins" className={headCls}>Current administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
+          {admins.length === 0 ? <section className={panelCls}><DsEmpty title="No regular administrators" /></section> :
+            admins.map((a) => <AdminCard key={a.userId} admin={a} workspaces={workspaces as any[]} />)}
+        </section>
+        <aside className="min-w-0 space-y-6">
+          <section aria-labelledby="add-admin" className={`${panelCls} p-4 sm:p-5`}>
+            <h2 id="add-admin" className={headCls}>Add administrator</h2>
+            <p className="ds-support mt-1">Promotes an existing account. New administrators start with No Access and no account scope.</p>
+            <form onSubmit={onPromote} className="mt-4 space-y-3">
+              <div><label htmlFor="promote-email" className="portal-label">Email of an existing account</label>
+                <input id="promote-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="portal-input" /></div>
+              <DsButton type="submit" disabled={busy} className="w-full">Add administrator</DsButton>
+            </form>
+          </section>
+          <section aria-labelledby="perm-history" className={panelCls}>
+            <h2 id="perm-history" className={`${headCls} border-b border-ds-border px-4 py-3 sm:px-5`}>Recent permission history</h2>
+            {audit.length === 0 ? <DsEmpty title="No changes yet" /> : (
+              <ul className="max-h-[32rem] divide-y divide-ds-border overflow-y-auto">{audit.map((r: any) => (
+                <li key={r.id} className="ds-support min-w-0 px-4 py-3 sm:px-5"><span className="block font-semibold text-ds-on-surface">{humanStatus(r.action)}</span><span className="ds-caption">{new Date(r.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET</span>
+                  {r.metadata?.new && <span className="mt-1 block break-words font-mono text-xs">{JSON.stringify(r.metadata.new)}</span>}</li>
+              ))}</ul>
+            )}
+            <p className="ds-caption border-t border-ds-border px-4 py-2 sm:px-5">History is append-only and cannot be edited.</p>
+          </section>
+        </aside>
+      </div>
     </>
   );
 }
@@ -81,52 +93,70 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
 
   return (
     <section className={`${panelCls} p-4 sm:p-5`} aria-labelledby={`adm-${id}`}>
-      <h2 id={`adm-${id}`} className="ds-subheading break-words text-ds-primary">{admin.name || admin.email}</h2>
-      <p className="ds-support break-all">{admin.email} · <span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
-      <p className="ds-support mt-2 text-ds-text-2">{active ? 'Active' : 'Disabled'} · {scope === 'selected' ? `${ws.size} selected accounts` : scope === 'all' ? 'All eligible accounts' : 'No account access'} · {Object.values(eff).filter(v => v === 'manage').length} Manage / {Object.values(eff).filter(v => v === 'read').length} Read-only sections</p>
-      <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <div>
-          <label htmlFor={`preset-${id}`} className="portal-label">Preset</label>
-          <select id={`preset-${id}`} className="portal-input" value={preset} onChange={(e) => { const p = e.target.value as AdminPreset; setPreset(p); if (p !== "custom") setSections(PRESETS[p] as any); }}>
-            {(Object.keys(PRESET_LABELS) as AdminPreset[]).map((p) => <option key={p} value={p}>{PRESET_LABELS[p]}</option>)}
-          </select>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <div className="min-w-0">
+          <h3 id={`adm-${id}`} className="ds-subheading break-words text-ds-primary">{admin.name || admin.email}</h3>
+          <p className="ds-support break-all">{admin.email} · <span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
         </div>
-        <div>
-          <label htmlFor={`scope-${id}`} className="portal-label">Account scope</label>
-          <select id={`scope-${id}`} className="portal-input" value={scope} onChange={(e) => setScope(e.target.value as any)}>
-            <option value="none">No accounts</option><option value="selected">Selected accounts</option><option value="all">All eligible accounts</option>
-          </select>
-        </div>
-        <label className="ds-body flex items-center gap-2 self-end pb-2"><input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Active (uncheck to suspend)</label>
+        <StatusPill status={active ? 'Active' : 'Suspended'} tone={active ? 'green' : 'red'} />
       </div>
-      <fieldset className="mt-4">
-        <legend className="portal-label">Sections {preset !== "custom" && "(switch to Custom to edit)"}</legend>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {ADMIN_SECTIONS.map((s) => (
-            <div key={s.key} className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-surface-muted px-3 py-2">
-              <label htmlFor={`${id}-${s.key}`} className="ds-support min-w-0 text-ds-on-surface">{s.label}</label>
-              <select id={`${id}-${s.key}`} disabled={preset !== "custom"} className="portal-input !w-32 shrink-0 py-1" value={eff[s.key] ?? "none"}
-                onChange={(e) => setSections((m) => ({ ...m, [s.key]: e.target.value as AccessLevel }))}>
-                <option value="none">No access</option><option value="read">Read-only</option><option value="manage">Manage</option>
-              </select>
-            </div>
-          ))}
+      <p className="ds-support mt-2 text-ds-text-2">{scope === 'selected' ? `${ws.size} selected accounts` : scope === 'all' ? 'All eligible accounts' : 'No account access'} · {Object.values(eff).filter(v => v === 'manage').length} Manage / {Object.values(eff).filter(v => v === 'read').length} Read-only sections</p>
+      <div className={`${groupCls} mt-4 space-y-4`}>
+        <h4 className="ds-label uppercase text-ds-primary">Permission preset / custom access</h4>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor={`preset-${id}`} className="portal-label">Preset</label>
+            <select id={`preset-${id}`} className="portal-input" value={preset} onChange={(e) => { const p = e.target.value as AdminPreset; setPreset(p); if (p !== "custom") setSections(PRESETS[p] as any); }}>
+              {(Object.keys(PRESET_LABELS) as AdminPreset[]).map((p) => <option key={p} value={p}>{PRESET_LABELS[p]}</option>)}
+            </select>
+          </div>
+          <label className="ds-body flex items-center gap-2 self-end pb-2"><input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Active (uncheck to suspend)</label>
         </div>
-        <p className="ds-support mt-2">Security settings and administrator management always stay with the Master Admin.</p>
-      </fieldset>
-      {scope === "selected" && (
-        <fieldset className="mt-4">
-          <legend className="portal-label">Accounts</legend>
-          <div className="grid max-h-56 gap-1 overflow-y-auto sm:grid-cols-2">
-            {workspaces.map((w) => (
-              <label key={w.id} className="ds-support flex items-center gap-2 break-words">
-                <input type="checkbox" checked={ws.has(w.id)} onChange={(e) => setWs((s) => { const n = new Set(s); e.target.checked ? n.add(w.id) : n.delete(w.id); return n; })} />
-                <span className="font-mono">{w.mfn_id}</span> {w.display_name || w.account_type}{w.is_test_account && " (test)"}
-              </label>
+        <fieldset className="min-w-0">
+          <legend className="portal-label">Sections {preset !== "custom" && "(switch to Custom to edit)"}</legend>
+          <table className="hidden w-full border-collapse md:table">
+            <thead><tr className="ds-label text-left text-ds-primary"><th scope="col" className="py-2 pr-3">Section</th>{(['none','read','manage'] as AccessLevel[]).map(l => <th key={l} scope="col" className="w-28 px-2 py-2 text-center">{l === 'none' ? 'No access' : l === 'read' ? 'Read-only' : 'Manage'}</th>)}</tr></thead>
+            <tbody className="divide-y divide-ds-border">{ADMIN_SECTIONS.map((s) => (
+              <tr key={s.key}><th scope="row" className="ds-support py-2 pr-3 text-left font-semibold text-ds-on-surface">{s.label}</th>
+                {(['none','read','manage'] as AccessLevel[]).map(l => <td key={l} className="px-2 py-2 text-center"><input type="radio" aria-label={`${s.label}: ${l}`} name={`${id}-${s.key}`} disabled={preset !== "custom"} checked={(eff[s.key] ?? 'none') === l} onChange={() => setSections((m) => ({ ...m, [s.key]: l }))} /></td>)}</tr>
+            ))}</tbody>
+          </table>
+          <div className="grid gap-2 md:hidden">
+            {ADMIN_SECTIONS.map((s) => (
+              <div key={s.key} className="grid gap-1 rounded-ds-sm bg-ds-surface px-3 py-2">
+                <label htmlFor={`${id}-${s.key}`} className="ds-support min-w-0 font-semibold text-ds-on-surface">{s.label}</label>
+                <select id={`${id}-${s.key}`} disabled={preset !== "custom"} className="portal-input" value={eff[s.key] ?? "none"}
+                  onChange={(e) => setSections((m) => ({ ...m, [s.key]: e.target.value as AccessLevel }))}>
+                  <option value="none">No access</option><option value="read">Read-only</option><option value="manage">Manage</option>
+                </select>
+              </div>
             ))}
           </div>
+          <p className="ds-caption mt-2">Security settings and administrator management always stay with the Master Admin.</p>
         </fieldset>
-      )}
+      </div>
+      <div className={`${groupCls} mt-4 space-y-3`}>
+        <h4 className="ds-label uppercase text-ds-primary">Account scope</h4>
+        <div className="max-w-sm">
+          <label htmlFor={`scope-${id}`} className="portal-label">Accounts this administrator may act on</label>
+          <select id={`scope-${id}`} className="portal-input" value={scope} onChange={(e) => setScope(e.target.value as any)}>
+            <option value="none">None</option><option value="selected">Selected accounts</option><option value="all">All eligible accounts</option>
+          </select>
+        </div>
+        {scope === "selected" && (
+          <fieldset>
+            <legend className="portal-label">Selected accounts</legend>
+            <div className="grid max-h-56 gap-1 overflow-y-auto rounded-ds-sm bg-ds-surface p-2 sm:grid-cols-2">
+              {workspaces.map((w) => (
+                <label key={w.id} className="ds-support flex min-w-0 items-center gap-2 break-words">
+                  <input type="checkbox" checked={ws.has(w.id)} onChange={(e) => setWs((s) => { const n = new Set(s); e.target.checked ? n.add(w.id) : n.delete(w.id); return n; })} />
+                  <span className="font-mono">{w.mfn_id}</span> {w.display_name || w.account_type}{w.is_test_account && " (test)"}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+      </div>
       <div className="mt-4 flex flex-wrap gap-3">
         <DsButton onClick={onSave}>Save permissions</DsButton>
         {!confirmRevoke ? <DsButton variant="ghost" onClick={() => setConfirmRevoke(true)}>Remove administrator</DsButton>
