@@ -822,6 +822,59 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_schedule_email_deliveries: {
+        Row: {
+          actor_mfn_id: string | null
+          actor_user_id: string
+          batch_id: string
+          created_at: string
+          driver_id: string
+          id: string
+          idempotency_key: string
+          safe_reason: string | null
+          status: string
+          trip_count: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          actor_mfn_id?: string | null
+          actor_user_id: string
+          batch_id: string
+          created_at?: string
+          driver_id: string
+          id?: string
+          idempotency_key: string
+          safe_reason?: string | null
+          status: string
+          trip_count?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          actor_mfn_id?: string | null
+          actor_user_id?: string
+          batch_id?: string
+          created_at?: string
+          driver_id?: string
+          id?: string
+          idempotency_key?: string
+          safe_reason?: string | null
+          status?: string
+          trip_count?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_schedule_email_deliveries_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "driver_schedule_email_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           availability: Json
@@ -3058,6 +3111,41 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      provider_api_access_events: {
+        Row: {
+          created_at: string
+          credential_id: string
+          endpoint: string
+          id: string
+          outcome: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_id: string
+          endpoint: string
+          id?: string
+          outcome: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_id?: string
+          endpoint?: string
+          id?: string
+          outcome?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_api_access_events_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "provider_api_credentials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_api_credential_events: {
         Row: {
