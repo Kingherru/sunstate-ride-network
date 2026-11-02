@@ -288,6 +288,13 @@
       "when": 1793659379956,
       "tag": "0040_network_offer_safe_detail",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793661306501,
+      "tag": "0041_provider_operations_status_keys_schedule_email",
+      "breakpoints": true
     }
   ]
 }
