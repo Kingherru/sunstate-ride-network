@@ -201,6 +201,8 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 <p className="ds-support mt-1 text-right text-ds-on-bg/50">{draft.length}/2000</p>
               </div>
             )}
+            {readOnly && <p className="ds-support border-t border-ds-border bg-ds-surface-muted px-4 py-2 text-ds-text-2">Read-only access — replies are turned off for your role.</p>}
+            {demo && <p className="ds-support border-t border-ds-border bg-ds-peach px-4 py-2">Demo conversation — preview only. Nothing is saved or sent.</p>}
             {thread.conversation.archived && mode === "portal" && !readOnly && (
               <p className="ds-support border-t border-ds-border px-4 py-2 text-ds-on-bg/60">This conversation is archived. Restore it to send a new message.</p>
             )}

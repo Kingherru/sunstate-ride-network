@@ -154,6 +154,23 @@ export const setDefaultPaymentMethod = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Link (or unlink with null) a saved card reference to one of the caller's
+ *  patient profiles. Only the reference changes — the Stripe method and past
+ *  payments are untouched, and no card data is copied anywhere. */
+export const setPaymentMethodPatient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), patient_id: z.string().uuid().nullable() }).strict().parse(i))
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    const { data: row } = await context.supabase.from("saved_payment_methods").select("id").eq("id", data.id).eq("user_id", context.userId).maybeSingle();
+    if (!row) return { error: "That card isn't available." };
+    if (data.patient_id) {
+      const { data: p } = await context.supabase.from("saved_patients").select("id").eq("id", data.patient_id).eq("owner_id", context.userId).maybeSingle();
+      if (!p) return { error: "That patient profile isn't available." };
+    }
+    const { error } = await context.supabase.from("saved_payment_methods").update({ patient_id: data.patient_id }).eq("id", data.id).eq("user_id", context.userId);
+    return error ? { error: "Could not update the card link." } : { ok: true };
+  });
+
 /** Charge a confirmed ride request using a saved card or a fresh one provided client-side. */
 export const payForConfirmedTrip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
