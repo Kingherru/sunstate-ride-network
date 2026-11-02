@@ -260,6 +260,13 @@
       "when": 1793652057747,
       "tag": "0036_uploads_retention_and_import_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793653654334,
+      "tag": "0037_network_settlement_ledger",
+      "breakpoints": true
     }
   ]
 }
