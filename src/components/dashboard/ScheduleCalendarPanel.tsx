@@ -68,6 +68,7 @@ export function ScheduleCalendarPanel() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [vehicleFilter, setVehicleFilter] = useState("all");
   const [hideEmptyDrivers, setHideEmptyDrivers] = useState(false);
+  const [includeInactive, setIncludeInactive] = useState(false);
   const [openDriverId, setOpenDriverId] = useState<string | null>(null);
 
   const whFn = useServerFn(getMyWorkHours);
@@ -125,8 +126,11 @@ export function ScheduleCalendarPanel() {
   const drivers = useMemo(() => {
     // Only drivers actually on duty for the selected day: active, not on vacation,
     // and not marked off for this day of the week.
+    // Inactive drivers never take new assignments; they stay visible (flagged) when they still
+    // hold assignments for this day, or when "Include inactive" is chosen.
+    const holding = new Set(allReservations.map((r: any) => r.assigned_driver_id).filter(Boolean));
     let list = allDrivers.filter((d: any) => {
-      if (d.status !== "active") return false;
+      if (d.status !== "active") return includeInactive || holding.has(d.id);
       if (isOnVacation(d, date)) return false;
       const a = d?.availability;
       if (a && typeof a === "object" && a.mode === "weekly") {
@@ -143,7 +147,7 @@ export function ScheduleCalendarPanel() {
       list = list.filter((d: any) => active.has(d.id));
     }
     return list;
-  }, [allDrivers, driverFilter, hideEmptyDrivers, reservations, date, dow]);
+  }, [allDrivers, allReservations, includeInactive, driverFilter, hideEmptyDrivers, reservations, date, dow]);
 
   // Hour columns: work-hour range, extended to include any reservation times that fall outside.
   const hours = useMemo(() => {
@@ -200,6 +204,7 @@ export function ScheduleCalendarPanel() {
     e.preventDefault();
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
     if (!id) return;
+    if (driverId && allDrivers.find((d: any) => d.id === driverId)?.status !== "active") { toast.error("This driver is inactive and cannot receive new assignments."); setDraggingId(null); return; }
     mAssign.mutate({
       reservation_id: id,
       driver_id: driverId,
@@ -246,6 +251,7 @@ export function ScheduleCalendarPanel() {
         </button>
       </div>
 
+      {(() => { const inactiveHeld = allReservations.filter((r: any) => (r.assigned_driver_id && allDrivers.find((d: any) => d.id === r.assigned_driver_id)?.status === "inactive") || (r.vehicle_id && (vehiclesQ.data ?? []).find((v: any) => v.id === r.vehicle_id)?.status === "inactive")); return inactiveHeld.length > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{inactiveHeld.length} trips are still assigned to an inactive driver or vehicle. The assignment is kept; reassign to an active resource when ready.</p></div>; })()}
       {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
       {/* Filters — one aligned row of equal-height shared toolbar controls */}
       <ScheduleEmailPreview />
@@ -258,7 +264,7 @@ export function ScheduleCalendarPanel() {
         >
           <option value="all">All vehicles</option>
           <option value="unassigned">No vehicle assigned</option>
-          {(vehiclesQ.data ?? []).map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+          {(vehiclesQ.data ?? []).filter((v: any) => includeInactive || v.status === "active" || allReservations.some((r: any) => r.vehicle_id === v.id)).map((v: any) => <option key={v.id} value={v.id}>{v.name}{v.status && v.status !== "active" ? " (inactive)" : ""}</option>)}
         </select>
         <select
           value={driverFilter}
@@ -268,8 +274,8 @@ export function ScheduleCalendarPanel() {
         >
           <option value="all">All drivers</option>
           <option value="unassigned">Unassigned only</option>
-          {allDrivers.filter((d: any) => !isOnVacation(d, date)).map((d: any) => (
-            <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
+          {allDrivers.filter((d: any) => !isOnVacation(d, date) && (includeInactive || d.status === "active" || allReservations.some((r: any) => r.assigned_driver_id === d.id))).map((d: any) => (
+            <option key={d.id} value={d.id}>{d.first_name} {d.last_name}{d.status !== "active" ? " (inactive)" : ""}</option>
           ))}
         </select>
         <select
@@ -291,6 +297,10 @@ export function ScheduleCalendarPanel() {
           />
           Hide drivers with no trips
         </label>
+        <select value={includeInactive ? "include" : "active"} onChange={(e) => setIncludeInactive(e.target.value === "include")} className="portal-control" aria-label="Active or inactive resources">
+          <option value="active">Active only</option>
+          <option value="include">Include inactive</option>
+        </select>
         <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground ml-auto">
           {reservations.length} of {allReservations.length} trips · {drivers.length} of {allDrivers.length} drivers
         </div>

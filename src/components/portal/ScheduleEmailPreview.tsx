@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Mail, X } from "lucide-react";
 import { toast } from "sonner";
 import { DsButton } from "@/components/ds/controls";
-import { previewScheduleEmails, confirmScheduleEmailPreview } from "@/lib/schedule-email-preview.functions";
+import { previewScheduleEmails, confirmScheduleEmailPreview, getDriverEmailSendState } from "@/lib/schedule-email-preview.functions";
 import { listPersonalSecurityAudit } from '@/lib/account-settings.functions';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePortalPreview, usePortalQuery } from "@/components/portal/preview-data";
@@ -25,6 +25,8 @@ export function ScheduleEmailPreview() {
   const history = useServerFn(listPersonalSecurityAudit);
   const qc = useQueryClient();
   const auditQuery = usePortalQuery({ queryKey: ['personal-security-audit'], queryFn: () => history(), enabled: open });
+  const sendState = useServerFn(getDriverEmailSendState);
+  const sendQ = usePortalQuery({ queryKey: ['driver-email-send-state'], queryFn: () => sendState(), enabled: open && !preview.active });
   const drivers = usePortalQuery({ queryKey: ["my-drivers"], queryFn: () => listMyDrivers() });
   async function review() {
     setBusy(true);
@@ -51,7 +53,8 @@ export function ScheduleEmailPreview() {
       <div className="flex flex-wrap gap-4">{(drivers.data ?? []).map((d) => <label key={d.id} className="flex gap-2 items-center"><input type="checkbox" checked={all || ids.includes(d.id)} disabled={all} onChange={(e) => { setIds((v) => e.target.checked ? [...v, d.id] : v.filter((id) => id !== d.id)); setResult(null); }} />{d.first_name} {d.last_name}</label>)}</div>
       {(drivers.data ?? []).length === 0 && <p className="ds-support">No authorized drivers available.</p>}
       <DsButton disabled={busy || (all ? (drivers.data ?? []).length === 0 : ids.length === 0) || (range && end < start)} onClick={review}>{busy ? "Preparing…" : "Review schedules"}</DsButton>
-      {result && <div className="space-y-3"><p className="ds-label">{result.recipients.length} recipients · {result.start} — {result.end}</p><p role="status" className="ds-support font-semibold text-ds-primary">Preview only — no email was sent. Emails include only assigned trip times, pickup and destination; no diagnosis, billing or private notes.</p>{result.recipients.map((r) => <div key={r.id} className="border border-ds-border bg-ds-surface p-3 rounded-ds"><h4 className="ds-label">{r.name} · {r.email ?? "No email on file"}</h4>{r.trips.length === 0 ? <p className="ds-support">No assigned trips in this period.</p> : r.trips.map((t) => <p className="ds-body" key={t.reference}>{t.date} {t.time} · {t.reference} · {t.pickup} → {t.destination}</p>)}</div>)}<DsButton disabled={busy || result.recipients.length === 0} onClick={confirmPreview}>Confirm preview only</DsButton></div>}
+      {result && <div className="space-y-3"><p className="ds-label">{result.recipients.length} recipients · {result.start} — {result.end}</p><p role="status" className="ds-support font-semibold text-ds-primary">Preview only — no email was sent. Emails include only assigned trip times, pickup and destination; no diagnosis, billing or private notes.</p>{result.recipients.map((r) => <div key={r.id} className="border border-ds-border bg-ds-surface p-3 rounded-ds"><h4 className="ds-label">{r.name} · {r.email ?? "No email on file"}</h4>{r.trips.length === 0 ? <p className="ds-support">No assigned trips in this period.</p> : r.trips.map((t) => <p className="ds-body" key={t.reference}>{t.date} {t.time} · {t.reference} · {t.pickup} → {t.destination}</p>)}</div>)}<DsButton disabled={busy || result.recipients.length === 0} onClick={confirmPreview}>Confirm preview only</DsButton>
+        <div className="rounded-ds border border-ds-border bg-ds-surface p-3"><p className="ds-label text-ds-primary">Sending is turned off</p><p className="ds-support">Driver schedule emails can't be sent yet. The send step is built but stays off until the owner approves it. Confirming saves a prepared batch only.</p>{!preview.active && sendQ.data?.enabled === true && <p className="ds-caption">Sending switch reports on — contact the Master Admin before any send.</p>}</div></div>}
       {preview.active && audit.length > 0 && <div><h4 className="ds-label">Demo audit — not saved</h4>{audit.map((line, i) => <p key={i} className="ds-caption mt-1">{line}</p>)}</div>}
       {!preview.active && <div><h4 className="ds-label">Permanent preview audit</h4>{auditQuery.isError && <p className="ds-support text-ds-error">Audit history unavailable.</p>}{(auditQuery.data ?? []).filter(a => a.event_type === 'schedule_email_preview').map(a => <p key={a.id} className="ds-caption mt-1">{new Date(a.created_at).toLocaleString()} · {a.sender_mfn_id} · {a.workspace_mfn_id} · {a.driver_ids.length} drivers · {a.range_start} — {a.range_end} · Preview only · Sent: 0</p>)}</div>}
     </section>}

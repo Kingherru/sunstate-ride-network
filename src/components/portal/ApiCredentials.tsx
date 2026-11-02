@@ -27,6 +27,15 @@ export function ApiCredentials() {
       <code className="block break-all rounded-ds-sm bg-ds-sky p-2 text-xs">{secret}</code>
       <div className="flex gap-2"><DsButton variant="secondary" onClick={() => navigator.clipboard?.writeText(secret).then(() => toast.success("Copied"))}>Copy</DsButton><DsButton variant="ghost" onClick={() => setSecret(null)}>I saved it</DsButton></div>
     </div>}
+    <details className="rounded-ds border border-ds-sky-border bg-ds-sky p-3">
+      <summary className="ds-label cursor-pointer text-ds-primary">API documentation (read-only, version 2026-11-v1)</summary>
+      <div className="mt-2 space-y-2 ds-support break-words">
+        <p>Send your key only in the header <code>Authorization: Bearer &lt;key&gt;</code>. Keys in web addresses are refused. Your business is responsible for protecting and rotating its key; revoke it here immediately if exposed.</p>
+        <p><strong>Read schedule</strong> (schedule:read): <code>GET /api/public/provider/v1/schedule?start=YYYY-MM-DD&amp;end=YYYY-MM-DD&amp;page=1&amp;page_size=100</code> — JSON list of your business's trips: reference, date/time, trip type, service, status, assignment, driver, vehicle, pickup and destination.</p>
+        <p><strong>Read exports</strong> (exports:read): <code>GET /api/public/provider/v1/exports/trips?start=…&amp;end=…</code> — the same fields as CSV. Excel and PDF stay available from the export buttons in the portal.</p>
+        <p>Ranges up to 31 days, up to 200 rows per page, 60 requests per minute per key. No diagnosis, notes, billing, payment, documents or other businesses' records are ever returned. Creating a key does not mean any dispatch software is connected.</p>
+      </div>
+    </details>
     {d && !d.allowed ? <p className="ds-support">API credentials can be managed by provider workspace owners and admins only.</p> : <>
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <label className="ds-label">Integration name<input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} className="portal-input mt-1" placeholder="e.g. Dispatch export" /></label>

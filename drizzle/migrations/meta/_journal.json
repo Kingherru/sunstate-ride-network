@@ -302,6 +302,13 @@
       "when": 1793661545587,
       "tag": "0042_fix_fleet_status_actor_lookup",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793661827710,
+      "tag": "0043_provider_api_access_and_driver_email_deliveries",
+      "breakpoints": true
     }
   ]
 }
