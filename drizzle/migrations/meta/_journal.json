@@ -253,6 +253,13 @@
       "when": 1793311085098,
       "tag": "0035_allow_current_and_legacy_contact_types",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793652057747,
+      "tag": "0036_uploads_retention_and_import_drafts",
+      "breakpoints": true
     }
   ]
 }
