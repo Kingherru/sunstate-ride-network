@@ -8,6 +8,8 @@ import { DistributionActivity } from "@/components/portal/TripNetwork";
 import { NetworkEligibility } from "@/components/portal/NetworkEligibility";
 import { DemoConversations } from "@/components/messaging/DemoConversations";
 import { SegTabs } from "@/components/portal/SegTabs";
+import { NetworkSettlements } from "@/components/portal/NetworkSettlements";
+import { AdminDisputeQueue } from "@/components/admin/AdminDisputeQueue";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
@@ -48,6 +50,9 @@ function AdminMessaging() {
             <div className="mt-8 border-t border-ds-border pt-6">
               <h2 className="ds-subheading mb-3 uppercase text-ds-primary">Network and referral activity</h2>
               <DistributionActivity admin />
+              <h2 className="ds-subheading mt-8 mb-3 uppercase text-ds-primary">Settlements, holds and disputes (read-only)</h2>
+              <NetworkSettlements admin />
+              <AdminDisputeQueue />
               {access?.isMasterAdmin && <NetworkEligibility />}
             </div>
           </>

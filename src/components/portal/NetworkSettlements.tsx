@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { DsButton, DsField, DsSelect, DsTextarea } from '@/components/ds/controls';
+import { DsButton, DsField, DsInput, DsSelect, DsTextarea } from '@/components/ds/controls';
 import { listSettlements, fileSettlementDispute, getConnectReadiness, type SettlementRow } from '@/lib/network-settlements.functions';
 import { createConnectOnboardingLink } from '@/lib/payouts.functions';
 import { effectiveSettlementState, SETTLEMENT_LABELS, ALERT_STATES, PROCESSING_FEE_COPY, HOLD_DAYS, connectState, CONNECT_LABELS, type SettlementState } from '@/lib/network-settlement-rules';
@@ -46,29 +46,29 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   const cs = connectState(preview.active ? null : (cq.data as never) ?? null);
 
   return <div className="space-y-5">
-    <p className="ds-body rounded-ds border border-ds-border bg-ds-blue-soft p-3 text-ds-primary">This is a settlement ledger, not a bank or escrow account. Funds stay in the platform settlement flow until the hold ends; held settlements cannot be withdrawn or accelerated. Hold: Super Verified {HOLD_DAYS.super} days, all others {HOLD_DAYS.standard} days, starting after sender payment succeeds with no open dispute. {preview.active && <strong> Preview only — demo settlements.</strong>}</p>
+    <p className="ds-body rounded-ds border border-ds-border bg-ds-sky p-3 text-ds-primary">This is a settlement ledger, not a bank or escrow account. Funds stay in the platform settlement flow until the hold ends; held settlements cannot be withdrawn or accelerated. Hold: Super Verified {HOLD_DAYS.super} days, all others {HOLD_DAYS.standard} days, starting after sender payment succeeds with no open dispute. {preview.active && <strong> Preview only — demo settlements.</strong>}</p>
 
     {!admin && <div className="flex flex-wrap items-center justify-between gap-3 rounded-ds border border-ds-border bg-ds-surface p-4">
-      <div><p className="ds-label uppercase">Stripe Connect payouts (test mode)</p><p className="ds-body">Status: <strong>{CONNECT_LABELS[cs]}</strong>. Bank and identity details are entered only on Stripe’s secure pages. Standard bank payout is the default.</p><p className="ds-caption text-ds-muted">Instant Payout — coming later; its fee would be paid by the receiving provider.</p></div>
+      <div><p className="ds-label uppercase">Stripe Connect payouts (test mode)</p><p className="ds-body">Status: <strong>{CONNECT_LABELS[cs]}</strong>. Bank and identity details are entered only on Stripe’s secure pages. Standard bank payout is the default.</p><p className="ds-caption text-ds-on-subtle">Instant Payout — coming later; its fee would be paid by the receiving provider.</p></div>
       <DsButton disabled={preview.active || cs === 'enabled'} onClick={async () => { const r = await onboard(); if (r.ok) window.location.href = r.url; else toast.error(r.error); }}>{cs === 'not_started' ? 'Start onboarding' : 'Manage on Stripe'}</DsButton>
     </div>}
 
     <div className="flex flex-wrap items-end gap-3">
-      <DsField label="From"><input type="date" className="ds-input h-10" value={from} onChange={e => setFrom(e.target.value)} /></DsField>
-      <DsField label="To"><input type="date" className="ds-input h-10" value={to} onChange={e => setTo(e.target.value)} /></DsField>
+      <DsField label="From"><DsInput type="date" value={from} onChange={e => setFrom(e.target.value)} /></DsField>
+      <DsField label="To"><DsInput type="date" value={to} onChange={e => setTo(e.target.value)} /></DsField>
     </div>
 
     <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
       {GROUPS.map(g => { const items = withState.filter(x => g.states.includes(x.s)); const sum = items.reduce((a, x) => a + x.r.receiver_payout_cents, 0);
-        return <div key={g.label} className="rounded-ds border border-ds-border bg-ds-surface p-3"><p className="ds-caption uppercase text-ds-muted whitespace-nowrap">{g.label}</p><p className="ds-h4 tabular-nums">{money(sum)}</p><p className="ds-caption">{items.length} settlement{items.length === 1 ? '' : 's'}</p></div>; })}
+        return <div key={g.label} className="rounded-ds border border-ds-border bg-ds-surface p-3"><p className="ds-caption uppercase text-ds-on-subtle whitespace-nowrap">{g.label}</p><p className="ds-h4 tabular-nums">{money(sum)}</p><p className="ds-caption">{items.length} settlement{items.length === 1 ? '' : 's'}</p></div>; })}
     </div>
 
     {q.isLoading && !preview.active ? <p className="ds-body">Loading settlements…</p> : q.isError && !preview.active ? <p className="ds-body">Settlements are unavailable right now.</p> : withState.length === 0 ? <p className="ds-body">No Network settlements yet. A settlement appears when a referral is accepted.</p> :
       <ul className="space-y-2">{withState.map(({ r, s }) => <li key={r.id}>
-        <button type="button" onClick={() => setOpen(r)} className="w-full text-left rounded-ds border border-ds-border bg-ds-surface p-3 hover:bg-ds-blue-soft">
+        <button type="button" onClick={() => setOpen(r)} className="w-full text-left rounded-ds border border-ds-border bg-ds-surface p-3 hover:bg-ds-sky">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="ds-label">{r.mfn_id} <span className="ds-caption text-ds-muted">· {r.side === 'receiver' ? `from ${r.sender_workspace_mfn_id}` : `to ${r.receiver_workspace_mfn_id}`}</span></span>
-            <span className={`ds-caption rounded-ds px-2 py-0.5 border whitespace-nowrap ${ALERT_STATES.includes(s) ? 'border-ds-danger text-ds-danger' : 'border-ds-border'}`}>{SETTLEMENT_LABELS[s]}</span>
+            <span className="ds-label">{r.mfn_id} <span className="ds-caption text-ds-on-subtle">· {r.side === 'receiver' ? `from ${r.sender_workspace_mfn_id}` : `to ${r.receiver_workspace_mfn_id}`}</span></span>
+            <span className={`ds-caption rounded-ds px-2 py-0.5 border whitespace-nowrap ${ALERT_STATES.includes(s) ? 'border-ds-error text-ds-error' : 'border-ds-border'}`}>{SETTLEMENT_LABELS[s]}</span>
           </div>
           <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 ds-caption tabular-nums">
             <span>Payout <strong>{money(r.receiver_payout_cents)}</strong></span>
@@ -78,12 +78,12 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
           </div>
         </button></li>)}</ul>}
 
-    {open && <div role="dialog" aria-modal="true" aria-label={`Settlement ${open.mfn_id}`} className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ds-overlay p-4">
+    {open && <div role="dialog" aria-modal="true" aria-label={`Settlement ${open.mfn_id}`} className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ds-on-bg/40 p-4">
       <div className="w-full max-w-4xl rounded-ds border border-ds-border bg-ds-surface p-5 space-y-4">
         <div className="flex items-center justify-between gap-3"><h3 className="ds-h4">Settlement {open.mfn_id}</h3><DsButton variant="ghost" onClick={() => setOpen(null)}>Close</DsButton></div>
         <div className="grid gap-3 md:grid-cols-3">
-          <section className="rounded-ds border border-ds-border bg-ds-blue-soft p-3 space-y-1 ds-caption tabular-nums"><p className="ds-label uppercase">Accepted terms</p>
-            <p>Receiver payout: <strong>{money(open.receiver_payout_cents)}</strong></p><p>Network fee (2%): {money(open.network_fee_cents)}</p><p>Processing fee: {money(open.processing_fee_cents)}</p><p>Sender total due: <strong>{money(open.sender_total_due_cents)}</strong>{open.processing_fee_cents == null && ' + processing'}</p><p className="text-ds-muted">{PROCESSING_FEE_COPY}</p></section>
+          <section className="rounded-ds border border-ds-border bg-ds-sky p-3 space-y-1 ds-caption tabular-nums"><p className="ds-label uppercase">Accepted terms</p>
+            <p>Receiver payout: <strong>{money(open.receiver_payout_cents)}</strong></p><p>Network fee (2%): {money(open.network_fee_cents)}</p><p>Processing fee: {money(open.processing_fee_cents)}</p><p>Sender total due: <strong>{money(open.sender_total_due_cents)}</strong>{open.processing_fee_cents == null && ' + processing'}</p><p className="text-ds-on-subtle">{PROCESSING_FEE_COPY}</p></section>
           <section className="rounded-ds border border-ds-peach-border bg-ds-peach p-3 space-y-1 ds-caption"><p className="ds-label uppercase">Timeline</p>
             <p>Completed: {when(open.completed_at)}</p><p>Review ends: {when(open.review_window_ends_at)}</p><p>Payment deadline: {when(open.payment_deadline_at)}</p><p>Paid: {when(open.payment_succeeded_at)}</p><p>Tier snapshot: {open.verification_tier_snapshot ?? '—'}</p><p>Release eligible: {when(open.release_eligible_at)}</p></section>
           <section className="rounded-ds border border-ds-border bg-ds-surface p-3 space-y-1 ds-caption"><p className="ds-label uppercase">History</p>
@@ -93,7 +93,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
           <DsField label="Category"><DsSelect value={cat} onChange={e => setCat(e.target.value)}><option value="completion_missing">Completion information missing</option><option value="service_not_completed">Service not completed</option><option value="amount_incorrect">Amount incorrect</option><option value="security_issue">Safety or security issue</option></DsSelect></DsField>
           <DsField label="Explanation (no medical details)"><DsTextarea value={why} maxLength={1000} onChange={e => setWhy(e.target.value)} /></DsField>
           <DsButton disabled={m.isPending} onClick={() => m.mutate(open.id)}>{m.isPending ? 'Opening…' : 'Open dispute'}</DsButton></section>}
-        <p className="ds-caption text-ds-muted">No charge, transfer or payout happens in this version. Test mode only.</p>
+        <p className="ds-caption text-ds-on-subtle">No charge, transfer or payout happens in this version. Test mode only.</p>
       </div></div>}
   </div>;
 }
