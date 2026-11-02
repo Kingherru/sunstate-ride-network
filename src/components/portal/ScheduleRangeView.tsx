@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { listReservationsForRange, listMyDrivers } from "@/lib/schedule-board.functions";
@@ -90,7 +91,7 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
               title={iss.map((i) => ATTN[i]).join(", ") || undefined}>
               <span className="font-semibold">{(t.scheduled_start_time ?? t.pickup_time ?? "").slice(0, 5) || "Time not provided"}</span>{" "}
               <span className="break-words">{t.pickup_city ?? "Not provided"} → {t.dropoff_city ?? "Not provided"}</span>
-              {iss.length > 0 && <span className="block text-ds-error">{iss.map((i) => ATTN[i]).join(" · ")}</span>}
+              {iss.length > 0 && <StatusPill className="mt-1 whitespace-normal" tone="red" status={iss.map((i) => ATTN[i]).join(" · ")} />}
             </button></li>;
           })}{view === "month" && list.length > 4 && <li className="ds-caption">+{list.length - 4} more</li>}</ul>
         </section>;

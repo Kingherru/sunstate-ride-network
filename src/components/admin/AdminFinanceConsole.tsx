@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -152,8 +153,8 @@ export function AdminFinanceConsole() {
                   <td className="px-3 py-2 text-xs">{PAYOUT_STATE_LABELS[payout] ?? payout}</td>
                   <td className="px-3 py-2 text-[11px] text-muted-foreground">
                     {hold ? hold.toLocaleString() : "—"}
-                    {hold && !holdReady && <div className="text-amber-700 font-semibold">Holding</div>}
-                    {hold && holdReady && payout === "holding" && <div className="text-emerald-700 font-semibold">Ready</div>}
+                    {hold && !holdReady && <StatusPill status="Holding" tone="yellow" />}
+                    {hold && holdReady && payout === "holding" && <StatusPill status="Ready" tone="green" />}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-col gap-1 items-end">

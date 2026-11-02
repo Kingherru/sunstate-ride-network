@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { SegTabs } from "@/components/portal/SegTabs";
@@ -26,7 +27,7 @@ function Availability() {
       <h3 className="ds-label break-words text-ds-primary">{d.first_name} {d.last_name}</h3>
       <p className="ds-support">{d.employment_type === "contractor" ? "Contractor" : d.employment_type === "employee" ? "Employee" : "Type not provided"} · {d.status === "active" ? "Active" : d.status ? "Inactive" : "Status not provided"}</p>
       <p className="ds-support">Availability: {avail || "Not provided"}</p>
-      {away && <p className="ds-support text-ds-error">On leave through {d.vacation_end!.slice(0, 10)}</p>}
+      {away && <StatusPill tone="yellow" status={`On leave through ${d.vacation_end!.slice(0, 10)}`} />}
     </article>;
   })}</div>;
 }

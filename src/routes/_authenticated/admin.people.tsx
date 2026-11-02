@@ -9,6 +9,7 @@ import { listPeopleAndAccounts, type PersonRow } from "@/lib/portal-account.func
 import { organizationLabel } from "@/lib/account-types";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { SegTabs } from "@/components/portal/SegTabs";
+import { StatusPill } from "@/components/ds/status";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { DsEmpty } from "@/components/ds/feedback";
 import { useQuery } from "@tanstack/react-query";
@@ -147,7 +148,7 @@ function People() {
         {list.length === 0 ? <DsEmpty title="No one here">Nobody matches this view.</DsEmpty> : (
           <ul className="divide-y divide-ds-border">
             {list.map((p) => (
-              <li key={p.userId} className="grid gap-2 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.3fr)] md:gap-6">
+              <li key={p.userId} className="grid min-w-0 gap-2 px-4 py-4 even:bg-ds-sky/30 sm:px-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.3fr)] md:gap-6">
                 <div className="min-w-0">
                   <DsButton variant="ghost" className="!px-0 text-left" onClick={() => setSelected(p)}>{p.name || p.email || 'Account details'}</DsButton>
                   <p className="ds-body break-all font-semibold">{p.email ?? "No email"}</p>
@@ -156,9 +157,12 @@ function People() {
                 </div>
                 <div className="ds-support min-w-0">
                   <p>{p.roles.length ? p.roles.map((r) => r.replace("_", " ")).join(", ") : "No staff role"}</p>
-                  <p>{p.emailVerified ? "Email verified" : "Email not verified"}{p.status === "suspended" ? " · Suspended" : ""}</p>
-                  {p.needsReview && <p className="font-semibold text-ds-warning">Needs classification</p>}
-                  {p.isTest && <p className="font-semibold">Test account</p>}
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    <StatusPill status={p.emailVerified ? "Email verified" : "Email not verified"} tone={p.emailVerified ? "green" : "neutral"} />
+                    {p.status === "suspended" && <StatusPill status="Suspended" />}
+                    {p.needsReview && <StatusPill status="Needs review" tone="red" />}
+                    {p.isTest && <StatusPill status="Test account" tone="neutral" />}
+                  </div>
                   {p.needsReview && canClassify && view === "review" && <ClassifyControl p={p} />}
                   {canManagePeople && <ResetControl p={p} />}
                 </div>
