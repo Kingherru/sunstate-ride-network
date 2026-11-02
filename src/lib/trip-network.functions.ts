@@ -111,3 +111,18 @@ export const listNetworkEligibility = createServerFn({method:'GET'}).middleware(
 export const verifyNetworkBase = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
  .inputValidator((i:unknown)=>z.object({workspace_id:z.string().uuid(),address:z.string().trim().min(1).max(300),lat:z.number().min(-90).max(90),lng:z.number().min(-180).max(180),services:z.array(z.enum(['ambulatory','wheelchair','stretcher'])).min(1)}).parse(i))
  .handler(async({data,context})=>{const {error}=await context.supabase.rpc('network_set_service_base',{_workspace:data.workspace_id,_address:data.address,_lat:data.lat,_lng:data.lng,_services:data.services});if(error)throw new Error(error.message);return {ok:true};});
+export type OfferSafeDetail = {
+  offer_mfn_id: string; status: string; viewer: 'sender' | 'receiver'; distribution_stage_miles: number | null; distribution_status: string;
+  stages: { radius_miles: number; sent_at: string }[]; versions: { side: string; action: string; amount_cents: number | null; created_at: string }[];
+  events: { event_type: string; created_at: string }[]; latest_negotiation: { side: string; action: string; amount_cents: number | null; created_at: string } | null;
+  verification_tier: string | null; receiver_payout_cents: number; network_fee_cents: number; processing_fee_rule: string; sender_total_before_processing_cents: number;
+  payment_ack_at: string | null; accepted: boolean; actions: { accept: boolean; counter: boolean; decline: boolean };
+};
+/** Safe pre-acceptance fields plus the exact actions the server allows this viewer right now. */
+export const getOfferSafeDetail = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ offer_id: z.string().uuid() }).strict().parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: d, error } = await context.supabase.rpc('network_offer_safe_detail', { _offer: data.offer_id });
+    if (error || !d) throw new Error('Offer details are not available.');
+    return d as unknown as OfferSafeDetail;
+  });
