@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
-import { CSV_MAX_ROWS, errorReport, parseCsv, templateCsv, validateRows, csvCell, type ImportKind, type ValidatedRow } from "@/lib/csv-import";
+import { CSV_MAX_ROWS, errorReport, parseCsv, templateCsv, validateRows, type ImportKind, type ValidatedRow } from "@/lib/csv-import";
 import { createImportDrafts, getUploadOriginalUrl, listMyUploads, prepareUpload } from "@/lib/uploads.functions";
 import { parseNoteShortcodes } from "@/lib/note-shortcodes";
 import { supabase } from "@/integrations/supabase/client";
@@ -213,7 +213,6 @@ function PortalUploads() {
           </li>)}</ul>
         )}
       </section>
-      <p className="ds-support mt-4 text-ds-text-2">Rows exported to an error report contain only row numbers and problem descriptions. Results: <button className="underline" onClick={() => download("mfn-upload-columns.csv", (kind === "passenger" ? "" : "") + [csvCell("Use the template columns")].join(","))}>column guide</button></p>
     </>
   );
 }
