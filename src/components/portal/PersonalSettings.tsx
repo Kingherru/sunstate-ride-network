@@ -34,8 +34,13 @@ export function PersonalSettings() {
   return <form onSubmit={submit} className="space-y-4 max-w-2xl">
     <h2 className="ds-subheading uppercase text-ds-primary">Personal information</h2>
     {q.isLoading && <p role="status" className="ds-support">Loading…</p>}
-    {q.isError && <p role="alert" className="ds-support text-ds-error">Account settings unavailable.</p>}
+    {q.isError && <p role="alert" className="ds-support rounded-ds-sm ds-status-red px-3 py-2">Account settings unavailable.</p>}
     {q.data?.display_name && !q.data.first_name && <p className="ds-support">Current name: {q.data.display_name}</p>}
+    <dl className="grid gap-3 rounded-ds-sm bg-ds-sky p-3 sm:grid-cols-2">
+      <div className="min-w-0"><dt className="ds-label">MFN ID</dt><dd className="ds-body font-mono">{q.data?.mfn_id ?? '—'}</dd></div>
+      <div className="min-w-0"><dt className="ds-label">Account status</dt><dd className="ds-body">{q.data?.status ? q.data.status.replace(/_/g, ' ') : '—'}</dd></div>
+      <p className="ds-caption sm:col-span-2">Read-only. Account type and role labels are managed by authorized administrators and never grant permissions on their own.</p>
+    </dl>
     <div className="grid gap-4 sm:grid-cols-2">
       <DsField label="First name">{p => <DsInput {...p} required maxLength={80} autoComplete="given-name" value={firstName} onChange={e => setFirst(e.target.value)} />}</DsField>
       <DsField label="Last name">{p => <DsInput {...p} required maxLength={80} autoComplete="family-name" value={lastName} onChange={e => setLast(e.target.value)} />}</DsField>
