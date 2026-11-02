@@ -1,7 +1,6 @@
 # Architecture decisions
 
 - App MCP (src/lib/mcp) is OAuth-only with public-info tools; consent returns via login/create-account `redirect`. Why: no private data to ChatGPT.
-- Example conversations are in-memory UI fixtures without sends. Why: demos never touch real messages.
 - Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal account_security_audit confirmation, never sends. Why: preview is not delivery.
 - Design tokens live under .theme-public/.theme-portal; new UI uses ds/brand components. Why: neutral training and central overrides remain intact.
 - Public pages use uppercase H1/H2; one-column section heads center as a group, two-column heads opt into left alignment. Why: consistent hierarchy.
