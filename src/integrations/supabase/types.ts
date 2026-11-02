@@ -8204,6 +8204,7 @@ export type Database = {
         Returns: undefined
       }
       network_offer_access: { Args: { _id: string }; Returns: boolean }
+      network_offer_safe_detail: { Args: { _offer: string }; Returns: Json }
       network_offer_safe_history: { Args: { _offer: string }; Returns: Json }
       network_open_payment_dispute: {
         Args: { _confirmed: boolean; _distribution: string; _reason: string }
