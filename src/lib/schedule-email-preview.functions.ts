@@ -37,5 +37,18 @@ export const confirmScheduleEmailPreview = createServerFn({ method: 'POST' }).mi
     if (data.allDrivers) throw new Error('Confirm the reviewed driver list.');
     const { data: id, error } = await context.supabase.rpc('confirm_schedule_email_preview', { _drivers: data.driverIds, _start: data.start, _end: data.end });
     if (error) throw new Error('Could not record the authorized preview.');
-    return { id, result: 'preview_only_sent_0' };
+    // Record an idempotent prepared batch. Sending stays behind the OFF 'driver_schedule_email' launch flag;
+    // no email provider is invoked from this function.
+    const { data: ws } = await context.supabase.from('workspace_members').select('workspace_id, role, workspaces!inner(account_type, status)').eq('user_id', context.userId).is('removed_at', null).eq('is_contractor', false);
+    const own = (ws ?? []).filter((m: any) => ['owner', 'admin'].includes(m.role) && m.workspaces.account_type === 'provider' && m.workspaces.status === 'active');
+    if (own.length === 1) {
+      const sorted = [...data.driverIds].sort();
+      const raw = `${own[0].workspace_id}|${sorted.join(',')}|${data.start}|${data.end}`;
+      const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw)))).map((b) => b.toString(16).padStart(2, '0')).join('');
+      const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+      const { data: prof } = await supabaseAdmin.from('user_profiles').select('mfn_id').eq('id', context.userId).maybeSingle();
+      await supabaseAdmin.from('driver_schedule_email_batches').upsert({ workspace_id: own[0].workspace_id, idempotency_key: `driver-schedule:${digest}`, driver_ids: sorted, range_start: data.start, range_end: data.end, actor_user_id: context.userId, actor_mfn_id: prof?.mfn_id ?? null }, { onConflict: 'idempotency_key', ignoreDuplicates: true });
+    }
+    const { data: flag } = await context.supabase.from('platform_launch_flags').select('enabled').eq('key', 'driver_schedule_email').maybeSingle();
+    return { id, result: 'preview_only_sent_0', sendingEnabled: !!flag?.enabled && false };
   });
