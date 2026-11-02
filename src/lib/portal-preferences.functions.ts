@@ -5,10 +5,10 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 export type InterfaceDensity = 'compact' | 'standard' | 'comfortable';
 export type PortalPreferences = { interface_density: InterfaceDensity; default_payer_id: string | null; default_payment_method_id: string | null; pay_by_invoice: boolean; invoiceEligible: boolean };
 
-/** Pay by Invoice is limited to facility/hospital business owners and admins. */
+/** Pay by Invoice: any account type; only the individual account owner or a workspace owner/admin may set it. It never marks invoices paid, grants credit or charges. */
 async function invoiceEligible(supabase: any, userId: string) {
   const { data } = await supabase.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status)').eq('user_id', userId).is('removed_at', null);
-  return (data ?? []).some((m: any) => !m.is_contractor && (m.role === 'owner' || m.role === 'admin') && ['facility', 'hospital'].includes(m.workspaces.account_type) && m.workspaces.status === 'active');
+  return (data ?? []).some((m: any) => !m.is_contractor && (m.role === 'owner' || m.role === 'admin') && m.workspaces.status === 'active');
 }
 
 export const getPortalPreferences = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth])
@@ -51,7 +51,7 @@ export const savePortalPreferences = createServerFn({ method: 'POST' }).middlewa
       patch.default_payment_method_id = data.default_payment_method_id;
     }
     if (data.pay_by_invoice !== undefined) {
-      if (data.pay_by_invoice && !(await invoiceEligible(context.supabase, context.userId))) throw new Error('Pay by Invoice is available to facility and hospital accounts.');
+      if (data.pay_by_invoice && !(await invoiceEligible(context.supabase, context.userId))) throw new Error('Only the account owner or a workspace owner/admin can change Pay by Invoice.');
       patch.pay_by_invoice = data.pay_by_invoice;
     }
     const { error } = await context.supabase.from('user_portal_preferences').upsert(patch as any, { onConflict: 'user_id' });
