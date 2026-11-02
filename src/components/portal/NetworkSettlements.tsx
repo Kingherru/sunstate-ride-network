@@ -6,6 +6,9 @@ import { DsButton, DsField, DsInput, DsSelect, DsTextarea } from '@/components/d
 import { listSettlements, fileSettlementDispute, getConnectReadiness, type SettlementRow } from '@/lib/network-settlements.functions';
 import { createConnectOnboardingLink } from '@/lib/payouts.functions';
 import { effectiveSettlementState, SETTLEMENT_LABELS, ALERT_STATES, PROCESSING_FEE_COPY, HOLD_DAYS, connectState, CONNECT_LABELS, type SettlementState } from '@/lib/network-settlement-rules';
+import { SettlementPayment } from './SettlementPayment';
+import { AdminSettlementTools } from '@/components/admin/AdminSettlementTools';
+import { TIER_LABELS } from '@/lib/network-settlement-rules';
 import { usePortalQuery, usePortalMutation, usePortalPreview } from './preview-data';
 
 const money = (c: number | null) => c == null ? 'Shown before payment' : `$${(c / 100).toFixed(2)}`;
@@ -85,15 +88,17 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
           <section className="rounded-ds border border-ds-border bg-ds-sky p-3 space-y-1 ds-caption tabular-nums"><p className="ds-label uppercase">Accepted terms</p>
             <p>Receiver payout: <strong>{money(open.receiver_payout_cents)}</strong></p><p>Network fee (2%): {money(open.network_fee_cents)}</p><p>Processing fee: {money(open.processing_fee_cents)}</p><p>Sender total due: <strong>{money(open.sender_total_due_cents)}</strong>{open.processing_fee_cents == null && ' + processing'}</p><p className="text-ds-on-subtle">{PROCESSING_FEE_COPY}</p></section>
           <section className="rounded-ds border border-ds-peach-border bg-ds-peach p-3 space-y-1 ds-caption"><p className="ds-label uppercase">Timeline</p>
-            <p>Completed: {when(open.completed_at)}</p><p>Review ends: {when(open.review_window_ends_at)}</p><p>Payment deadline: {when(open.payment_deadline_at)}</p><p>Paid: {when(open.payment_succeeded_at)}</p><p>Tier snapshot: {open.verification_tier_snapshot ?? '—'}</p><p>Release eligible: {when(open.release_eligible_at)}</p></section>
+            <p>Completed: {when(open.completed_at)}</p><p>Review ends: {when(open.review_window_ends_at)}</p><p>Payment deadline: {when(open.payment_deadline_at)}</p><p>Paid: {when(open.payment_succeeded_at)}</p><p>Tier snapshot: {open.verification_tier_snapshot ? TIER_LABELS[open.verification_tier_snapshot] ?? open.verification_tier_snapshot : '—'}</p><p>Hold: {open.hold_days ? `${open.hold_days} days (${open.hold_days === 4 ? 'Super Verified' : 'standard'}, from stored snapshot)` : '—'}</p><p>Release eligible: {when(open.release_eligible_at)}</p><p>Transfer: {open.transfer_status ?? '—'} · Payout: {open.payout_status ?? '—'}</p></section>
           <section className="rounded-ds border border-ds-border bg-ds-surface p-3 space-y-1 ds-caption"><p className="ds-label uppercase">History</p>
             {open.events.length ? open.events.map((e, i) => <p key={i}>{when(e.created_at)} — {e.event_type.replace(/_/g, ' ')}{e.actor_mfn_id ? ` · ${e.actor_mfn_id}` : ''}</p>) : <p>No events yet.</p>}</section>
         </div>
+        {open.side === 'sender' && !admin && ['under_review', 'payment_due', 'overdue'].includes(effectiveSettlementState(open)) && <SettlementPayment row={open} payable={!['succeeded', 'processing'].includes(open.attempt_status ?? '')} />}
+        {admin && <AdminSettlementTools settlementId={open.id} releaseEligible={effectiveSettlementState(open) === 'available_for_transfer'} />}
         {open.side === 'sender' && !admin && effectiveSettlementState(open) === 'under_review' && <section className="rounded-ds border border-ds-border p-3 space-y-2"><p className="ds-label uppercase">Open dispute (24-hour window)</p>
           <DsField label="Category">{(fp) => <DsSelect {...fp} value={cat} onChange={e => setCat(e.target.value)}><option value="completion_missing">Completion information missing</option><option value="service_not_completed">Service not completed</option><option value="amount_incorrect">Amount incorrect</option><option value="security_issue">Safety or security issue</option></DsSelect>}</DsField>
           <DsField label="Explanation (no medical details)">{(fp) => <DsTextarea {...fp} value={why} maxLength={1000} onChange={e => setWhy(e.target.value)} />}</DsField>
           <DsButton disabled={m.isPending} onClick={() => m.mutate(open.id)}>{m.isPending ? 'Opening…' : 'Open dispute'}</DsButton></section>}
-        <p className="ds-caption text-ds-on-subtle">No charge, transfer or payout happens in this version. Test mode only.</p>
+        <p className="ds-caption text-ds-on-subtle">Test mode only. Paid / Held starts only after Stripe confirms payment. Receivers cannot cash out early or shorten a hold.</p>
       </div></div>}
   </div>;
 }
