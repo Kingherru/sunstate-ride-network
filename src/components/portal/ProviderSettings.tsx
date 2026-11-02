@@ -21,8 +21,7 @@ const sections = [
   { value: 'services', label: 'Services & Operating Hours' }, { value: 'areas', label: 'Service Areas' },
   { value: 'documents', label: 'Insurance & Documents' }, { value: 'verification', label: 'Business Verification' },
   { value: 'membership', label: 'Membership & Billing' }, { value: 'notifications', label: 'Notifications' }, { value: 'requests', label: 'Platform Requests' },
-  { value: 'integrations', label: 'API & Dispatch Integration' }, { value: 'account', label: 'Account Settings' },
-  { value: 'security', label: 'Security' },
+  { value: 'integrations', label: 'API & Exports' }, { value: 'account', label: 'Account & Security' },
 ];
 /** Legacy person-owned documents/integrations remain owner-only, not implicitly shared. */
 export function ProviderSettings({ workspaceId, role, email }: { workspaceId: string; role: string; email?: string | null }) {
@@ -65,8 +64,8 @@ export function ProviderSettings({ workspaceId, role, email }: { workspaceId: st
     {tab === 'membership' && <div className="space-y-5"><MembershipBilling workspaceId={workspaceId} role={role} /><BillingDefaults showPaymentMethod={false} /></div>}
     {tab === 'notifications' && <PersonalSettings />}
     {tab === 'requests' && <ProviderPlatformRequests workspaceId={workspaceId} />}
-    {tab === 'integrations' && <div className="space-y-6">{owner ? <IntegrationsPanel /> : <p className="ds-support">Legacy API connections remain owner-only.</p>}<ProviderExports /></div>}
+    {tab === 'integrations' && <div className="space-y-6"><ProviderExports /><section className="space-y-3 rounded-ds border border-ds-sky-border bg-ds-sky p-4"><h2 className="ds-subheading uppercase text-ds-primary">Dispatch software integrations</h2><p className="ds-support">Vendor connections are not configured unless saved below by the account owner. Saving credentials does not verify a live connection; no vendor is connected in this release.</p>{owner ? <IntegrationsPanel /> : <p className="ds-support">Integration setup is limited to the account owner.</p>}</section></div>}
     {tab === 'account' && <div className="mb-6"><InterfaceSize /></div>}
-    {(tab === 'account' || tab === 'security') && <PersonalSecurity email={email} />}
+    {tab === 'account' && <PersonalSecurity email={email} />}
   </div>;
 }

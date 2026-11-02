@@ -158,7 +158,6 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
       {identity && <div className="px-3 pb-2">
         {identity.name && identity.name !== "MY FLORIDA NEMT" && <p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>}
-        {identity.label && <p className="ds-support mt-1 flex items-center gap-1.5 text-ds-on-primary/80"><IdCard className="size-3.5 shrink-0" aria-hidden />{identity.label}</p>}
         {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80">{identity.mfnId}</p>}
       </div>}
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
@@ -171,6 +170,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </button>
     </div>
   );
+  const classification = identity?.label ? <p className="ds-support mx-6 mb-3 flex items-center gap-1.5 text-ds-on-primary/85"><IdCard className="size-3.5 shrink-0" aria-hidden />{identity.label}</p> : null;
   const topHeader = (
     <header className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:flex lg:px-10">
       <h1 className="sr-only">{pageTitle}</h1>
@@ -199,6 +199,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       {/* Desktop sidebar */}
       <aside className="portal-sidebar fixed inset-y-0 left-0 hidden w-64 flex-col bg-ds-primary py-6 lg:flex">
         <Link to="/" className="mx-6 mb-3 rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName on="blue" className="text-lg" /></Link>
+        {classification}
         <div className="min-h-0 flex-1 overflow-y-auto">{links}</div>
         <div className="mt-3">{footer}</div>
       </aside>
@@ -229,7 +230,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </header>
       {open && (
         <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary pb-6 pt-2 lg:hidden">
-            <div className="flex-1">{links}</div>
+            <div className="pt-2">{classification}</div><div className="flex-1">{links}</div>
           <div className="mt-6">{footer}</div>
         </div>
       )}
