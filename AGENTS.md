@@ -23,9 +23,9 @@
 - Vehicles/drivers/contacts/payers use workspace RLS, record_permissions and shares; creator/MFN identity immutable. Fleet status changes only via set_fleet_resource_status (append-only, inactive blocks new assignments, never delete); provider API keys are hash-only, read scopes. Why: ownership never trusts browser IDs.
 - Controlled distribution actions live in authenticated trip-network.functions.ts wrappers and database RPCs; prospective-provider reads project safe general fields, and negotiation/event history is append-only. Why: permissions and atomic selection remain authoritative even when UI is bypassed.
 - Draft resume uses UUID URLs and owner-scoped payloads. Why: no browser persistence or auto-submit.
-- Shared request/trip overlays enforce RLS; offers use safe fields, drafts owner payloads; detail fields distinguish missing/inapplicable/unavailable. Why: never broadens access.
+- Shared request/trip overlays enforce RLS and show safe fields only. Why: never broadens access.
 - User removal uses credential-destroying Auth soft deletion only for dependency-free Master-Admin removals, otherwise bans login and keeps profile/membership tombstones; preflight scans UUID relationships. Why: legacy Auth foreign keys must never cascade-delete history.
-- Training uses server-only keys, user-scoped enrollments/attempts/certificates and ownership-verified memory-only cart checkout. Why: one identity/payment.
+- Training uses server-only keys, user-scoped records and verified in-memory checkout. Why: one identity/payment.
 - Shared personal settings use strict owner RPC/audit; provider tabs reuse tools, legacy credentials/integrations remain owner-scoped, exports use owned/accepted RLS trip rows. Why: never widen permissions.
 - Secure email changes require server AMR/password reauthentication; Auth lifecycle triggers audit requested/confirmed/canceled and provider code failures audit failed/expired. Why: client events never prove confirmation or store secrets.
 - Network settlement: immutable `network_settlements` per referral (DB trigger); locked `network_payment_attempts` priced by DB fee policy; only webhooks mark Paid/Held; attempts lock fee terms, variance is record-only; Connect events use own route/secret; hold via `network_receiver_hold_tier`. Why: clients never set money or holds.
