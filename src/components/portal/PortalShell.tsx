@@ -19,6 +19,8 @@ import { getUnreadMessageCount } from "@/lib/messages.functions";
 import { RequestDetailProvider } from './RequestDetailOverlay';
 import { TrainingCartIcon } from '@/components/training/TrainingCart';
 import { getPortalPreferences } from '@/lib/portal-preferences.functions';
+import { getActivityIndicators, ACTIVITY_KEYS } from '@/lib/indicators.functions';
+import { markTabViewed } from '@/lib/unread.functions';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -116,12 +118,22 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const directUnread = usePortalQuery({ queryKey: ["msg-unread-total"], staleTime: 30_000, queryFn: () => getUnreadMessageCount() });
   const hasAdminMessaging = nav.some((i) => i.to === "/admin/messaging");
   const contactUnread = usePortalQuery({ queryKey: ["frontend-contacts-unread"], enabled: hasAdminMessaging, staleTime: 60_000, queryFn: () => countUnreadFrontendContacts() });
-  const combinedUnread = Number(msgUnread.data ?? 0) + Number(directUnread.data?.count ?? 0) + Number(contactUnread.data?.count ?? 0);
+  const activity = usePortalQuery({ queryKey: ["activity-indicators"], staleTime: 60_000, queryFn: () => getActivityIndicators() });
+  const act = activity.data as { network?: number; platformRequests?: number; adminPlatformRequests?: number } | undefined;
+  const platformUnread = hasAdminMessaging ? Number(act?.adminPlatformRequests ?? 0) : Number(act?.platformRequests ?? 0);
+  // One shared unread source for sidebar Messages, Network and the header bell.
+  const combinedUnread = Number(msgUnread.data ?? 0) + Number(directUnread.data?.count ?? 0) + Number(contactUnread.data?.count ?? 0) + (hasAdminMessaging ? platformUnread : 0);
+  const networkUnread = Number(act?.network ?? 0);
+  useEffect(() => {
+    const key = pathname.startsWith("/portal/network") ? ACTIVITY_KEYS.network : pathname.startsWith("/admin/messaging") ? ACTIVITY_KEYS.adminPlatformRequests : null;
+    if (!key || (key === ACTIVITY_KEYS.network ? networkUnread : platformUnread) === 0) return;
+    markTabViewed({ data: { tab_key: key } }).then(() => qc.invalidateQueries({ queryKey: ["activity-indicators"] })).catch(() => {});
+  }, [pathname, networkUnread, platformUnread]); // eslint-disable-line react-hooks/exhaustive-deps
   const links = (
     <nav aria-label={`${area} navigation`} className="flex flex-col gap-1 px-3">
       {nav.map((i) => {
         const Icon = iconFor(i.iconFor ?? i.to);
-        const showMsgDot = ["/portal/messaging", "/admin/messaging"].includes(i.iconFor ?? i.to) && combinedUnread > 0;
+        const showMsgDot = (["/portal/messaging", "/admin/messaging"].includes(i.iconFor ?? i.to) && combinedUnread > 0) || (i.to === "/portal/network" && networkUnread > 0);
         return (
           <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
@@ -140,7 +152,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
     queryFn: () => listMyNotifications({ data: { filter: "unread", limit: 20, offset: 0 } }),
   });
   const unreadRows = (unread.data as { rows?: { type: string; title: string }[] } | undefined)?.rows ?? [];
-  const notifIndicator: Indicator = unreadRows.length === 0 ? "none" : unreadRows.some((r) => URGENT_TYPES.test(r.type + " " + r.title)) ? "important" : "update";
+  const notifIndicator: Indicator = unreadRows.some((r) => URGENT_TYPES.test(r.type + " " + r.title)) ? "important" : (unreadRows.length > 0 || combinedUnread > 0 || networkUnread > 0) ? "update" : "none";
   const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
