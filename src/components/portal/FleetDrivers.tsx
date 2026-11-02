@@ -7,7 +7,7 @@ import { listMyDrivers } from "@/lib/schedule-board.functions";
 type Section = "vehicles" | "drivers" | "availability";
 export function FleetDrivers({ initial = "vehicles" }: { initial?: "vehicles" | "drivers" }) {
   const [section, setSection] = useState<Section>(initial);
-  return <div className="space-y-5"><SegTabs label="Fleet sections" value={section} onChange={setSection} options={[
+  return <div className="min-w-0 max-w-full space-y-5"><SegTabs label="Fleet sections" value={section} onChange={setSection} options={[
     { value: "vehicles", label: "Vehicles" }, { value: "drivers", label: "Drivers & Contractors" }, { value: "availability", label: "Assignments & Availability" },
   ]} />{section === "availability" ? <Availability /> : <FleetPanel key={section} only={section} />}</div>;
 }

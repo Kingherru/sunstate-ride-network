@@ -1,3 +1,4 @@
+import { StatusPill } from '@/components/ds/status';
 import { useMemo, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,11 +15,6 @@ import { usePortalQuery, usePortalMutation, usePortalPreview } from './preview-d
 const money = (c: number | null) => c == null ? 'Shown before payment' : `$${(c / 100).toFixed(2)}`;
 const when = (s: string | null) => s ? new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(s)) + ' ET' : '—';
 
-/** Removable preview fixtures (synthetic, never written). */
-const DEMO: SettlementRow[] = [
-  { id: '00000000-0000-4000-8000-000000000001', mfn_id: 'MFN-S-DEMO01', source_mfn_id: 'MFN-R-DEMO', side: 'receiver', sender_workspace_mfn_id: 'MFN-A-DEMO1', receiver_workspace_mfn_id: 'MFN-A-DEMO2', receiver_payout_cents: 8500, network_fee_cents: 170, processing_fee_cents: null, processing_fee_rule: 'disclosed_before_payment', sender_total_due_cents: 8670, currency: 'usd', completed_at: new Date(Date.now() - 3600e3).toISOString(), review_window_ends_at: new Date(Date.now() + 23 * 3600e3).toISOString(), payment_deadline_at: new Date(Date.now() + 4 * 86400e3).toISOString(), payment_succeeded_at: null, verification_tier_snapshot: null, hold_days: null, release_eligible_at: null, dispute_opened_at: null, dispute_resolved_at: null, transferred: false, paid_out: false, stripe_environment: 'sandbox', state: 'under_review', created_at: new Date().toISOString(), events: [] },
-  { id: '00000000-0000-4000-8000-000000000002', mfn_id: 'MFN-S-DEMO02', source_mfn_id: 'MFN-R-DEMO', side: 'receiver', sender_workspace_mfn_id: 'MFN-A-DEMO3', receiver_workspace_mfn_id: 'MFN-A-DEMO2', receiver_payout_cents: 12000, network_fee_cents: 240, processing_fee_cents: null, processing_fee_rule: 'disclosed_before_payment', sender_total_due_cents: 12240, currency: 'usd', completed_at: new Date(Date.now() - 5 * 86400e3).toISOString(), review_window_ends_at: null, payment_deadline_at: null, payment_succeeded_at: new Date(Date.now() - 2 * 86400e3).toISOString(), verification_tier_snapshot: 'verified', hold_days: 10, release_eligible_at: new Date(Date.now() + 8 * 86400e3).toISOString(), dispute_opened_at: null, dispute_resolved_at: null, transferred: false, paid_out: false, stripe_environment: 'sandbox', state: 'held', created_at: new Date().toISOString(), events: [] },
-];
 
 const GROUPS: { label: string; states: SettlementState[] }[] = [
   { label: 'Pending / review', states: ['pending_completion', 'under_review'] },
@@ -35,7 +31,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ['network-settlements'], queryFn: () => list() });
   const cq = usePortalQuery({ queryKey: ['connect-readiness'], queryFn: () => readiness(), enabled: !admin });
-  const rows = (preview.active ? DEMO : (q.data as SettlementRow[] | undefined)) ?? [];
+  const rows = (q.data as SettlementRow[] | undefined) ?? [];
   const [from, setFrom] = useState(''); const [to, setTo] = useState('');
   const [open, setOpen] = useState<SettlementRow | null>(null);
   const [cat, setCat] = useState('completion_missing'); const [why, setWhy] = useState('');
@@ -49,6 +45,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   const cs = connectState(preview.active ? null : (cq.data as never) ?? null);
 
   return <div className="space-y-5">
+    {preview.active && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved, sent or charged.</p>}
     <p className="ds-body rounded-ds border border-ds-border bg-ds-sky p-3 text-ds-primary">This is a settlement ledger, not a bank or escrow account. Funds stay in the platform settlement flow until the hold ends; held settlements cannot be withdrawn or accelerated. Hold: Super Verified {HOLD_DAYS.super} days, all others {HOLD_DAYS.standard} days, starting after sender payment succeeds with no open dispute. {preview.active && <strong> Preview only — demo settlements.</strong>}</p>
 
     {!admin && <div className="flex flex-wrap items-center justify-between gap-3 rounded-ds border border-ds-border bg-ds-surface p-4">
@@ -71,7 +68,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
         <button type="button" onClick={() => setOpen(r)} className="w-full text-left rounded-ds border border-ds-border bg-ds-surface p-3 hover:bg-ds-sky">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="ds-label">{r.mfn_id} <span className="ds-caption text-ds-on-subtle">· {r.side === 'receiver' ? `from ${r.sender_workspace_mfn_id}` : `to ${r.receiver_workspace_mfn_id}`}</span></span>
-            <span className={`ds-caption rounded-ds px-2 py-0.5 border whitespace-nowrap ${ALERT_STATES.includes(s) ? 'border-ds-error text-ds-error' : 'border-ds-border'}`}>{SETTLEMENT_LABELS[s]}</span>
+            <StatusPill status={SETTLEMENT_LABELS[s]} tone={ALERT_STATES.includes(s) || s === 'under_review' ? 'red' : ['paid_out', 'transferred'].includes(s) ? 'green' : s === 'payment_due' ? 'yellow' : 'neutral'} />
           </div>
           <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 ds-caption tabular-nums">
             <span>Payout <strong>{money(r.receiver_payout_cents)}</strong></span>

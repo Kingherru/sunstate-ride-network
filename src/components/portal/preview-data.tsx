@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import { toast } from "sonner";
+import { PROVIDER_DEMO_FIXTURES, providerDemoKeyed } from "./demo-fixtures/provider-demo";
 import { useMutation, useQuery, type UseMutationOptions, type UseMutationResult, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query";
 
 /** Shared state for Master-Admin portal previews: which kind of portal is
@@ -30,14 +31,6 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   'personal-settings': { first_name: 'Demo', last_name: 'Account', display_name: 'Demo Account', phone: '', mfn_id: 'MFN-P-DEMO', notification_preferences: { in_app: true, email: false }, status: 'active' },
   'personal-security-audit': [],
   'targeted-patient-requests': [],
-  drivers: [
-    { id: "preview-driver-1", first_name: "Dana", last_name: "Driverly (Demo)", phone: "(555) 010-0001", email: "dana.demo@example.com", status: "active", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "weekly", days: {} }, service_capabilities: ["wheelchair"], primary_vehicle_id: "preview-vehicle-1", contractor_pricing: {} },
-    { id: "preview-driver-2", first_name: "Sam", last_name: "Sample (Demo)", phone: "(555) 010-0002", email: "", status: "active", employment_type: "independent_contractor", pay_type: "independent_contractor", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
-  ],
-  vehicles: [
-    { id: "preview-vehicle-1", name: "Van 02 (Demo)", plate: "DEMO01", type: "wheelchair", capacity: 4, status: "active", assigned_driver_id: "preview-driver-1" },
-    { id: "preview-vehicle-2", name: "Van 05 (Demo)", plate: "DEMO02", type: "ambulatory", capacity: 4, status: "active", assigned_driver_id: null },
-  ],
   "work-hours": { weekly: {} },
   "my-drivers": [],
   "day-reservations": [],
@@ -49,9 +42,6 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   "driver-earnings": { trips: { completed_count: 0, pickup_legs: 0, total_miles: 0, wait_minutes: 0, canceled_count: 0, worked_hours: 0, worked_days: 0 }, pay_type: null, lines: [], gross_cents: 0, adjustments_cents: 0, amount_paid_cents: 0, outstanding_cents: 0, adjustments: [], payments: [] },
   "driver-payment-history": [],
   "driver-earnings-reports": [],
-  "network-providers": [
-    { workspace_id: "preview-ws-1", business_name: "Gulfside Rides (Demo)", mfn_id: 'MFN-A-DEMO01', description: "Demo listing for preview only.", cities: ["Clearwater"], counties: ["Pinellas"], zips: [], service_types: ["Wheelchair"], medical_delivery: false, accepting_connections: true, is_saved: false, business_contact_email: "", business_contact_phone: "", hours: "" },
-  ],
   contacts: [],
   "my-payers": [],
   "payer-cards": [],
@@ -74,7 +64,10 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
 
 export function previewFixtureFor(queryKey: readonly unknown[]): unknown {
   const key = String(queryKey[0] ?? "");
-  if (key === "my-drivers") return PREVIEW_FIXTURES.drivers;
+  const keyed = providerDemoKeyed(queryKey);
+  if (keyed !== undefined) return keyed;
+  if (key === "my-drivers") return PROVIDER_DEMO_FIXTURES.drivers ?? [];
+  if (key in PROVIDER_DEMO_FIXTURES) return PROVIDER_DEMO_FIXTURES[key];
   if (key in PREVIEW_FIXTURES) return PREVIEW_FIXTURES[key];
   return [];
 }

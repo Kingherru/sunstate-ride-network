@@ -282,7 +282,10 @@
 .auth-enter { animation: auth-rise 500ms cubic-bezier(.2,.7,.2,1) both; }
 .auth-message { animation: auth-fade 240ms ease-out both; }
 /* Portal: subtle content and drawer entry (disabled under reduced motion below). */
-.portal-enter { animation: auth-fade 220ms ease-out both; }
+/* Opacity-only: an animated transform turns the content box into the containing block for
+   position:fixed dialogs, which pushed Fleet/History overlays off-screen. */
+@keyframes portal-fade { from { opacity: 0; } to { opacity: 1; } }
+.portal-enter { animation: portal-fade 200ms ease-out; }
 .portal-drawer { animation: auth-fade 180ms ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .theme-public *, .theme-portal * { animation: none !important; transition: none !important; }
@@ -377,3 +380,28 @@
 .portal-root[data-density="comfortable"] main .space-y-5 > * + * { margin-top: 1.75rem; }
 
 @media (max-width: 639px) { .theme-portal .portal-toolbar > .portal-control, .theme-portal .portal-toolbar > select { width: 100%; } }
+
+/* Pass 3R-A: portal inner boxes never default to pale orange; orange stays for accents/CTAs. */
+.theme-portal {
+  --ds-peach: #F5F8FB;
+  --ds-membership: #F5F8FB;
+  --ds-peach-border: var(--ds-sky-border);
+  /* Universal solid status colors (meaning is always also written in text). */
+  --ds-status-red: #B42318; --ds-status-red-text: #FFFFFF;
+  --ds-status-green: #1E7B3E; --ds-status-green-text: #FFFFFF;
+  --ds-status-yellow: #FFD000; --ds-status-yellow-text: #1A1A1A;
+  --ds-status-gold: #F6E7B0; --ds-status-gold-text: #6B4A00;
+}
+.theme-portal main { overflow-x: clip; }
+@utility ds-status-red { background-color: var(--ds-status-red, #B42318); color: var(--ds-status-red-text, #fff); border-color: transparent; }
+@utility ds-status-green { background-color: var(--ds-status-green, #1E7B3E); color: var(--ds-status-green-text, #fff); border-color: transparent; }
+@utility ds-status-yellow { background-color: var(--ds-status-yellow, #FFD000); color: var(--ds-status-yellow-text, #1A1A1A); border-color: transparent; }
+@utility ds-status-blue { background-color: var(--ds-primary); color: var(--ds-on-primary, #fff); border-color: transparent; }
+@utility ds-badge-gold { background-color: var(--ds-status-gold, #F6E7B0); color: var(--ds-status-gold-text, #6B4A00); }
+/* Existing soft status washes become solid inside the portals; their text follows. */
+.theme-portal .bg-ds-error-soft { background-color: var(--ds-status-red); border-color: transparent; }
+.theme-portal .bg-ds-error-soft, .theme-portal .bg-ds-error-soft * { color: var(--ds-status-red-text) !important; }
+.theme-portal .bg-ds-success-soft { background-color: var(--ds-status-green); border-color: transparent; }
+.theme-portal .bg-ds-success-soft, .theme-portal .bg-ds-success-soft * { color: var(--ds-status-green-text) !important; }
+.theme-portal .bg-ds-warning-soft { background-color: var(--ds-status-yellow); border-color: transparent; }
+.theme-portal .bg-ds-warning-soft, .theme-portal .bg-ds-warning-soft * { color: var(--ds-status-yellow-text) !important; }

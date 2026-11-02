@@ -30,7 +30,7 @@ function DriversCard() {
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (d: any) => `${d.first_name} ${d.last_name} ${d.phone ?? ""} ${d.email ?? ""}`);
 
   return (
-    <section className="bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
+    <section className="min-w-0 bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Drivers</h2>
         <button onClick={() => setEditing({ status: "active" })} className="text-xs font-bold text-primary hover:underline">+ Add driver</button>
@@ -46,7 +46,7 @@ function DriversCard() {
             const veh = (vq.data ?? []).find((v: any) => v.id === d.primary_vehicle_id);
             return (
             <li key={d.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
-              <div>
+              <div className="min-w-0 break-words">
                 <div className="font-bold">{d.first_name} {d.last_name}
                   <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{String(d.status ?? "Not set").replace("_"," ")}</span>
                 </div>
@@ -244,7 +244,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   });
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-2 sm:p-4 z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
             className="bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <h3 className="sm:col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
@@ -487,7 +487,7 @@ function VehiclesCard() {
   const [filter, setFilter] = useFleetFilter();
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (v: any) => `${v.name} ${v.plate ?? ""} ${v.vehicle_type ?? ""}`);
   return (
-    <section className="bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
+    <section className="min-w-0 bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Vehicles</h2>
         <button onClick={() => setEditing({ vehicle_type: "sedan", status: "active", capacity: 4 })}
@@ -504,7 +504,7 @@ function VehiclesCard() {
             const drv = (dq.data ?? []).find((d: any) => d.id === v.assigned_driver_id);
             return (
             <li key={v.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
-              <div>
+              <div className="min-w-0 break-words">
                 <div className="font-bold">{v.name}
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{String(v.vehicle_type ?? v.type ?? "Not set").replace("_"," ")}</span>
                 </div>

@@ -12,7 +12,7 @@ import {
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
 import { previewConversations, PREVIEW_SELF_WORKSPACE } from "@/components/messaging/preview-conversations";
 
-const NOTICE = "Do not include patient or protected health information in network introduction messages.";
+const NOTICE = "Safety: do not include diagnoses, unnecessary health details, payment credentials or sensitive documents in ordinary messages.";
 
 type Props = {
   mode: "portal" | "admin";
@@ -121,13 +121,15 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   const canCompose = !readOnly && (mode === "portal" ? !thread?.conversation.archived : true);
 
   return (
-    <div className="grid gap-4 md:grid-cols-[18rem_1fr]">
+    <div className="space-y-3">
+    {demo && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved or sent.</p>}
+    <div className="grid gap-4 md:grid-cols-[18rem_minmax(0,1fr)]">
       <div className={`min-w-0 space-y-2 ${selected ? "hidden md:block" : ""}`}>
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="ds-support font-semibold uppercase tracking-[0.06em]">Conversations</h3>
+        <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary px-3 py-2">
+          <h3 className="ds-label uppercase tracking-[0.06em] text-ds-on-primary">Conversations</h3>
           {mode === "portal" && (
             <label className="ds-support flex items-center gap-1.5">
-              <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> Archived
+              <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> <span className="text-ds-on-primary">Archived</span>
             </label>
           )}
         </div>
@@ -135,7 +137,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         <div className="max-h-[28rem] space-y-1 overflow-y-auto rounded-ds-sm border border-ds-border">
           {!demo && convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
           {(wsQuery.isError || convosQuery.isError) && <p role="alert" className="ds-support p-3 text-ds-error">Conversations couldn't load. Please try again.</p>}
-          {(demo || !convosQuery.isLoading) && conversations.length === 0 && <p className="ds-support p-3">{search ? "No conversations match your search." : "No conversations yet."}</p>}
+          {(demo || !convosQuery.isLoading) && conversations.length === 0 && <p className="ds-support p-3">{search ? "No conversations match your search." : "No conversations yet. Use Message provider in the Provider Network directory to start one."}</p>}
           {conversations.map((c) => (
             <DsButton variant="ghost" key={c.id} onClick={() => setSelected(c.id)}
               className={`block h-auto w-full border-b border-ds-border px-3 py-2.5 text-left last:border-b-0 ${selected === c.id ? "bg-ds-sky" : "hover:bg-ds-bg"}`}>
@@ -153,12 +155,12 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
       </div>
 
       <div className={`min-w-0 rounded-ds-sm border border-ds-sky-border bg-ds-surface ${selected ? "" : "hidden md:block"}`}>
-        {!selected && <p className="ds-support p-4">Select a conversation to view messages.</p>}
+        {!selected && <div className="p-6 text-center"><p className="ds-subheading text-ds-primary">Select a conversation</p><p className="ds-support mt-1">Messages between your business and other Network providers appear here.</p></div>}
         {selected && !demo && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between gap-2 border-b border-ds-border px-4 py-3">
+            <div className="flex items-center justify-between gap-2 border-b border-ds-sky-border bg-ds-sky px-4 py-3">
               <div className="min-w-0">
                 <button onClick={() => setSelected(null)} className="ds-support mb-1 inline-flex items-center gap-1 font-semibold uppercase text-ds-primary hover:underline md:hidden">
                   ← Back to conversations
@@ -188,7 +190,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
             </div>
             {canCompose && (
               <div className="border-t border-ds-border p-3">
-                <p className="ds-support mb-2 text-ds-on-bg/70">{NOTICE}</p>
+                <p className="ds-support mb-2 rounded-ds-sm ds-status-yellow px-2 py-1 font-semibold">{NOTICE}</p>
                 <label htmlFor="wm-reply" className="sr-only">Reply message</label>
                 <div className="flex items-end gap-2">
                   <textarea id="wm-reply" value={draft} onChange={(e) => { setDraft(e.target.value.slice(0, 2000)); setSendError(""); }} maxLength={2000} rows={2}
@@ -210,6 +212,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         )}
         {selected && !demo && threadQuery.data && !threadQuery.data.ok && <p className="ds-support p-4">{threadQuery.data.error}</p>}
       </div>
+    </div>
     </div>
   );
 }

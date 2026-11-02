@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { Link } from "@tanstack/react-router";
 import { DsBadge, type Status } from "@/components/ds/feedback";
 import type { RequestDetailRow, RequestListRow } from "@/lib/portal-requests.functions";
@@ -47,8 +48,8 @@ export function StatusBadge({ status }: { status: string | null }) {
     provider_selected: ['info', 'Provider selected'],
     needs_attention: ['error', 'Needs attention'],
   };
-  const [tone, label] = map[s] ?? ["neutral", s ? titleCase(s) : "Unknown"];
-  return <DsBadge status={tone}>{label}</DsBadge>;
+  const [, label] = map[s] ?? ["neutral", s ? titleCase(s) : "Unknown"];
+  return <StatusPill status={label} />;
 }
 
 export const fmtDateTime = (iso: string) =>

@@ -1,3 +1,4 @@
+import { WorkspaceMessaging } from "@/components/messaging/WorkspaceMessaging";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { getAccessState } from "@/lib/access.functions";
@@ -118,7 +119,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
       case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
       case "network": return <ProviderNetworkPage />;
       case "training": return <TrainingTests />;
-      case "messaging": return <SampleConversations initiallyOpen />;
+      case "messaging": return <Panel><WorkspaceMessaging mode="portal" /></Panel>;
       default: return <ProviderOverview workspaceId="preview-ws" userId={PREVIEW_USER} />;
     }
   }

@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -8,12 +9,7 @@ import { AdminReservationDetailModal } from "./AdminReservationDetailModal";
 const STATUS_OPTIONS = ["all", "pending", "assigned", "in_progress", "completed", "canceled", "no_show"];
 
 function StatusBadge({ status }: { status: string | null | undefined }) {
-  const s = (status ?? "unknown").replace(/_/g, " ");
-  return (
-    <span className="inline-flex items-center rounded-sm bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-      {s}
-    </span>
-  );
+  return <StatusPill status={status ?? "unknown"} />;
 }
 
 export function AdminTripsPanel() {

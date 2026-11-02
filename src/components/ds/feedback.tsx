@@ -8,7 +8,7 @@ const statusStyle: Record<Status, string> = {
   info: "bg-ds-info-soft text-ds-info",
   success: "bg-ds-success-soft text-ds-success",
   warning: "bg-ds-warning-soft text-ds-warning",
-  pending: "bg-ds-peach text-ds-warning",
+  pending: "bg-ds-sky text-ds-primary",
   error: "bg-ds-error-soft text-ds-error",
   neutral: "bg-ds-subtle text-ds-text-2",
 };
