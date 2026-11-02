@@ -36,6 +36,7 @@ export const createNetworkDistribution = createServerFn({ method: 'POST' }).midd
     await requireNetworkAddon(context.supabase, context.userId);
     const { data: id, error } = await context.supabase.rpc('network_create_distribution', { _request: data.request_id, _trip: data.trip_id, _amount: data.amount_cents, _expires: data.expires_at });
     if (error) throw new Error(error.message);
+    if (data.payment_responsibility_confirmed) await context.supabase.rpc('network_ack_payment_responsibility', { _distribution: id as string });
     return { id: id as string };
   });
 export const sendNetworkWave = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
