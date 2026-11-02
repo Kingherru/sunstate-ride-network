@@ -359,3 +359,51 @@ export const listWorkspaceMembersForMessaging = createServerFn({ method: "POST" 
     const nameMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p.display_name as string | null]));
     return (members ?? []).map((m: any) => ({ userId: m.user_id, role: m.role, name: nameMap.get(m.user_id) ?? "Member", canMessage: m.can_message_for_workspace }));
   });
+
+const referralInput = z.object({ distributionId: z.string().uuid() }).strict();
+
+/** Resolve which accepted-referral side the caller messages for, and the
+ *  counterparty. Returns null when the caller lacks Team Messaging access or
+ *  the other business is unavailable (inactive/suspended/hidden). */
+async function resolveReferralParties(context: any, supabaseAdmin: any, distributionId: string) {
+  const { data: d } = await supabaseAdmin.from("trip_distributions").select("id, source_workspace_id, selected_workspace_id").eq("id", distributionId).maybeSingle();
+  if (!d?.selected_workspace_id || !d.source_workspace_id) return null;
+  for (const [mine, other] of [[d.source_workspace_id, d.selected_workspace_id], [d.selected_workspace_id, d.source_workspace_id]] as const) {
+    const { data: ok } = await context.supabase.rpc("can_access_workspace_messages", { ws: mine });
+    if (ok !== true) continue;
+    const { data: ws } = await supabaseAdmin.from("workspaces").select("id, status, account_type").in("id", [mine, other]);
+    const me = (ws ?? []).find((w: any) => w.id === mine), them = (ws ?? []).find((w: any) => w.id === other);
+    if (me?.status !== "active" || them?.status !== "active" || them.account_type !== "provider") return null;
+    return { mine: mine as string, other: other as string };
+  }
+  return null;
+}
+
+/** Which of the caller's visible accepted referrals can open a conversation. */
+export const listReferralMessageEligibility = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ ids: z.array(z.string().uuid()).max(200) }).strict().parse(i))
+  .handler(async ({ data, context }): Promise<string[]> => {
+    if (!data.ids.length) return [];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const out: string[] = [];
+    for (const id of data.ids) if (await resolveReferralParties(context, supabaseAdmin, id)) out.push(id);
+    return out;
+  });
+
+/** Message Provider on an accepted referral: opens the single existing
+ *  conversation between the two businesses or creates exactly one. */
+export const openReferralConversation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => referralInput.parse(i))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const parties = await resolveReferralParties(context, supabaseAdmin, data.distributionId);
+    if (!parties) throw new Error("That business isn't available to message.");
+    await assertCanAccess(context, parties.mine);
+    const { data: conversationId, error } = await supabaseAdmin.rpc("find_or_create_workspace_conversation", {
+      _sender_ws: parties.mine, _target_ws: parties.other, _created_by: context.userId, _source: "network_profile",
+    });
+    if (error || !conversationId) throw new Error("Could not start that conversation.");
+    return { ok: true as const, conversationId: conversationId as string };
+  });
