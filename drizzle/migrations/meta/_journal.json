@@ -267,6 +267,13 @@
       "when": 1793653654334,
       "tag": "0037_network_settlement_ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793656175326,
+      "tag": "0038_network_settlement_payments_transfers",
+      "breakpoints": true
     }
   ]
 }
