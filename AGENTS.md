@@ -1,7 +1,7 @@
 # Architecture decisions
 
 - App MCP (src/lib/mcp) is OAuth-only with public-info tools; consent returns via login/create-account `redirect`. Why: no private data to ChatGPT.
-- Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal account_security_audit confirmation, never sends. Why: preview is not delivery.
+- Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal account_security_audit confirmation, never sends. Why: preview never sends.
 - Design tokens live under .theme-public/.theme-portal; new UI uses ds/brand components. Why: neutral training and central overrides remain intact.
 - Public pages use uppercase H1/H2; one-column section heads center as a group, two-column heads opt into left alignment. Why: consistent hierarchy.
 - Transportation uses workspaces/members/profiles, atomic `complete_account_setup()` and server-verified `getAccessState`; platform roles stay in `user_roles`. Sidebar/guards share `isPortalPathBlocked`; CSV matches existing single active eligible customer membership. Why: no broader permissions; learners need no workspace.
@@ -24,7 +24,7 @@
 - Controlled distribution actions live in authenticated trip-network.functions.ts wrappers and database RPCs; prospective-provider reads project safe general fields, and negotiation/event history is append-only. Why: permissions and atomic selection remain authoritative even when UI is bypassed.
 - Draft resume uses UUID URLs/owner-scoped payloads; shared request/trip overlays enforce RLS and show safe fields only. Why: no browser persistence, auto-submit or broader access.
 - User removal uses credential-destroying Auth soft deletion only for dependency-free Master-Admin removals, otherwise bans login and keeps profile/membership tombstones; preflight scans UUID relationships. Why: legacy Auth foreign keys must never cascade-delete history.
-- Training uses server-only keys, user-scoped records and verified in-memory checkout. Why: one identity/payment.
+- Training uses server-only keys, user-scoped records and verified in-memory checkout. Why: one identity.
 - Shared personal settings use strict owner RPC/audit; provider tabs reuse tools, legacy credentials/integrations remain owner-scoped, exports use owned/accepted RLS trip rows. Why: never widen permissions.
 - Secure email changes require server AMR/password reauthentication; Auth lifecycle triggers audit requested/confirmed/canceled and provider code failures audit failed/expired. Why: client events never prove confirmation or store secrets.
 - Network settlement: immutable `network_settlements` per referral (DB trigger); locked `network_payment_attempts` priced by DB fee policy; only webhooks mark Paid/Held; attempts lock fee terms, variance is record-only; Connect events use own route/secret; hold via `network_receiver_hold_tier`. Why: clients never set money or holds.
