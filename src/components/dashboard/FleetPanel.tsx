@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import {
-  listDrivers, upsertDriver, deleteDriver,
-  listVehicles, upsertVehicle, deleteVehicle,
+  listDrivers, upsertDriver,
+  listVehicles, upsertVehicle,
   sendDriverWeeklySchedule,
 } from "@/lib/fleet.functions";
+import { FleetStatusControl, FleetFilterBar, useFleetFilter, applyFleetFilter } from "@/components/portal/FleetStatusControl";
 
 export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
   if (only === "drivers") return <DriversCard />;
@@ -25,10 +26,8 @@ function DriversCard() {
   const vq = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const [editing, setEditing] = useState<any>(null);
   const [scheduling, setScheduling] = useState<any>(null);
-  const del = usePortalMutation({
-    mutationFn: (id: string) => deleteDriver({ data: { id } }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); },
-  });
+  const [filter, setFilter] = useFleetFilter();
+  const rows = applyFleetFilter((q.data ?? []) as any[], filter, (d: any) => `${d.first_name} ${d.last_name} ${d.phone ?? ""} ${d.email ?? ""}`);
 
   return (
     <section className="bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
@@ -39,9 +38,11 @@ function DriversCard() {
       {q.isError ? <div role="alert" className="ds-support text-ds-error">Drivers couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
        : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No drivers yet.</p>
-       : (
+       : (<>
+        <FleetFilterBar value={filter} onChange={setFilter} noun="drivers" />
+        {rows.length === 0 && <p className="ds-support">No drivers match these filters.</p>}
         <ul className="divide-y divide-border text-sm">
-          {(q.data ?? []).map((d: any) => {
+          {rows.map((d: any) => {
             const veh = (vq.data ?? []).find((v: any) => v.id === d.primary_vehicle_id);
             return (
             <li key={d.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
@@ -77,12 +78,12 @@ function DriversCard() {
                   <button onClick={() => setScheduling(d)} className="font-bold text-primary hover:underline">Email week</button>
                 )}
                 <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline">Edit</button>
-                <button onClick={() => confirm("Remove driver?") && del.mutate(d.id)} className="font-bold text-red-600 hover:underline">Remove</button>
+                <FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />
               </div>
             </li>
             );
           })}
-        </ul>
+        </ul></>
       )}
       {editing && <DriverDialog d={editing} vehicles={vq.data ?? []} onClose={() => setEditing(null)}
                                 onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["drivers"] }); qc.invalidateQueries({ queryKey: ["vehicles"] }); }} />}
@@ -486,10 +487,8 @@ function VehiclesCard() {
   const q = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const dq = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const [editing, setEditing] = useState<any>(null);
-  const del = usePortalMutation({
-    mutationFn: (id: string) => deleteVehicle({ data: { id } }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); },
-  });
+  const [filter, setFilter] = useFleetFilter();
+  const rows = applyFleetFilter((q.data ?? []) as any[], filter, (v: any) => `${v.name} ${v.plate ?? ""} ${v.vehicle_type ?? ""}`);
   return (
     <section className="bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
@@ -500,9 +499,11 @@ function VehiclesCard() {
       {q.isError ? <div role="alert" className="ds-support text-ds-error">Vehicles couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
        : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
        : (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No vehicles yet.</p>
-       : (
+       : (<>
+        <FleetFilterBar value={filter} onChange={setFilter} noun="vehicles" />
+        {rows.length === 0 && <p className="ds-support">No vehicles match these filters.</p>}
         <ul className="divide-y divide-border text-sm">
-          {(q.data ?? []).map((v: any) => {
+          {rows.map((v: any) => {
             const drv = (dq.data ?? []).find((d: any) => d.id === v.assigned_driver_id);
             return (
             <li key={v.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
@@ -510,7 +511,7 @@ function VehiclesCard() {
                 <div className="font-bold">{v.name}
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{String(v.vehicle_type ?? v.type ?? "Not set").replace("_"," ")}</span>
                 </div>
-                <div className="text-xs text-muted-foreground">{v.plate ?? "no plate"} · cap {v.capacity} · {v.status}</div>
+                <div className="text-xs text-muted-foreground">{v.plate ?? "No plate"} · {v.capacity ?? 0} seats · {v.wheelchair_capacity ?? 0} wheelchair positions · {v.status ?? "Not set"}</div>
                 {(v.service_capabilities?.length ?? 0) > 0 && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
                     Services: {(v.service_capabilities as string[]).map(capLabel).join(", ")}
@@ -522,12 +523,12 @@ function VehiclesCard() {
               </div>
               <div className="text-xs">
                 <button onClick={() => setEditing(v)} className="font-bold text-primary hover:underline mr-3">Edit</button>
-                <button onClick={() => confirm("Remove vehicle?") && del.mutate(v.id)} className="font-bold text-red-600 hover:underline">Remove</button>
+                <FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />
               </div>
             </li>
             );
           })}
-        </ul>
+        </ul></>
       )}
       {editing && <VehicleDialog v={editing} drivers={dq.data ?? []} onClose={() => setEditing(null)}
                                  onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["vehicles"] }); qc.invalidateQueries({ queryKey: ["drivers"] }); }} />}
