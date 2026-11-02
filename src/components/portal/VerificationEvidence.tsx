@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,7 +19,7 @@ export function VerificationEvidence({ workspaceId, editable = false }: { worksp
       <p className="ds-support">{q.data.paused_reason ? `Requirements: ${q.data.paused_reason.replaceAll('_', ' ')}` : 'All verification requirements complete.'}</p>
       <ul className="grid gap-2 sm:grid-cols-2">{q.data.requirements.map(r => <li key={r.label} className="flex items-start gap-2 ds-body">{r.complete ? <Check className="size-4 shrink-0 text-ds-primary mt-1" /> : <AlertCircle className="size-4 shrink-0 text-ds-warning mt-1" />}<span>{r.label}<span className="block ds-caption">{r.complete ? 'Complete' : 'Missing'}</span></span></li>)}</ul>
       <h3 className="ds-label text-ds-primary">Document checklist</h3>
-      <ul className="divide-y divide-ds-border">{q.data.documents.map(d => <li key={d.kind} className="flex flex-wrap justify-between gap-2 py-2 ds-body"><span>{d.label}</span><span className={d.status === 'Expired' || d.status === 'Missing' ? 'ds-caption text-ds-error' : 'ds-caption text-ds-primary'}>{d.status}</span></li>)}</ul>
+      <ul className="divide-y divide-ds-border">{q.data.documents.map(d => <li key={d.kind} className="flex flex-wrap justify-between gap-2 py-2 ds-body"><span>{d.label}</span><StatusPill status={d.status} /></li>)}</ul>
       <p className="ds-caption">Provider-attested documents are not authenticated by MY FLORIDA NEMT. Private files and payment details are not shown.</p>
     </>}
     {editable && <BusinessEvidenceEditor workspaceId={workspaceId} />}

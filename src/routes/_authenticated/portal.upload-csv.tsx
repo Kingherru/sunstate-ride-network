@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -173,7 +174,7 @@ function PortalUploads() {
               <tbody>{rows.map((r) => <tr key={r.row} className="border-b border-ds-border last:border-b-0">
                 <td className="p-2"><input type="checkbox" aria-label={`Create draft from row ${r.row}`} disabled={!r.ok || r.dup !== undefined} checked={chosen.has(r.row)} onChange={(e) => { const n = new Set(chosen); e.target.checked ? n.add(r.row) : n.delete(r.row); setChosen(n); }} /></td>
                 <td className="p-2">{r.row}</td><td className="p-2">{r.date || "—"}</td><td className="p-2">{r.service || "—"}</td>
-                <td className="p-2">{!r.ok ? <span className="text-ds-error">{r.errors.join("; ")}</span> : r.dup !== undefined ? `Possible duplicate of row ${r.dup}` : "Ready"}</td>
+                <td className="p-2">{!r.ok ? <StatusPill tone="red" className="whitespace-normal" status={r.errors.join("; ")} /> : r.dup !== undefined ? `Possible duplicate of row ${r.dup}` : "Ready"}</td>
               </tr>)}</tbody>
             </table>
           </div>

@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -133,22 +134,20 @@ export function AdminPayoutQueue() {
                       )}
                     </td>
                     <td>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${r.payment_status === "paid" ? "bg-emerald-100 text-emerald-800" : "bg-yellow-100 text-yellow-800"}`}>
-                        {r.payment_status}
-                      </span>
+                      <StatusPill status={r.payment_status ?? "unknown"} tone={r.payment_status === "paid" ? "green" : "yellow"} />
                     </td>
                     <td className="text-right font-bold tabular-nums">{formatUsd(net)}</td>
                     <td className="pl-3 text-xs">{fmtWhen(r.payout_eligible_at)}</td>
                     <td className="text-xs">
                       {isHeld ? (
-                        <div className="text-red-700">
-                          <span className="font-bold uppercase text-[10px]">Held</span>
+                        <div>
+                          <StatusPill status="Held" tone="red" />
                           {r.payout_hold_reasons && r.payout_hold_reasons.length > 0 && (
                             <div className="text-muted-foreground">{r.payout_hold_reasons.join(", ")}</div>
                           )}
                         </div>
                       ) : eligible ? (
-                        <span className="font-bold uppercase text-[10px] text-emerald-700">Ready</span>
+                        <StatusPill status="Ready" tone="green" />
                       ) : (
                         <span className="font-bold uppercase text-[10px] text-muted-foreground">In hold window</span>
                       )}

@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -43,7 +44,7 @@ export function ApiCredentials() {
       </div>
       <DsButton disabled={busy || name.trim().length < 2 || scopes.length === 0} onClick={() => run(() => createApiCredential({ data: { name: name.trim(), scopes: scopes as ("exports:read" | "schedule:read")[] } }).then((r) => { setName(""); return r; }), "Key created")}>Create key</DsButton>
       <ul className="space-y-2">{(d?.keys ?? []).map((k: any) => <li key={k.id} className="rounded-ds border border-ds-sky-border bg-ds-surface p-3">
-        <p className="ds-label break-words text-ds-primary">{k.name} <span className={k.status === "active" ? "ds-caption" : "ds-caption text-ds-error"}>· {k.status === "active" ? "Active" : "Revoked"}</span></p>
+        <p className="ds-label break-words text-ds-primary">{k.name} <StatusPill status={k.status === "active" ? "Active" : "Revoked"} /></p>
         <p className="ds-caption font-mono">{k.key_prefix}…{k.key_last4} · {(k.scopes ?? []).join(", ")}</p>
         <p className="ds-caption">Created {new Date(k.created_at).toLocaleString()} by {k.created_by_mfn_id ?? "Not available"} · Last used {k.last_used_at ? new Date(k.last_used_at).toLocaleString() : "Never"}{k.rotated_at ? ` · Rotated ${new Date(k.rotated_at).toLocaleString()}` : ""}{k.revoked_at ? ` · Revoked ${new Date(k.revoked_at).toLocaleString()} by ${k.revoked_by_mfn_id ?? "Not available"}` : ""}</p>
         {k.status === "active" && <div className="mt-2 flex flex-wrap gap-3 text-sm">

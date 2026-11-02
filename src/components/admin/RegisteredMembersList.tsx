@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -118,7 +119,7 @@ export function RegisteredMembersList({
                   <td className="py-2 pr-3 text-center">{u.drivers_count ?? 0}</td>
                   <td className="py-2 pr-3 text-xs">
                     {u.application_status === "approved" ? (
-                      <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 font-semibold">Approved</span>
+                      <StatusPill status="Approved" />
                     ) : u.application_status ? (
                       <span className="inline-block px-2 py-0.5 bg-muted text-muted-foreground">{u.application_status}</span>
                     ) : (

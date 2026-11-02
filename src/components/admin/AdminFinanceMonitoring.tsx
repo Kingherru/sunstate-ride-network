@@ -1,3 +1,4 @@
+import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -129,11 +130,7 @@ export function AdminFinanceMonitoring() {
                   <div className="text-xs font-bold uppercase text-muted-foreground">{JOB_LABEL[job]}</div>
                   <div className="text-lg font-black">{s ? (healthy ? "Healthy" : "Attention") : "No runs yet"}</div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${
-                  !s ? "bg-muted text-muted-foreground" : healthy ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                }`}>
-                  {s ? (healthy ? "OK" : `${s.errors_24h ?? 0} errors/24h`) : "IDLE"}
-                </span>
+                <StatusPill status={s ? (healthy ? "OK" : `${s.errors_24h ?? 0} errors/24h`) : "Idle"} tone={!s ? "neutral" : healthy ? "green" : "red"} />
               </div>
               <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                 <dt className="text-muted-foreground">Last run</dt>
@@ -177,9 +174,7 @@ export function AdminFinanceMonitoring() {
                 <td className="px-3 py-1 text-xs">{JOB_LABEL[r.job_name] ?? r.job_name}</td>
                 <td className="px-3 py-1 text-xs">{fmtTs(r.started_at)}</td>
                 <td className="px-3 py-1 text-xs">
-                  <span className={r.ok ? "text-emerald-700 font-bold" : "text-destructive font-bold"}>
-                    {r.ok ? "OK" : "Fail"}
-                  </span>
+                  <StatusPill status={r.ok ? "OK" : "Failed"} tone={r.ok ? "green" : "red"} />
                   {r.error_text && <span className="ml-2 text-[10px] text-muted-foreground">{r.error_text}</span>}
                 </td>
                 <td className="px-3 py-1 text-right tabular-nums">{r.processed}</td>
