@@ -189,7 +189,7 @@ function PortalUploads() {
           <div className="mt-3 grid gap-4 md:grid-cols-2">
             <div className="rounded-ds-sm border border-ds-border bg-ds-surface p-3"><h3 className="ds-label text-ds-primary">Found fields</h3>
               {pdf.fields.length ? <dl className="ds-support mt-2 space-y-1">{pdf.fields.map((f) => <div key={f.label} className="flex gap-2"><dt className="font-semibold capitalize">{f.label}:</dt><dd className="break-words">{f.value}</dd></div>)}</dl> : <p className="ds-support mt-2">No labeled trip details were found.</p>}</div>
-            <div className="rounded-ds-sm border border-ds-accent/30 bg-ds-accent-soft p-3"><h3 className="ds-label text-ds-primary">Not placed — review manually</h3>
+            <div className="rounded-ds-sm border border-ds-border bg-ds-peach p-3"><h3 className="ds-label text-ds-primary">Not placed — review manually</h3>
               {pdf.unresolved.length ? <ul className="ds-support mt-2 max-h-48 space-y-1 overflow-y-auto">{pdf.unresolved.map((t, i) => <li key={i} className="break-words">{t}</li>)}</ul> : <p className="ds-support mt-2">Nothing left over.</p>}</div>
           </div>
           <button disabled={busy} onClick={onCreate} className="portal-btn-primary mt-4 whitespace-nowrap">{busy ? "Creating draft…" : "Create 1 draft for review"}</button>
