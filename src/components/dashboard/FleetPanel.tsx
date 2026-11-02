@@ -74,9 +74,6 @@ function DriversCard() {
                 )}
               </div>
               <div className="text-xs flex items-center gap-3">
-                {d.email && (
-                  <button onClick={() => setScheduling(d)} className="font-bold text-primary hover:underline">Email week</button>
-                )}
                 <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline">Edit</button>
                 <FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />
               </div>
