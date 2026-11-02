@@ -9,6 +9,8 @@ import {
   listAdminConversations, getAdminConversation, adminSendMessage, adminArchiveConversation,
   type ConversationRow, type MessageRow,
 } from "@/lib/workspace-messages.functions";
+import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { previewConversations, PREVIEW_SELF_WORKSPACE } from "@/components/messaging/preview-conversations";
 
 const NOTICE = "Do not include patient or protected health information in network introduction messages.";
 
@@ -37,27 +39,31 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   const [selected, setSelected] = useState<string | null>(initialConversationId ?? null);
   const [draft, setDraft] = useState("");
   const [search, setSearch] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const preview = usePortalPreview();
+  const demo = preview.active ? previewConversations(preview.kind) : null;
 
   useEffect(() => { onConversationChange?.(selected); }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const wsQuery = useQuery({
     queryKey: ["messaging-workspaces"],
     queryFn: () => listMine(),
-    enabled: mode === "portal" && !workspaceId,
+    enabled: !demo && mode === "portal" && !workspaceId,
   });
-  const effectiveWorkspaceId = workspaceId ?? wsQuery.data?.[0]?.id ?? null;
+  const effectiveWorkspaceId = demo ? PREVIEW_SELF_WORKSPACE : workspaceId ?? wsQuery.data?.[0]?.id ?? null;
 
   const convosQuery = useQuery({
     queryKey: ["workspace-conversations", mode, effectiveWorkspaceId, showArchived],
     queryFn: () => mode === "admin" ? listAdminConvos() : listMineConvos({ data: { workspaceId: effectiveWorkspaceId as string, includeArchived: showArchived } }),
-    enabled: mode === "admin" || !!effectiveWorkspaceId,
+    enabled: !demo && (mode === "admin" || !!effectiveWorkspaceId),
   });
 
   const conversations = useMemo(() => {
-    const rows = (convosQuery.data ?? []) as ConversationRow[];
+    const rows = (demo ? demo.map((d) => d.convo) : convosQuery.data ?? []) as ConversationRow[];
     const visible = showArchived || mode === "admin" ? rows : rows.filter((r) => !r.archived);
     return visible.filter((r) => [r.otherName, r.otherMfnId, r.lastSenderName, r.lastMessage].filter(Boolean).join(" ").toLowerCase().includes(search.trim().toLowerCase()));
-  }, [convosQuery.data, showArchived, mode, search]);
+  }, [convosQuery.data, showArchived, mode, search, demo]);
 
   // No auto-select: on phones the conversation list must show first, with a
   // clear Back to Conversations action after opening one.
@@ -65,11 +71,11 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   const threadQuery = useQuery({
     queryKey: ["workspace-conversation", mode, effectiveWorkspaceId, selected],
     queryFn: () => mode === "admin" ? getAdminConvo({ data: { conversationId: selected as string } }) : getConvo({ data: { workspaceId: effectiveWorkspaceId as string, conversationId: selected as string } }),
-    enabled: !!selected && (mode === "admin" || !!effectiveWorkspaceId),
+    enabled: !demo && !!selected && (mode === "admin" || !!effectiveWorkspaceId),
   });
 
   useEffect(() => {
-    if (mode === "portal" && selected && effectiveWorkspaceId && threadQuery.data?.ok) {
+    if (!demo && mode === "portal" && selected && effectiveWorkspaceId && threadQuery.data?.ok) {
       markReadFn({ data: { workspaceId: effectiveWorkspaceId, conversationId: selected } }).then(() => {
         qc.invalidateQueries({ queryKey: ["workspace-conversations", mode, effectiveWorkspaceId] });
       });
@@ -78,7 +84,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
 
   async function onSend() {
     const body = draft.trim();
-    if (!body || !selected) return;
+    if (!body || !selected || sending) return;
+    if (demo) return previewBlocked();
+    setSending(true); setSendError("");
     try {
       if (mode === "admin") {
         if (!effectiveWorkspaceId) throw new Error("Choose a workspace to send as.");
@@ -90,12 +98,13 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
       qc.invalidateQueries({ queryKey: ["workspace-conversation", mode, effectiveWorkspaceId, selected] });
       qc.invalidateQueries({ queryKey: ["workspace-conversations", mode, effectiveWorkspaceId] });
     } catch (e: any) {
-      toast.error(e.message ?? "Could not send that message.");
-    }
+      setSendError(e.message ?? "Could not send that message.");
+    } finally { setSending(false); }
   }
 
   async function onToggleArchive(archived: boolean) {
     if (!selected) return;
+    if (demo) return previewBlocked();
     try {
       if (mode === "admin") await archiveAdmin({ data: { conversationId: selected, archived } });
       else await archiveFn({ data: { workspaceId: effectiveWorkspaceId as string, conversationId: selected, archived } });
@@ -107,7 +116,8 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
     }
   }
 
-  const thread = threadQuery.data?.ok ? threadQuery.data : null;
+  const demoThread = demo?.find((d) => d.convo.id === selected);
+  const thread = demoThread ? { ok: true as const, conversation: demoThread.convo, messages: demoThread.messages } : threadQuery.data?.ok ? threadQuery.data : null;
   const canCompose = !readOnly && (mode === "portal" ? !thread?.conversation.archived : true);
 
   return (
@@ -123,15 +133,16 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         </div>
         <div className="portal-search"><Search className="size-4" aria-hidden /><input aria-label="Search workspace conversations" placeholder="Search accounts, senders, messages…" value={search} onChange={(e) => setSearch(e.target.value)} className="portal-input w-full" /></div>
         <div className="max-h-[28rem] space-y-1 overflow-y-auto rounded-ds-sm border border-ds-border">
-          {convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
+          {!demo && convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
           {(wsQuery.isError || convosQuery.isError) && <p role="alert" className="ds-support p-3 text-ds-error">Conversations couldn't load. Please try again.</p>}
-          {!convosQuery.isLoading && conversations.length === 0 && <p className="ds-support p-3">{search ? "No conversations match your search." : "No conversations yet."}</p>}
+          {(demo || !convosQuery.isLoading) && conversations.length === 0 && <p className="ds-support p-3">{search ? "No conversations match your search." : "No conversations yet."}</p>}
           {conversations.map((c) => (
             <DsButton variant="ghost" key={c.id} onClick={() => setSelected(c.id)}
               className={`block h-auto w-full border-b border-ds-border px-3 py-2.5 text-left last:border-b-0 ${selected === c.id ? "bg-ds-sky" : "hover:bg-ds-bg"}`}>
               <div className="flex items-center justify-between gap-2">
-                <span className="ds-body truncate font-semibold">{c.otherName}</span>
-                {c.unreadCount > 0 && <span className="ds-support shrink-0 rounded-ds-sm bg-ds-error px-2 py-0.5 text-ds-on-action">{c.unreadCount}</span>}
+                <span className={`ds-body truncate ${c.unreadCount > 0 ? "font-bold text-ds-primary" : "font-semibold"}`}>{c.otherName}</span>
+                {c.lastMessageAt && <span className="ds-caption ml-auto shrink-0 text-ds-text-2">{new Date(c.lastMessageAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</span>}
+                {c.unreadCount > 0 && <span className="ds-support shrink-0 rounded-ds-sm bg-ds-error px-2 py-0.5 text-ds-on-action" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
               {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
@@ -143,7 +154,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
 
       <div className={`min-w-0 rounded-ds-sm border border-ds-sky-border bg-ds-surface ${selected ? "" : "hidden md:block"}`}>
         {!selected && <p className="ds-support p-4">Select a conversation to view messages.</p>}
-        {selected && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
+        {selected && !demo && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
@@ -152,7 +163,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 <button onClick={() => setSelected(null)} className="ds-support mb-1 inline-flex items-center gap-1 font-semibold uppercase text-ds-primary hover:underline md:hidden">
                   ← Back to conversations
                 </button>
-                <p className="ds-body truncate font-semibold">{thread.conversation.otherName}</p>
+                <h3 className="ds-body truncate font-bold text-ds-primary">{thread.conversation.otherName}</h3>
                 {thread.conversation.otherMfnId && <p className="ds-support font-mono">{thread.conversation.otherMfnId}</p>}
               </div>
               {!readOnly && (
@@ -178,22 +189,26 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
             {canCompose && (
               <div className="border-t border-ds-border p-3">
                 <p className="ds-support mb-2 text-ds-on-bg/70">{NOTICE}</p>
+                <label htmlFor="wm-reply" className="sr-only">Reply message</label>
                 <div className="flex items-end gap-2">
-                  <textarea value={draft} onChange={(e) => setDraft(e.target.value.slice(0, 2000))} maxLength={2000} rows={2}
-                    placeholder="Write a message…" className="portal-input min-h-[3rem] flex-1 resize-y" />
-                  <button onClick={onSend} disabled={!draft.trim()} className="inline-flex size-11 shrink-0 items-center justify-center rounded-ds-sm bg-ds-action text-ds-on-action disabled:opacity-50">
-                    <Send className="size-4" />
+                  <textarea id="wm-reply" value={draft} onChange={(e) => { setDraft(e.target.value.slice(0, 2000)); setSendError(""); }} maxLength={2000} rows={2}
+                    placeholder="Write a reply…" aria-describedby={sendError ? "wm-err" : undefined} className="portal-input min-h-[3rem] flex-1 resize-y" />
+                  <button onClick={onSend} disabled={!draft.trim() || sending} className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-ds-sm bg-ds-action px-4 font-semibold uppercase text-ds-on-action disabled:opacity-50">
+                    <Send className="size-4" aria-hidden />{sending ? "Sending…" : "Send"}
                   </button>
                 </div>
+                {sendError && <p id="wm-err" role="alert" className="ds-support mt-1 text-ds-error">{sendError}</p>}
                 <p className="ds-support mt-1 text-right text-ds-on-bg/50">{draft.length}/2000</p>
               </div>
             )}
+            {readOnly && <p className="ds-support border-t border-ds-border bg-ds-surface-muted px-4 py-2 text-ds-text-2">Read-only access — replies are turned off for your role.</p>}
+            {demo && <p className="ds-support border-t border-ds-border bg-ds-peach px-4 py-2">Demo conversation — preview only. Nothing is saved or sent.</p>}
             {thread.conversation.archived && mode === "portal" && !readOnly && (
               <p className="ds-support border-t border-ds-border px-4 py-2 text-ds-on-bg/60">This conversation is archived. Restore it to send a new message.</p>
             )}
           </div>
         )}
-        {selected && threadQuery.data && !threadQuery.data.ok && <p className="ds-support p-4">{threadQuery.data.error}</p>}
+        {selected && !demo && threadQuery.data && !threadQuery.data.ok && <p className="ds-support p-4">{threadQuery.data.error}</p>}
       </div>
     </div>
   );

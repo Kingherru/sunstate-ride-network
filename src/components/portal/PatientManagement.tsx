@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { DsButton, DsCheckbox, DsField, DsInput, DsSelect, DsTextarea } from '@/components/ds/controls';
 import { createSavedPatient, getPatientScope, listSavedPatientHistory, listSavedPatients, setSavedPatientActive, updateSavedPatient } from '@/lib/saved-patients.functions';
 import { listMyPayers } from '@/lib/payers.functions';
+import { listSavedPaymentMethods, setPaymentMethodPatient } from '@/lib/saved-payments.functions';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 
 type F = { key: string; label: string; type?: 'text' | 'date' | 'email' | 'tel' | 'number' | 'textarea'; max?: number };
@@ -39,6 +40,20 @@ export function PatientManagement() {
   const q = usePortalQuery({ queryKey: ['saved-patients'], queryFn: () => list() });
   const scope = usePortalQuery({ queryKey: ['patient-scope'], queryFn: () => scopeFn() });
   const payers = usePortalQuery({ queryKey: ['my-payers'], queryFn: () => payersFn() });
+  const cardsFn = useServerFn(listSavedPaymentMethods);
+  const linkCard = useServerFn(setPaymentMethodPatient);
+  const cards = usePortalQuery({ queryKey: ['payer-cards'], queryFn: () => cardsFn() });
+  const cardRows = ((cards.data as any[]) ?? []);
+  async function changeCard(patientId: string, cardId: string) {
+    if (preview.active) return previewBlocked();
+    const current = cardRows.find(c => c.patient_id === patientId);
+    try {
+      if (current && current.id !== cardId) { const r = await linkCard({ data: { id: current.id, patient_id: null } }); if ('error' in r) throw new Error(r.error); }
+      if (cardId) { const r = await linkCard({ data: { id: cardId, patient_id: patientId } }); if ('error' in r) throw new Error(r.error); }
+      toast.success(cardId ? 'Card linked to patient.' : 'Card link removed. The card stays saved.');
+      await qc.invalidateQueries({ queryKey: ['payer-cards'] });
+    } catch (err) { toast.error(err instanceof Error ? err.message : 'Could not update.'); }
+  }
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [editing, setEditing] = useState<Record<string, any> | null>(null);
@@ -110,6 +125,7 @@ export function PatientManagement() {
               <DsButton size="sm" variant="ghost" onClick={() => openHistory(p.id)}>History</DsButton>
             </div>
           </div>
+          {!privateOnly && p.active !== false && cardRows.length > 0 && <div className="max-w-sm"><DsField label="Payment card for this patient">{f => <DsSelect {...f} value={cardRows.find(c => c.patient_id === p.id)?.id ?? ''} onChange={e => changeCard(p.id, e.target.value)}><option value="">No patient card (use account default)</option>{cardRows.filter(c => !c.patient_id || c.patient_id === p.id).map(c => <option key={c.id} value={c.id}>{String(c.brand ?? 'Card').toUpperCase()} •••• {c.last4} · exp {String(c.exp_month).padStart(2, '0')}/{String(c.exp_year).slice(-2)}</option>)}</DsSelect>}</DsField></div>}
           {statusFor?.id === p.id && <div role="alertdialog" aria-label="Confirm status change" className="space-y-3 rounded-ds bg-ds-surface-muted p-4">
             <DsField label={`Reason to ${statusFor!.active ? 'restore' : 'deactivate'}`}>{f => <DsTextarea {...f} minLength={3} maxLength={300} value={reason} onChange={e => setReason(e.target.value)} />}</DsField>
             <div className="flex gap-2"><DsButton size="sm" disabled={busy || reason.trim().length < 3} onClick={changeStatus}>Confirm {statusFor!.active ? 'restore' : 'deactivation'}</DsButton><DsButton size="sm" variant="ghost" onClick={() => setStatusFor(null)}>Cancel</DsButton></div>

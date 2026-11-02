@@ -454,40 +454,55 @@ export type Database = {
       }
       csv_import_jobs: {
         Row: {
+          actor_mfn_id: string | null
           created_at: string
+          draft_ids: string[]
+          error_summary: Json
           failed_rows: number
           id: string
           idempotency_key: string
           kind: string
+          source_type: string
           status: string
           submitted_rows: number
           total_rows: number
           user_id: string
           workspace_id: string
+          workspace_mfn_id: string | null
         }
         Insert: {
+          actor_mfn_id?: string | null
           created_at?: string
+          draft_ids?: string[]
+          error_summary?: Json
           failed_rows?: number
           id?: string
           idempotency_key: string
           kind: string
+          source_type?: string
           status?: string
           submitted_rows?: number
           total_rows?: number
           user_id: string
           workspace_id: string
+          workspace_mfn_id?: string | null
         }
         Update: {
+          actor_mfn_id?: string | null
           created_at?: string
+          draft_ids?: string[]
+          error_summary?: Json
           failed_rows?: number
           id?: string
           idempotency_key?: string
           kind?: string
+          source_type?: string
           status?: string
           submitted_rows?: number
           total_rows?: number
           user_id?: string
           workspace_id?: string
+          workspace_mfn_id?: string | null
         }
         Relationships: [
           {
@@ -4975,33 +4990,53 @@ export type Database = {
           autosaved: boolean
           created_at: string
           id: string
+          import_job_id: string | null
+          import_row: number | null
           payload: Json
+          source: string | null
           submitted_trip_id: string | null
           summary: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           autosaved?: boolean
           created_at?: string
           id?: string
+          import_job_id?: string | null
+          import_row?: number | null
           payload?: Json
+          source?: string | null
           submitted_trip_id?: string | null
           summary?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           autosaved?: boolean
           created_at?: string
           id?: string
+          import_job_id?: string | null
+          import_row?: number | null
           payload?: Json
+          source?: string | null
           submitted_trip_id?: string | null
           summary?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trip_drafts_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "csv_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trip_network_events: {
         Row: {
@@ -5981,6 +6016,56 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upload_originals: {
+        Row: {
+          byte_size: number
+          created_at: string
+          deleted_at: string | null
+          expires_at: string
+          id: string
+          import_job_id: string | null
+          source_hash: string
+          source_type: string
+          storage_path: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          byte_size: number
+          created_at?: string
+          deleted_at?: string | null
+          expires_at?: string
+          id?: string
+          import_job_id?: string | null
+          source_hash: string
+          source_type: string
+          storage_path: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          byte_size?: number
+          created_at?: string
+          deleted_at?: string | null
+          expires_at?: string
+          id?: string
+          import_job_id?: string | null
+          source_hash?: string
+          source_type?: string
+          storage_path?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_originals_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "csv_import_jobs"
             referencedColumns: ["id"]
           },
         ]

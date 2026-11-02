@@ -4,7 +4,8 @@ import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 import { listProviderExportRows } from '@/lib/provider-exports.functions';
-import { EXPORT_FIELDS, providerCsv } from '@/lib/provider-export-rules';
+import { EXPORT_FIELDS } from '@/lib/provider-export-rules';
+import { exportTable, readableDate, type ExportFormat } from '@/lib/table-export';
 import { usePortalPreview, previewBlocked } from './preview-data';
 
 export function ProviderExports() {
@@ -18,19 +19,8 @@ export function ProviderExports() {
       const rows = await read({ data: { start, end } });
       if (!rows.length) { toast('No authorized trips in this date range.'); return; }
       const filename = `${kind.toLowerCase()}-${start}-${end}`;
-      if (format === 'pdf') {
-        const { jsPDF } = await import('jspdf'); const { default: autoTable } = await import('jspdf-autotable');
-        const doc = new jsPDF({ orientation: 'landscape' }); doc.text(`MY FLORIDA NEMT — ${kind}`, 14, 16);
-        autoTable(doc, { startY: 24, head: [EXPORT_FIELDS.map(k => k.replaceAll('_', ' '))], body: rows.map(r => EXPORT_FIELDS.map(k => String(r[k] ?? ''))), styles: { fontSize: 8 } }); doc.save(`${filename}.pdf`);
-      } else if (format === 'xlsx') {
-        const XLSX = await import('xlsx');
-        const workbook = XLSX.utils.book_new();
-        const sheet = XLSX.utils.aoa_to_sheet([EXPORT_FIELDS.map(k => k.replaceAll('_', ' ')), ...rows.map(r => EXPORT_FIELDS.map(k => String(r[k] ?? '')))]);
-        XLSX.utils.book_append_sheet(workbook, sheet, kind); XLSX.writeFile(workbook, `${filename}.xlsx`);
-      } else {
-        const blob = new Blob([providerCsv(rows)], { type: 'text/csv;charset=utf-8' }); const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `${filename}.csv`; a.click(); URL.revokeObjectURL(url);
-      }
+      const cols = EXPORT_FIELDS.map((k) => ({ label: k.replaceAll('_', ' ').replace(/^./, (c) => c.toUpperCase()), value: (r: any) => k === 'pickup_date' ? readableDate(r[k]) : r[k] }));
+      await exportTable(rows as any[], cols, kind, format as ExportFormat, filename);
     } catch { toast.error('Could not export authorized trips.'); } finally { setBusy(false); }
   }
   return <section className="space-y-4 border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">Trip & schedule exports</h2>

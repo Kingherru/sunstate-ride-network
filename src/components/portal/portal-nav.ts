@@ -23,7 +23,7 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal", label: "Overview", exact: true },
   { to: "/portal/requests/new", label: "New trip" },
   { to: "/portal/requests", label: "Trip history", exact: true },
-  { to: "/portal/upload-csv", label: "Upload CSV" },
+  { to: "/portal/upload-csv", label: "Uploads" },
   { to: "/portal/saved-providers", label: "Saved providers" },
   { to: "/portal/find-providers", label: "Find providers" },
   { to: "/portal/contacts", label: "Contacts & payers" },

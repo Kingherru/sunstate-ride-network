@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { markTabViewed } from "@/lib/unread.functions";
+import { ACTIVITY_KEYS } from "@/lib/indicators.functions";
+import { usePortalPreview } from "@/components/portal/preview-data";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -56,6 +59,12 @@ function RequestDetail({ req, admin, canManage, onBack }: { req: PlatformRequest
     queryKey: ["platform-request-events", req.id],
     queryFn: () => eventsFn({ data: { requestId: req.id } }),
   });
+
+  const preview = usePortalPreview();
+  useEffect(() => {
+    if (admin || preview.active) return;
+    markTabViewed({ data: { tab_key: ACTIVITY_KEYS.platformRequests } }).then(() => qc.invalidateQueries({ queryKey: ["activity-indicators"] })).catch(() => {});
+  }, [req.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const replyM = usePortalMutation({
     mutationFn: () => replyFn({ data: { requestId: req.id, body: reply } }),
