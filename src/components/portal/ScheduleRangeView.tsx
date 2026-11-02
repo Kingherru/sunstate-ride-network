@@ -26,7 +26,7 @@ const ATTN: Record<Attention, string> = { no_driver: "Unassigned driver", no_veh
 export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
   const [anchor, setAnchor] = useState(iso(new Date()));
   const [driver, setDriver] = useState("all"); const [vehicle, setVehicle] = useState("all");
-  const [status, setStatus] = useState("all"); const [attention, setAttention] = useState(false); const [q, setQ] = useState("");
+  const [status, setStatus] = useState("all"); const [attention, setAttention] = useState(false); const [inactive, setInactive] = useState(false); const [q, setQ] = useState("");
   const r = rangeFor(view, anchor);
   const open = useRequestDetails();
   const trips = usePortalQuery({ queryKey: ["range-reservations", r.start, r.end], queryFn: () => listReservationsForRange({ data: { start: r.start, end: r.end } }) });
@@ -67,12 +67,13 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
       <input type="date" aria-label="Go to date" value={anchor} onChange={(e) => e.target.value && setAnchor(e.target.value)} className="portal-control" />
       <p className="ds-label text-ds-primary">{label}</p>
     </div>
-    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))_auto]">
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))_auto]">
       <label className="relative block"><span className="sr-only">Search trips</span><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ds-text-2" aria-hidden />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search passenger or city" className="portal-control w-full !pl-9" /></label>
-      <select aria-label="Filter by driver" value={driver} onChange={(e) => setDriver(e.target.value)} className="portal-control"><option value="all">All drivers</option><option value="unassigned">No driver</option>{[...driverMap.values()].map((d) => <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>)}</select>
-      <select aria-label="Filter by vehicle" value={vehicle} onChange={(e) => setVehicle(e.target.value)} className="portal-control"><option value="all">All vehicles</option><option value="unassigned">No vehicle</option>{[...vehicleMap.values()].map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}</select>
+      <select aria-label="Filter by driver" value={driver} onChange={(e) => setDriver(e.target.value)} className="portal-control"><option value="all">All drivers</option><option value="unassigned">No driver</option>{[...driverMap.values()].filter((d) => inactive || !d.status || d.status === "active" || rows.some((t) => t.driver_id === d.id)).map((d) => <option key={d.id} value={d.id}>{d.first_name} {d.last_name}{d.status && d.status !== "active" ? " (inactive)" : ""}</option>)}</select>
+      <select aria-label="Filter by vehicle" value={vehicle} onChange={(e) => setVehicle(e.target.value)} className="portal-control"><option value="all">All vehicles</option><option value="unassigned">No vehicle</option>{[...vehicleMap.values()].filter((v) => inactive || !v.status || v.status === "active" || rows.some((t) => t.vehicle_id === v.id)).map((v) => <option key={v.id} value={v.id}>{v.name}{v.status && v.status !== "active" ? " (inactive)" : ""}</option>)}</select>
       <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)} className="portal-control"><option value="all">All statuses</option>{statuses.map((s) => <option key={s} value={s}>{s}</option>)}</select>
+      <select aria-label="Active or inactive resources" value={inactive ? "include" : "active"} onChange={(e) => setInactive(e.target.value === "include")} className="portal-control"><option value="active">Active only</option><option value="include">Include inactive</option></select>
       <label className="portal-control cursor-pointer whitespace-nowrap"><input type="checkbox" checked={attention} onChange={(e) => setAttention(e.target.checked)} />Needs attention ({attnCount})</label>
     </div>
     {trips.isError && <p role="alert" className="ds-support text-ds-error">Schedule could not be loaded.</p>}
