@@ -9,6 +9,7 @@ import { template as tripFinalDetails } from './trip-final-details'
 import { template as providerQuoteRequest } from './provider-quote-request'
 import { template as providerApprovalRequest } from './provider-approval-request'
 import { template as staffNewTripReview } from './staff-new-trip-review'
+import { template as driverSchedule } from './driver-schedule'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -34,4 +35,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'provider-quote-request': providerQuoteRequest,
   'provider-approval-request': providerApprovalRequest,
   'staff-new-trip-review': staffNewTripReview,
+  'driver-schedule': driverSchedule,
 }

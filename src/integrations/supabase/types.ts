@@ -777,6 +777,51 @@ export type Database = {
           },
         ]
       }
+      driver_schedule_email_batches: {
+        Row: {
+          actor_mfn_id: string | null
+          actor_user_id: string
+          created_at: string
+          driver_ids: string[]
+          id: string
+          idempotency_key: string
+          range_end: string
+          range_start: string
+          sent_count: number
+          status: string
+          trip_count: number
+          workspace_id: string
+        }
+        Insert: {
+          actor_mfn_id?: string | null
+          actor_user_id: string
+          created_at?: string
+          driver_ids: string[]
+          id?: string
+          idempotency_key: string
+          range_end: string
+          range_start: string
+          sent_count?: number
+          status?: string
+          trip_count?: number
+          workspace_id: string
+        }
+        Update: {
+          actor_mfn_id?: string | null
+          actor_user_id?: string
+          created_at?: string
+          driver_ids?: string[]
+          id?: string
+          idempotency_key?: string
+          range_end?: string
+          range_start?: string
+          sent_count?: number
+          status?: string
+          trip_count?: number
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       drivers: {
         Row: {
           availability: Json
@@ -1282,6 +1327,48 @@ export type Database = {
           standard_hold_hours?: number
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      fleet_resource_status_events: {
+        Row: {
+          actor_mfn_id: string | null
+          actor_user_id: string
+          created_at: string
+          id: string
+          new_status: string
+          previous_status: string | null
+          reason: string
+          resource_id: string
+          resource_kind: string
+          resource_reference: string | null
+          workspace_id: string
+        }
+        Insert: {
+          actor_mfn_id?: string | null
+          actor_user_id: string
+          created_at?: string
+          id?: string
+          new_status: string
+          previous_status?: string | null
+          reason: string
+          resource_id: string
+          resource_kind: string
+          resource_reference?: string | null
+          workspace_id: string
+        }
+        Update: {
+          actor_mfn_id?: string | null
+          actor_user_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string
+          previous_status?: string | null
+          reason?: string
+          resource_id?: string
+          resource_kind?: string
+          resource_reference?: string | null
+          workspace_id?: string
         }
         Relationships: []
       }
@@ -2969,6 +3056,104 @@ export type Database = {
           signing_secret?: string
           updated_at?: string
           url?: string
+        }
+        Relationships: []
+      }
+      provider_api_credential_events: {
+        Row: {
+          actor_mfn_id: string | null
+          actor_user_id: string
+          created_at: string
+          credential_id: string
+          detail: string | null
+          event: string
+          id: string
+          workspace_id: string
+        }
+        Insert: {
+          actor_mfn_id?: string | null
+          actor_user_id: string
+          created_at?: string
+          credential_id: string
+          detail?: string | null
+          event: string
+          id?: string
+          workspace_id: string
+        }
+        Update: {
+          actor_mfn_id?: string | null
+          actor_user_id?: string
+          created_at?: string
+          credential_id?: string
+          detail?: string | null
+          event?: string
+          id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_api_credential_events_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "provider_api_credentials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_api_credentials: {
+        Row: {
+          created_at: string
+          created_by: string
+          created_by_mfn_id: string | null
+          id: string
+          key_last4: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          replaced_by: string | null
+          revoked_at: string | null
+          revoked_by_mfn_id: string | null
+          rotated_at: string | null
+          scopes: string[]
+          secret_hash: string
+          status: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          created_by_mfn_id?: string | null
+          id?: string
+          key_last4: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          replaced_by?: string | null
+          revoked_at?: string | null
+          revoked_by_mfn_id?: string | null
+          rotated_at?: string | null
+          scopes?: string[]
+          secret_hash: string
+          status?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          created_by_mfn_id?: string | null
+          id?: string
+          key_last4?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          replaced_by?: string | null
+          revoked_at?: string | null
+          revoked_by_mfn_id?: string | null
+          rotated_at?: string | null
+          scopes?: string[]
+          secret_hash?: string
+          status?: string
+          workspace_id?: string
         }
         Relationships: []
       }
@@ -8495,6 +8680,10 @@ export type Database = {
           _workspace: string
         }
         Returns: undefined
+      }
+      set_fleet_resource_status: {
+        Args: { _id: string; _kind: string; _reason: string; _status: string }
+        Returns: Json
       }
       set_trip_payment_status: {
         Args: {

@@ -375,3 +375,5 @@
 .portal-root[data-density="comfortable"] main { padding-top: 2.5rem; padding-bottom: 2.5rem; }
 .portal-root[data-density="comfortable"] .portal-input { min-height: 3.25rem; }
 .portal-root[data-density="comfortable"] main .space-y-5 > * + * { margin-top: 1.75rem; }
+
+@media (max-width: 639px) { .theme-portal .portal-toolbar > .portal-control, .theme-portal .portal-toolbar > select { width: 100%; } }
