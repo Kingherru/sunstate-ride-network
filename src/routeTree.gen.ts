@@ -104,7 +104,9 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as ApiPublicIntegrationsHibambiWebhookRouteImport } from './routes/api/public/integrations/hibambi.webhook'
 import { Route as ApiPublicIntegrationsRoutegenieWebhookRouteImport } from './routes/api/public/integrations/routegenie.webhook'
+import { Route as ApiPublicProviderV1ScheduleRouteImport } from './routes/api/public/provider/v1/schedule'
 import { Route as ApiPublicIntegrationsDuetEventsEventRouteImport } from './routes/api/public/integrations/duet.events.$event'
+import { Route as ApiPublicProviderV1ExportsTripsRouteImport } from './routes/api/public/provider/v1/exports/trips'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -634,10 +636,22 @@ const ApiPublicIntegrationsRoutegenieWebhookRoute =
     path: '/api/public/integrations/routegenie/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicProviderV1ScheduleRoute =
+  ApiPublicProviderV1ScheduleRouteImport.update({
+    id: '/api/public/provider/v1/schedule',
+    path: '/api/public/provider/v1/schedule',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIntegrationsDuetEventsEventRoute =
   ApiPublicIntegrationsDuetEventsEventRouteImport.update({
     id: '/api/public/integrations/duet/events/$event',
     path: '/api/public/integrations/duet/events/$event',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicProviderV1ExportsTripsRoute =
+  ApiPublicProviderV1ExportsTripsRouteImport.update({
+    id: '/api/public/provider/v1/exports/trips',
+    path: '/api/public/provider/v1/exports/trips',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -736,7 +750,9 @@ export interface FileRoutesByFullPath {
   '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  '/api/public/provider/v1/schedule': typeof ApiPublicProviderV1ScheduleRoute
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
+  '/api/public/provider/v1/exports/trips': typeof ApiPublicProviderV1ExportsTripsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -829,7 +845,9 @@ export interface FileRoutesByTo {
   '/florida-coverage/$region/$county': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  '/api/public/provider/v1/schedule': typeof ApiPublicProviderV1ScheduleRoute
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
+  '/api/public/provider/v1/exports/trips': typeof ApiPublicProviderV1ExportsTripsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -928,7 +946,9 @@ export interface FileRoutesById {
   '/florida-coverage/$region/$county/': typeof FloridaCoverageRegionCountyIndexRoute
   '/api/public/integrations/hibambi/webhook': typeof ApiPublicIntegrationsHibambiWebhookRoute
   '/api/public/integrations/routegenie/webhook': typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  '/api/public/provider/v1/schedule': typeof ApiPublicProviderV1ScheduleRoute
   '/api/public/integrations/duet/events/$event': typeof ApiPublicIntegrationsDuetEventsEventRoute
+  '/api/public/provider/v1/exports/trips': typeof ApiPublicProviderV1ExportsTripsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1027,7 +1047,9 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/$county/'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
+    | '/api/public/provider/v1/schedule'
     | '/api/public/integrations/duet/events/$event'
+    | '/api/public/provider/v1/exports/trips'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1120,7 +1142,9 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/$county'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
+    | '/api/public/provider/v1/schedule'
     | '/api/public/integrations/duet/events/$event'
+    | '/api/public/provider/v1/exports/trips'
   id:
     | '__root__'
     | '/'
@@ -1218,7 +1242,9 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/$county/'
     | '/api/public/integrations/hibambi/webhook'
     | '/api/public/integrations/routegenie/webhook'
+    | '/api/public/provider/v1/schedule'
     | '/api/public/integrations/duet/events/$event'
+    | '/api/public/provider/v1/exports/trips'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1268,7 +1294,9 @@ export interface RootRouteChildren {
   FloridaCoverageRegionCountyIndexRoute: typeof FloridaCoverageRegionCountyIndexRoute
   ApiPublicIntegrationsHibambiWebhookRoute: typeof ApiPublicIntegrationsHibambiWebhookRoute
   ApiPublicIntegrationsRoutegenieWebhookRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRoute
+  ApiPublicProviderV1ScheduleRoute: typeof ApiPublicProviderV1ScheduleRoute
   ApiPublicIntegrationsDuetEventsEventRoute: typeof ApiPublicIntegrationsDuetEventsEventRoute
+  ApiPublicProviderV1ExportsTripsRoute: typeof ApiPublicProviderV1ExportsTripsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1938,11 +1966,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIntegrationsRoutegenieWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/provider/v1/schedule': {
+      id: '/api/public/provider/v1/schedule'
+      path: '/api/public/provider/v1/schedule'
+      fullPath: '/api/public/provider/v1/schedule'
+      preLoaderRoute: typeof ApiPublicProviderV1ScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/integrations/duet/events/$event': {
       id: '/api/public/integrations/duet/events/$event'
       path: '/api/public/integrations/duet/events/$event'
       fullPath: '/api/public/integrations/duet/events/$event'
       preLoaderRoute: typeof ApiPublicIntegrationsDuetEventsEventRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/provider/v1/exports/trips': {
+      id: '/api/public/provider/v1/exports/trips'
+      path: '/api/public/provider/v1/exports/trips'
+      fullPath: '/api/public/provider/v1/exports/trips'
+      preLoaderRoute: typeof ApiPublicProviderV1ExportsTripsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -2142,8 +2184,10 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicIntegrationsHibambiWebhookRoute,
   ApiPublicIntegrationsRoutegenieWebhookRoute:
     ApiPublicIntegrationsRoutegenieWebhookRoute,
+  ApiPublicProviderV1ScheduleRoute: ApiPublicProviderV1ScheduleRoute,
   ApiPublicIntegrationsDuetEventsEventRoute:
     ApiPublicIntegrationsDuetEventsEventRoute,
+  ApiPublicProviderV1ExportsTripsRoute: ApiPublicProviderV1ExportsTripsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
