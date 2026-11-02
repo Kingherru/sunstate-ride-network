@@ -504,7 +504,7 @@ function VehiclesCard() {
             const drv = (dq.data ?? []).find((d: any) => d.id === v.assigned_driver_id);
             return (
             <li key={v.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
-              <div>
+              <div className="min-w-0 break-words">
                 <div className="font-bold">{v.name}
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{String(v.vehicle_type ?? v.type ?? "Not set").replace("_"," ")}</span>
                 </div>
