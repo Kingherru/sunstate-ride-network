@@ -7,9 +7,9 @@ export type ButtonVariant = "primary" | "secondary" | "on-blue" | "ghost";
 
 const buttonVariants: Record<ButtonVariant, string> = {
   primary: "bg-ds-accent text-ds-on-accent hover:bg-ds-accent-hover active:bg-ds-accent-active",
-  secondary: "bg-ds-link text-ds-on-primary hover:bg-ds-link-hover active:bg-ds-primary-active",
+  secondary: "bg-ds-link-hover text-ds-on-primary hover:bg-ds-primary active:bg-ds-primary-active",
   "on-blue": "bg-ds-surface text-ds-primary hover:bg-ds-sky active:bg-ds-active focus-visible:ring-offset-ds-primary",
-  ghost: "bg-transparent text-ds-link hover:bg-ds-hover active:bg-ds-active",
+  ghost: "bg-transparent text-ds-link-hover hover:bg-ds-hover active:bg-ds-active",
 };
 
 export const DsButton = forwardRef<
