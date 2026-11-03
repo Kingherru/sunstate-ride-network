@@ -374,7 +374,14 @@ async function resolveReferralParties(context: any, supabaseAdmin: any, distribu
     const { data: ws } = await supabaseAdmin.from("workspaces").select("id, status, account_type").in("id", [mine, other]);
     const me = (ws ?? []).find((w: any) => w.id === mine), them = (ws ?? []).find((w: any) => w.id === other);
     if (me?.status !== "active" || them?.status !== "active" || them.account_type !== "provider") return null;
-    return { mine: mine as string, other: other as string };
+    // Historical conversation between these two businesses: authorized parties keep it.
+    const { data: existing } = await supabaseAdmin.from("workspace_conversations").select("id")
+      .or(`and(workspace_a_id.eq.${mine},workspace_b_id.eq.${other}),and(workspace_a_id.eq.${other},workspace_b_id.eq.${mine})`).limit(1);
+    if (existing?.length) return { mine: mine as string, other: other as string, existing: true };
+    // New conversation: counterparty must still be listed in the Network directory.
+    const { data: listed } = await context.supabase.rpc("list_network_providers", {});
+    if (!(listed ?? []).some((p: any) => p.workspace_id === other)) return null;
+    return { mine: mine as string, other: other as string, existing: false };
   }
   return null;
 }

@@ -62,9 +62,9 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
   const attnCount = rows.filter((t) => issues(t).length > 0).length;
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center gap-2">
-      <button type="button" aria-label="Previous" onClick={() => step(-1)} className="portal-control"><ChevronLeft className="size-4" /></button>
-      <button type="button" onClick={() => setAnchor(iso(new Date()))} className="portal-control">Today</button>
-      <button type="button" aria-label="Next" onClick={() => step(1)} className="portal-control"><ChevronRight className="size-4" /></button>
+      <button type="button" aria-label="Previous" onClick={() => step(-1)} className="ds-glass-btn min-h-[46px] px-3"><ChevronLeft className="size-4" /></button>
+      <button type="button" onClick={() => setAnchor(iso(new Date()))} className="ds-glass-btn min-h-[46px] text-xs">Today</button>
+      <button type="button" aria-label="Next" onClick={() => step(1)} className="ds-glass-btn min-h-[46px] px-3"><ChevronRight className="size-4" /></button>
       <input type="date" aria-label="Go to date" value={anchor} onChange={(e) => e.target.value && setAnchor(e.target.value)} className="portal-control" />
       <p className="ds-label text-ds-primary">{label}</p>
     </div>

@@ -55,7 +55,7 @@ function CustomerOverview() {
     <div className="space-y-6">
       <dl className="grid grid-cols-3 gap-3">
         {([["Sent", counts.sent], ["Accepted", counts.accepted], ["Declined", counts.declined]] as const).map(([label, n]) => (
-          <div key={label} className="rounded-ds border border-ds-border bg-ds-surface px-4 py-4 text-center shadow-[var(--ds-shadow)]">
+          <div key={label} className="ds-glass px-4 py-4 text-center">
             <dd className="text-2xl font-extrabold text-ds-primary">{n}</dd>
             <dt className="ds-support mt-1 uppercase">{label}</dt>
           </div>
