@@ -49,7 +49,7 @@ function Player() {
   });
 
   if (isLoading) return <div className="max-w-3xl mx-auto p-10">Loading…</div>;
-  if (error || !data) return <div className="max-w-3xl mx-auto p-10 text-destructive">{(error as any)?.message ?? "Unable to load course."}</div>;
+  if (error || !data) return <div className="max-w-3xl mx-auto p-10 text-ds-error">{(error as any)?.message ?? "Unable to load course."}</div>;
 
   const { course, modules, questions, enrollment, certificate } = data;
   const totalSteps = modules.length + 1; // modules + exam
@@ -58,16 +58,16 @@ function Player() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <Link to="/learn" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"><ArrowLeft className="w-4 h-4" />My Courses</Link>
+      <Link to="/learn" className="ds-glass-btn mb-4 min-h-9 px-3 text-sm"><ArrowLeft className="w-4 h-4" />My Courses</Link>
       <h1 className="text-2xl md:text-3xl font-extrabold mb-2">{course.title}</h1>
       {data.personMfnId && <p className="ds-support font-mono">{data.personMfnId}</p>}
-      <div className="text-sm text-muted-foreground mb-6">Step {step + 1} of {totalSteps}</div>
+      <div className="text-sm text-ds-text-2 mb-6">Step {step + 1} of {totalSteps}</div>
 
       {enrollment.status === "completed" && certificate ? (
-        <div className="border border-primary/40 bg-primary/5 rounded-lg p-6 mb-6">
-          <div className="flex items-center gap-2 mb-2"><Award className="w-6 h-6 text-primary" /><h2 className="text-xl font-bold">Certificate issued</h2></div>
-          <p className="text-sm text-muted-foreground mb-1">Certificate #: <span className="font-mono">{certificate.cert_number}</span></p>
-          <p className="text-sm text-muted-foreground mb-4">Holder: {certificate.holder_name}</p>
+        <div className="border border-ds-sky-border bg-ds-sky rounded-ds p-6 mb-6">
+          <div className="flex items-center gap-2 mb-2"><Award className="w-6 h-6 text-ds-primary" /><h2 className="text-xl font-bold">Certificate issued</h2></div>
+          <p className="text-sm text-ds-text-2 mb-1">Certificate #: <span className="font-mono">{certificate.cert_number}</span></p>
+          <p className="text-sm text-ds-text-2 mb-4">Holder: {certificate.holder_name}</p>
           <div className="flex gap-2 flex-wrap">
             <Button onClick={() => downloadCert.mutate(certificate.id)} disabled={downloadCert.isPending}><Download className="w-4 h-4 mr-1" />{downloadCert.isPending ? "Preparing…" : "Download PDF"}</Button>
             <Button asChild variant="outline"><Link to="/verify/$token" params={{ token: certificate.verify_token }}>Public verify link</Link></Button>
@@ -76,19 +76,19 @@ function Player() {
       ) : null}
 
       {basic && !isExam ? <BasicNemtReading pages={data.readingPages} onExam={() => setBasicExam(true)} /> : !isExam ? (
-        <article className="border border-border rounded-lg p-6 bg-card mb-6">
+        <article className="border border-ds-border rounded-ds p-6 bg-ds-surface mb-6">
           <h2 className="text-xl font-bold mb-3">{modules[step].title}</h2>
           <div className="prose prose-sm max-w-none whitespace-pre-line">{modules[step].body_markdown}</div>
         </article>
       ) : result ? (
-        <div className={`border rounded-lg p-6 mb-6 ${result.passed ? "border-primary/40 bg-primary/5" : "border-destructive/40 bg-destructive/5"}`}>
+        <div className={`border rounded-ds p-6 mb-6 ${result.passed ? "border-ds-sky-border bg-ds-sky" : "border-ds-error bg-ds-error-soft"}`}>
           <div className="flex items-center gap-2 mb-2">
-            {result.passed ? <CheckCircle2 className="w-6 h-6 text-primary" /> : <XCircle className="w-6 h-6 text-destructive" />}
+            {result.passed ? <CheckCircle2 className="w-6 h-6 text-ds-primary" /> : <XCircle className="w-6 h-6 text-ds-error" />}
             <h2 className="text-xl font-bold">{result.passed ? "You passed!" : "Not quite — try again"}</h2>
           </div>
           <p>Score: {result.score}% ({result.correct}/{result.total})</p>
           {result.passed ? (
-            <p className="text-sm text-muted-foreground mt-2">Your certificate is being issued — refresh this page to download it.</p>
+            <p className="text-sm text-ds-text-2 mt-2">Your certificate is being issued — refresh this page to download it.</p>
           ) : (
             <Button className="mt-4" onClick={() => { setResult(null); setAnswers({}); }}>Retake exam</Button>
           )}
@@ -133,14 +133,14 @@ function ExamForm({
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border border-border rounded-md px-3 py-2 bg-background"
+          className="w-full border border-ds-border rounded-ds-sm px-3 py-2 bg-ds-surface"
           placeholder="Your full name"
         />
       </div>
       {questions.map((q, i) => {
         const choices = Array.isArray(q.choices) ? (q.choices as string[]) : [];
         return (
-          <fieldset key={q.id} className="border border-border rounded-lg p-4">
+          <fieldset key={q.id} className="border border-ds-border rounded-ds p-4">
             <legend className="font-semibold px-1">{i + 1}. {q.prompt}</legend>
             <div className="space-y-2 mt-2">
               {choices.map((c, ci) => (

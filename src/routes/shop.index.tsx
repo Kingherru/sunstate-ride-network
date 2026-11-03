@@ -35,17 +35,17 @@ function ShopIndex() {
 
         <section className="max-w-6xl mx-auto px-4 py-12">
           {courses.length === 0 ? (
-            <p className="text-muted-foreground">No courses available right now — check back soon.</p>
+            <p className="text-ds-text-2">No courses available right now — check back soon.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((c) => (
-                <Link key={c.id} to="/shop/$slug" params={{ slug: c.slug }} className="group border border-border rounded-lg overflow-hidden bg-card hover:border-primary transition flex flex-col">
+                <Link key={c.id} to="/shop/$slug" params={{ slug: c.slug }} className="group border border-ds-border rounded-ds overflow-hidden bg-ds-surface hover:border-primary transition flex flex-col">
                   <div className="h-40 bg-primary" />
                   <div className="p-5 flex-1 flex flex-col">
                     <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition">{c.title}</h2>
-                    <p className="text-sm text-muted-foreground mb-4 flex-1">{c.summary}</p>
+                    <p className="text-sm text-ds-text-2 mb-4 flex-1">{c.summary}</p>
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-3 text-muted-foreground">
+                      <div className="flex items-center gap-3 text-ds-text-2">
                         <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{c.duration_min} min</span>
                         <span className="flex items-center gap-1"><Award className="w-4 h-4" />Cert</span>
                       </div>
@@ -56,7 +56,7 @@ function ShopIndex() {
               ))}
             </div>
           )}
-          <p className="mt-6 text-xs text-muted-foreground italic">Pricing is subject to change at any time.</p>
+          <p className="mt-6 text-xs text-ds-text-2 italic">Pricing is subject to change at any time.</p>
         </section>
       </main>
   );

@@ -12,7 +12,7 @@ function LearnLayout() {
   const title = pathname.startsWith("/learn/settings") ? "Settings" : "Training";
   return (
     <div className="theme-portal min-h-screen bg-ds-bg">
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-3 bg-ds-primary px-4 sm:px-6">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-end gap-3 bg-ds-primary ds-glass-blue px-4 sm:px-6">
         <h1 className="sr-only">{title}</h1>
         <TrainingCartIcon />
         <Link to="/learn/settings" aria-label="Settings" title="Settings"
