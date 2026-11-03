@@ -73,7 +73,7 @@ function PortalPreview() {
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
     <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle} settingsTo={`${previewTo}?page=account`} notificationsTo={`${previewTo}?page=notifications`}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-ds border border-ds-peach-border bg-ds-peach px-4 py-3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 ds-glass px-4 py-3">
         <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Preview mode — demo information only, nothing is saved</p>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
       </div>
