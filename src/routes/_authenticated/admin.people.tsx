@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 import { PersonDetails } from '@/components/admin/PersonDetails';
-import { MembershipTransitionsList, GrandfatheringList, GrandfatheringList } from '@/components/admin/AdminMembership';
+import { MembershipTransitionsList, GrandfatheringList } from '@/components/admin/AdminMembership';
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 import { matchesPeopleFilters } from '@/lib/people-filters';
 import { ProviderBadgeControl } from '@/components/admin/ProviderBadgeControl';
