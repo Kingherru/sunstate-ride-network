@@ -468,7 +468,6 @@
 .theme-portal :is(.grid, .flex) > * { min-width: 0; }
 .theme-portal :is([role="dialog"], form) label { line-height: 1.35; }
 .theme-portal :is([role="dialog"], form) label > :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) { display: block; width: 100%; margin-top: .375rem; }
-.theme-portal :is([role="dialog"], form) :is(.grid) { row-gap: max(1rem, var(--tw-gap-y, 0px)); column-gap: max(1rem, var(--tw-gap-x, 0px)); }
 .theme-portal :is(input, select, textarea) + :is(p, small, [role="alert"]) { display: block; margin-top: .375rem; }
 .theme-portal input:is([class*="pl-8"], [class*="pl-9"], [class*="pl-10"], [class*="pl-11"]) { padding-left: 2.5rem; }
 .theme-portal :is(.relative) > svg.absolute + input, .theme-portal :is(.relative) > input:has(+ svg.absolute) { padding-left: 2.5rem; }

@@ -172,7 +172,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   );
   const classification = identity?.label ? <p className="ds-support mx-6 mb-3 flex items-center gap-1.5 text-ds-on-primary/85"><IdCard className="size-3.5 shrink-0" aria-hidden />{identity.label}</p> : null;
   const topHeader = (
-    <header className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-3 bg-ds-primary px-4 sm:px-6 lg:flex lg:px-10">
+    <header className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-3 bg-ds-primary ds-glass-blue px-4 sm:px-6 lg:flex lg:px-10">
       <h1 className="sr-only">{pageTitle}</h1>
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         <TrainingCartIcon />
@@ -205,7 +205,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </aside>
 
       {/* Phone/tablet top bar + drawer */}
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 bg-ds-primary px-3 py-2.5 lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 bg-ds-primary ds-glass-blue px-3 py-2.5 lg:hidden">
         <div className="flex min-w-0 items-center gap-2">
           <button ref={menuBtn} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="portal-drawer" aria-label={open ? "Close menu" : "Open menu"}
             className="inline-flex size-10 shrink-0 items-center justify-center rounded-ds-sm text-ds-on-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
@@ -229,7 +229,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
         </div>
       </header>
       {open && (
-        <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary pb-6 pt-2 lg:hidden">
+        <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary ds-glass-blue pb-6 pt-2 lg:hidden">
             <div className="pt-2">{classification}</div><div className="flex-1">{links}</div>
           <div className="mt-6">{footer}</div>
         </div>
