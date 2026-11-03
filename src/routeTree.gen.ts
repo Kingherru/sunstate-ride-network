@@ -52,6 +52,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminAdminsRouteImport } from './routes/_authenticated/admin.admins'
 import { Route as AuthenticatedAdminChangelogRouteImport } from './routes/_authenticated/admin.changelog'
 import { Route as AuthenticatedAdminIntegrationsRouteImport } from './routes/_authenticated/admin.integrations'
+import { Route as AuthenticatedAdminLaunchRouteImport } from './routes/_authenticated/admin.launch'
 import { Route as AuthenticatedAdminMessagingRouteImport } from './routes/_authenticated/admin.messaging'
 import { Route as AuthenticatedAdminNetworkRouteImport } from './routes/_authenticated/admin.network'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
@@ -327,6 +328,12 @@ const AuthenticatedAdminIntegrationsRoute =
   AuthenticatedAdminIntegrationsRouteImport.update({
     id: '/integrations',
     path: '/integrations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminLaunchRoute =
+  AuthenticatedAdminLaunchRouteImport.update({
+    id: '/launch',
+    path: '/launch',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminMessagingRoute =
@@ -697,6 +704,7 @@ export interface FileRoutesByFullPath {
   '/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/admin/launch': typeof AuthenticatedAdminLaunchRoute
   '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
   '/admin/network': typeof AuthenticatedAdminNetworkRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
@@ -792,6 +800,7 @@ export interface FileRoutesByTo {
   '/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/admin/launch': typeof AuthenticatedAdminLaunchRoute
   '/admin/messaging': typeof AuthenticatedAdminMessagingRoute
   '/admin/network': typeof AuthenticatedAdminNetworkRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
@@ -893,6 +902,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/admins': typeof AuthenticatedAdminAdminsRoute
   '/_authenticated/admin/changelog': typeof AuthenticatedAdminChangelogRoute
   '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/_authenticated/admin/launch': typeof AuthenticatedAdminLaunchRoute
   '/_authenticated/admin/messaging': typeof AuthenticatedAdminMessagingRoute
   '/_authenticated/admin/network': typeof AuthenticatedAdminNetworkRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
@@ -994,6 +1004,7 @@ export interface FileRouteTypes {
     | '/admin/admins'
     | '/admin/changelog'
     | '/admin/integrations'
+    | '/admin/launch'
     | '/admin/messaging'
     | '/admin/network'
     | '/admin/notifications'
@@ -1089,6 +1100,7 @@ export interface FileRouteTypes {
     | '/admin/admins'
     | '/admin/changelog'
     | '/admin/integrations'
+    | '/admin/launch'
     | '/admin/messaging'
     | '/admin/network'
     | '/admin/notifications'
@@ -1189,6 +1201,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/admins'
     | '/_authenticated/admin/changelog'
     | '/_authenticated/admin/integrations'
+    | '/_authenticated/admin/launch'
     | '/_authenticated/admin/messaging'
     | '/_authenticated/admin/network'
     | '/_authenticated/admin/notifications'
@@ -1602,6 +1615,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIntegrationsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/launch': {
+      id: '/_authenticated/admin/launch'
+      path: '/launch'
+      fullPath: '/admin/launch'
+      preLoaderRoute: typeof AuthenticatedAdminLaunchRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/messaging': {
       id: '/_authenticated/admin/messaging'
       path: '/messaging'
@@ -1994,6 +2014,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAdminsRoute: typeof AuthenticatedAdminAdminsRoute
   AuthenticatedAdminChangelogRoute: typeof AuthenticatedAdminChangelogRoute
   AuthenticatedAdminIntegrationsRoute: typeof AuthenticatedAdminIntegrationsRoute
+  AuthenticatedAdminLaunchRoute: typeof AuthenticatedAdminLaunchRoute
   AuthenticatedAdminMessagingRoute: typeof AuthenticatedAdminMessagingRoute
   AuthenticatedAdminNetworkRoute: typeof AuthenticatedAdminNetworkRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
@@ -2013,6 +2034,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAdminsRoute: AuthenticatedAdminAdminsRoute,
   AuthenticatedAdminChangelogRoute: AuthenticatedAdminChangelogRoute,
   AuthenticatedAdminIntegrationsRoute: AuthenticatedAdminIntegrationsRoute,
+  AuthenticatedAdminLaunchRoute: AuthenticatedAdminLaunchRoute,
   AuthenticatedAdminMessagingRoute: AuthenticatedAdminMessagingRoute,
   AuthenticatedAdminNetworkRoute: AuthenticatedAdminNetworkRoute,
   AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,

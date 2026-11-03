@@ -46,6 +46,15 @@ function AdminSettings() {
           </div>
         </section>
       )}
+      {access.isMasterAdmin && (
+        <section className={`${panelCls} mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5`}>
+          <div className="min-w-0 max-w-2xl">
+            <h2 className="ds-subheading uppercase text-ds-primary">Launch readiness</h2>
+            <p className="ds-support mt-1 text-ds-text-2">Read-only checklist of what is ready, off, or waiting on owner action.</p>
+          </div>
+          <Link to="/admin/launch" className={actionCls}>Open</Link>
+        </section>
+      )}
       {access.isMasterAdmin && <section className={`${panelCls} mb-6 p-5`}><NetworkTimingSettings /></section>}
 
       <section className={`${panelCls} mb-6`} aria-labelledby="preview-h">

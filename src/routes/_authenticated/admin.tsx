@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
     if (!access.isAdmin) throw redirect({ to: access.destination === "/admin" ? "/account-status" : access.destination });
     const perms = await getMyAdminPermissions();
     const path = location.pathname.replace(/\/$/, "") || "/admin";
-    if (path !== "/admin" && path !== "/admin/changelog" && path !== "/admin/settings" && !path.startsWith("/admin/preview") && !canOpen(path, perms)) throw redirect({ to: "/admin" });
+    if (path !== "/admin" && path !== "/admin/changelog" && path !== "/admin/settings" && path !== "/admin/launch" && !path.startsWith("/admin/preview") && !canOpen(path, perms)) throw redirect({ to: "/admin" });
     return { access, perms };
   },
   component: AdminLayout,
