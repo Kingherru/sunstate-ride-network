@@ -38,7 +38,7 @@ function Overview() {
       <PageHead title="Admin" action={<Link to="/admin/requests" className={actionCls}>All requests</Link>}>
         Request review and controlled provider distribution.
       </PageHead>
-      <nav aria-label="Admin activity" className="mb-6 grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">{groups.map(g => <Link key={g.label} to={g.to as '/admin/network'} className="grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-ds-sm border border-ds-border bg-ds-sky/50 px-4 py-3 text-ds-primary ds-transition hover:border-ds-primary"><span className="ds-label min-w-0">{g.label}</span><strong className="ds-heading-3 tabular-nums">{g.count}</strong></Link>)}</nav>
+      <nav aria-label="Admin activity" className="mb-6 grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">{groups.map(g => <Link key={g.label} to={g.to as '/admin/network'} className="grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 ds-glass px-4 py-3 text-ds-primary ds-transition hover:border-ds-primary"><span className="ds-label min-w-0">{g.label}</span><strong className="ds-heading-3 tabular-nums">{g.count}</strong></Link>)}</nav>
       <section className={panelCls}>
         <h2 className="ds-subheading border-b border-ds-border px-4 py-3 uppercase text-ds-primary sm:px-5">Latest requests</h2>
         {recent.length === 0 ? <DsEmpty title="No requests yet" /> : <RequestTable rows={recent} detailBase="/admin/requests" showSource />}
