@@ -204,7 +204,7 @@ export function NotificationsPanel() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="ds-glass flex flex-wrap items-center gap-3 px-4 py-3">
         <div className="flex items-center gap-2">
           <Bell className="h-5 w-5" />
           <h2 className="text-xl font-bold tracking-tight">Notifications</h2>

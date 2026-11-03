@@ -160,9 +160,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between gap-2 border-b border-ds-sky-border bg-ds-sky px-4 py-3">
+            <div className="flex items-center justify-between gap-2 ds-glass rounded-b-none px-4 py-3">
               <div className="min-w-0">
-                <button onClick={() => setSelected(null)} className="ds-support mb-1 inline-flex items-center gap-1 font-semibold uppercase text-ds-primary hover:underline md:hidden">
+                <button onClick={() => setSelected(null)} className="ds-glass-btn mb-2 min-h-9 px-3 text-sm md:hidden">
                   ← Back to conversations
                 </button>
                 <h3 className="ds-body truncate font-bold text-ds-primary">{thread.conversation.otherName}</h3>
@@ -170,7 +170,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
               </div>
               {!readOnly && (
                 <button onClick={() => onToggleArchive(!thread.conversation.archived)}
-                  className="ds-support inline-flex shrink-0 items-center gap-1.5 rounded-ds-sm border border-ds-border px-2.5 py-1.5 uppercase hover:bg-ds-bg">
+                  className="ds-glass-btn min-h-9 shrink-0 px-3 text-sm">
                   {thread.conversation.archived ? <><ArchiveRestore className="size-3.5" /> Restore</> : <><Archive className="size-3.5" /> Archive</>}
                 </button>
               )}
