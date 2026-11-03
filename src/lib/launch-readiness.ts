@@ -60,7 +60,7 @@ export function buildReadiness(i: ReadinessInput): ReadinessGroup[] {
       { label: "Main webhook signing secret", status: i.mainSecret ? "Configured" : "Missing", tone: i.mainSecret ? "green" : "red" },
       { label: "Main webhook test events", status: "Configured in Stripe test mode", tone: "green", note: MAIN_WEBHOOK_EVENTS.join(", ") },
       { label: "Connected-account webhook route", status: "Code ready", tone: "green" },
-      { label: "Connected-account signing secret", status: i.connectSecret ? "Configured" : "Owner action required", tone: "yellow" === "yellow" && i.connectSecret ? "green" : "yellow", note: i.connectSecret ? undefined : "Route answers 503 until the secret is saved." },
+      { label: "Connected-account signing secret", status: i.connectSecret ? "Configured" : "Owner action required", tone: i.connectSecret ? "green" : "yellow", note: i.connectSecret ? undefined : "Route answers 503 until the secret is saved." },
       { label: "Connected-account events", status: i.connectSecret ? "Confirm in Stripe Dashboard" : "Owner action required", tone: "yellow", note: CONNECT_WEBHOOK_EVENTS.join(", ") },
       { label: "Duplicate-event protection", status: "Code ready", tone: "green" },
     ] },
