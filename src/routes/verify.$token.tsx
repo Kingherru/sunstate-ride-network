@@ -21,7 +21,7 @@ function Verify() {
   const { token } = Route.useParams();
   const { data } = useSuspenseQuery(qo(token));
   return (
-    <div className="min-h-screen bg-ds-surface flex flex-col">
+    <div className="theme-public min-h-screen bg-ds-surface flex flex-col">
       
       <main className="flex-1 max-w-xl mx-auto px-4 py-16">
         <div className="border border-ds-border rounded-ds p-8 text-center bg-ds-surface">
