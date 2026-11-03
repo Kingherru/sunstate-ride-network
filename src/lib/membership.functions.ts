@@ -63,7 +63,7 @@ async function buildSummary(admin: any, workspaceId: string, environment: string
   if (sub && base !== 'canceled') {
     if (legacy) items.push({ label: 'Former Provider Membership (includes Network until renewal transition)', cents: 1000 });
     else {
-      items.push({ label: 'Base Provider Membership', cents: MEMBERSHIP_PRICING.baseCents });
+      items.push({ label: 'Provider Base Membership', cents: sub.base_price_cents ?? MEMBERSHIP_PRICING.baseCents });
       if (['trialing', 'active', 'past_due'].includes(addon)) items.push({ label: 'Referral Network add-on', cents: MEMBERSHIP_PRICING.networkCents });
     }
   }
