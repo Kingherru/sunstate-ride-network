@@ -3693,6 +3693,48 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_membership_grandfathering: {
+        Row: {
+          effective_at: string | null
+          eligible: boolean
+          environment: string
+          expires_at: string | null
+          id: string
+          original_cents: number
+          prepared_at: string
+          prepared_by: string | null
+          status: string
+          subscription_row_id: string
+          workspace_id: string
+        }
+        Insert: {
+          effective_at?: string | null
+          eligible?: boolean
+          environment: string
+          expires_at?: string | null
+          id?: string
+          original_cents: number
+          prepared_at?: string
+          prepared_by?: string | null
+          status?: string
+          subscription_row_id: string
+          workspace_id: string
+        }
+        Update: {
+          effective_at?: string | null
+          eligible?: boolean
+          environment?: string
+          expires_at?: string | null
+          id?: string
+          original_cents?: number
+          prepared_at?: string
+          prepared_by?: string | null
+          status?: string
+          subscription_row_id?: string
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       provider_membership_transitions: {
         Row: {
           activated_at: string | null
@@ -8611,6 +8653,7 @@ export type Database = {
         }
         Returns: string
       }
+      prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
