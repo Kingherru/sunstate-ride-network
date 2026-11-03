@@ -25,8 +25,12 @@ export const Route = createFileRoute("/terms")({
         { id: "availability", h: "Availability and no guarantee of acceptance", body: <p>Submitting a request does not guarantee that a provider will accept it. Availability depends on location, timing, equipment needs and participating providers.</p> },
         { id: "prices", h: "Prices, payments and provider terms", body: <p>Trip-specific pricing, payment timing and cancellation terms may vary by provider and trip. They should be presented to you before a booking is confirmed.</p> },
         { id: "membership", h: "Provider membership and platform fees", body: <ul>
-          <li>Provider membership currently includes 30 days free, then $15 per month for the Base Provider Membership; the optional Referral Network add-on is $10 per month ($25 per month with both).</li>
-          <li>A 2% platform fee applies to completed trips received through the provider network.</li>
+          <li>The Provider Base Membership is $20 per month. Eligible new businesses may receive one 30-day introductory trial.</li>
+          <li>Referral Network access is an optional $10 per month add-on and requires an active Provider Base Membership ($30 per month with both, before usage fees).</li>
+          <li>The existing 2% Network fee applies to applicable referral transactions and is separate from monthly charges.</li>
+          <li>Training courses are separate one-time purchases.</li>
+          <li>Prices and plan availability are subject to change. Cancellation affects future access according to the billing period and cancellation rules; paid access continues until the end of the current period.</li>
+          <li>Providers remain responsible for payment on trips they send to receiving providers. Settlement holds, the dispute window, payment deadlines and Stripe Connect payout rules are unchanged.</li>
           <li>Payment-processing fees may apply.</li>
         </ul> },
         { id: "training", h: "Training purchases and course access", body: <p>Training classes are purchased separately from membership. Purchasing a class gives you access to that course for your own use. Course materials may not be shared or resold.</p> },

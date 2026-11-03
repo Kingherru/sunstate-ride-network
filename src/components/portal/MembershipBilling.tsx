@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { DsButton } from '@/components/ds/controls';
 import { getMembershipBilling, setNetworkAddon } from '@/lib/membership.functions';
 import { createPortalSession } from '@/utils/payments.functions';
-import { ADDON_STATUS_LABEL, BASE_STATUS_LABEL, BASE_MEMBERSHIP_PRICE, MEMBERSHIP_PRICING, money } from '@/lib/membership-pricing';
+import { ADDON_STATUS_LABEL, BASE_STATUS_LABEL, MEMBERSHIP_PRICING, money } from '@/lib/membership-pricing';
 import { getStripeEnvironment } from '@/lib/stripe';
-import { StripeEmbeddedCheckout } from '@/components/StripeEmbeddedCheckout';
+import { useTrainingCart } from '@/components/training/TrainingCart';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 
 const box = 'rounded-ds border border-ds-border bg-ds-surface p-4 sm:p-5';
@@ -26,7 +26,8 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
   const q = usePortalQuery({ queryKey: ['membership-billing', workspaceId], queryFn: () => get({ data: { environment: env!, workspaceId } }), enabled: !!env || preview.active });
   const [confirm, setConfirm] = useState<null | boolean>(null);
   const [busy, setBusy] = useState(false);
-  const [checkout, setCheckout] = useState<null | { network: boolean }>(null);
+  const cart = useTrainingCart();
+  const addToCart = (network: boolean) => { if (preview.active) return previewBlocked(); cart.setMembership({ base: true, network, baseActive: false, addonActive: false, trialEligible: !s?.trialEnd }); cart.open(); };
   const owner = role === 'owner';
   const d = q.data as Awaited<ReturnType<typeof getMembershipBilling>> | undefined;
   const s = d?.summary;
@@ -64,7 +65,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
       <div className="grid gap-4 md:grid-cols-2">
         <article className={box}>
           <h3 className="ds-label text-ds-primary">Base Provider Membership</h3>
-          <p className="ds-heading mt-1">{money(MEMBERSHIP_PRICING.baseCents)}<span className="ds-support"> /month</span></p>
+          <p className="ds-heading mt-1">{money(s.items[0]?.cents && !s.legacy ? s.items[0].cents : MEMBERSHIP_PRICING.baseCents)}<span className="ds-support"> /month</span></p>
           <dl className="ds-body mt-3 space-y-1">
             <div><dt className="inline font-semibold">Status: </dt><dd className="inline">{s.cancelAtPeriodEnd && s.base !== 'canceled' ? 'Canceling' : BASE_STATUS_LABEL[s.base]}</dd></div>
             <div><dt className="inline font-semibold">Trial ends: </dt><dd className="inline">{date(s.trialEnd)}</dd></div>
@@ -72,8 +73,8 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
           </dl>
           {s.legacy && <p className="ds-support mt-3">Your former $10 membership keeps Referral Network access through your current paid billing period. Any change at renewal is prepared but not active.</p>}
           {s.base === 'none' && <div className="mt-4 flex flex-wrap gap-2">
-            <DsButton size="sm" disabled={!!disabledReason} onClick={() => setCheckout({ network: false })}>Start membership</DsButton>
-            <DsButton size="sm" variant="secondary" disabled={!!disabledReason} onClick={() => setCheckout({ network: true })}>Start with Network add-on</DsButton>
+            <DsButton size="sm" disabled={!!disabledReason} onClick={() => addToCart(false)}>Add membership to cart</DsButton>
+            <DsButton size="sm" variant="secondary" disabled={!!disabledReason} onClick={() => addToCart(true)}>Add with Network add-on</DsButton>
           </div>}
         </article>
         <article className={box}>
@@ -94,12 +95,11 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
         </article>
       </div>
       {disabledReason && <p className="ds-support">{disabledReason}</p>}
-      {checkout && !disabledReason && <div className={box}><StripeEmbeddedCheckout priceId={BASE_MEMBERSHIP_PRICE} includeNetworkAddon={checkout.network} returnUrl={`${window.location.origin}/portal/account?session_id={CHECKOUT_SESSION_ID}`} /><DsButton className="mt-3" size="sm" variant="ghost" onClick={() => setCheckout(null)}>Close checkout</DsButton></div>}
 
       <div className={soft}>
         <h3 className="ds-label text-ds-primary">Recurring total</h3>
         {s.items.length ? <ul className="ds-body mt-2 space-y-1">{s.items.map(i => <li key={i.label} className="flex justify-between gap-4"><span>{i.label}</span><span>{money(i.cents)}</span></li>)}<li className="flex justify-between gap-4 border-t border-ds-border pt-1 font-semibold"><span>Total per month</span><span>{money(s.totalCents)}</span></li></ul> : <p className="ds-support mt-2">No recurring charges.</p>}
-        <p className="ds-caption mt-3">30 days free shared trial, then $15/month base, optional $10/month add-on, $25/month with both. The 2% Network transaction fee is separate and unchanged.</p>
+        <p className="ds-caption mt-3">Provider Base Membership $20/month; optional Referral Network add-on $10/month (requires the base membership); $30/month with both before usage fees. The 2% Network fee applies only to applicable referral transactions. Courses are separate one-time purchases. Prices are subject to change.</p>
       </div>
 
       {s.transition && <div className={box}><h3 className="ds-label text-ds-primary">Pending renewal transition</h3><p className="ds-body mt-2">{s.transition.currentCents != null ? money(s.transition.currentCents) : '—'} → {money(s.transition.proposedCents)} at {date(s.transition.renewalAt)}. Status: {s.transition.status}. Not active until launch approval.</p></div>}

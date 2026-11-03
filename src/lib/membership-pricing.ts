@@ -5,19 +5,22 @@ export const NETWORK_ADDON_PRICE = 'nemt_network_addon_monthly';
 export const LEGACY_MEMBERSHIP_PRICE = 'nemt_membership_monthly_v2';
 
 export const MEMBERSHIP_PRICING = {
-  baseCents: 1500,
+  baseCents: 2000,
   networkCents: 1000,
-  combinedCents: 2500,
+  combinedCents: 3000,
   trialDays: 30,
 } as const;
 
 export const PRICING_COPY = {
   trial: '30 DAYS FREE',
-  base: '$15/MONTH BASE PROVIDER MEMBERSHIP',
+  base: '$20/MONTH PROVIDER BASE MEMBERSHIP',
   network: 'OPTIONAL $10/MONTH REFERRAL NETWORK ADD-ON',
-  combined: '$25/MONTH WITH BOTH AFTER THE SHARED TRIAL',
-  sentence: '30 days free, then $15 per month for the Base Provider Membership. The optional Referral Network add-on is $10 per month ($25 per month with both after the shared trial).',
+  combined: '$30/MONTH WITH BOTH BEFORE USAGE FEES',
+  sentence: '30 days free for new businesses, then $20 per month for the Provider Base Membership. The optional Referral Network add-on is $10 per month and requires the base membership ($30 per month with both, before usage fees).',
 } as const;
+
+/** Base amounts that count as a qualifying base payment: current $20 and existing members' $15. */
+export const QUALIFYING_BASE_CENTS: readonly number[] = [1500, 2000];
 
 export type BaseStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'pending_transition' | 'needs_review' | 'none';
 export type AddonStatus = 'not_selected' | 'trialing' | 'active' | 'past_due' | 'canceling' | 'canceled' | 'needs_review';

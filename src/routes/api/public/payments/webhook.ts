@@ -117,7 +117,7 @@ async function handleSubscriptionUpdated(sub: any, env: StripeEnv) {
 async function handleSubscriptionDeleted(sub: any, env: StripeEnv) {
   await getSupabase()
     .from("subscriptions")
-    .update({ status: "canceled", updated_at: new Date().toISOString() })
+    .update({ status: "canceled", network_addon_status: "canceled", network_addon_cancel_at: null, updated_at: new Date().toISOString() })
     .eq("stripe_subscription_id", sub.id)
     .eq("environment", env);
 }
@@ -155,7 +155,8 @@ async function handleCheckoutSessionCompleted(sess: any, env: StripeEnv) {
     }
   }
 
-  if (!userId || sess.mode !== 'payment' || sess.payment_status !== 'paid') return;
+  // Courses are fulfilled only from a paid session (one-time checkout or combined membership checkout).
+  if (!userId || (sess.mode !== 'payment' && sess.mode !== 'subscription') || sess.payment_status !== 'paid') return;
   let slugs: string[] = meta.course_slug ? [meta.course_slug] : [];
   if (meta.course_slugs) {
     const parsed: unknown = JSON.parse(meta.course_slugs);

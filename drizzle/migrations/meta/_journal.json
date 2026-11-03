@@ -309,6 +309,13 @@
       "when": 1793661827710,
       "tag": "0043_provider_api_access_and_driver_email_deliveries",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1793665470464,
+      "tag": "0044_membership_grandfathering",
+      "breakpoints": true
     }
   ]
 }

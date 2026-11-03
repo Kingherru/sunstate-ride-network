@@ -1,4 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { listGrandfathering, prepareGrandfathering } from '@/lib/commerce.functions';
+import { DsButton } from '@/components/ds/controls';
 import { useServerFn } from '@tanstack/react-start';
 import { getAdminWorkspaceMembership, listMembershipTransitions } from '@/lib/membership.functions';
 import { ADDON_STATUS_LABEL, BASE_STATUS_LABEL, money } from '@/lib/membership-pricing';
@@ -34,6 +36,24 @@ export function MembershipTransitionsList() {
     <p className="ds-support mt-1">Read-only. Launch flag is {q.data?.enabled ? 'ON' : 'OFF'}; transitions cannot be activated here.</p>
     {q.isLoading ? <p className="ds-support mt-2">Loading…</p> : rows.length === 0 ? <p className="ds-support mt-2">No prepared transitions.</p> : (
       <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">{r.workspaces?.display_name ?? 'Business'} · {r.workspaces?.mfn_id ?? '—'} · {r.current_cents != null ? money(r.current_cents) : '—'} → {money(r.proposed_cents)} · renews {date(r.renewal_at)} · {r.status}{r.reason ? ` · ${r.reason}` : ''}</li>)}</ul>
+    )}
+  </section>;
+}
+
+/** Master Admin only. Private: eligibility is recorded but no effective date is set and no subscription changes. */
+export function GrandfatheringList() {
+  const get = useServerFn(listGrandfathering);
+  const prep = useServerFn(prepareGrandfathering);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ['membership-grandfathering'], queryFn: () => get(), retry: false });
+  if (q.isError) return null;
+  const rows = (q.data?.rows ?? []) as any[];
+  return <section className="rounded-ds border border-ds-border bg-ds-surface p-4" aria-labelledby="gf-h">
+    <h2 id="gf-h" className="ds-subheading uppercase text-ds-primary">Private price grandfathering</h2>
+    <p className="ds-support mt-1">Master Admin only. Qualifying existing members keep their base price for 12 months from a future, owner-approved transition date. No date is set and nothing activates here.</p>
+    <DsButton className="mt-3" size="sm" variant="secondary" onClick={async () => { await prep(); await qc.invalidateQueries({ queryKey: ['membership-grandfathering'] }); }}>Record eligibility</DsButton>
+    {q.isLoading ? <p className="ds-support mt-2">Loading…</p> : rows.length === 0 ? <p className="ds-support mt-2">No eligibility recorded.</p> : (
+      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">Business {String(r.workspace_id).slice(0, 8)} · {r.environment === 'live' ? 'live' : 'test'} · {money(r.original_cents)}/month · {r.eligible ? 'Eligible' : 'Not eligible'} · effective {r.effective_at ? date(r.effective_at) : 'not set'} · expires {r.expires_at ? date(r.expires_at) : 'not set'} · {r.status}</li>)}</ul>
     )}
   </section>;
 }

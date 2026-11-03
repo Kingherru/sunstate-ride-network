@@ -1,6 +1,6 @@
 import { type StripeEnv, createStripeClient } from './stripe.server';
 import { isQualifyingMembershipInvoice, PROVIDER_MEMBERSHIP_PRICE } from './membership-invoice-rules';
-import { MEMBERSHIP_PRICING, NETWORK_ADDON_PRICE } from './membership-pricing';
+import { MEMBERSHIP_PRICING, NETWORK_ADDON_PRICE, QUALIFYING_BASE_CENTS } from './membership-pricing';
 
 /** Read-only Stripe reconciliation; never creates customers, charges or subscriptions. */
 export async function reconcileMembershipInvoice(invoiceObject: any, env: StripeEnv) {
@@ -21,7 +21,7 @@ export async function reconcileMembershipInvoice(invoiceObject: any, env: Stripe
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const item = subscription.items.data.find(i => i.price.lookup_key === PROVIDER_MEMBERSHIP_PRICE);
   const others = subscription.items.data.filter(i => i !== item);
-  if (!item || item.price.unit_amount !== MEMBERSHIP_PRICING.baseCents || item.price.currency !== 'usd' || item.price.recurring?.interval !== 'month' || item.price.recurring.interval_count !== 1) return;
+  if (!item || !QUALIFYING_BASE_CENTS.includes(item.price.unit_amount ?? -1) || item.price.currency !== 'usd' || item.price.recurring?.interval !== 'month' || item.price.recurring.interval_count !== 1) return;
   if (others.length > 1 || (others[0] && (others[0].price.lookup_key !== NETWORK_ADDON_PRICE || others[0].price.unit_amount !== MEMBERSHIP_PRICING.networkCents))) return;
   const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
   const { data: existing, error: readError } = await supabaseAdmin.from('subscriptions').select('id,user_id,workspace_id,membership_paid_at').eq('stripe_subscription_id', subscriptionId).eq('environment', env).maybeSingle();
@@ -43,7 +43,7 @@ export async function reconcileMembershipInvoice(invoiceObject: any, env: Stripe
     confirmedCharge = true;
     if (charge.refunded || charge.amount_refunded > 0 || charge.disputed) refunded = true;
   }
-  const qualifies = confirmedCharge && !refunded && isQualifyingMembershipInvoice(invoice, { status: subscription.status, trial_end: subscription.trial_end, current_period_end: item.current_period_end }, Date.now() / 1000);
+  const qualifies = confirmedCharge && !refunded && isQualifyingMembershipInvoice(invoice, { status: subscription.status, trial_end: subscription.trial_end, current_period_end: item.current_period_end }, Date.now() / 1000, oneTimeInvoiceCents(invoice));
   const { error } = await supabaseAdmin.from('subscriptions').update({ workspace_id: claimedWorkspace, membership_invoice_id: invoice.id, membership_paid_cents: invoice.amount_paid, membership_currency: invoice.currency, membership_payment_state: refunded ? 'refunded' : qualifies ? 'succeeded' : invoice.status === 'paid' ? 'pending' : 'failed', membership_paid_at: paidAt ? new Date(paidAt * 1000).toISOString() : null, status: subscription.status, current_period_end: new Date(item.current_period_end * 1000).toISOString() }).eq('id', existing.id).eq('environment', env);
   if (error) throw new Error('Membership evidence could not be saved.');
 }
@@ -70,4 +70,9 @@ export async function reconcileLatestMembershipInvoice(subscriptionObject: any, 
   const subscription = await stripe.subscriptions.retrieve(subscriptionObject.id);
   const latest = subscription.latest_invoice;
   if (latest) await reconcileMembershipInvoice({ id: typeof latest === 'string' ? latest : latest.id }, env);
+}
+/** One-time items (e.g. courses bought with the membership) never count toward the base payment amount. */
+function oneTimeInvoiceCents(invoice: any): number {
+  const lines: any[] = invoice?.lines?.data ?? [];
+  return lines.filter(l => l?.parent?.type === 'invoice_item_details').reduce((sum, l) => sum + (l.amount ?? 0), 0);
 }
