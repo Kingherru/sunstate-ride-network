@@ -75,7 +75,7 @@ function Player() {
         </div>
       ) : null}
 
-      {basic && !isExam ? <BasicNemtReading onExam={() => setBasicExam(true)} /> : !isExam ? (
+      {basic && !isExam ? <BasicNemtReading pages={data.readingPages} onExam={() => setBasicExam(true)} /> : !isExam ? (
         <article className="border border-border rounded-lg p-6 bg-card mb-6">
           <h2 className="text-xl font-bold mb-3">{modules[step].title}</h2>
           <div className="prose prose-sm max-w-none whitespace-pre-line">{modules[step].body_markdown}</div>
