@@ -69,6 +69,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="ds-label">{r.mfn_id} <span className="ds-caption text-ds-on-subtle">· {r.side === 'receiver' ? `from ${r.sender_workspace_mfn_id}` : `to ${r.receiver_workspace_mfn_id}`}</span></span>
             <StatusPill status={SETTLEMENT_LABELS[s]} tone={ALERT_STATES.includes(s) || s === 'under_review' ? 'red' : ['paid_out', 'transferred'].includes(s) ? 'green' : s === 'payment_due' ? 'yellow' : 'neutral'} />
+            {r.payout_status === 'failed' && <StatusPill status="Payout failed — needs attention" tone="red" />}
           </div>
           <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 ds-caption tabular-nums">
             <span>Payout <strong>{money(r.receiver_payout_cents)}</strong></span>
