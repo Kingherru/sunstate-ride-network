@@ -105,7 +105,8 @@ export const getMyCoursePlayer = createServerFn({ method: "GET" })
     const { data: person } = await supabase.from('user_profiles').select('mfn_id').eq('user_id', userId).maybeSingle();
     const source = course.slug === 'nemt-certification' ? await import('@/lib/training/basic-nemt.server') : null;
     const questions = source ? source.NEMT_QUESTIONS.map(q => ({ id: `basic-nemt-${q.id}`, ord: q.id, prompt: q.q, choices: q.choices })) : rawQuestions ?? [];
-    return { course, enrollment, modules: modules ?? [], questions, certificate: cert, attempts: attempts ?? [], personMfnId: person?.mfn_id ?? null };
+    const readingPages = source ? (await import('@/lib/training/basic-nemt-materials.server')).NEMT_PAGES : [];
+    return { course, enrollment, modules: modules ?? [], questions, readingPages, certificate: cert, attempts: attempts ?? [], personMfnId: person?.mfn_id ?? null };
   });
 
 export const checkMyCourseAnswer = createServerFn({ method: 'POST' })

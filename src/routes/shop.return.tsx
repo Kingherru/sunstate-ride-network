@@ -26,12 +26,12 @@ function Return() {
   }, [session_id, course]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-ds-surface flex flex-col">
       
       <main className="flex-1 max-w-2xl mx-auto px-4 py-16 text-center">
-        <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
+        <CheckCircle2 className="w-16 h-16 text-ds-primary mx-auto mb-4" />
         <h1 className="text-3xl font-extrabold mb-3">Thank you for your purchase</h1>
-        <p className="text-muted-foreground mb-8">
+        <p className="text-ds-text-2 mb-8">
           {state === "pending" && "Finalizing your enrollment…"}
           {state === "ok" && "Your enrollment is ready. You can start your course now."}
           {state === "signin" && "Sign in to access your course. Your purchase is saved to your email."}

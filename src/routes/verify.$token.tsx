@@ -21,21 +21,21 @@ function Verify() {
   const { token } = Route.useParams();
   const { data } = useSuspenseQuery(qo(token));
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="theme-public min-h-screen bg-ds-surface flex flex-col">
       
       <main className="flex-1 max-w-xl mx-auto px-4 py-16">
-        <div className="border border-border rounded-lg p-8 text-center bg-card">
-          <ShieldCheck className="w-12 h-12 mx-auto text-primary mb-3" />
+        <div className="border border-ds-border rounded-ds p-8 text-center bg-ds-surface">
+          <ShieldCheck className="w-12 h-12 mx-auto text-ds-primary mb-3" />
           <h1 className="text-2xl font-extrabold mb-6">Certificate Verification</h1>
           {!data ? (
-            <div className="flex flex-col items-center gap-2 text-destructive">
+            <div className="flex flex-col items-center gap-2 text-ds-error">
               <XCircle className="w-10 h-10" />
               <p>No certificate found for this link.</p>
             </div>
           ) : (
             <div className="text-left space-y-3">
               <Row label="Status" value={
-                <span className={data.valid ? "text-primary flex items-center gap-1" : "text-destructive flex items-center gap-1"}>
+                <span className={data.valid ? "text-ds-primary flex items-center gap-1" : "text-ds-error flex items-center gap-1"}>
                   {data.valid ? <><CheckCircle2 className="w-4 h-4" />Valid</> : <><XCircle className="w-4 h-4" />Expired</>}
                 </span>
               } />
@@ -55,8 +55,8 @@ function Verify() {
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between border-b border-border pb-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
+    <div className="flex justify-between border-b border-ds-border pb-2">
+      <span className="text-sm text-ds-text-2">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
   );
