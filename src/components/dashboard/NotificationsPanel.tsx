@@ -328,7 +328,7 @@ export function NotificationsPanel() {
                           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                             <p
                               className={`text-sm break-words ${
-                                isUnread ? "font-semibold text-foreground" : "font-medium text-foreground"
+                                isUnread ? "font-bold text-foreground" : "font-normal text-foreground"
                               }`}
                             >
                               {n.title}
