@@ -124,8 +124,8 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
     <div className="space-y-3">
     {demo && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved or sent.</p>}
     <div className="grid gap-4 md:grid-cols-[18rem_minmax(0,1fr)]">
-      <div className={`min-w-0 space-y-2 ${selected ? "hidden md:block" : ""}`}>
-        <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary px-3 py-2">
+      <div className={`min-w-0 space-y-2 md:ds-glass md:p-2 ${selected ? "hidden md:block" : ""}`}>
+        <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary ds-glass-blue px-3 py-2">
           <h3 className="ds-label uppercase tracking-[0.06em] text-ds-on-primary">Conversations</h3>
           {mode === "portal" && (
             <label className="ds-support flex items-center gap-1.5">

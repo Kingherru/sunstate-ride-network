@@ -45,7 +45,7 @@ function ActionBlocks({ className, full }: { className?: string; full?: boolean 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 bg-ds-primary text-ds-on-primary" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}>
+    <header className="sticky top-0 z-50 bg-ds-primary ds-glass-blue border-b border-ds-primary-hover text-ds-on-primary" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}>
       <div className="mfn-container flex min-h-[76px] items-center justify-between gap-4 py-3">
         <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="MY FLORIDA NEMT home">
           <BrandName on="blue" className="text-xl sm:text-2xl" />
@@ -68,7 +68,7 @@ export function PublicHeader() {
         </div>
       </div>
       {open && (
-        <nav id="mobile-menu" aria-label="Mobile" className="ds-fade-in border-t border-ds-primary-hover px-4 pb-5 2xl:hidden">
+        <nav id="mobile-menu" aria-label="Mobile" className="ds-fade-in ds-glass-blue border-t border-ds-primary-hover px-4 pb-5 2xl:hidden">
           <ul className="mfn-container flex flex-col gap-1 pt-2">
             {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
