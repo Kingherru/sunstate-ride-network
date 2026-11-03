@@ -126,7 +126,7 @@ export function Services() {
 /* Membership */
 export function Membership() {
   const terms = [
-    { icon: LayoutGrid, t: "30 days free, then $15 per month base" },
+    { icon: LayoutGrid, t: "30 days free, then $20 per month base" },
     { icon: BadgePercent, t: "2% platform fee on completed trips received through the provider network" },
     { icon: CreditCard, t: "Payment-processing fees may apply" },
   ];
