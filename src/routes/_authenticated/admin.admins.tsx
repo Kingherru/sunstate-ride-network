@@ -35,7 +35,7 @@ function AdminsPage() {
   return (
     <>
       <PageHead title="Administrators">Only you, the Master Admin, can add, change or remove regular administrators. New administrators start with no sections and no accounts.</PageHead>
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <section aria-labelledby="current-admins" className="min-w-0 space-y-4">
           <h2 id="current-admins" className={headCls}>Current administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
           {admins.length === 0 ? <section className={panelCls}><DsEmpty title="No regular administrators" /></section> :
