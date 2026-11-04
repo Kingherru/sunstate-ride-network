@@ -46,6 +46,7 @@ const DialogContent = React.forwardRef<
         className,
       )}
       {...props}
+      onCloseAutoFocus={event => { window.reset(); props.onCloseAutoFocus?.(event); }}
       {...(largeWindow ? window.windowProps : {})}
       data-radix-detail={largeWindow ? '' : undefined}
     >

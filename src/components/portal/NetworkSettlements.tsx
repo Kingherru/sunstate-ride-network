@@ -28,7 +28,6 @@ const GROUPS: { label: string; states: SettlementState[] }[] = [
 
 export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   const preview = usePortalPreview();
-  const detailWindow = useDetailWindow();
   const list = useServerFn(listSettlements), dispute = useServerFn(fileSettlementDispute), readiness = useServerFn(getConnectReadiness), onboard = useServerFn(createConnectOnboardingLink);
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ['network-settlements'], queryFn: () => list() });
@@ -36,6 +35,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   const rows = (q.data as SettlementRow[] | undefined) ?? [];
   const [from, setFrom] = useState(''); const [to, setTo] = useState('');
   const [open, setOpen] = useState<SettlementRow | null>(null);
+  const detailWindow = useDetailWindow(open !== null);
   const [cat, setCat] = useState('completion_missing'); const [why, setWhy] = useState('');
   const filtered = useMemo(() => rows.filter(r => (!from || r.created_at >= from) && (!to || r.created_at.slice(0, 10) <= to)), [rows, from, to]);
   const withState = filtered.map(r => ({ r, s: effectiveSettlementState(r) }));

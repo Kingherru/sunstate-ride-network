@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { DsButton } from '@/components/ds/controls';
 
 /** Local presentation state only; unmounting a closed window restores defaults. */
-export function useDetailWindow() {
+export function useDetailWindow(open = true) {
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => { if (!open) setExpanded(false); }, [open]);
   const label = expanded ? 'Restore window' : 'Expand window';
   return {
+    reset: () => setExpanded(false),
     windowProps: { 'data-detail-window': '', 'data-expanded': expanded },
     control: <DsButton type="button" variant="ghost" aria-label={label} title={label}
       aria-pressed={expanded} className="portal-window-control !size-11 !min-h-11 !p-0 shrink-0"

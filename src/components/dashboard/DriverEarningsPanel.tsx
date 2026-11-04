@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useDetailWindow } from '@/components/portal/use-detail-window';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listDrivers } from "@/lib/fleet.functions";
@@ -450,6 +451,7 @@ function EmailReportCard({
   const [recipient, setRecipient] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const detailWindow = useDetailWindow(previewOpen);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -569,7 +571,7 @@ function EmailReportCard({
       {previewOpen && previewUrl && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
              onClick={closePreview}>
-          <div className="portal-custom-dialog bg-card border border-border rounded-sm w-full max-w-4xl h-[85vh] flex flex-col"
+          <div {...detailWindow.windowProps} className="portal-custom-dialog bg-card border border-border rounded-sm w-full max-w-4xl h-[85vh] flex flex-col"
                onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-3 border-b border-border">
               <div className="text-sm font-bold">PDF preview — {driverName} · {periodLabel}</div>
@@ -581,7 +583,7 @@ function EmailReportCard({
                 >
                   {send.isPending ? "Sending…" : `Send to ${recipient || "driver"}`}
                 </button>
-                <button onClick={closePreview}
+                {detailWindow.control}<button onClick={closePreview}
                         className="text-xs font-bold border border-border px-3 py-1.5 rounded-sm hover:bg-muted">
                   Close
                 </button>

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { X } from 'lucide-react';
+import { DsButton } from '@/components/ds/controls';
+import { useDetailWindow } from '@/components/portal/use-detail-window';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
@@ -174,6 +177,7 @@ function defaultAvailability() {
 }
 
 function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any[]; onClose: () => void; onSaved: () => void }) {
+  const detailWindow = useDetailWindow();
   const initialAvail = d.availability && typeof d.availability === "object"
     ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
     : defaultAvailability();
@@ -245,9 +249,10 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4 z-50" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
+      <form {...detailWindow.windowProps} onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
             className="portal-custom-dialog bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-        <h3 className="sm:col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
+        <div className="sm:col-span-2 flex items-center justify-between gap-3"><h3 className="text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3><div className="flex shrink-0 items-center gap-1">{detailWindow.control}<DsButton type="button" variant="ghost" aria-label="Close" className="!size-11 !p-0" onClick={onClose}><X className="size-4" /></DsButton></div></div>
+        <section className="portal-dialog-section sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
         <I l="Phone" v={f.phone} on={(v) => set({ ...f, phone: v })} />
@@ -269,6 +274,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
           </select>
         </label>
 
+        </section>
         <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3 bg-background/60">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <span className="font-bold text-sm">Vacation mode</span>
