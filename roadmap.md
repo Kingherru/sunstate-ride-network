@@ -1,7 +1,7 @@
 # Pass 3W — public visual modernization
-- [ ] Refine shared public header/footer, homepage photo framing and section rhythm.
-- [ ] Strengthen path/step cards, product previews, map surround, services and membership emphasis; shared inner-page presentation only.
-- [ ] Verify automatic typecheck/production build; preserve content, SEO, links, all behavior and backend. No browser/test sweeps or activation.
+- [x] Refined shared public header/footer, homepage photo framing and white/blue/pale-blue section rhythm.
+- [x] Strengthened path/step cards, product previews, map surround, services and membership emphasis; shared inner-page presentation only. Existing text/photos/links and interactions retained.
+- [x] Automatic compilation checks report build OK; no manual builds, browser/test sweeps, backend changes or activation. Visual viewport verification intentionally not run under this pass's check restriction.
 
 # Pass 3L completion — automatic evidence and lifecycle
 - [x] One database evaluator reads existing live membership invoices, approved services/business evidence, protected owner-attested documents, explicit Connect linkage, Network settlement/disputes and suspension; event triggers recalculate without browser writes. Future membership/Connect onboarding stamps server-validated company linkage; no existing accounts changed.
