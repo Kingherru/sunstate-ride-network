@@ -1,3 +1,8 @@
+# Pass 3W — public visual modernization
+- [ ] Refine shared public header/footer, homepage photo framing and section rhythm.
+- [ ] Strengthen path/step cards, product previews, map surround, services and membership emphasis; shared inner-page presentation only.
+- [ ] Verify automatic typecheck/production build; preserve content, SEO, links, all behavior and backend. No browser/test sweeps or activation.
+
 # Pass 3L completion — automatic evidence and lifecycle
 - [x] One database evaluator reads existing live membership invoices, approved services/business evidence, protected owner-attested documents, explicit Connect linkage, Network settlement/disputes and suspension; event triggers recalculate without browser writes. Future membership/Connect onboarding stamps server-validated company linkage; no existing accounts changed.
 - [x] Protected business requirement entry and credential effective-date/name/attestation fields; shared provider/admin safe checklist. Signed-in administrator opened real provider summary: missing requirements shown honestly, no private files/amounts exposed.
