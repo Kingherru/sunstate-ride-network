@@ -1,3 +1,8 @@
+# Pass 4A — saved notification preferences
+- [ ] Map existing producers only; required communications unaffected, ambiguous categories unchanged.
+- [ ] Central trusted server-side optional decision path and minimal Settings clarification; preserve history, unread state and preview safety.
+- [ ] Automatic compilation only; no delivery, records, permissions, publishing, money movement or activation.
+
 # Pass 3Z — Administrators and shared Profile & Security
 - [x] Compact selectable administrator list and structured existing permission editor, clear preset/read-only/selected/status states, covered accounts and separated red removal confirmation; all authorization retained.
 - [x] Shared solid Profile, Contact information, Account status/type, Password & sign-in, Sessions & devices and Security activity groups through Admin settings, Provider/Contractor Account & Security, Patient/Facility Security and synthetic previews; existing actions and guards retained. Customer account details use matching solid groups and above-field labels.
