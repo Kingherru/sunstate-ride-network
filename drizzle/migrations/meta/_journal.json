@@ -316,6 +316,13 @@
       "when": 1793665470464,
       "tag": "0044_membership_grandfathering",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1793764092813,
+      "tag": "0045_optional_network_notice_preferences",
+      "breakpoints": true
     }
   ]
 }

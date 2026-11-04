@@ -1,3 +1,9 @@
+# Pass 4A — saved notification preferences
+- [x] Existing initial pending/unaccepted Network offer notices mapped to in_app; all accepted-trip/security/account/finance/deadline operations preserved, ambiguous legacy categories unchanged.
+- [x] One internal server-side decision reads saved preferences before existing Network inserts; required/default/unknown events proceed. Settings distinguishes optional opportunity notices and always-enabled required notices; email choice honestly marked not connected to an optional producer. Queue/templates/history/unread and preview guards unchanged.
+- [x] Automatic build OK at 03:49:02 UTC; seven targeted read-only null-recipient helper assertions passed using the service-only endpoint after the read-query runner correctly denied helper execution. Applied function definitions verified read-only. No delivery, data rows, access permissions, publishing, money movement or activation.
+- Exception: legacy queue email entries lack reliable optional category/profile mapping; no existing optional training/summary/announcement email producer identified. These remain unchanged, documented in docs/notification-preference-coverage.md. Disabled-preference/live delivery readback intentionally unrun without permitted fixtures.
+
 # Pass 3Z — Administrators and shared Profile & Security
 - [x] Compact selectable administrator list and structured existing permission editor, clear preset/read-only/selected/status states, covered accounts and separated red removal confirmation; all authorization retained.
 - [x] Shared solid Profile, Contact information, Account status/type, Password & sign-in, Sessions & devices and Security activity groups through Admin settings, Provider/Contractor Account & Security, Patient/Facility Security and synthetic previews; existing actions and guards retained. Customer account details use matching solid groups and above-field labels.
@@ -56,7 +62,7 @@
 - [x] 36 narrow tests, signed-in settings read and denied empty/missing RPC checks, demo provider select/remove/settings tabs pass; harness typecheck/build OK; existing record fingerprints unchanged (7 requests, 5 trips, 28 profiles, 14 memberships), audit has zero rows
 - [x] Email-change initiation superseded by Pass 3L after owner confirmed secure setting ON; delivery/confirmation readback remains intentionally untested, no emails sent.
 - [ ] Automatic verification blocked: legacy payment/documents remain person-owned with no authoritative business entitlement/Network settlement-dispute-deadline linkage. Five-trip threshold and detailed requirements now approved and covered by pure policy checks above; live directory verification unchanged.
-- [ ] Preference delivery enforcement deferred: settings save preferences, but legacy queue/mail producers need category mapping before optional notices can be safely suppressed without blocking required/security notices
+- [x] Preference delivery enforcement: Pass 4A connects unambiguous initial Network opportunities; required and unmapped legacy producers remain unchanged. Missing optional email mappings are explicitly documented in Pass 4A.
 - [ ] Authenticated create/save/accept/audit/export/proximity readback blocked: no permitted synthetic writes or populated public-center fixtures; tested UI choices in isolated demo only and safe live reads/denials, not a complete end-to-end workflow
 
 # Routing and security clarifications

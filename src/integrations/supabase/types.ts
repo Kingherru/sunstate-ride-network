@@ -8635,6 +8635,15 @@ export type Database = {
         Args: { _manage?: boolean; _ws: string }
         Returns: boolean
       }
+      notification_preference_allows: {
+        Args: {
+          _channel: string
+          _event: string
+          _required?: boolean
+          _user: string
+        }
+        Returns: boolean
+      }
       notify_expiring_unconfirmed_reservations: { Args: never; Returns: number }
       offer_trip_priority: {
         Args: { _provider_user_id: string; _trip_id: string }
