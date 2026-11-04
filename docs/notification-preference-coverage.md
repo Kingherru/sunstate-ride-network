@@ -23,4 +23,4 @@
 
 ## Verification and safety
 
-The compatibility migration replaces only the notification producer and adds an internal read-only decision function. It does not alter existing rows, RLS, membership, assignment, authorization or jobs. Regression assertions are read-only with null recipient IDs; they never generate communications. Delivery and interactive checks remain unrun. Preview still uses synthetic data and blocks preference saves.
+The compatibility migration replaces only the notification producer and adds an internal read-only decision function. It does not alter existing rows, RLS, membership, assignment, authorization or jobs. Seven read-only null-recipient regression assertions passed through the service-only endpoint; the read-query runner was correctly denied execution. Applied function definitions were verified read-only. Disabled-preference/live delivery and interactive checks remain unrun without permitted fixtures. Preview still uses synthetic data and blocks preference saves. Automatic compilation reported build OK.
