@@ -19,7 +19,7 @@ export function AdminMembershipSummary({ workspaceId }: { workspaceId: string })
     <div><dt className="inline font-semibold">Network add-on: </dt><dd className="inline">{s.legacy ? 'Included until renewal' : ADDON_STATUS_LABEL[s.addon]}</dd></div>
     <div><dt className="inline font-semibold">Trial ends: </dt><dd className="inline">{date(s.trialEnd)}</dd></div>
     <div><dt className="inline font-semibold">Renews: </dt><dd className="inline">{date(s.renewalAt)}</dd></div>
-    <div><dt className="inline font-semibold">Recurring: </dt><dd className="inline">{s.items.length ? `${s.items.map(i => `${i.label} ${money(i.cents)}`).join(' + ')} = ${money(s.totalCents)}` : 'None'}</dd></div>
+    <div><dt className="inline font-semibold">Recurring: </dt><dd className="inline">{s.items.length ? <>{s.items.map((i, n) => <span key={n}>{n > 0 ? ' + ' : ''}{i.label} <span className="portal-money">{money(i.cents)}</span></span>)} = <span className="portal-money">{money(s.totalCents)}</span></> : 'None'}</dd></div>
     <div><dt className="inline font-semibold">Billing linkage: </dt><dd className="inline">{s.stripeLinked ? `Linked (${s.environment === 'live' ? 'live' : 'test'})` : 'Not linked'}</dd></div>
     <div><dt className="inline font-semibold">Latest payment: </dt><dd className="inline">{s.latestPayment?.state ?? 'Not Available'}{s.latestPayment?.paidAt ? ` · ${date(s.latestPayment.paidAt)}` : ''}</dd></div>
     {(s.transition || s.needsReviewReason) && <div className="sm:col-span-2"><dt className="inline font-semibold">Transition / review: </dt><dd className="inline">{s.needsReviewReason ?? `${s.transition!.status} → ${money(s.transition!.proposedCents)} at ${date(s.transition!.renewalAt)}`}</dd></div>}
@@ -35,7 +35,7 @@ export function MembershipTransitionsList() {
     <h2 id="mt-h" className="ds-subheading uppercase text-ds-primary">Membership renewal transitions</h2>
     <p className="ds-support mt-1">Read-only. Launch flag is {q.data?.enabled ? 'ON' : 'OFF'}; transitions cannot be activated here.</p>
     {q.isLoading ? <p className="ds-support mt-2">Loading…</p> : rows.length === 0 ? <p className="ds-support mt-2">No prepared transitions.</p> : (
-      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">{r.workspaces?.display_name ?? 'Business'} · {r.workspaces?.mfn_id ?? '—'} · {r.current_cents != null ? money(r.current_cents) : '—'} → <span className="portal-money">{money(r.proposed_cents)}</span> · renews {date(r.renewal_at)} · {r.status}{r.reason ? ` · ${r.reason}` : ''}</li>)}</ul>
+      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">{r.workspaces?.display_name ?? 'Business'} · {r.workspaces?.mfn_id ?? '—'} · <span className="portal-money">{r.current_cents != null ? money(r.current_cents) : '—'}</span> → <span className="portal-money">{money(r.proposed_cents)}</span> · renews {date(r.renewal_at)} · {r.status}{r.reason ? ` · ${r.reason}` : ''}</li>)}</ul>
     )}
   </section>;
 }

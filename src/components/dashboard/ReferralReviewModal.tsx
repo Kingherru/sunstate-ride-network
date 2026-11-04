@@ -100,7 +100,7 @@ export function ReferralReviewModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-3 overflow-y-auto">
-      <div className="bg-card border border-border rounded-sm max-w-2xl w-full my-6 shadow-xl">
+      <div className="portal-custom-dialog bg-card border border-border rounded-sm max-w-2xl w-full my-6 shadow-xl">
         <div className="p-5 border-b border-border flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-extrabold tracking-tight">Review referred trip</h2>
@@ -109,12 +109,12 @@ export function ReferralReviewModal({
               terms before accepting or declining.
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
+          <button onClick={onClose} className="portal-secondary-control text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
         </div>
 
         <div className="p-5 space-y-5">
           {/* Trip details */}
-          <section className="space-y-2">
+          <section className="portal-dialog-section space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Trip details</h3>
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
               <Info label="Patient" value={`${trip.patient_first_name ?? ""} ${trip.patient_last_name ?? ""}`.trim() || "—"} />
@@ -127,7 +127,7 @@ export function ReferralReviewModal({
           </section>
 
           {/* Pickup / dropoff */}
-          <section className="grid sm:grid-cols-2 gap-3">
+          <section className="portal-dialog-section grid sm:grid-cols-2 gap-3">
             <div className="border border-border rounded-sm p-3 text-sm">
               <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pickup</div>
               <div className="font-bold mt-1">{trip.pickup_address ?? "—"}</div>
@@ -227,7 +227,7 @@ function FinRow({
         <div className={`text-sm ${emphasize ? "font-extrabold" : "font-bold"}`}>{label}</div>
         {hint && <div className="text-[11px] text-muted-foreground leading-snug">{hint}</div>}
       </div>
-      <div className={`text-sm tabular-nums ${emphasize ? "font-extrabold text-accent" : "font-bold"}`}>{fmt(value)}</div>
+      <div className={`portal-money text-sm tabular-nums ${emphasize ? "font-extrabold text-accent" : "font-bold"}`}>{fmt(value)}</div>
     </li>
   );
 }

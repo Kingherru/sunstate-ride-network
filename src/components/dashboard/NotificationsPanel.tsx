@@ -217,6 +217,7 @@ export function NotificationsPanel() {
             <Button
               size="sm"
               variant="secondary"
+              className="portal-secondary-control"
               onClick={() => markSelected.mutate(Array.from(selected))}
               disabled={markSelected.isPending}
             >
@@ -226,6 +227,7 @@ export function NotificationsPanel() {
           <Button
             size="sm"
             variant="outline"
+            className="portal-secondary-control"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending || unreadCount === 0}
           >
@@ -355,7 +357,7 @@ export function NotificationsPanel() {
                               </span>
                             )}
                             {n.link && (
-                              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                              <span className="text-[10px] font-semibold text-ds-link-hover uppercase tracking-wider">
                                 Open →
                               </span>
                             )}
@@ -367,7 +369,7 @@ export function NotificationsPanel() {
                           aria-label="Delete notification"
                           onClick={() => removeOne.mutate(n.id)}
                           disabled={removeOne.isPending}
-                          className="flex-shrink-0"
+                          className="flex-shrink-0 text-ds-error"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

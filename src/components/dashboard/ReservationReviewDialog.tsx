@@ -403,7 +403,7 @@ export function ReservationReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto">
+      <DialogContent className="theme-portal portal-custom-dialog max-w-4xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -452,7 +452,7 @@ export function ReservationReviewDialog({
                         <div className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                           Quote amount to invoice
                         </div>
-                        <div className="text-2xl font-extrabold text-foreground">
+                        <div className="portal-money text-2xl font-extrabold text-foreground">
                           {parsedQuoteCents != null ? `$${(parsedQuoteCents / 100).toFixed(2)}` : priceUsd}
                         </div>
                       </div>
@@ -784,7 +784,7 @@ export function ReservationReviewDialog({
 
         {declineOpen && (
           <Dialog open={declineOpen} onOpenChange={setDeclineOpen}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="theme-portal portal-custom-dialog max-w-md">
               <DialogHeader>
                 <DialogTitle>Decline reservation</DialogTitle>
                 <DialogDescription>Provide a short reason so the requester and dispatch are notified.</DialogDescription>
@@ -827,7 +827,7 @@ export function ReservationReviewDialog({
 
         {providerPickerOpen && (
           <Dialog open={providerPickerOpen} onOpenChange={setProviderPickerOpen}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="theme-portal portal-custom-dialog max-w-md">
               <DialogHeader>
                 <DialogTitle>Send to a connected provider</DialogTitle>
                 <DialogDescription>

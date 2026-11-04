@@ -102,7 +102,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
         <p className="ds-caption mt-3">Provider Base Membership $20/month; optional Referral Network add-on $10/month (requires the base membership); $30/month with both before usage fees. The 2% Network fee applies only to applicable referral transactions. Courses are separate one-time purchases. Prices are subject to change.</p>
       </div>
 
-      {s.transition && <div className={box}><h3 className="ds-label text-ds-primary">Pending renewal transition</h3><p className="ds-body mt-2">{s.transition.currentCents != null ? money(s.transition.currentCents) : '—'} → <span className="portal-money">{money(s.transition.proposedCents)}</span> at {date(s.transition.renewalAt)}. Status: {s.transition.status}. Not active until launch approval.</p></div>}
+      {s.transition && <div className={box}><h3 className="ds-label text-ds-primary">Pending renewal transition</h3><p className="ds-body mt-2"><span className="portal-money">{s.transition.currentCents != null ? money(s.transition.currentCents) : '—'}</span> → <span className="portal-money">{money(s.transition.proposedCents)}</span> at {date(s.transition.renewalAt)}. Status: {s.transition.status}. Not active until launch approval.</p></div>}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className={box}>
