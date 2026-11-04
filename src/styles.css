@@ -363,9 +363,14 @@
 .theme-portal .portal-search > svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--mfn-text-2); }
 .theme-portal .portal-search > input { padding-left: 2.5rem; }
 
-/* Restrained 1px orange edge on the sidebar while focus/pointer is in the workspace. */
-.portal-sidebar::after { content: ""; position: absolute; top: 3.5rem; bottom: 0; right: -1px; width: 1px; background: var(--mfn-orange, #E07A1F); box-shadow: 0 0 6px rgb(224 122 31 / 0.45); opacity: 0; transition: opacity .2s; pointer-events: none; }
-.portal-root:has(main:hover, main:focus-within) .portal-sidebar::after { opacity: 1; }
+/* Shared activity edge stays inside the sidebar, including above the top bar.
+   Shadow is cast inward, so it cannot bleed across the workspace/header. */
+.theme-portal { --sidebar-activity-shadow: -2px 0 7px 1px color-mix(in oklab, var(--ds-accent) 58%, transparent); }
+.portal-sidebar { z-index: 21; }
+.portal-sidebar::after, .portal-drawer::after { content: ""; position: absolute; inset-block: 0; right: 0; width: 1px; background: var(--ds-accent); box-shadow: var(--sidebar-activity-shadow); opacity: .08; transition: opacity 160ms ease; pointer-events: none; }
+.portal-root:has(> main:hover, > main:focus-within) .portal-sidebar::after { opacity: 1; }
+.portal-drawer { isolation: isolate; }
+.portal-drawer::after { opacity: .3; box-shadow: none; }
 
 /* Pass 3I: matching subtle edges on colored portal panels only. */
 .theme-portal :where(.bg-ds-sky, .bg-ds-info-soft) { border: 1px solid var(--ds-sky-border); }
@@ -503,3 +508,35 @@
 .portal-root header :is(a, button)[aria-label]:focus-visible { background-color: rgb(255 255 255 / 0.16); color: #F59A3C; }
 /* Brighter icon/secondary controls on light surfaces (never primary/destructive). */
 .theme-portal main button:is([aria-label*="xpand" i], [aria-label*="istory" i], [aria-label*="essage" i]):not(:disabled) { color: var(--control-bright); }
+
+/* Pass 3X: one solid hierarchy for custom and shared portal dialogs. */
+.theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)), .theme-portal.portal-custom-dialog {
+  border: 2px solid var(--modal-edge); border-radius: var(--ds-radius-lg);
+}
+.theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)) :where(section, fieldset, div.border, dl.border, ul.border):not(.contents):not([class*="ds-status-"]):not(.bg-ds-error-soft):not(.bg-ds-warning-soft):not(.bg-ds-success-soft) {
+  border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background-color: var(--ds-surface); box-shadow: none; backdrop-filter: none;
+}
+.theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)) :where(dl > div, section > p + p, ul > li + li, .portal-dialog-rows > * + *) {
+  border-top: 1px solid var(--row-divider); padding-top: .5rem;
+}
+.theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)) :where(dl > div) { padding-bottom: .5rem; }
+.theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)) > :is(h2, h3, h4),
+.theme-portal .portal-dialog-header { border-bottom: 1px solid var(--section-edge); padding-bottom: .75rem; }
+.theme-portal .portal-dialog-actions { border-top: 1px solid var(--section-edge); padding-top: .75rem; }
+.theme-portal .portal-dialog-section { border: 1px solid var(--section-edge); border-radius: var(--ds-radius); padding: .75rem; background: var(--ds-surface); box-shadow: none; }
+.theme-portal .portal-dialog-rows > * + * { border-top: 1px solid var(--row-divider); margin-top: .5rem; padding-top: .5rem; }
+/* Weight-only money treatment retains existing semantic colors, including red
+   adjustments and white text on solid status/action controls. */
+.theme-portal .portal-money { font-weight: 750; font-variant-numeric: tabular-nums; }
+.theme-portal .portal-money-input { font-weight: 700; font-variant-numeric: tabular-nums; }
+.theme-portal .portal-secondary-control:not(:disabled):not([aria-disabled="true"]) { color: var(--ds-link-hover); }
+.theme-portal .portal-secondary-control:not(:disabled):hover, .theme-portal .portal-secondary-control:not(:disabled):focus-visible { background-color: var(--ds-hover); outline-color: var(--ds-focus); }
+.theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)) button:has(> .sr-only):not(:disabled) { color: var(--ds-link-hover); opacity: 1; }
+.portal-root > header :is(a, button)[aria-label]:not(:disabled), .portal-root > div > header :is(a, button)[aria-label]:not(:disabled) { color: var(--ds-on-primary); }
+.portal-root > header :is(a, button)[aria-label]:not(:disabled):is(:hover, :focus-visible), .portal-root > div > header :is(a, button)[aria-label]:not(:disabled):is(:hover, :focus-visible) { color: var(--ds-accent); background-color: var(--ds-primary-hover); }
+.theme-portal .portal-header-cart:hover:not(:disabled), .theme-portal .portal-header-cart:focus-visible:not(:disabled) { color: var(--ds-accent) !important; }
+@media (max-width: 639px) {
+  .theme-portal .portal-custom-dialog.grid > .col-span-2 { grid-column: 1 / -1; }
+  .theme-portal .portal-finance-summary { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .portal-sidebar::after, .portal-drawer::after { transition: none; } }
