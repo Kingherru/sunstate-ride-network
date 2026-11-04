@@ -367,7 +367,7 @@
    Shadow is cast inward, so it cannot bleed across the workspace/header. */
 .theme-portal { --sidebar-activity-shadow: -2px 0 7px 1px color-mix(in oklab, var(--ds-accent) 58%, transparent); }
 .portal-sidebar { z-index: 21; }
-.portal-sidebar::after, .portal-drawer::after { content: ""; position: absolute; inset-block: 0; right: 0; width: 1px; background: var(--ds-accent); box-shadow: var(--sidebar-activity-shadow); opacity: .08; transition: opacity 160ms ease; pointer-events: none; }
+.portal-sidebar::after, .portal-drawer::after { content: ""; position: absolute; inset-block: 0; right: 0; width: 1px; background: var(--ds-accent); box-shadow: var(--sidebar-activity-shadow); clip-path: inset(0 0 0 -10px); opacity: .08; transition: opacity 160ms ease; pointer-events: none; }
 .portal-root:has(> main:hover, > main:focus-within) .portal-sidebar::after { opacity: 1; }
 .portal-drawer { isolation: isolate; }
 .portal-drawer::after { opacity: .3; box-shadow: none; }
@@ -523,6 +523,9 @@
 .theme-portal :is(.portal-custom-dialog, [role="dialog"]:not(.inset-0)) > :is(h2, h3, h4),
 .theme-portal .portal-dialog-header { border-bottom: 1px solid var(--section-edge); padding-bottom: .75rem; }
 .theme-portal .portal-dialog-actions { border-top: 1px solid var(--section-edge); padding-top: .75rem; }
+.theme-portal[role="dialog"] :where(section, div.border, dl.border, ul.border, fieldset):not(.contents):not([class*="ds-status-"]):not(.bg-ds-error-soft):not(.bg-ds-warning-soft):not(.bg-ds-success-soft) { border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background-color: var(--ds-surface); box-shadow: none; backdrop-filter: none; }
+.theme-portal[role="dialog"] :where(dl > div, section > p + p) { border-top: 1px solid var(--row-divider); padding-top: .5rem; }
+.theme-portal[role="dialog"] > :is(h2, h3, h4) { border-bottom: 1px solid var(--section-edge); padding-bottom: .75rem; }
 .theme-portal .portal-dialog-section { border: 1px solid var(--section-edge); border-radius: var(--ds-radius); padding: .75rem; background: var(--ds-surface); box-shadow: none; }
 .theme-portal .portal-dialog-rows > * + * { border-top: 1px solid var(--row-divider); margin-top: .5rem; padding-top: .5rem; }
 /* Legacy pop-outs without a dialog role still receive the same inner hierarchy;
