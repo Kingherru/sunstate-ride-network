@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { listRegularAdmins, promoteRegularAdmin, setRegularAdminPermissions, revokeRegularAdmin, type RegularAdmin } from "@/lib/admin-management.functions";
 import { ADMIN_SECTIONS, PRESETS, PRESET_LABELS, type AdminPreset, type AccessLevel } from "@/lib/admin-permissions";
-import { PageHead, panelCls } from "@/components/portal/PortalShell";
+import { PageHead } from "@/components/portal/PortalShell";
 import { DsEmpty } from "@/components/ds/feedback";
 import { DsButton } from '@/components/ds/controls';
 import { StatusPill, humanStatus } from '@/components/ds/status';

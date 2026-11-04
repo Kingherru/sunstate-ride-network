@@ -10,8 +10,8 @@ import { useRouteContext } from '@tanstack/react-router';
 
 export function PersonalSettings() {
   const preview = usePortalPreview();
-  const { access } = useRouteContext({ from: '/_authenticated' });
-  const workspace = preview.active ? null : access.primary;
+  const { access } = useRouteContext({ strict: false });
+  const workspace = preview.active ? null : access?.primary;
   const qc = useQueryClient();
   const get = useServerFn(getPersonalSettings);
   const save = useServerFn(savePersonalSettings);
@@ -56,7 +56,7 @@ export function PersonalSettings() {
         <div className="min-w-0"><dt className="ds-label">MFN ID</dt><dd className="ds-body break-words font-mono">{q.data?.mfn_id ?? '—'}</dd></div>
         <div className="min-w-0"><dt className="ds-label">Account status</dt><dd className="mt-1">{q.data?.status ? <StatusPill status={q.data.status} /> : '—'}</dd></div>
         {(preview.active || workspace) && <div className="min-w-0"><dt className="ds-label">Account name</dt><dd className="ds-body break-words">{preview.active ? 'Demo Account' : workspace?.name || '—'}</dd></div>}
-        <div className="min-w-0"><dt className="ds-label">Account type / role</dt><dd className="ds-body break-words">{preview.active ? `${preview.kind === 'provider' ? 'Provider' : preview.accountType.replace(/_/g, ' ')} · Demo` : workspace ? `${workspace.type.replace(/_/g, ' ')} · ${workspace.role.replace(/_/g, ' ')}` : access.isMasterAdmin ? 'Master Admin' : access.isAdmin ? 'Administrator' : 'Learner'}</dd></div>
+        <div className="min-w-0"><dt className="ds-label">Account type / role</dt><dd className="ds-body break-words">{preview.active ? `${preview.kind === 'provider' ? 'Provider' : preview.accountType.replace(/_/g, ' ')} · Demo` : workspace ? `${workspace.is_contractor ? 'Contractor' : workspace.type.replace(/_/g, ' ')} · ${workspace.role.replace(/_/g, ' ')}` : access?.isMasterAdmin ? 'Master Admin' : access?.isAdmin ? 'Administrator' : 'Learner'}</dd></div>
       </dl><p className="ds-caption">Read-only. Account type and role labels are managed by authorized administrators and never grant permissions on their own.</p></div>
     </section>
     <section className="portal-business-section">

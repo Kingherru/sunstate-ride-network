@@ -29,6 +29,7 @@ import { CustomerBilling } from '@/components/portal/CustomerBilling';
 import { PatientManagement } from '@/components/portal/PatientManagement';
 import { InterfaceSize } from '@/components/portal/InterfaceSize';
 import { Link } from '@tanstack/react-router';
+import { DsButton } from '@/components/ds/controls';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications";
@@ -108,16 +109,18 @@ function Profile({ email }: { email: string | null }) {
   ];
   return (
     <>
-      <dl className="divide-y divide-ds-border">
+      <section className="portal-business-section portal-business-form mt-4">
+      <h2 className="portal-business-heading ds-subheading uppercase">Account details</h2>
+      <dl className="portal-business-body divide-y divide-ds-border">
         {rows.map(([k, v]) => (
-          <div key={k} className="grid gap-1 py-3 sm:grid-cols-[12rem_1fr] sm:gap-4">
-            <dt className="ds-support font-semibold uppercase tracking-[0.06em]">{k}</dt>
-            <dd className="ds-body break-words">{v}</dd>
+          <div key={k} className="grid min-w-0 gap-1 py-3">
+            <dt className="ds-label">{k}</dt>
+            <dd className="ds-body min-w-0 break-words">{v}</dd>
           </div>
         ))}
         {ws && (
-          <div className="grid gap-1 py-3 sm:grid-cols-[12rem_1fr] sm:gap-4">
-            <dt className="ds-support font-semibold uppercase tracking-[0.06em]"><label htmlFor="org-type">Account type</label></dt>
+          <div className="grid gap-1 py-3">
+            <dt className="ds-label"><label htmlFor="org-type">Account type</label></dt>
             <dd className="ds-body">
               {canEdit ? (
                 <div className="flex flex-wrap items-center gap-3">
@@ -125,7 +128,7 @@ function Profile({ email }: { email: string | null }) {
                     {org === "needs_review" && <option value="needs_review">Choose a type…</option>}
                     {ORGANIZATION_TYPES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
-                  <button onClick={onSave} disabled={busy || org === "needs_review" || org === ws.organization_type} className={actionCls}>Save type</button>
+                  <DsButton onClick={onSave} disabled={busy || org === "needs_review" || org === ws.organization_type}>Save type</DsButton>
                 </div>
               ) : organizationLabel(ws.organization_type)}
               <p className="ds-support mt-2">This describes your business. It doesn't change what you can access.</p>
@@ -133,6 +136,7 @@ function Profile({ email }: { email: string | null }) {
           </div>
         )}
       </dl>
+      </section>
     </>
   );
 }
