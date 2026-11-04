@@ -35,7 +35,7 @@ export function MembershipTransitionsList() {
     <h2 id="mt-h" className="ds-subheading uppercase text-ds-primary">Membership renewal transitions</h2>
     <p className="ds-support mt-1">Read-only. Launch flag is {q.data?.enabled ? 'ON' : 'OFF'}; transitions cannot be activated here.</p>
     {q.isLoading ? <p className="ds-support mt-2">Loading…</p> : rows.length === 0 ? <p className="ds-support mt-2">No prepared transitions.</p> : (
-      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">{r.workspaces?.display_name ?? 'Business'} · {r.workspaces?.mfn_id ?? '—'} · {r.current_cents != null ? money(r.current_cents) : '—'} → {money(r.proposed_cents)} · renews {date(r.renewal_at)} · {r.status}{r.reason ? ` · ${r.reason}` : ''}</li>)}</ul>
+      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">{r.workspaces?.display_name ?? 'Business'} · {r.workspaces?.mfn_id ?? '—'} · {r.current_cents != null ? money(r.current_cents) : '—'} → <span className="portal-money">{money(r.proposed_cents)}</span> · renews {date(r.renewal_at)} · {r.status}{r.reason ? ` · ${r.reason}` : ''}</li>)}</ul>
     )}
   </section>;
 }
@@ -53,7 +53,7 @@ export function GrandfatheringList() {
     <p className="ds-support mt-1">Master Admin only. Qualifying existing members keep their base price for 12 months from a future, owner-approved transition date. No date is set and nothing activates here.</p>
     <DsButton className="mt-3" size="sm" variant="secondary" onClick={async () => { await prep(); await qc.invalidateQueries({ queryKey: ['membership-grandfathering'] }); }}>Record eligibility</DsButton>
     {q.isLoading ? <p className="ds-support mt-2">Loading…</p> : rows.length === 0 ? <p className="ds-support mt-2">No eligibility recorded.</p> : (
-      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">Business {String(r.workspace_id).slice(0, 8)} · {r.environment === 'live' ? 'live' : 'test'} · {money(r.original_cents)}/month · {r.eligible ? 'Eligible' : 'Not eligible'} · effective {r.effective_at ? date(r.effective_at) : 'not set'} · expires {r.expires_at ? date(r.expires_at) : 'not set'} · {r.status}</li>)}</ul>
+      <ul className="ds-support mt-3 divide-y divide-ds-border">{rows.map(r => <li key={r.id} className="py-2">Business {String(r.workspace_id).slice(0, 8)} · {r.environment === 'live' ? 'live' : 'test'} · <span className="portal-money">{money(r.original_cents)}</span>/month · {r.eligible ? 'Eligible' : 'Not eligible'} · effective {r.effective_at ? date(r.effective_at) : 'not set'} · expires {r.expires_at ? date(r.expires_at) : 'not set'} · {r.status}</li>)}</ul>
     )}
   </section>;
 }

@@ -51,14 +51,14 @@ export function SettlementPayment({ row, payable }: { row: SettlementRow; payabl
       </div>
       {!ACH_AVAILABLE && <p className="ds-caption text-ds-on-subtle">Bank (ACH) is not available yet. Apple Pay or Google Pay appear inside the card form only when Stripe offers them on your device.</p>}
       {q && <div className="space-y-2 ds-caption tabular-nums">
-        <p>Receiver amount: <strong>{money(q.receiver_payout_cents)}</strong></p>
-        <p>MY FLORIDA NEMT Network fee (2%): {money(q.network_fee_cents)}</p>
-        <p>Card processing fee: {money(q.processing_fee_cents)}{q.sandbox_estimate && ' (test-mode estimate)'}</p>
-        <p className="ds-label">Total due: {money(q.total_cents)}</p>
+        <p>Receiver amount: <strong><span className="portal-money">{money(q.receiver_payout_cents)}</span></strong></p>
+        <p>MY FLORIDA NEMT Network fee (2%): <span className="portal-money">{money(q.network_fee_cents)}</span></p>
+        <p>Card processing fee: <span className="portal-money">{money(q.processing_fee_cents)}</span>{q.sandbox_estimate && ' (test-mode estimate)'}</p>
+        <p className="ds-label">Total due: <span className="portal-money">{money(q.total_cents)}</span></p>
         <label className="flex items-start gap-2"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} /> <span>I confirm my business is responsible for this payment and this exact total. No fee will be added later.</span></label>
         <DsButton disabled={!ack || busy} onClick={async () => { setBusy(true); const r = await start({ data: { settlementId: row.id, method: 'card', environment: env!, acknowledged: true } }); setBusy(false); if ('error' in r) toast.error(r.error); else { setSecret(r.clientSecret); setLocked(r.attempt.total_cents); } }}>{busy ? 'Preparing…' : 'Continue to payment'}</DsButton>
       </div>}
     </>}
-    {secret && locked != null && <Elements stripe={getStripe()} options={{ clientSecret: secret }}><p className="ds-caption">Locked total: <strong>{money(locked)}</strong></p><PayForm total={locked} onDone={() => { setDone(true); qc.invalidateQueries({ queryKey: ['network-settlements'] }); }} /></Elements>}
+    {secret && locked != null && <Elements stripe={getStripe()} options={{ clientSecret: secret }}><p className="ds-caption">Locked total: <strong><span className="portal-money">{money(locked)}</span></strong></p><PayForm total={locked} onDone={() => { setDone(true); qc.invalidateQueries({ queryKey: ['network-settlements'] }); }} /></Elements>}
   </section>;
 }

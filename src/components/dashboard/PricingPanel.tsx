@@ -69,7 +69,7 @@ export function PricingPanel() {
                 <span className="px-3 text-muted-foreground">$</span>
                 <input type="number" min="0" step="0.01" value={String(form[f.key] ?? 0)}
                        onChange={(e) => setNum(f.key)(e.target.value)}
-                       className="flex-1 px-2 py-2 bg-transparent focus:outline-none" />
+                       className="portal-money-input flex-1 px-2 py-2 bg-transparent focus:outline-none" />
               </div>
             </label>
           ))}
@@ -79,7 +79,7 @@ export function PricingPanel() {
               <span className="px-3 text-muted-foreground">$</span>
               <input type="number" min="0" step="0.01" value={String(form.wait_per_min ?? 0)}
                      onChange={(e) => setForm({ ...form, wait_per_min: Number(e.target.value) || 0 })}
-                     className="flex-1 px-2 py-2 bg-transparent focus:outline-none" />
+                     className="portal-money-input flex-1 px-2 py-2 bg-transparent focus:outline-none" />
             </div>
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -156,7 +156,7 @@ export function PricingPanel() {
                       type="number" min="0" step="0.01"
                       value={String((form as any)[f.key] ?? 0)}
                       onChange={(e) => setForm({ ...form, [f.key]: Number(e.target.value) || 0 } as any)}
-                      className="flex-1 px-2 py-2 bg-transparent focus:outline-none"
+                      className="portal-money-input flex-1 px-2 py-2 bg-transparent focus:outline-none"
                     />
                   </div>
                 </label>
@@ -186,19 +186,19 @@ export function PricingPanel() {
         </p>
         <ul className="text-sm space-y-1">
           {sample.lines.map((l, i) => (
-            <li key={i} className="flex justify-between"><span className="text-muted-foreground">{l.label}</span><span className="font-mono">${l.amount.toFixed(2)}</span></li>
+            <li key={i} className="flex justify-between"><span className="text-muted-foreground">{l.label}</span><span className="font-mono">$<span className="portal-money">{l.amount.toFixed(2)}</span></span></li>
           ))}
         </ul>
         <div className="border-t border-border pt-2 flex justify-between font-extrabold">
-          <span>You receive</span><span className="font-mono">${sample.total.toFixed(2)}</span>
+          <span>You receive</span><span className="font-mono">$<span className="portal-money">{sample.total.toFixed(2)}</span></span>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>Platform fee ({(platformFeePct * 100).toFixed(2).replace(/\.00$/, "")}%)</span>
-          <span className="font-mono">${(patientTotal - sample.total).toFixed(2)}</span>
+          <span className="font-mono">$<span className="portal-money">{(patientTotal - sample.total).toFixed(2)}</span></span>
 
         </div>
         <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
-          <span>Patient pays</span><span className="font-mono">${patientTotal.toFixed(2)}</span>
+          <span>Patient pays</span><span className="font-mono">$<span className="portal-money">{patientTotal.toFixed(2)}</span></span>
         </div>
       </aside>
     </div>

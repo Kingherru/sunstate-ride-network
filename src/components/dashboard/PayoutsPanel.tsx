@@ -100,9 +100,9 @@ export function PayoutsPanel({ userId }: { userId: string }) {
                 <tr key={t.id}>
                   <td className="py-2 font-mono text-xs">{t.id.slice(0, 8)}</td>
                   <td>{t.pickup_date}</td>
-                  <td className="text-right">{formatUsd((t.cost_total ?? 0) * 100)}</td>
-                  <td className="text-right text-muted-foreground">−{formatUsd(t.platform_fee_cents ?? Math.round((t.cost_total ?? 0) * 100 * feePct))}</td>
-                  <td className="text-right font-bold">{formatUsd(computePayout(t))}</td>
+                  <td className="text-right"><span className="portal-money">{formatUsd((t.cost_total ?? 0) * 100)}</span></td>
+                  <td className="text-right text-muted-foreground">−<span className="portal-money">{formatUsd(t.platform_fee_cents ?? Math.round((t.cost_total ?? 0) * 100 * feePct))}</span></td>
+                  <td className="text-right font-bold"><span className="portal-money">{formatUsd(computePayout(t))}</span></td>
                   <td className="pl-3"><PayoutBadge status={t.payout_status} releasedAt={t.payout_released_at} /></td>
                 </tr>
               ))}
@@ -189,7 +189,7 @@ function ConnectCard({ account, loading, userId }: { account: PayoutAccount | nu
           <button
             disabled={busy !== null}
             onClick={onRefresh}
-            className="bg-card border border-border font-bold px-4 py-2.5 rounded-sm hover:bg-muted/40 disabled:opacity-50"
+            className="portal-secondary-control bg-card border border-border font-bold px-4 py-2.5 rounded-sm hover:bg-muted/40 disabled:opacity-50"
           >
             {busy === "refresh" ? "Refreshing…" : "Refresh status"}
           </button>

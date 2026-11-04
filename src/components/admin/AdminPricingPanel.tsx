@@ -75,7 +75,7 @@ function PricingColumn({
                   <input type="number" min="0" step="0.01" disabled={readOnly}
                     value={String(values[f.key] ?? 0)}
                     onChange={(e) => onChange({ ...values, [f.key]: Number(e.target.value) || 0 })}
-                    className="flex-1 px-2 py-1.5 bg-transparent focus:outline-none text-sm disabled:opacity-60" />
+                    className="portal-money-input flex-1 px-2 py-1.5 bg-transparent focus:outline-none text-sm disabled:opacity-60" />
                 </div>
               </label>
             ))}

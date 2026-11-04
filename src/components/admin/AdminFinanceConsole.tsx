@@ -145,10 +145,10 @@ export function AdminFinanceConsole() {
                     {PAYER_KIND_LABELS[r.fin_payer_kind ?? ""] ?? "—"}
                     {r.fin_is_medicaid && <span className="ml-1 text-[9px] font-bold text-amber-700">MCD</span>}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums">{formatCents(r.fin_gross_cents)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{formatCents(r.fin_platform_fee_cents)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{formatCents(r.fin_referral_fee_cents)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums font-bold">{formatCents(r.fin_provider_net_cents)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums"><span className="portal-money">{formatCents(r.fin_gross_cents)}</span></td>
+                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground"><span className="portal-money">{formatCents(r.fin_platform_fee_cents)}</span></td>
+                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground"><span className="portal-money">{formatCents(r.fin_referral_fee_cents)}</span></td>
+                  <td className="px-3 py-2 text-right tabular-nums font-bold"><span className="portal-money">{formatCents(r.fin_provider_net_cents)}</span></td>
                   <td className="px-3 py-2 text-xs">{PAYMENT_STATE_LABELS[state] ?? state}</td>
                   <td className="px-3 py-2 text-xs">{PAYOUT_STATE_LABELS[payout] ?? payout}</td>
                   <td className="px-3 py-2 text-[11px] text-muted-foreground">

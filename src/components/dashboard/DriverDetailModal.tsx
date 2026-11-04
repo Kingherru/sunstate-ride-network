@@ -46,7 +46,7 @@ export function DriverDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-background border border-border rounded-md shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col"
+        className="portal-custom-dialog bg-background border border-border rounded-md shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between p-5 border-b border-border">
@@ -63,7 +63,7 @@ export function DriverDetailModal({
               {driver?.phone && <span className="ml-3">{driver.phone}</span>}
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1" aria-label="Close">
+          <button onClick={onClose} className="portal-secondary-control text-muted-foreground hover:text-foreground p-1" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -93,7 +93,7 @@ export function DriverDetailModal({
           )}
 
           {dates.map((date) => (
-            <div key={date}>
+            <div key={date} className="portal-dialog-section">
               <div className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-2">
                 {new Date(date + "T00:00:00").toLocaleDateString(undefined, {
                   weekday: "long", month: "short", day: "numeric",

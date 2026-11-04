@@ -58,7 +58,7 @@ export function PaymentHistory() {
     <div className={box}>
       <h3 className="ds-label text-ds-primary">Invoice & payment history</h3>
       {!env ? <p className="ds-support mt-2">Payments are not configured for this build.</p> : q.isLoading ? <p role="status" className="ds-support mt-2">Loading…</p> : d && 'error' in d ? <p role="alert" className="ds-support mt-2">{d.error}</p> : rows.length ? (
-        <ul className="ds-body mt-2 divide-y divide-ds-border">{rows.map((r, i) => <li key={i} className="flex flex-wrap justify-between gap-2 py-2"><span>{new Date(r.created).toLocaleDateString('en-US', { timeZone: 'America/New_York', dateStyle: 'medium' })} · {r.description ?? 'Payment'} · {r.status}</span><span>{money(r.amountCents)}{r.receiptUrl && <> · <a className="text-ds-link underline" href={r.receiptUrl} target="_blank" rel="noopener noreferrer">Receipt</a></>}</span></li>)}</ul>
+        <ul className="ds-body mt-2 divide-y divide-ds-border">{rows.map((r, i) => <li key={i} className="flex flex-wrap justify-between gap-2 py-2"><span>{new Date(r.created).toLocaleDateString('en-US', { timeZone: 'America/New_York', dateStyle: 'medium' })} · {r.description ?? 'Payment'} · {r.status}</span><span><span className="portal-money">{money(r.amountCents)}</span>{r.receiptUrl && <> · <a className="text-ds-link underline" href={r.receiptUrl} target="_blank" rel="noopener noreferrer">Receipt</a></>}</span></li>)}</ul>
       ) : <p className="ds-support mt-2">No payments yet.</p>}
     </div>
   );

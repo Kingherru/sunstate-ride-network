@@ -181,7 +181,7 @@ export function DriverEarningsPanel() {
                 <ul className="text-sm divide-y divide-border">
                   {report.data.lines.map((l, i) => (
                     <li key={i} className="py-1.5 flex items-center justify-between">
-                      <span>{l.label}</span><span className="font-bold">{usd(l.amount_cents)}</span>
+                      <span>{l.label}</span><span className="font-bold"><span className="portal-money">{usd(l.amount_cents)}</span></span>
                     </li>
                   ))}
                 </ul>
@@ -243,7 +243,7 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
 function Line({ label, v, bold, accent }: { label: string; v: string; bold?: boolean; accent?: boolean }) {
   return (
     <div className={`flex items-center justify-between ${bold ? "font-bold" : ""} ${accent ? "text-accent" : ""}`}>
-      <span>{label}</span><span>{v}</span>
+      <span>{label}</span><span className="portal-money">{v}</span>
     </div>
   );
 }
@@ -277,7 +277,7 @@ function AdjustmentsCard({ driverId, adjustments, onChanged }: { driverId: strin
               {a.reason || <span className="italic text-muted-foreground">no reason</span>}
             </span>
             <span className="flex items-center gap-3">
-              <span className={`font-bold ${a.amount_cents < 0 ? "text-destructive" : ""}`}>{usd(a.amount_cents)}</span>
+              <span className={`font-bold ${a.amount_cents < 0 ? "text-destructive" : ""}`}><span className="portal-money">{usd(a.amount_cents)}</span></span>
               <button onClick={() => confirm("Remove adjustment?") && del.mutate(a.id)}
                       className="text-xs font-bold text-red-600 hover:underline">Remove</button>
             </span>
@@ -342,7 +342,7 @@ function PaymentsCard({ driverId, range, grossCents, payments, onChanged }:
           <li key={p.id} className="py-2 flex items-center justify-between gap-3">
             <div>
               <div className="font-bold">
-                {usd(p.amount_paid_cents)}
+                <span className="portal-money">{usd(p.amount_paid_cents)}</span>
                 <span className="ml-2 text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-sm bg-muted text-muted-foreground">
                   {p.status}
                 </span>
@@ -422,8 +422,8 @@ function PaymentHistoryCard({ payments, loading, onChanged }:
                 <tr key={p.id}>
                   <td className="py-1.5">{p.period_start && p.period_end ? `${p.period_start} → ${p.period_end}` : "—"}</td>
                   <td className="uppercase text-xs">{p.status}</td>
-                  <td className="text-right">{usd(p.gross_cents)}</td>
-                  <td className="text-right font-bold">{usd(p.amount_paid_cents)}</td>
+                  <td className="text-right"><span className="portal-money">{usd(p.gross_cents)}</span></td>
+                  <td className="text-right font-bold"><span className="portal-money">{usd(p.amount_paid_cents)}</span></td>
                   <td className="pl-3">{p.method ?? "—"}</td>
                   <td className="text-right">
                     <button onClick={() => confirm("Delete payment?") && del.mutate(p.id)}
@@ -569,7 +569,7 @@ function EmailReportCard({
       {previewOpen && previewUrl && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
              onClick={closePreview}>
-          <div className="bg-card border border-border rounded-sm w-full max-w-4xl h-[85vh] flex flex-col"
+          <div className="portal-custom-dialog bg-card border border-border rounded-sm w-full max-w-4xl h-[85vh] flex flex-col"
                onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-3 border-b border-border">
               <div className="text-sm font-bold">PDF preview — {driverName} · {periodLabel}</div>
@@ -659,8 +659,8 @@ function EmailedReportsHistoryCard({ driverId }: { driverId: string }) {
                 <td className="py-1.5">{new Date(r.sent_at).toLocaleString()}</td>
                 <td>{r.period_start} → {r.period_end}</td>
                 <td>{r.recipient_email}</td>
-                <td className="text-right">{usd(r.snapshot?.gross_cents ?? 0)}</td>
-                <td className="text-right font-bold">{usd(r.snapshot?.outstanding_cents ?? 0)}</td>
+                <td className="text-right"><span className="portal-money">{usd(r.snapshot?.gross_cents ?? 0)}</span></td>
+                <td className="text-right font-bold"><span className="portal-money">{usd(r.snapshot?.outstanding_cents ?? 0)}</span></td>
                 <td className="text-right">
                   <button onClick={() => openSnapshot(r)}
                           className="text-xs font-bold text-primary hover:underline">

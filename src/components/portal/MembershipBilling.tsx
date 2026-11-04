@@ -65,7 +65,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
       <div className="grid gap-4 md:grid-cols-2">
         <article className={box}>
           <h3 className="ds-label text-ds-primary">Base Provider Membership</h3>
-          <p className="ds-heading mt-1">{money(s.items[0]?.cents && !s.legacy ? s.items[0].cents : MEMBERSHIP_PRICING.baseCents)}<span className="ds-support"> /month</span></p>
+          <p className="ds-heading mt-1"><span className="portal-money">{money(s.items[0]?.cents && !s.legacy ? s.items[0].cents : MEMBERSHIP_PRICING.baseCents)}</span><span className="ds-support"> /month</span></p>
           <dl className="ds-body mt-3 space-y-1">
             <div><dt className="inline font-semibold">Status: </dt><dd className="inline">{s.cancelAtPeriodEnd && s.base !== 'canceled' ? 'Canceling' : BASE_STATUS_LABEL[s.base]}</dd></div>
             <div><dt className="inline font-semibold">Trial ends: </dt><dd className="inline">{date(s.trialEnd)}</dd></div>
@@ -79,7 +79,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
         </article>
         <article className={box}>
           <h3 className="ds-label text-ds-primary">Referral Network add-on</h3>
-          <p className="ds-heading mt-1">{money(MEMBERSHIP_PRICING.networkCents)}<span className="ds-support"> /month, optional</span></p>
+          <p className="ds-heading mt-1"><span className="portal-money">{money(MEMBERSHIP_PRICING.networkCents)}</span><span className="ds-support"> /month, optional</span></p>
           <p className="ds-body mt-3"><span className="font-semibold">Status: </span>{s.legacy ? 'Included until renewal transition' : ADDON_STATUS_LABEL[s.addon]}</p>
           {s.addon === 'canceling' && <p className="ds-support">Access continues until {date(s.addonCancelAt)}.</p>}
           {!s.legacy && s.linked && (s.base === 'active' || s.base === 'trialing') && (
@@ -98,11 +98,11 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
 
       <div className={soft}>
         <h3 className="ds-label text-ds-primary">Recurring total</h3>
-        {s.items.length ? <ul className="ds-body mt-2 space-y-1">{s.items.map(i => <li key={i.label} className="flex justify-between gap-4"><span>{i.label}</span><span>{money(i.cents)}</span></li>)}<li className="flex justify-between gap-4 border-t border-ds-border pt-1 font-semibold"><span>Total per month</span><span>{money(s.totalCents)}</span></li></ul> : <p className="ds-support mt-2">No recurring charges.</p>}
+        {s.items.length ? <ul className="ds-body mt-2 space-y-1">{s.items.map(i => <li key={i.label} className="flex justify-between gap-4"><span>{i.label}</span><span><span className="portal-money">{money(i.cents)}</span></span></li>)}<li className="flex justify-between gap-4 border-t border-ds-border pt-1 font-semibold"><span>Total per month</span><span><span className="portal-money">{money(s.totalCents)}</span></span></li></ul> : <p className="ds-support mt-2">No recurring charges.</p>}
         <p className="ds-caption mt-3">Provider Base Membership $20/month; optional Referral Network add-on $10/month (requires the base membership); $30/month with both before usage fees. The 2% Network fee applies only to applicable referral transactions. Courses are separate one-time purchases. Prices are subject to change.</p>
       </div>
 
-      {s.transition && <div className={box}><h3 className="ds-label text-ds-primary">Pending renewal transition</h3><p className="ds-body mt-2">{s.transition.currentCents != null ? money(s.transition.currentCents) : '—'} → {money(s.transition.proposedCents)} at {date(s.transition.renewalAt)}. Status: {s.transition.status}. Not active until launch approval.</p></div>}
+      {s.transition && <div className={box}><h3 className="ds-label text-ds-primary">Pending renewal transition</h3><p className="ds-body mt-2">{s.transition.currentCents != null ? money(s.transition.currentCents) : '—'} → <span className="portal-money">{money(s.transition.proposedCents)}</span> at {date(s.transition.renewalAt)}. Status: {s.transition.status}. Not active until launch approval.</p></div>}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className={box}>
@@ -115,7 +115,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
           <h3 className="ds-label text-ds-primary">Invoices</h3>
           {d?.stripeError && <p role="alert" className="ds-support mt-2">{d.stripeError}</p>}
           {d?.invoices === null ? <p className="ds-support mt-2">Visible to the business owner only.</p> : d?.invoices?.length ? (
-            <ul className="ds-body mt-2 divide-y divide-ds-border">{d.invoices.map((i, n) => <li key={i.number ?? n} className="flex flex-wrap justify-between gap-2 py-2"><span>{date(i.created)} · {i.status ?? '—'}</span><span>{money(i.amountCents)}{i.url && <> · <a className="text-ds-link underline" href={i.url} target="_blank" rel="noopener noreferrer">View</a></>}</span></li>)}</ul>
+            <ul className="ds-body mt-2 divide-y divide-ds-border">{d.invoices.map((i, n) => <li key={i.number ?? n} className="flex flex-wrap justify-between gap-2 py-2"><span>{date(i.created)} · {i.status ?? '—'}</span><span><span className="portal-money">{money(i.amountCents)}</span>{i.url && <> · <a className="text-ds-link underline" href={i.url} target="_blank" rel="noopener noreferrer">View</a></>}</span></li>)}</ul>
           ) : <p className="ds-support mt-2">No invoices yet.</p>}
         </div>
       </div>
