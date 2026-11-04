@@ -144,7 +144,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
               <div className="flex items-center justify-between gap-2">
                 <span className={`ds-body truncate ${c.unreadCount > 0 ? "font-bold text-ds-primary" : "font-semibold"}`}>{c.otherName}</span>
                 {c.lastMessageAt && <span className="ds-caption ml-auto shrink-0 text-ds-text-2">{new Date(c.lastMessageAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</span>}
-                {c.unreadCount > 0 && <span className="ds-support shrink-0 rounded-ds-sm bg-ds-error px-2 py-0.5 text-ds-on-action" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
+                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm bg-ds-error px-2 py-0.5 text-ds-on-action" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
               {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
