@@ -403,7 +403,7 @@ export function ReservationReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="theme-portal portal-custom-dialog max-w-4xl max-h-[92vh] overflow-y-auto">
+      <DialogContent largeWindow className="theme-portal portal-custom-dialog max-w-4xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
