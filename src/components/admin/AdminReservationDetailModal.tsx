@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { useDetailWindow } from '@/components/portal/use-detail-window';
 import {
   getAdminReservation,
   suggestProvidersForReservation,
@@ -24,6 +25,7 @@ export function AdminReservationDetailModal({
   onClose: () => void;
 }) {
   const qc = useQueryClient();
+  const detailWindow = useDetailWindow();
   const fetchReservation = useServerFn(getAdminReservation);
   const fetchProviders = useServerFn(suggestProvidersForReservation);
   const pushFn = useServerFn(pushReservationToProvider);
@@ -60,11 +62,11 @@ export function AdminReservationDetailModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center p-4 overflow-y-auto"
       onClick={onClose}>
-      <div className="portal-custom-dialog bg-background border border-border rounded-sm w-full max-w-4xl my-8"
+      <div {...detailWindow.windowProps} className="portal-custom-dialog bg-background border border-border rounded-sm w-full max-w-4xl my-8"
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-bold uppercase tracking-wide">Reservation Details</h2>
-          <button onClick={onClose} className="portal-secondary-control text-2xl leading-none px-2 hover:opacity-70">×</button>
+          <div className="flex shrink-0 items-center gap-1">{detailWindow.control}<button onClick={onClose} className="portal-secondary-control text-2xl leading-none px-2 hover:opacity-70">×</button></div>
         </div>
 
         {rq.isLoading && <div className="p-8 text-center text-muted-foreground">Loading…</div>}
@@ -119,7 +121,7 @@ export function AdminReservationDetailModal({
             </div>
 
             {(r.special_instructions || r.provider_notes) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="portal-dialog-section grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Special Instructions" value={r.special_instructions} />
                 <Field label="Provider Notes" value={r.provider_notes} />
               </div>

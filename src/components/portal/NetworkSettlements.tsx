@@ -1,4 +1,5 @@
 import { StatusPill } from '@/components/ds/status';
+import { useDetailWindow } from './use-detail-window';
 import { useMemo, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
@@ -34,6 +35,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   const rows = (q.data as SettlementRow[] | undefined) ?? [];
   const [from, setFrom] = useState(''); const [to, setTo] = useState('');
   const [open, setOpen] = useState<SettlementRow | null>(null);
+  const detailWindow = useDetailWindow(open !== null);
   const [cat, setCat] = useState('completion_missing'); const [why, setWhy] = useState('');
   const filtered = useMemo(() => rows.filter(r => (!from || r.created_at >= from) && (!to || r.created_at.slice(0, 10) <= to)), [rows, from, to]);
   const withState = filtered.map(r => ({ r, s: effectiveSettlementState(r) }));
@@ -80,8 +82,8 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
         </button></li>)}</ul>}
 
     {open && <div role="dialog" aria-modal="true" aria-label={`Settlement ${open.mfn_id}`} className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ds-on-bg/40 p-4">
-      <div className="portal-custom-dialog w-full max-w-4xl rounded-ds border border-ds-border bg-ds-surface p-5 space-y-4">
-        <div className="portal-dialog-header flex items-center justify-between gap-3"><h3 className="ds-h4">Settlement {open.mfn_id}</h3><DsButton variant="ghost" onClick={() => setOpen(null)}>Close</DsButton></div>
+      <div {...detailWindow.windowProps} className="portal-custom-dialog w-full max-w-4xl rounded-ds border border-ds-border bg-ds-surface p-5 space-y-4">
+        <div className="portal-dialog-header flex items-center justify-between gap-3"><h3 className="ds-h4">Settlement {open.mfn_id}</h3><div className="flex shrink-0 items-center gap-1">{detailWindow.control}<DsButton variant="ghost" onClick={() => setOpen(null)}>Close</DsButton></div></div>
         <div className="grid gap-3 md:grid-cols-3">
           <section className="rounded-ds border border-ds-border bg-ds-sky p-3 space-y-1 ds-caption tabular-nums"><p className="ds-label uppercase">Accepted terms</p>
             <p>Receiver payout: <strong><span className="portal-money">{money(open.receiver_payout_cents)}</span></strong></p><p>Network fee (2%): <span className="portal-money">{money(open.network_fee_cents)}</span></p><p>Processing fee: <span className="portal-money">{money(open.processing_fee_cents)}</span></p><p>Sender total due: <strong><span className="portal-money">{money(open.sender_total_due_cents)}</span></strong>{open.processing_fee_cents == null && ' + processing'}</p><p className="text-ds-on-subtle">{PROCESSING_FEE_COPY}</p></section>

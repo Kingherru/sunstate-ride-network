@@ -33,8 +33,8 @@ export function PersonDetails({ person, canManage, onClose }: { person: PersonRo
     try { await remove({ data: { userId: person.userId, mode: plan.mode, reason, confirmedMfn: confirmation } }); toast.success('Login access removed; historical records preserved.'); router.invalidate(); onClose(); }
     catch (e) { toast.error(e instanceof Error ? e.message : 'Action unavailable.'); } finally { setBusy(false); }
   }
-  return <Dialog open onOpenChange={v => { if (!v) onClose(); }}><DialogContent className="theme-portal portal-custom-dialog !max-w-6xl max-h-[92dvh] overflow-y-auto !bg-ds-bg !text-ds-on-bg !rounded-ds">
-    <DialogTitle className="!tracking-normal text-ds-primary">{person.name || person.email || 'Account details'}</DialogTitle><DialogDescription>MFN ID {person.mfnId} · {person.status} · {canManage ? 'Manage' : 'Read-only'}</DialogDescription>
+  return <Dialog open onOpenChange={v => { if (!v) onClose(); }}><DialogContent largeWindow className="theme-portal portal-custom-dialog !max-w-6xl max-h-[92dvh] overflow-y-auto !bg-ds-bg !text-ds-on-bg !rounded-ds">
+    <div><DialogTitle className="!tracking-normal text-ds-primary">{person.name || person.email || 'Account details'}</DialogTitle><DialogDescription>MFN ID {person.mfnId} · {person.status} · {canManage ? 'Manage' : 'Read-only'}</DialogDescription></div>
     {q.isPending ? <p>Loading account…</p> : q.error ? <p role="alert">Account details unavailable.</p> : q.data && <div className="space-y-5">
       <section className="rounded-ds border border-ds-border bg-ds-surface p-4"><h3 className="ds-subheading uppercase text-ds-primary border-b border-ds-border pb-2">Contact and verification</h3><dl className="mt-2 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div><dt className="ds-support font-semibold uppercase">Email</dt><dd>{q.data.email || 'Not Provided'} · {q.data.verified ? 'Verified' : 'Not verified'}</dd></div>

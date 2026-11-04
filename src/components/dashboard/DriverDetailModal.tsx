@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { X, Mail, Calendar } from "lucide-react";
+import { useDetailWindow } from '@/components/portal/use-detail-window';
 import { emailDriverWeeklySchedule, listDriverUpcomingTrips } from "@/lib/schedule-board.functions";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
@@ -13,6 +14,7 @@ export function DriverDetailModal({
   onClose: () => void;
 }) {
   const qc = useQueryClient();
+  const detailWindow = useDetailWindow();
   const listFn = useServerFn(listDriverUpcomingTrips);
   const emailFn = useServerFn(emailDriverWeeklySchedule);
 
@@ -46,6 +48,7 @@ export function DriverDetailModal({
       onClick={onClose}
     >
       <div
+        {...detailWindow.windowProps}
         className="portal-custom-dialog bg-background border border-border rounded-md shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -63,9 +66,9 @@ export function DriverDetailModal({
               {driver?.phone && <span className="ml-3">{driver.phone}</span>}
             </p>
           </div>
-          <button onClick={onClose} className="portal-secondary-control text-muted-foreground hover:text-foreground p-1" aria-label="Close">
+          <div className="flex shrink-0 items-center gap-1">{detailWindow.control}<button onClick={onClose} className="portal-secondary-control text-muted-foreground hover:text-foreground p-1" aria-label="Close">
             <X className="h-5 w-5" />
-          </button>
+          </button></div>
         </div>
 
         <div className="p-5 overflow-y-auto flex-1 space-y-4">

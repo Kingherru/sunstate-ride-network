@@ -1,3 +1,8 @@
+# Pass 3Y — compact expandable portal details
+- [x] Shared compact desktop/tablet detail sizing, viewport Expand/Restore with reset on close and unchanged phone touch sizing.
+- [x] Logical worksheet groups and minimal hooks for legacy driver, referral, reservation, settlement, contractor editor and earnings PDF windows; compact confirmations/vehicle forms unchanged.
+- [x] Automatic compilation reports build OK; no manual builds, browser/tests, records or activation. Interaction/viewport checks deliberately unrun under pass restrictions.
+
 # Pass 3X — portal visual completion
 - [x] Full-height shared sidebar edge strengthens on main-workspace hover/focus; inward glow does not cross header. Drawer edge stays subtle and disappears when unmounted.
 - [x] Completed custom Fleet/driver/admin/reservation/settlement dialog borders and dividers; monetary values emphasized across billing, earnings, pricing, payouts, cart and offer histories. Secondary/notification controls brightened; semantic/disabled meanings preserved.
