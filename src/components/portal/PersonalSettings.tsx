@@ -62,9 +62,10 @@ export function PersonalSettings() {
     <section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Notification preferences</h2>
       <fieldset className="portal-business-body space-y-3"><legend className="sr-only">Notification preferences</legend>
-      <DsCheckbox label="In-app notifications" checked={inApp} onChange={e => setInApp(e.target.checked)} />
+      <DsCheckbox label="Optional in-app Network opportunities" checked={inApp} onChange={e => setInApp(e.target.checked)} />
       <div><DsCheckbox label="Optional email notifications" checked={email} onChange={e => setEmail(e.target.checked)} /></div>
-      <p className="ds-caption">Security and required transaction notices remain enabled.</p>
+      <p className="ds-caption">Email preference is saved. No optional email category is currently connected to this setting.</p>
+      <div className="border-t border-ds-border pt-3"><p className="ds-label">Required notices — always enabled</p><p className="ds-caption mt-1">Security, account access, billing and payments, disputes, deadlines, and active-trip operations cannot be disabled.</p></div>
       </fieldset>
     </section>
     <div className="portal-business-actions"><DsButton disabled={busy || (!preview.active && !q.data)} type="submit">{busy ? 'Saving…' : 'Save settings'}</DsButton></div>
