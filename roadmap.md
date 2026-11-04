@@ -1,3 +1,8 @@
+# Pass 3X — portal visual completion
+- [ ] Full-height shared sidebar/drawer edge, hover and keyboard workspace activity.
+- [ ] Complete custom dialog borders/dividers, money emphasis and secondary-control consistency without business changes.
+- [ ] Check automatic compilation result only; no browser/audit/test sweep or activation.
+
 # Pass 3W — public visual modernization
 - [x] Refined shared public header/footer, homepage photo framing and white/blue/pale-blue section rhythm.
 - [x] Strengthened path/step cards, product previews, map surround, services and membership emphasis; shared inner-page presentation only. Existing text/photos/links and interactions retained.
