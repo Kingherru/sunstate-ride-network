@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDetailWindow } from '@/components/portal/use-detail-window';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlatformFeePct } from "@/hooks/usePlatformFee";
@@ -24,6 +25,7 @@ export function ReferralReviewModal({
   onDone: () => void;
 }) {
   const [agreed, setAgreed] = useState(false);
+  const detailWindow = useDetailWindow();
   const [busy, setBusy] = useState<null | "accept" | "decline">(null);
   const platformFeePct = usePlatformFeePct();
 
@@ -100,7 +102,7 @@ export function ReferralReviewModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-3 overflow-y-auto">
-      <div className="portal-custom-dialog bg-card border border-border rounded-sm max-w-2xl w-full my-6 shadow-xl">
+      <div {...detailWindow.windowProps} className="portal-custom-dialog bg-card border border-border rounded-sm max-w-2xl w-full my-6 shadow-xl">
         <div className="p-5 border-b border-border flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-extrabold tracking-tight">Review referred trip</h2>
@@ -109,7 +111,7 @@ export function ReferralReviewModal({
               terms before accepting or declining.
             </p>
           </div>
-          <button onClick={onClose} className="portal-secondary-control text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
+          <div className="flex shrink-0 items-center gap-1">{detailWindow.control}<button onClick={onClose} className="portal-secondary-control text-muted-foreground hover:text-foreground text-xl leading-none">×</button></div>
         </div>
 
         <div className="p-5 space-y-5">
