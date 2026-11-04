@@ -548,3 +548,73 @@
   .theme-portal .portal-finance-summary { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .portal-sidebar::after, .portal-drawer::after { transition: none; } }
+
+/* Pass 3Y: opt-in large details only. No content scaling or browser fullscreen. */
+.theme-portal [data-detail-window], .theme-portal[data-detail-window] {
+  --detail-compact-width: 57.6rem;
+  width: min(75.2vw, var(--detail-compact-width)) !important;
+  max-width: calc(100vw - 2rem) !important;
+  max-height: 73.6dvh !important;
+  margin-block: 0 !important;
+  border: 2px solid var(--modal-edge);
+  border-radius: var(--ds-radius-lg) !important;
+  background: var(--ds-surface);
+  overflow-x: hidden;
+}
+.theme-portal [data-detail-window][class*="max-w-2xl"] { --detail-compact-width: 33.6rem; }
+.theme-portal [data-detail-window][class*="max-w-6xl"], .theme-portal[data-detail-window][class*="max-w-6xl"] { --detail-compact-width: 57.6rem; }
+.theme-portal [data-detail-window][class*="max-w-4xl"], .theme-portal[data-detail-window][class*="max-w-4xl"] { --detail-compact-width: 44.8rem; }
+.theme-portal[data-detail-window].portal-detail-frame { --detail-compact-width: 100vw; height: 73.6dvh !important; }
+.theme-portal [data-detail-window][class*="h-[85vh]"] { height: 68dvh !important; }
+.theme-portal [data-detail-window][data-expanded="true"], .theme-portal[data-detail-window][data-expanded="true"] {
+  width: calc(100vw - 2rem) !important; max-width: calc(100vw - 2rem) !important;
+  height: calc(100dvh - 2rem) !important; max-height: calc(100dvh - 2rem) !important;
+}
+.theme-portal[data-radix-detail] {
+  top: 50% !important; display: flex !important; flex-direction: column;
+  gap: 0 !important; padding: 0 !important; overflow: hidden !important;
+}
+.portal-window-header {
+  flex-shrink: 0; min-width: 0; padding: 1rem 7rem 1rem 1.25rem;
+  background: var(--ds-surface); border-bottom: 1px solid var(--section-edge);
+  overflow-wrap: anywhere;
+}
+.portal-window-body { min-height: 0; min-width: 0; flex: 1; overflow-y: auto; overflow-x: hidden; padding: 1.25rem; }
+.portal-window-body > * + * { margin-top: 1rem; }
+.portal-window-expand { position: absolute; right: 3.75rem; top: .75rem; }
+.theme-portal[data-radix-detail] > .portal-window-close {
+  right: .75rem; top: .75rem; width: 2.75rem; height: 2.75rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--control-bright); background: var(--ds-surface); opacity: 1;
+}
+.theme-portal[data-radix-detail] > .portal-window-close:is(:hover, :focus-visible) { background: var(--ds-hover); }
+.portal-window-control { color: var(--control-bright); }
+/* Legacy shells keep their existing header/body/footer and handlers. */
+.theme-portal [data-detail-window] > :first-child:not(.portal-window-body) {
+  position: sticky; top: 0; z-index: 2; background: var(--ds-surface);
+  border-bottom: 1px solid var(--section-edge); flex-shrink: 0;
+}
+.theme-portal [data-detail-window] > :nth-child(2) { min-height: 0; overflow-y: auto; }
+.theme-portal [data-detail-window]:not([data-radix-detail]) { overflow-y: auto; }
+/* Logical worksheet groups: one enclosing edge, not a grid of bordered cells. */
+.theme-portal [data-detail-window] :where(section, fieldset, .portal-dialog-section),
+.theme-portal[data-detail-window] :where(section, fieldset, .portal-dialog-section) {
+  border: 1px solid var(--section-edge); border-radius: var(--ds-radius);
+  background: var(--ds-surface); box-shadow: none; backdrop-filter: none;
+}
+.theme-portal [data-detail-window] :where(section, fieldset, .portal-dialog-section) > :is(h2, h3, .ds-label):first-child,
+.theme-portal[data-detail-window] :where(section, fieldset, .portal-dialog-section) > :is(h2, h3, .ds-label):first-child {
+  border-bottom: 1px solid var(--row-divider); padding-bottom: .625rem; margin-bottom: .75rem;
+}
+.theme-portal [data-detail-window] .portal-dialog-section .portal-dialog-section { border: 0; padding: 0; }
+.theme-portal [data-detail-window] dl > div, .theme-portal[data-detail-window] dl > div { border-top: 0; }
+.theme-portal [data-detail-window] .portal-dialog-actions, .theme-portal[data-detail-window] .portal-dialog-actions { border-top: 1px solid var(--section-edge); }
+@media (max-width: 639px) {
+  .theme-portal [data-detail-window], .theme-portal[data-detail-window] {
+    width: calc(100vw - 1rem) !important; max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+  }
+  .theme-portal[data-detail-window].portal-detail-frame { height: calc(100dvh - 1rem) !important; }
+  .portal-window-body { padding: 1rem; }
+  .portal-window-header { padding-left: 1rem; }
+}
