@@ -87,16 +87,16 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   }
 
   const pwType = showPw ? "text" : "password";
-  const card = "rounded-ds border border-ds-border bg-ds-surface p-4 sm:p-6";
-  const H = ({ icon: I, children }: { icon: typeof KeyRound; children: React.ReactNode }) => <h2 className="ds-subheading flex items-center gap-2 uppercase text-ds-primary"><I className="size-4 shrink-0" aria-hidden />{children}</h2>;
+  const card = "portal-business-section p-4 sm:p-5";
+  const H = ({ icon: I, children }: { icon: typeof KeyRound; children: React.ReactNode }) => <h2 className="ds-subheading flex items-center gap-2 border-b border-ds-border pb-3 uppercase text-ds-primary"><I className="size-4 shrink-0" aria-hidden />{children}</h2>;
   return (
-    <div className="min-w-0 max-w-3xl space-y-5">
-      <SegTabs label="Profile and security" value={tab} onChange={setTab} options={[{ value: 'profile', label: 'Profile' }, { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions' }, { value: 'security', label: 'Security' }]} />
+    <div className="portal-business-form min-w-0 w-full space-y-4">
+      <SegTabs label="Profile and security" value={tab} onChange={setTab} options={[{ value: 'profile', label: 'Profile & contact' }, { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} />
       {tab === 'profile' && <div className="space-y-5">
-        <section className={card}><PersonalSettings /></section>
+        <PersonalSettings />
         <section className={`${card} space-y-4`}>
-          <H icon={UserRound}>Email</H>
-          <dl className="grid gap-1 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4"><dt className="ds-label">Current email</dt><dd className="ds-body min-w-0 break-words">{currentEmail ?? "—"}</dd></dl>
+          <H icon={UserRound}>Email &amp; confirmation</H>
+          <dl className="grid gap-1"><dt className="ds-label">Current email</dt><dd className="ds-body min-w-0 break-words">{currentEmail ?? "—"}</dd></dl>
           <SecureEmailChange />
         </section>
       </div>}
@@ -108,11 +108,11 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
             <div><label htmlFor="ps-npw" className="portal-label">New password</label><input id="ps-npw" type={pwType} autoComplete="new-password" className="portal-input" value={pw} onChange={(e) => setPw(e.target.value)} /></div>
             <div><label htmlFor="ps-npw2" className="portal-label">Confirm new password</label><input id="ps-npw2" type={pwType} autoComplete="new-password" className="portal-input" value={pw2} onChange={(e) => setPw2(e.target.value)} /></div>
           </div>
-          <button type="button" onClick={() => setShowPw(v => !v)} aria-pressed={showPw} className="ds-support inline-flex items-center gap-1.5 font-semibold text-ds-primary">{showPw ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}{showPw ? 'Hide passwords' : 'Show passwords'}</button>
+          <DsButton variant="ghost" type="button" onClick={() => setShowPw(v => !v)} aria-pressed={showPw}>{showPw ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}{showPw ? 'Hide passwords' : 'Show passwords'}</DsButton>
           {err && <p role="alert"><StatusPill status={err} tone="red" className="whitespace-normal" /></p>}
           {ok && <p role="status"><StatusPill status={ok} tone="green" /></p>}
           <p className="ds-caption">At least 8 characters. Your current password is verified before any change.</p>
-          <DsButton type="submit" size="sm" disabled={busy}>{busy ? "Updating…" : "Update password"}</DsButton>
+          <div className="portal-business-actions"><DsButton type="submit" disabled={busy}>{busy ? "Updating…" : "Update password"}</DsButton></div>
         </form>
         <section className={`${card} space-y-3`}>
           <H icon={SendHorizonal}>Password reset link</H>
@@ -121,10 +121,10 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
         </section>
       </div>}
       {tab === 'sessions' && <section className={`${card} space-y-4`}>
-        <H icon={MonitorSmartphone}>Sessions</H>
+        <H icon={MonitorSmartphone}>Sessions &amp; devices</H>
         <p className="ds-support">You are signed in on this device. Signing out of other devices ends every other session and keeps this one active. Session identifiers are never shown.</p>
-        <div className="flex flex-wrap gap-3">
-          <DsButton type="button" size="sm" onClick={signOut} disabled={signOutBusy}><LogOut className="size-4" aria-hidden />Sign out</DsButton>
+        <div className="portal-business-actions">
+          <DsButton type="button" size="sm" variant="ghost" className="portal-danger-control" onClick={signOut} disabled={signOutBusy}><LogOut className="size-4" aria-hidden />Sign out</DsButton>
           <DsButton type="button" size="sm" variant="secondary" onClick={signOutEverywhere} disabled={signOutBusy}>Sign out of other devices</DsButton>
         </div>
       </section>}

@@ -32,13 +32,13 @@ export function SecureEmailChange() {
     } catch { setError('Confirmation could not be completed.'); }
     finally { setCode(''); setBusy(false); }
   }
-  return <section className="space-y-4">
-    <h2 className="ds-subheading uppercase text-ds-primary">Verified email change</h2>
+  return <section className="space-y-4 border-t border-ds-border pt-4">
+    <h3 className="ds-label uppercase text-ds-primary">Verified email change</h3>
     <p className="ds-support">Your current email remains active until secure confirmation is complete. Your account, permissions and purchases stay unchanged.</p>
     <form onSubmit={submit} className="space-y-3">
       <DsField label="New email">{p => <DsInput {...p} type="email" autoComplete="email" required value={newEmail} onChange={e => setNewEmail(e.target.value)} />}</DsField>
       <DsField label="Current password" hint="Or sign in again and request the change within five minutes.">{p => <DsInput {...p} type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />}</DsField>
-      <DsButton type="submit" size="sm" disabled={busy || preview.active}>{busy ? 'Please wait…' : 'Request email change'}</DsButton>
+      <DsButton type="submit" size="sm" disabled={busy}>{busy ? 'Please wait…' : 'Request email change'}</DsButton>
     </form>
     {requested && <form onSubmit={verify} className="space-y-3">
       <p className="ds-support">Use the secure confirmation links in both emails. If your message includes a code, enter it below.</p>

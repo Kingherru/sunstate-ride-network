@@ -1,3 +1,8 @@
+# Pass 3Z — Administrators and shared Profile & Security
+- [x] Compact selectable administrator list and structured existing permission editor, clear preset/read-only/selected/status states, covered accounts and separated red removal confirmation; all authorization retained.
+- [x] Shared solid Profile, Contact information, Account status/type, Password & sign-in, Sessions & devices and Security activity groups through Admin settings, Provider/Contractor Account & Security, Patient/Facility Security and synthetic previews; existing actions and guards retained. Customer account details use matching solid groups and above-field labels.
+- [x] Automatic compilation reported build OK at 03:44:06 UTC; no manual checks, browser/tests, records, sends, publishing or activation. Interactive verification deliberately unrun under this pass's restrictions.
+
 # Pass 3Y — compact expandable portal details
 - [x] Shared compact desktop/tablet detail sizing, viewport Expand/Restore with reset on close and unchanged phone touch sizing.
 - [x] Logical worksheet groups and minimal hooks for legacy driver, referral, reservation, settlement, contractor editor and earnings PDF windows; compact confirmations/vehicle forms unchanged.
@@ -92,7 +97,7 @@
 - Deferred: Pricing/content polish, sizing settings and proximity search; Network reminder/capability labels completed in Pass 3I. Proximity needs authorized verified-location data.
 - Deferred: dispatch exports/API Settings and live schedule send/audit; safe schedule preparation completed in Pass 3I.
 - [x] Training rebuild — source supplied and integrated in Pass 3J; checkout and completion verification limits listed above
-- [ ] Later build: Admin and shared Profile & Security redesign
+- [x] Later build: Admin and shared Profile & Security presentation completed in Pass 3Z; existing permission and authentication systems retained.
 
 - [x] Email update: replaced Lovable queue sends, preserved templates/history, signed outcome receiver, removed five replaced repo files; 25 tests pass and harness build OK; sign-in renders and unsigned callbacks return 401. No real sends or publish. Independent Maps confirmation and driver assignment/schedule notification queue paths unchanged.
 - [x] Latest brief: payment responsibility acknowledgement, active wave recipients, shared conditional field layout, exact selected service/trip types, offer amounts/history, People account-status/type/email filters

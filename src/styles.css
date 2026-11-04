@@ -619,3 +619,29 @@
   .portal-window-body { padding: 1rem; }
   .portal-window-header { padding-left: 1rem; }
 }
+
+/* Pass 3Z: opt-in solid business groups; no changes to shell or other pages. */
+.theme-portal .portal-business-section {
+  min-width: 0; border: 1px solid var(--section-edge); border-radius: var(--ds-radius);
+  background: var(--ds-surface); box-shadow: none; backdrop-filter: none;
+}
+.theme-portal .portal-business-heading {
+  margin: 0; padding: .75rem 1rem; border-bottom: 1px solid var(--section-edge);
+  background: var(--ds-sky); color: var(--ds-primary); border-radius: var(--ds-radius) var(--ds-radius) 0 0;
+}
+.theme-portal .portal-business-body { min-width: 0; padding: 1rem; }
+.theme-portal .portal-business-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
+  border-top: 1px solid var(--section-edge); padding-top: 1rem;
+}
+.theme-portal .portal-business-form :is(input:not([type="checkbox"]):not([type="radio"]), select, button) { min-height: 2.875rem; }
+.theme-portal .portal-business-form :is(input[type="checkbox"], input[type="radio"]) {
+  min-height: 0; width: 1.125rem; height: 1.125rem; padding: 0; flex-shrink: 0; accent-color: var(--ds-primary);
+}
+.theme-portal .portal-business-form :is(input[type="checkbox"], input[type="radio"]):disabled { opacity: .6; cursor: not-allowed; }
+.theme-portal .portal-business-form button { white-space: normal; overflow-wrap: anywhere; }
+.theme-portal .portal-business-form [data-admin-selected="true"] { background: var(--ds-sky); box-shadow: inset 3px 0 var(--ds-primary); }
+.theme-portal .portal-danger-control:not(:disabled) { background: var(--ds-status-red); color: var(--ds-status-red-text); }
+.theme-portal .portal-danger-control:not(:disabled):hover { background: var(--ds-error); color: var(--ds-status-red-text); }
+.theme-portal .portal-permission-matrix td:has(input:checked) { background: var(--ds-sky); }
+.theme-portal .portal-permission-matrix[data-read-only="true"] { background: var(--ds-hover); }
