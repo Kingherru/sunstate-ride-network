@@ -644,4 +644,4 @@
 .theme-portal .portal-danger-control:not(:disabled) { background: var(--ds-status-red); color: var(--ds-status-red-text); }
 .theme-portal .portal-danger-control:not(:disabled):hover { background: var(--ds-error); color: var(--ds-status-red-text); }
 .theme-portal .portal-permission-matrix td:has(input:checked) { background: var(--ds-sky); }
-.theme-portal .portal-permission-matrix[data-read-only="true"] { background: var(--ds-gray); }
+.theme-portal .portal-permission-matrix[data-read-only="true"] { background: var(--ds-hover); }

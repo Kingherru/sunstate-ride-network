@@ -1,7 +1,7 @@
 # Pass 3Z — Administrators and shared Profile & Security
-- [ ] Compact administrator list and structured existing permission editor; preserve all authorization and confirmations.
-- [ ] Shared solid profile/contact/account/security groups across existing portal and demo entry points; preserve all actions and preview guards.
-- [ ] Check automatic compilation only; no records, sends, publishing or activation.
+- [x] Compact selectable administrator list and structured existing permission editor, clear preset/read-only/selected/status states, covered accounts and separated red removal confirmation; all authorization retained.
+- [x] Shared solid Profile, Contact information, Account status/type, Password & sign-in, Sessions & devices and Security activity groups through Admin settings, Provider/Contractor Account & Security, Patient/Facility Security and synthetic previews; existing actions and guards retained. Customer account details use matching solid groups and above-field labels.
+- [x] Automatic compilation reported build OK at 03:44:06 UTC; no manual checks, browser/tests, records, sends, publishing or activation. Interactive verification deliberately unrun under this pass's restrictions.
 
 # Pass 3Y — compact expandable portal details
 - [x] Shared compact desktop/tablet detail sizing, viewport Expand/Restore with reset on close and unchanged phone touch sizing.
