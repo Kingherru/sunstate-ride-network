@@ -1,0 +1,126 @@
+/* Public presentation only: imported after the shared system so portal/training
+   controls retain their existing tokens and behavior. */
+.theme-public {
+  --public-edge: oklch(0.76 0.045 250);
+  --public-edge-soft: oklch(0.88 0.025 250);
+  --public-on-blue-edge: color-mix(in oklab, var(--ds-on-primary) 28%, transparent);
+  --public-depth: 0 5px 16px -8px color-mix(in oklab, var(--ds-primary) 23%, transparent);
+  --public-preview-depth: 0 16px 32px -20px color-mix(in oklab, var(--ds-primary-active) 55%, transparent);
+  --public-photo-depth: 0 12px 24px -12px color-mix(in oklab, var(--ds-primary-active) 50%, transparent);
+  --public-image-fade: linear-gradient(to right, var(--ds-primary), color-mix(in oklab, var(--ds-primary) 70%, transparent), transparent);
+}
+.theme-public .public-header { border-bottom-color: var(--public-on-blue-edge); }
+.public-header .public-header-inner { gap: 1rem; }
+.public-header :is(a, button) { letter-spacing: 0; }
+.public-header a:focus-visible { color: var(--ds-accent); outline: 2px solid currentColor; outline-offset: 3px; box-shadow: none; }
+.public-header a.text-ds-accent:focus-visible { color: var(--ds-on-primary); }
+.public-header .public-menu-control:hover, .public-header .public-menu-control:focus-visible { background: var(--ds-primary-hover); color: var(--ds-accent); }
+.public-header #mobile-menu { padding-block: .75rem 1.5rem; border-top-color: var(--public-on-blue-edge); }
+.public-header #mobile-menu ul { gap: .25rem; }
+.public-header #mobile-menu ul a { min-height: 3rem; padding-inline: .75rem; }
+.public-header #mobile-menu .public-header-actions { border-top: 1px solid var(--public-on-blue-edge); padding-top: 1rem; gap: .5rem; }
+.public-header #mobile-menu .public-header-actions a { padding-inline: .75rem; }
+@media (min-width: 1280px) {
+  .public-header .public-header-inner { min-height: 76px; padding-block: .75rem; gap: 1.25rem; }
+  .public-header .public-brand { font-size: 1.375rem; }
+  .public-header nav[aria-label="Main"] { gap: .375rem; }
+  .public-header nav[aria-label="Main"] a { font-size: .75rem; padding-inline: .4rem; }
+  .public-header .public-header-actions { gap: .65rem; }
+  .public-header .public-header-actions a { font-size: .8125rem; gap: .4rem; padding-inline: .25rem; }
+}
+@media (min-width: 1536px) {
+  .public-header nav[aria-label="Main"] { gap: .75rem; }
+  .public-header nav[aria-label="Main"] a { font-size: .8125rem; }
+  .public-header .public-header-actions { gap: 1rem; }
+  .public-header .public-header-actions a { font-size: .875rem; }
+}
+.theme-public .public-home-hero { border-bottom: 1px solid var(--public-on-blue-edge); }
+.public-hero-photo { padding: 1.25rem var(--mfn-gutter) 0; }
+.public-hero-photo > div { overflow: hidden; border: 1px solid var(--public-on-blue-edge); border-right: 3px solid var(--ds-accent); border-radius: var(--ds-radius-lg); box-shadow: var(--public-photo-depth); }
+.public-hero-fade { display: none; pointer-events: none; }
+.public-hero-copy p { max-width: 39rem; }
+.public-hero-copy h1 { font-size: 2rem; line-height: 1.1; letter-spacing: 0; }
+.public-hero-copy .ds-subheading { font-size: 1.125rem; line-height: 1.5; font-weight: 600; }
+.public-hero-copy > div { flex-wrap: wrap; }
+@media (min-width: 640px) { .public-hero-copy h1 { font-size: 2.75rem; } }
+@media (min-width: 1024px) {
+  .public-hero-photo { padding: 1.75rem 1.75rem 1.75rem 0; }
+  .public-hero-photo > div { border-left: 0; border-radius: 0 var(--ds-radius-lg) var(--ds-radius-lg) 0; }
+  .public-hero-fade { display: block; background: var(--public-image-fade); }
+  .public-hero-content { display: flex; align-items: center; min-height: 36rem; padding-block: 4rem; }
+  .public-hero-copy { max-width: 43%; }
+  .public-hero-copy h1 { font-size: 3rem; }
+  .public-hero-copy > .ds-body-lg { font-size: 1.1875rem; }
+}
+@media (min-width: 1536px) { .public-hero-copy h1 { font-size: 3.5rem; } }
+.theme-public .public-connect { background: var(--ds-surface); }
+.public-path-card { border: 1px solid var(--public-edge); box-shadow: var(--public-depth); }
+.public-path-card .ds-label { min-height: 3rem; align-items: center; gap: 1rem; }
+.public-path-card .ds-label svg { width: 2rem; height: 2rem; flex-shrink: 0; color: var(--ds-accent); }
+.public-path-card .ds-section-title { min-height: 2.4em; }
+.public-path-card[data-path="path-public"] { background: var(--ds-primary); color: var(--ds-on-primary); border-color: var(--ds-primary); }
+.public-path-card[data-path="path-public"] :is(.ds-label, .ds-section-title, .ds-body-lg) { color: var(--ds-on-primary); }
+.public-path-card[data-path="path-public"] .ds-body-lg { opacity: .94; }
+.public-path-card[data-path="path-p2p"] { background: var(--ds-sky); }
+.public-provider-steps { gap: 1rem; }
+.public-step-card { border: 1px solid var(--public-on-blue-edge); box-shadow: var(--public-depth); grid-template-rows: 3.25rem 5.25rem 1fr; }
+.public-step-card > svg { padding-bottom: .5rem; height: 3rem; width: 3rem; border-bottom: 1px solid var(--ds-accent); }
+.public-step-card > h3 { margin-top: 1rem; font-size: 1.125rem; line-height: 1.45; letter-spacing: 0; }
+.public-step-card > p { margin-top: 1rem; font-size: 1.0625rem; }
+.theme-public .public-product-showcase { background: var(--ds-primary); border-block: 1px solid var(--public-on-blue-edge); }
+.public-product-showcase :is(#demo-title, .public-product-intro) { color: var(--ds-on-primary); }
+.public-product-showcase .public-product-intro { opacity: .92; }
+.public-product-showcase .public-product-label { color: var(--ds-accent); }
+.public-tool-nav button { border: 1px solid var(--public-on-blue-edge); }
+.public-tool-nav button[aria-selected="true"] { background: var(--ds-primary-hover); border-color: var(--ds-accent); }
+.public-preview-frame { border: 1px solid var(--public-on-blue-edge); box-shadow: var(--public-preview-depth); }
+.public-preview-frame #demo-panel { border: 1px solid var(--public-edge-soft); }
+.public-preview-content :is(.bg-ds-subtle, .bg-ds-sky, .bg-ds-surface, .bg-ds-peach) { border: 1px solid var(--public-edge-soft); }
+.theme-public .public-coverage { border-block: 1px solid var(--public-edge-soft); }
+.public-map-frame { border: 1px solid var(--public-edge); border-radius: var(--ds-radius-lg); padding: 1.25rem; background: var(--ds-sky); box-shadow: var(--public-depth); }
+.public-map-results { border: 1px solid var(--public-edge); border-left: 3px solid var(--ds-primary); }
+.public-map-modes { gap: .5rem; }
+.public-map-modes button { padding-inline: 1rem; border: 1px solid var(--public-edge); white-space: nowrap; }
+.public-map-modes button[aria-checked="true"] { border-color: var(--ds-primary); box-shadow: var(--public-depth); }
+.public-coverage :is(input, select) { border-color: var(--public-edge); }
+.public-services-copy { padding: 2rem; background: var(--ds-primary); border-radius: var(--ds-radius-lg); border-top: 3px solid var(--ds-accent); }
+.public-services-copy :is(h2, p) { color: var(--ds-on-primary); }
+.public-services-copy > .ds-label { color: var(--ds-accent); }
+.public-service-card { border: 1px solid var(--public-edge-soft); box-shadow: var(--public-depth); }
+.public-service-card > span { border: 1px solid var(--public-edge-soft); }
+.theme-public .public-membership { border-top: 1px solid var(--ds-peach-border); }
+.public-membership h2 { font-size: 3rem; letter-spacing: 0; }
+.public-membership ul { gap: 0; border-block: 1px solid var(--ds-peach-border); }
+.public-membership li { border-radius: 0; box-shadow: none; background: transparent; border-bottom: 1px solid var(--ds-peach-border); padding-block: 1.5rem; padding-inline: 0; }
+.public-membership li:last-child { border-bottom: 0; }
+.public-membership li svg { width: 1.75rem; height: 1.75rem; }
+@media (min-width: 640px) { .public-membership h2 { font-size: 4.5rem; } }
+.theme-public .public-page-hero { border-bottom: 3px solid var(--ds-accent); }
+.public-page-hero h1 { letter-spacing: 0; font-size: 2rem; }
+.theme-public .public-cta-band { border-block: 1px solid var(--ds-peach-border); }
+.theme-public :is(.public-icon-item, .public-link-card, .public-shared-card, .public-shared-panel) { border: 1px solid var(--public-edge-soft); box-shadow: var(--public-depth); }
+.theme-public .public-link-card:hover { transform: translateY(-2px); border-color: var(--public-edge); }
+.theme-public .public-link-card > svg { color: var(--ds-action); }
+.theme-public .public-footer { border-top: 1px solid var(--public-on-blue-edge); }
+.public-footer .public-footer-columns { gap: 2.5rem; }
+.public-footer a { overflow-wrap: anywhere; letter-spacing: 0; transition: color 150ms ease; }
+.public-footer a:hover, .public-footer a:focus-visible { color: var(--ds-accent); text-decoration: none; }
+@media (min-width: 1024px) { .public-footer .public-footer-columns { grid-template-columns: 1.15fr .9fr 1fr 1.15fr; gap: 3rem; } .public-page-hero h1 { font-size: 3rem; } }
+@media (max-width: 639px) {
+  .public-header .public-brand { font-size: 1rem; }
+  .public-header .public-header-inner { gap: .5rem; min-height: 68px; }
+  .public-header .public-mobile-actions { gap: .25rem; }
+  .public-path-card { padding: 1.5rem; }
+  .public-path-card .ds-section-title { min-height: 0; }
+  .public-services-copy { padding: 1.5rem; }
+  .public-map-frame { padding: .75rem; }
+  .public-map-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-map-modes button { padding-inline: .5rem; }
+  .public-preview-frame #demo-panel { padding-inline: .875rem; }
+  .public-preview-frame [role="radiogroup"] button { font-size: .8125rem; padding-inline: .5rem; gap: .375rem; }
+  .public-preview-frame [role="radiogroup"] button svg { width: 1rem; height: 1rem; }
+  .public-hero-copy :is(a), .public-path-card a, .public-membership a, .public-cta-band a { font-size: .9375rem; padding-inline: .875rem; gap: .5rem; }
+  .public-preview-content .flex { flex-wrap: wrap; }
+}
+.theme-public :is(.public-connect, .public-product-showcase, .public-coverage, .public-services, .public-membership, .public-page-hero) :is(.grid, .flex) > * { min-width: 0; }
+@media (prefers-reduced-motion: reduce) { .theme-public .public-link-card:hover { transform: none; } }
