@@ -57,17 +57,17 @@ export function ProviderBalancePanel() {
       <div className="grid gap-3 md:grid-cols-3">
         <div className="border border-border rounded-sm p-4 bg-card">
           <div className="text-xs font-bold uppercase text-muted-foreground">Available</div>
-          <div className="text-3xl font-black tabular-nums text-emerald-700">{formatCents(balance.available_cents)}</div>
+          <div className="text-3xl font-black tabular-nums text-emerald-700"><span className="portal-money">{formatCents(balance.available_cents)}</span></div>
           <div className="text-[11px] text-muted-foreground mt-1">Ready to cash out</div>
         </div>
         <div className="border border-border rounded-sm p-4 bg-card">
           <div className="text-xs font-bold uppercase text-muted-foreground">Pending (holding)</div>
-          <div className="text-3xl font-black tabular-nums text-amber-700">{formatCents(balance.pending_cents)}</div>
+          <div className="text-3xl font-black tabular-nums text-amber-700"><span className="portal-money">{formatCents(balance.pending_cents)}</span></div>
           <div className="text-[11px] text-muted-foreground mt-1">Waiting for hold window to end</div>
         </div>
         <div className="border border-border rounded-sm p-4 bg-card">
           <div className="text-xs font-bold uppercase text-muted-foreground">Lifetime paid out</div>
-          <div className="text-3xl font-black tabular-nums">{formatCents(balance.lifetime_paid_out_cents)}</div>
+          <div className="text-3xl font-black tabular-nums"><span className="portal-money">{formatCents(balance.lifetime_paid_out_cents)}</span></div>
           <div className="text-[11px] text-muted-foreground mt-1">All completed cash-outs</div>
         </div>
       </div>
@@ -82,7 +82,7 @@ export function ProviderBalancePanel() {
           </label>
           <button type="button"
             onClick={() => setAmount(((balance.available_cents ?? 0) / 100).toFixed(2))}
-            className="text-xs font-bold uppercase px-2 py-1 rounded-sm border border-border">Max</button>
+            className="portal-secondary-control text-xs font-bold uppercase px-2 py-1 rounded-sm border border-border">Max</button>
           <button type="button" disabled={busy || (balance.available_cents ?? 0) < 100}
             onClick={submitCashout}
             className="text-xs font-bold uppercase px-4 py-2 rounded-sm bg-primary text-primary-foreground disabled:opacity-50">
@@ -119,7 +119,7 @@ export function ProviderBalancePanel() {
                       ? <span className="text-amber-700 font-bold">Medicaid</span>
                       : <span>Standard</span>}
                   </td>
-                  <td className="px-3 py-1 text-right tabular-nums">{formatCents(p.amount_cents)}</td>
+                  <td className="px-3 py-1 text-right tabular-nums"><span className="portal-money">{formatCents(p.amount_cents)}</span></td>
                   <td className="px-3 py-1 text-xs">
                     {p.available_at
                       ? new Date(p.available_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
@@ -152,7 +152,7 @@ export function ProviderBalancePanel() {
                 <tr key={a.id}>
                   <td className="px-3 py-1 font-mono text-[11px]">{a.trip_id?.slice(0, 8) ?? "—"}</td>
                   <td className="px-3 py-1 text-xs">{new Date(a.created_at).toLocaleDateString()}</td>
-                  <td className="px-3 py-1 text-right tabular-nums">{formatCents(a.amount_cents)}</td>
+                  <td className="px-3 py-1 text-right tabular-nums"><span className="portal-money">{formatCents(a.amount_cents)}</span></td>
                   <td className="px-3 py-1 text-[11px] text-muted-foreground">{a.release_reason ?? a.note ?? "—"}</td>
                 </tr>
               ))}
@@ -179,7 +179,7 @@ export function ProviderBalancePanel() {
               {cashouts.map((c) => (
                 <tr key={c.id}>
                   <td className="px-3 py-1 text-xs">{new Date(c.requested_at).toLocaleString()}</td>
-                  <td className="px-3 py-1 text-right tabular-nums">{formatCents(c.amount_cents)}</td>
+                  <td className="px-3 py-1 text-right tabular-nums"><span className="portal-money">{formatCents(c.amount_cents)}</span></td>
                   <td className="px-3 py-1 text-xs capitalize">
                     {c.status}
                     {c.failure_reason && <span className="ml-1 text-destructive">— {c.failure_reason}</span>}

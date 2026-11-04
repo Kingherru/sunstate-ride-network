@@ -83,7 +83,7 @@ export function AdminPayoutQueue() {
         </div>
         <button
           onClick={() => qc.invalidateQueries({ queryKey: ["admin-payout-queue"] })}
-          className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-sm border border-border hover:bg-muted/40"
+          className="portal-secondary-control text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-sm border border-border hover:bg-muted/40"
         >
           Refresh
         </button>
@@ -136,7 +136,7 @@ export function AdminPayoutQueue() {
                     <td>
                       <StatusPill status={r.payment_status ?? "unknown"} tone={r.payment_status === "paid" ? "green" : "yellow"} />
                     </td>
-                    <td className="text-right font-bold tabular-nums">{formatUsd(net)}</td>
+                    <td className="text-right font-bold tabular-nums"><span className="portal-money">{formatUsd(net)}</span></td>
                     <td className="pl-3 text-xs">{fmtWhen(r.payout_eligible_at)}</td>
                     <td className="text-xs">
                       {isHeld ? (

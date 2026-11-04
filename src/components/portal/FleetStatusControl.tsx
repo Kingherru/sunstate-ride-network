@@ -38,16 +38,16 @@ export function FleetStatusControl({ kind, id, status, name }: { kind: "driver" 
   const h = usePortalQuery({ queryKey: ["fleet-history", id], enabled: history, queryFn: () => listFleetStatusHistory({ data: { kind, id } }) });
   return <span className="inline-flex flex-wrap items-center gap-3">
     <button type="button" onClick={() => setOpen(true)} className={inactive ? "font-bold text-ds-primary hover:underline" : "font-bold text-ds-error hover:underline"}>{inactive ? "Restore" : "Deactivate"}</button>
-    <button type="button" onClick={() => setHistory((v) => !v)} className="font-bold text-ds-primary hover:underline">History</button>
+    <button type="button" onClick={() => setHistory((v) => !v)} className="portal-secondary-control font-bold text-ds-primary hover:underline">History</button>
     {open && <div role="dialog" aria-modal="true" aria-label={`${inactive ? "Restore" : "Deactivate"} ${name}`} className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/40 p-4">
-      <div className="w-full max-w-md space-y-3 rounded-ds border border-ds-sky-border bg-ds-surface p-5 shadow-[var(--ds-shadow)]">
+      <div className="portal-custom-dialog w-full max-w-md space-y-3 rounded-ds border border-ds-sky-border bg-ds-surface p-5 shadow-[var(--ds-shadow)]">
         <h3 className="ds-subheading text-ds-primary">{inactive ? "Restore" : "Deactivate"} {name}?</h3>
         <p className="ds-support">{inactive ? "It can receive new assignments again." : "It stays visible under the Inactive filter and keeps all trip, assignment and earnings history. It cannot receive new assignments."}</p>
-        <label className="ds-label block">Reason<textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} className="portal-input mt-1" /></label>
-        <div className="flex flex-wrap justify-end gap-2"><DsButton variant="ghost" onClick={() => setOpen(false)}>Cancel</DsButton>
+        <label className="portal-dialog-section ds-label block">Reason<textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} className="portal-input mt-1" /></label>
+        <div className="portal-dialog-actions flex flex-wrap justify-end gap-2"><DsButton variant="ghost" onClick={() => setOpen(false)}>Cancel</DsButton>
           <DsButton disabled={reason.trim().length < 3 || m.isPending} onClick={() => m.mutate()}>{m.isPending ? "Saving…" : "Confirm"}</DsButton></div>
       </div></div>}
-    {history && <span className="block w-full basis-full rounded-ds border border-ds-sky-border bg-ds-sky p-2">
+    {history && <span className="portal-dialog-rows block w-full basis-full rounded-ds border border-ds-sky-border bg-ds-sky p-2">
       {h.isLoading ? "Loading…" : (h.data ?? []).length === 0 ? "No status changes recorded." : (h.data ?? []).map((e) => <span key={e.id} className="ds-caption block">{new Date(e.created_at).toLocaleString()} · {e.previous_status ?? "Not set"} → {e.new_status} · {e.actor_mfn_id ?? "Not available"} · {e.reason}</span>)}
     </span>}
   </span>;

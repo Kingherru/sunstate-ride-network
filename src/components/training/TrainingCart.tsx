@@ -34,7 +34,7 @@ function Checkout({ req }: { req: CheckoutReq }) {
 }
 
 function Line({ label, kind, cents, onRemove, locked }: { label: string; kind: string; cents: number; onRemove: () => void; locked: boolean }) {
-  return <li className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="ds-label">{label}</p><p className="ds-support">{usd(cents)} · {kind}</p></div><DsButton variant="ghost" size="sm" aria-label={`Remove ${label}`} disabled={locked} onClick={onRemove}><Trash2 className="size-4" /></DsButton></li>;
+  return <li className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="ds-label">{label}</p><p className="ds-support"><span className="portal-money">{usd(cents)}</span> · {kind}</p></div><DsButton variant="ghost" size="sm" aria-label={`Remove ${label}`} disabled={locked} onClick={onRemove}><Trash2 className="size-4" /></DsButton></li>;
 }
 
 export function TrainingCartProvider({ children }: { children: React.ReactNode }) {
@@ -76,9 +76,9 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
           </ul>
           {sel.notices.map(n => <p key={n} role="status" className="ds-support">{n}</p>)}
           <dl className="ds-body space-y-1 rounded-ds border border-ds-border bg-ds-surface p-4">
-            {hasRecurring && <div className="flex justify-between gap-4"><dt>Monthly total</dt><dd className="font-semibold">{usd(totals.recurringCents)}/month</dd></div>}
-            {sel.courses.length > 0 && <div className="flex justify-between gap-4"><dt>One-time training total</dt><dd className="font-semibold">{usd(totals.oneTimeCents)}</dd></div>}
-            <div className="flex justify-between gap-4 border-t border-ds-border pt-1"><dt className="font-semibold">Due at checkout{sel.base && membership.trialEligible ? ' (30-day trial if eligible)' : ''}</dt><dd className="font-semibold">{usd(totals.dueTodayCents)}</dd></div>
+            {hasRecurring && <div className="flex justify-between gap-4"><dt>Monthly total</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.recurringCents)}</span>/month</dd></div>}
+            {sel.courses.length > 0 && <div className="flex justify-between gap-4"><dt>One-time training total</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.oneTimeCents)}</span></dd></div>}
+            <div className="flex justify-between gap-4 border-t border-ds-border pt-1"><dt className="font-semibold">Due at checkout{sel.base && membership.trialEligible ? ' (30-day trial if eligible)' : ''}</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.dueTodayCents)}</span></dd></div>
           </dl>
           {hasRecurring && <p className="ds-caption">The 2% Network fee applies only to applicable referral transactions; it is not charged for joining. Future monthly charges exclude separately incurred Network transaction fees. Prices and plan availability are subject to change. If you already used a trial, billing starts today.</p>}
           {!signedIn ? <Link to="/login" className="text-ds-link underline">Sign in to purchase</Link> : !req && <fieldset className="space-y-2">
@@ -99,5 +99,5 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
 export function TrainingCartIcon({ onBlue = true }: { onBlue?: boolean }) {
   const cart = useTrainingCart();
   const preview = usePortalPreview();
-  return <DsButton variant="ghost" size="sm" aria-label="Training cart" title="Cart" onClick={preview.active ? previewBlocked : cart.open} className={`relative !size-10 !min-h-10 !p-0 ${onBlue ? '!text-ds-on-primary hover:!bg-ds-primary-hover' : ''}`}><ShoppingCart className="size-5" />{(cart.items.length + (cart.membership.base ? 1 : 0) + (cart.membership.network ? 1 : 0)) > 0 && <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-ds-sm bg-ds-action text-xs text-ds-on-action">{cart.items.length + (cart.membership.base ? 1 : 0) + (cart.membership.network ? 1 : 0)}</span>}</DsButton>;
+  return <DsButton variant="ghost" size="sm" aria-label="Training cart" title="Cart" onClick={preview.active ? previewBlocked : cart.open} className={`portal-header-cart relative !size-10 !min-h-10 !p-0 ${onBlue ? '!text-ds-on-primary hover:!bg-ds-primary-hover' : ''}`}><ShoppingCart className="size-5" />{(cart.items.length + (cart.membership.base ? 1 : 0) + (cart.membership.network ? 1 : 0)) > 0 && <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-ds-sm bg-ds-action text-xs font-bold text-ds-on-action">{cart.items.length + (cart.membership.base ? 1 : 0) + (cart.membership.network ? 1 : 0)}</span>}</DsButton>;
 }

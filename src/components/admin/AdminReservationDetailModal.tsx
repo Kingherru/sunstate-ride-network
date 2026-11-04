@@ -11,7 +11,7 @@ function Field({ label, value }: { label: string; value: any }) {
   return (
     <div className="space-y-1">
       <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="text-sm">{value ?? <span className="text-muted-foreground">—</span>}</div>
+      <div className={label === "Est. Cost" ? "portal-money text-sm" : "text-sm"}>{value ?? <span className="text-muted-foreground">—</span>}</div>
     </div>
   );
 }
@@ -60,11 +60,11 @@ export function AdminReservationDetailModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center p-4 overflow-y-auto"
       onClick={onClose}>
-      <div className="bg-background border border-border rounded-sm w-full max-w-4xl my-8"
+      <div className="portal-custom-dialog bg-background border border-border rounded-sm w-full max-w-4xl my-8"
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-bold uppercase tracking-wide">Reservation Details</h2>
-          <button onClick={onClose} className="text-2xl leading-none px-2 hover:opacity-70">×</button>
+          <button onClick={onClose} className="portal-secondary-control text-2xl leading-none px-2 hover:opacity-70">×</button>
         </div>
 
         {rq.isLoading && <div className="p-8 text-center text-muted-foreground">Loading…</div>}
@@ -76,16 +76,16 @@ export function AdminReservationDetailModal({
               <div className="rounded-sm border border-border bg-secondary/40 p-3 text-sm">{flash}</div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="portal-dialog-section grid grid-cols-2 md:grid-cols-4 gap-4">
               <Field label="Status" value={<span className="uppercase text-xs font-bold">{(r.status ?? "—").replace(/_/g, " ")}</span>} />
               <Field label="Date" value={r.pickup_date} />
               <Field label="Time" value={String(r.pickup_time ?? "").slice(0, 5)} />
               <Field label="Type" value={r.transport_type} />
             </div>
 
-            <div>
+            <div className="portal-dialog-section">
               <div className="text-xs font-bold uppercase tracking-wide mb-2 text-muted-foreground">Passenger</div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="portal-dialog-section grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Field label="Name" value={`${r.patient_first_name ?? ""} ${r.patient_last_name ?? ""}`.trim()} />
                 <Field label="Phone" value={r.patient_phone} />
                 <Field label="Email" value={r.patient_email} />
@@ -93,7 +93,7 @@ export function AdminReservationDetailModal({
               </div>
             </div>
 
-            <div>
+            <div className="portal-dialog-section">
               <div className="text-xs font-bold uppercase tracking-wide mb-2 text-muted-foreground">Pickup</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Address" value={r.pickup_address} />
@@ -102,7 +102,7 @@ export function AdminReservationDetailModal({
               </div>
             </div>
 
-            <div>
+            <div className="portal-dialog-section">
               <div className="text-xs font-bold uppercase tracking-wide mb-2 text-muted-foreground">Dropoff</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Address" value={r.dropoff_address} />
@@ -111,7 +111,7 @@ export function AdminReservationDetailModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="portal-dialog-section grid grid-cols-2 md:grid-cols-4 gap-4">
               <Field label="Distance (mi)" value={r.distance_miles} />
               <Field label="Est. Cost" value={r.estimated_cost_cents != null ? `$${(r.estimated_cost_cents / 100).toFixed(2)}` : null} />
               <Field label="Trip Type" value={r.trip_type} />
@@ -125,7 +125,7 @@ export function AdminReservationDetailModal({
               </div>
             )}
 
-            <div className="border-t border-border pt-6">
+            <div className="portal-dialog-actions border-t border-border pt-6">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold uppercase tracking-wide">Push to Provider</h3>
                 {r.assigned_provider_id && (

@@ -69,12 +69,12 @@ function DriversCard() {
                 </div>
                 {d.employment_type === "independent_contractor" && pricingSummary(d.contractor_pricing) && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
-                    Pricing: {pricingSummary(d.contractor_pricing)}
+                    Pricing: <span className="portal-money">{pricingSummary(d.contractor_pricing)}</span>
                   </div>
                 )}
               </div>
               <div className="text-xs flex items-center gap-3">
-                <button onClick={() => setEditing(d)} className="font-bold text-primary hover:underline">Edit</button>
+                <button onClick={() => setEditing(d)} className="portal-secondary-control font-bold text-primary hover:underline">Edit</button>
                 <FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />
               </div>
             </li>
@@ -246,7 +246,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            className="portal-custom-dialog bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <h3 className="sm:col-span-2 text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3>
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
@@ -269,7 +269,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
           </select>
         </label>
 
-        <div className="sm:col-span-2 border border-border rounded-sm p-3 bg-background/60">
+        <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3 bg-background/60">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <span className="font-bold text-sm">Vacation mode</span>
             <span className="text-[11px] text-muted-foreground">
@@ -303,7 +303,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         </label>
 
 
-        <div className="sm:col-span-2 border border-border rounded-sm p-3">
+        <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
           <div className="flex flex-wrap gap-3 text-xs">
             {SERVICE_CAPABILITIES.map(c => (
@@ -331,7 +331,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         </label>
 
         {isHourly && (
-          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+          <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
             <div className="font-bold text-sm mb-2">Hourly pay</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <MoneyI l="Hourly rate ($ / hour)" v={f.pricing.hourly_rate}
@@ -341,7 +341,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         )}
 
         {isDaily && (
-          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+          <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
             <div className="font-bold text-sm mb-2">Daily salary</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <MoneyI l="Daily pay ($ / day)" v={f.pricing.daily_rate}
@@ -351,7 +351,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         )}
 
         {isContractor && !isHourly && !isDaily && (
-          <div className="sm:col-span-2 border border-border rounded-sm p-3">
+          <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
             <div className="font-bold text-sm mb-2">Independent contractor (1099) pricing</div>
             <p className="text-[11px] text-muted-foreground mb-2">
               Fill in any that apply — leave blank for fees you don't use. Amounts are in US dollars.
@@ -379,7 +379,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
 
 
 
-        <div className="col-span-2 border border-border rounded-sm p-3">
+        <div className="portal-dialog-section col-span-2 border border-border rounded-sm p-3">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-sm">Weekly availability</span>
             <label className="flex items-center gap-2 text-xs">
@@ -434,7 +434,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
           )}
         </div>
 
-        <div className="col-span-2 flex justify-end gap-2 pt-2">
+        <div className="portal-dialog-actions col-span-2 flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
             {m.isPending ? "Saving…" : "Save"}
@@ -457,7 +457,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-sm w-full p-6 grid gap-3">
+            className="portal-custom-dialog bg-card rounded-sm max-w-sm w-full p-6 grid gap-3">
         <h3 className="text-lg font-extrabold">Email week schedule</h3>
         <p className="text-sm text-muted-foreground">
           Send {d.first_name} {d.last_name} a 7-day trip schedule starting on the date below.
@@ -468,7 +468,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
                  className="border border-border rounded-sm px-3 py-2 bg-background" />
         </label>
         <div className="text-xs text-muted-foreground">To: {d.email}</div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="portal-dialog-actions flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
             {m.isPending ? "Sending…" : "Send"}
@@ -553,7 +553,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
+            className="portal-custom-dialog bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
         <h3 className="col-span-2 text-lg font-extrabold">{v.id ? "Edit vehicle" : "New vehicle"}</h3>
 
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
@@ -589,7 +589,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
             Driver primarily assigned to this vehicle. Used across scheduling and dispatch. Saving will also update the driver's primary vehicle.
           </span>
         </label>
-        <div className="col-span-2 border border-border rounded-sm p-3">
+        <div className="portal-dialog-section col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
           <div className="flex flex-wrap gap-3 text-xs">
             {SERVICE_CAPABILITIES.map(c => (
@@ -604,7 +604,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
             What this vehicle can transport. Combine as needed (e.g. wheelchair-accessible van that also handles ambulatory riders).
           </p>
         </div>
-        <div className="col-span-2 flex justify-end gap-2 pt-2">
+        <div className="portal-dialog-actions col-span-2 flex justify-end gap-2 pt-2">
 
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
@@ -634,7 +634,7 @@ function MoneyI({ l, v, on }: { l: string; v: string; on: (v: string) => void })
         <span className="text-muted-foreground">$</span>
         <input type="number" min={0} step="0.01" value={v} onChange={(e) => on(e.target.value)}
                placeholder="0.00"
-               className="w-full border border-border rounded-sm px-2 py-1 bg-background" />
+               className="portal-money-input w-full border border-border rounded-sm px-2 py-1 bg-background" />
       </div>
     </label>
   );

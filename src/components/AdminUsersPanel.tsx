@@ -293,21 +293,21 @@ export function AdminUsersPanel() {
           onClick={() => !saveMut.isPending && setPending(null)}
         >
           <div
-            className="bg-card border border-border max-w-md w-full p-5 shadow-xl"
+            className="portal-custom-dialog bg-card border border-border max-w-md w-full p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="text-base font-extrabold tracking-tight">Confirm role change</h4>
             <p className="text-sm mt-2">
               Change role for <span className="font-mono">{pending.email ?? pending.user_id}</span>?
             </p>
-            <div className="mt-3 text-sm bg-muted/20 border border-border p-3">
+            <div className="portal-dialog-section portal-dialog-rows mt-3 text-sm bg-muted/20 border border-border p-3">
               <div><span className="text-muted-foreground">From:</span> <strong>{ROLE_LABELS[pending.current_role]}</strong></div>
               <div className="mt-1"><span className="text-muted-foreground">To:</span> <strong>{ROLE_LABELS[pending.new_role]}</strong></div>
             </div>
             <p className="text-xs text-muted-foreground mt-3">
               Permissions and portal access update immediately. The user will see the new dashboard on their next page load or sign-in. This change is written to the audit log.
             </p>
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="portal-dialog-actions flex justify-end gap-2 mt-4">
               <button
                 type="button"
                 onClick={() => setPending(null)}

@@ -1,3 +1,8 @@
+# Pass 3X — portal visual completion
+- [x] Full-height shared sidebar edge strengthens on main-workspace hover/focus; inward glow does not cross header. Drawer edge stays subtle and disappears when unmounted.
+- [x] Completed custom Fleet/driver/admin/reservation/settlement dialog borders and dividers; monetary values emphasized across billing, earnings, pricing, payouts, cart and offer histories. Secondary/notification controls brightened; semantic/disabled meanings preserved.
+- [x] Automatic compilation log reports build OK; no explicit prohibited commands, browser/audit/test sweeps or activation. Interactive viewport checks intentionally not run.
+
 # Pass 3W — public visual modernization
 - [x] Refined shared public header/footer, homepage photo framing and white/blue/pale-blue section rhythm.
 - [x] Strengthened path/step cards, product previews, map surround, services and membership emphasis; shared inner-page presentation only. Existing text/photos/links and interactions retained.
