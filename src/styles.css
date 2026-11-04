@@ -525,6 +525,11 @@
 .theme-portal .portal-dialog-actions { border-top: 1px solid var(--section-edge); padding-top: .75rem; }
 .theme-portal .portal-dialog-section { border: 1px solid var(--section-edge); border-radius: var(--ds-radius); padding: .75rem; background: var(--ds-surface); box-shadow: none; }
 .theme-portal .portal-dialog-rows > * + * { border-top: 1px solid var(--row-divider); margin-top: .5rem; padding-top: .5rem; }
+/* Legacy pop-outs without a dialog role still receive the same inner hierarchy;
+   only bordered information groups are touched, not fields or status surfaces. */
+.theme-portal .fixed.inset-0.z-50 > :is(div, form):is(.bg-card, .bg-background, .bg-ds-surface) :where(div.border, section.border, dl.border, ul.border):not([class*="ds-status-"]):not(.bg-ds-error-soft):not(.bg-ds-warning-soft):not(.bg-ds-success-soft) { border-color: var(--section-edge); border-width: 1px; border-radius: var(--ds-radius); background-color: var(--ds-surface); box-shadow: none; backdrop-filter: none; }
+.theme-portal .fixed.inset-0.z-50 > :is(div, form):is(.bg-card, .bg-background, .bg-ds-surface) > :is(h2, h3, h4) { border-bottom: 1px solid var(--section-edge); padding-bottom: .75rem; }
+.theme-portal .fixed.inset-0.z-50 > :is(div, form):is(.bg-card, .bg-background, .bg-ds-surface) > .flex.justify-end { border-top: 1px solid var(--section-edge); padding-top: .75rem; }
 /* Weight-only money treatment retains existing semantic colors, including red
    adjustments and white text on solid status/action controls. */
 .theme-portal .portal-money { font-weight: 750; font-variant-numeric: tabular-nums; }
