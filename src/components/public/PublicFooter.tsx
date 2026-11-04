@@ -30,9 +30,9 @@ const linkCls = "ds-transition rounded-ds-sm uppercase tracking-[0.06em] opacity
 
 export function PublicFooter() {
   return (
-    <footer className="bg-ds-primary text-ds-on-primary">
+    <footer className="public-footer bg-ds-primary text-ds-on-primary">
       <div className="mfn-container py-16">
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-14">
+        <div className="public-footer-columns grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-14">
           <div id="contact">
             <Link to="/" className="rounded-ds-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-on-primary" aria-label="MY FLORIDA NEMT home"><BrandName on="blue" className="text-2xl" /></Link>
             <ul className="ds-body mt-6 space-y-3.5">

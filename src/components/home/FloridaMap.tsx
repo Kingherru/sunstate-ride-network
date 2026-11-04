@@ -69,14 +69,14 @@ export function FloridaMap({ page = false, motion = false }: { page?: boolean; m
   const fieldCls = "ds-body-lg w-full min-h-13 rounded-ds-sm border border-ds-border bg-ds-surface px-3 text-ds-on-surface focus-visible:outline-none focus-visible:border-ds-focus focus-visible:ring-2 focus-visible:ring-ds-focus/30";
 
   return (
-    <section id={page ? "map" : "coverage"} aria-labelledby="map-title" className="mfn-section bg-ds-sky scroll-mt-20">
+    <section id={page ? "map" : "coverage"} aria-labelledby="map-title" className="public-coverage mfn-section bg-ds-sky scroll-mt-20">
       <HomeReveal disabled={!motion} className="mfn-container-wide grid gap-12 lg:grid-cols-[45fr_55fr] lg:gap-12 lg:items-center">
         <div className="text-ds-on-soft">
           {page && <p className="ds-label text-ds-accent-active">Explore the map</p>}
           <h2 id="map-title" className={cn("ds-page-title uppercase text-ds-primary", page && "mt-2")}>{page ? "Explore by region, county, city or ZIP code." : "CONNECTIONS ACROSS FLORIDA START HERE."}</h2>
           <p className="ds-body-lg mt-4">MY FLORIDA NEMT is being built around all 67 Florida counties, helping customers, facilities and providers find the right place to begin.</p>
 
-          <div role="radiogroup" aria-label="Explore by" className="mt-8 flex flex-wrap gap-2">
+          <div role="radiogroup" aria-label="Explore by" className="public-map-modes mt-8 flex flex-wrap gap-2">
             {MODES.map((m) => { const MIcon = { region: MapIcon, county: Layers, city: Building2, zip: Hash }[m.id]; return (
               <button key={m.id} role="radio" aria-checked={mode === m.id} onClick={() => { setMode(m.id); setCounty(null); setMarker(null); }}
                 className={cn("ds-button-text ds-transition min-h-12 rounded-ds-sm px-6 text-[1.0625rem] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
@@ -117,7 +117,7 @@ export function FloridaMap({ page = false, motion = false }: { page?: boolean; m
             <p id="zip-msg" aria-live="polite" className="ds-support mt-2 min-h-6">{mode === "zip" ? zipMsg : null}</p>
           </div>
 
-          <div className="mt-2 rounded-ds bg-ds-surface p-6 text-ds-on-surface shadow-ds" aria-live="polite">
+          <div className="public-map-results mt-2 rounded-ds bg-ds-surface p-6 text-ds-on-surface shadow-ds" aria-live="polite">
             {county && (page
               ? <><p className="ds-label text-ds-accent-active">{county} County</p><p className="ds-body mb-3 mt-1">Network participation information for this county will appear as providers join and complete their service profiles.</p></>
               : <p className="ds-label text-ds-accent-active">{county} County · provider participation information is not yet available</p>)}
@@ -128,7 +128,7 @@ export function FloridaMap({ page = false, motion = false }: { page?: boolean; m
           <p className="ds-body-lg mt-6">Availability depends on location, trip requirements and participating providers.</p>
         </div>
 
-        <div className="relative">
+        <div className="public-map-frame relative">
           <svg viewBox={FL_VIEWBOX} role="img" aria-label={`Map of Florida's 67 counties with ${county ? county + " County" : sel.name} highlighted`} className="mx-auto h-auto max-h-[40rem] w-full">
             {Object.entries(FL_COUNTY_PATHS).map(([name, d]) => {
               const inRegion = COUNTY_REGION[name] === region;

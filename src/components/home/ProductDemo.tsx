@@ -150,19 +150,19 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
     setActive(FEATURES[n].id);
     refs.current[n]?.focus();
   };
-  const current = FEATURES.find((f) => f.id === active)!;
+  const current = FEATURES.find((f) => f.id === active) ?? FEATURES[0];
 
   return (
-    <section id="providers" aria-labelledby="demo-title" className="mfn-section-lg relative overflow-hidden bg-ds-bg scroll-mt-20">
+    <section id="providers" aria-labelledby="demo-title" className="public-product-showcase mfn-section-lg relative overflow-hidden bg-ds-bg scroll-mt-20">
       <div className="mfn-container-wide">
         <HomeReveal disabled={!motion} className="mx-auto max-w-3xl text-center">
-          <p className="ds-label text-ds-accent-active">Provider tools</p>
+          <p className="public-product-label ds-label text-ds-accent-active">Provider tools</p>
           <h2 id="demo-title" className="ds-page-title mt-2 uppercase text-ds-primary">BUILT AROUND THE WAY NEMT PROVIDERS ACTUALLY WORK.</h2>
-          <p className="ds-body-lg mx-auto mt-4 max-w-[44rem] text-ds-text-2">Review opportunities, organize trip information and stay connected from the office or on the go across desktop, tablet and mobile.</p>
+          <p className="public-product-intro ds-body-lg mx-auto mt-4 max-w-[44rem] text-ds-text-2">Review opportunities, organize trip information and stay connected from the office or on the go across desktop, tablet and mobile.</p>
         </HomeReveal>
 
         <HomeReveal disabled={!motion} className="mt-10"><div className="grid gap-6 lg:grid-cols-[30%_1fr] lg:items-center lg:gap-8">
-          <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
+          <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="public-tool-nav -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
             {FEATURES.map((f, i) => {
               const on = f.id === active;
               const Icon = f.icon;
@@ -191,7 +191,7 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
 
           {/* App-window composition */}
           <div>
-            <div className={cn("overflow-hidden rounded-ds-lg bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] px-2 pb-5 pt-3")}>
+            <div className={cn("public-preview-frame overflow-hidden rounded-ds-lg bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] px-2 pb-5 pt-3")}>
               <div className="px-1 pb-2 sm:pb-3">
               <div className="flex justify-center">
                 <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-primary-hover p-1">
@@ -209,7 +209,7 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
               <div id="demo-panel" role="tabpanel" aria-labelledby={`demo-tab-${active}`} className={cn("@container rounded-ds bg-ds-surface text-ds-on-surface", view === "mobile" ? "min-h-[34rem] p-4" : "min-h-[28rem] p-5 sm:p-10")}>
                 <p className="ds-section-title text-ds-primary">{current.label}</p>
                 <p className="ds-body-lg mb-6 text-ds-text-2">{current.blurb}</p>
-                <div key={active + view} className="ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
+                <div key={active + view} className="public-preview-content ds-fade-in [&_.ds-caption]:text-[0.9375rem] [&_.ds-label]:text-[1.0625rem] [&_.ds-body]:text-[1.0625rem]"><Preview id={active} /></div>
               </div>
             </div>
           </div>

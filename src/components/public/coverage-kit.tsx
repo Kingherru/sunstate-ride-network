@@ -49,7 +49,7 @@ export function trailHead(path: string, title: string, description: string, trai
 
 export function LinkCard({ href, title, text }: { href: string; title: string; text?: string }) {
   return (
-    <a href={href} className="group flex h-full flex-col rounded-ds bg-ds-sky p-6 ds-transition hover:bg-ds-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+    <a href={href} className="public-link-card group flex h-full flex-col rounded-ds bg-ds-sky p-6 ds-transition hover:bg-ds-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
       <span className="ds-subheading uppercase text-ds-primary">{title}</span>
       {text && <span className="ds-body-lg mt-2 flex-1 text-ds-text-2">{text}</span>}
       <ArrowRight className="mt-4 size-5 text-ds-link ds-transition group-hover:translate-x-1" aria-hidden />

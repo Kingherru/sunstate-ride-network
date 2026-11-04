@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { BrandName } from "@/components/brand/BrandName";
 
 export function DsCard({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-ds bg-ds-surface text-ds-on-surface p-5 sm:p-6 shadow-ds", className)}>{children}</div>;
+  return <div className={cn("public-shared-card rounded-ds bg-ds-surface text-ds-on-surface p-5 sm:p-6 shadow-ds", className)}>{children}</div>;
 }
 
 export type SoftTone = "sky" | "green" | "peach" | "sand" | "gray";
@@ -18,7 +18,7 @@ const softTone: Record<SoftTone, string> = {
 
 /** Soft-colored box. No contrasting border, ever. */
 export function DsSoftBox({ tone = "sky", className, children }: { tone?: SoftTone; className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-ds text-ds-on-soft p-5 sm:p-6", softTone[tone], className)}>{children}</div>;
+  return <div className={cn("public-shared-panel rounded-ds text-ds-on-soft p-5 sm:p-6", softTone[tone], className)}>{children}</div>;
 }
 
 export function DsTabs({ tabs }: { tabs: { id: string; label: string; content: React.ReactNode }[] }) {

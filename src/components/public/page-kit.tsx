@@ -53,7 +53,7 @@ type Img = (typeof HOME_IMAGES)[keyof typeof HOME_IMAGES];
 export function PageHero({ title, intro, img, children, crumb, showCrumbs }: { crumb?: string; showCrumbs?: boolean; eyebrow?: string; title: React.ReactNode; intro: React.ReactNode; img?: Img; children?: React.ReactNode }) {
   return (
     <>
-      <section aria-labelledby="page-title" className="relative overflow-hidden bg-ds-primary text-ds-on-primary">
+      <section aria-labelledby="page-title" className="public-page-hero relative overflow-hidden bg-ds-primary text-ds-on-primary">
         {img && <img src={img.src} width={img.w} height={img.h} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-[0.14]" />}
         <div className="relative mfn-container py-16 lg:py-24">
           <HomeReveal className="mx-auto max-w-4xl text-center">
@@ -97,7 +97,7 @@ export function SectionHead({ eyebrow, title, intro, id, onBlue, align = "center
 /** Icon + text list item used for checklists. */
 export function IconItem({ icon: Icon, children, tone = "bg-ds-sky" }: { icon: LucideIcon; children: React.ReactNode; tone?: string }) {
   return (
-    <li className="flex gap-4 rounded-ds bg-ds-surface p-5 shadow-ds">
+    <li className="public-icon-item flex gap-4 rounded-ds bg-ds-surface p-5 shadow-ds">
       <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-ds-sm text-ds-primary", tone)}><Icon className="size-6" aria-hidden /></span>
       <span className="ds-body-lg self-center">{children}</span>
     </li>
@@ -138,7 +138,7 @@ export type CtaAction = { label: string; to: string; icon: LucideIcon; kind?: "a
 export function CtaBand({ title, text, actions, primary, secondary }: { title: string; text: string; actions?: CtaAction[]; primary?: CtaAction; secondary?: CtaAction }) {
   const list = actions ?? [primary, secondary].filter(Boolean) as CtaAction[];
   return (
-    <section aria-labelledby="cta-title" className="mfn-section bg-ds-membership">
+    <section aria-labelledby="cta-title" className="public-cta-band mfn-section bg-ds-membership">
       <HomeReveal className="mfn-container mx-auto max-w-3xl text-center">
         <h2 id="cta-title" className="ds-page-title uppercase text-ds-primary">{title}</h2>
         <p className="ds-body-lg mx-auto mt-3 max-w-2xl text-ds-primary">{text}</p>
