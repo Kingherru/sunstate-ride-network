@@ -594,11 +594,11 @@
   position: sticky; top: 0; z-index: 2; background: var(--ds-surface);
   border-bottom: 1px solid var(--section-edge); flex-shrink: 0;
 }
-.theme-portal [data-detail-window] > :nth-child(2) { min-height: 0; overflow-y: auto; }
+.theme-portal [data-detail-window]:not(.grid) > :nth-child(2) { min-height: 0; overflow-y: auto; }
 .theme-portal [data-detail-window]:not([data-radix-detail]) { overflow-y: auto; }
 /* Logical worksheet groups: one enclosing edge, not a grid of bordered cells. */
-.theme-portal [data-detail-window] :where(section, fieldset, .portal-dialog-section),
-.theme-portal[data-detail-window] :where(section, fieldset, .portal-dialog-section) {
+.theme-portal [data-detail-window] :where(section, fieldset, .portal-dialog-section):not([class*="ds-status-"]):not(.bg-ds-error-soft):not(.bg-ds-warning-soft):not(.bg-ds-success-soft),
+.theme-portal[data-detail-window] :where(section, fieldset, .portal-dialog-section):not([class*="ds-status-"]):not(.bg-ds-error-soft):not(.bg-ds-warning-soft):not(.bg-ds-success-soft) {
   border: 1px solid var(--section-edge); border-radius: var(--ds-radius);
   background: var(--ds-surface); box-shadow: none; backdrop-filter: none;
 }
@@ -615,6 +615,7 @@
     max-height: calc(100dvh - 1rem) !important;
   }
   .theme-portal[data-detail-window].portal-detail-frame { height: calc(100dvh - 1rem) !important; }
+  .theme-portal [data-detail-window][class*="h-[85vh]"] { height: calc(100dvh - 1rem) !important; }
   .portal-window-body { padding: 1rem; }
   .portal-window-header { padding-left: 1rem; }
 }
