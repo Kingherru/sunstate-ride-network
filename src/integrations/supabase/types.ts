@@ -6345,6 +6345,7 @@ export type Database = {
           completion_information_submitted_at: string | null
           created_at: string
           current_radius: number | null
+          customer_invoice_document_id: string | null
           destination_area: string
           dispute_opened_at: string | null
           dispute_reason_code: string | null
@@ -6397,6 +6398,7 @@ export type Database = {
           completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
+          customer_invoice_document_id?: string | null
           destination_area: string
           dispute_opened_at?: string | null
           dispute_reason_code?: string | null
@@ -6449,6 +6451,7 @@ export type Database = {
           completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
+          customer_invoice_document_id?: string | null
           destination_area?: string
           dispute_opened_at?: string | null
           dispute_reason_code?: string | null
@@ -6492,6 +6495,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_distributions_customer_invoice_document_id_fkey"
+            columns: ["customer_invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "trip_invoice_documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trip_distributions_request_id_fkey"
             columns: ["request_id"]
@@ -6919,6 +6929,7 @@ export type Database = {
           id: string
           invoice_document_id: string | null
           invoice_idempotency_key: string | null
+          invoice_payment_evidence: Json
           payer_user_id: string
           platform_fee_cents: number
           policy_acceptance_id: string | null
@@ -6943,6 +6954,7 @@ export type Database = {
           id?: string
           invoice_document_id?: string | null
           invoice_idempotency_key?: string | null
+          invoice_payment_evidence?: Json
           payer_user_id: string
           platform_fee_cents?: number
           policy_acceptance_id?: string | null
@@ -6967,6 +6979,7 @@ export type Database = {
           id?: string
           invoice_document_id?: string | null
           invoice_idempotency_key?: string | null
+          invoice_payment_evidence?: Json
           payer_user_id?: string
           platform_fee_cents?: number
           policy_acceptance_id?: string | null
@@ -8873,6 +8886,19 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       admin_user_removal_plan: { Args: { _user: string }; Returns: Json }
+      apply_verified_invoice_payment: {
+        Args: {
+          _account: string
+          _amount: number
+          _currency: string
+          _env: string
+          _event: string
+          _intent: string
+          _payment: string
+          _status: string
+        }
+        Returns: boolean
+      }
       approve_membership_transition: {
         Args: { _id: string }
         Returns: undefined
@@ -9651,6 +9677,16 @@ export type Database = {
       }
       prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
+      prepare_owned_trip_referral: {
+        Args: {
+          _amount: number
+          _expires: string
+          _refund: string
+          _terms: string
+          _trip: string
+        }
+        Returns: string
+      }
       prepare_referral_funding_version: {
         Args: {
           _distribution: string
