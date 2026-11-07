@@ -393,6 +393,13 @@
       "when": 1794082455750,
       "tag": "0055_trip_invoice_documents_and_contact_consent",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1794082541093,
+      "tag": "0056_atomic_quote_invoice_attachment",
+      "breakpoints": true
     }
   ]
 }

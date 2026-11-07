@@ -4942,6 +4942,8 @@ export type Database = {
           canceled_at: string | null
           created_at: string
           creator_person_mfn_id: string | null
+          customer_quote_draft_id: string | null
+          customer_quote_id: string | null
           deactivated_at: string | null
           delivery_hazmat: boolean
           delivery_instructions: string | null
@@ -5065,6 +5067,8 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
+          customer_quote_draft_id?: string | null
+          customer_quote_id?: string | null
           deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
@@ -5188,6 +5192,8 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
+          customer_quote_draft_id?: string | null
+          customer_quote_id?: string | null
           deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
@@ -5308,6 +5314,13 @@ export type Database = {
             columns: ["assigned_vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_customer_quote_draft_id_fkey"
+            columns: ["customer_quote_draft_id"]
+            isOneToOne: false
+            referencedRelation: "trip_drafts"
             referencedColumns: ["id"]
           },
           {
@@ -8575,6 +8588,7 @@ export type Database = {
         Args: { _drivers: string[]; _end: string; _start: string }
         Returns: string
       }
+      customer_quote_fingerprint: { Args: { _form: Json }; Returns: string }
       deactivate_account_connection: {
         Args: { _confirmed: boolean; _id: string; _ws: string }
         Returns: undefined
@@ -8771,6 +8785,7 @@ export type Database = {
         Returns: Json
       }
       get_referral_fee_pct: { Args: never; Returns: number }
+      get_trip_invoice_snapshot: { Args: { _invoice: string }; Returns: Json }
       get_trips_admin_metadata: {
         Args: never
         Returns: {
@@ -8964,6 +8979,7 @@ export type Database = {
         }[]
       }
       list_patient_requests: { Args: never; Returns: Json[] }
+      list_request_invoices: { Args: { _request: string }; Returns: Json[] }
       list_targeted_patient_requests: {
         Args: never
         Returns: {
@@ -9244,6 +9260,7 @@ export type Database = {
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
       patient_request_access: { Args: { _request: string }; Returns: boolean }
       patient_request_snapshot: { Args: { _request: string }; Returns: Json }
+      patient_trip_contacts: { Args: { _request: string }; Returns: Json }
       persist_provider_draft_quote: {
         Args: {
           _actor: string
@@ -9265,6 +9282,15 @@ export type Database = {
           _zone_id: string
         }
         Returns: string
+      }
+      prepare_customer_invoice_payment: {
+        Args: {
+          _account: string
+          _env: string
+          _invoice: string
+          _payer: string
+        }
+        Returns: Json
       }
       prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
