@@ -1,5 +1,7 @@
 # Florida MVP launch sequence
-1. [ ] Onboarding foundation — Pass 4B; reuse existing signup, verified email, profiles, workspaces and protected credentials.
+1. [x] Onboarding foundation — Pass 4B; three signup choices, verified-email continuation, optional saved setup steps, authoritative personal/workspace/patient fields, existing private credential and Network forms, synthetic Master Admin preview. New account setup creates active basic workspaces; no existing workspace statuses/classifications changed.
+   - Existing owners may resume/review from Settings without portal lockout; training-only and role routing retained. No real account creation/save/upload/email/payment was exercised.
+   - Remaining focused follow-up: consolidate legacy business application and verification legal/address fields after confirming authoritative ownership; credential policy/carrier fields stay limited to the existing model; multiple-owned-account setup selection and legacy missing-organization recovery are not completed here. Single patient mobility default only, no new relationship authority.
 2. [ ] Provider Settings rebuild and provider-owned pricing.
    - Business & Operations; Pricing; Credentials & Verification; Team & Integrations; Billing & Payouts; Account & Security.
    - Provider Pricing controls provider customer rates only. Admin Pricing controls platform membership, Referral Network add-on, platform fees and system guardrails.

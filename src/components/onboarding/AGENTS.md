@@ -1,0 +1,1 @@
+- Guided setup reuses owner-scoped personal settings, workspace contacts, saved patients, Network service profile and private credentials; optional step markers never grant access or verification. Why: no duplicate identities or destructive re-onboarding.
