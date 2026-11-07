@@ -372,6 +372,13 @@
       "when": 1794081315036,
       "tag": "0052_business_audiences_and_explicit_patient_links",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1794081566353,
+      "tag": "0053_patient_invitation_extension_and_event_notices",
+      "breakpoints": true
     }
   ]
 }

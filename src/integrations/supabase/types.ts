@@ -80,6 +80,7 @@ export type Database = {
           expires_at: string
           generation: number
           id: string
+          intended_account_type: string | null
           intended_type: string
           inviter_workspace_id: string
           mfn_id: string
@@ -98,6 +99,7 @@ export type Database = {
           expires_at: string
           generation?: number
           id?: string
+          intended_account_type?: string | null
           intended_type: string
           inviter_workspace_id: string
           mfn_id?: string
@@ -116,6 +118,7 @@ export type Database = {
           expires_at?: string
           generation?: number
           id?: string
+          intended_account_type?: string | null
           intended_type?: string
           inviter_workspace_id?: string
           mfn_id?: string
