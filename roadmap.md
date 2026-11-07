@@ -11,6 +11,7 @@
    - Rate changes apply to new quotes/drafts only, never booked, paid, completed or historical trips.
    - Consolidate duplicate Provider Settings panels only after confirming shared authoritative data/actions.
 3. [ ] Account linking, Who Referred You, and invitations — next Florida MVP build.
+   - Pass 4D in progress: separate source attribution, private preferred provider, and explicitly accepted business connections; secure workspace-scoped invitations, no membership/trip/payment access.
 4. [ ] Patient trip visibility, status timeline, and history.
 5. [ ] Provider/Facility New Trip with live invoice or referral funding.
 6. [ ] Linked-patient invoicing and secure payments.
@@ -19,6 +20,7 @@
 9. [ ] Provider Network proximity search using safe public locations.
 10. [ ] Stripe/lifecycle/domain/legal/phone/launch configuration.
 11. [ ] Final focused validation and publishing.
+   - [ ] Final polish (low priority): On tablet and mobile, add a compact secondary public-site header row outside the hamburger menu with SIGN IN and CALL US, including clear icons, so those actions remain obvious to visitors who do not recognize a hamburger menu. Preserve the hamburger menu and avoid duplicating the actions on desktop.
 
 Regional mynnemt.com branding is planned after the Florida MVP and is not a Florida launch blocker.
 Historical evidence and blockers remain below; unfinished shared commerce is retained rather than assumed complete.
