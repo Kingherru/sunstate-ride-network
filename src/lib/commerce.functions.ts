@@ -23,7 +23,7 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
     try {
       assertCheckoutConsent(data.policyConsent);
-      const { requireCheckoutPreparationEnabled, requireApprovedPurchaseTerms } = await import('./checkout-policy.server');
+      const { requireCheckoutPreparationEnabled, requireApprovedPurchaseTerms, recordCheckoutAcceptance } = await import('./checkout-policy.server');
       await requireCheckoutPreparationEnabled();
       // Product-specific eligibility and final fee disclosure are intentionally not configured.
       await requireApprovedPurchaseTerms();
@@ -96,7 +96,9 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
           : { payment_intent_data: { description: sel.courses.map(c => c.title).join(' · ') } }),
         managed_payments: { enabled: true },
       };
-      const session = await stripe.checkout.sessions.create(params);
+      const acceptance = await recordCheckoutAcceptance(data.policyConsent, {personId:context.userId,workspaceId:workspaceId??null,referenceType:'combined_cart',referenceId:crypto.randomUUID(),amountCents:(grantTrial?0:(sel.base?MEMBERSHIP_PRICING.baseCents:0)+(sel.network?MEMBERSHIP_PRICING.networkCents:0))+sel.courses.reduce((n,c)=>n+c.price_cents,0),payer:workspaceId??context.userId,merchant:'MY FLORIDA NEMT',recurring,fees:[],checkoutKey:crypto.randomUUID(),attribution:new URL(getRequest().url).pathname});
+      params.metadata={...metadata,policy_acceptance_id:acceptance.id};
+      const session = await stripe.checkout.sessions.create(params,{idempotencyKey:`checkout:${acceptance.id}`});
       if (!session.client_secret) throw new Error('Stripe did not return checkout information');
       return { clientSecret: session.client_secret };
     } catch (e) { return { error: getStripeErrorMessage(e) }; }

@@ -93,7 +93,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
             <p className="ds-support">Exact processor/tax total and product-specific refund eligibility are not yet approved for payment preparation. No extra fee is assumed; checkout remains off.</p>
             <CheckoutAcknowledgment accepted={confirm.terms} onChange={accepted => setConfirm(c => ({...c,terms:accepted}))}/>
 
-            <DsButton disabled={!ready} onClick={() => { try { getStripeEnvironment(); setReq({ base: sel.base, network: sel.network, ids: sel.courses.map(c => c.id), confirm }); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } }}>Continue to checkout</DsButton>
+            <DsButton disabled={!ready} onClick={() => { try { getStripeEnvironment(); setReq({ base: sel.base, network: sel.network, ids: sel.courses.map(c => c.id), confirm }); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } }}>Review checkout availability</DsButton>
           </fieldset>}
           {error && <p role="alert" className="text-ds-error">{error}</p>}
           {req && <><PaymentTestModeBanner /><CheckoutErrorBoundary><Checkout req={req} /></CheckoutErrorBoundary></>}
