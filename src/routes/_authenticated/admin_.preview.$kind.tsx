@@ -27,6 +27,7 @@ import { AccountConnections } from '@/components/portal/AccountConnections';
 import { PersonalSecurity } from '@/components/portal/PersonalSecurity';
 import { OnboardingDemo } from '@/components/onboarding/OnboardingDemo';
 import { DsButton } from '@/components/ds/controls';
+import {PatientTrips} from '@/components/portal/PatientTrips';
 
 type Kind = "provider" | "customer";
 
@@ -130,7 +131,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
   switch (page) {
     case "requests/new": return <RequestForm context="portal" allowProviderSelection />;
     case "account": return <Panel><div className="space-y-5"><PersonalSecurity email="demo@example.com" /><AccountConnections workspaceId="preview-ws" /></div></Panel>;
-    case "requests": return <Panel><DsEmpty title="No requests yet">Requests this account submits appear here.</DsEmpty></Panel>;
+    case "requests": return <Panel><PatientTrips/></Panel>;
     case "upload-csv": return <Unavailable what="CSV upload" />;
     case "find-providers": return <Panel><ProviderDirectory /></Panel>;
     case "saved-providers": return <Panel><ProviderDirectory savedOnly /></Panel>;
@@ -138,7 +139,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
     case "payers": return <Panel><PayersPanel /></Panel>;
     case "notifications": return <Panel><NotificationsPanel /></Panel>;
     case "messaging": return <SampleConversations initiallyOpen />;
-    default: return <Panel><DsEmpty title="No requests yet">Recent requests for this account appear here.</DsEmpty></Panel>;
+    default: return <Panel><PatientTrips overview/></Panel>;
   }
 }
 

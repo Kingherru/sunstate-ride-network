@@ -191,6 +191,8 @@ export const getPortalRequest = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(idInput)
   .handler(async ({ data, context }) => {
+    const {data:access}=await context.supabase.rpc('patient_request_access',{_request:data.id});
+    if(access){const {data:snapshot}=await context.supabase.rpc('patient_request_snapshot',{_request:data.id});if(!snapshot)return {ok:false as const,error:NOT_FOUND};const p=presentPatientTrip(snapshot as unknown as PatientSnapshot);return {ok:true as const,request:p.request};}
     const { data: row } = await context.supabase.from("ride_requests").select(DETAIL_COLS).eq("id", data.id).maybeSingle();
     if (!row) return { ok: false as const, error: NOT_FOUND };
     return { ok: true as const, request: row as unknown as RequestDetailRow };
