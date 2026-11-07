@@ -23,7 +23,7 @@ export const confirmTripCustomerQuote = createServerFn({ method: 'POST' }).middl
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: history } = await context.supabase.from('trip_drafts').select('customer_quote_history').eq('id', data.draftId).eq('user_id', context.userId).maybeSingle();
     snapshot.version = Array.isArray(history?.customer_quote_history) ? history.customer_quote_history.length + 1 : 1;
-    const { error } = await supabaseAdmin.rpc('persist_provider_draft_quote', { _draft: data.draftId, _workspace: data.workspaceId, _actor: context.userId, _snapshot: snapshot as never, ...({ _expected: data.expectedQuoteId } as { _expected?: string }), _replace: data.replacementConfirmed });
+    const { error } = await supabaseAdmin.rpc('persist_provider_draft_quote', { _draft: data.draftId, _workspace: data.workspaceId, _actor: context.userId, _snapshot: snapshot as never, _expected: data.expectedQuoteId as never, _replace: data.replacementConfirmed });
     if (error) throw new Error('Quote changed or is unavailable. Reload and confirm replacement.');
     return snapshot;
   });
@@ -86,7 +86,7 @@ export const getReferralFundingPreparation = createServerFn({ method: 'POST' }).
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: policies } = await supabaseAdmin.from('network_fee_policies').select('version,percent_bps,fixed_cents,cap_cents,sandbox_estimate').eq('environment', data.environment).eq('method_category', 'card').eq('active', true).order('version', { ascending: false }).limit(1);
     const policy = policies?.[0]; const networkFeeCents = Math.round(data.receiverCents * 200 / 10000);
-    if (!policy) return { receiverCents: data.receiverCents, networkFeeCents, processingCents: null, totalCents: null, policyVersion: null, blocker: 'Configured processing recovery unavailable. Funding is not prepared.' };
+    if (!policy || policy.percent_bps >= 10000) return { receiverCents: data.receiverCents, networkFeeCents, processingCents: null, totalCents: null, policyVersion: null, blocker: 'Configured processing recovery unavailable. Funding is not prepared.' };
     const subtotal = data.receiverCents + networkFeeCents;
     let processingCents = Math.ceil((subtotal + policy.fixed_cents) / (1 - policy.percent_bps / 10000)) - subtotal;
     if (policy.cap_cents != null) processingCents = Math.min(processingCents, policy.cap_cents);

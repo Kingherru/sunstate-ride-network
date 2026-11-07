@@ -30,7 +30,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
   const [details, setDetails] = useState(false); const [examples, setExamples] = useState(true);
   const calculate = useServerFn(calculateProviderCustomerQuote); const confirm = useServerFn(confirmTripCustomerQuote); const save = useServerFn(saveTripDraft); const prepareFunding = useServerFn(getReferralFundingPreparation);
   const unchanged = quoteForm === JSON.stringify(form); const attachment = confirmed && draftId && unchanged && !network ? { id: confirmed.id, draftId } : null;
-  const demoLines = [{ label: 'Pickup / loading', cents: 4000 }, { label: 'Mileage after included miles', cents: 3000 }];
+  const demoLines: InvoiceLine[] = [{ label: 'Pickup / loading', cents: 4000 }, { label: 'Mileage after included miles', cents: 3000 }];
   const shown = preview.active && examples ? { lines: demoLines, totalCents: 7000 } : calculated ?? confirmed;
   function tripInput() {
     const delivery = form && 'requestedDate' in form;
