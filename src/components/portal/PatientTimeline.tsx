@@ -1,0 +1,4 @@
+import {type PatientStage} from '@/lib/patient-timeline';
+import {StatusPill} from '@/components/ds/status';
+import {fmtDateTime} from './request-display';
+export function PatientTimeline({stage,events}:{stage:PatientStage;events:{label:PatientStage;at:string}[]}){return <div><p className="ds-label mb-3">Current stage <StatusPill status={stage}/></p><ol className="divide-y divide-ds-border">{events.map((e,i)=><li key={`${e.at}-${i}`} className="grid gap-1 py-3 sm:grid-cols-2"><span className="ds-label">{e.label}</span><time className="ds-support" dateTime={e.at}>{fmtDateTime(e.at)}</time></li>)}</ol><p className="ds-caption mt-4">Transportation is provided by independent businesses. A received request is not a confirmed ride.</p></div>;}

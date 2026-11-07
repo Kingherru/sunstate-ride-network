@@ -14,6 +14,7 @@ const delivery = {
 };
 
 describe("passenger requests", () => {
+  test('patient attachment requires a UUID, never typed name or email',()=>{expect(rideRequestSchema.safeParse({...ride,patientWorkspaceId:'patient@example.com'}).success).toBe(false);expect(rideRequestSchema.safeParse({...ride,patientWorkspaceId:'11111111-1111-4111-8111-111111111111'}).success).toBe(true);});
   test("valid passenger request passes", () => expect(rideRequestSchema.safeParse(ride).success).toBe(true));
   test('selected provider is a workspace UUID, not a display MFN ID', () => {
     expect(rideRequestSchema.safeParse({ ...ride, selectedProviderWorkspaceId: '11111111-1111-4111-8111-111111111111' }).success).toBe(true);

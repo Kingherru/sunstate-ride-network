@@ -14,9 +14,10 @@ import { usePortalMutation, usePortalQuery, previewBlocked, usePortalPreview } f
 import { DsButton } from "@/components/ds/controls";
 import { exportTable, readableDate, type ExportFormat } from "@/lib/table-export";
 import { DsEmpty } from "@/components/ds/feedback";
+import {PatientTrips} from '@/components/portal/PatientTrips';
 
 export const Route = createFileRoute("/_authenticated/portal/requests/")({
-  head: () => ({ meta: [{ title: "Trip History — MY FLORIDA NEMT Portal" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Trip History — MY FLORIDA NEMT Portal" },{name:'description',content:'Authorized upcoming trips, patient timeline, history and existing payment records.'},{property:'og:title',content:'Trip History — MY FLORIDA NEMT Portal'},{property:'og:description',content:'Your authorized trip timeline and history.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => listPortalRequests(),
   component: Requests,
 });
@@ -26,6 +27,7 @@ const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
 function Requests() {
   const rows = Route.useLoaderData();
+  const {access}=Route.useRouteContext();
   const [tab, setTab] = useState<"history" | "drafts">("history");
   return (
     <>
@@ -33,7 +35,7 @@ function Requests() {
         Only requests you're authorized to view are shown.
       </PageHead>
       <SegTabs label="Trip history sections" value={tab} onChange={setTab} options={[{ value: "history", label: "History" }, { value: "drafts", label: "Drafts" }]} />
-      <div className="mt-4">{tab === "history" ? <History rows={rows} /> : <Drafts />}</div>
+      <div className="mt-4">{tab === "history" ? access.primary?.type==='private_pay'?<PatientTrips/>:<History rows={rows} /> : <Drafts />}</div>
     </>
   );
 }

@@ -28,6 +28,10 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'business-visibility': {workspace:{display_name:'Demo transportation business',account_type:'provider'},profile:null,consent:null},
+  'business-search': [{workspace_id:'demo-business',business_name:'Demo Florida Facility',mfn_id:'MFN-A-DEMO',business_type:'facility',location:'Orlando',description:'Synthetic facility example.',facility_category:'Clinic',service_types:[],counties:[],cities:['Orlando'],medical_delivery:false,accepting_connections:true,business_contact_email:null,business_contact_phone:null,verification_level:null}],
+  'patient-link-context': {workspaceId:'demo-source',patients:[{workspace_id:'demo-patient',display_name:'Demo Patient',mfn_id:'MFN-A-DEMO-PATIENT'}]},
+  'patient-trips': [{request:{id:'demo-patient-request',mfn_id:'MFN-R-DEMO',trip_kind:'passenger',transport_type:'wheelchair',trip_type:'one_way',created_at:'2026-11-07T12:00:00Z',pickup_date:'2026-11-10',pickup_time:'09:00',pickup_city:'Orlando',dropoff_city:'Winter Park'},tripId:null,tripNumber:null,providerName:'Demo independent provider',source:'Created by facility',events:[],payments:[],scheduledAt:null,driverAssigned:false,invoice:null,stage:'Confirmed',group:'upcoming',timeline:[{label:'Received',at:'2026-11-07T12:00:00Z'},{label:'Confirmed',at:'2026-11-07T13:00:00Z'}]}],
   'personal-settings': { first_name: 'Demo', last_name: 'Account', display_name: 'Demo Account', phone: '', mfn_id: 'MFN-P-DEMO', notification_preferences: { in_app: true, email: false }, status: 'active' },
   'personal-security-audit': [],
   'targeted-patient-requests': [],

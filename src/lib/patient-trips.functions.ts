@@ -1,0 +1,14 @@
+import {createServerFn} from '@tanstack/react-start';
+import {requireSupabaseAuth} from '@/integrations/supabase/auth-middleware';
+import {z} from 'zod';
+import type {RequestDetailRow} from './portal-requests.functions';
+import {patientStage,patientTimeline,patientTripGroup,type PatientEvent} from './patient-timeline';
+export type PatientSnapshot = {request:RequestDetailRow;status:string;tripId:string|null;tripNumber:string|null;providerName:string|null;source:string;events:PatientEvent[];payments:{reference:string;amountCents:number;status:string;createdAt:string;updatedAt:string}[];scheduledAt:string|null;driverAssigned:boolean;invoice:null};
+export function presentPatientTrip(row:PatientSnapshot) { let status=patientStage(row.status);if(!['Completed','Canceled','Declined','Needs Attention'].includes(status)){if(row.driverAssigned)status='Driver Assigned';else if(row.scheduledAt)status='Added to Dispatch Schedule';}return {...row,stage:status,group:patientTripGroup(status),timeline:patientTimeline(row.events)}; }
+export const listPatientTrips = createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async ({context})=>{const {data,error}=await context.supabase.rpc('list_patient_requests');if(error)throw new Error('Your trips could not be loaded.');return (data??[]).filter(Boolean).map(row=>presentPatientTrip(row as unknown as PatientSnapshot));});
+export const listLinkedPatients = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({workspaceId:z.string().uuid()}).strict().parse(i)).handler(async ({data,context})=>{const {data:rows,error}=await context.supabase.rpc('list_linked_patient_accounts',{_ws:data.workspaceId});if(error)throw new Error('Linked patients unavailable.');return rows??[];});
+export const getPatientLinkContext = createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async ({context})=>{
+ const {data:members}=await context.supabase.from('workspace_members').select('workspace_id,role,is_contractor,workspaces!inner(account_type,status)').eq('user_id',context.userId).is('removed_at',null);
+ const eligible=(members??[]).filter(m=>!m.is_contractor && ['owner','admin'].includes(m.role) && ['provider','facility','hospital'].includes(m.workspaces.account_type) && m.workspaces.status==='active');
+ if(eligible.length!==1)return {workspaceId:null,patients:[]};const workspaceId=eligible[0]?.workspace_id;if(!workspaceId)return {workspaceId:null,patients:[]};const {data:patients,error}=await context.supabase.rpc('list_linked_patient_accounts',{_ws:workspaceId});if(error)throw new Error('Linked patients unavailable.');return {workspaceId,patients:patients??[]};
+});

@@ -80,6 +80,7 @@ export type Database = {
           expires_at: string
           generation: number
           id: string
+          intended_account_type: string | null
           intended_type: string
           inviter_workspace_id: string
           mfn_id: string
@@ -98,6 +99,7 @@ export type Database = {
           expires_at: string
           generation?: number
           id?: string
+          intended_account_type?: string | null
           intended_type: string
           inviter_workspace_id: string
           mfn_id?: string
@@ -116,6 +118,7 @@ export type Database = {
           expires_at?: string
           generation?: number
           id?: string
+          intended_account_type?: string | null
           intended_type?: string
           inviter_workspace_id?: string
           mfn_id?: string
@@ -357,6 +360,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      business_search_consents: {
+        Row: {
+          public_changed_at: string | null
+          public_enabled: boolean
+          public_person_mfn_id: string | null
+          signed_in_changed_at: string | null
+          signed_in_enabled: boolean
+          signed_in_person_mfn_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          public_changed_at?: string | null
+          public_enabled?: boolean
+          public_person_mfn_id?: string | null
+          signed_in_changed_at?: string | null
+          signed_in_enabled?: boolean
+          signed_in_person_mfn_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          public_changed_at?: string | null
+          public_enabled?: boolean
+          public_person_mfn_id?: string | null
+          signed_in_changed_at?: string | null
+          signed_in_enabled?: boolean
+          signed_in_person_mfn_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_search_consents_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_messages: {
         Row: {
@@ -4131,9 +4172,12 @@ export type Database = {
           business_contact_email: string | null
           business_contact_phone: string | null
           cities: string[]
+          contact_email_public: boolean
+          contact_phone_public: boolean
           counties: string[]
           description: string | null
           eligibility_expires_at: string | null
+          facility_category: string | null
           hours: string | null
           location_city: string | null
           location_county: string | null
@@ -4160,9 +4204,12 @@ export type Database = {
           business_contact_email?: string | null
           business_contact_phone?: string | null
           cities?: string[]
+          contact_email_public?: boolean
+          contact_phone_public?: boolean
           counties?: string[]
           description?: string | null
           eligibility_expires_at?: string | null
+          facility_category?: string | null
           hours?: string | null
           location_city?: string | null
           location_county?: string | null
@@ -4189,9 +4236,12 @@ export type Database = {
           business_contact_email?: string | null
           business_contact_phone?: string | null
           cities?: string[]
+          contact_email_public?: boolean
+          contact_phone_public?: boolean
           counties?: string[]
           description?: string | null
           eligibility_expires_at?: string | null
+          facility_category?: string | null
           hours?: string | null
           location_city?: string | null
           location_county?: string | null
@@ -4885,6 +4935,7 @@ export type Database = {
           cancel_reason: string | null
           canceled_at: string | null
           created_at: string
+          creator_person_mfn_id: string | null
           deactivated_at: string | null
           delivery_hazmat: boolean
           delivery_instructions: string | null
@@ -4932,12 +4983,15 @@ export type Database = {
           needs_wheelchair: boolean
           network_status: string | null
           on_behalf_of_user_id: string | null
+          originating_workspace_mfn_id: string | null
           patient_date_of_birth: string | null
           patient_email: string | null
           patient_first_name: string
           patient_gender: string | null
           patient_last_name: string
           patient_phone: string
+          patient_workspace_id: string | null
+          patient_workspace_mfn_id: string | null
           payer: string | null
           payer_id: string | null
           payment_amount_cents: number | null
@@ -5004,6 +5058,7 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          creator_person_mfn_id?: string | null
           deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
@@ -5051,12 +5106,15 @@ export type Database = {
           needs_wheelchair?: boolean
           network_status?: string | null
           on_behalf_of_user_id?: string | null
+          originating_workspace_mfn_id?: string | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name: string
           patient_gender?: string | null
           patient_last_name: string
           patient_phone: string
+          patient_workspace_id?: string | null
+          patient_workspace_mfn_id?: string | null
           payer?: string | null
           payer_id?: string | null
           payment_amount_cents?: number | null
@@ -5123,6 +5181,7 @@ export type Database = {
           cancel_reason?: string | null
           canceled_at?: string | null
           created_at?: string
+          creator_person_mfn_id?: string | null
           deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
@@ -5170,12 +5229,15 @@ export type Database = {
           needs_wheelchair?: boolean
           network_status?: string | null
           on_behalf_of_user_id?: string | null
+          originating_workspace_mfn_id?: string | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name?: string
           patient_gender?: string | null
           patient_last_name?: string
           patient_phone?: string
+          patient_workspace_id?: string | null
+          patient_workspace_mfn_id?: string | null
           payer?: string | null
           payer_id?: string | null
           payment_amount_cents?: number | null
@@ -5247,6 +5309,13 @@ export type Database = {
             columns: ["hipaa_ack_id"]
             isOneToOne: false
             referencedRelation: "hipaa_acknowledgments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_patient_workspace_id_fkey"
+            columns: ["patient_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
           {
@@ -8637,6 +8706,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      list_linked_patient_accounts: {
+        Args: { _ws: string }
+        Returns: {
+          display_name: string
+          mfn_id: string
+          workspace_id: string
+        }[]
+      }
       list_network_providers: {
         Args: {
           _accepting?: boolean
@@ -8703,6 +8780,7 @@ export type Database = {
           trip_type: string
         }[]
       }
+      list_patient_requests: { Args: never; Returns: Json[] }
       list_targeted_patient_requests: {
         Args: never
         Returns: {
@@ -8981,6 +9059,8 @@ export type Database = {
       }
       open_dispatch_thread: { Args: { _zone_id?: string }; Returns: string }
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
+      patient_request_access: { Args: { _request: string }; Returns: boolean }
+      patient_request_snapshot: { Args: { _request: string }; Returns: Json }
       pick_auto_provider: {
         Args: {
           _created_by: string
@@ -9145,6 +9225,41 @@ export type Database = {
         Args: { _details: Json; _workspace: string }
         Returns: undefined
       }
+      save_shared_business_identity: {
+        Args: {
+          _accepting: boolean
+          _category: string
+          _city: string
+          _confirmed: boolean
+          _description: string
+          _email: string
+          _email_public: boolean
+          _phone: string
+          _phone_public: boolean
+          _ws: string
+        }
+        Returns: undefined
+      }
+      search_business_identities: {
+        Args: { _audience: string; _search?: string }
+        Returns: {
+          accepting_connections: boolean
+          business_contact_email: string
+          business_contact_phone: string
+          business_name: string
+          business_type: string
+          cities: string[]
+          counties: string[]
+          description: string
+          facility_category: string
+          location: string
+          medical_delivery: boolean
+          mfn_id: string
+          service_types: string[]
+          verification_level: string
+          workspace_id: string
+        }[]
+      }
       search_connection_businesses: {
         Args: { _mode: string; _value: string; _ws: string }
         Returns: {
@@ -9182,6 +9297,15 @@ export type Database = {
           _permissions: Json
           _user: string
           _workspace: string
+        }
+        Returns: undefined
+      }
+      set_business_search_consent: {
+        Args: {
+          _audience: string
+          _confirmed: boolean
+          _enabled: boolean
+          _ws: string
         }
         Returns: undefined
       }

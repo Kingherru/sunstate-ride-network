@@ -1,0 +1,19 @@
+import { createServerFn } from '@tanstack/react-start';
+import { z } from 'zod';
+import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { businessVisibilityInput,businessIdentityInput } from './business-visibility-rules';
+export type BusinessIdentity = {workspace_id:string;business_name:string;mfn_id:string|null;business_type:string;location:string|null;description:string|null;facility_category:string|null;service_types:string[];counties:string[];cities:string[];medical_delivery:boolean;accepting_connections:boolean;business_contact_email:string|null;business_contact_phone:string|null;verification_level:string|null};
+export const listPublicBusinesses = createServerFn({method:'GET'}).handler(async () => {
+  const {createClient}=await import('@supabase/supabase-js');
+  const key=process.env['SUPABASE_PUBLISHABLE_KEY'];const url=process.env['SUPABASE_URL'];
+  if(!key || !url) return [] as BusinessIdentity[];
+  const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:(input,init)=>{const headers=new Headers(init?.headers);if(key.startsWith('sb_') && headers.get('Authorization')===`Bearer ${key}`)headers.delete('Authorization');headers.set('apikey',key);return fetch(input,{...init,headers});}}});
+  const {data,error}=await client.rpc('search_business_identities',{_audience:'public',_search:''});if(error)throw new Error('Business search is unavailable.');return (data??[]) as BusinessIdentity[];
+});
+export const listSignedInBusinesses = createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async ({context})=>{const {data,error}=await context.supabase.rpc('search_business_identities',{_audience:'signed_in',_search:''});if(error)throw new Error('Business search unavailable.');return (data??[]) as BusinessIdentity[];});
+export const getBusinessVisibility = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({workspaceId:z.string().uuid()}).strict().parse(i)).handler(async ({data,context})=>{
+  const {data:allowed}=await context.supabase.rpc('can_manage_account_connections',{_ws:data.workspaceId});if(!allowed)throw new Error('Account owner or administrator required.');
+  const [{data:consent},{data:profile},{data:workspace}]=await Promise.all([context.supabase.from('business_search_consents').select('*').eq('workspace_id',data.workspaceId).maybeSingle(),context.supabase.from('provider_network_profiles').select('description,location_city,facility_category,business_contact_email,business_contact_phone,contact_email_public,contact_phone_public,accepting_connections,service_types,counties,cities').eq('workspace_id',data.workspaceId).maybeSingle(),context.supabase.from('workspaces').select('display_name,account_type').eq('id',data.workspaceId).single()]);return {consent,profile,workspace};
+});
+export const setBusinessVisibility = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>businessVisibilityInput.parse(i)).handler(async ({data,context})=>{const {error}=await context.supabase.rpc('set_business_search_consent',{_ws:data.workspaceId,_audience:data.audience,_enabled:data.enabled,_confirmed:true});if(error)throw new Error('Visibility change unavailable.');return {ok:true};});
+export const saveBusinessIdentity = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>businessIdentityInput.parse(i)).handler(async ({data,context})=>{const {error}=await context.supabase.rpc('save_shared_business_identity',{_ws:data.workspaceId,_city:data.city,_description:data.description,_category:data.category,_email:data.email,_phone:data.phone,_email_public:data.emailPublic,_phone_public:data.phonePublic,_accepting:data.accepting,_confirmed:true});if(error)throw new Error('Business identity update unavailable.');return {ok:true};});

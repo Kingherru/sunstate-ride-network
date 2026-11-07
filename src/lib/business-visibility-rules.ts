@@ -1,0 +1,5 @@
+import { z } from 'zod';
+export const businessVisibilityInput = z.object({ workspaceId:z.string().uuid(), audience:z.enum(['signed_in','public']), enabled:z.boolean(), confirmed:z.literal(true) }).strict();
+export const businessIdentityInput = z.object({workspaceId:z.string().uuid(),city:z.string().trim().max(100),description:z.string().trim().max(2000),category:z.string().trim().max(100),email:z.string().email().max(254).or(z.literal('')),phone:z.string().trim().max(32),emailPublic:z.boolean(),phonePublic:z.boolean(),accepting:z.boolean(),confirmed:z.literal(true)}).strict();
+export function eligibleBusiness(type:string) { return ['provider','facility','hospital'].includes(type); }
+export function searchableBusiness(type:string, active:boolean, consent:boolean | null) { return eligibleBusiness(type) && active && consent === true; }

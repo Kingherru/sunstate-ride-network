@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { connectionScope, invitationActionInput, normalizeBusinessMatch, invitationStatus } from './account-connections-rules';
-const invitationColumns = 'id,mfn_id,inviter_workspace_id,recipient_workspace_id,intended_type,status,expires_at,created_at,updated_at,generation,delivery_status' as const;
+const invitationColumns = 'id,mfn_id,inviter_workspace_id,recipient_workspace_id,intended_type,intended_account_type,status,expires_at,created_at,updated_at,generation,delivery_status' as const;
 
 export const getAccountConnections = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((i: unknown) => connectionScope.parse(i))
   .handler(async ({ data, context }) => {
@@ -19,7 +19,7 @@ export const getAccountConnections = createServerFn({ method: 'POST' }).middlewa
     const email = typeof context.claims.email === 'string' ? context.claims.email.trim().toLowerCase() : '';
     const { data: incoming } = await supabaseAdmin.from('account_connection_invitations').select(invitationColumns).eq('recipient_email', email).neq('inviter_workspace_id', data.workspaceId).order('created_at', { ascending: false }).limit(100);
     const { data: ws } = await context.supabase.from('workspaces').select('account_type').eq('id', data.workspaceId).single();
-    const filtered = (incoming ?? []).filter(i => i.intended_type === 'provider' ? ws?.account_type === 'provider' : ['facility','hospital'].includes(ws?.account_type ?? ''));
+    const filtered = (incoming ?? []).filter(i => i.intended_account_type==='patient'?ws?.account_type==='private_pay':i.intended_type === 'provider' ? ws?.account_type === 'provider' : ['facility','hospital'].includes(ws?.account_type ?? ''));
     const ids = new Set<string>();
     for (const c of connections ?? []) { ids.add(c.workspace_a); ids.add(c.workspace_b); }
     for (const i of [...(sent ?? []), ...filtered]) { ids.add(i.inviter_workspace_id); if (i.recipient_workspace_id) ids.add(i.recipient_workspace_id); }
@@ -49,13 +49,13 @@ export const manageConnectionInvitation = createServerFn({ method: 'POST' }).mid
     if (error || !invitationId) throw new Error('Invitation unavailable. Check the invited email, business type, account permissions and expiration; wait before resending.');
     if (!send || !token) return { ok: true, delivery: 'not_requested' };
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    const { data: row } = await supabaseAdmin.from('account_connection_invitations').select('recipient_email,mfn_id,intended_type,generation').eq('id', invitationId).single();
+    const { data: row } = await supabaseAdmin.from('account_connection_invitations').select('recipient_email,mfn_id,intended_type,intended_account_type,generation').eq('id', invitationId).single();
     const { data: inviter } = await context.supabase.from('workspaces').select('display_name').eq('id', data.workspaceId).single();
     if (!row) throw new Error('Invitation saved but delivery unavailable.');
     const { sendTemplateEmail } = await import('./email-templates/send-email');
     try {
       // Fixed transactional template for ONE explicitly invited recipient; never a broadcast or arbitrary template.
-      const result = await sendTemplateEmail('business-connection-invitation', row.recipient_email, { templateData: { reference: row.mfn_id, inviterName: inviter?.display_name ?? 'An account', intendedType: row.intended_type, reviewUrl: `https://myfloridanemt.com/connection-invitation#${token}` }, idempotencyKey: `business-invitation:${invitationId}:${row.generation}` });
+      const result = await sendTemplateEmail('business-connection-invitation', row.recipient_email, { templateData: { reference: row.mfn_id, inviterName: inviter?.display_name ?? 'An account', intendedType: row.intended_account_type ?? row.intended_type, reviewUrl: `https://myfloridanemt.com/connection-invitation#${token}` }, idempotencyKey: `business-invitation:${invitationId}:${row.generation}` });
       const delivery = result.sent ? 'sent' : 'suppressed';
       await supabaseAdmin.from('account_connection_invitations').update({ delivery_status: delivery }).eq('id',invitationId);
       return { ok: true, delivery };
@@ -75,10 +75,10 @@ export const resolveConnectionInvitation = createServerFn({ method: 'POST' }).mi
     const { hashInvitationToken, constantTimeHashEqual } = await import('./account-connections-token.server'); const hash = await hashInvitationToken(data.token);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const email = typeof context.claims.email === 'string' ? context.claims.email.trim().toLowerCase() : '';
-    const { data: row } = await supabaseAdmin.from('account_connection_invitations').select('id,mfn_id,intended_type,status,expires_at,token_hash,inviter_workspace_id').eq('token_hash', hash).eq('recipient_email', email).maybeSingle();
+    const { data: row } = await supabaseAdmin.from('account_connection_invitations').select('id,mfn_id,intended_type,intended_account_type,status,expires_at,token_hash,inviter_workspace_id').eq('token_hash', hash).eq('recipient_email', email).maybeSingle();
     if (!row || !constantTimeHashEqual(hash,row.token_hash) || row.status !== 'pending' || Date.parse(row.expires_at) <= Date.now()) throw new Error('Invitation unavailable. Sign in with the invited email and use a current invitation.');
     const { data: inviter } = await supabaseAdmin.from('workspaces').select('display_name').eq('id',row.inviter_workspace_id).single();
-    return { id: row.id, reference: row.mfn_id, intendedType: row.intended_type, inviterName: inviter?.display_name ?? 'An account' };
+    return { id: row.id, reference: row.mfn_id, intendedType: row.intended_account_type ?? row.intended_type, inviterName: inviter?.display_name ?? 'An account' };
   });
 
 export const openConnectionConversation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])

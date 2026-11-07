@@ -12,6 +12,7 @@ import { DetailSection } from './DetailSection';
 import { RequestLifecycle } from './RequestLifecycle';
 import { AdminRequestActions } from './AdminRequestActions';
 import { useAdminLevel } from '@/lib/use-admin-level';
+import { PatientTimeline } from './PatientTimeline';
 
 const money = (c: number) => (c / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const words = (s: string) => s.replaceAll('_', ' ');
@@ -43,7 +44,7 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
   // The database records it only for the selected provider business while Distributed.
   const loadedId = q.data?.ok && target?.kind === 'request' ? String(q.data.request.id) : null;
   useEffect(() => {
-    if (!loadedId || !isProviderPortal || preview.active || recorded.current.has(loadedId)) return;
+    if (!loadedId || q.data?.ok && q.data.patient || !isProviderPortal || preview.active || recorded.current.has(loadedId)) return;
     recorded.current.add(loadedId);
     viewed({ data: { id: loadedId } }).catch(() => {});
   }, [loadedId, isProviderPortal, preview.active, viewed]);
@@ -57,6 +58,7 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
         {q.isPending ? <p role="status">Loading details…</p> : q.error || !ok ? <p role="alert">Details not available.</p> : <div className="space-y-6">
           {ok.request.deactivated_at && <DetailSection tone="warning" title="Deactivated"><p>This request was deactivated on {fmtDateTime(String(ok.request.deactivated_at))}. All history is preserved.</p></DetailSection>}
           <RequestDetail r={ok.request} showSource />
+          {ok.patient && <div className="grid gap-5 lg:grid-cols-2"><DetailSection title="Your trip timeline"><PatientTimeline stage={ok.patient.stage} events={ok.patient.timeline}/></DetailSection><DetailSection title="Invoice & payment summary"><p className="ds-body">No invoice available</p><p className="ds-support mt-3">{ok.patient.source}</p>{ok.patient.payments.map(p=><p key={p.reference} className="ds-support mt-3">{p.status} · <span className="portal-money">{money(p.amountCents)}</span> · {fmtDateTime(p.createdAt)}</p>)}</DetailSection></div>}
           <div className="grid gap-6 lg:grid-cols-2">
             <DetailSection tone="contact" title="Request account"><p className="ds-body">{ok.account ? `${ok.account.display_name} · ${ok.account.mfn_id}` : 'Not Available'}</p></DetailSection>
             <DetailSection title="Assignment and activity">
