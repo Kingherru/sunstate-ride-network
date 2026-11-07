@@ -47,7 +47,8 @@ function Account() {
   const ws = access.primary;
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>("profile");
-  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6"><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8 space-y-6"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /><details><summary className="ds-label cursor-pointer text-ds-primary">Pricing rules</summary><div className="mt-4 space-y-8"><PricingPanel /><RulesPanel /></div></details>{ws.role === 'owner' && <details><summary className="ds-label cursor-pointer text-ds-primary">Payouts</summary><div className="mt-4 space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></details>}<details><summary className="ds-label cursor-pointer text-ds-primary">Team messaging</summary><div className="mt-4"><TeamMessaging workspaceId={ws.id} /></div></details></div></div></>;
+  const setupLink = ws?.role === 'owner' && !ws.is_contractor ? <div className="mb-5 border-b border-ds-border pb-4"><Link to="/onboarding" className="ds-label text-ds-link underline">{access.onboardingPending ? 'Continue account setup' : 'Review account setup'}</Link><p className="ds-caption mt-1">Update missing information without changing your portal access.</p></div> : null;
+  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6">{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8 space-y-6"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /><details><summary className="ds-label cursor-pointer text-ds-primary">Pricing rules</summary><div className="mt-4 space-y-8"><PricingPanel /><RulesPanel /></div></details>{ws.role === 'owner' && <details><summary className="ds-label cursor-pointer text-ds-primary">Payouts</summary><div className="mt-4 space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></details>}<details><summary className="ds-label cursor-pointer text-ds-primary">Team messaging</summary><div className="mt-4"><TeamMessaging workspaceId={ws.id} /></div></details></div></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
        { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
@@ -61,6 +62,7 @@ function Account() {
   return (
     <>
       <PageHead title="Account" />
+      {setupLink}
       <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
       <section className={`${panelCls} p-5 sm:p-6`}>
         {tab === "profile" && <><PersonalSettings /><div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}

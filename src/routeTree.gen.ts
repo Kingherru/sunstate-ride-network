@@ -36,6 +36,7 @@ import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authent
 import { Route as AuthenticatedAccountStatusRouteImport } from './routes/_authenticated/account-status'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as FloridaCoverageIndexRouteImport } from './routes/florida-coverage.index'
@@ -245,6 +246,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPortalRoute = AuthenticatedPortalRouteImport.update({
@@ -689,6 +695,7 @@ export interface FileRoutesByFullPath {
   '/account-status': typeof AuthenticatedAccountStatusRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/learn': typeof AuthenticatedLearnRouteWithChildren
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/resources/$slug': typeof ResourcesSlugRoute
@@ -786,6 +793,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/services/$service': typeof ServicesServiceRoute
@@ -887,6 +895,7 @@ export interface FileRoutesById {
   '/_authenticated/account-status': typeof AuthenticatedAccountStatusRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/learn': typeof AuthenticatedLearnRouteWithChildren
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/resources/$slug': typeof ResourcesSlugRoute
@@ -989,6 +998,7 @@ export interface FileRouteTypes {
     | '/account-status'
     | '/admin'
     | '/learn'
+    | '/onboarding'
     | '/portal'
     | '/checkout/return'
     | '/resources/$slug'
@@ -1086,6 +1096,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account-setup'
     | '/account-status'
+    | '/onboarding'
     | '/checkout/return'
     | '/resources/$slug'
     | '/services/$service'
@@ -1186,6 +1197,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account-status'
     | '/_authenticated/admin'
     | '/_authenticated/learn'
+    | '/_authenticated/onboarding'
     | '/_authenticated/portal'
     | '/checkout/return'
     | '/resources/$slug'
@@ -1501,6 +1513,13 @@ declare module '@tanstack/react-router' {
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof AuthenticatedLearnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/portal': {
@@ -2125,6 +2144,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountStatusRoute: typeof AuthenticatedAccountStatusRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRouteWithChildren
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPortalRoute: typeof AuthenticatedPortalRouteWithChildren
   AuthenticatedAdminPreviewKindRoute: typeof AuthenticatedAdminPreviewKindRoute
 }
@@ -2134,6 +2154,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountStatusRoute: AuthenticatedAccountStatusRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedLearnRoute: AuthenticatedLearnRouteWithChildren,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPortalRoute: AuthenticatedPortalRouteWithChildren,
   AuthenticatedAdminPreviewKindRoute: AuthenticatedAdminPreviewKindRoute,
 }

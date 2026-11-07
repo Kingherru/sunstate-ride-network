@@ -6,6 +6,7 @@ import { AuthShell, AuthMessage, PasswordInput, authField, authLabel } from "@/c
 import { btnAction } from "@/components/home/buttons";
 import { cn } from "@/lib/utils";
 import { safeReturnPath } from "@/lib/access.functions";
+import { DsButton, DsSelect } from '@/components/ds/controls';
 
 export const Route = createFileRoute("/create-account")({
   validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: safeReturnPath(s.redirect) ?? undefined }),
@@ -24,9 +25,8 @@ export const Route = createFileRoute("/create-account")({
 });
 
 const TYPES = [
-  { value: "private_pay", label: "Private Pay", desc: "For yourself or a family member." },
+  { value: "private_pay", label: "Patient / Personal", desc: "For yourself or another patient." },
   { value: "facility", label: "Facility", desc: "Assisted living, dialysis, clinics and similar." },
-  { value: "hospital", label: "Hospital", desc: "Hospital discharge and case management teams." },
   { value: "provider", label: "Provider", desc: "Independent NEMT transportation businesses." },
 ] as const;
 type AccountType = (typeof TYPES)[number]["value"];
@@ -44,6 +44,8 @@ const schema = z.object({
 function CreateAccount() {
   const { redirect: returnTo } = Route.useSearch();
   const [type, setType] = useState<AccountType | null>(null);
+  const [facilityType, setFacilityType] = useState('general_facility');
+  const [step, setStep] = useState(0);
   const [f, setF] = useState({ name: "", email: "", phone: "", org: "", password: "", confirm: "", terms: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ function CreateAccount() {
       password: f.password,
       options: {
         emailRedirectTo: `${window.location.origin}/login?verified=1${returnTo ? `&redirect=${encodeURIComponent(returnTo)}` : ""}`,
-        data: { display_name: f.name.trim(), phone: f.phone.trim(), account_type: type, organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
+        data: { display_name: f.name.trim(), phone: f.phone.trim(), account_type: type === 'facility' && facilityType === 'hospital' ? 'hospital' : type, organization_type: type === 'facility' ? facilityType : type === 'provider' ? 'transportation_provider' : 'private_pay_patient', organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
       },
     });
     setBusy(false);
@@ -103,9 +105,11 @@ function CreateAccount() {
   return (
     <AuthShell title="Create Account" intro="Choose the account type that fits you." wide>
       <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
+        <p className="ds-caption" aria-live="polite">Step {step + 1} of 2 · {step === 0 ? 'Choose account type' : 'Create your verified sign-in'}</p>
+        {step === 0 && <>
         <fieldset>
           <legend className={authLabel}>Account type</legend>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             {TYPES.map((t) => (
               <label key={t.value} className={cn("ds-transition cursor-pointer rounded-ds-sm p-4 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ds-focus", type === t.value ? "bg-ds-primary text-ds-on-primary" : "bg-ds-sky text-ds-primary hover:bg-ds-hover")}>
                 <input type="radio" name="type" value={t.value} checked={type === t.value} onChange={() => setType(t.value)} className="sr-only" />
@@ -115,16 +119,19 @@ function CreateAccount() {
             ))}
           </div>
         </fieldset>
+        <DsButton type="button" disabled={!type} onClick={() => setStep(1)}>Continue</DsButton>
+        </>}
 
         {type === "provider" && (
-          <AuthMessage tone="info">This creates your provider account. Your full provider application and credentialing come later — see <Link to="/join" className="font-semibold underline">Join the Provider Network</Link>.</AuthMessage>
+          <AuthMessage tone="info">Your basic account does not require payment or administrator approval. After email verification, continue setup for business details and private credentials; verification and Network eligibility remain separate.</AuthMessage>
         )}
 
-        {type && (
+        {type && step === 1 && (
           <div className="auth-message flex flex-col gap-5">
             {formError && <AuthMessage tone="error">{formError}</AuthMessage>}
             {field("name", "Full name", "text", "name")}
             {needsOrg && field("org", type === "provider" ? "Business name" : "Organization name", "text", "organization")}
+            {type === 'facility' && <div><label htmlFor="facility-type" className={authLabel}>Facility type — Required</label><DsSelect id="facility-type" value={facilityType} onChange={e => setFacilityType(e.target.value)}><option value="hospital">Hospital</option><option value="nursing_home">Nursing Home / Skilled Nursing</option><option value="group_home">Group Home</option><option value="general_facility">Assisted Living</option><option value="medical_facility">Clinic / Medical Office / Dialysis / Rehabilitation</option><option value="broker">Broker</option><option value="insurance_company">Insurance Company</option><option value="other_organization">Other</option></DsSelect></div>}
             <div className="grid gap-5 sm:grid-cols-2">
               {field("email", "Email", "email", "email")}
               {field("phone", "Phone number", "tel", "tel")}
@@ -148,7 +155,8 @@ function CreateAccount() {
               </label>
               {errors.terms && <p className="auth-message ds-caption mt-1.5 !text-ds-error">{errors.terms}</p>}
             </div>
-            <button className={`${btnAction} w-full`} disabled={busy}>{busy ? "CREATING ACCOUNT…" : "CREATE ACCOUNT"}</button>
+            <DsButton type="submit" className="w-full" disabled={busy}>{busy ? "CREATING ACCOUNT…" : "CREATE ACCOUNT"}</DsButton>
+            <DsButton type="button" variant="ghost" disabled={busy} onClick={() => setStep(0)}>Back</DsButton>
           </div>
         )}
         <p className="ds-body text-center text-ds-text-2">Already have an account? <Link to="/login" className="font-semibold text-ds-link underline underline-offset-4">Sign in</Link></p>
