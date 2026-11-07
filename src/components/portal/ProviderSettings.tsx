@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { SegTabs } from './SegTabs';
+import { DsButton } from '@/components/ds/controls';
+import { CustomerPricing } from './CustomerPricing';
+import { BusinessPermissions } from './BusinessPermissions';
+import { RulesPanel } from '@/components/dashboard/RulesPanel';
 import { PersonalSecurity } from './PersonalSecurity';
 import { PersonalSettings } from './PersonalSettings';
 import { BusinessInfoPanel } from '@/components/dashboard/BusinessInfoPanel';
@@ -19,20 +23,25 @@ import { InterfaceSize } from './InterfaceSize';
 import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
 
 const sections = [
-  { value: 'business', label: 'Business Information' }, { value: 'contact', label: 'Contact Information' },
-  { value: 'services', label: 'Services & Operating Hours' }, { value: 'areas', label: 'Service Areas' },
-  { value: 'documents', label: 'Insurance & Documents' }, { value: 'verification', label: 'Business Verification' },
-  { value: 'membership', label: 'Membership & Billing' }, { value: 'notifications', label: 'Notifications' }, { value: 'requests', label: 'Platform Requests' },
-  { value: 'integrations', label: 'API & Exports' }, { value: 'account', label: 'Account & Security' },
+  { value: 'business', label: 'Business & Operations' },
+  { value: 'pricing', label: 'Pricing' },
+  { value: 'credentials', label: 'Credentials & Verification' },
+  { value: 'team', label: 'Team & Integrations' },
+  { value: 'billing', label: 'Billing & Payouts' },
+  { value: 'account', label: 'Account & Security' },
 ];
+const legacySections: Record<string, string> = { contact: 'business', services: 'business', areas: 'business', documents: 'credentials', verification: 'credentials', membership: 'billing', payouts: 'billing', notifications: 'account', requests: 'account', integrations: 'team', security: 'account', profile: 'account' };
 /** Legacy person-owned documents/integrations remain owner-only, not implicitly shared. */
-export function ProviderSettings({ workspaceId, role, email }: { workspaceId: string; role: string; email?: string | null }) {
-  const [tab, setTab] = useState('business'); const preview = usePortalPreview(); const owner = role === 'owner';
-  return <div className="space-y-5"><SegTabs label="Provider settings sections" options={sections} value={tab} onChange={setTab} />
-    {tab === 'business' && <div className="space-y-5">{owner && <BusinessContactSettings />}<BusinessInfoPanel /></div>}
-    {(tab === 'contact' || tab === 'services' || tab === 'areas') && <NetworkProfileForm key={tab} workspaceId={workspaceId} section={tab} />}
-    {tab === 'documents' && (preview.active ? <p className="ds-support">No demo documents.</p> : owner ? <ProviderCredentialsPanel /> : <p className="ds-support">Legacy documents are available to their owner only.</p>)}
-    {tab === 'verification' && <section className="space-y-5">
+export function ProviderSettings({ workspaceId, role, email, initialSection = 'business', accountDetails, teamMessaging, financialTools }: { workspaceId: string; role: string; email?: string | null; initialSection?: string; accountDetails?: React.ReactNode; teamMessaging?: React.ReactNode; financialTools?: React.ReactNode }) {
+  const [tab, setTab] = useState(legacySections[initialSection] ?? (sections.some(s => s.value === initialSection) ? initialSection : 'business')); const preview = usePortalPreview(); const owner = role === 'owner';
+  return <div className="grid min-w-0 gap-5 lg:grid-cols-[14rem_minmax(0,1fr)]">
+    <nav aria-label="Provider settings sections" className="flex flex-wrap gap-2 self-start lg:sticky lg:top-4 lg:flex-col">{sections.map(section => <DsButton key={section.value} variant={tab === section.value ? 'secondary' : 'ghost'} className="justify-start text-left" aria-current={tab === section.value ? 'page' : undefined} onClick={() => setTab(section.value)}>{section.label}</DsButton>)}</nav>
+    <div className="portal-business-form min-w-0 space-y-5">
+    <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
+    {tab === 'business' && <div className="space-y-5">{owner && <BusinessContactSettings />}<section className="portal-business-section"><div className="portal-business-body"><NetworkProfileForm workspaceId={workspaceId} /></div></section><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Legacy application & HIPAA acknowledgment</summary><div className="portal-business-body"><BusinessInfoPanel /></div></details></div>}
+    {tab === 'pricing' && <div className="space-y-5"><CustomerPricing workspaceId={workspaceId} /><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Existing provider operating rules</summary><div className="portal-business-body"><RulesPanel /></div></details></div>}
+    {tab === 'credentials' && <div className="space-y-5">{preview.active ? <p className="ds-support">Preview only. Document uploads are unavailable.</p> : owner ? <ProviderCredentialsPanel /> : <p className="ds-support">Legacy documents are available to their owner only.</p>}
+    <section className="portal-business-section"><div className="portal-business-body space-y-5">
       <h2 className="ds-subheading uppercase text-ds-primary">Business verification</h2>
       <ProviderVerificationBadge workspaceId={workspaceId} />
       <VerificationEvidence workspaceId={workspaceId} editable={role === 'owner' || role === 'admin'} />
@@ -62,12 +71,10 @@ export function ProviderSettings({ workspaceId, role, email }: { workspaceId: st
         <p className="ds-support">Initiate payment within {PROVIDER_VERIFICATION_POLICY.paymentBusinessDays} business days after the receiving provider marks Completed and supplies required completion information. Report a legitimate dispute within {PROVIDER_VERIFICATION_POLICY.disputeHours} hours; a submitted dispute pauses the deadline until reviewed. Stripe processing and payout-transfer time are separate.</p>
         <p className="ds-support">Canceled, declined, refunded, test and demo trips do not count. Gold pauses for overdue payments and returns when eligibility is restored. Automatic level changes will be permanently audited; no administrator approval is required.</p>
       </div>
-    </section>}
-    {tab === 'membership' && <div className="space-y-5"><MembershipBilling workspaceId={workspaceId} role={role} /><BillingDefaults showPaymentMethod={false} /></div>}
-    {tab === 'notifications' && <PersonalSettings />}
-    {tab === 'requests' && <ProviderPlatformRequests workspaceId={workspaceId} />}
-    {tab === 'integrations' && <div className="space-y-6"><ProviderExports /><ApiCredentials /><section className="space-y-3 rounded-ds border border-ds-sky-border bg-ds-sky p-4"><h2 className="ds-subheading uppercase text-ds-primary">Dispatch software integrations</h2><p className="ds-support">Vendor connections are not configured unless saved below by the account owner. Saving credentials does not verify a live connection; no vendor is connected in this release.</p>{owner ? <IntegrationsPanel /> : <p className="ds-support">Integration setup is limited to the account owner.</p>}</section></div>}
-    {tab === 'account' && <div className="mb-6"><InterfaceSize /></div>}
-    {tab === 'account' && <PersonalSecurity email={email} />}
+    </div></section></div>}
+    {tab === 'billing' && <div className="space-y-5"><MembershipBilling workspaceId={workspaceId} role={role} />{owner && <><BillingDefaults showPaymentMethod={false} />{financialTools ?? <p className="ds-support">Preview only. No payout actions are available.</p>}</>}{!owner && <p className="ds-support">Financial records and payout controls remain limited to the business owner.</p>}</div>}
+    {tab === 'team' && <div className="space-y-6"><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Team & contractors</h2><div className="portal-business-body"><BusinessPermissions workspaceId={workspaceId} />{teamMessaging ?? <p className="ds-support">Preview only. Team messaging permissions cannot be changed.</p>}</div></section><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">API & exports</h2><div className="portal-business-body space-y-5"><ProviderExports /><ApiCredentials /></div></section><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Dispatch software integrations</h2><div className="portal-business-body"><p className="ds-support mb-4">Saving credentials does not verify a live connection; no vendor is connected in this release.</p>{owner ? <IntegrationsPanel /> : <p className="ds-support">Integration setup is limited to the account owner.</p>}</div></section></div>}
+    {tab === 'account' && <div className="space-y-5"><PersonalSettings />{accountDetails}<InterfaceSize /><PersonalSecurity email={email} /><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Platform Requests & help</h2><div className="portal-business-body"><ProviderPlatformRequests workspaceId={workspaceId} /></div></section></div>}
+    </div>
   </div>;
 }

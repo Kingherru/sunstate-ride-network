@@ -96,6 +96,9 @@ export const saveCredential = createServerFn({ method: "POST" })
       business_name: data.business_name ?? null,
       effective_at: data.effective_at || null,
       accuracy_attested_at: data.accuracy_attested ? new Date().toISOString() : null,
+      ...(data.insurance_carrier?.trim() && { insurance_carrier: data.insurance_carrier.trim() }),
+      ...(data.policy_reference?.trim() && { policy_reference: data.policy_reference.trim() }),
+      ...(data.coverage_cents != null && { coverage_cents: data.coverage_cents }),
     };
     if (data.id) {
       const { error } = await context.supabase

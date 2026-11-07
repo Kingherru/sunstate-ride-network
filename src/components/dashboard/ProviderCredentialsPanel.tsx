@@ -53,7 +53,7 @@ export function ProviderCredentialsPanel() {
   const [uploading, setUploading] = useState(false);
 
   const saveMut = useMutation({
-    mutationFn: (payload: any) => save({ data: { id: payload.id, kind: payload.kind, label: payload.label, expires_at: payload.expires_at || null, effective_at: payload.effective_at || null, business_name: payload.business_name ?? '', accuracy_attested: payload.accuracy_attested === true, doc_path: payload.doc_path ?? null, required: payload.required ?? true, notes: payload.notes ?? null } }),
+    mutationFn: (payload: any) => save({ data: { id: payload.id, kind: payload.kind, label: payload.label, expires_at: payload.expires_at || null, effective_at: payload.effective_at || null, business_name: payload.business_name ?? '', accuracy_attested: payload.accuracy_attested === true, doc_path: payload.doc_path ?? null, required: payload.required ?? true, notes: payload.notes ?? null, insurance_carrier: payload.insurance_carrier ?? '', policy_reference: payload.policy_reference ?? '', coverage_cents: payload.coverage_cents ?? null } }),
     onSuccess: () => {
       toast.success("Credential saved");
       setEditing(null);
@@ -146,6 +146,9 @@ export function ProviderCredentialsPanel() {
           </label>
           <label className="block"><span className="portal-label">Effective date (when applicable)</span><input type="date" className="portal-input" value={editing.effective_at ?? ''} onChange={e => setEditing({ ...editing, effective_at: e.target.value })} /></label>
           <label className="block col-span-2"><span className="portal-label">Business name on document</span><input className="portal-input" maxLength={200} value={editing.business_name ?? ''} onChange={e => setEditing({ ...editing, business_name: e.target.value })} /></label>
+          <label className="block col-span-2"><span className="portal-label">Insurance carrier (if applicable)</span><input className="portal-input" maxLength={200} value={editing.insurance_carrier ?? ''} onChange={e => setEditing({ ...editing, insurance_carrier: e.target.value })} /></label>
+          <label className="block col-span-2"><span className="portal-label">Policy / reference number (private)</span><input className="portal-input" maxLength={160} value={editing.policy_reference ?? ''} onChange={e => setEditing({ ...editing, policy_reference: e.target.value })} /></label>
+          <label className="block col-span-2"><span className="portal-label">Coverage amount (USD, optional)</span><input className="portal-input portal-money-input" type="number" min="0" step="0.01" value={editing.coverage_cents == null ? '' : editing.coverage_cents / 100} onChange={e => setEditing({ ...editing, coverage_cents: e.target.value === '' ? null : Math.round(Number(e.target.value) * 100) })} /></label>
           <div className="col-span-2"><DsCheckbox label="I attest that the document and entered business details are accurate." checked={editing.accuracy_attested === true} onChange={e => setEditing({ ...editing, accuracy_attested: e.target.checked })} /></div>
           <label className="block">
             <span className="portal-label">Required for dispatch?</span>

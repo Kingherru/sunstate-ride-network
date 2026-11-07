@@ -26,6 +26,9 @@ export const credentialEvidenceInput = z.object({
   effective_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   business_name: z.string().trim().max(200).optional(),
   accuracy_attested: z.boolean().optional(),
+  insurance_carrier: z.string().trim().max(200).optional(),
+  policy_reference: z.string().trim().max(160).optional(),
+  coverage_cents: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).nullable().optional(),
   doc_path: z.string().max(500).nullable().optional(), required: z.boolean().optional(), notes: z.string().max(2000).nullable().optional(),
 }).strict();
 

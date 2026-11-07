@@ -37,22 +37,24 @@ type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "ne
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
+  validateSearch: (search: Record<string, unknown>): { section?: string } => ({ section: typeof search.section === 'string' ? search.section : typeof search.tab === 'string' ? search.tab : undefined }),
   loader: () => getPortalSummary(),
   component: Account,
 });
 
 function Account() {
   const s = Route.useLoaderData();
+  const search = Route.useSearch();
   const { access, user } = Route.useRouteContext();
   const provider = access.portalKind === "provider";
   const ws = access.primary;
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>("profile");
   const setupLink = ws?.role === 'owner' && !ws.is_contractor ? <div className="mb-5 border-b border-ds-border pb-4"><Link to="/onboarding" className="ds-label text-ds-link underline">{access.onboardingPending ? 'Continue account setup' : 'Review account setup'}</Link><p className="ds-caption mt-1">Update missing information without changing your portal access.</p></div> : null;
-  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div className="p-5 sm:p-6">{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} /><div className="mt-8 space-y-6"><Profile email={s.email} /><BusinessPermissions workspaceId={ws.id} /><details><summary className="ds-label cursor-pointer text-ds-primary">Pricing rules</summary><div className="mt-4 space-y-8"><PricingPanel /><RulesPanel /></div></details>{ws.role === 'owner' && <details><summary className="ds-label cursor-pointer text-ds-primary">Payouts</summary><div className="mt-4 space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></details>}<details><summary className="ds-label cursor-pointer text-ds-primary">Team messaging</summary><div className="mt-4"><TeamMessaging workspaceId={ws.id} /></div></details></div></div></>;
+  if (provider && !access.restricted && canEditNetwork && ws && !ws.is_contractor) return <><PageHead title="Settings" /><div className="p-5 sm:p-6">{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} initialSection={search.section} accountDetails={<Profile email={s.email} />} teamMessaging={<TeamMessaging workspaceId={ws.id} />} financialTools={ws.role === 'owner' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Earnings & payouts</h2><div className="portal-business-body space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></section> : null} /></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
-    ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" }, { value: "pricing", label: "Pricing rules" },
-       { value: "integrations", label: "Integrations" }, { value: "payouts", label: "Payouts" },
+    ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" },
+       { value: "integrations", label: "Integrations" },
        ...(canEditNetwork ? [{ value: "network" as Tab, label: "Network profile" }] : []),
        { value: "membership", label: "Membership" }, { value: "requests", label: "Platform requests" }, { value: "security", label: "Security" }]
     : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" },
