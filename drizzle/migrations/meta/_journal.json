@@ -337,6 +337,13 @@
       "when": 1794079461385,
       "tag": "0047_onboarding_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794079675867,
+      "tag": "0048_onboarding_new_account_classification",
+      "breakpoints": true
     }
   ]
 }
