@@ -24,10 +24,12 @@ export function TrainingTests() {
   const byCourse = new Map((mine.data ?? []).map((e) => [e.course_id, e]));
   // Each view has one purpose: Available = not yet purchased; Tests to Take = purchased, not started;
   // In Progress = purchased with recorded progress; Completed Tests = certificate earned.
-  const tabs = ['Available', 'Tests to Take', 'In Progress', 'Completed Tests'];
+  const tabs = ['Available', 'Tests to Take', 'In Progress', 'Completed Tests', 'Digital Guides'];
   const started = (e: { progress?: unknown } | undefined) => typeof e?.progress === 'number' && e.progress > 0;
   const rows = (courses.data ?? []).filter(c => {
     const e = byCourse.get(c.id);
+    if(c.product_kind==='digital_guide')return tab==='Digital Guides';
+    if(tab==='Digital Guides')return false;
     if (tab === 'Available') return !e;
     if (tab === 'Tests to Take') return !!e && e.status !== 'completed' && !started(e);
     if (tab === 'In Progress') return !!e && e.status !== 'completed' && started(e);
@@ -50,11 +52,11 @@ export function TrainingTests() {
               <BookOpen className="mt-1 size-5 shrink-0 text-ds-primary" aria-hidden />
               <div className="min-w-0">
                 <h2 className="ds-subheading text-ds-primary">{c.title}</h2>
-                <p className="ds-support mt-1">{c.duration_min} min · {e ? (done ? "Completed" : "Purchased") : `${price(c.price_cents)} per course`}</p>
+                <p className="ds-support mt-1">{c.product_kind==='digital_guide'?'PDF digital guide':`${c.duration_min} min`} · {e ? (done ? "Completed" : "Purchased") : `${price(c.price_cents)} one-time`}</p>
               </div>
             </div>
             {c.summary && <p className="ds-body mt-3 text-ds-text-2">{c.summary}</p>}
-            <p className="ds-support mt-2">Passing score: {c.passing_score}% · Certificate: {c.cert_validity_months} months</p>
+            {c.product_kind==='digital_guide'?<p className="ds-support mt-2">Educational business resource · No exam or certificate</p>:<p className="ds-support mt-2">Passing score: {c.passing_score}% · Certificate: {c.cert_validity_months} months</p>}
             {e && !done && pct !== null && (
               <div className="mt-4" aria-label={`Progress ${pct}%`}>
                 <div className="h-2 w-full rounded-ds-sm bg-ds-subtle"><div className="h-2 rounded-ds-sm bg-ds-action" style={{ width: `${pct}%` }} /></div>
@@ -62,7 +64,7 @@ export function TrainingTests() {
               </div>
             )}
             <div className="mt-auto flex flex-wrap gap-3 pt-5">
-              {e ? (
+              {e && c.product_kind==='digital_guide'?<Link to="/shop/$slug" params={{slug:c.slug}} className={actionCls}>View guide access</Link>: e ? (
                 <Link to="/learn/$slug" params={{ slug: c.slug }} onClick={event => { if (preview.active) { event.preventDefault(); previewBlocked(); } }} className={actionCls}>
                   {done ? <><Award className="mr-2 size-4" aria-hidden />View certificate</> : <><PlayCircle className="mr-2 size-4" aria-hidden />Continue course</>}
                 </Link>
@@ -73,7 +75,7 @@ export function TrainingTests() {
               ) : (
                 c.price_id ? <DsButton className={actionCls} onClick={() => cart.add(c, (mine.data ?? []).map(e => e.course_id))} disabled={cart.items.some(i => i.id === c.id)}><ShoppingBag className="size-4" />{cart.items.some(i => i.id === c.id) ? 'In cart' : 'Add to cart'}</DsButton> : <p className="ds-support">Requires product setup</p>
               )}
-              <Link to="/shop/$slug" params={{ slug: c.slug }} className="ds-label text-ds-link underline">Course & test details</Link>
+              <Link to="/shop/$slug" params={{ slug: c.slug }} className="ds-label text-ds-link underline">{c.product_kind==='digital_guide'?'Guide details':'Course & test details'}</Link>
             </div>
           </article>
         );
