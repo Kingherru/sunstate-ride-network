@@ -1,0 +1,1 @@
+- Provider customer pricing extends legacy provider_pricing with private append-only workspace versions saved by a locked owner/admin RPC, excluding contractors; the new-quote interface returns a version snapshot and never writes existing trips or legacy rates. Why: forward-only pricing and auditable ownership.
