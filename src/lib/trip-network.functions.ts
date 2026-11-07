@@ -101,7 +101,7 @@ export const getDistributionReadiness = createServerFn({ method: 'POST' }).middl
     const { data: scope } = data.request_id ? await context.supabase.rpc('admin_can_account', { _workspace_id: r.workspace_id }) : sourceWorkspace ? await context.supabase.rpc('network_workspace_access',{_ws:sourceWorkspace,_manage:true}) : {data:false};
     if (!can || !scope) throw new Error('Distribution permission required.');
     const missing = [!r.pickup_city && 'Pickup area', !r.dropoff_city && 'Destination area', !r.pickup_date && 'Date', !r.pickup_time && 'Time', (r.pickup_lat == null || r.pickup_lng == null) && 'Reliable pickup coordinates', r.trip_kind === 'medical_delivery' && 'Medical Delivery offers are not enabled', r.is_test && 'Test sources cannot be distributed'].filter(Boolean) as string[];
-    return { source_id: r.mfn_id || r.display_id, service_type: r.transport_type, pickup_area: r.pickup_city, destination_area: r.dropoff_city, pickup_date: r.pickup_date, pickup_time: r.pickup_time, trip_type: r.trip_type || (r.round_trip ? 'round_trip' : 'one_way'), estimated_miles: r.distance_miles, missing };
+    return { source_workspace_id:sourceWorkspace, source_id: r.mfn_id || r.display_id, service_type: r.transport_type, pickup_area: r.pickup_city, destination_area: r.dropoff_city, pickup_date: r.pickup_date, pickup_time: r.pickup_time, trip_type: r.trip_type || (r.round_trip ? 'round_trip' : 'one_way'), estimated_miles: r.distance_miles, missing };
   });
 export const markNetworkAttention = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
   const {data,error}=await context.supabase.rpc('network_mark_attention'); if(error) throw new Error(error.message); return data;
