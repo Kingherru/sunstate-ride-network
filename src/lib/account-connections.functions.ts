@@ -35,7 +35,7 @@ export const searchConnectionBusinesses = createServerFn({ method: 'POST' }).mid
 
 export const saveRelationshipPreference = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ workspaceId: z.string().uuid(), kind: z.enum(['referral','preferred']), targetId: z.string().uuid().nullable(), name: z.string().trim().max(200).default(''), confirmed: z.literal(true), source: z.enum(['settings','onboarding']) }).strict().parse(i))
-  .handler(async ({ data, context }) => { const { error } = await context.supabase.rpc('save_account_relationship_preferences', { _ws: data.workspaceId, _kind: data.kind, _target: data.targetId, _name: data.name, _confirmed: data.confirmed, _source: data.source }); if (error) throw new Error('Confirm a currently listed business, or save a referral name without linking an account.'); return { ok: true }; });
+  .handler(async ({ data, context }) => { const { error } = await context.supabase.rpc('save_account_relationship_preferences', { _ws: data.workspaceId, _kind: data.kind, ...data.targetId ? { _target: data.targetId } : {}, _name: data.name, _confirmed: data.confirmed, _source: data.source } as never); if (error) throw new Error('Confirm a currently listed business, or save a referral name without linking an account.'); return { ok: true }; });
 
 export const manageConnectionInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((i: unknown) => invitationActionInput.parse(i))
   .handler(async ({ data, context }) => {
@@ -43,7 +43,9 @@ export const manageConnectionInvitation = createServerFn({ method: 'POST' }).mid
     const send = data.action === 'send' || data.action === 'resend';
     const token = send ? generateInvitationToken() : data.token;
     const hash = token ? await hashInvitationToken(token) : null;
-    const { data: invitationId, error } = await context.supabase.rpc('manage_account_invitation', { _ws: data.workspaceId, _action: data.action, _id: data.invitationId ?? null, _email: data.email ?? null, _type: data.intendedType ?? null, _hash: hash, _confirmed: true });
+    // PostgreSQL nullable arguments are emitted as non-nullable by generated types; null is intentional for inapp acceptance and clear-preference actions.
+    const args = { _ws: data.workspaceId, _action: data.action, _id: data.invitationId ?? null, _email: data.email ?? null, _type: data.intendedType ?? null, _hash: hash, _confirmed: true };
+    const { data: invitationId, error } = await context.supabase.rpc('manage_account_invitation', args as never);
     if (error || !invitationId) throw new Error('Invitation unavailable. Check the invited email, business type, account permissions and expiration; wait before resending.');
     if (!send || !token) return { ok: true, delivery: 'not_requested' };
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
@@ -77,4 +79,21 @@ export const resolveConnectionInvitation = createServerFn({ method: 'POST' }).mi
     if (!row || !constantTimeHashEqual(hash,row.token_hash) || row.status !== 'pending' || Date.parse(row.expires_at) <= Date.now()) throw new Error('Invitation unavailable. Sign in with the invited email and use a current invitation.');
     const { data: inviter } = await supabaseAdmin.from('workspaces').select('display_name').eq('id',row.inviter_workspace_id).single();
     return { id: row.id, reference: row.mfn_id, intendedType: row.intended_type, inviterName: inviter?.display_name ?? 'An account' };
+  });
+
+export const openConnectionConversation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ workspaceId:z.string().uuid(), connectionId:z.string().uuid() }).strict().parse(i))
+  .handler(async ({data,context}) => {
+    const {data:canManage}=await context.supabase.rpc('can_manage_account_connections',{_ws:data.workspaceId});
+    const {data:canMessage}=await context.supabase.rpc('can_access_workspace_messages',{ws:data.workspaceId});
+    if(!canManage || !canMessage) throw new Error('Existing business messaging permission is required.');
+    const {data:connection}=await context.supabase.from('account_business_connections').select('workspace_a,workspace_b,active').eq('id',data.connectionId).single();
+    if(!connection?.active || ![connection.workspace_a,connection.workspace_b].includes(data.workspaceId)) throw new Error('Accepted connection unavailable.');
+    const target=connection.workspace_a===data.workspaceId?connection.workspace_b:connection.workspace_a;
+    const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
+    const {data:workspaces}=await supabaseAdmin.from('workspaces').select('id,status,is_test_account').in('id',[target,data.workspaceId]);
+    if(workspaces?.length!==2 || workspaces.some(w=>w.status!=='active'||w.is_test_account))throw new Error('Business unavailable.');
+    const {data:conversationId,error}=await supabaseAdmin.rpc('find_or_create_workspace_conversation',{_sender_ws:data.workspaceId,_target_ws:target,_created_by:context.userId,_source:'network_profile'});
+    if(error || !conversationId)throw new Error('Conversation unavailable.');
+    return {conversationId};
   });
