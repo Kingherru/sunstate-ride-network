@@ -11,8 +11,11 @@
    - Rate changes apply to new quotes/drafts only, never booked, paid, completed or historical trips.
    - Consolidate duplicate Provider Settings panels only after confirming shared authoritative data/actions.
 3. [ ] Account linking, Who Referred You, and invitations — next Florida MVP build.
-   - Pass 4D in progress: separate source attribution, private preferred provider, and explicitly accepted business connections; secure workspace-scoped invitations, no membership/trip/payment access.
-4. [ ] Patient trip visibility, status timeline, and history.
+   - Pass 4D built: optional confirmed/corrected referral source with plain-text fallback, separate preferred provider, accepted/deactivated business connections, confirmed send/resend/cancel and recipient accept/decline. Onboarding and Settings share workspace records; provider Team & Integrations shows incoming/accepted connections. Existing messaging gate and conversation store reused, no membership/trip/payment/medical access grants.
+   - Invitations use hash-only 256-bit tokens, seven-day expiry, rotation on resend, consumption on accept/decline/cancel, exact verified recipient email + correct active owner/admin workspace, MFN references and append-only actions/delivery audit. Fragment stripped before sign-in; authenticated incoming lookup resumes without browser token storage. No existing accounts guessed, linked or backfilled.
+   - Real limitation: searchable businesses are limited to the existing approved public Provider Network. Facilities currently have no approved public identity/opt-in directory, so Facility referral matching is not exposed; use a plain-text referral name or explicit email invitation. This keeps item 3 open for a safe existing-facility public identity path rather than inventing one. Master Admin oversight UI was not extended. Real invitation acceptance, delivery and relationship writes remain unexercised under no-real-record/no-send restrictions.
+   - Seven targeted relationship/token tests passed; latest automatic compilation build OK. No real relationship/invitation rows created, email/message sends, publishing or activation.
+4. [ ] Patient trip visibility, status timeline, and history — next build; item 3 public Facility matching limitation remains recorded above.
 5. [ ] Provider/Facility New Trip with live invoice or referral funding.
 6. [ ] Linked-patient invoicing and secure payments.
 7. [ ] Patient trip reminders and status communications.

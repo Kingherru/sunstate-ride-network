@@ -23,6 +23,7 @@ import { EarningsPayments } from "@/components/portal/EarningsPayments";
 import { SampleConversations } from "@/components/messaging/SampleConversations";
 import { ProviderNetworkPage } from '@/components/portal/ProviderNetworkPage';
 import { ProviderSettings } from '@/components/portal/ProviderSettings';
+import { AccountConnections } from '@/components/portal/AccountConnections';
 import { PersonalSecurity } from '@/components/portal/PersonalSecurity';
 import { OnboardingDemo } from '@/components/onboarding/OnboardingDemo';
 import { DsButton } from '@/components/ds/controls';
@@ -128,7 +129,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
   }
   switch (page) {
     case "requests/new": return <RequestForm context="portal" allowProviderSelection />;
-    case "account": return <Panel><PersonalSecurity email="demo@example.com" /></Panel>;
+    case "account": return <Panel><div className="space-y-5"><PersonalSecurity email="demo@example.com" /><AccountConnections workspaceId="preview-ws" /></div></Panel>;
     case "requests": return <Panel><DsEmpty title="No requests yet">Requests this account submits appear here.</DsEmpty></Panel>;
     case "upload-csv": return <Unavailable what="CSV upload" />;
     case "find-providers": return <Panel><ProviderDirectory /></Panel>;
