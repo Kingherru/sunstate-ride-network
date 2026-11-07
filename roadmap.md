@@ -1,4 +1,12 @@
 # Florida MVP launch sequence
+## Active Pass 4G
+- [ ] Versioned Refund & Payment Reversal Policy, consistent Terms/Privacy/payment pages and shared required checkout acknowledgment.
+- [ ] Immutable acceptance evidence and charge-type-aware fee/responsibility review foundation; no refund/reversal actions.
+- [ ] Complete safe Pass 4F owned-trip, facility agreement, funding-version, invoice-token/Viewed/payment-preparation and oversight foundations where authoritative prerequisites exist; report partial items honestly.
+- [ ] Public-only frame/scrollbar cleanup and restrained glass; preserve Florida geography, all portal borders and deferred mobile SIGN IN/CALL US item.
+- [ ] Focused changed-boundary tests and automatic compilation; no real records, sends, financial objects, activation or publishing.
+- Regional decision remains undecided/unbuilt. Later recommendation: Keep Florida as the default. For detected out-of-state visitors, suggest—not force—a manually changeable state/region experience; show a U.S. map only after user selection or on a national/state-specific route; never imply provider availability without opted-in coverage.
+
 1. [x] Onboarding foundation — Pass 4B; three signup choices, verified-email continuation, optional saved setup steps, authoritative personal/workspace/patient fields, existing private credential and Network forms, synthetic Master Admin preview. New account setup creates active basic workspaces; no existing workspace statuses/classifications changed.
    - Existing owners may resume/review from Settings without portal lockout; training-only and role routing retained. No real account creation/save/upload/email/payment was exercised.
    - Remaining focused follow-up: consolidate legacy business application and verification legal/address fields after confirming authoritative ownership; credential policy/carrier fields stay limited to the existing model; multiple-owned-account setup selection and legacy missing-organization recovery are not completed here. Single patient mobility default only, no new relationship authority.
@@ -24,7 +32,7 @@
 6. [ ] Linked-patient invoicing and secure payments — Pass 4F partial implementation: scoped invoice details, itemized PDF download, verified linked-patient recipient review and explicit gated email-send workflow, existing trip_payments linkage/idempotency preparation, refund-aware immutable original amounts/references. No new refund behavior.
    - Blockers/incomplete: non-account secure invoice tokens, embedded connected-account collection and verified customer-payment reconciliation remain unimplemented; Pay securely is not presented as working. Dedicated sandbox Connect secret is absent, customer fee configuration requires approval, and new collection/email/in-app flags remain missing/off. No webhook or launch configuration was changed. Facility invoice-billing workflow and audited Master Admin invoice oversight remain incomplete. Invoice Viewed tracking is not implemented.
    - Verification: 31 focused rate/invoice/schema tests passed, including an in-memory synthetic PDF. Automatic compilation build OK. Authorized synthetic invoice/referral panels checked on desktop/phone without page errors or horizontal overflow; live submit/invoice/email/payment/contact end-to-end checks deliberately not exercised under no-real-write restrictions. Read-only counts confirm zero invoices, invoice events/payments, confirmed quotes, dispatch/driver consents and enabled new flags.
-   - [ ] MANDATORY NEXT GATE: Refund and Payment Reversal Rules. STOP after Pass 4F for the owner's decision. Full/partial eligibility, cancellations/no-shows, referral reversals, dispute outcomes, fees and processing losses remain intentionally undecided. No refund controls, automation or Stripe refund calls.
+   - [x] Owner refund discussion reached in Pass 4G: hybrid responsibility approved; exact membership/add-on/training eligibility remains unapproved. No refund controls, automation or Stripe refund calls.
 7. [ ] Patient trip reminders and status communications — blocked until the refund gate is resolved; not the next pass.
 8. [ ] Public five-minute-trip conversion/explainer page.
 9. [ ] Provider Network proximity search using safe public locations.
