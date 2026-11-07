@@ -386,6 +386,13 @@
       "when": 1794081662599,
       "tag": "0054_business_contact_consent_and_patient_timeline_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1794082455750,
+      "tag": "0055_trip_invoice_documents_and_contact_consent",
+      "breakpoints": true
     }
   ]
 }
