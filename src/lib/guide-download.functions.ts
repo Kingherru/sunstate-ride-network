@@ -3,6 +3,8 @@ import {requireSupabaseAuth} from '@/integrations/supabase/auth-middleware';
 import {STARTUP_GUIDE,verifiedGuidePurchase} from './digital-guide';
 export const downloadPurchasedGuide=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
  try{
+ const {data:person}=await context.supabase.from('user_profiles').select('status,is_test_account,deleted_at').eq('user_id',context.userId).maybeSingle();
+ if(!person||person.status!=='active'||person.is_test_account||person.deleted_at)throw new Error('Account unavailable.');
  const {data:course}=await context.supabase.from('courses').select('id').eq('slug',STARTUP_GUIDE.slug).eq('product_kind','digital_guide').maybeSingle();
  if(!course)throw new Error('Guide unavailable.');
  const {data:purchase}=await context.supabase.from('course_enrollments').select('id,user_id,stripe_session_id,status').eq('user_id',context.userId).eq('course_id',course.id).maybeSingle();
@@ -14,7 +16,12 @@ export const downloadPurchasedGuide=createServerFn({method:'POST'}).middleware([
  const session=await stripe.checkout.sessions.retrieve(purchase.stripe_session_id,{expand:['payment_intent']});
  const lines=await stripe.checkout.sessions.listLineItems(session.id,{limit:100});
  const priceMatches=!lines.has_more&&lines.data.some(l=>l.price?.lookup_key===STARTUP_GUIDE.priceKey&&l.price.unit_amount===5000&&l.price.currency==='usd'&&l.quantity===1);
- const intent=typeof session.payment_intent==='object'?session.payment_intent:null;
+ let intent=typeof session.payment_intent==='object'?session.payment_intent:null;
+ if(!intent&&session.mode==='subscription'&&session.subscription){
+ const invoices=await stripe.invoices.list({subscription:typeof session.subscription==='string'?session.subscription:session.subscription.id,limit:100});
+ const first=invoices.data.find(i=>i.billing_reason==='subscription_create'&&i.status==='paid');
+ if(first){const payments=await stripe.invoicePayments.list({invoice:first.id,status:'paid',limit:100});const payment=payments.data.find(p=>p.payment.type==='payment_intent');const id=payment?.payment.payment_intent;intent=typeof id==='string'?await stripe.paymentIntents.retrieve(id):id??null;}
+ }
  if(!intent||intent.status!=='succeeded')throw new Error('Payment evidence unavailable.');
  const charges=await stripe.charges.list({payment_intent:intent.id,limit:100});
  if(charges.has_more||!charges.data.length)throw new Error('Payment review required.');
