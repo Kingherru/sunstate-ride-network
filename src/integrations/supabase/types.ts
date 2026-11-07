@@ -4146,6 +4146,7 @@ export type Database = {
           bill_to_workspace_id: string
           connection_id: string
           created_at: string
+          creator_person_mfn_id: string | null
           currency: string
           facility_confirmed_by: string
           facility_workspace_id: string
@@ -4155,6 +4156,7 @@ export type Database = {
           provider_workspace_id: string
           quote_reference: string
           responsible_payer_workspace_id: string
+          scope_fingerprint: string | null
           version: number
         }
         Insert: {
@@ -4162,6 +4164,7 @@ export type Database = {
           bill_to_workspace_id: string
           connection_id: string
           created_at?: string
+          creator_person_mfn_id?: string | null
           currency?: string
           facility_confirmed_by: string
           facility_workspace_id: string
@@ -4171,6 +4174,7 @@ export type Database = {
           provider_workspace_id: string
           quote_reference: string
           responsible_payer_workspace_id: string
+          scope_fingerprint?: string | null
           version: number
         }
         Update: {
@@ -4178,6 +4182,7 @@ export type Database = {
           bill_to_workspace_id?: string
           connection_id?: string
           created_at?: string
+          creator_person_mfn_id?: string | null
           currency?: string
           facility_confirmed_by?: string
           facility_workspace_id?: string
@@ -4187,6 +4192,7 @@ export type Database = {
           provider_workspace_id?: string
           quote_reference?: string
           responsible_payer_workspace_id?: string
+          scope_fingerprint?: string | null
           version?: number
         }
         Relationships: [
@@ -8795,6 +8801,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      accept_facility_quote: { Args: { _proposal: string }; Returns: string }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
       admin_account_conversation_access: {
         Args: { _thread: string; _write?: boolean }
@@ -9659,6 +9666,10 @@ export type Database = {
         Args: { _ride_request_id: string }
         Returns: string
       }
+      propose_facility_quote: {
+        Args: { _cents: number; _policy: string; _request: string }
+        Returns: string
+      }
       provider_can_serve_ride: {
         Args: {
           _dropoff_lat: number
@@ -9746,6 +9757,7 @@ export type Database = {
         Args: { _trip_id: string }
         Returns: string
       }
+      request_facility_quote: { Args: { _draft: string }; Returns: string }
       request_lifecycle_allowed: {
         Args: { _from: string; _to: string }
         Returns: boolean
