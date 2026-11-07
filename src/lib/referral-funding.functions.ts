@@ -7,7 +7,7 @@ export const prepareReferralFundingVersion=createServerFn({method:'POST'}).middl
  .inputValidator((v:unknown)=>z.object({distributionId:z.string().uuid(),environment:z.enum(['sandbox','live']),policyConsent:z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}),confirmed:z.literal(true)}).strict().parse(v))
  .handler(async({data,context})=>{
  assertCheckoutConsent(data.policyConsent);
- const {data:allowed}=await context.supabase.rpc('network_source_access',{_distribution:data.distributionId,_manage:true});
+ const {data:allowed}=await context.supabase.rpc('network_source_access',{_id:data.distributionId,_manage:true});
  if(!allowed)throw new Error('Funding unavailable.');
  const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
  const {data:gate}=await supabaseAdmin.from('platform_launch_flags').select('enabled').eq('key','referral_funding_version_preparation').maybeSingle();
