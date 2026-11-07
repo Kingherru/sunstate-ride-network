@@ -31,9 +31,10 @@ import { InterfaceSize } from '@/components/portal/InterfaceSize';
 import { Link } from '@tanstack/react-router';
 import { DsButton } from '@/components/ds/controls';
 import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
+import { AccountConnections } from '@/components/portal/AccountConnections';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
-type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications";
+type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications" | "connections";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -49,7 +50,7 @@ function Account() {
   const provider = access.portalKind === "provider";
   const ws = access.primary;
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
-  const [tab, setTab] = useState<Tab>("profile");
+  const [tab, setTab] = useState<Tab>(search.section === 'connections' ? 'connections' : 'profile');
   const setupLink = ws?.role === 'owner' && !ws.is_contractor ? <div className="mb-5 border-b border-ds-border pb-4"><Link to="/onboarding" className="ds-label text-ds-link underline">{access.onboardingPending ? 'Continue account setup' : 'Review account setup'}</Link><p className="ds-caption mt-1">Update missing information without changing your portal access.</p></div> : null;
   if (provider && !access.restricted && canEditNetwork && ws && !ws.is_contractor) return <><PageHead title="Settings" /><div className="p-5 sm:p-6">{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} initialSection={search.section} accountDetails={<Profile email={s.email} />} teamMessaging={<TeamMessaging workspaceId={ws.id} />} financialTools={ws.role === 'owner' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Earnings & payouts</h2><div className="portal-business-body space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></section> : null} /></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
@@ -60,6 +61,7 @@ function Account() {
     : [{ value: "profile", label: "Profile" }, { value: "security", label: "Security" },
        ...(!provider && ws && !access.restricted ? [{ value: "patients" as Tab, label: "Patients" }] : []),
        ...(!provider && ws ? [{ value: "billing" as Tab, label: "Billing" }] : []),
+       ...(!provider && ws && !ws.is_contractor && ['owner','admin'].includes(ws.role) ? [{ value: "connections" as Tab, label: "Connections" }] : []),
        { value: "notifications", label: "Notifications" }];
 
   return (
@@ -79,6 +81,7 @@ function Account() {
         {tab === "security" && <Security />}
         {tab === "patients" && <PatientManagement />}
         {tab === "billing" && <CustomerBilling />}
+        {tab === 'connections' && ws && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <AccountConnections workspaceId={ws.id} provider={provider} />}
         {tab === "notifications" && <div className="space-y-4"><PersonalSettings /><Link to="/portal/notifications" className="ds-support font-semibold text-ds-link underline">Open notifications inbox</Link></div>}
       </section>
     </>

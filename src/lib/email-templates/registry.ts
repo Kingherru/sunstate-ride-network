@@ -10,6 +10,7 @@ import { template as providerQuoteRequest } from './provider-quote-request'
 import { template as providerApprovalRequest } from './provider-approval-request'
 import { template as staffNewTripReview } from './staff-new-trip-review'
 import { template as driverSchedule } from './driver-schedule'
+import { template as businessConnectionInvitation } from './business-connection-invitation'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -25,6 +26,7 @@ export interface TemplateEntry {
  * Import and register new templates here after creating them in this directory.
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'business-connection-invitation': businessConnectionInvitation,
   'driver-earnings-report': driverEarningsReport,
   'provider-funds-available': providerFundsAvailable,
   'provider-cashout-completed': providerCashoutCompleted,

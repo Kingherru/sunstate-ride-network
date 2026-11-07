@@ -1,0 +1,7 @@
+import React from 'react';
+import { Body, Button, Container, Head, Heading, Html, Preview, Text } from '@react-email/components';
+import type { TemplateEntry } from './registry';
+function ConnectionInvitation({ reference = '', inviterName = 'An account', intendedType = 'business', reviewUrl = '' }: { reference?: string; inviterName?: string; intendedType?: string; reviewUrl?: string }) {
+  return <Html lang="en"><Head /><Preview>Business connection invitation — {reference}</Preview><Body style={{ backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }}><Container style={{ padding: '24px', maxWidth: '560px' }}><Heading style={{ color: '#13335A', fontSize: '22px' }}>MY FLORIDA NEMT</Heading><Text>{inviterName} invited your {intendedType} account to connect.</Text><Text>Reference: {reference}. Sign in with this email or create the correct business account, then confirm or decline. This invitation expires in seven days.</Text><Text>A connection does not grant workspace membership, trip or patient-record access, or financial permissions.</Text>{reviewUrl && <Button href={reviewUrl} style={{ backgroundColor: '#BE5200', color: '#ffffff', padding: '12px 20px', borderRadius: '4px' }}>Review invitation</Button>}</Container></Body></Html>;
+}
+export const template = { component: ConnectionInvitation, subject: 'MY FLORIDA NEMT — business connection invitation', displayName: 'Business connection invitation', previewData: { reference: 'MFN-I-DEMO', inviterName: 'Demo Facility', intendedType: 'provider' } } satisfies TemplateEntry;

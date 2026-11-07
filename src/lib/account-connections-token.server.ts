@@ -1,0 +1,3 @@
+export function generateInvitationToken() { const bytes = crypto.getRandomValues(new Uint8Array(32)); return Array.from(bytes, byte => byte.toString(16).padStart(2,'0')).join(''); }
+export async function hashInvitationToken(token: string) { const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token)); return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2,'0')).join(''); }
+export function constantTimeHashEqual(a: string, b: string) { if (a.length !== 64 || b.length !== 64) return false; let mismatch = 0; for (let i = 0; i < 64; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i); return mismatch === 0; }
