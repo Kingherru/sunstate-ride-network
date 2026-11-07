@@ -30,6 +30,7 @@ import { PatientManagement } from '@/components/portal/PatientManagement';
 import { InterfaceSize } from '@/components/portal/InterfaceSize';
 import { Link } from '@tanstack/react-router';
 import { DsButton } from '@/components/ds/controls';
+import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications";
@@ -65,7 +66,7 @@ function Account() {
       {setupLink}
       <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
       <section className={`${panelCls} p-5 sm:p-6`}>
-        {tab === "profile" && <><PersonalSettings /><div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+        {tab === "profile" && <><PersonalSettings />{!provider && ws?.type !== 'private_pay' && ws?.role === 'owner' && <div className="my-6"><BusinessContactSettings /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}
