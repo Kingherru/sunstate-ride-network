@@ -92,6 +92,7 @@ import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/e
 import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
 import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
 import { Route as AuthenticatedAdminPreviewKindRouteImport } from './routes/_authenticated/admin_.preview.$kind'
+import { Route as AuthenticatedPortalInvoicesIdRouteImport } from './routes/_authenticated/portal.invoices.$id'
 import { Route as AuthenticatedPortalRequestsIndexRouteImport } from './routes/_authenticated/portal.requests.index'
 import { Route as AuthenticatedPortalRequestsIdRouteImport } from './routes/_authenticated/portal.requests.$id'
 import { Route as AuthenticatedPortalRequestsNewRouteImport } from './routes/_authenticated/portal.requests.new'
@@ -567,6 +568,12 @@ const AuthenticatedAdminPreviewKindRoute =
     path: '/admin/preview/$kind',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPortalInvoicesIdRoute =
+  AuthenticatedPortalInvoicesIdRouteImport.update({
+    id: '/invoices/$id',
+    path: '/invoices/$id',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
 const AuthenticatedPortalRequestsIndexRoute =
   AuthenticatedPortalRequestsIndexRouteImport.update({
     id: '/requests/',
@@ -762,6 +769,7 @@ export interface FileRoutesByFullPath {
   '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
   '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/admin/preview/$kind': typeof AuthenticatedAdminPreviewKindRoute
+  '/portal/invoices/$id': typeof AuthenticatedPortalInvoicesIdRoute
   '/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
   '/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
@@ -861,6 +869,7 @@ export interface FileRoutesByTo {
   '/florida-coverage/$region': typeof FloridaCoverageRegionIndexRoute
   '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/admin/preview/$kind': typeof AuthenticatedAdminPreviewKindRoute
+  '/portal/invoices/$id': typeof AuthenticatedPortalInvoicesIdRoute
   '/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
   '/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
@@ -966,6 +975,7 @@ export interface FileRoutesById {
   '/florida-coverage/$region/': typeof FloridaCoverageRegionIndexRoute
   '/_authenticated/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/_authenticated/admin_/preview/$kind': typeof AuthenticatedAdminPreviewKindRoute
+  '/_authenticated/portal/invoices/$id': typeof AuthenticatedPortalInvoicesIdRoute
   '/_authenticated/portal/requests/$id': typeof AuthenticatedPortalRequestsIdRoute
   '/_authenticated/portal/requests/new': typeof AuthenticatedPortalRequestsNewRoute
   '/api/public/hooks/fin-cashout-tick': typeof ApiPublicHooksFinCashoutTickRoute
@@ -1071,6 +1081,7 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/'
     | '/admin/requests/$id'
     | '/admin/preview/$kind'
+    | '/portal/invoices/$id'
     | '/portal/requests/$id'
     | '/portal/requests/new'
     | '/api/public/hooks/fin-cashout-tick'
@@ -1170,6 +1181,7 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region'
     | '/admin/requests/$id'
     | '/admin/preview/$kind'
+    | '/portal/invoices/$id'
     | '/portal/requests/$id'
     | '/portal/requests/new'
     | '/api/public/hooks/fin-cashout-tick'
@@ -1274,6 +1286,7 @@ export interface FileRouteTypes {
     | '/florida-coverage/$region/'
     | '/_authenticated/admin/requests/$id'
     | '/_authenticated/admin_/preview/$kind'
+    | '/_authenticated/portal/invoices/$id'
     | '/_authenticated/portal/requests/$id'
     | '/_authenticated/portal/requests/new'
     | '/api/public/hooks/fin-cashout-tick'
@@ -1933,6 +1946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPreviewKindRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/portal/invoices/$id': {
+      id: '/_authenticated/portal/invoices/$id'
+      path: '/invoices/$id'
+      fullPath: '/portal/invoices/$id'
+      preLoaderRoute: typeof AuthenticatedPortalInvoicesIdRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
     '/_authenticated/portal/requests/': {
       id: '/_authenticated/portal/requests/'
       path: '/requests'
@@ -2146,6 +2166,7 @@ interface AuthenticatedPortalRouteChildren {
   AuthenticatedPortalUploadCsvRoute: typeof AuthenticatedPortalUploadCsvRoute
   AuthenticatedPortalVehiclesRoute: typeof AuthenticatedPortalVehiclesRoute
   AuthenticatedPortalIndexRoute: typeof AuthenticatedPortalIndexRoute
+  AuthenticatedPortalInvoicesIdRoute: typeof AuthenticatedPortalInvoicesIdRoute
   AuthenticatedPortalRequestsIdRoute: typeof AuthenticatedPortalRequestsIdRoute
   AuthenticatedPortalRequestsNewRoute: typeof AuthenticatedPortalRequestsNewRoute
   AuthenticatedPortalRequestsIndexRoute: typeof AuthenticatedPortalRequestsIndexRoute
@@ -2171,6 +2192,7 @@ const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
   AuthenticatedPortalUploadCsvRoute: AuthenticatedPortalUploadCsvRoute,
   AuthenticatedPortalVehiclesRoute: AuthenticatedPortalVehiclesRoute,
   AuthenticatedPortalIndexRoute: AuthenticatedPortalIndexRoute,
+  AuthenticatedPortalInvoicesIdRoute: AuthenticatedPortalInvoicesIdRoute,
   AuthenticatedPortalRequestsIdRoute: AuthenticatedPortalRequestsIdRoute,
   AuthenticatedPortalRequestsNewRoute: AuthenticatedPortalRequestsNewRoute,
   AuthenticatedPortalRequestsIndexRoute: AuthenticatedPortalRequestsIndexRoute,

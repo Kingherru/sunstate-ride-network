@@ -5,7 +5,7 @@ import { customerRateBook, customerRatesFromLegacy, calculateCustomerQuote, type
 export async function readCustomerPricing(client: SupabaseClient<Database>, workspaceId: string) {
   const { data: allowed, error: permissionError } = await client.rpc('can_manage_provider_customer_pricing', { _workspace: workspaceId });
   if (permissionError || !allowed) throw new Error('Customer pricing is available to active provider owners and account admins, not contractors.');
-  const { data: versions, error } = await client.from('provider_customer_pricing_versions').select('id,version,effective_at,person_mfn_id,workspace_mfn_id,rates').eq('workspace_id', workspaceId).order('version', { ascending: false });
+  const { data: versions, error } = await client.from('provider_customer_pricing_versions').select('id,version,effective_at,person_mfn_id,workspace_mfn_id,rates').eq('workspace_id', workspaceId).lte('effective_at', new Date().toISOString()).order('version', { ascending: false });
   if (error) throw new Error('Customer pricing unavailable');
   const { data: owners, error: ownerError } = await client.from('workspace_members').select('user_id').eq('workspace_id', workspaceId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null).order('created_at').limit(1);
   if (ownerError) throw new Error('Business pricing ownership unavailable');
@@ -21,5 +21,5 @@ export async function readCustomerPricing(client: SupabaseClient<Database>, work
 export async function quoteNewProviderCustomerTrip(client: SupabaseClient<Database>, workspaceId: string, trip: CustomerQuoteInput) {
   const current = await readCustomerPricing(client, workspaceId);
   if (!current.version || !current.effectiveAt) throw new Error('Confirm Customer Pricing before preparing a new customer quote.');
-  return { ...calculateCustomerQuote(current.rates, trip), pricingSnapshot: { workspaceId, version: current.version, effectiveAt: current.effectiveAt, rates: current.rates }, quotedAt: new Date().toISOString() };
+  return { ...calculateCustomerQuote(current.rates, trip), pricingSnapshot: { workspaceId, rateVersionId: current.history[0]?.id ?? null, version: current.version, effectiveAt: current.effectiveAt, rates: current.rates }, quotedAt: new Date().toISOString() };
 }

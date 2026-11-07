@@ -386,6 +386,34 @@
       "when": 1794081662599,
       "tag": "0054_business_contact_consent_and_patient_timeline_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1794082455750,
+      "tag": "0055_trip_invoice_documents_and_contact_consent",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1794082541093,
+      "tag": "0056_atomic_quote_invoice_attachment",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1794082724967,
+      "tag": "0057_patient_invoice_projection_and_snapshot_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1794082924484,
+      "tag": "0058_invoice_quote_reference_immutability",
+      "breakpoints": true
     }
   ]
 }

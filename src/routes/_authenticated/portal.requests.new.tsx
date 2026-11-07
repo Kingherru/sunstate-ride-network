@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RequestForm } from "@/components/requests/RequestForm";
 import { getTripDraft } from '@/lib/trip-drafts.functions';
+import { NewTripWorkspace } from '@/components/portal/NewTripWorkspace';
 
 export const Route = createFileRoute("/_authenticated/portal/requests/new")({
   head: () => ({ meta: [{ title: "New Request — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Create or resume a secure transportation request.' }, { property: 'og:title', content: 'New Request — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Create or resume a secure transportation request.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -12,5 +13,7 @@ export const Route = createFileRoute("/_authenticated/portal/requests/new")({
 function NewRequest() {
   const draft = Route.useLoaderData();
   const { access } = Route.useRouteContext();
+  const business = access.primary;
+  if (business && ['provider', 'facility', 'hospital'].includes(business.type) && ['owner', 'admin'].includes(business.role) && !business.is_contractor) return <NewTripWorkspace key={draft?.id ?? 'new'} workspaceId={business.id} provider={business.type === 'provider'} initialDraft={draft ?? undefined}/>;
   return <RequestForm key={draft?.id ?? 'new'} context="portal" allowProviderSelection={access.portalKind === 'customer' && !!access.primary} initialDraft={draft ?? undefined} />;
 }

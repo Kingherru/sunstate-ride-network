@@ -28,6 +28,7 @@ import { PersonalSecurity } from '@/components/portal/PersonalSecurity';
 import { OnboardingDemo } from '@/components/onboarding/OnboardingDemo';
 import { DsButton } from '@/components/ds/controls';
 import {PatientTrips} from '@/components/portal/PatientTrips';
+import {NewTripWorkspace} from '@/components/portal/NewTripWorkspace';
 
 type Kind = "provider" | "customer";
 
@@ -117,7 +118,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
       case "schedule": return <Panel><ScheduleCalendarPanel /></Panel>;
       case "fleet": return <FleetDrivers />;
       case "earnings": return <EarningsPayments userId={PREVIEW_USER} />;
-      case "requests/new": return <RequestForm context="portal" />;
+      case "requests/new": return <NewTripWorkspace workspaceId="preview-ws" provider/>;
       case "notifications": return <Panel><NotificationsPanel /></Panel>;
       case "account": return <Panel><ProviderSettings workspaceId="preview-ws" role="owner" email="demo@example.com" /></Panel>;
       case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;

@@ -23,6 +23,7 @@ import { BillingDefaults } from './CustomerBilling';
 import { InterfaceSize } from './InterfaceSize';
 import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
 import { AccountConnections } from './AccountConnections';
+import { TripDispatchSettings } from './TripCommunicationSettings';
 
 const sections = [
   { value: 'business', label: 'Business & Operations' },
@@ -40,6 +41,7 @@ export function ProviderSettings({ workspaceId, role, email, initialSection = 'b
     <nav aria-label="Provider settings sections" className="flex flex-wrap gap-2 self-start lg:sticky lg:top-4 lg:flex-col">{sections.map(section => <DsButton key={section.value} variant={tab === section.value ? 'secondary' : 'ghost'} className="justify-start text-left" aria-current={tab === section.value ? 'page' : undefined} onClick={() => setTab(section.value)}>{section.label}</DsButton>)}</nav>
     <div className="portal-business-form min-w-0 space-y-5">
     <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
+    {tab === 'business' && <TripDispatchSettings workspaceId={workspaceId}/>}
     {tab === 'team' && <AccountConnections workspaceId={workspaceId} provider />}
     {tab === 'business' && <div className="space-y-5">{owner && <BusinessContactSettings />}<section className="portal-business-section"><div className="portal-business-body"><NetworkProfileForm workspaceId={workspaceId} /></div></section><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Legal identity & operations attestation</h2><div className="portal-business-body"><p className="ds-caption">Verification identity and service-base attestation remain separate from workspace contact details; existing values are retained.</p>{preview.active ? <p className="ds-support mt-3">Preview only. Business attestations cannot be saved.</p> : <BusinessEvidenceEditor workspaceId={workspaceId} />}</div></section><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Legacy application & HIPAA acknowledgment</summary><div className="portal-business-body"><BusinessInfoPanel /></div></details></div>}
     {tab === 'pricing' && <div className="space-y-5"><CustomerPricing workspaceId={workspaceId} /><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Existing provider operating rules</summary><div className="portal-business-body"><RulesPanel /></div></details></div>}

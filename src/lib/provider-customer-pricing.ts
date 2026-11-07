@@ -28,19 +28,22 @@ export function customerRatesFromLegacy(legacy: Record<string, unknown> | null):
 export function calculateCustomerQuote(book: CustomerRateBook, input: CustomerQuoteInput) {
   const rates = customerRateBook.parse(book)[input.service];
   const trip = customerQuoteInput.parse(input);
-  const lines: { label: string; cents: number }[] = [];
-  const add = (label: string, amount: number) => { const value = Math.round(amount); if (!Number.isSafeInteger(value) || value < 0) throw new Error('Quote exceeds supported currency precision'); if (value) lines.push({ label, cents: value }); };
+  const lines: { label: string; cents: number; quantity: number; rateCents: number }[] = [];
+  const add = (label: string, amount: number, quantity = 1, rateCents = amount) => { const value = Math.round(amount); if (!Number.isSafeInteger(value) || value < 0) throw new Error('Quote exceeds supported currency precision'); if (value) lines.push({ label, cents: value, quantity, rateCents }); };
   if (trip.outcome === 'canceled') add('Cancellation', rates.cancellation_cents);
   else if (trip.outcome === 'no_show') add('No-show', rates.no_show_cents);
   else {
-    add('Pickup / loading', rates.base_cents * (trip.roundTrip && rates.round_trip === 'per_leg' ? 2 : 1));
-    add('Mileage after included miles', Math.max(0, trip.miles - rates.included_miles) * rates.per_mile_cents);
+    const pickups = trip.roundTrip && rates.round_trip === 'per_leg' ? 2 : 1;
+    add('Pickup / loading', rates.base_cents * pickups, pickups, rates.base_cents);
+    const billableMiles = Math.max(0, trip.miles - rates.included_miles);
+    add('Mileage after included miles', billableMiles * rates.per_mile_cents, billableMiles, rates.per_mile_cents);
     const unit = rates.wait_unit === 'hour' ? 60 : rates.wait_unit === 'half_hour' ? 30 : 1;
-    add('Wait time', (unit === 1 ? trip.waitMinutes : Math.ceil(trip.waitMinutes / unit)) * rates.wait_cents);
+    const waitUnits = unit === 1 ? trip.waitMinutes : Math.ceil(trip.waitMinutes / unit);
+    add('Wait time', waitUnits * rates.wait_cents, waitUnits, rates.wait_cents);
     const time = trip.pickupTime; const start = rates.after_hours_start; const end = rates.after_hours_end;
     if (start < end ? time >= start && time < end : time >= start || time < end) add('After-hours', rates.after_hours_cents);
     if (rates.holidays.includes(trip.pickupDate)) add('Holiday', rates.holiday_cents);
-    add('Additional stops', trip.additionalStops * rates.additional_stop_cents);
+    add('Additional stops', trip.additionalStops * rates.additional_stop_cents, trip.additionalStops, rates.additional_stop_cents);
     if (trip.service !== 'medical_delivery') add('Additional passengers', trip.additionalPassengers * rates.additional_passenger_cents);
     if (trip.service === 'medical_delivery') { if (trip.coldChain) add('Cold-chain', rates.cold_chain_cents); if (trip.signature) add('Signature required', rates.signature_cents); if (trip.rush) add('Rush / priority', rates.rush_cents); }
     const subtotal = lines.reduce((sum, line) => sum + line.cents, 0);

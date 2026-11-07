@@ -4191,6 +4191,8 @@ export type Database = {
           service_base_verified_at: string | null
           service_radius_miles: number | null
           service_types: string[]
+          trip_dispatch_phone: string | null
+          trip_dispatch_phone_designated: boolean
           updated_at: string
           updated_by: string | null
           verification_details: Json
@@ -4223,6 +4225,8 @@ export type Database = {
           service_base_verified_at?: string | null
           service_radius_miles?: number | null
           service_types?: string[]
+          trip_dispatch_phone?: string | null
+          trip_dispatch_phone_designated?: boolean
           updated_at?: string
           updated_by?: string | null
           verification_details?: Json
@@ -4255,6 +4259,8 @@ export type Database = {
           service_base_verified_at?: string | null
           service_radius_miles?: number | null
           service_types?: string[]
+          trip_dispatch_phone?: string | null
+          trip_dispatch_phone_designated?: boolean
           updated_at?: string
           updated_by?: string | null
           verification_details?: Json
@@ -4936,6 +4942,8 @@ export type Database = {
           canceled_at: string | null
           created_at: string
           creator_person_mfn_id: string | null
+          customer_quote_draft_id: string | null
+          customer_quote_id: string | null
           deactivated_at: string | null
           delivery_hazmat: boolean
           delivery_instructions: string | null
@@ -5059,6 +5067,8 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
+          customer_quote_draft_id?: string | null
+          customer_quote_id?: string | null
           deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
@@ -5182,6 +5192,8 @@ export type Database = {
           canceled_at?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
+          customer_quote_draft_id?: string | null
+          customer_quote_id?: string | null
           deactivated_at?: string | null
           delivery_hazmat?: boolean
           delivery_instructions?: string | null
@@ -5302,6 +5314,13 @@ export type Database = {
             columns: ["assigned_vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_customer_quote_draft_id_fkey"
+            columns: ["customer_quote_draft_id"]
+            isOneToOne: false
+            referencedRelation: "trip_drafts"
             referencedColumns: ["id"]
           },
           {
@@ -6249,6 +6268,7 @@ export type Database = {
         Row: {
           autosaved: boolean
           created_at: string
+          customer_quote_history: Json
           id: string
           import_job_id: string | null
           import_row: number | null
@@ -6263,6 +6283,7 @@ export type Database = {
         Insert: {
           autosaved?: boolean
           created_at?: string
+          customer_quote_history?: Json
           id?: string
           import_job_id?: string | null
           import_row?: number | null
@@ -6277,6 +6298,7 @@ export type Database = {
         Update: {
           autosaved?: boolean
           created_at?: string
+          customer_quote_history?: Json
           id?: string
           import_job_id?: string | null
           import_row?: number | null
@@ -6294,6 +6316,136 @@ export type Database = {
             columns: ["import_job_id"]
             isOneToOne: false
             referencedRelation: "csv_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_invoice_documents: {
+        Row: {
+          bill_to_snapshot: Json
+          billed_workspace_id: string | null
+          created_at: string
+          created_by: string
+          due_at: string | null
+          id: string
+          mfn_id: string
+          patient_workspace_id: string | null
+          person_mfn_id: string | null
+          provider_snapshot: Json
+          provider_workspace_id: string
+          quote_id: string
+          quote_snapshot: Json
+          request_id: string
+          sent_at: string | null
+          status: string
+          total_cents: number
+          workspace_mfn_id: string | null
+        }
+        Insert: {
+          bill_to_snapshot: Json
+          billed_workspace_id?: string | null
+          created_at?: string
+          created_by: string
+          due_at?: string | null
+          id?: string
+          mfn_id?: string
+          patient_workspace_id?: string | null
+          person_mfn_id?: string | null
+          provider_snapshot: Json
+          provider_workspace_id: string
+          quote_id: string
+          quote_snapshot: Json
+          request_id: string
+          sent_at?: string | null
+          status?: string
+          total_cents: number
+          workspace_mfn_id?: string | null
+        }
+        Update: {
+          bill_to_snapshot?: Json
+          billed_workspace_id?: string | null
+          created_at?: string
+          created_by?: string
+          due_at?: string | null
+          id?: string
+          mfn_id?: string
+          patient_workspace_id?: string | null
+          person_mfn_id?: string | null
+          provider_snapshot?: Json
+          provider_workspace_id?: string
+          quote_id?: string
+          quote_snapshot?: Json
+          request_id?: string
+          sent_at?: string | null
+          status?: string
+          total_cents?: number
+          workspace_mfn_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_invoice_documents_billed_workspace_id_fkey"
+            columns: ["billed_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_invoice_documents_patient_workspace_id_fkey"
+            columns: ["patient_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_invoice_documents_provider_workspace_id_fkey"
+            columns: ["provider_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_invoice_documents_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_invoice_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          invoice_id: string
+          person_mfn_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          invoice_id: string
+          person_mfn_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          invoice_id?: string
+          person_mfn_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_invoice_events_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "trip_invoice_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -6426,47 +6578,72 @@ export type Database = {
       trip_payments: {
         Row: {
           amount_cents: number
+          amount_refunded_cents: number
           created_at: string
           environment: string
           id: string
+          invoice_document_id: string | null
+          invoice_idempotency_key: string | null
           payer_user_id: string
           platform_fee_cents: number
           provider_user_id: string | null
           ride_request_id: string | null
           status: string
+          stripe_charge_id: string | null
+          stripe_checkout_session_id: string | null
+          stripe_connected_account_id: string | null
           stripe_payment_intent_id: string
           trip_id: string | null
           updated_at: string
         }
         Insert: {
           amount_cents: number
+          amount_refunded_cents?: number
           created_at?: string
           environment?: string
           id?: string
+          invoice_document_id?: string | null
+          invoice_idempotency_key?: string | null
           payer_user_id: string
           platform_fee_cents?: number
           provider_user_id?: string | null
           ride_request_id?: string | null
           status?: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_connected_account_id?: string | null
           stripe_payment_intent_id: string
           trip_id?: string | null
           updated_at?: string
         }
         Update: {
           amount_cents?: number
+          amount_refunded_cents?: number
           created_at?: string
           environment?: string
           id?: string
+          invoice_document_id?: string | null
+          invoice_idempotency_key?: string | null
           payer_user_id?: string
           platform_fee_cents?: number
           provider_user_id?: string | null
           ride_request_id?: string | null
           status?: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_connected_account_id?: string | null
           stripe_payment_intent_id?: string
           trip_id?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_payments_invoice_document_id_fkey"
+            columns: ["invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "trip_invoice_documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trip_payments_ride_request_id_fkey"
             columns: ["ride_request_id"]
@@ -6778,7 +6955,11 @@ export type Database = {
           no_show_reason: string | null
           odometer_end: number | null
           odometer_start: number | null
+          patient_contact_driver_id: string | null
           patient_date_of_birth: string | null
+          patient_driver_confirmed: boolean
+          patient_driver_phone: string | null
+          patient_driver_provider_confirmed: boolean
           patient_email: string | null
           patient_first_name: string
           patient_last_name: string
@@ -6951,7 +7132,11 @@ export type Database = {
           no_show_reason?: string | null
           odometer_end?: number | null
           odometer_start?: number | null
+          patient_contact_driver_id?: string | null
           patient_date_of_birth?: string | null
+          patient_driver_confirmed?: boolean
+          patient_driver_phone?: string | null
+          patient_driver_provider_confirmed?: boolean
           patient_email?: string | null
           patient_first_name: string
           patient_last_name: string
@@ -7124,7 +7309,11 @@ export type Database = {
           no_show_reason?: string | null
           odometer_end?: number | null
           odometer_start?: number | null
+          patient_contact_driver_id?: string | null
           patient_date_of_birth?: string | null
+          patient_driver_confirmed?: boolean
+          patient_driver_phone?: string | null
+          patient_driver_provider_confirmed?: boolean
           patient_email?: string | null
           patient_first_name?: string
           patient_last_name?: string
@@ -7248,6 +7437,13 @@ export type Database = {
             columns: ["network_provider_workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_patient_contact_driver_id_fkey"
+            columns: ["patient_contact_driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
           {
@@ -8392,6 +8588,7 @@ export type Database = {
         Args: { _drivers: string[]; _end: string; _start: string }
         Returns: string
       }
+      customer_quote_fingerprint: { Args: { _form: Json }; Returns: string }
       deactivate_account_connection: {
         Args: { _confirmed: boolean; _id: string; _ws: string }
         Returns: undefined
@@ -8588,6 +8785,7 @@ export type Database = {
         Returns: Json
       }
       get_referral_fee_pct: { Args: never; Returns: number }
+      get_trip_invoice_snapshot: { Args: { _invoice: string }; Returns: Json }
       get_trips_admin_metadata: {
         Args: never
         Returns: {
@@ -8781,6 +8979,7 @@ export type Database = {
         }[]
       }
       list_patient_requests: { Args: never; Returns: Json[] }
+      list_request_invoices: { Args: { _request: string }; Returns: Json[] }
       list_targeted_patient_requests: {
         Args: never
         Returns: {
@@ -9061,6 +9260,18 @@ export type Database = {
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
       patient_request_access: { Args: { _request: string }; Returns: boolean }
       patient_request_snapshot: { Args: { _request: string }; Returns: Json }
+      patient_trip_contacts: { Args: { _request: string }; Returns: Json }
+      persist_provider_draft_quote: {
+        Args: {
+          _actor: string
+          _draft: string
+          _expected: string
+          _replace: boolean
+          _snapshot: Json
+          _workspace: string
+        }
+        Returns: Json
+      }
       pick_auto_provider: {
         Args: {
           _created_by: string
@@ -9071,6 +9282,15 @@ export type Database = {
           _zone_id: string
         }
         Returns: string
+      }
+      prepare_customer_invoice_payment: {
+        Args: {
+          _account: string
+          _env: string
+          _invoice: string
+          _payer: string
+        }
+        Returns: Json
       }
       prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
@@ -9313,6 +9533,20 @@ export type Database = {
         Args: { _id: string; _kind: string; _reason: string; _status: string }
         Returns: Json
       }
+      set_patient_trip_contact: {
+        Args: {
+          _driver: string
+          _driver_confirmed: boolean
+          _phone: string
+          _provider_confirmed: boolean
+          _trip: string
+        }
+        Returns: undefined
+      }
+      set_trip_dispatch_contact: {
+        Args: { _confirmed: boolean; _phone: string; _workspace: string }
+        Returns: undefined
+      }
       set_trip_payment_status: {
         Args: {
           _status: Database["public"]["Enums"]["trip_payment_status"]
@@ -9362,6 +9596,10 @@ export type Database = {
       transition_request_lifecycle: {
         Args: { _note?: string; _request: string; _to: string }
         Returns: string
+      }
+      trip_invoice_access: {
+        Args: { _invoice: string; _manage?: boolean }
+        Returns: boolean
       }
       verification_normalize_name: { Args: { _name: string }; Returns: string }
       verify_course_certificate: {

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {presentPatientTrip,type PatientSnapshot} from './patient-trips.functions';
+import type {TripInvoice} from './trip-invoice-rules';
 
 /**
  * Portal + admin request reads. Every read runs as the signed-in user, so the
@@ -43,10 +44,10 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
       if(error || !snapshot)return {ok:false as const};
       const p=presentPatientTrip(snapshot as unknown as PatientSnapshot);
       const request:RequestDetailRow={...p.request,status:p.stage,network_status:null};
-      return {ok:true as const,request,account:null,assignment:p.providerName,history:[] as {action:string;at:string;actor:string|null}[],distributions:[] as {id:string;mfn_id:string;status:string;waves:{id:string;radius_miles:number;sent_at:string}[];offers:{id:string;mfn_id:string;status:string;amount_cents:number}[];negotiations:{id:string;side:string;action:string;amount_cents:number|null;created_at:string}[]}[],patient:p};
+      return {ok:true as const,request,account:null,assignment:p.providerName,history:[] as {action:string;at:string;actor:string|null}[],distributions:[] as {id:string;mfn_id:string;status:string;waves:{id:string;radius_miles:number;sent_at:string}[];offers:{id:string;mfn_id:string;status:string;amount_cents:number}[];negotiations:{id:string;side:string;action:string;amount_cents:number|null;created_at:string}[]}[],patient:p,invoices:p.invoice?[p.invoice]:[]};
     }
     if(patientOnly)return {ok:false as const};
-    const tripCols = 'id,display_id,ride_request_id,trip_kind,transport_type,status,network_status,created_at,updated_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,return_dropoff_time,return_pickup_building,return_pickup_suite,additional_stops,recurrence_rule,recurrence_end_date,service_level,needs_wheelchair,needs_assistance_to_vehicle,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id,assigned_to';
+    const tripCols = 'id,display_id,ride_request_id,driver_id,trip_kind,transport_type,status,network_status,created_at,updated_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,return_dropoff_time,return_pickup_building,return_pickup_suite,additional_stops,recurrence_rule,recurrence_end_date,service_level,needs_wheelchair,needs_assistance_to_vehicle,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id,assigned_to';
     const { data: row, error } = data.kind === 'request'
       ? await context.supabase.from('ride_requests').select(DETAIL_COLS).eq('id', data.id).maybeSingle()
       : await context.supabase.from('trips').select(tripCols).eq('id', data.id).maybeSingle();
@@ -79,7 +80,8 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
     if (!assignment && selected) assignment = 'Provider selected';
     if (!assignment && (r.assigned_provider_id || r.assigned_to)) assignment = 'Assigned provider';
     const { data: requester } = r.requester_user_id ? await context.supabase.from('user_profiles').select('mfn_id,display_name').eq('user_id', r.requester_user_id).maybeSingle() : { data: null };
-    return { ok: true as const, request: { ...r, ...(requester ? { requester_name: requester.display_name, requester_mfn_id: requester.mfn_id } : {}), additional_stops: Array.isArray(r.additional_stops) ? r.additional_stops.map((stop: any) => ({ address: String(stop.address || ''), city: String(stop.city || ''), pickupTime: String(stop.pickupTime || stop.pickup_time || '') })) : [], mfn_id: r.mfn_id || r.display_id || null, intake_source: r.intake_source || null, submitted_via: r.submitted_via || null } as RequestDetailRow, account, assignment, history, distributions: detailDistributions,patient:null };
+    const {data:invoiceRows}=requestId?await context.supabase.rpc('list_request_invoices',{_request:requestId}):{data:[]};
+    return { ok: true as const, request: { ...r, ...(requester ? { requester_name: requester.display_name, requester_mfn_id: requester.mfn_id } : {}), additional_stops: Array.isArray(r.additional_stops) ? r.additional_stops.map((stop: any) => ({ address: String(stop.address || ''), city: String(stop.city || ''), pickupTime: String(stop.pickupTime || stop.pickup_time || '') })) : [], mfn_id: r.mfn_id || r.display_id || null, intake_source: r.intake_source || null, submitted_via: r.submitted_via || null } as RequestDetailRow, account, assignment, history, distributions: detailDistributions,patient:null,invoices:(invoiceRows??[]) as unknown as TripInvoice[] };
   });
 
 async function requireAdmin(context: { supabase: any; userId: string }) {
