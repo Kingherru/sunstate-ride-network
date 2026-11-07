@@ -73,6 +73,8 @@ export const rideRequestSchema = z.object({
   requestCategory: z.literal("passenger_transport").optional(),
   selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
   patientWorkspaceId: z.string().uuid().optional().nullable(),
+  customerQuoteDraftId: z.string().uuid().optional().nullable(),
+  customerQuoteId: z.string().uuid().optional().nullable(),
   patientFirstName: z.string().trim().min(1).max(80),
   patientLastName: z.string().trim().min(1).max(80),
   patientPhone: z.string().trim().min(7).max(30),
@@ -158,6 +160,9 @@ export const DELIVERY_CATEGORY_LABELS: Record<(typeof DELIVERY_CATEGORY_OPTIONS)
 export const deliveryRequestSchema = z
   .object({
     requestCategory: z.literal("medical_delivery"),
+    patientWorkspaceId: z.string().uuid().optional().nullable(),
+    customerQuoteDraftId: z.string().uuid().optional().nullable(),
+    customerQuoteId: z.string().uuid().optional().nullable(),
     contactFirstName: z.string().trim().min(1).max(80),
     contactLastName: z.string().trim().min(1).max(80),
     contactPhone: z.string().trim().min(7).max(30),

@@ -142,6 +142,8 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     trip_kind: "passenger",
     selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
     patient_workspace_id: data.patientWorkspaceId ?? null,
+    customer_quote_draft_id: data.customerQuoteDraftId ?? null,
+    customer_quote_id: data.customerQuoteId ?? null,
     patient_first_name: data.patientFirstName, patient_last_name: data.patientLastName,
     patient_phone: data.patientPhone, patient_email: data.patientEmail || null,
     pickup_address: data.pickupAddress, pickup_address_details: data.pickupAddressDetails || null,
@@ -170,6 +172,9 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
 export async function insertDeliveryRequest(data: DeliveryRequestInput, own: InsertOwnership): Promise<InsertResult> {
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
     trip_kind: "medical_delivery", transport_type: "delivery", trip_type: "one_way", round_trip: false,
+    patient_workspace_id: data.patientWorkspaceId ?? null,
+    customer_quote_draft_id: data.customerQuoteDraftId ?? null,
+    customer_quote_id: data.customerQuoteId ?? null,
     patient_first_name: data.contactFirstName, patient_last_name: data.contactLastName,
     patient_phone: data.contactPhone, patient_email: data.contactEmail || null,
     requester_phone: data.contactPhone, requester_email: data.contactEmail || null,
