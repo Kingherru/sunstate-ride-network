@@ -1,3 +1,7 @@
+# Membership verification pricing finding
+- [x] Confirmed the deployed evaluator still restricted invoice totals to former prices; replaced only its amount guard and outdated requirement label, preserving authoritative live paid-base evidence and all other badge requirements. Course-inclusive totals rely on the existing server-validated succeeded state; no account recalculation or record edits.
+- [x] Eight invoice tests (17 assertions) and eight read-only deployed SQL price/proof assertions passed; automatic compilation reported build OK. No publishing, charges, sends or activation. Paid-provider end-to-end recalculation was not exercised because it would change real records.
+
 # Pass 4A — saved notification preferences
 - [x] Existing initial pending/unaccepted Network offer notices mapped to in_app; all accepted-trip/security/account/finance/deadline operations preserved, ambiguous legacy categories unchanged.
 - [x] One internal server-side decision reads saved preferences before existing Network inserts; required/default/unknown events proceed. Settings distinguishes optional opportunity notices and always-enabled required notices; email choice honestly marked not connected to an optional producer. Queue/templates/history/unread and preview guards unchanged.
