@@ -323,6 +323,13 @@
       "when": 1793764092813,
       "tag": "0045_optional_network_notice_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794077927568,
+      "tag": "0046_verification_current_base_membership_prices",
+      "breakpoints": true
     }
   ]
 }
