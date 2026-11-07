@@ -39,7 +39,8 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
       const {data:snapshot,error}=await context.supabase.rpc('patient_request_snapshot',{_request:data.id});
       if(error || !snapshot)return {ok:false as const};
       const p=presentPatientTrip(snapshot as unknown as PatientSnapshot);
-      return {ok:true as const,request:{...p.request,status:p.stage,network_status:null},account:null,assignment:p.providerName,history:[] as {action:string;at:string;actor:string|null}[],distributions:[] as {id:string;mfn_id:string;status:string;waves:{id:string;radius_miles:number;sent_at:string}[];offers:{id:string;mfn_id:string;status:string;amount_cents:number}[];negotiations:{id:string;side:string;action:string;amount_cents:number|null;created_at:string}[]}[],patient:p};
+      const request:RequestDetailRow={...p.request,status:p.stage,network_status:null};
+      return {ok:true as const,request,account:null,assignment:p.providerName,history:[] as {action:string;at:string;actor:string|null}[],distributions:[] as {id:string;mfn_id:string;status:string;waves:{id:string;radius_miles:number;sent_at:string}[];offers:{id:string;mfn_id:string;status:string;amount_cents:number}[];negotiations:{id:string;side:string;action:string;amount_cents:number|null;created_at:string}[]}[],patient:p};
     }
     const tripCols = 'id,display_id,ride_request_id,trip_kind,transport_type,status,network_status,created_at,updated_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,return_dropoff_time,return_pickup_building,return_pickup_suite,additional_stops,recurrence_rule,recurrence_end_date,service_level,needs_wheelchair,needs_assistance_to_vehicle,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id,assigned_to';
     const { data: row, error } = data.kind === 'request'
