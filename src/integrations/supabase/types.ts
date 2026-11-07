@@ -14,6 +14,238 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_business_connections: {
+        Row: {
+          accepted_by: string
+          active: boolean
+          created_at: string
+          id: string
+          invitation_id: string
+          person_mfn_id: string
+          updated_at: string
+          workspace_a: string
+          workspace_b: string
+        }
+        Insert: {
+          accepted_by: string
+          active?: boolean
+          created_at?: string
+          id?: string
+          invitation_id: string
+          person_mfn_id: string
+          updated_at?: string
+          workspace_a: string
+          workspace_b: string
+        }
+        Update: {
+          accepted_by?: string
+          active?: boolean
+          created_at?: string
+          id?: string
+          invitation_id?: string
+          person_mfn_id?: string
+          updated_at?: string
+          workspace_a?: string
+          workspace_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_business_connections_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "account_connection_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_business_connections_workspace_a_fkey"
+            columns: ["workspace_a"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_business_connections_workspace_b_fkey"
+            columns: ["workspace_b"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_connection_invitations: {
+        Row: {
+          created_at: string
+          created_by: string
+          delivery_status: string
+          expires_at: string
+          generation: number
+          id: string
+          intended_type: string
+          inviter_workspace_id: string
+          mfn_id: string
+          person_mfn_id: string
+          recipient_email: string
+          recipient_workspace_id: string | null
+          status: string
+          token_hash: string
+          updated_at: string
+          workspace_mfn_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          delivery_status?: string
+          expires_at: string
+          generation?: number
+          id?: string
+          intended_type: string
+          inviter_workspace_id: string
+          mfn_id?: string
+          person_mfn_id: string
+          recipient_email: string
+          recipient_workspace_id?: string | null
+          status?: string
+          token_hash: string
+          updated_at?: string
+          workspace_mfn_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          delivery_status?: string
+          expires_at?: string
+          generation?: number
+          id?: string
+          intended_type?: string
+          inviter_workspace_id?: string
+          mfn_id?: string
+          person_mfn_id?: string
+          recipient_email?: string
+          recipient_workspace_id?: string | null
+          status?: string
+          token_hash?: string
+          updated_at?: string
+          workspace_mfn_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_connection_invitations_inviter_workspace_id_fkey"
+            columns: ["inviter_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_connection_invitations_recipient_workspace_id_fkey"
+            columns: ["recipient_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_relationship_events: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          details: Json
+          id: string
+          person_mfn_id: string
+          record_id: string | null
+          workspace_id: string
+          workspace_mfn_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          person_mfn_id: string
+          record_id?: string | null
+          workspace_id: string
+          workspace_mfn_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          person_mfn_id?: string
+          record_id?: string | null
+          workspace_id?: string
+          workspace_mfn_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_relationship_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_relationship_preferences: {
+        Row: {
+          person_mfn_id: string | null
+          preferred_provider_id: string | null
+          referral_name: string | null
+          referral_workspace_id: string | null
+          source: string
+          updated_at: string
+          updated_by: string | null
+          workspace_id: string
+          workspace_mfn_id: string | null
+        }
+        Insert: {
+          person_mfn_id?: string | null
+          preferred_provider_id?: string | null
+          referral_name?: string | null
+          referral_workspace_id?: string | null
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id: string
+          workspace_mfn_id?: string | null
+        }
+        Update: {
+          person_mfn_id?: string | null
+          preferred_provider_id?: string | null
+          referral_name?: string | null
+          referral_workspace_id?: string | null
+          source?: string
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id?: string
+          workspace_mfn_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_relationship_preferences_preferred_provider_id_fkey"
+            columns: ["preferred_provider_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationship_preferences_referral_workspace_id_fkey"
+            columns: ["referral_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_relationship_preferences_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       account_security_audit: {
         Row: {
           correlation_id: string | null
@@ -8041,6 +8273,10 @@ export type Database = {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
+      can_manage_account_connections: {
+        Args: { _ws: string }
+        Returns: boolean
+      }
       can_manage_provider_customer_pricing: {
         Args: { _workspace: string }
         Returns: boolean
@@ -8086,6 +8322,10 @@ export type Database = {
       confirm_schedule_email_preview: {
         Args: { _drivers: string[]; _end: string; _start: string }
         Returns: string
+      }
+      deactivate_account_connection: {
+        Args: { _confirmed: boolean; _id: string; _ws: string }
+        Returns: undefined
       }
       decide_trip_quote: {
         Args: { _approve: boolean; _decision_note?: string; _quote_id: string }
@@ -8495,6 +8735,18 @@ export type Database = {
         }
         Returns: string
       }
+      manage_account_invitation: {
+        Args: {
+          _action: string
+          _confirmed: boolean
+          _email: string
+          _hash: string
+          _id: string
+          _type: string
+          _ws: string
+        }
+        Returns: string
+      }
       manages_zone: {
         Args: { _user_id: string; _zone_id: string }
         Returns: boolean
@@ -8856,6 +9108,17 @@ export type Database = {
         Args: { _accept: boolean; _request: string }
         Returns: undefined
       }
+      save_account_relationship_preferences: {
+        Args: {
+          _confirmed: boolean
+          _kind: string
+          _name: string
+          _source: string
+          _target: string
+          _ws: string
+        }
+        Returns: undefined
+      }
       save_onboarding_progress: {
         Args: { _complete?: boolean; _step: number }
         Returns: undefined
@@ -8881,6 +9144,16 @@ export type Database = {
       save_provider_verification_details: {
         Args: { _details: Json; _workspace: string }
         Returns: undefined
+      }
+      search_connection_businesses: {
+        Args: { _mode: string; _value: string; _ws: string }
+        Returns: {
+          business_name: string
+          business_type: string
+          location: string
+          mfn_id: string
+          workspace_id: string
+        }[]
       }
       search_providers_by_zip: {
         Args: { _zip: string }
