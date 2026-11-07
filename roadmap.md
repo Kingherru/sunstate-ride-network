@@ -1,3 +1,7 @@
+# Shared commerce checkout
+- [ ] Finish existing shared cart selection, secure embedded checkout, pay-now/trial selection and truthful purchase confirmation.
+- [ ] Preserve authoritative paid-base verification, course ownership, preview blocking and webhook retry behavior; run focused rules and automatic compilation checks without real payments or activation.
+
 # Membership verification pricing finding
 - [x] Confirmed the deployed evaluator still restricted invoice totals to former prices; replaced only its amount guard and outdated requirement label, preserving authoritative live paid-base evidence and all other badge requirements. Course-inclusive totals rely on the existing server-validated succeeded state; no account recalculation or record edits.
 - [x] Eight invoice tests (17 assertions) and eight read-only deployed SQL price/proof assertions passed; automatic compilation reported build OK. No publishing, charges, sends or activation. Paid-provider end-to-end recalculation was not exercised because it would change real records.

@@ -16,7 +16,7 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
     base: z.boolean(), network: z.boolean(),
     courseIds: z.array(z.string().uuid()).max(20),
     confirm: z.object({ recurring: z.boolean(), oneTime: z.boolean(), terms: z.boolean() }),
-    environment: z.enum(['sandbox', 'live']), returnUrl: z.string().url(),
+    environment: z.enum(['sandbox', 'live']), returnUrl: z.string().url(), payNow: z.boolean().default(false),
   }).parse(input))
   .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
     try {
@@ -27,7 +27,8 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
         ? await context.supabase.from('courses').select('id,slug,title,price_id,price_cents').in('id', ids).eq('is_published', true)
         : { data: [], error: null };
       if (error || (courses?.length ?? 0) !== ids.length) throw new Error('A course is unavailable');
-      const { data: owned } = ids.length ? await context.supabase.from('course_enrollments').select('course_id').eq('user_id', context.userId).in('course_id', ids) : { data: [] };
+      const { data: owned, error: ownedError } = ids.length ? await context.supabase.from('course_enrollments').select('course_id').eq('user_id', context.userId).in('course_id', ids) : { data: [], error: null };
+      if (ownedError) throw new Error('Could not verify existing purchases');
       if (owned?.length) throw new Error('You already own an item in this cart. Remove it before checkout.');
 
       const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
@@ -35,16 +36,22 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
       let baseActive = false;
       let grantTrial = false;
       if (data.base || data.network) {
-        const { data: memberships } = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', context.userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
+        const { data: memberships, error: membershipError } = await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', context.userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
+        if (membershipError) throw new Error('Could not verify business ownership');
         const owners = (memberships ?? []).filter(m => m.workspaces.account_type === 'provider' && m.workspaces.status === 'active' && !m.workspaces.is_test_account);
         if (owners.length !== 1) return { error: 'One active provider business is required for membership checkout.' };
-        workspaceId = owners[0]!.workspace_id;
-        const [{ data: current }, { data: trial }] = await Promise.all([
-          supabaseAdmin.from('subscriptions').select('id').eq('workspace_id', workspaceId).in('status', ['active', 'trialing', 'past_due', 'incomplete']).limit(1),
+        const owner = owners[0];
+        if (!owner) throw new Error('Provider business required');
+        workspaceId = owner.workspace_id;
+        const [{ data: current, error: currentError }, { data: trial, error: trialError }, { data: unlinked, error: unlinkedError }] = await Promise.all([
+          supabaseAdmin.from('subscriptions').select('id').eq('workspace_id', workspaceId).eq('environment', data.environment).in('status', ['active', 'trialing', 'past_due', 'incomplete', 'unpaid', 'paused']).limit(1),
           supabaseAdmin.from('provider_membership_trials').select('workspace_id').eq('workspace_id', workspaceId).maybeSingle(),
+          supabaseAdmin.from('subscriptions').select('id').eq('user_id', context.userId).is('workspace_id', null).eq('environment', data.environment).in('status', ['active', 'trialing', 'past_due', 'incomplete', 'unpaid', 'paused']).limit(1),
         ]);
+        if (currentError || trialError || unlinkedError) throw new Error('Could not verify membership or trial eligibility');
+        if (unlinked?.length) throw new Error('An existing membership needs business linkage. Manage it from Settings → Membership.');
         baseActive = !!current?.length;
-        grantTrial = !trial;
+        grantTrial = !trial && !data.payNow;
       }
       const sel = normalizeSelection({ base: data.base, network: data.network, courses: (courses ?? []).map(c => ({ ...c, price_cents: c.price_cents ?? 0 })) }, { ownedCourseIds: [], baseActive, addonActive: false });
       if (data.base && baseActive) return { error: 'This business already has a membership. Manage it from Settings → Membership.' };
@@ -55,7 +62,7 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
       const lineItems: { price: string; quantity: number }[] = [];
       const resolve = async (key: string, type: 'recurring' | 'one_time', cents: number, label: string) => {
         const price = (await stripe.prices.list({ lookup_keys: [key], active: true })).data[0];
-        if (!price || price.type !== type || price.unit_amount !== cents || price.currency !== 'usd') throw new Error(`${label} requires product setup`);
+        if (!price || price.type !== type || price.unit_amount !== cents || price.currency !== 'usd' || (type === 'recurring' && (price.recurring?.interval !== 'month' || price.recurring.interval_count !== 1))) throw new Error(`${label} requires product setup`);
         lineItems.push({ price: price.id, quantity: 1 });
       };
       if (sel.base) await resolve(BASE_MEMBERSHIP_PRICE, 'recurring', MEMBERSHIP_PRICING.baseCents, 'Provider Base Membership');
@@ -73,17 +80,40 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
       if (workspaceId) metadata.workspaceId = workspaceId;
       if (sel.courses.length) metadata.course_slugs = JSON.stringify(sel.courses.map(c => c.slug));
       const recurring = sel.base;
-      const session = await stripe.checkout.sessions.create({
+      if (recurring && !workspaceId) throw new Error('Provider business required');
+      const params: Parameters<typeof stripe.checkout.sessions.create>[0] & { managed_payments: { enabled: boolean } } = {
         mode: recurring ? 'subscription' : 'payment', ui_mode: 'embedded_page', customer, line_items: lineItems,
         return_url: data.returnUrl, metadata,
         ...(recurring
-          ? { subscription_data: { metadata: { userId: context.userId, workspaceId: workspaceId! }, ...(grantTrial && { trial_period_days: MEMBERSHIP_PRICING.trialDays }) } }
+          ? { subscription_data: { metadata: { userId: context.userId, ...(workspaceId && { workspaceId }) }, ...(grantTrial && { trial_period_days: MEMBERSHIP_PRICING.trialDays }) } }
           : { payment_intent_data: { description: sel.courses.map(c => c.title).join(' · ') } }),
         managed_payments: { enabled: true },
-      } as any);
+      };
+      const session = await stripe.checkout.sessions.create(params);
       if (!session.client_secret) throw new Error('Stripe did not return checkout information');
       return { clientSecret: session.client_secret };
     } catch (e) { return { error: getStripeErrorMessage(e) }; }
+  });
+
+/** Read-only confirmation: a URL never proves payment or grants verification. */
+export const getCommerceCheckoutStatus = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ sessionId: z.string().regex(/^cs_[a-zA-Z0-9_]+$/), environment: z.enum(['sandbox', 'live']) }).parse(input))
+  .handler(async ({ data, context }) => {
+    try {
+      const session = await createStripeClient(data.environment).checkout.sessions.retrieve(data.sessionId);
+      if (session.metadata?.userId !== context.userId) throw new Error('Checkout not found for your account');
+      const paid = session.status === 'complete' && session.payment_status === 'paid';
+      const complete = session.status === 'complete';
+      const workspaceId = session.metadata.workspaceId;
+      let membershipSynced = false;
+      if (workspaceId && session.subscription) {
+        const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
+        const { data: row, error } = await context.supabase.from('subscriptions').select('id').eq('user_id', context.userId).eq('workspace_id', workspaceId).eq('environment', data.environment).eq('stripe_subscription_id', subscriptionId).maybeSingle();
+        if (error) throw new Error('Membership confirmation is not available yet');
+        membershipSynced = !!row;
+      }
+      return { paid, complete, membership: !!workspaceId, membershipSynced, training: !!(session.metadata.course_slugs || session.metadata.course_slug), testMode: data.environment === 'sandbox' };
+    } catch (error) { return { error: getStripeErrorMessage(error) }; }
   });
 
 /** Master Admin only (RLS): private grandfathering eligibility; never public. */
