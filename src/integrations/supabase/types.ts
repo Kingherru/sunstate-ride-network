@@ -5214,6 +5214,7 @@ export type Database = {
           promoted_at: string | null
           promoted_trip_id: string | null
           provider_notes: string | null
+          provider_owned_operation: boolean
           provider_selection_status: string | null
           recurrence_end_date: string | null
           recurrence_exceptions: string[]
@@ -5339,6 +5340,7 @@ export type Database = {
           promoted_at?: string | null
           promoted_trip_id?: string | null
           provider_notes?: string | null
+          provider_owned_operation?: boolean
           provider_selection_status?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
@@ -5464,6 +5466,7 @@ export type Database = {
           promoted_at?: string | null
           promoted_trip_id?: string | null
           provider_notes?: string | null
+          provider_owned_operation?: boolean
           provider_selection_status?: string | null
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]

@@ -421,6 +421,13 @@
       "when": 1794084231120,
       "tag": "0059_policy_acceptance_and_reversal_preparation",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1794084396965,
+      "tag": "0060_owned_trip_and_invoice_evidence_guards",
+      "breakpoints": true
     }
   ]
 }
