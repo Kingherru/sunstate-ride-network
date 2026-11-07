@@ -11,6 +11,8 @@ describe('checkout policy versions',()=>{
 });
 describe('approved responsibility, never money movement',()=>{
  it('provider failure assigns full principal and unrecovered costs to provider',()=>{const r=allocateReversalResponsibility(evidence);expect(r.principalCents).toBe(12000);expect(r.responsibleAccount).toBe('provider');expect(r.processorFeeNotReturnedCents).toBe(400);expect(r.platformAbsorptionCents).toBe(0);});
+ it('provider failure cannot prepare a partial principal return',()=>expect(()=>allocateReversalResponsibility({...evidence,principalCents:6000})).toThrow());
+ it('confirmed duplicate cannot retain part of principal',()=>expect(()=>allocateReversalResponsibility({...evidence,cause:'duplicate',principalCents:6000})).toThrow());
  it('customer cancellation applies only accepted charge with provider costs',()=>{const r=allocateReversalResponsibility({...evidence,cause:'customer_cancellation'});expect(r.customerCancellationChargeCents).toBe(1500);expect(r.responsibleAccount).toBe('provider');expect(r.undisclosedCustomerRefundFeeCents).toBe(0);});
  it('receiver failure before payout blocks payout against held funds',()=>{const r=allocateReversalResponsibility({...evidence,cause:'receiver_failure'});expect(r.recoveryStatus).toBe('held_funds_block_payout');expect(r.responsibleAccount).toBe('receiver');});
  it('receiver failure after payout opens recovery, never autocharges',()=>{const r=allocateReversalResponsibility({...evidence,cause:'receiver_failure',payoutAlreadyReleased:true});expect(r.recoveryStatus).toBe('negative_balance_recovery_review');expect(r.autoCharge).toBe(false);});
