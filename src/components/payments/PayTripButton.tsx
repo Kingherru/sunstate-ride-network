@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { toast } from "sonner";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { getStripe, getStripeEnvironment } from "@/lib/stripe";
-import { payForConfirmedTrip } from "@/lib/saved-payments.functions";
+import { DsButton } from '@/components/ds/controls';
+import { CheckoutAcknowledgment } from './CheckoutAcknowledgment';
 
 interface Props {
   rideRequestId: string;
