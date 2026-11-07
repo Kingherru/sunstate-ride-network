@@ -414,6 +414,13 @@
       "when": 1794082924484,
       "tag": "0058_invoice_quote_reference_immutability",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1794084231120,
+      "tag": "0059_policy_acceptance_and_reversal_preparation",
+      "breakpoints": true
     }
   ]
 }

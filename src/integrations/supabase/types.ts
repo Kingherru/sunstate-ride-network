@@ -399,6 +399,78 @@ export type Database = {
           },
         ]
       }
+      checkout_policy_acceptances: {
+        Row: {
+          amount_cents: number
+          attribution_hash: string
+          checkout_key: string
+          created_at: string
+          currency: string
+          id: string
+          invoice_id: string | null
+          mfn_id: string
+          person_id: string
+          provider_policy_snapshot: Json | null
+          reference_id: string
+          reference_type: string
+          refund_version: string
+          review_snapshot: Json
+          terms_version: string
+          workspace_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          attribution_hash: string
+          checkout_key: string
+          created_at?: string
+          currency: string
+          id?: string
+          invoice_id?: string | null
+          mfn_id?: string
+          person_id: string
+          provider_policy_snapshot?: Json | null
+          reference_id: string
+          reference_type: string
+          refund_version: string
+          review_snapshot: Json
+          terms_version: string
+          workspace_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          attribution_hash?: string
+          checkout_key?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          mfn_id?: string
+          person_id?: string
+          provider_policy_snapshot?: Json | null
+          reference_id?: string
+          reference_type?: string
+          refund_version?: string
+          review_snapshot?: Json
+          terms_version?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_policy_acceptances_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "trip_invoice_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_policy_acceptances_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           business_name: string | null
@@ -554,6 +626,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          policy_acceptance_id: string | null
           progress: Json
           purchased_at: string
           status: string
@@ -566,6 +639,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          policy_acceptance_id?: string | null
           progress?: Json
           purchased_at?: string
           status?: string
@@ -578,6 +652,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          policy_acceptance_id?: string | null
           progress?: Json
           purchased_at?: string
           status?: string
@@ -591,6 +666,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_policy_acceptance_id_fkey"
+            columns: ["policy_acceptance_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_policy_acceptances"
             referencedColumns: ["id"]
           },
         ]
@@ -1407,8 +1489,10 @@ export type Database = {
           created_at: string
           id: string
           metadata: Json
+          policy_acceptance_id: string | null
           provider_user_id: string | null
           reason: string | null
+          responsibility_evidence: Json | null
           trip_id: string | null
         }
         Insert: {
@@ -1418,8 +1502,10 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json
+          policy_acceptance_id?: string | null
           provider_user_id?: string | null
           reason?: string | null
+          responsibility_evidence?: Json | null
           trip_id?: string | null
         }
         Update: {
@@ -1429,11 +1515,21 @@ export type Database = {
           created_at?: string
           id?: string
           metadata?: Json
+          policy_acceptance_id?: string | null
           provider_user_id?: string | null
           reason?: string | null
+          responsibility_evidence?: Json | null
           trip_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fin_admin_actions_policy_acceptance_id_fkey"
+            columns: ["policy_acceptance_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_policy_acceptances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fin_bank_holidays: {
         Row: {
@@ -2408,8 +2504,10 @@ export type Database = {
       network_payment_attempts: {
         Row: {
           acting_user_mfn_id: string | null
+          application_fee_ref: string | null
           canceled_at: string | null
           charge_ref: string | null
+          charge_type: string | null
           confirmed_at: string | null
           created_at: string
           error_code: string | null
@@ -2425,6 +2523,7 @@ export type Database = {
           mfn_id: string
           network_fee_cents: number
           payment_intent_ref: string | null
+          policy_acceptance_id: string | null
           processing_fee_cents: number
           processor_fee_variance_cents: number | null
           receiver_payout_cents: number
@@ -2442,8 +2541,10 @@ export type Database = {
         }
         Insert: {
           acting_user_mfn_id?: string | null
+          application_fee_ref?: string | null
           canceled_at?: string | null
           charge_ref?: string | null
+          charge_type?: string | null
           confirmed_at?: string | null
           created_at?: string
           error_code?: string | null
@@ -2459,6 +2560,7 @@ export type Database = {
           mfn_id?: string
           network_fee_cents: number
           payment_intent_ref?: string | null
+          policy_acceptance_id?: string | null
           processing_fee_cents: number
           processor_fee_variance_cents?: number | null
           receiver_payout_cents: number
@@ -2476,8 +2578,10 @@ export type Database = {
         }
         Update: {
           acting_user_mfn_id?: string | null
+          application_fee_ref?: string | null
           canceled_at?: string | null
           charge_ref?: string | null
+          charge_type?: string | null
           confirmed_at?: string | null
           created_at?: string
           error_code?: string | null
@@ -2493,6 +2597,7 @@ export type Database = {
           mfn_id?: string
           network_fee_cents?: number
           payment_intent_ref?: string | null
+          policy_acceptance_id?: string | null
           processing_fee_cents?: number
           processor_fee_variance_cents?: number | null
           receiver_payout_cents?: number
@@ -2509,6 +2614,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "network_payment_attempts_policy_acceptance_id_fkey"
+            columns: ["policy_acceptance_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_policy_acceptances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "network_payment_attempts_settlement_id_fkey"
             columns: ["settlement_id"]
@@ -3979,6 +4091,93 @@ export type Database = {
           token?: string
         }
         Relationships: []
+      }
+      provider_facility_agreement_versions: {
+        Row: {
+          approved_total_cents: number
+          bill_to_workspace_id: string
+          connection_id: string
+          created_at: string
+          currency: string
+          facility_confirmed_by: string
+          facility_workspace_id: string
+          id: string
+          provider_confirmed_by: string
+          provider_policy_snapshot: string
+          provider_workspace_id: string
+          quote_reference: string
+          responsible_payer_workspace_id: string
+          version: number
+        }
+        Insert: {
+          approved_total_cents: number
+          bill_to_workspace_id: string
+          connection_id: string
+          created_at?: string
+          currency?: string
+          facility_confirmed_by: string
+          facility_workspace_id: string
+          id?: string
+          provider_confirmed_by: string
+          provider_policy_snapshot: string
+          provider_workspace_id: string
+          quote_reference: string
+          responsible_payer_workspace_id: string
+          version: number
+        }
+        Update: {
+          approved_total_cents?: number
+          bill_to_workspace_id?: string
+          connection_id?: string
+          created_at?: string
+          currency?: string
+          facility_confirmed_by?: string
+          facility_workspace_id?: string
+          id?: string
+          provider_confirmed_by?: string
+          provider_policy_snapshot?: string
+          provider_workspace_id?: string
+          quote_reference?: string
+          responsible_payer_workspace_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_facility_agreement_v_responsible_payer_workspace__fkey"
+            columns: ["responsible_payer_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_facility_agreement_versions_bill_to_workspace_id_fkey"
+            columns: ["bill_to_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_facility_agreement_versions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "account_business_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_facility_agreement_versions_facility_workspace_id_fkey"
+            columns: ["facility_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_facility_agreement_versions_provider_workspace_id_fkey"
+            columns: ["provider_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_integrations: {
         Row: {
@@ -5824,6 +6023,7 @@ export type Database = {
           current_period_start: string | null
           environment: string
           id: string
+          initial_policy_acceptance_id: string | null
           membership_currency: string | null
           membership_invoice_id: string | null
           membership_paid_at: string | null
@@ -5849,6 +6049,7 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          initial_policy_acceptance_id?: string | null
           membership_currency?: string | null
           membership_invoice_id?: string | null
           membership_paid_at?: string | null
@@ -5874,6 +6075,7 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          initial_policy_acceptance_id?: string | null
           membership_currency?: string | null
           membership_invoice_id?: string | null
           membership_paid_at?: string | null
@@ -5892,6 +6094,13 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_initial_policy_acceptance_id_fkey"
+            columns: ["initial_policy_acceptance_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_policy_acceptances"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -6085,6 +6294,8 @@ export type Database = {
           dispute_resolved_at: string | null
           estimated_miles: number | null
           expires_at: string
+          funding_required: boolean
+          funding_versions: Json
           id: string
           mfn_id: string
           network_completed_at: string | null
@@ -6135,6 +6346,8 @@ export type Database = {
           dispute_resolved_at?: string | null
           estimated_miles?: number | null
           expires_at: string
+          funding_required?: boolean
+          funding_versions?: Json
           id?: string
           mfn_id?: string
           network_completed_at?: string | null
@@ -6185,6 +6398,8 @@ export type Database = {
           dispute_resolved_at?: string | null
           estimated_miles?: number | null
           expires_at?: string
+          funding_required?: boolean
+          funding_versions?: Json
           id?: string
           mfn_id?: string
           network_completed_at?: string | null
@@ -6320,6 +6535,47 @@ export type Database = {
           },
         ]
       }
+      trip_invoice_access_tokens: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          invoice_id: string
+          revoked_at: string | null
+          scope: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          invoice_id: string
+          revoked_at?: string | null
+          scope: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          invoice_id?: string
+          revoked_at?: string | null
+          scope?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_invoice_access_tokens_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "trip_invoice_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_invoice_documents: {
         Row: {
           bill_to_snapshot: Json
@@ -6327,6 +6583,7 @@ export type Database = {
           created_at: string
           created_by: string
           due_at: string | null
+          facility_agreement_id: string | null
           id: string
           mfn_id: string
           patient_workspace_id: string | null
@@ -6336,6 +6593,7 @@ export type Database = {
           quote_id: string
           quote_snapshot: Json
           request_id: string
+          responsible_payer_workspace_id: string | null
           sent_at: string | null
           status: string
           total_cents: number
@@ -6347,6 +6605,7 @@ export type Database = {
           created_at?: string
           created_by: string
           due_at?: string | null
+          facility_agreement_id?: string | null
           id?: string
           mfn_id?: string
           patient_workspace_id?: string | null
@@ -6356,6 +6615,7 @@ export type Database = {
           quote_id: string
           quote_snapshot: Json
           request_id: string
+          responsible_payer_workspace_id?: string | null
           sent_at?: string | null
           status?: string
           total_cents: number
@@ -6367,6 +6627,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           due_at?: string | null
+          facility_agreement_id?: string | null
           id?: string
           mfn_id?: string
           patient_workspace_id?: string | null
@@ -6376,6 +6637,7 @@ export type Database = {
           quote_id?: string
           quote_snapshot?: Json
           request_id?: string
+          responsible_payer_workspace_id?: string | null
           sent_at?: string | null
           status?: string
           total_cents?: number
@@ -6387,6 +6649,13 @@ export type Database = {
             columns: ["billed_workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_invoice_documents_facility_agreement_id_fkey"
+            columns: ["facility_agreement_id"]
+            isOneToOne: false
+            referencedRelation: "provider_facility_agreement_versions"
             referencedColumns: ["id"]
           },
           {
@@ -6408,6 +6677,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_invoice_documents_responsible_payer_workspace_id_fkey"
+            columns: ["responsible_payer_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -6579,6 +6855,8 @@ export type Database = {
         Row: {
           amount_cents: number
           amount_refunded_cents: number
+          application_fee_ref: string | null
+          charge_type: string | null
           created_at: string
           environment: string
           id: string
@@ -6586,7 +6864,9 @@ export type Database = {
           invoice_idempotency_key: string | null
           payer_user_id: string
           platform_fee_cents: number
+          policy_acceptance_id: string | null
           provider_user_id: string | null
+          reversal_evidence: Json
           ride_request_id: string | null
           status: string
           stripe_charge_id: string | null
@@ -6599,6 +6879,8 @@ export type Database = {
         Insert: {
           amount_cents: number
           amount_refunded_cents?: number
+          application_fee_ref?: string | null
+          charge_type?: string | null
           created_at?: string
           environment?: string
           id?: string
@@ -6606,7 +6888,9 @@ export type Database = {
           invoice_idempotency_key?: string | null
           payer_user_id: string
           platform_fee_cents?: number
+          policy_acceptance_id?: string | null
           provider_user_id?: string | null
+          reversal_evidence?: Json
           ride_request_id?: string | null
           status?: string
           stripe_charge_id?: string | null
@@ -6619,6 +6903,8 @@ export type Database = {
         Update: {
           amount_cents?: number
           amount_refunded_cents?: number
+          application_fee_ref?: string | null
+          charge_type?: string | null
           created_at?: string
           environment?: string
           id?: string
@@ -6626,7 +6912,9 @@ export type Database = {
           invoice_idempotency_key?: string | null
           payer_user_id?: string
           platform_fee_cents?: number
+          policy_acceptance_id?: string | null
           provider_user_id?: string | null
+          reversal_evidence?: Json
           ride_request_id?: string | null
           status?: string
           stripe_charge_id?: string | null
@@ -6642,6 +6930,13 @@ export type Database = {
             columns: ["invoice_document_id"]
             isOneToOne: false
             referencedRelation: "trip_invoice_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_payments_policy_acceptance_id_fkey"
+            columns: ["policy_acceptance_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_policy_acceptances"
             referencedColumns: ["id"]
           },
           {
@@ -8684,8 +8979,10 @@ export type Database = {
           created_at: string
           id: string
           metadata: Json
+          policy_acceptance_id: string | null
           provider_user_id: string | null
           reason: string | null
+          responsibility_evidence: Json | null
           trip_id: string | null
         }[]
         SetofOptions: {
@@ -8840,6 +9137,7 @@ export type Database = {
         Returns: number
       }
       holds_admin_label: { Args: { _user_id: string }; Returns: boolean }
+      invoice_viewed: { Args: { _invoice: string }; Returns: undefined }
       is_active_workspace_member: {
         Args: { _uid: string; _ws: string }
         Returns: boolean
