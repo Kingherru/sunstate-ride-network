@@ -2,13 +2,15 @@
 1. [x] Onboarding foundation — Pass 4B; three signup choices, verified-email continuation, optional saved setup steps, authoritative personal/workspace/patient fields, existing private credential and Network forms, synthetic Master Admin preview. New account setup creates active basic workspaces; no existing workspace statuses/classifications changed.
    - Existing owners may resume/review from Settings without portal lockout; training-only and role routing retained. No real account creation/save/upload/email/payment was exercised.
    - Remaining focused follow-up: consolidate legacy business application and verification legal/address fields after confirming authoritative ownership; credential policy/carrier fields stay limited to the existing model; multiple-owned-account setup selection and legacy missing-organization recovery are not completed here. Single patient mobility default only, no new relationship authority.
-2. [ ] Provider Settings rebuild and provider-owned pricing.
-   - Pass 4C in progress: consolidate existing controls into six sections, add private versioned Customer Pricing with server-authoritative calculation; preserve all existing rates/records and owner-only finances.
+2. [x] Provider Settings rebuild and provider-owned pricing — Pass 4C: six sections, private effective-dated Customer Pricing with confirmation and locked owner/admin writes (contractors excluded), integer cents, four services, append-only version/person/workspace attribution, future quote calculation with snapshot; no existing rates or trips rewritten.
+   - Existing pricing/team/profile/payout extras moved into sections; legacy application history and attested legal identity intentionally retained because they are different authoritative records, not duplicate copies. Onboarding and Settings share Network services/Medical Delivery and private credential carrier/policy/coverage/effective/expiry fields. Legacy section/tab query aliases retained.
+   - Limitations: workspace contact editing still uses the existing single-owner onboarding path; admins cannot read another person's legacy pricing under its existing RLS, so missing values are clearly unsaved placeholders. No historical rate versions can be reconstructed before the first save. New customer pricing is prepared for the later live-invoice/New Trip build, not wired to reprice existing estimates/trips. Weekend surcharge is not an existing supported component. No real pricing save/upload/financial action or browser flow was exercised.
+   - Verification: six targeted pricing-rule tests passed; automatic compilation reported build OK. No manual build/typecheck commands, broad tests, scans or real data writes.
    - Business & Operations; Pricing; Credentials & Verification; Team & Integrations; Billing & Payouts; Account & Security.
    - Provider Pricing controls provider customer rates only. Admin Pricing controls platform membership, Referral Network add-on, platform fees and system guardrails.
    - Rate changes apply to new quotes/drafts only, never booked, paid, completed or historical trips.
    - Consolidate duplicate Provider Settings panels only after confirming shared authoritative data/actions.
-3. [ ] Account linking, Who Referred You, and invitations.
+3. [ ] Account linking, Who Referred You, and invitations — next Florida MVP build.
 4. [ ] Patient trip visibility, status timeline, and history.
 5. [ ] Provider/Facility New Trip with live invoice or referral funding.
 6. [ ] Linked-patient invoicing and secure payments.
