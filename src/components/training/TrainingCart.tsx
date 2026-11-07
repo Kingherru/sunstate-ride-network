@@ -82,7 +82,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
           <dl className="ds-body space-y-1 rounded-ds border border-ds-border bg-ds-surface p-4">
             {hasRecurring && <div className="flex justify-between gap-4"><dt>Monthly total</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.recurringCents)}</span>/month</dd></div>}
             {sel.courses.length > 0 && <div className="flex justify-between gap-4"><dt>One-time training total</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.oneTimeCents)}</span></dd></div>}
-            <div className="flex justify-between gap-4 border-t border-ds-border pt-1"><dt className="font-semibold">Due at checkout{sel.base && membership.trialEligible ? ' (30-day trial if eligible)' : ''}</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.dueTodayCents)}</span></dd></div>
+            <div className="flex justify-between gap-4 border-t border-ds-border pt-1"><dt className="font-semibold">Product subtotal before final fee/tax review{sel.base && membership.trialEligible ? ' (30-day trial if eligible)' : ''}</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.dueTodayCents)}</span></dd></div>
           </dl>
           {hasRecurring && <p className="ds-caption">The 2% Network fee applies only to applicable referral transactions; it is not charged for joining. Future monthly charges exclude separately incurred Network transaction fees. Prices and plan availability are subject to change. If you already used a trial, billing starts today.</p>}
           {!signedIn ? <Link to="/login" className="text-ds-link underline">Sign in to purchase</Link> : !req && <fieldset className="space-y-2">
@@ -96,7 +96,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
             <DsButton disabled={!ready} onClick={() => { try { getStripeEnvironment(); setReq({ base: sel.base, network: sel.network, ids: sel.courses.map(c => c.id), confirm }); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } }}>Review checkout availability</DsButton>
           </fieldset>}
           {error && <p role="alert" className="text-ds-error">{error}</p>}
-          {req && <><PaymentTestModeBanner /><CheckoutErrorBoundary><Checkout req={req} /></CheckoutErrorBoundary></>}
+          {req && <><p role="status" className="ds-body">Checkout is off pending approved purchase-specific terms and exact final fee/tax review. Nothing was saved or charged.</p><DsButton variant="secondary" onClick={()=>{setReq(null);setConfirm({recurring:false,oneTime:false,terms:false});}}>Correct cart / return to review</DsButton></>}
         </>}
       </DialogContent>
     </Dialog>
