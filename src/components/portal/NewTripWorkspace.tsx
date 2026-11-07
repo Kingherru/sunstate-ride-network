@@ -54,7 +54,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
     if (preview.active) return previewBlocked(); if (!ack) return;
     setBusy(true); try { setFunding(await prepareFunding({ data: { workspaceId, receiverCents: Number(receiver), environment: 'sandbox' } })); } catch (e) { toast.error(e instanceof Error ? e.message : 'Funding unavailable.'); } finally { setBusy(false); }
   }
-  return <TripCommerceContext.Provider value={{ onChange: change, quote: attachment, business: true }}>
+  return <TripCommerceContext.Provider value={{ onChange: change, quote: attachment, business: true, submissionBlocked: network || !!confirmed && !unchanged }}>
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <div className="min-w-0"><RequestForm context="portal" initialDraft={initialDraft} allowProviderSelection={!provider}/></div>
       <aside className="min-w-0 self-start border border-ds-border bg-ds-surface xl:sticky xl:top-24">

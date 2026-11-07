@@ -55,7 +55,7 @@ export function DatePickerField({
   const maxDate = effMax ? parse(effMax, "yyyy-MM-dd", new Date()) : undefined;
 
   return (
-    <label className={cn("block", className)}>
+    <label className={cn("relative block min-w-0", className)}>
       {label && <span className="portal-label">{label}{required && " *"}</span>}
       <Popover>
         <PopoverTrigger asChild>

@@ -5,4 +5,5 @@ export const TripCommerceContext = createContext<{
   onChange: (form: CommerceFormData) => void;
   quote: { draftId: string; id: string } | null;
   business: boolean;
+  submissionBlocked: boolean;
 } | null>(null);

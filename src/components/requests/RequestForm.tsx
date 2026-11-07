@@ -314,6 +314,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (preview.active) { previewBlocked(); return; }
+    if (commerce?.submissionBlocked) { toast.error('Confirm the changed quote first, or finish the separate controlled Network preparation. Nothing was submitted.'); return; }
     setErrors({});
     const withBilling: RideRequestInput = {
       ...form,
@@ -1043,6 +1044,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
     e.preventDefault();
     setErrors({});
     if (preview.active) { previewBlocked(); return; }
+    if (commerce?.submissionBlocked) { toast.error('Confirm the changed quote first. Nothing was submitted.'); return; }
     const parsed = deliveryRequestSchema.safeParse({ ...form, customerQuoteDraftId: commerce?.quote?.draftId ?? null, customerQuoteId: commerce?.quote?.id ?? null });
     if (!parsed.success) {
       const errs: Record<string, string> = {};
