@@ -3,6 +3,8 @@ import { useServerFn } from '@tanstack/react-start';
 import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { FileText, RefreshCw } from 'lucide-react';
+import {FacilityQuoteInbox} from './FacilityQuoteInbox';
+import {requestFacilityQuote} from '@/lib/facility-billing.functions';
 import { FacilityBillingReview } from './FacilityBillingReview';
 import { CheckoutAcknowledgment } from '@/components/payments/CheckoutAcknowledgment';
 import { RequestForm } from '@/components/requests/RequestForm';
@@ -31,6 +33,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
   const [calculated, setCalculated] = useState<{ lines: InvoiceLine[]; totalCents: number } | null>(null);
   const [funding, setFunding] = useState<{ networkFeeCents: number; processingCents: number | null; totalCents: number | null; blocker: string; policyVersion: number | null } | null>(null);
   const [details, setDetails] = useState(false); const [examples, setExamples] = useState(true);
+  const requestFacility=useServerFn(requestFacilityQuote);
   const calculate = useServerFn(calculateProviderCustomerQuote); const confirm = useServerFn(confirmTripCustomerQuote); const save = useServerFn(saveTripDraft); const prepareFunding = useServerFn(getReferralFundingPreparation);
   const unchanged = quoteForm === JSON.stringify(form); const attachment = confirmed && draftId && unchanged && !network ? { id: confirmed.id, draftId } : null;
   const demoLines: InvoiceLine[] = [{ label: 'Pickup / loading', cents: 4000 }, { label: 'Mileage after included miles', cents: 3000 }];
@@ -66,7 +69,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
         <div className={`${details ? 'block' : 'hidden'} space-y-5 p-4 xl:block`}>
           {preview.active && <div className="flex flex-wrap gap-2"><p className="ds-caption">Synthetic example — all financial actions blocked.</p><DsButton variant="ghost" onClick={() => setExamples(!examples)}>{examples ? 'Remove example' : 'Show example'}</DsButton></div>}
           {provider && <DsCheckbox label="Send through Referral Network" checked={network} onChange={e => { setNetwork(e.target.checked); setFunding(null); setAck(false); setPolicyAccepted(false); }}/>} 
-          {!provider ? <div className="space-y-3"><StatusPill status="Pending"/><p className="ds-body">Quote required</p><p className="ds-support">Your chosen provider must supply an approved customer quote. Private provider rates are not available to this account.</p><FacilityBillingReview workspaceId={workspaceId}/></div> : network ? <>
+          {!provider ? <div className="space-y-3"><StatusPill status="Pending"/><p className="ds-body">Quote required</p><p className="ds-support">Your chosen provider must supply an approved customer quote. Private provider rates are not available to this account.</p><DsButton disabled={busy||preview.active||!form} onClick={async()=>{if(!form||!window.confirm('Request a trip-specific quote from the selected accepted provider?'))return;try{const saved=await save({data:{draft_id:draftId,payload:form,autosaved:false}});setDraftId(saved.id);await requestFacility({data:{draftId:saved.id,confirmed:true}});toast.success('Quote requested in portal. No message or invoice sent.');}catch{toast.error('Choose an accepted provider and complete the trip first.');}}}>Request provider quote</DsButton><FacilityBillingReview workspaceId={workspaceId} draftId={draftId} onAccepted={d=>{const quotes=Array.isArray(d.customer_quote_history)?d.customer_quote_history as Quote[]:[];setConfirmed(quotes.at(-1)??null);setQuoteForm(JSON.stringify(form));}}/></div> : network ? <>
             <p className="ds-support">Service, general route and compensation only. Patient identity remains protected under existing assignment rules.</p><p className="ds-support">Payer: sending provider workspace · Merchant: MY FLORIDA NEMT · One-time funding · USD. Amounts below are preparation only; missing processing configuration blocks acceptance and payment.</p>
             <DsField label="Proposed receiver compensation (cents)">{p => <DsInput {...p} type="number" min="1" step="1" value={receiver} onChange={e => {setReceiver(e.target.value);setFunding(null);setPolicyAccepted(false);setAck(false);}}/>}</DsField>
             <dl className="space-y-2 ds-body"><div className="flex justify-between gap-3"><dt>Network fee (2%)</dt><dd className="portal-money">{funding ? money(funding.networkFeeCents) : 'Not prepared'}</dd></div><div className="flex justify-between gap-3"><dt>Processing recovery</dt><dd className="portal-money">{funding?.processingCents != null ? money(funding.processingCents) : 'Configuration required'}</dd></div><div className="flex justify-between gap-3"><dt>Customer invoice / retained amount</dt><dd>No invoice issued</dd></div><div className="flex justify-between gap-3"><dt>Sender margin</dt><dd>Not available</dd></div></dl>
@@ -82,6 +85,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
             <DsField label="Provider cancellation / no-show policy and exact disclosed charges">{p => <DsTextarea {...p} value={terms} maxLength={3000} onChange={e => { setTerms(e.target.value); setQuoteForm(null); }}/>}</DsField>
             <p className="ds-support">Processing: not applied — approved collection configuration required. Amount paid and balance appear only on an issued invoice.</p>
             <DsButton disabled={busy || !manualConfirmed} onClick={confirmQuote}>{confirmed ? 'Confirm replacement quote' : 'Confirm quote snapshot'}</DsButton>
+            <FacilityQuoteInbox workspaceId={workspaceId}/>
             {confirmed && <p className="ds-support">Quote version {confirmed.version} · {unchanged ? 'Confirmed for this trip' : 'Trip or price inputs changed — confirm replacement before attaching invoice'}</p>}
           </>}
         </div>

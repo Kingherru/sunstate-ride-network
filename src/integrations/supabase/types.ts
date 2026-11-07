@@ -768,6 +768,8 @@ export type Database = {
           passing_score: number
           price_cents: number
           price_id: string | null
+          private_file_path: string | null
+          product_kind: string
           slug: string
           summary: string
           title: string
@@ -784,6 +786,8 @@ export type Database = {
           passing_score?: number
           price_cents?: number
           price_id?: string | null
+          private_file_path?: string | null
+          product_kind?: string
           slug: string
           summary?: string
           title: string
@@ -800,6 +804,8 @@ export type Database = {
           passing_score?: number
           price_cents?: number
           price_id?: string | null
+          private_file_path?: string | null
+          product_kind?: string
           slug?: string
           summary?: string
           title?: string
@@ -865,6 +871,48 @@ export type Database = {
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digital_guide_download_events: {
+        Row: {
+          action: string
+          course_id: string
+          created_at: string
+          enrollment_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          course_id: string
+          created_at?: string
+          enrollment_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          course_id?: string
+          created_at?: string
+          enrollment_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_guide_download_events_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digital_guide_download_events_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
             referencedColumns: ["id"]
           },
         ]
@@ -4098,6 +4146,7 @@ export type Database = {
           bill_to_workspace_id: string
           connection_id: string
           created_at: string
+          creator_person_mfn_id: string | null
           currency: string
           facility_confirmed_by: string
           facility_workspace_id: string
@@ -4107,6 +4156,7 @@ export type Database = {
           provider_workspace_id: string
           quote_reference: string
           responsible_payer_workspace_id: string
+          scope_fingerprint: string | null
           version: number
         }
         Insert: {
@@ -4114,6 +4164,7 @@ export type Database = {
           bill_to_workspace_id: string
           connection_id: string
           created_at?: string
+          creator_person_mfn_id?: string | null
           currency?: string
           facility_confirmed_by: string
           facility_workspace_id: string
@@ -4123,6 +4174,7 @@ export type Database = {
           provider_workspace_id: string
           quote_reference: string
           responsible_payer_workspace_id: string
+          scope_fingerprint?: string | null
           version: number
         }
         Update: {
@@ -4130,6 +4182,7 @@ export type Database = {
           bill_to_workspace_id?: string
           connection_id?: string
           created_at?: string
+          creator_person_mfn_id?: string | null
           currency?: string
           facility_confirmed_by?: string
           facility_workspace_id?: string
@@ -4139,6 +4192,7 @@ export type Database = {
           provider_workspace_id?: string
           quote_reference?: string
           responsible_payer_workspace_id?: string
+          scope_fingerprint?: string | null
           version?: number
         }
         Relationships: [
@@ -6291,6 +6345,7 @@ export type Database = {
           completion_information_submitted_at: string | null
           created_at: string
           current_radius: number | null
+          customer_invoice_document_id: string | null
           destination_area: string
           dispute_opened_at: string | null
           dispute_reason_code: string | null
@@ -6343,6 +6398,7 @@ export type Database = {
           completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
+          customer_invoice_document_id?: string | null
           destination_area: string
           dispute_opened_at?: string | null
           dispute_reason_code?: string | null
@@ -6395,6 +6451,7 @@ export type Database = {
           completion_information_submitted_at?: string | null
           created_at?: string
           current_radius?: number | null
+          customer_invoice_document_id?: string | null
           destination_area?: string
           dispute_opened_at?: string | null
           dispute_reason_code?: string | null
@@ -6438,6 +6495,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_distributions_customer_invoice_document_id_fkey"
+            columns: ["customer_invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "trip_invoice_documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trip_distributions_request_id_fkey"
             columns: ["request_id"]
@@ -6865,6 +6929,7 @@ export type Database = {
           id: string
           invoice_document_id: string | null
           invoice_idempotency_key: string | null
+          invoice_payment_evidence: Json
           payer_user_id: string
           platform_fee_cents: number
           policy_acceptance_id: string | null
@@ -6889,6 +6954,7 @@ export type Database = {
           id?: string
           invoice_document_id?: string | null
           invoice_idempotency_key?: string | null
+          invoice_payment_evidence?: Json
           payer_user_id: string
           platform_fee_cents?: number
           policy_acceptance_id?: string | null
@@ -6913,6 +6979,7 @@ export type Database = {
           id?: string
           invoice_document_id?: string | null
           invoice_idempotency_key?: string | null
+          invoice_payment_evidence?: Json
           payer_user_id?: string
           platform_fee_cents?: number
           policy_acceptance_id?: string | null
@@ -8747,6 +8814,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      accept_facility_quote: { Args: { _proposal: string }; Returns: string }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
       admin_account_conversation_access: {
         Args: { _thread: string; _write?: boolean }
@@ -8818,6 +8886,19 @@ export type Database = {
       }
       admin_user_ids: { Args: never; Returns: string[] }
       admin_user_removal_plan: { Args: { _user: string }; Returns: Json }
+      apply_verified_invoice_payment: {
+        Args: {
+          _account: string
+          _amount: number
+          _currency: string
+          _env: string
+          _event: string
+          _intent: string
+          _payment: string
+          _status: string
+        }
+        Returns: boolean
+      }
       approve_membership_transition: {
         Args: { _id: string }
         Returns: undefined
@@ -9596,6 +9677,16 @@ export type Database = {
       }
       prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
+      prepare_owned_trip_referral: {
+        Args: {
+          _amount: number
+          _expires: string
+          _refund: string
+          _terms: string
+          _trip: string
+        }
+        Returns: string
+      }
       prepare_referral_funding_version: {
         Args: {
           _distribution: string
@@ -9609,6 +9700,10 @@ export type Database = {
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
         Args: { _ride_request_id: string }
+        Returns: string
+      }
+      propose_facility_quote: {
+        Args: { _cents: number; _policy: string; _request: string }
         Returns: string
       }
       provider_can_serve_ride: {
@@ -9698,6 +9793,7 @@ export type Database = {
         Args: { _trip_id: string }
         Returns: string
       }
+      request_facility_quote: { Args: { _draft: string }; Returns: string }
       request_lifecycle_allowed: {
         Args: { _from: string; _to: string }
         Returns: boolean

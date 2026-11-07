@@ -27,6 +27,7 @@ import { Route as InvoiceAccessRouteImport } from './routes/invoice-access'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as PoliciesRouteImport } from './routes/policies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -204,6 +205,11 @@ const LoginRoute = LoginRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliciesRoute = PoliciesRouteImport.update({
+  id: '/policies',
+  path: '/policies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -724,6 +730,7 @@ export interface FileRoutesByFullPath {
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/policies': typeof PoliciesRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -831,6 +838,7 @@ export interface FileRoutesByTo {
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/policies': typeof PoliciesRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -936,6 +944,7 @@ export interface FileRoutesById {
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/policies': typeof PoliciesRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -1045,6 +1054,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/login'
     | '/mcp'
+    | '/policies'
     | '/privacy'
     | '/refund-policy'
     | '/reset-password'
@@ -1152,6 +1162,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/login'
     | '/mcp'
+    | '/policies'
     | '/privacy'
     | '/refund-policy'
     | '/reset-password'
@@ -1256,6 +1267,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/login'
     | '/mcp'
+    | '/policies'
     | '/privacy'
     | '/refund-policy'
     | '/reset-password'
@@ -1365,6 +1377,7 @@ export interface RootRouteChildren {
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
+  PoliciesRoute: typeof PoliciesRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1528,6 +1541,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/policies': {
+      id: '/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof PoliciesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -2319,6 +2339,7 @@ const rootRouteChildren: RootRouteChildren = {
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
+  PoliciesRoute: PoliciesRoute,
   PrivacyRoute: PrivacyRoute,
   RefundPolicyRoute: RefundPolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,

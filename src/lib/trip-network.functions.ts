@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { distributionInput } from '@/lib/trip-network-rules';
+import {assertCheckoutConsent,TERMS_VERSION,PAYMENT_POLICY_VERSION} from './payment-policy';
 
 
 /** Paid Referral Network add-on (or shared trial) gates live referral activity; Master Admin is exempt. */
@@ -34,6 +35,12 @@ export const createNetworkDistribution = createServerFn({ method: 'POST' }).midd
   .inputValidator((i: unknown) => distributionInput.parse(i))
   .handler(async ({ data, context }) => {
     await requireNetworkAddon(context.supabase, context.userId);
+    if(data.trip_id){
+      assertCheckoutConsent(data.policyConsent);
+      const {data:id,error}=await context.supabase.rpc('prepare_owned_trip_referral',{_trip:data.trip_id,_amount:data.amount_cents,_expires:data.expires_at,_terms:TERMS_VERSION,_refund:PAYMENT_POLICY_VERSION});
+      if(error)throw new Error('Referral preparation is off or approved processing recovery / owned invoice linkage is unavailable. No offer was sent or funded.');
+      return {id:id as string};
+    }
     const { data: id, error } = await context.supabase.rpc('network_create_distribution', { _request: data.request_id, _trip: data.trip_id, _amount: data.amount_cents, _expires: data.expires_at });
     if (error) throw new Error(error.message);
     if (data.payment_responsibility_confirmed) await context.supabase.rpc('network_ack_payment_responsibility', { _distribution: id as string });
@@ -94,7 +101,7 @@ export const getDistributionReadiness = createServerFn({ method: 'POST' }).middl
     const { data: scope } = data.request_id ? await context.supabase.rpc('admin_can_account', { _workspace_id: r.workspace_id }) : sourceWorkspace ? await context.supabase.rpc('network_workspace_access',{_ws:sourceWorkspace,_manage:true}) : {data:false};
     if (!can || !scope) throw new Error('Distribution permission required.');
     const missing = [!r.pickup_city && 'Pickup area', !r.dropoff_city && 'Destination area', !r.pickup_date && 'Date', !r.pickup_time && 'Time', (r.pickup_lat == null || r.pickup_lng == null) && 'Reliable pickup coordinates', r.trip_kind === 'medical_delivery' && 'Medical Delivery offers are not enabled', r.is_test && 'Test sources cannot be distributed'].filter(Boolean) as string[];
-    return { source_id: r.mfn_id || r.display_id, service_type: r.transport_type, pickup_area: r.pickup_city, destination_area: r.dropoff_city, pickup_date: r.pickup_date, pickup_time: r.pickup_time, trip_type: r.trip_type || (r.round_trip ? 'round_trip' : 'one_way'), estimated_miles: r.distance_miles, missing };
+    return { source_workspace_id:sourceWorkspace, source_id: r.mfn_id || r.display_id, service_type: r.transport_type, pickup_area: r.pickup_city, destination_area: r.dropoff_city, pickup_date: r.pickup_date, pickup_time: r.pickup_time, trip_type: r.trip_type || (r.round_trip ? 'round_trip' : 'one_way'), estimated_miles: r.distance_miles, missing };
   });
 export const markNetworkAttention = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
   const {data,error}=await context.supabase.rpc('network_mark_attention'); if(error) throw new Error(error.message); return data;

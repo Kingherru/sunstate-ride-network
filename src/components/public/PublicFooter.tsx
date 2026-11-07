@@ -19,11 +19,8 @@ const COLS: { title: string; items: Item[] }[] = [
   ] },
 ];
 const LEGAL: Item[] = [
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-  { label: "Refund & Payment Reversal Policy", href: "/refund-policy" },
+  { label: "OUR POLICIES", href: "/policies" },
   { label: "Contact Us", href: "/contact" },
-  { label: "Accessibility", href: "/accessibility" },
   { label: "Sitemap", href: "/sitemap" },
 ];
 

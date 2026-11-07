@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { TermsOctober2026 } from "@/components/public/TermsOctober2026";
 import { LegalPage } from "@/components/public/LegalPage";
 import { pageHead } from "@/components/public/page-kit";
@@ -6,7 +6,7 @@ import { TERMS_PAYMENT_SECTIONS, TERMS_VERSION, POLICY_EFFECTIVE_DATE, REFUND_VE
 export const Route = createFileRoute("/terms")({
   validateSearch: (search: Record<string, unknown>): { version?: string } => ({ version: typeof search.version === 'string' ? search.version : undefined }),
   head: () => pageHead("/terms", "Terms and Conditions | MY FLORIDA NEMT", "Platform and provider responsibilities, recurring billing, Network fees, holds, disputes and versioned electronic purchase consent."),
-  component: Terms,
+  beforeLoad:({search})=>{throw redirect({to:'/policies',search:{version:search.version},hash:'terms',statusCode:301});},
 });
 function Terms() {
   const { version } = Route.useSearch();

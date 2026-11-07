@@ -442,6 +442,41 @@
       "when": 1794085144763,
       "tag": "0062_invoice_history_and_owned_draft_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1794088697413,
+      "tag": "0063_guide_catalog_private_download_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1794088873688,
+      "tag": "0064_facility_bilateral_quote_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1794088915866,
+      "tag": "0065_atomic_facility_invoice_attachment",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1794088975010,
+      "tag": "0066_owned_referral_invoice_and_payment_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1794089156666,
+      "tag": "0067_private_guide_and_facility_confirmation_guards",
+      "breakpoints": true
     }
   ]
 }

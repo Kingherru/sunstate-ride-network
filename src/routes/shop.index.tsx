@@ -9,12 +9,14 @@ export const Route = createFileRoute("/shop/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(coursesQO),
   head: () => ({
     meta: [
-      { title: "Training Shop — HIPAA & NEMT Certification | MY FLORIDA NEMT" },
+      { title: "Training & Resources Shop | MY FLORIDA NEMT" },
       { name: "description", content: "Buy online HIPAA training and NEMT certification courses. Complete the exam and get a printable certificate." },
-      { property: "og:title", content: "Training Shop — HIPAA & NEMT Certification" },
+      { property: "og:title", content: "Training & Resources Shop" },
       { property: "og:description", content: "Certification courses for NEMT drivers, dispatchers, and staff." },
       { property: "og:url", content: "https://myfloridanemt.com/shop" },
       { name: "robots", content: "index,follow" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
     links: [{ rel: "canonical", href: "https://myfloridanemt.com/shop" }],
   }),
@@ -27,9 +29,9 @@ function ShopIndex() {
     <main className="flex-1">
         <section className="bg-primary text-primary-foreground py-14">
           <div className="max-w-6xl mx-auto px-4">
-            <div className="flex items-center gap-3 mb-3"><ShoppingBag className="w-6 h-6" /><span className="uppercase tracking-wider text-sm">Training Shop</span></div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">HIPAA & NEMT Certification Courses</h1>
-            <p className="text-lg opacity-90 max-w-2xl">Online training for drivers, dispatchers, and NEMT staff. Purchase, complete the modules, pass the exam, and download your certificate. No account required to buy — creating one is recommended so your progress and certificate are saved.</p>
+            <div className="flex items-center gap-3 mb-3"><ShoppingBag className="w-6 h-6" /><span className="uppercase tracking-wider text-sm">Training & Resources</span></div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">TRAINING & RESOURCES</h1>
+            <p className="text-lg opacity-90 max-w-2xl">Online training for drivers, dispatchers, and NEMT staff. Purchase, complete the modules, pass the exam, and download your certificate. Sign in to purchase and retain your training or digital-resource access.</p>
           </div>
         </section>
 
@@ -46,8 +48,8 @@ function ShopIndex() {
                     <p className="text-sm text-ds-text-2 mb-4 flex-1">{c.summary}</p>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-3 text-ds-text-2">
-                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{c.duration_min} min</span>
-                        <span className="flex items-center gap-1"><Award className="w-4 h-4" />Cert</span>
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{c.product_kind==='digital_guide'?'PDF guide':`${c.duration_min} min`}</span>
+                        <span className="flex items-center gap-1"><Award className="w-4 h-4" />{c.product_kind==='digital_guide'?'Guide':'Cert'}</span>
                       </div>
                       <span className="font-bold text-lg">${(c.price_cents / 100).toFixed(2)}</span>
                     </div>

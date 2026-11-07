@@ -13,7 +13,7 @@ export const Route = createFileRoute("/training")({
   head: ({ loaderData }) => {
     const h = pageHead("/training", "NEMT Training — HIPAA & Florida Basic NEMT Test | MY FLORIDA NEMT",
       "Online training for Florida NEMT drivers and staff: HIPAA Training for NEMT and the Florida Basic NEMT Test, each with an exam and printable certificate.", "Training");
-    const courses = (loaderData ?? []).map((c) => ldScript({ "@context": "https://schema.org", "@type": "Course", name: c.title, description: c.summary ?? c.title,
+    const courses = (loaderData ?? []).filter(c=>c.product_kind==='course').map((c) => ldScript({ "@context": "https://schema.org", "@type": "Course", name: c.title, description: c.summary ?? c.title,
       url: `${SITE}/shop/${c.slug}`, provider: { "@type": "Organization", name: "MY FLORIDA NEMT", url: `${SITE}/` } }));
     return { ...h, scripts: [...h.scripts, ...courses] };
   },
@@ -29,7 +29,7 @@ function TrainingPage() {
         <div className="mfn-container">
           <Reveal><SectionHead id="courses" title="Two courses" intro="Each course is purchased separately. Creating an account is recommended so your progress and certificate are saved." /></Reveal>
           <ul className="mx-auto mt-10 grid max-w-5xl gap-6 md:grid-cols-2">
-            {courses.map((c, i) => (
+            {courses.filter(c=>c.product_kind==='course').map((c, i) => (
               <li key={c.id}><Reveal delay={i * 80} className="h-full">
                 <div className="flex h-full flex-col rounded-ds-lg bg-ds-sky p-7 sm:p-9">
                   <span className="flex size-12 items-center justify-center rounded-ds-sm bg-ds-primary text-ds-on-primary">{i === 0 ? <ShieldCheck className="size-6" aria-hidden /> : <GraduationCap className="size-6" aria-hidden />}</span>
@@ -48,6 +48,7 @@ function TrainingPage() {
           <p className="ds-body mt-8 text-center text-ds-text-2">Already purchased? <a href="/learn" className="text-ds-link underline underline-offset-4">Go to my courses</a> · Pricing is subject to change.</p>
         </div>
       </section>
+      <section className="mfn-section bg-ds-sky"><div className="mfn-container text-center"><h2 className="ds-section-title uppercase text-ds-primary">DIGITAL BUSINESS GUIDE</h2><p className="ds-body-lg mx-auto mt-4 max-w-2xl">How to Start an NEMT Business in 30 Days or Less · $50 one-time. Simplified educational guidance, not a certification or approval.</p><a href="/shop/nemt-startup-guide" className={`${btnAction} mt-6`}>View guide</a></div></section>
       <CtaBand title="Training for your whole team" text="Running an NEMT business? Join the provider network and keep your team's training in one place." actions={[{ label: "Join the Provider Network", to: LINKS.join, icon: GraduationCap }]} />
     </PublicPage>
   );

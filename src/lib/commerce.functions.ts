@@ -31,7 +31,7 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
       if (new URL(data.returnUrl).origin !== new URL(getRequest().url).origin) throw new Error('Invalid checkout return address');
       const ids = [...new Set(data.courseIds)];
       const { data: courses, error } = ids.length
-        ? await context.supabase.from('courses').select('id,slug,title,price_id,price_cents').in('id', ids).eq('is_published', true)
+        ? await context.supabase.from('courses').select('id,slug,title,price_id,price_cents,product_kind').in('id', ids).eq('is_published', true)
         : { data: [], error: null };
       if (error || (courses?.length ?? 0) !== ids.length) throw new Error('A course is unavailable');
       const { data: owned, error: ownedError } = ids.length ? await context.supabase.from('course_enrollments').select('course_id').eq('user_id', context.userId).in('course_id', ids) : { data: [], error: null };
