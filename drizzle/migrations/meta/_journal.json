@@ -407,6 +407,13 @@
       "when": 1794082724967,
       "tag": "0057_patient_invoice_projection_and_snapshot_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1794082924484,
+      "tag": "0058_invoice_quote_reference_immutability",
+      "breakpoints": true
     }
   ]
 }
