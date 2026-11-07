@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { useTrainingCart } from '@/components/training/TrainingCart';
 import { listMyEnrollments } from '@/lib/courses.functions';
 import { useQuery } from '@tanstack/react-query';
+import {DigitalGuideDetail} from '@/components/training/DigitalGuideDetail';
 
 const qo = (slug: string) => queryOptions({ queryKey: ["shop", "course", slug], queryFn: () => getPublicCourse({ data: { slug } }) });
 
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/shop/$slug")({
     const c = loaderData?.course;
     return {
       meta: [
-        { title: c ? `${c.title} — Training Shop | MY FLORIDA NEMT` : "Course — Training Shop" },
+        { title: c ? `${c.title} — Training & Resources | MY FLORIDA NEMT` : "Product — MY FLORIDA NEMT" },
         { name: "description", content: c?.summary ?? "NEMT certification training course." },
         { property: "og:title", content: c?.title ?? "Training Course" },
         { property: "og:description", content: c?.summary ?? "" },
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/shop/$slug")({
               type: "application/ld+json",
               children: JSON.stringify({
                 "@context": "https://schema.org",
-                "@type": "Course",
+                "@type": c.product_kind==='digital_guide'?'Product':'Course',
                 name: c.title,
                 description: c.summary,
                 provider: {
@@ -79,6 +80,7 @@ function CourseDetail() {
     );
   }
   const { course, modules, question_count } = data;
+  if(course.product_kind==='digital_guide')return <main className="theme-public mx-auto w-full max-w-6xl px-5 py-12"><DigitalGuideDetail product={course} owned={!!mine.data?.some(e=>e.course_id===course.id)}/></main>;
   const returnUrl = typeof window !== "undefined"
     ? `${window.location.origin}/shop/return?session_id={CHECKOUT_SESSION_ID}&course=${course.slug}`
     : undefined;

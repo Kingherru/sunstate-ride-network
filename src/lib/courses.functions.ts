@@ -8,8 +8,11 @@ type Course = Database["public"]["Tables"]["courses"]["Row"];
 type Module = Database["public"]["Tables"]["course_modules"]["Row"];
 
 function publicClient() {
-  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+  const url=process.env['SUPABASE_URL'];const key=process.env['SUPABASE_PUBLISHABLE_KEY'];
+  if(!url||!key)throw new Error('Catalog unavailable');
+  return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+    global:{fetch:(input,init)=>{const h=new Headers(init?.headers);if(key.startsWith('sb_')&&h.get('Authorization')===`Bearer ${key}`)h.delete('Authorization');h.set('apikey',key);return fetch(input,{...init,headers:h});}},
   });
 }
 
@@ -19,7 +22,7 @@ export const listPublicCourses = createServerFn({ method: "GET" }).handler(async
   const sb = publicClient();
   const { data, error } = await sb
     .from("courses")
-    .select("id,slug,title,summary,description,price_cents,price_id,duration_min,passing_score,cert_validity_months,cover_image,is_published")
+    .select("id,slug,title,summary,description,price_cents,price_id,duration_min,passing_score,cert_validity_months,cover_image,is_published,product_kind")
     .eq("is_published", true)
     .order("price_cents", { ascending: true });
   if (error) throw new Error(error.message);
@@ -32,11 +35,12 @@ export const getPublicCourse = createServerFn({ method: "GET" })
     const sb = publicClient();
     const { data: course } = await sb
       .from("courses")
-      .select("id,slug,title,summary,description,price_cents,price_id,duration_min,passing_score,cert_validity_months,cover_image,is_published")
+      .select("id,slug,title,summary,description,price_cents,price_id,duration_min,passing_score,cert_validity_months,cover_image,is_published,product_kind")
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (!course) return null;
+    if(course.product_kind==='digital_guide')return {course,modules:[],question_count:0};
     const { data: modules } = await sb
       .from("course_modules")
       .select("id,ord,title")
@@ -61,7 +65,7 @@ export const listMyEnrollments = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("course_enrollments")
-      .select("id,course_id,status,progress,purchased_at,completed_at,courses!inner(slug,title,summary,cover_image,duration_min)")
+      .select("id,course_id,status,progress,purchased_at,completed_at,courses!inner(slug,title,summary,cover_image,duration_min,product_kind)")
       .eq("user_id", userId)
       .order("purchased_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -78,7 +82,7 @@ export const getMyCoursePlayer = createServerFn({ method: "GET" })
       .select("*")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!course) throw new Error("Course not found");
+    if (!course || course.product_kind==='digital_guide') throw new Error("Course not found");
     const { data: enrollment } = await supabase
       .from("course_enrollments")
       .select("*")
