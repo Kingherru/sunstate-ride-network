@@ -386,7 +386,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
           }
         } catch { /* ignore — non-fatal */ }
         setDone({ id: res.id, mfnId: (res as any).mfnId ?? null, ...enrichedInfo } as any);
-        toast.success("Request received for review. Availability and acceptance are not guaranteed.");
+        toast.success('ownedOperation' in res && res.ownedOperation ? "Owned operational trip created. No Network offer was sent." : "Request received for review. Availability and acceptance are not guaranteed.");
         router.invalidate();
 
       } else {

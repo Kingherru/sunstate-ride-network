@@ -16,6 +16,8 @@ export type ReversalEvidence = z.infer<typeof reversalEvidenceInput>;
 export function allocateReversalResponsibility(value: ReversalEvidence) {
   const v = reversalEvidenceInput.parse(value);
   if (v.principalCents > v.remainingPrincipalCents || v.transferReverseCents > v.remainingTransferCents) throw new Error('Exceeds authoritative remaining amount.');
+  if (v.cause === 'provider_failure' && v.principalCents !== v.remainingPrincipalCents) throw new Error('Provider failure requires full remaining customer principal return.');
+  if (v.cause === 'duplicate' && v.principalCents !== v.remainingPrincipalCents) throw new Error('Confirmed duplicate principal must be returned in full.');
   if (v.transferReverseCents > 0 && (!v.originalTransferRef || v.chargeType === 'direct')) throw new Error('A direct charge cannot imply a platform transfer reversal.');
   const responsibleAccount = v.cause === 'provider_failure' || v.cause === 'customer_cancellation' ? v.providerAccount : v.cause === 'receiver_failure' ? v.receiverAccount : v.cause === 'sender_cancellation' ? v.senderAccount : null;
   if (responsibleAccount === null && !['platform_technical','duplicate'].includes(v.cause)) throw new Error('Responsible business evidence required.');

@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { TripInvoice } from './trip-invoice-rules';
+import { TERMS_VERSION_URL, REFUND_VERSION_URL } from './payment-policy';
 
 /** Safe document projection only; never accepts private notes or Network economics. */
 export async function renderTripInvoicePdf(invoice: TripInvoice) {
@@ -22,6 +23,9 @@ export async function renderTripInvoicePdf(invoice: TripInvoice) {
   for (const line of invoice.lines) { text(line.label + (line.quantity != null ? ' | Qty ' + line.quantity : '') + (line.rateCents != null ? ' @ ' + money(line.rateCents) : '') + ' | ' + money(line.cents)); if (line.reason) text('Reason: ' + line.reason); }
   y -= 12; text('TOTAL: ' + money(invoice.totalCents), true, 14); text('Amount paid: ' + money(invoice.paidCents)); text('Balance due: ' + money(invoice.balanceCents), true);
   if (invoice.terms) { y -= 15; text('Provider terms', true); text(invoice.terms); }
+  text('Before payment, review the exact Terms and Refund Policy versions displayed at checkout.');
+  text('https://myfloridanemt.com' + TERMS_VERSION_URL);
+  text('https://myfloridanemt.com' + REFUND_VERSION_URL);
   text('Transportation is provided by the independent provider. Invoice payment does not itself confirm transportation.');
   return document.save();
 }

@@ -9140,6 +9140,7 @@ export type Database = {
         Returns: number
       }
       holds_admin_label: { Args: { _user_id: string }; Returns: boolean }
+      invoice_safe_events: { Args: { _invoice: string }; Returns: Json }
       invoice_viewed: { Args: { _invoice: string }; Returns: undefined }
       is_active_workspace_member: {
         Args: { _uid: string; _ws: string }
@@ -9595,6 +9596,15 @@ export type Database = {
       }
       prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
+      prepare_referral_funding_version: {
+        Args: {
+          _distribution: string
+          _env: string
+          _refund: string
+          _terms: string
+        }
+        Returns: Json
+      }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {

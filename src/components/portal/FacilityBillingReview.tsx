@@ -1,0 +1,10 @@
+import {useState} from 'react';
+import {useServerFn} from '@tanstack/react-start';
+import {getFacilityBillingProviders} from '@/lib/facility-billing.functions';
+import {DsButton,DsField,DsSelect} from '@/components/ds/controls';
+import {usePortalPreview} from './preview-data';
+export function FacilityBillingReview({workspaceId}:{workspaceId:string}) {
+ const preview=usePortalPreview();const load=useServerFn(getFacilityBillingProviders);const [data,setData]=useState<Awaited<ReturnType<typeof getFacilityBillingProviders>>|null>(null);const [selected,setSelected]=useState('');const [error,setError]=useState('');
+ const agreement=data?.agreements.find(a=>a.provider_workspace_id===selected);
+ return <div className="space-y-3"><h3 className="ds-label">Accepted provider / agreement review</h3><DsButton variant="secondary" disabled={preview.active} onClick={async()=>{try{setData(await load({data:{workspaceId}}));}catch{setError('Accepted provider agreements unavailable.');}}}>Review accepted providers</DsButton>{data&&<DsField label="Accepted provider">{p=><DsSelect {...p} value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Select provider</option>{data.providers.map(w=><option key={w.id} value={w.id}>{w.display_name} · {w.mfn_id}</option>)}</DsSelect>}</DsField>}{agreement?<><p className="ds-body">Agreement v{agreement.version} · {agreement.quote_reference} · ${(agreement.approved_total_cents/100).toFixed(2)} USD</p><p className="ds-support">Bill-to: {agreement.bill_to_workspace_id===workspaceId?'This facility':'Agreement-designated business'} · Responsible payer: {agreement.responsible_payer_workspace_id===workspaceId?'This facility':'Agreement-designated business'}</p><p className="ds-support whitespace-pre-wrap">{agreement.provider_policy_snapshot}</p><p className="ds-support">Reference only. Trip-specific scope, bilateral agreement creation and atomic invoice attachment still require completion; no total is applied to this trip.</p></>:<p className="ds-body">Quote required — no authorized trip-specific agreement selected.</p>}{error&&<p role="alert" className="ds-support">{error}</p>}</div>;
+}

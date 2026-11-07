@@ -180,6 +180,9 @@ export const payForConfirmedTrip = createServerFn({ method: "POST" })
     payment_method_id: z.string().min(3).max(200).optional(),
   }).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true; payment_intent_id: string } | { error: string; requires_action?: { client_secret: string } }> => {
+    const {requireApprovedPurchaseTerms}=await import('@/lib/checkout-policy.server');
+    try { await requireApprovedPurchaseTerms(); } catch { return {error:'Trip payments require the invoice final review and versioned policy acceptance. Legacy saved-card charging is unavailable.'}; }
+
     const { data: req, error: reqErr } = await context.supabase
       .from("ride_requests")
       .select("id, requester_user_id, assigned_provider_id, estimated_cost_cents, status, payment_status, payer_id")

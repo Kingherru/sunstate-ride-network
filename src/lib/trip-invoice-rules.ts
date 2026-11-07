@@ -11,7 +11,7 @@ export const prepareTripQuoteInput = z.object({
   terms: z.string().trim().max(3000).default(''),
 }).strict();
 export type InvoiceLine = { label: string; cents: number; quantity?: number; rateCents?: number; kind?: string; reason?: string };
-export type TripInvoice = { id: string; mfnId: string; requestId: string; requestNumber: string; providerName: string; billTo: string; providerPhone: string | null; lines: InvoiceLine[]; totalCents: number; paidCents: number; balanceCents: number; status: string; quoteVersion: number; terms: string; dueAt: string | null; createdAt: string; canManage: boolean; canPay: boolean; paymentConfigured: boolean; history: { reference: string; status: string; amountCents: number; refundedCents: number; createdAt: string }[] };
+export type TripInvoice = { id: string; mfnId: string; requestId: string; requestNumber: string; providerName: string; billTo: string; providerPhone: string | null; lines: InvoiceLine[]; totalCents: number; paidCents: number; balanceCents: number; status: string; quoteVersion: number; terms: string; dueAt: string | null; createdAt: string; canManage: boolean; canPay: boolean; paymentConfigured: boolean; events?: {action:string;created_at:string}[]; history: { reference: string; status: string; amountCents: number; refundedCents: number; createdAt: string }[] };
 
 export function appendInvoiceAdjustments(calculated: InvoiceLine[], adjustments: z.infer<typeof invoiceAdjustment>[]) {
   const original = calculated.map(l => ({ ...l }));

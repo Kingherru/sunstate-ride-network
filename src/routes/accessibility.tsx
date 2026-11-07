@@ -27,6 +27,7 @@ export const Route = createFileRoute("/accessibility")({
           <li>Layouts that adapt to phones, tablets and desktops.</li>
           <li>Reduced motion for people who turn it on in their device settings.</li>
         </ul> },
+        { id: "purchase-policies", h: "Accessible purchase policies", body: <p>Terms and the Refund &amp; Payment Reversal Policy can be read and printed before payment review. Checkout version links open in a clearly announced new tab so the current review is retained. Required acknowledgment is never selected for you.</p> },
         { id: "map", h: "Known limitation", body: <p>Counties on the Florida coverage map can be clicked with a mouse or touch. Keyboard and screen-reader users can choose any county, region, city or ZIP code using the menus next to the map instead.</p> },
         { id: "report", h: "Report a problem", body: <>
           <p>If something on the website is hard to use, please email <a className="text-ds-link underline underline-offset-4 hover:text-ds-link-hover" href={`mailto:${PUBLIC_EMAIL}`}>{PUBLIC_EMAIL}</a>. It helps us to know:</p>

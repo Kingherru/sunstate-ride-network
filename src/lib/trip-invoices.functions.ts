@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { assertCheckoutConsent } from './payment-policy';
 import { prepareTripQuoteInput, appendInvoiceAdjustments, type TripInvoice } from './trip-invoice-rules';
 const idInput = z.object({ invoiceId: z.string().uuid() }).strict();
 
@@ -32,7 +33,11 @@ export const getTripInvoice = createServerFn({ method: 'POST' }).middleware([req
   .inputValidator((v: unknown) => idInput.parse(v)).handler(async ({ data, context }) => {
     const { data: invoice, error } = await context.supabase.rpc('get_trip_invoice_snapshot', { _invoice: data.invoiceId });
     if (error || !invoice) return null;
-    return invoice as unknown as TripInvoice;
+    const {data:safeEvents}=await context.supabase.rpc('invoice_safe_events',{_invoice:data.invoiceId});
+    const events=safeEvents as unknown as {action:string;created_at:string}[];
+    const {data:gate}=await context.supabase.from('platform_launch_flags').select('enabled').eq('key','invoice_view_tracking').maybeSingle();
+    if(gate?.enabled===true)await context.supabase.rpc('invoice_viewed',{_invoice:data.invoiceId});
+    return {...(invoice as unknown as TripInvoice),events:events??[]};
   });
 export const downloadTripInvoice = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => idInput.parse(v)).handler(async ({ data, context }) => {
@@ -73,7 +78,8 @@ export const sendCustomerInvoice = createServerFn({ method: 'POST' }).middleware
   });
 /** No Stripe call: collection stays closed until the existing verified event path is extended and fees approved. */
 export const prepareSecureInvoicePayment = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => idInput.parse(v)).handler(async ({ data, context }) => {
+  .inputValidator((v: unknown) => idInput.extend({policyConsent:z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}).optional()}).parse(v)).handler(async ({ data, context }) => {
+    assertCheckoutConsent(data.policyConsent);
     const { data: invoice } = await context.supabase.rpc('get_trip_invoice_snapshot', { _invoice: data.invoiceId });
     if (!invoice) return { error: 'Invoice unavailable.' };
     return { error: 'Secure invoice collection is not enabled. Connected-account payment events and approved customer-processing configuration are required. No payment was created.' };
