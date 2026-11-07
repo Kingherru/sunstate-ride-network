@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
+import { assertCheckoutConsent } from './payment-policy';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
 /** Pass 3O-B: test-mode Network settlement payments, transfers and dispute resolution.
@@ -34,8 +35,10 @@ export const confirmSettlementCompletion = createServerFn({ method: 'POST' }).mi
 
 /** Creates (or reuses) the locked attempt and its PaymentIntent. Returns only the client secret and locked amounts. */
 export const startSettlementPayment = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => z.object({ settlementId: z.string().uuid(), method: Method, environment: Env, acknowledged: z.literal(true) }).strict().parse(v))
+  .inputValidator((v: unknown) => z.object({ settlementId: z.string().uuid(), method: Method, environment: Env, acknowledged: z.literal(true), policyConsent:z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}).optional() }).strict().parse(v))
   .handler(async ({ data, context }) => {
+    assertCheckoutConsent(data.policyConsent);
+    return {error:'Network payment preparation is off. Versioned funding acceptance and embedded payment collection remain required.'} as const;
     if (data.method === 'ach' && !ACH_AVAILABLE) return { error: 'Bank (ACH) payment is not available yet.' } as const;
     if (data.environment === 'live' && !(await liveCollectionAllowed(context.supabase))) return { error: 'Live Network payments are not turned on. Test mode only.' } as const;
     const { data: att, error } = await context.supabase.rpc('network_prepare_payment_attempt', { _settlement: data.settlementId, _method: data.method, _env: data.environment });
@@ -88,30 +91,16 @@ export const getExclusionReasons = createServerFn({ method: 'POST' }).middleware
     return (d ?? []) as unknown as { provider_mfn_id: string | null; reason_code: string; recorded_at: string }[];
   });
 
-/** Master Admin, test mode only. Sender outcome on a paid settlement issues an idempotent test refund (and reversal if transferred). */
-export const resolveNetworkDispute = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => z.object({ disputeId: z.string().uuid(), outcome: z.enum(['sender', 'receiver', 'partial']), reason: z.string().trim().min(10).max(1000), adjustCents: z.number().int().positive().optional(), confirmed: z.literal(true) }).strict().parse(v))
-  .handler(async ({ data, context }) => {
-    const { data: r, error } = await context.supabase.rpc('network_admin_resolve_dispute', { _dispute: data.disputeId, _outcome: data.outcome, _reason: data.reason, _adjust_cents: data.adjustCents ?? 0 });
-    if (error) return { error: error.message } as const;
-    const res = r as unknown as { settlement_id: string; paid: boolean; transferred: boolean };
-    if (data.outcome !== 'sender' || !res.paid) return { ok: true } as const;
-    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    const { createStripeClient, getStripeErrorMessage } = await import('@/lib/stripe.server');
-    const { data: s } = await supabaseAdmin.from('network_settlements').select('id,mfn_id,charge_ref,transfer_ref,stripe_environment,refunded_at').eq('id', res.settlement_id).single();
-    if (!s || s.stripe_environment !== 'sandbox' || !s.charge_ref || s.refunded_at) return { ok: true } as const;
-    try {
-      const stripe = createStripeClient('sandbox');
-      if (s.transfer_ref) await stripe.transfers.createReversal(s.transfer_ref, { metadata: { settlement_mfn_id: s.mfn_id } }, { idempotencyKey: `nsr_${s.id}` });
-      await stripe.refunds.create({ charge: s.charge_ref, metadata: { settlement_mfn_id: s.mfn_id } }, { idempotencyKey: `nsf_${s.id}` });
-      return { ok: true, note: 'Test refund requested; status updates when Stripe confirms.' } as const;
-    } catch (e) { return { error: `Resolved, but the test refund failed: ${getStripeErrorMessage(e)}` } as const; }
-  });
+/** Refund/reversal behavior is deliberately inactive; never calls a processor or changes a dispute. */
+export const resolveNetworkDispute = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+  .inputValidator((v:unknown)=>z.object({disputeId:z.string().uuid(),outcome:z.enum(['sender','receiver','partial']),reason:z.string().trim().min(10).max(1000),adjustCents:z.number().int().positive().optional(),confirmed:z.literal(true)}).strict().parse(v))
+  .handler(async()=>({error:'Refund and reversal review is read-only. No resolution, refund or reversal was created.'} as const));
 
 /** Master Admin, test mode only, after the full hold and with no open dispute. No bypass. */
 export const processEligibleTestSettlement = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => z.object({ settlementId: z.string().uuid(), confirmed: z.literal(true) }).strict().parse(v))
   .handler(async ({ data, context }) => {
+    return {error:'Settlement transfer preparation is off. No transfer was created.'} as const;
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: claim, error } = await supabaseAdmin.rpc('network_claim_transfer', { _settlement: data.settlementId, _env: 'sandbox', _actor: context.userId });
     if (error || !claim) return { error: error?.message ?? 'Not eligible' } as const;

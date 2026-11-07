@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { createStripeClient, getStripeErrorMessage } from '@/lib/stripe.server';
 import { BASE_MEMBERSHIP_PRICE, NETWORK_ADDON_PRICE, MEMBERSHIP_PRICING } from '@/lib/membership-pricing';
+import { assertCheckoutConsent } from './payment-policy';
 import { confirmationComplete, normalizeSelection } from '@/lib/commerce-rules';
 
 /**
@@ -14,12 +15,18 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({
     base: z.boolean(), network: z.boolean(),
+    policyConsent: z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}).optional(),
     courseIds: z.array(z.string().uuid()).max(20),
     confirm: z.object({ recurring: z.boolean(), oneTime: z.boolean(), terms: z.boolean() }),
     environment: z.enum(['sandbox', 'live']), returnUrl: z.string().url(), payNow: z.boolean().default(false),
   }).parse(input))
   .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
     try {
+      assertCheckoutConsent(data.policyConsent);
+      const { requireCheckoutPreparationEnabled } = await import('./checkout-policy.server');
+      await requireCheckoutPreparationEnabled();
+      // Product-specific eligibility and final fee disclosure are intentionally not configured.
+      return { error: 'Approved purchase-specific terms and final exact processor/tax review are required. Checkout remains unavailable.' };
       const { getRequest } = await import('@tanstack/react-start/server');
       if (new URL(data.returnUrl).origin !== new URL(getRequest().url).origin) throw new Error('Invalid checkout return address');
       const ids = [...new Set(data.courseIds)];

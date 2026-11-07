@@ -47,6 +47,7 @@ export const ADMIN_NAV_REQUIREMENT: Record<string, AdminSection | "master" | nul
   "/admin/integrations": "integrations",
   "/admin/notifications": "notifications",
   "/admin/security": "master",
+  "/admin/refund-review": "master",
   "/admin/admins": "master",
   '/admin/training': 'master',
 };

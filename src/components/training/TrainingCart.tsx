@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { DsButton } from '@/components/ds/controls';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 import { eligibleCartItems, type CartCourse } from '@/lib/training/cart-rules';
+import { CheckoutAcknowledgment } from '@/components/payments/CheckoutAcknowledgment';
+import { currentCheckoutConsent } from '@/lib/payment-policy';
 import { createCommerceCheckout } from '@/lib/commerce.functions';
 import { commerceTotals, confirmationComplete, normalizeSelection, type Confirmation } from '@/lib/commerce-rules';
 import { MEMBERSHIP_PRICING } from '@/lib/membership-pricing';
@@ -26,7 +28,7 @@ type CheckoutReq = { base: boolean; network: boolean; ids: string[]; confirm: Co
 function Checkout({ req }: { req: CheckoutReq }) {
   const create = useServerFn(createCommerceCheckout);
   const fetchClientSecret = useCallback(async () => {
-    const result = await create({ data: { base: req.base, network: req.network, courseIds: req.ids, confirm: req.confirm, environment: getStripeEnvironment(), returnUrl: `${window.location.origin}/shop/return?session_id={CHECKOUT_SESSION_ID}` } });
+    const result = await create({ data: { base: req.base, network: req.network, courseIds: req.ids, confirm: req.confirm, policyConsent: currentCheckoutConsent(req.confirm.terms), environment: getStripeEnvironment(), returnUrl: `${window.location.origin}/shop/return?session_id={CHECKOUT_SESSION_ID}` } });
     if ('error' in result) throw new Error(result.error);
     return result.clientSecret;
   }, [create, req]);
@@ -57,6 +59,8 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
   const count = sel.courses.length + (sel.base ? 1 : 0) + (sel.network ? 1 : 0);
   const hasRecurring = sel.base || sel.network;
   const ready = confirmationComplete(sel, confirm);
+  const selectionKey = JSON.stringify([sel.base,sel.network,sel.courses.map(c=>[c.id,c.price_cents]),membership.trialEligible]);
+  useEffect(() => { setConfirm({recurring:false,oneTime:false,terms:false}); setReq(null); }, [selectionKey]);
   const setMembership = (m: Partial<Membership>) => setM(prev => {
     const next = { ...prev, ...m };
     if (!next.base && !next.baseActive) next.network = false; // add-on never stands alone
@@ -65,7 +69,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
   const check = (k: keyof Confirmation) => (e: React.ChangeEvent<HTMLInputElement>) => setConfirm(c => ({ ...c, [k]: e.target.checked }));
   return <CartContext.Provider value={{ items, membership, setMembership, add: (item, ownedIds) => setItems(prev => eligibleCartItems([...prev, item], ownedIds)), open: () => setOpen(true), remove: id => setItems(prev => prev.filter(c => c.id !== id)) }}>
     {children}
-    <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) { setReq(null); setError(''); } }}>
+    <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) { setReq(null); setError(''); setConfirm({recurring:false,oneTime:false,terms:false}); } }}>
       <DialogContent className="theme-portal max-h-[92dvh] !max-w-3xl overflow-y-auto">
         <DialogTitle className="pr-8 text-ds-primary">Your cart</DialogTitle><DialogDescription className="sr-only">Selected membership items, courses and secure checkout</DialogDescription>
         {!count ? <p className="ds-body">Your cart is empty.</p> : <>
@@ -85,7 +89,10 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
             <legend className="ds-label">Confirm before checkout</legend>
             {hasRecurring && <label className="ds-body flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirm.recurring} onChange={check('recurring')} />I confirm the monthly membership items listed above.</label>}
             {sel.courses.length > 0 && <label className="ds-body flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirm.oneTime} onChange={check('oneTime')} />I confirm the separate one-time course purchases listed above.</label>}
-            <label className="ds-body flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirm.terms} onChange={check('terms')} /><span>I accept the <Link to="/terms" className="text-ds-link underline">Terms</Link> and the payment and cancellation policies.</span></label>
+            <p className="ds-body">Payer: signed-in purchaser / owning business · Merchant: MY FLORIDA NEMT · Currency: USD.</p>
+            <p className="ds-support">Exact processor/tax total and product-specific refund eligibility are not yet approved for payment preparation. No extra fee is assumed; checkout remains off.</p>
+            <CheckoutAcknowledgment accepted={confirm.terms} onChange={accepted => setConfirm(c => ({...c,terms:accepted}))}/>
+
             <DsButton disabled={!ready} onClick={() => { try { getStripeEnvironment(); setReq({ base: sel.base, network: sel.network, ids: sel.courses.map(c => c.id), confirm }); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } }}>Continue to checkout</DsButton>
           </fieldset>}
           {error && <p role="alert" className="text-ds-error">{error}</p>}
