@@ -38,9 +38,9 @@ export const saveOnboardingSection = createServerFn({ method: 'POST' }).middlewa
       if (error) throw new Error('Could not save personal information');
     } else if (data.section === 'business') {
       if (owner.workspaces.account_type === 'private_pay') throw new Error('Business account required');
-      const { section: _section, npi, medicaid_number, ...fields } = data;
+      const { npi, medicaid_number } = data;
       // Empty optional fields never erase established values.
-      const populated = Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== ''));
+      const populated = { display_name: data.display_name, ...(data.legal_business_name && { legal_business_name: data.legal_business_name }), ...(data.business_phone && { business_phone: data.business_phone }), ...(data.dispatch_phone && { dispatch_phone: data.dispatch_phone }), ...(data.business_address && { business_address: data.business_address }), ...(data.operating_hours && { operating_hours: data.operating_hours }) };
       const { error } = await context.supabase.from('workspaces').update(populated).eq('id', owner.workspace_id).select('id').single();
       if (error) throw new Error('Could not save business information');
       if (owner.workspaces.account_type === 'provider' && (npi || medicaid_number)) {
