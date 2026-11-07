@@ -55,9 +55,9 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     try {
       assertCheckoutConsent(data.policyConsent);
-      const { requireCheckoutPreparationEnabled } = await import('@/lib/checkout-policy.server');
+      const { requireCheckoutPreparationEnabled, requireApprovedPurchaseTerms } = await import('@/lib/checkout-policy.server');
       await requireCheckoutPreparationEnabled();
-      return { error: 'Approved purchase-specific terms and final exact fee review are required. No payment session was created.' };
+      await requireApprovedPurchaseTerms();
       if (data.environment !== 'sandbox' && data.environment !== 'live') return { error: 'Choose a valid payment environment.' };
       if (data.userId && data.userId !== context.userId) return { error: 'Checkout must belong to the signed-in account.' };
       const stripe = createStripeClient(data.environment);

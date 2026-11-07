@@ -38,7 +38,8 @@ export const startSettlementPayment = createServerFn({ method: 'POST' }).middlew
   .inputValidator((v: unknown) => z.object({ settlementId: z.string().uuid(), method: Method, environment: Env, acknowledged: z.literal(true), policyConsent:z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}).optional() }).strict().parse(v))
   .handler(async ({ data, context }) => {
     assertCheckoutConsent(data.policyConsent);
-    return {error:'Network payment preparation is off. Versioned funding acceptance and embedded payment collection remain required.'} as const;
+    const { requireApprovedPurchaseTerms }=await import('./checkout-policy.server');
+    await requireApprovedPurchaseTerms();
     if (data.method === 'ach' && !ACH_AVAILABLE) return { error: 'Bank (ACH) payment is not available yet.' } as const;
     if (data.environment === 'live' && !(await liveCollectionAllowed(context.supabase))) return { error: 'Live Network payments are not turned on. Test mode only.' } as const;
     const { data: att, error } = await context.supabase.rpc('network_prepare_payment_attempt', { _settlement: data.settlementId, _method: data.method, _env: data.environment });
@@ -100,7 +101,8 @@ export const resolveNetworkDispute = createServerFn({method:'POST'}).middleware(
 export const processEligibleTestSettlement = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => z.object({ settlementId: z.string().uuid(), confirmed: z.literal(true) }).strict().parse(v))
   .handler(async ({ data, context }) => {
-    return {error:'Settlement transfer preparation is off. No transfer was created.'} as const;
+    const {requireApprovedPurchaseTerms}=await import('./checkout-policy.server');
+    await requireApprovedPurchaseTerms();
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: claim, error } = await supabaseAdmin.rpc('network_claim_transfer', { _settlement: data.settlementId, _env: 'sandbox', _actor: context.userId });
     if (error || !claim) return { error: error?.message ?? 'Not eligible' } as const;

@@ -23,10 +23,10 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
     try {
       assertCheckoutConsent(data.policyConsent);
-      const { requireCheckoutPreparationEnabled } = await import('./checkout-policy.server');
+      const { requireCheckoutPreparationEnabled, requireApprovedPurchaseTerms } = await import('./checkout-policy.server');
       await requireCheckoutPreparationEnabled();
       // Product-specific eligibility and final fee disclosure are intentionally not configured.
-      return { error: 'Approved purchase-specific terms and final exact processor/tax review are required. Checkout remains unavailable.' };
+      await requireApprovedPurchaseTerms();
       const { getRequest } = await import('@tanstack/react-start/server');
       if (new URL(data.returnUrl).origin !== new URL(getRequest().url).origin) throw new Error('Invalid checkout return address');
       const ids = [...new Set(data.courseIds)];

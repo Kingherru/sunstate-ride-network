@@ -12,9 +12,9 @@ export const createTrainingCheckout = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     try {
       assertCheckoutConsent(data.policyConsent);
-      const {requireCheckoutPreparationEnabled}=await import('@/lib/checkout-policy.server');
+      const {requireCheckoutPreparationEnabled,requireApprovedPurchaseTerms}=await import('@/lib/checkout-policy.server');
       await requireCheckoutPreparationEnabled();
-      return {error:'Approved training purchase terms and final exact fee review are required. Checkout is unavailable.'};
+      await requireApprovedPurchaseTerms();
       const { getRequest } = await import('@tanstack/react-start/server');
       const origin = new URL(getRequest().url).origin;
       if (new URL(data.returnUrl).origin !== origin) throw new Error('Invalid checkout return address');
