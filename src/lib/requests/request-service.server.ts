@@ -117,7 +117,7 @@ export type InsertOwnership = {
   /** CSV imports never email; test rows never email (decided by DB flag). */
   skipNotify?: boolean;
 };
-type InsertResult = { ok: true; id: string; mfnId: string | null; isTest: boolean } | { ok: false; code: string };
+type InsertResult = { ok: true; id: string; mfnId: string | null; isTest: boolean; ownedOperation: boolean } | { ok: false; code: string };
 
 async function finish(row: any, error: any, category: RequestCategory, email: string | null, own: InsertOwnership, embedProviderId?: string | null): Promise<InsertResult> {
   if (error || !row) {
@@ -127,7 +127,7 @@ async function finish(row: any, error: any, category: RequestCategory, email: st
   // Targeted intake is visible only in the chosen provider's Network inbox.
   // Do not fan out staff or provider emails from this path.
   if (!row.is_test && !own.skipNotify && !row.selected_provider_workspace_id && !row.provider_owned_operation) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
-  return { ok: true, id: row.id, mfnId: row.mfn_id ?? null, isTest: !!row.is_test };
+  return { ok: true, id: row.id, mfnId: row.mfn_id ?? null, isTest: !!row.is_test, ownedOperation:row.provider_owned_operation===true };
 }
 
 export async function insertPassengerRequest(data: RideRequestInput, own: InsertOwnership): Promise<InsertResult> {

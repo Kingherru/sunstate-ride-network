@@ -33,7 +33,8 @@ export const getTripInvoice = createServerFn({ method: 'POST' }).middleware([req
   .inputValidator((v: unknown) => idInput.parse(v)).handler(async ({ data, context }) => {
     const { data: invoice, error } = await context.supabase.rpc('get_trip_invoice_snapshot', { _invoice: data.invoiceId });
     if (error || !invoice) return null;
-    const {data:events}=await context.supabase.from('trip_invoice_events').select('action,created_at').eq('invoice_id',data.invoiceId).in('action',['invoice_ready','invoice_sent','invoice_viewed']).order('created_at');
+    const {data:safeEvents}=await context.supabase.rpc('invoice_safe_events',{_invoice:data.invoiceId});
+    const events=safeEvents as unknown as {action:string;created_at:string}[];
     const {data:gate}=await context.supabase.from('platform_launch_flags').select('enabled').eq('key','invoice_view_tracking').maybeSingle();
     if(gate?.enabled===true)await context.supabase.rpc('invoice_viewed',{_invoice:data.invoiceId});
     return {...(invoice as unknown as TripInvoice),events:events??[]};

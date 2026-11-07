@@ -22,7 +22,7 @@ export const submitRideRequest = createServerFn({ method: "POST" })
       workspaceId: requester.workspaceId, submittedVia: requester.isAdmin ? "portal" : requester.submittedVia,
     });
     if (!r.ok) return { ok: false as const, error: GENERIC_SUBMIT_ERROR };
-    return { ok: true as const, id: r.id, mfnId: r.mfnId, enrichmentToken: signEnrichmentToken(r.id) };
+    return { ok: true as const, id: r.id, mfnId: r.mfnId, ownedOperation:r.ownedOperation, enrichmentToken: signEnrichmentToken(r.id) };
   });
 
 // ---------- Medical Delivery ----------
