@@ -2,9 +2,10 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { ArrowUpRight, BookOpen, Search } from 'lucide-react';
 import { PublicPage } from '@/components/public/PublicPage';
-import { PageHero, pageHead, btnSecondary } from '@/components/public/page-kit';
+import { PageHero, pageHead } from '@/components/public/page-kit';
 import { DsInput, DsSelect } from '@/components/ds/controls';
 import { RESOURCE_LIBRARY, RESOURCE_CATEGORIES, filterResources } from '@/lib/resource-library';
+import {btnBlue as btnSecondary} from '@/components/home/buttons';
 import { STARTUP_GUIDE } from '@/lib/digital-guide';
 export const Route=createFileRoute('/resources/')({head:()=>pageHead('/resources','Resources — Florida & United States NEMT Guides | MY FLORIDA NEMT','Reviewed transportation guidance for patients, facilities and providers, plus educational business resources.','Resources','CollectionPage'),component:ResourcesPage});
 function ResourcesPage(){
