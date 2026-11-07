@@ -9595,6 +9595,15 @@ export type Database = {
       }
       prepare_membership_grandfathering: { Args: never; Returns: number }
       prepare_membership_transitions: { Args: never; Returns: number }
+      prepare_referral_funding_version: {
+        Args: {
+          _distribution: string
+          _env: string
+          _refund: string
+          _terms: string
+        }
+        Returns: Json
+      }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
