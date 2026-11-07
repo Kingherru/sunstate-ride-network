@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { distributionInput } from '@/lib/trip-network-rules';
+import {assertCheckoutConsent,TERMS_VERSION,PAYMENT_POLICY_VERSION} from './payment-policy';
 
 
 /** Paid Referral Network add-on (or shared trial) gates live referral activity; Master Admin is exempt. */
@@ -34,6 +35,12 @@ export const createNetworkDistribution = createServerFn({ method: 'POST' }).midd
   .inputValidator((i: unknown) => distributionInput.parse(i))
   .handler(async ({ data, context }) => {
     await requireNetworkAddon(context.supabase, context.userId);
+    if(data.trip_id){
+      assertCheckoutConsent(data.policyConsent);
+      const {data:id,error}=await context.supabase.rpc('prepare_owned_trip_referral',{_trip:data.trip_id,_amount:data.amount_cents,_expires:data.expires_at,_terms:TERMS_VERSION,_refund:PAYMENT_POLICY_VERSION});
+      if(error)throw new Error('Referral preparation is off or approved processing recovery / owned invoice linkage is unavailable. No offer was sent or funded.');
+      return {id:id as string};
+    }
     const { data: id, error } = await context.supabase.rpc('network_create_distribution', { _request: data.request_id, _trip: data.trip_id, _amount: data.amount_cents, _expires: data.expires_at });
     if (error) throw new Error(error.message);
     if (data.payment_responsibility_confirmed) await context.supabase.rpc('network_ack_payment_responsibility', { _distribution: id as string });

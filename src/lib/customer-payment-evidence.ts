@@ -1,0 +1,3 @@
+export function invoiceEvidenceMatches(input:{expectedIntent:string|null;intent:string;expectedAccount:string|null;account:string;expectedAmount:number;amount:number;currency:string;expectedEnvironment:string;environment:string;acceptanceId:string|null}){
+ return !!input.acceptanceId&&!!input.expectedIntent&&!!input.expectedAccount&&input.expectedIntent===input.intent&&input.expectedAccount===input.account&&Number.isSafeInteger(input.amount)&&input.amount>0&&input.expectedAmount===input.amount&&input.currency==='usd'&&input.expectedEnvironment===input.environment;
+}
