@@ -35,7 +35,7 @@ export const searchConnectionBusinesses = createServerFn({ method: 'POST' }).mid
 
 export const saveRelationshipPreference = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ workspaceId: z.string().uuid(), kind: z.enum(['referral','preferred']), targetId: z.string().uuid().nullable(), name: z.string().trim().max(200).default(''), confirmed: z.literal(true), source: z.enum(['settings','onboarding']) }).strict().parse(i))
-  .handler(async ({ data, context }) => { const { error } = await context.supabase.rpc('save_account_relationship_preferences', { _ws: data.workspaceId, _kind: data.kind, ...data.targetId ? { _target: data.targetId } : {}, _name: data.name, _confirmed: data.confirmed, _source: data.source } as never); if (error) throw new Error('Confirm a currently listed business, or save a referral name without linking an account.'); return { ok: true }; });
+  .handler(async ({ data, context }) => { const { error } = await context.supabase.rpc('save_account_relationship_preferences', { _ws: data.workspaceId, _kind: data.kind, _target: data.targetId, _name: data.name, _confirmed: data.confirmed, _source: data.source } as never); if (error) throw new Error('Confirm a currently listed business, or save a referral name without linking an account.'); return { ok: true }; });
 
 export const manageConnectionInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((i: unknown) => invitationActionInput.parse(i))
   .handler(async ({ data, context }) => {
