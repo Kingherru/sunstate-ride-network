@@ -195,9 +195,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
         <label className="inline-flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
         </label>
-        <label className="inline-flex items-center gap-2 text-sm font-bold">
-          <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} /> Visible in Provider Network
-        </label>
+        <p className="ds-caption">Search visibility is managed separately in Settings → Team & Integrations → Business identity & search visibility.</p>
       </div>}
 
       <DsButton type="submit" size="sm" disabled={busy}>

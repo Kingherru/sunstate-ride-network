@@ -17,6 +17,7 @@ import { Route as ConnectionInvitationRouteImport } from './routes/connection-in
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
+import { Route as FindSupportRouteImport } from './routes/find-support'
 import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
 import { Route as ForProvidersRouteImport } from './routes/for-providers'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -148,6 +149,11 @@ const CreateAccountRoute = CreateAccountRouteImport.update({
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FindSupportRoute = FindSupportRouteImport.update({
+  id: '/find-support',
+  path: '/find-support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForFacilitiesRoute = ForFacilitiesRouteImport.update({
@@ -682,6 +688,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/find-support': typeof FindSupportRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -784,6 +791,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/find-support': typeof FindSupportRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -884,6 +892,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/find-support': typeof FindSupportRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -988,6 +997,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/create-account'
     | '/design-system'
+    | '/find-support'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -1090,6 +1100,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/create-account'
     | '/design-system'
+    | '/find-support'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -1189,6 +1200,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/create-account'
     | '/design-system'
+    | '/find-support'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -1293,6 +1305,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  FindSupportRoute: typeof FindSupportRoute
   ForFacilitiesRoute: typeof ForFacilitiesRoute
   ForProvidersRoute: typeof ForProvidersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -1393,6 +1406,13 @@ declare module '@tanstack/react-router' {
       path: '/design-system'
       fullPath: '/design-system'
       preLoaderRoute: typeof DesignSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/find-support': {
+      id: '/find-support'
+      path: '/find-support'
+      fullPath: '/find-support'
+      preLoaderRoute: typeof FindSupportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-facilities': {
@@ -2205,6 +2225,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
+  FindSupportRoute: FindSupportRoute,
   ForFacilitiesRoute: ForFacilitiesRoute,
   ForProvidersRoute: ForProvidersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,

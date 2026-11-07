@@ -35,6 +35,7 @@ import { restoreDraftFields } from '@/lib/draft-fields';
 import { DsButton } from '@/components/ds/controls';
 import { PatientProviderPicker } from '@/components/network/PatientProviderPicker';
 import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
+import { LinkedPatientSelector } from '@/components/portal/LinkedPatientSelector';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -68,6 +69,7 @@ const empty: RideRequestInput = {
   patientLastName: "",
   patientPhone: "",
   patientEmail: "",
+  patientWorkspaceId: null,
   pickupAddress: "",
   pickupAddressDetails: "",
   pickupCity: "",
@@ -507,6 +509,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
 
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
+          {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId',id)} />}
 
           {/* Patient */}
           <fieldset className="space-y-6">

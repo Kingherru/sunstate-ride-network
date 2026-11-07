@@ -141,6 +141,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
     trip_kind: "passenger",
     selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
+    patient_workspace_id: data.patientWorkspaceId ?? null,
     patient_first_name: data.patientFirstName, patient_last_name: data.patientLastName,
     patient_phone: data.patientPhone, patient_email: data.patientEmail || null,
     pickup_address: data.pickupAddress, pickup_address_details: data.pickupAddressDetails || null,

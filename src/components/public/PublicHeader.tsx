@@ -11,6 +11,7 @@ const NAV = [
   { label: "Providers", to: "/for-providers" },
   { label: "Facilities", to: "/for-facilities" },
   { label: "Coverage", to: "/florida-coverage" },
+  { label: "Find Support", to: "/find-support" },
   { label: "Training", to: "/training" },
 ] as const;
 
