@@ -44,7 +44,7 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
   // The database records it only for the selected provider business while Distributed.
   const loadedId = q.data?.ok && target?.kind === 'request' ? String(q.data.request.id) : null;
   useEffect(() => {
-    if (!loadedId || !isProviderPortal || preview.active || recorded.current.has(loadedId)) return;
+    if (!loadedId || q.data?.ok && q.data.patient || !isProviderPortal || preview.active || recorded.current.has(loadedId)) return;
     recorded.current.add(loadedId);
     viewed({ data: { id: loadedId } }).catch(() => {});
   }, [loadedId, isProviderPortal, preview.active, viewed]);
