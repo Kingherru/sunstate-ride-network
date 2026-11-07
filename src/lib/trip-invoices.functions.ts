@@ -23,7 +23,7 @@ export const confirmTripCustomerQuote = createServerFn({ method: 'POST' }).middl
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: history } = await context.supabase.from('trip_drafts').select('customer_quote_history').eq('id', data.draftId).eq('user_id', context.userId).maybeSingle();
     snapshot.version = Array.isArray(history?.customer_quote_history) ? history.customer_quote_history.length + 1 : 1;
-    const { error } = await supabaseAdmin.rpc('persist_provider_draft_quote', { _draft: data.draftId, _workspace: data.workspaceId, _actor: context.userId, _snapshot: snapshot as never, _expected: data.expectedQuoteId, _replace: data.replacementConfirmed });
+    const { error } = await supabaseAdmin.rpc('persist_provider_draft_quote', { _draft: data.draftId, _workspace: data.workspaceId, _actor: context.userId, _snapshot: snapshot as never, ...({ _expected: data.expectedQuoteId } as { _expected?: string }), _replace: data.replacementConfirmed });
     if (error) throw new Error('Quote changed or is unavailable. Reload and confirm replacement.');
     return snapshot;
   });

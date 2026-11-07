@@ -36,6 +36,7 @@ import { DsButton } from '@/components/ds/controls';
 import { PatientProviderPicker } from '@/components/network/PatientProviderPicker';
 import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
 import { LinkedPatientSelector } from '@/components/portal/LinkedPatientSelector';
+import { TripCommerceContext } from './trip-commerce-context';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -204,6 +205,7 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
 }
 
 function RequestRidePage({ context, service, initialDraft, allowProviderSelection }: { context: RequestFormContext; service?: string; initialDraft?: { id: string; payload: Record<string, unknown> }; allowProviderSelection: boolean }) {
+  const commerce = useContext(TripCommerceContext);
   const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
@@ -250,6 +252,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
+  useEffect(() => { if (kind === 'ride') commerce?.onChange(form); }, [form, kind, commerce?.onChange]);
 
   useEffect(() => {
     if (preview.active) return;
@@ -314,6 +317,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setErrors({});
     const withBilling: RideRequestInput = {
       ...form,
+      customerQuoteDraftId: commerce?.quote?.draftId ?? null,
+      customerQuoteId: commerce?.quote?.id ?? null,
       selectedProviderWorkspaceId: allowProviderSelection ? selectedProvider?.workspace_id ?? null : null,
       billingContact:
         form.billingSource === "saved" ? savedBilling ?? undefined
@@ -359,7 +364,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     try {
       const res = await submit({ data: parsed.data });
       if (res.ok) {
-        if (draftId) { try { await removeDraft({ data: { draft_id: draftId } }); } catch { toast.error('Request received, but the saved draft could not be removed.'); } }
+        if (draftId && !commerce?.quote) { try { await removeDraft({ data: { draft_id: draftId } }); } catch { toast.error('Request received, but the saved draft could not be removed.'); } }
         // Geocode + compute miles, drive time, traffic-aware ETA & polyline in the background;
         // if it fails we still confirm the booking.
         let enrichedInfo: Partial<NonNullable<typeof done>> = {};
@@ -476,7 +481,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 
   return (
     <section className={portal ? "" : "bg-ds-bg px-5 py-16 sm:px-6 lg:py-20"}>
-      <div className="mx-auto max-w-3xl">
+      <div className={commerce ? 'min-w-0' : 'mx-auto max-w-3xl'}>
         {portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>}
         <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
           Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.
@@ -506,7 +511,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         {kind === "delivery" ? (
           <DeliveryRequestForm portal={portal} initialDraft={initialDraft?.payload.requestCategory === "medical_delivery" ? initialDraft : undefined} />
         ) : (
-        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-8 md:p-12 rounded-ds-lg">
+        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-4 sm:p-6 rounded-ds-sm">
 
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
           {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId',id)} />}
@@ -633,7 +638,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
-            {(
+            {!commerce && (
               <PriceEstimate
                 pickupZip={pickupMeta.zip}
                 miles={estimatedMiles}
@@ -1015,6 +1020,7 @@ const emptyDelivery: DeliveryRequestInput = {
 
 /** Medical Delivery request — kept separate from passenger fields. In-memory state only. */
 function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initialDraft?: { id: string; payload: Record<string, unknown> } }) {
+  const commerce = useContext(TripCommerceContext);
   const preview = usePortalPreview();
   const saveDraft = useServerFn(saveTripDraft);
   const removeDraft = useServerFn(deleteTripDraft);
@@ -1026,6 +1032,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   const submit = (a: { data: DeliveryRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const [form, setForm] = useState<DeliveryRequestInput>(() => initialDraft ? { ...emptyDelivery, deliveryCategory: "" as DeliveryRequestInput["deliveryCategory"], ...restoreDraftFields(initialDraft.payload, Object.keys(emptyDelivery)) } as DeliveryRequestInput : emptyDelivery);
+  useEffect(() => { commerce?.onChange(form); }, [form, commerce?.onChange]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [doneId, setDoneId] = useState<string | null>(null);
@@ -1036,7 +1043,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
     e.preventDefault();
     setErrors({});
     if (preview.active) { previewBlocked(); return; }
-    const parsed = deliveryRequestSchema.safeParse(form);
+    const parsed = deliveryRequestSchema.safeParse({ ...form, customerQuoteDraftId: commerce?.quote?.draftId ?? null, customerQuoteId: commerce?.quote?.id ?? null });
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
@@ -1057,7 +1064,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
       const res = await submit({ data: parsed.data });
       if (res.ok) {
         setDoneId((res as any).mfnId ?? `#${res.id.slice(0, 8).toUpperCase()}`);
-        if (draftId) await removeDraft({ data: { draft_id: draftId } }).catch(() => undefined);
+        if (draftId && !commerce?.quote) await removeDraft({ data: { draft_id: draftId } }).catch(() => undefined);
         setForm(emptyDelivery);
       } else toast.error(res.error);
     } catch {
@@ -1081,7 +1088,8 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-lg border border-ds-border bg-ds-surface p-8 md:p-12">
+    <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-sm border border-ds-border bg-ds-surface p-4 sm:p-6">
+      {portal && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId', id)}/>}
       {portal && !onBehalf && <div className="flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={async () => {
         if (preview.active) { previewBlocked(); return; }
         setSavingDraft(true);

@@ -48,9 +48,9 @@ export const getTripDraft = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ draft_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase.from('trip_drafts').select('id,payload').eq('id', data.draft_id).eq('user_id', context.userId).is('submitted_trip_id', null).maybeSingle();
+    const { data: row, error } = await context.supabase.from('trip_drafts').select('id,payload,customer_quote_history').eq('id', data.draft_id).eq('user_id', context.userId).is('submitted_trip_id', null).maybeSingle();
     if (error || !row) throw new Error('Draft not available.');
-    return { id: row.id, payload: row.payload as DraftPayload };
+    return { id: row.id, payload: row.payload as DraftPayload, quoteHistory: row.customer_quote_history };
   });
 
 export const saveTripDraft = createServerFn({ method: "POST" })
