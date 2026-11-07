@@ -17,10 +17,10 @@ export function normalizeSelection(sel: CommerceSelection, ctx: CommerceContext)
   return { base, network, courses, notices };
 }
 
-export function commerceTotals(sel: { base: boolean; network: boolean; courses: { price_cents: number }[] }, trialEligible: boolean) {
+export function commerceTotals(sel: { base: boolean; network: boolean; courses: { price_cents: number }[] }, trialEligible: boolean, payNow = false) {
   const recurringCents = (sel.base ? MEMBERSHIP_PRICING.baseCents : 0) + (sel.network ? MEMBERSHIP_PRICING.networkCents : 0);
   const oneTimeCents = sel.courses.reduce((s, c) => s + c.price_cents, 0);
-  const dueTodayCents = oneTimeCents + (sel.base && trialEligible ? 0 : recurringCents);
+  const dueTodayCents = oneTimeCents + (sel.base && trialEligible && !payNow ? 0 : recurringCents);
   return { recurringCents, oneTimeCents, dueTodayCents };
 }
 
