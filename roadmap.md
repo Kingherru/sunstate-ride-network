@@ -1,4 +1,10 @@
 # Florida MVP launch sequence
+## Pass 4H — implementation
+- [ ] Connect Facility agreement/invoice, owned-trip referral and reconciliation preparation without collection.
+- [ ] Consolidate OUR POLICIES, exact-version checkout links, redirect and sitemaps.
+- [ ] Improve existing Resources library without adding duplicate articles.
+- [ ] Prepare $50 guide in shared cart with authenticated purchaser-only private delivery.
+- [ ] Run narrow changed-boundary checks; record precise disabled actions, private upload outcome and credits.
 ## Pass 4G — safe foundation (partial pass)
 - [x] Public printable Refund & Payment Reversal Policy / updated Terms effective November 7, 2026; frozen October Terms retained; exact-version links, Privacy evidence retention and Accessibility consistency. No existing Payment/Cancellation route was found; its rules are consolidated in the dedicated policy, not duplicated.
 - [x] Shared never-preselected clickwrap on cart, invoice, referral and legacy payment reviews; server exact-version rejection. Payment actions remain disabled/unavailable. Selection changes reset cart consent and correction returns to review.
