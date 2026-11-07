@@ -330,6 +330,13 @@
       "when": 1794077927568,
       "tag": "0046_verification_current_base_membership_prices",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794079461385,
+      "tag": "0047_onboarding_foundation",
+      "breakpoints": true
     }
   ]
 }

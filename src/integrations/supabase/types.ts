@@ -7029,6 +7029,8 @@ export type Database = {
           legacy_review_needed: boolean
           mfn_id: string | null
           notification_preferences: Json
+          onboarding_completed_at: string | null
+          onboarding_step: number | null
           phone: string | null
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
@@ -7044,6 +7046,8 @@ export type Database = {
           legacy_review_needed?: boolean
           mfn_id?: string | null
           notification_preferences?: Json
+          onboarding_completed_at?: string | null
+          onboarding_step?: number | null
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
@@ -7059,6 +7063,8 @@ export type Database = {
           legacy_review_needed?: boolean
           mfn_id?: string | null
           notification_preferences?: Json
+          onboarding_completed_at?: string | null
+          onboarding_step?: number | null
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
@@ -7525,13 +7531,18 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["workspace_type"]
           automatic_verification_level: string | null
+          business_address: string | null
+          business_phone: string | null
           created_at: string
           created_by: string
+          dispatch_phone: string | null
           display_name: string
           id: string
           is_test_account: boolean
           legacy_backfilled: boolean
+          legal_business_name: string | null
           mfn_id: string | null
+          operating_hours: string | null
           organization_type: string
           provider_verified: boolean
           status: Database["public"]["Enums"]["workspace_status"]
@@ -7542,13 +7553,18 @@ export type Database = {
         Insert: {
           account_type: Database["public"]["Enums"]["workspace_type"]
           automatic_verification_level?: string | null
+          business_address?: string | null
+          business_phone?: string | null
           created_at?: string
           created_by: string
+          dispatch_phone?: string | null
           display_name: string
           id?: string
           is_test_account?: boolean
           legacy_backfilled?: boolean
+          legal_business_name?: string | null
           mfn_id?: string | null
+          operating_hours?: string | null
           organization_type?: string
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
@@ -7559,13 +7575,18 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["workspace_type"]
           automatic_verification_level?: string | null
+          business_address?: string | null
+          business_phone?: string | null
           created_at?: string
           created_by?: string
+          dispatch_phone?: string | null
           display_name?: string
           id?: string
           is_test_account?: boolean
           legacy_backfilled?: boolean
+          legal_business_name?: string | null
           mfn_id?: string | null
+          operating_hours?: string | null
           organization_type?: string
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
@@ -8776,6 +8797,10 @@ export type Database = {
       }
       respond_targeted_patient_request: {
         Args: { _accept: boolean; _request: string }
+        Returns: undefined
+      }
+      save_onboarding_progress: {
+        Args: { _complete?: boolean; _step: number }
         Returns: undefined
       }
       save_personal_settings: {
