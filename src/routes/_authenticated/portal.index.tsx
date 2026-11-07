@@ -5,9 +5,10 @@ import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
 import { ACCOUNT_TYPE_LABEL, RequestTable, fmtDateTime } from "@/components/portal/request-display";
 import { ProviderOverview } from "@/components/portal/ProviderOverview";
 import { DsEmpty } from "@/components/ds/feedback";
+import {PatientTrips} from '@/components/portal/PatientTrips';
 
 export const Route = createFileRoute("/_authenticated/portal/")({
-  head: () => ({ meta: [{ title: "Portal Overview — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Portal Overview — MY FLORIDA NEMT" },{name:'description',content:'Your account overview and authorized upcoming trips.'},{property:'og:title',content:'Portal Overview — MY FLORIDA NEMT'},{property:'og:description',content:'Account overview and authorized trip activity.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}, { name: "robots", content: "noindex, nofollow" }] }),
   loader: () => getPortalSummary(),
   component: PortalHome,
 });
@@ -28,7 +29,7 @@ function PortalHome() {
       {provider ? (
         <ProviderOverview workspaceId={ws?.status === "active" ? ws.id : null} userId={user.id} />
       ) : (
-        <CustomerOverview />
+        ws?.type==='private_pay'?<PatientTrips overview/>:<CustomerOverview />
       )}
     </>
   );
