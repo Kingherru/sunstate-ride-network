@@ -7,9 +7,9 @@ export function patientStage(status: string | null | undefined, invoiceDue = fal
   if (s === 'completed') return 'Completed';
   if (s === 'needs_attention') return 'Needs Attention';
   if (invoiceDue) return 'Waiting on Payment';
-  if (['driver_assigned','in_progress'].includes(s)) return 'Driver Assigned';
+  if (s === 'driver_assigned') return 'Driver Assigned';
   if (['scheduled','dispatched'].includes(s)) return 'Added to Dispatch Schedule';
-  if (['approved','confirmed','accepted','reserved','assigned'].includes(s)) return 'Confirmed';
+  if (['approved','confirmed','accepted','reserved','assigned','in_progress'].includes(s)) return 'Confirmed';
   return 'Received';
 }
 export function patientTimeline(events: PatientEvent[]) {
