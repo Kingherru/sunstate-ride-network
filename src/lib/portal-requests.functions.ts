@@ -33,6 +33,9 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ kind: z.enum(['request', 'trip']), id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
+    const {data:memberships}=await context.supabase.from('workspace_members').select('workspaces!inner(account_type)').eq('user_id',context.userId).is('removed_at',null);
+    const patientOnly=!!memberships?.length && memberships.every(m=>m.workspaces.account_type==='private_pay');
+    if(patientOnly && data.kind==='trip')return {ok:false as const};
     const {data:patientAccess}=await context.supabase.rpc('patient_request_access',{_request:data.id});
     if(data.kind==='request' && patientAccess){
       // Patient projections never enter Network activity or internal history reads.
@@ -42,6 +45,7 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
       const request:RequestDetailRow={...p.request,status:p.stage,network_status:null};
       return {ok:true as const,request,account:null,assignment:p.providerName,history:[] as {action:string;at:string;actor:string|null}[],distributions:[] as {id:string;mfn_id:string;status:string;waves:{id:string;radius_miles:number;sent_at:string}[];offers:{id:string;mfn_id:string;status:string;amount_cents:number}[];negotiations:{id:string;side:string;action:string;amount_cents:number|null;created_at:string}[]}[],patient:p};
     }
+    if(patientOnly)return {ok:false as const};
     const tripCols = 'id,display_id,ride_request_id,trip_kind,transport_type,status,network_status,created_at,updated_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,return_dropoff_time,return_pickup_building,return_pickup_suite,additional_stops,recurrence_rule,recurrence_end_date,service_level,needs_wheelchair,needs_assistance_to_vehicle,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id,assigned_to';
     const { data: row, error } = data.kind === 'request'
       ? await context.supabase.from('ride_requests').select(DETAIL_COLS).eq('id', data.id).maybeSingle()

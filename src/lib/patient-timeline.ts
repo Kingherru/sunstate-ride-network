@@ -13,7 +13,8 @@ export function patientStage(status: string | null | undefined, invoiceDue = fal
   return 'Received';
 }
 export function patientTimeline(events: PatientEvent[]) {
-  return events.filter(e => Number.isFinite(Date.parse(e.at))).map(e => ({ ...e, label: patientStage(e.action) })).filter((e,i,a) => i === 0 || e.label !== a[i-1]?.label);
+  const known=new Set(['received','new','pending','approved','confirmed','accepted','reserved','assigned','scheduled','dispatched','driver_assigned','completed','canceled','cancelled','declined','needs_attention']);
+  return events.filter(e => known.has(e.action) && Number.isFinite(Date.parse(e.at))).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)).map(e => ({ ...e, label: patientStage(e.action) })).filter((e,i,a) => i === 0 || e.label !== a[i-1]?.label);
 }
 export function patientTripGroup(stage: PatientStage) {
   return stage === 'Completed' ? 'completed' : ['Canceled','Declined'].includes(stage) ? 'canceled' : ['Received','Needs Attention','Waiting on Payment'].includes(stage) ? 'pending' : 'upcoming';
