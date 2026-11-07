@@ -456,6 +456,13 @@
       "when": 1794088873688,
       "tag": "0064_facility_bilateral_quote_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1794088915866,
+      "tag": "0065_atomic_facility_invoice_attachment",
+      "breakpoints": true
     }
   ]
 }
