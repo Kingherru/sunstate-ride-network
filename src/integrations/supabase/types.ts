@@ -9140,6 +9140,7 @@ export type Database = {
         Returns: number
       }
       holds_admin_label: { Args: { _user_id: string }; Returns: boolean }
+      invoice_safe_events: { Args: { _invoice: string }; Returns: Json }
       invoice_viewed: { Args: { _invoice: string }; Returns: undefined }
       is_active_workspace_member: {
         Args: { _uid: string; _ws: string }
