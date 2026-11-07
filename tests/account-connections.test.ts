@@ -1,0 +1,12 @@
+import { describe,expect,it } from 'vitest';
+import { invitationActionInput,invitationStatus,normalizeBusinessMatch,canManageConnections,tokenIsUsable } from '../src/lib/account-connections-rules';
+import { generateInvitationToken,hashInvitationToken,constantTimeHashEqual } from '../src/lib/account-connections-token.server';
+describe('Account connection boundaries',()=>{
+  it('does not allow contractors to accept organization connections',()=>{expect(canManageConnections({role:'admin',isContractor:true,active:true})).toBe(false);});
+  it('allows only active owners/account admins',()=>{expect(canManageConnections({role:'member',isContractor:false,active:true})).toBe(false);expect(canManageConnections({role:'owner',isContractor:false,active:false})).toBe(false);expect(canManageConnections({role:'admin',isContractor:false,active:true})).toBe(true);});
+  it('requires explicit send confirmation',()=>{expect(invitationActionInput.safeParse({workspaceId:'00000000-0000-4000-8000-000000000001',action:'send',email:'business@example.com',intendedType:'provider',confirmed:false}).success).toBe(false);});
+  it('rejects role and membership injection',()=>{expect(invitationActionInput.safeParse({workspaceId:'00000000-0000-4000-8000-000000000001',action:'accept',invitationId:'00000000-0000-4000-8000-000000000002',confirmed:true,role:'admin'}).success).toBe(false);});
+  it('normalizes exact email and US phone matches',()=>{expect(normalizeBusinessMatch('email',' Business@Example.com ')).toBe('business@example.com');expect(normalizeBusinessMatch('phone','+1 (305) 555-1234')).toBe('3055551234');});
+  it('expires pending tokens and rejects consumed tokens',()=>{const now=Date.parse('2026-11-07T19:39:00Z');expect(invitationStatus('pending','2026-11-07T19:39:00Z',now)).toBe('expired');expect(tokenIsUsable('accepted','2026-11-14T19:39:00Z',true,now)).toBe(false);expect(tokenIsUsable('pending','2026-11-07T19:38:00Z',true,now)).toBe(false);expect(tokenIsUsable('pending','2026-11-14T19:39:00Z',false,now)).toBe(false);});
+  it('uses 256-bit random tokens and stores only SHA-256 hashes',async()=>{const token=generateInvitationToken();const other=generateInvitationToken();expect(token).toMatch(/^[a-f0-9]{64}$/);expect(token).not.toBe(other);const hash=await hashInvitationToken(token);expect(hash).not.toBe(token);expect(constantTimeHashEqual(hash,await hashInvitationToken(token))).toBe(true);expect(constantTimeHashEqual(hash,await hashInvitationToken(other))).toBe(false);});
+});
