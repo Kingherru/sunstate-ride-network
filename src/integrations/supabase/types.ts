@@ -3572,15 +3572,18 @@ export type Database = {
         Row: {
           accuracy_attested_at: string | null
           business_name: string | null
+          coverage_cents: number | null
           created_at: string
           doc_path: string | null
           effective_at: string | null
           expires_at: string | null
           id: string
+          insurance_carrier: string | null
           kind: string
           label: string
           lifecycle_state: string | null
           notes: string | null
+          policy_reference: string | null
           provider_user_id: string
           required: boolean
           updated_at: string
@@ -3589,15 +3592,18 @@ export type Database = {
         Insert: {
           accuracy_attested_at?: string | null
           business_name?: string | null
+          coverage_cents?: number | null
           created_at?: string
           doc_path?: string | null
           effective_at?: string | null
           expires_at?: string | null
           id?: string
+          insurance_carrier?: string | null
           kind: string
           label: string
           lifecycle_state?: string | null
           notes?: string | null
+          policy_reference?: string | null
           provider_user_id: string
           required?: boolean
           updated_at?: string
@@ -3606,15 +3612,18 @@ export type Database = {
         Update: {
           accuracy_attested_at?: string | null
           business_name?: string | null
+          coverage_cents?: number | null
           created_at?: string
           doc_path?: string | null
           effective_at?: string | null
           expires_at?: string | null
           id?: string
+          insurance_carrier?: string | null
           kind?: string
           label?: string
           lifecycle_state?: string | null
           notes?: string | null
+          policy_reference?: string | null
           provider_user_id?: string
           required?: boolean
           updated_at?: string
@@ -3623,6 +3632,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "provider_credentials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_customer_pricing_versions: {
+        Row: {
+          created_by: string
+          effective_at: string
+          id: string
+          legacy_snapshot: Json | null
+          person_mfn_id: string
+          rates: Json
+          version: number
+          workspace_id: string
+          workspace_mfn_id: string
+        }
+        Insert: {
+          created_by: string
+          effective_at?: string
+          id?: string
+          legacy_snapshot?: Json | null
+          person_mfn_id: string
+          rates: Json
+          version: number
+          workspace_id: string
+          workspace_mfn_id: string
+        }
+        Update: {
+          created_by?: string
+          effective_at?: string
+          id?: string
+          legacy_snapshot?: Json | null
+          person_mfn_id?: string
+          rates?: Json
+          version?: number
+          workspace_id?: string
+          workspace_mfn_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_customer_pricing_versions_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -7988,6 +8041,10 @@ export type Database = {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
+      can_manage_provider_customer_pricing: {
+        Args: { _workspace: string }
+        Returns: boolean
+      }
       can_manage_workspace_requests: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
@@ -8811,6 +8868,15 @@ export type Database = {
           _preferences: Json
         }
         Returns: undefined
+      }
+      save_provider_customer_pricing: {
+        Args: {
+          _confirmed: boolean
+          _expected_version: number
+          _rates: Json
+          _workspace: string
+        }
+        Returns: string
       }
       save_provider_verification_details: {
         Args: { _details: Json; _workspace: string }

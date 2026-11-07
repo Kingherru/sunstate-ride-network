@@ -26,7 +26,7 @@ export function VerificationEvidence({ workspaceId, editable = false }: { worksp
   </section>;
 }
 
-function BusinessEvidenceEditor({ workspaceId }: { workspaceId: string }) {
+export function BusinessEvidenceEditor({ workspaceId }: { workspaceId: string }) {
   const get = useServerFn(getVerificationDetails); const save = useServerFn(saveVerificationDetails); const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ['verification-details', workspaceId], queryFn: () => get({ data: { workspaceId } }) });
   const [busy, setBusy] = useState(false);
