@@ -20,3 +20,6 @@ export async function requireCheckoutPreparationEnabled() {
   const { data } = await supabaseAdmin.from('platform_launch_flags').select('enabled').eq('key','commerce_checkout_preparation').maybeSingle();
   if (data?.enabled !== true) throw new Error('Checkout preparation is off. Approved product-specific purchase terms and exact fee review are required. No payment was created.');
 }
+export async function requireApprovedPurchaseTerms(): Promise<void> {
+  throw new Error('Approved purchase-specific terms and final exact fee review are required. No payment may be created.');
+}
