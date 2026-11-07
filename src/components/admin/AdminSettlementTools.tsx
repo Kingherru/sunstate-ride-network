@@ -39,15 +39,9 @@ export function AdminSettlementTools({ settlementId, releaseEligible }: { settle
         {!d.disputes.length && !d.adjustments.length && <p>None.</p>}</section>
     </div>
     {d.is_master && <div className="rounded-ds border border-ds-peach-border bg-ds-peach p-3 space-y-3"><p className="ds-label uppercase">Master Admin — test mode only</p>
-      {open && <div className="space-y-2">
-        <DsField label="Resolve dispute">{fp => <DsSelect {...fp} value={outcome} onChange={e => setOutcome(e.target.value as never)}><option value="receiver">For receiver (hold restarts)</option><option value="sender">For sender (test refund if paid)</option><option value="partial">Partial approved adjustment</option></DsSelect>}</DsField>
-        {outcome === 'partial' && <DsField label="Reduce receiver payout by (cents)">{fp => <DsInput {...fp} inputMode="numeric" value={adj} onChange={e => setAdj(e.target.value.replace(/\D/g, ''))} />}</DsField>}
-        <DsField label="Reason (required, no medical details)">{fp => <DsTextarea {...fp} value={reason} maxLength={1000} onChange={e => setReason(e.target.value)} />}</DsField>
-        <DsButton disabled={busy || reason.trim().length < 10} onClick={async () => { if (!window.confirm('Record this dispute resolution? This cannot be undone.')) return; setBusy(true); const r = await resolve({ data: { disputeId: open.id, outcome, reason, adjustCents: outcome === 'partial' ? Number(adj) || undefined : undefined, confirmed: true } }); setBusy(false); if ('error' in r) toast.error(r.error); else { toast.success('Dispute resolved.'); setReason(''); refresh(); } }}>Record resolution</DsButton>
-      </div>}
+      <p className="ds-body">Refund, reversal, dispute-resolution and transfer actions are off. Review evidence only.</p>
       <div className="flex flex-wrap items-center gap-2">
-        <DsButton variant="ghost" disabled={busy || !releaseEligible || !!d.transfer && d.transfer.status !== 'failed'} title={releaseEligible ? undefined : 'Only after the full hold ends with no open dispute'} onClick={async () => { if (!window.confirm('Create a test-mode transfer for the locked receiver payout?')) return; setBusy(true); const r = await transfer({ data: { settlementId, confirmed: true } }); setBusy(false); if ('error' in r) toast.error(r.error); else { toast.success('Test transfer created.'); refresh(); } }}>Process eligible test settlement</DsButton>
-        {d.distribution_id && <DsButton variant="ghost" disabled={busy} onClick={async () => { try { setReasons(await excl({ data: { distributionId: d.distribution_id! } })); } catch (e) { toast.error((e as Error).message); } }}>Show excluded providers</DsButton>}
+        {d.distribution_id && <DsButton variant="ghost" disabled={busy} onClick={async () => { try { setReasons(await excl({ data: { distributionId: d.distribution_id ?? '' } })); } catch (e) { toast.error((e as Error).message); } }}>Show excluded providers</DsButton>}
       </div>
       <p className="ds-caption text-ds-on-subtle">No “release now” option exists; the hold cannot be bypassed.</p>
       {reasons && <ul className="ds-caption grid sm:grid-cols-2 gap-1">{reasons.length ? reasons.map((r, i) => <li key={i}>{r.provider_mfn_id ?? 'Provider'} — {REASONS[r.reason_code] ?? r.reason_code}</li>) : <li>No exclusions recorded.</li>}</ul>}

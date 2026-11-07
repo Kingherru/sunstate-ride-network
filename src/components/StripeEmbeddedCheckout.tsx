@@ -1,39 +1,9 @@
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { getStripe, getStripeEnvironment } from "@/lib/stripe";
-import { createCheckoutSession } from "@/utils/payments.functions";
-
-interface Props {
-  priceId: string;
-  customerEmail?: string;
-  userId?: string;
-  returnUrl?: string;
-  metadata?: Record<string, string>;
-  includeNetworkAddon?: boolean;
-}
-
-export function StripeEmbeddedCheckout({ priceId, customerEmail, userId, returnUrl, metadata, includeNetworkAddon }: Props) {
-  const fetchClientSecret = async (): Promise<string> => {
-    const result = await createCheckoutSession({
-      data: {
-        priceId,
-        customerEmail,
-        userId,
-        returnUrl: returnUrl || `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-        environment: getStripeEnvironment(),
-        metadata,
-        includeNetworkAddon,
-      },
-    });
-    if ("error" in result) throw new Error(result.error);
-    if (!result.clientSecret) throw new Error("Stripe did not return a client secret");
-    return result.clientSecret;
-  };
-
-  return (
-    <div id="checkout">
-      <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
-        <EmbeddedCheckout />
-      </EmbeddedCheckoutProvider>
-    </div>
-  );
+import { useState } from 'react';
+import { DsButton } from '@/components/ds/controls';
+import { CheckoutAcknowledgment } from '@/components/payments/CheckoutAcknowledgment';
+interface Props { priceId: string; customerEmail?: string; userId?: string; returnUrl?: string; metadata?: Record<string,string>; includeNetworkAddon?: boolean; }
+/** Legacy entry points share clickwrap, but cannot mount a payment form without authoritative final review. */
+export function StripeEmbeddedCheckout(_props: Props) {
+  const [accepted,setAccepted]=useState(false);
+  return <div className="theme-portal space-y-4"><p className="ds-body">Payment review unavailable: exact amount, payer, merchant, recurring status, fees and approved product-specific purchase terms are required. No payment form is opened.</p><CheckoutAcknowledgment accepted={accepted} onChange={setAccepted}/><DsButton disabled>Payment unavailable</DsButton></div>;
 }

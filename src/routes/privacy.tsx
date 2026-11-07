@@ -13,7 +13,7 @@ export const Route = createFileRoute("/privacy")({
       title="Privacy Policy"
       intro="This policy explains, in plain language, what information MY FLORIDA NEMT collects, why we use it and who we share it with."
       dateLabel="Last updated"
-      date="October 1, 2026"
+      date="November 7, 2026"
       sections={[
         { id: "collect", h: "Information we collect", body: <>
           <p>We collect only the information needed to run the website and network features you use:</p>
@@ -50,6 +50,7 @@ export const Route = createFileRoute("/privacy")({
              <li>As part of a business transfer if the ownership or operation of MY FLORIDA NEMT changes.</li>
           </ul>
         </> },
+        { id: "purchase-evidence", h: "Purchase acceptance and security evidence", body: <p>We retain the policy versions and provider cancellation/no-show terms displayed at checkout, accepted amount and currency, purchase and invoice/order/subscription/training/referral references, person/workspace identity where applicable, timestamp and server-derived session attribution. These immutable records establish what was accepted and support transaction administration, disputes, recovery and legal obligations. Security/session evidence is restricted to authorized oversight; it is not publicly searchable or shared as unrelated provider financial information. Card numbers, CVC and raw payment credentials are not stored in acceptance evidence. We retain evidence only as needed for these purposes and applicable legal requirements, then delete or de-identify it when lawful; a policy update does not rewrite an earlier acceptance.</p> },
         { id: "retention", h: "How long we keep information", body: <p>We keep information for as long as it is needed to provide the service, maintain trip, payment and training records, resolve disputes and meet legal obligations. When it is no longer needed, we delete or de-identify it.</p> },
         { id: "security", h: "Security", body: <p>We use reasonable administrative and technical safeguards, such as encrypted connections and access controls, to protect information. No online service can guarantee absolute security.</p> },
         { id: "choices", h: "Your choices", body: <p>You can review and update account information when you are signed in, or contact us to ask for a correction. You may also ask us to close your account, subject to records we must keep.</p> },

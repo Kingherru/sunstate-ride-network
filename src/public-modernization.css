@@ -71,14 +71,18 @@
 .public-product-showcase :is(#demo-title, .public-product-intro) { color: var(--ds-on-primary); }
 .public-product-showcase .public-product-intro { opacity: .92; }
 .public-product-showcase .public-product-label { color: var(--ds-accent); }
-.public-tool-nav button { border: 1px solid var(--public-on-blue-edge); }
-.public-tool-nav button[aria-selected="true"] { background: var(--ds-primary-hover); border-color: var(--ds-accent); }
-.public-preview-frame { border: 1px solid var(--public-on-blue-edge); box-shadow: var(--public-preview-depth); }
-.public-preview-frame #demo-panel { border: 1px solid var(--public-edge-soft); }
-.public-preview-content :is(.bg-ds-subtle, .bg-ds-sky, .bg-ds-surface, .bg-ds-peach) { border: 1px solid var(--public-edge-soft); }
-.theme-public .public-coverage { border-block: 1px solid var(--public-edge-soft); }
-.public-map-frame { border: 1px solid var(--public-edge); border-radius: var(--ds-radius-lg); padding: 1.25rem; background: var(--ds-sky); box-shadow: var(--public-depth); }
-.public-map-results { border: 1px solid var(--public-edge); border-left: 3px solid var(--ds-primary); }
+.public-tool-nav { scrollbar-width: none; }
+.public-tool-nav::-webkit-scrollbar { display: none; }
+.public-tool-nav button { border: 0; }
+.public-tool-nav button[aria-selected="true"] { background: var(--ds-primary-hover); border-color: transparent; }
+.public-preview-frame { border: 0; box-shadow: var(--public-preview-depth); background: var(--public-preview-glass); backdrop-filter: blur(12px); }
+.public-preview-frame #demo-panel { border: 0; }
+.public-preview-frame [role="radiogroup"] { border: 0; box-shadow: none; background: transparent; }
+.public-preview-content :is(.bg-ds-subtle, .bg-ds-sky, .bg-ds-surface, .bg-ds-peach) { border: 0; }
+.public-preview-content .ds-notepad { border: 0; }
+.theme-public .public-coverage { border: 0; }
+.public-map-frame { border: 0; padding: 1.25rem; background: transparent; box-shadow: none; }
+.public-map-results { border: 0; background: var(--public-surface-glass); backdrop-filter: blur(10px); box-shadow: var(--public-depth); }
 .public-map-modes { gap: .5rem; }
 .public-map-modes button { padding-inline: 1rem; border: 1px solid var(--public-edge); white-space: nowrap; }
 .public-map-modes button[aria-checked="true"] { border-color: var(--ds-primary); box-shadow: var(--public-depth); }
@@ -98,7 +102,7 @@
 .theme-public .public-page-hero { border-bottom: 3px solid var(--ds-accent); }
 .public-page-hero h1 { letter-spacing: 0; font-size: 2rem; }
 .theme-public .public-cta-band { border-block: 1px solid var(--ds-peach-border); }
-.theme-public :is(.public-icon-item, .public-link-card, .public-shared-card, .public-shared-panel) { border: 1px solid var(--public-edge-soft); box-shadow: var(--public-depth); }
+.theme-public :is(.public-icon-item, .public-link-card, .public-shared-card, .public-shared-panel) { border: 0; box-shadow: var(--public-depth); }
 .theme-public .public-link-card:hover { transform: translateY(-2px); border-color: var(--public-edge); }
 .theme-public .public-link-card > svg { color: var(--ds-action); }
 .theme-public .public-footer { border-top: 1px solid var(--public-on-blue-edge); }
@@ -124,3 +128,4 @@
 }
 .theme-public :is(.public-connect, .public-product-showcase, .public-coverage, .public-services, .public-membership, .public-page-hero) :is(.grid, .flex) > * { min-width: 0; }
 @media (prefers-reduced-motion: reduce) { .theme-public .public-link-card:hover { transform: none; } }
+@media print { .theme-public .public-header, .theme-public .public-footer, .legal-document nav, .theme-public a[href="#main"] { display: none !important; } .theme-public .public-page-hero { background: var(--ds-surface); color: var(--ds-primary); border: 0; } .theme-public .public-page-hero * { animation: none !important; opacity: 1 !important; transform: none !important; } .theme-public .public-page-hero .mfn-container { padding-block: 1rem; } .legal-document { padding-block: 1rem; } .legal-document > .grid { display: block; } .legal-document section { break-inside: avoid; } }

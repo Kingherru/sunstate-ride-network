@@ -3,6 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 import { BASE_MEMBERSHIP_PRICE, NETWORK_ADDON_PRICE } from "@/lib/membership-pricing";
 
+import { assertCheckoutConsent, type CheckoutConsent } from "@/lib/payment-policy";
+
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
 
@@ -39,6 +41,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: {
     priceId: string;
+    policyConsent?: CheckoutConsent;
     customerEmail?: string;
     userId?: string;
     returnUrl: string;
@@ -51,6 +54,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     try {
+      assertCheckoutConsent(data.policyConsent);
+      const { requireCheckoutPreparationEnabled, requireApprovedPurchaseTerms } = await import('@/lib/checkout-policy.server');
+      await requireCheckoutPreparationEnabled();
+      await requireApprovedPurchaseTerms();
       if (data.environment !== 'sandbox' && data.environment !== 'live') return { error: 'Choose a valid payment environment.' };
       if (data.userId && data.userId !== context.userId) return { error: 'Checkout must belong to the signed-in account.' };
       const stripe = createStripeClient(data.environment);
@@ -75,8 +82,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         // No duplicate subscriptions; the 30-day trial is granted once per business.
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const [{ data: current }, { data: trial }] = await Promise.all([
-          supabaseAdmin.from('subscriptions').select('id').eq('workspace_id', membershipWorkspace!).in('status', ['active', 'trialing', 'past_due', 'incomplete']).limit(1),
-          supabaseAdmin.from('provider_membership_trials').select('workspace_id').eq('workspace_id', membershipWorkspace!).maybeSingle(),
+          supabaseAdmin.from('subscriptions').select('id').eq('workspace_id', membershipWorkspace ?? '').in('status', ['active', 'trialing', 'past_due', 'incomplete']).limit(1),
+          supabaseAdmin.from('provider_membership_trials').select('workspace_id').eq('workspace_id', membershipWorkspace ?? '').maybeSingle(),
         ]);
         if (current?.length) return { error: 'This business already has a membership. Manage it from Settings → Membership.' };
         grantTrial = !trial;

@@ -3,12 +3,18 @@ import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { createStripeClient, getStripeErrorMessage } from '@/lib/stripe.server';
 
+import { assertCheckoutConsent } from '@/lib/payment-policy';
+
 // A dedicated course checkout: membership checkout remains unchanged.
 export const createTrainingCheckout = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ courseIds: z.array(z.string().uuid()).min(1).max(20), environment: z.enum(['sandbox', 'live']), returnUrl: z.string().url() }).parse(input))
+  .inputValidator((input: unknown) => z.object({ policyConsent:z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}).optional(), courseIds: z.array(z.string().uuid()).min(1).max(20), environment: z.enum(['sandbox', 'live']), returnUrl: z.string().url() }).parse(input))
   .handler(async ({ data, context }) => {
     try {
+      assertCheckoutConsent(data.policyConsent);
+      const {requireCheckoutPreparationEnabled,requireApprovedPurchaseTerms}=await import('@/lib/checkout-policy.server');
+      await requireCheckoutPreparationEnabled();
+      await requireApprovedPurchaseTerms();
       const { getRequest } = await import('@tanstack/react-start/server');
       const origin = new URL(getRequest().url).origin;
       if (new URL(data.returnUrl).origin !== origin) throw new Error('Invalid checkout return address');

@@ -66,6 +66,7 @@ export const ADMIN_NAV: NavItem[] = [
   { to: "/admin/messaging", label: "Messaging" },
   { to: "/admin/pricing", label: "Pricing" },
   { to: "/admin/payouts", label: "Payouts" },
+  { to: "/admin/refund-review", label: "Refund & reversal review" },
   { to: "/admin/integrations", label: "Integrations" },
   { to: "/admin/admins", label: "Administrators" },
   { to: "/admin/security", label: "Security" },

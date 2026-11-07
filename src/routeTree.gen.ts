@@ -27,6 +27,7 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapRouteImport } from './routes/sitemap'
@@ -63,6 +64,7 @@ import { Route as AuthenticatedAdminOnBehalfRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin.people'
 import { Route as AuthenticatedAdminPricingRouteImport } from './routes/_authenticated/admin.pricing'
+import { Route as AuthenticatedAdminRefundReviewRouteImport } from './routes/_authenticated/admin.refund-review'
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin.security'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminTrainingRouteImport } from './routes/_authenticated/admin.training'
@@ -201,6 +203,11 @@ const McpRoute = McpRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -395,6 +402,12 @@ const AuthenticatedAdminPricingRoute =
   AuthenticatedAdminPricingRouteImport.update({
     id: '/pricing',
     path: '/pricing',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRefundReviewRoute =
+  AuthenticatedAdminRefundReviewRouteImport.update({
+    id: '/refund-review',
+    path: '/refund-review',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminSecurityRoute =
@@ -705,6 +718,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
@@ -740,6 +754,7 @@ export interface FileRoutesByFullPath {
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/pricing': typeof AuthenticatedAdminPricingRoute
+  '/admin/refund-review': typeof AuthenticatedAdminRefundReviewRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/training': typeof AuthenticatedAdminTrainingRoute
@@ -809,6 +824,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap': typeof SitemapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -840,6 +856,7 @@ export interface FileRoutesByTo {
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/pricing': typeof AuthenticatedAdminPricingRoute
+  '/admin/refund-review': typeof AuthenticatedAdminRefundReviewRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/training': typeof AuthenticatedAdminTrainingRoute
@@ -911,6 +928,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
@@ -946,6 +964,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/_authenticated/admin/pricing': typeof AuthenticatedAdminPricingRoute
+  '/_authenticated/admin/refund-review': typeof AuthenticatedAdminRefundReviewRoute
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/training': typeof AuthenticatedAdminTrainingRoute
@@ -1017,6 +1036,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/privacy'
+    | '/refund-policy'
     | '/reset-password'
     | '/shop'
     | '/sitemap'
@@ -1052,6 +1072,7 @@ export interface FileRouteTypes {
     | '/admin/payouts'
     | '/admin/people'
     | '/admin/pricing'
+    | '/admin/refund-review'
     | '/admin/security'
     | '/admin/settings'
     | '/admin/training'
@@ -1121,6 +1142,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/privacy'
+    | '/refund-policy'
     | '/reset-password'
     | '/sitemap'
     | '/sitemap.xml'
@@ -1152,6 +1174,7 @@ export interface FileRouteTypes {
     | '/admin/payouts'
     | '/admin/people'
     | '/admin/pricing'
+    | '/admin/refund-review'
     | '/admin/security'
     | '/admin/settings'
     | '/admin/training'
@@ -1222,6 +1245,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/privacy'
+    | '/refund-policy'
     | '/reset-password'
     | '/shop'
     | '/sitemap'
@@ -1257,6 +1281,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/people'
     | '/_authenticated/admin/pricing'
+    | '/_authenticated/admin/refund-review'
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/training'
@@ -1328,6 +1353,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ShopRoute: typeof ShopRouteWithChildren
   SitemapRoute: typeof SitemapRoute
@@ -1489,6 +1515,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -1741,6 +1774,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/admin/pricing'
       preLoaderRoute: typeof AuthenticatedAdminPricingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/refund-review': {
+      id: '/_authenticated/admin/refund-review'
+      path: '/refund-review'
+      fullPath: '/admin/refund-review'
+      preLoaderRoute: typeof AuthenticatedAdminRefundReviewRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/security': {
@@ -2101,6 +2141,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
   AuthenticatedAdminPricingRoute: typeof AuthenticatedAdminPricingRoute
+  AuthenticatedAdminRefundReviewRoute: typeof AuthenticatedAdminRefundReviewRoute
   AuthenticatedAdminSecurityRoute: typeof AuthenticatedAdminSecurityRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminTrainingRoute: typeof AuthenticatedAdminTrainingRoute
@@ -2121,6 +2162,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
   AuthenticatedAdminPricingRoute: AuthenticatedAdminPricingRoute,
+  AuthenticatedAdminRefundReviewRoute: AuthenticatedAdminRefundReviewRoute,
   AuthenticatedAdminSecurityRoute: AuthenticatedAdminSecurityRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminTrainingRoute: AuthenticatedAdminTrainingRoute,
@@ -2257,6 +2299,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ShopRoute: ShopRouteWithChildren,
   SitemapRoute: SitemapRoute,

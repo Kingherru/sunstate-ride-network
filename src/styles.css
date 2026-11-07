@@ -148,6 +148,8 @@
 /* Public pages: disciplined blue / orange / white palette. Soft sections use pale blue only. */
 .theme-public {
   --mfn-pale: #F3F7FB;
+  --public-preview-glass: color-mix(in oklab, var(--ds-on-primary) 8%, transparent);
+  --public-surface-glass: color-mix(in oklab, var(--ds-surface) 94%, transparent);
   --ds-subtle: var(--mfn-pale);
   --ds-sky: var(--mfn-pale);
   --ds-green: var(--mfn-pale);

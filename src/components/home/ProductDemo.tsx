@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { ArrowRight, CalendarCheck, Check, FileText, MapPin, Monitor, Search, Send, Smartphone, Sparkles, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DsButton } from "@/components/ds/controls";
 import { HomeReveal } from "./HomeReveal";
 
 // Fictional sample data only.
@@ -162,12 +163,12 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
         </HomeReveal>
 
         <HomeReveal disabled={!motion} className="mt-10"><div className="grid gap-6 lg:grid-cols-[30%_1fr] lg:items-center lg:gap-8">
-          <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="public-tool-nav -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
+          <div role="tablist" aria-label="Provider tools" aria-orientation="vertical" className="public-tool-nav grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-col">
             {FEATURES.map((f, i) => {
               const on = f.id === active;
               const Icon = f.icon;
               return (
-                <button
+                <DsButton variant="ghost"
                   key={f.id}
                   ref={(el) => { refs.current[i] = el; }}
                   role="tab"
@@ -183,8 +184,8 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
                   )}
                 >
                   <Icon className={cn("size-5 shrink-0", on && "text-ds-accent")} aria-hidden />
-                  <span className="ds-button-text whitespace-nowrap text-[1.125rem]">{f.label}</span>
-                </button>
+                  <span className="ds-button-text whitespace-normal text-[1.125rem]">{f.label}</span>
+                </DsButton>
               );
             })}
           </div>
@@ -196,11 +197,11 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
               <div className="flex justify-center">
                 <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-primary-hover p-1">
                   {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
-                    <button key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
+                    <DsButton variant="ghost" key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
                       className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-ds-sm px-2.5 sm:gap-2 sm:px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
                         view === v ? "bg-ds-surface text-ds-primary" : "text-ds-on-primary hover:bg-ds-primary-active")}>
                       <Icon className="size-4 shrink-0 sm:size-5" aria-hidden />{l}
-                    </button>
+                    </DsButton>
                   ))}
                 </div>
               </div>

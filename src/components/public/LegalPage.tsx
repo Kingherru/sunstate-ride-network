@@ -1,4 +1,6 @@
 import { PublicPage } from "./PublicPage";
+import { Printer } from "lucide-react";
+import { DsButton } from "@/components/ds/controls";
 import { PageHero } from "./page-kit";
 
 export type LegalSection = { id: string; h: string; body: React.ReactNode };
@@ -8,7 +10,8 @@ export function LegalPage({ crumb, title, intro, dateLabel, date, sections }: { 
   return (
     <PublicPage>
       <PageHero crumb={crumb} eyebrow="MY FLORIDA NEMT" title={title} intro={<><p>{intro}</p><p className="ds-label !text-ds-accent">{dateLabel}: {date}</p></>} />
-      <div className="mfn-section bg-ds-bg">
+      <div className="legal-document mfn-section bg-ds-bg">
+        <div className="mfn-container mb-8 flex justify-end print:hidden"><DsButton variant="secondary" onClick={() => window.print()}><Printer className="size-4"/>Print / save policy</DsButton></div>
         <div className="mfn-container grid gap-10 lg:grid-cols-[18rem_1fr] lg:gap-16">
           <nav aria-label="On this page" className="lg:sticky lg:top-28 lg:self-start">
             <h2 className="ds-label uppercase tracking-[0.08em] text-ds-accent-active">On this page</h2>

@@ -2,7 +2,7 @@ import { PublicHeader } from "./PublicHeader";
 import { PublicFooter } from "./PublicFooter";
 
 /** Wrapper for rebuilt public pages. Root route hides its temporary bar on these paths. */
-export const PUBLIC_SHELL_PATHS = ["/", "/book", "/join", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/privacy", "/terms", "/accessibility", "/sitemap", "/resources", "/frequently-asked-questions", "/login", "/create-account", "/forgot-password", "/reset-password", "/portal", "/admin", "/account-setup", "/account-status"];
+export const PUBLIC_SHELL_PATHS = ["/", "/book", "/join", "/services", "/how-it-works", "/for-providers", "/for-facilities", "/florida-coverage", "/privacy", "/terms", "/refund-policy", "/accessibility", "/sitemap", "/resources", "/frequently-asked-questions", "/login", "/create-account", "/forgot-password", "/reset-password", "/portal", "/admin", "/account-setup", "/account-status"];
 
 /** Prefix-aware check so nested public pages (services, coverage, resources) also use their own shell. */
 export const usesOwnShell = (path: string) => path === '/find-support' || PUBLIC_SHELL_PATHS.includes(path) || ["/services/", "/florida-coverage/", "/resources/", "/training", "/book", "/portal", "/admin", "/learn"].some((p) => path.startsWith(p));
