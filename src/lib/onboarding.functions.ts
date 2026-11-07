@@ -3,10 +3,6 @@ import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { onboardingInput } from './onboarding-rules';
 
-async function ownedSetup(context: Parameters<Parameters<typeof requireSupabaseAuth.server>[0]>[0]) {
-  return context;
-}
-
 export const getOnboarding = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: person, error } = await context.supabase.from('user_profiles').select('first_name,last_name,display_name,phone,mfn_id,status,is_test_account,deleted_at,notification_preferences,onboarding_step,onboarding_completed_at').eq('user_id', context.userId).single();
