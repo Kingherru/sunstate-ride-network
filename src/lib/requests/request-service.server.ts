@@ -126,7 +126,7 @@ async function finish(row: any, error: any, category: RequestCategory, email: st
   }
   // Targeted intake is visible only in the chosen provider's Network inbox.
   // Do not fan out staff or provider emails from this path.
-  if (!row.is_test && !own.skipNotify && !row.selected_provider_workspace_id) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
+  if (!row.is_test && !own.skipNotify && !row.selected_provider_workspace_id && !row.provider_owned_operation) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
   return { ok: true, id: row.id, mfnId: row.mfn_id ?? null, isTest: !!row.is_test };
 }
 
@@ -165,7 +165,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     trip_billing_source: data.billingSource,
     trip_billing_first_name: data.billingContact?.firstName ?? null, trip_billing_last_name: data.billingContact?.lastName ?? null,
     trip_billing_email: data.billingContact?.email ?? null, trip_billing_phone: data.billingContact?.phone ?? null,
-  } as any).select("id, mfn_id, is_test, selected_provider_workspace_id").single();
+  } as any).select("id, mfn_id, is_test, selected_provider_workspace_id, provider_owned_operation").single();
   return finish(row, error, "passenger_transport", data.patientEmail || null, own, embedProviderId);
 }
 
@@ -185,6 +185,6 @@ export async function insertDeliveryRequest(data: DeliveryRequestInput, own: Ins
     delivery_signature_required: data.signatureRequired,
     requester_user_id: own.requesterUserId, actor_user_id: own.actorUserId, workspace_id: own.workspaceId,
     submitted_via: own.submittedVia, on_behalf_of_user_id: own.onBehalfOfUserId ?? null, import_job_id: own.importJobId ?? null,
-  } as any).select("id, mfn_id, is_test").single();
+  } as any).select("id, mfn_id, is_test, provider_owned_operation").single();
   return finish(row, error, "medical_delivery", data.contactEmail || null, own);
 }

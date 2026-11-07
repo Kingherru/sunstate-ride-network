@@ -3,6 +3,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { FileText, RefreshCw } from 'lucide-react';
+import { CheckoutAcknowledgment } from '@/components/payments/CheckoutAcknowledgment';
 import { RequestForm } from '@/components/requests/RequestForm';
 import { TripCommerceContext, type CommerceFormData } from '@/components/requests/trip-commerce-context';
 import { DsButton, DsCheckbox, DsField, DsInput, DsTextarea } from '@/components/ds/controls';
@@ -21,6 +22,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
   const change = useCallback((value: CommerceFormData) => setForm(value), []);
   const [miles, setMiles] = useState(''); const [wait, setWait] = useState('0'); const [manualConfirmed, setManualConfirmed] = useState(false);
   const [terms, setTerms] = useState(''); const [discount, setDiscount] = useState('0'); const [adjustment, setAdjustment] = useState('0'); const [reason, setReason] = useState('');
+  const [policyAccepted,setPolicyAccepted]=useState(false);
   const [network, setNetwork] = useState(false); const [receiver, setReceiver] = useState(''); const [ack, setAck] = useState(false); const [busy, setBusy] = useState(false);
   const history = Array.isArray(initialDraft?.quoteHistory) ? initialDraft.quoteHistory as Quote[] : [];
   const [confirmed, setConfirmed] = useState<Quote | null>(history.at(-1) ?? null); const [draftId, setDraftId] = useState<string | null>(initialDraft?.id ?? null);
@@ -67,7 +69,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
             <p className="ds-support">Service, general route and compensation only. Patient identity remains protected under existing assignment rules.</p>
             <DsField label="Proposed receiver compensation (cents)">{p => <DsInput {...p} type="number" min="1" step="1" value={receiver} onChange={e => setReceiver(e.target.value)}/>}</DsField>
             <dl className="space-y-2 ds-body"><div className="flex justify-between gap-3"><dt>Network fee (2%)</dt><dd className="portal-money">{funding ? money(funding.networkFeeCents) : 'Not prepared'}</dd></div><div className="flex justify-between gap-3"><dt>Processing recovery</dt><dd className="portal-money">{funding?.processingCents != null ? money(funding.processingCents) : 'Configuration required'}</dd></div><div className="flex justify-between gap-3"><dt>Customer invoice / retained amount</dt><dd>No invoice issued</dd></div><div className="flex justify-between gap-3"><dt>Sender margin</dt><dd>Not available</dd></div></dl>
-            <p role="note" className="ds-body border-y border-ds-border py-4 font-semibold">{warning}</p><DsCheckbox label="I confirm the compensation and payment responsibility" checked={ack} onChange={e => setAck(e.target.checked)}/><DsButton disabled={!ack || busy} onClick={fundingReview}>Review funding preparation</DsButton>{funding && <p className="ds-support">{funding.blocker}</p>}<p className="ds-caption">Not funded · No offer sent · Hold: standard 10 days, Super/Gold Verified 4 days. Existing 24-hour dispute window and payment deadlines are unchanged.</p><Link to="/portal/network" className="ds-label text-ds-link underline">Open controlled Network offers</Link>
+            <p role="note" className="ds-body border-y border-ds-border py-4 font-semibold">{warning}</p><DsCheckbox label="I confirm the compensation and payment responsibility" checked={ack} onChange={e => setAck(e.target.checked)}/><CheckoutAcknowledgment accepted={policyAccepted} onChange={setPolicyAccepted}/><DsButton disabled={!ack || !policyAccepted || busy} onClick={fundingReview}>Review funding preparation</DsButton>{funding && <p className="ds-support">{funding.blocker}</p>}<p className="ds-caption">Not funded · No offer sent · Hold: standard 10 days, Super/Gold Verified 4 days. Existing 24-hour dispute window and payment deadlines are unchanged.</p><Link to="/portal/network" className="ds-label text-ds-link underline">Open controlled Network offers</Link>
           </> : <>
             <DsField label="MANUAL MILEAGE — total billable route miles">{p => <DsInput {...p} type="number" min="0" step="0.1" value={miles} onChange={e => { setMiles(e.target.value); setManualConfirmed(false); setCalculated(null); setQuoteForm(null); }}/>}</DsField>
             <DsCheckbox label="I confirm these are actual route miles, including applicable return travel" checked={manualConfirmed} onChange={e => setManualConfirmed(e.target.checked)}/>
@@ -76,7 +78,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
             {shown && <ul className="divide-y divide-ds-border">{shown.lines.map((l, i) => <li key={i} className="flex justify-between gap-3 py-3 ds-body"><span>{l.label}{l.reason && <small className="block ds-caption">{l.reason}</small>}</span><span className="portal-money shrink-0">{money(l.cents)}</span></li>)}</ul>}
             <div className="grid gap-3 sm:grid-cols-2"><DsField label="Discount (integer cents)">{p => <DsInput {...p} type="number" min="0" step="1" value={discount} onChange={e => { setDiscount(e.target.value); setQuoteForm(null); }}/>}</DsField><DsField label="Adjustment (integer cents)">{p => <DsInput {...p} type="number" min="0" step="1" value={adjustment} onChange={e => { setAdjustment(e.target.value); setQuoteForm(null); }}/>}</DsField></div>
             <DsField label="Adjustment / discount reason">{p => <DsInput {...p} value={reason} onChange={e => { setReason(e.target.value); setQuoteForm(null); }}/>}</DsField>
-            <DsField label="Provider terms — cancellation / no-show terms are informational only">{p => <DsTextarea {...p} value={terms} maxLength={3000} onChange={e => { setTerms(e.target.value); setQuoteForm(null); }}/>}</DsField>
+            <DsField label="Provider cancellation / no-show policy and exact disclosed charges">{p => <DsTextarea {...p} value={terms} maxLength={3000} onChange={e => { setTerms(e.target.value); setQuoteForm(null); }}/>}</DsField>
             <p className="ds-support">Processing: not applied — approved collection configuration required. Amount paid and balance appear only on an issued invoice.</p>
             <DsButton disabled={busy || !manualConfirmed} onClick={confirmQuote}>{confirmed ? 'Confirm replacement quote' : 'Confirm quote snapshot'}</DsButton>
             {confirmed && <p className="ds-support">Quote version {confirmed.version} · {unchanged ? 'Confirmed for this trip' : 'Trip or price inputs changed — confirm replacement before attaching invoice'}</p>}

@@ -23,6 +23,7 @@ import { Route as ForProvidersRouteImport } from './routes/for-providers'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FrequentlyAskedQuestionsRouteImport } from './routes/frequently-asked-questions'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as InvoiceAccessRouteImport } from './routes/invoice-access'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -183,6 +184,11 @@ const FrequentlyAskedQuestionsRoute =
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoiceAccessRoute = InvoiceAccessRouteImport.update({
+  id: '/invoice-access',
+  path: '/invoice-access',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -714,6 +720,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/frequently-asked-questions': typeof FrequentlyAskedQuestionsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/invoice-access': typeof InvoiceAccessRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -820,6 +827,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/frequently-asked-questions': typeof FrequentlyAskedQuestionsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/invoice-access': typeof InvoiceAccessRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -924,6 +932,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/frequently-asked-questions': typeof FrequentlyAskedQuestionsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/invoice-access': typeof InvoiceAccessRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1032,6 +1041,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/frequently-asked-questions'
     | '/how-it-works'
+    | '/invoice-access'
     | '/join'
     | '/login'
     | '/mcp'
@@ -1138,6 +1148,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/frequently-asked-questions'
     | '/how-it-works'
+    | '/invoice-access'
     | '/join'
     | '/login'
     | '/mcp'
@@ -1241,6 +1252,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/frequently-asked-questions'
     | '/how-it-works'
+    | '/invoice-access'
     | '/join'
     | '/login'
     | '/mcp'
@@ -1349,6 +1361,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   FrequentlyAskedQuestionsRoute: typeof FrequentlyAskedQuestionsRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  InvoiceAccessRoute: typeof InvoiceAccessRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -1487,6 +1500,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoice-access': {
+      id: '/invoice-access'
+      path: '/invoice-access'
+      fullPath: '/invoice-access'
+      preLoaderRoute: typeof InvoiceAccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -2295,6 +2315,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   FrequentlyAskedQuestionsRoute: FrequentlyAskedQuestionsRoute,
   HowItWorksRoute: HowItWorksRoute,
+  InvoiceAccessRoute: InvoiceAccessRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
