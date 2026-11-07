@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as ConnectionInvitationRouteImport } from './routes/connection-invitation'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
@@ -127,6 +128,11 @@ const AccessibilityRoute = AccessibilityRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectionInvitationRoute = ConnectionInvitationRouteImport.update({
+  id: '/connection-invitation',
+  path: '/connection-invitation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -672,6 +678,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/connection-invitation': typeof ConnectionInvitationRoute
   '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
@@ -773,6 +780,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/connection-invitation': typeof ConnectionInvitationRoute
   '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
@@ -872,6 +880,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accessibility': typeof AccessibilityRoute
   '/book': typeof BookRoute
+  '/connection-invitation': typeof ConnectionInvitationRoute
   '/contact': typeof ContactRoute
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
@@ -975,6 +984,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/book'
+    | '/connection-invitation'
     | '/contact'
     | '/create-account'
     | '/design-system'
@@ -1076,6 +1086,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/book'
+    | '/connection-invitation'
     | '/contact'
     | '/create-account'
     | '/design-system'
@@ -1174,6 +1185,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/accessibility'
     | '/book'
+    | '/connection-invitation'
     | '/contact'
     | '/create-account'
     | '/design-system'
@@ -1277,6 +1289,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AccessibilityRoute: typeof AccessibilityRoute
   BookRoute: typeof BookRoute
+  ConnectionInvitationRoute: typeof ConnectionInvitationRoute
   ContactRoute: typeof ContactRoute
   CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
@@ -1352,6 +1365,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connection-invitation': {
+      id: '/connection-invitation'
+      path: '/connection-invitation'
+      fullPath: '/connection-invitation'
+      preLoaderRoute: typeof ConnectionInvitationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -2181,6 +2201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AccessibilityRoute: AccessibilityRoute,
   BookRoute: BookRoute,
+  ConnectionInvitationRoute: ConnectionInvitationRoute,
   ContactRoute: ContactRoute,
   CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
