@@ -2,8 +2,8 @@
 export const PAYMENT_POLICY_VERSION = '2026-11-07' as const;
 export const TERMS_VERSION = '2026-11-07' as const;
 export const POLICY_EFFECTIVE_DATE = 'November 7, 2026';
-export const TERMS_VERSION_URL = '/terms?version=2026-11-07';
-export const REFUND_VERSION_URL = '/refund-policy?version=2026-11-07';
+export const TERMS_VERSION_URL = '/policies?version=2026-11-07#terms';
+export const REFUND_VERSION_URL = '/policies?version=2026-11-07#refunds';
 export type PolicySection = { id: string; h: string; paragraphs: string[] };
 export const REFUND_SECTIONS: PolicySection[] = [
   { id: 'scope', h: 'Policy and purchase terms', paragraphs: ['Version 2026-11-07 · Effective November 7, 2026. Save or print this policy with your purchase review. This policy is incorporated into the Terms and Conditions. Providers set their customer-facing cancellation and no-show terms; MY FLORIDA NEMT sets platform rules for Network funding, subscriptions, training, technical errors, disputes and reversals.', 'The exact provider policy, disclosed charges and platform policy versions displayed for a purchase are retained with its acceptance. A later update does not change that earlier acceptance. Refunds are subject to applicable law and never limit non-waivable rights.'] },

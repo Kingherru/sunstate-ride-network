@@ -35,7 +35,7 @@ const GROUPS: { h: string; items: { label: string; href: string }[] }[] = [
   ] },
   { h: "Training", items: [{ label: "Training", href: "/training" }, { label: "Training Shop", href: "/shop" }, ...TRAINING.map((t) => ({ label: t.title, href: t.href }))] },
   { h: "Resources", items: [{ label: "Resources", href: "/resources" }, ...RESOURCES.map((r) => ({ label: r.title, href: `/resources/${r.slug}` })), { label: "People Also Ask", href: "/frequently-asked-questions" }] },
-  { h: "Policies", items: [{ label: "Privacy Policy", href: "/privacy" }, { label: "Terms of Use", href: "/terms" }, { label: "Accessibility Statement", href: "/accessibility" }] },
+  { h: "Policies", items: [{ label: "OUR POLICIES", href: "/policies" }] },
 ];
 
 const link = "ds-body-lg rounded-ds-sm text-ds-link underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
