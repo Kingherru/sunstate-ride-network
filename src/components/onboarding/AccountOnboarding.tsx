@@ -10,6 +10,7 @@ import { VerificationEvidence } from '@/components/portal/VerificationEvidence';
 import { ProviderCredentialsPanel } from '@/components/dashboard/ProviderCredentialsPanel';
 import { usePortalPreview, previewBlocked } from '@/components/portal/preview-data';
 import { organizationLabel } from '@/lib/account-types';
+import { AccountConnections } from '@/components/portal/AccountConnections';
 
 type SetupData = Awaited<ReturnType<typeof getOnboarding>>;
 export function AccountOnboarding({ data }: { data: SetupData }) {
@@ -19,7 +20,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
   const progress = useServerFn(saveOnboardingProgress);
   const provider = data.workspace.account_type === 'provider';
   const personal = data.workspace.account_type === 'private_pay';
-  const steps = ['Owner & contact', personal ? 'Patient & needs' : 'Business information', provider ? 'Services & coverage' : 'Review information', provider ? 'Credentials' : 'Account review', 'Finish'];
+  const steps = ['Owner & contact', personal ? 'Patient & needs' : 'Business information', provider ? 'Services & coverage' : 'Who referred you? / Connections', provider ? 'Credentials' : 'Account review', 'Finish'];
   const [step, setStep] = useState(data.person.onboarding_completed_at ? 0 : data.person.onboarding_step ?? 0);
   const [busy, setBusy] = useState(false);
   const [accountFor, setAccountFor] = useState(data.legacy?.patient_type === 'other' ? 'another' : 'myself');
@@ -62,6 +63,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
         {step === 1 && personal && <><fieldset className="sm:col-span-2"><legend className="ds-label mb-3">This account is for — Required</legend><div className="flex flex-wrap gap-4"><DsRadio name="accountFor" label="Myself" checked={accountFor === 'myself'} onChange={() => setAccountFor('myself')} /><DsRadio name="accountFor" label="Another patient" checked={accountFor === 'another'} onChange={() => setAccountFor('another')} /></div></fieldset>{accountFor === 'another' && <>{field('first_name', 'Patient first name', true, 'text', 80)}{field('last_name', 'Patient last name', true, 'text', 80)}<p className="ds-caption sm:col-span-2">This choice does not establish legal authority to act for the patient.</p></>}<DsField label="Transportation need — Required">{p => <DsSelect {...p} value={form.mobility} onChange={e => setForm(prev => ({ ...prev, mobility: e.target.value }))}><option value="ambulatory">Ambulatory</option><option value="wheelchair">Wheelchair</option><option value="stretcher">Gurney / Stretcher</option></DsSelect>}</DsField><p className="ds-caption sm:col-span-2">One default transportation need is supported. No diagnosis or medical records are needed.</p></>}
         {step === 1 && !personal && <>{field('display_name', provider ? 'Display business name' : 'Facility name', true)}{field('legal_business_name', 'Legal business name', provider)}{field('business_phone', 'Main business phone', true, 'tel', 32)}{field('dispatch_phone', 'Dispatch / coordination phone', false, 'tel', 32)}{field('business_address', 'Private business address', true, 'text', 300)}{field('operating_hours', 'Operating hours', false, 'text', 500)}{provider && <>{field('npi', 'NPI', false, 'text', 10)}{field('medicaid_number', 'Medicaid provider number', false, 'text', 60)}</>}<p className="ds-caption sm:col-span-2">Account classification: {provider ? 'Provider' : organizationLabel(data.workspace.organization_type)}. Staff invitations will be available in a later step of the launch sequence.</p></>}
       </form> : step === 2 && provider ? <><p className="ds-caption">Save each service section before continuing. Public service locations are separate from private contact addresses; directory publication remains your explicit choice.</p><NetworkProfileForm workspaceId={data.workspace.id} onboarding /></> : step === 3 && provider ? <><p className="ds-body">Credentials affect verification and Network eligibility, not account creation. An upload alone does not verify your business. You may complete this section later.</p>{!preview.active ? <><VerificationEvidence workspaceId={data.workspace.id} editable /><ProviderCredentialsPanel /></> : <p className="ds-support">Preview only. Document uploads and verification saves are unavailable.</p>}</> : review}
+      {step === 2 && !provider && <AccountConnections workspaceId={data.workspace.id} source="onboarding" />}
       {step === 4 && <p className="ds-caption">Finishing setup does not start payments, grant verification, approve documents or change account access.</p>}
     </div></section>
     <div className="portal-business-actions flex flex-wrap items-center gap-2">
