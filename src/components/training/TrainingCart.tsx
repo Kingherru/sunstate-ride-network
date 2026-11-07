@@ -76,19 +76,19 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
           <ul className="divide-y divide-ds-border">
             {sel.base && <Line label="Provider Base Membership" kind="monthly" cents={MEMBERSHIP_PRICING.baseCents} locked={!!req} onRemove={() => setMembership({ base: false })} />}
             {sel.network && <Line label="Referral Network Add-On" kind="monthly, requires base membership" cents={MEMBERSHIP_PRICING.networkCents} locked={!!req} onRemove={() => setMembership({ network: false })} />}
-            {sel.courses.map(c => <Line key={c.id} label={c.title} kind="one-time" cents={c.price_cents} locked={!!req} onRemove={() => setItems(prev => prev.filter(i => i.id !== c.id))} />)}
+            {sel.courses.map(c => <Line key={c.id} label={c.title} kind={c.product_kind==='digital_guide'?'one-time digital guide':'one-time training / test'} cents={c.price_cents} locked={!!req} onRemove={() => setItems(prev => prev.filter(i => i.id !== c.id))} />)}
           </ul>
           {sel.notices.map(n => <p key={n} role="status" className="ds-support">{n}</p>)}
           <dl className="ds-body space-y-1 rounded-ds border border-ds-border bg-ds-surface p-4">
             {hasRecurring && <div className="flex justify-between gap-4"><dt>Monthly total</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.recurringCents)}</span>/month</dd></div>}
-            {sel.courses.length > 0 && <div className="flex justify-between gap-4"><dt>One-time training total</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.oneTimeCents)}</span></dd></div>}
+            {sel.courses.length > 0 && <div className="flex justify-between gap-4"><dt>One-time purchases</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.oneTimeCents)}</span></dd></div>}
             <div className="flex justify-between gap-4 border-t border-ds-border pt-1"><dt className="font-semibold">Product subtotal before final fee/tax review{sel.base && membership.trialEligible ? ' (30-day trial if eligible)' : ''}</dt><dd className="font-semibold"><span className="portal-money">{usd(totals.dueTodayCents)}</span></dd></div>
           </dl>
           {hasRecurring && <p className="ds-caption">The 2% Network fee applies only to applicable referral transactions; it is not charged for joining. Future monthly charges exclude separately incurred Network transaction fees. Prices and plan availability are subject to change. If you already used a trial, billing starts today.</p>}
           {!signedIn ? <Link to="/login" className="text-ds-link underline">Sign in to purchase</Link> : !req && <fieldset className="space-y-2">
             <legend className="ds-label">Confirm before checkout</legend>
             {hasRecurring && <label className="ds-body flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirm.recurring} onChange={check('recurring')} />I confirm the monthly membership items listed above.</label>}
-            {sel.courses.length > 0 && <label className="ds-body flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirm.oneTime} onChange={check('oneTime')} />I confirm the separate one-time course purchases listed above.</label>}
+            {sel.courses.length > 0 && <label className="ds-body flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirm.oneTime} onChange={check('oneTime')} />I confirm the separate one-time training, test or guide purchases listed above.</label>}
             <p className="ds-body">Payer: signed-in purchaser / owning business · Merchant: MY FLORIDA NEMT · Currency: USD.</p>
             <p className="ds-support">Exact processor/tax total and product-specific refund eligibility are not yet approved for payment preparation. No extra fee is assumed; checkout remains off.</p>
             <CheckoutAcknowledgment accepted={confirm.terms} onChange={accepted => setConfirm(c => ({...c,terms:accepted}))}/>
