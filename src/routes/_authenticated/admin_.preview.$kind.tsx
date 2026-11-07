@@ -24,6 +24,8 @@ import { SampleConversations } from "@/components/messaging/SampleConversations"
 import { ProviderNetworkPage } from '@/components/portal/ProviderNetworkPage';
 import { ProviderSettings } from '@/components/portal/ProviderSettings';
 import { PersonalSecurity } from '@/components/portal/PersonalSecurity';
+import { OnboardingDemo } from '@/components/onboarding/OnboardingDemo';
+import { DsButton } from '@/components/ds/controls';
 
 type Kind = "provider" | "customer";
 
@@ -76,6 +78,7 @@ function PortalPreview() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 ds-glass px-4 py-3">
         <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Preview mode — demo information only, nothing is saved</p>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
+        <DsButton variant="ghost" onClick={() => navigate({ search: prev => ({ ...prev, page: 'onboarding' }) })}>Preview account setup</DsButton>
       </div>
 
       {!isProvider && (
@@ -143,7 +146,7 @@ function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accou
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
       {!(kind === 'provider' && page === 'network') && <PageHead title={label} />}
-      {realPage(kind, page)}
+      {page === 'onboarding' ? <OnboardingDemo provider={kind === 'provider'} personal={accountType === 'private_pay_patient'} /> : realPage(kind, page)}
     </PortalPreviewContext.Provider>
   );
 }

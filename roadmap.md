@@ -1,3 +1,25 @@
+# Florida MVP launch sequence
+1. [x] Onboarding foundation — Pass 4B; three signup choices, verified-email continuation, optional saved setup steps, authoritative personal/workspace/patient fields, existing private credential and Network forms, synthetic Master Admin preview. New account setup creates active basic workspaces; no existing workspace statuses/classifications changed.
+   - Existing owners may resume/review from Settings without portal lockout; training-only and role routing retained. No real account creation/save/upload/email/payment was exercised.
+   - Remaining focused follow-up: consolidate legacy business application and verification legal/address fields after confirming authoritative ownership; credential policy/carrier fields stay limited to the existing model; multiple-owned-account setup selection and legacy missing-organization recovery are not completed here. Single patient mobility default only, no new relationship authority.
+2. [ ] Provider Settings rebuild and provider-owned pricing.
+   - Business & Operations; Pricing; Credentials & Verification; Team & Integrations; Billing & Payouts; Account & Security.
+   - Provider Pricing controls provider customer rates only. Admin Pricing controls platform membership, Referral Network add-on, platform fees and system guardrails.
+   - Rate changes apply to new quotes/drafts only, never booked, paid, completed or historical trips.
+   - Consolidate duplicate Provider Settings panels only after confirming shared authoritative data/actions.
+3. [ ] Account linking, Who Referred You, and invitations.
+4. [ ] Patient trip visibility, status timeline, and history.
+5. [ ] Provider/Facility New Trip with live invoice or referral funding.
+6. [ ] Linked-patient invoicing and secure payments.
+7. [ ] Patient trip reminders and status communications.
+8. [ ] Public five-minute-trip conversion/explainer page.
+9. [ ] Provider Network proximity search using safe public locations.
+10. [ ] Stripe/lifecycle/domain/legal/phone/launch configuration.
+11. [ ] Final focused validation and publishing.
+
+Regional mynnemt.com branding is planned after the Florida MVP and is not a Florida launch blocker.
+Historical evidence and blockers remain below; unfinished shared commerce is retained rather than assumed complete.
+
 # Shared commerce checkout
 - [ ] Finish existing shared cart selection, secure embedded checkout, pay-now/trial selection and truthful purchase confirmation.
 - [ ] Preserve authoritative paid-base verification, course ownership, preview blocking and webhook retry behavior; run focused rules and automatic compilation checks without real payments or activation.

@@ -16,6 +16,7 @@ import { VerificationEvidence } from './VerificationEvidence';
 import { MembershipBilling } from './MembershipBilling';
 import { BillingDefaults } from './CustomerBilling';
 import { InterfaceSize } from './InterfaceSize';
+import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
 
 const sections = [
   { value: 'business', label: 'Business Information' }, { value: 'contact', label: 'Contact Information' },
@@ -28,7 +29,7 @@ const sections = [
 export function ProviderSettings({ workspaceId, role, email }: { workspaceId: string; role: string; email?: string | null }) {
   const [tab, setTab] = useState('business'); const preview = usePortalPreview(); const owner = role === 'owner';
   return <div className="space-y-5"><SegTabs label="Provider settings sections" options={sections} value={tab} onChange={setTab} />
-    {tab === 'business' && <BusinessInfoPanel />}
+    {tab === 'business' && <div className="space-y-5">{owner && <BusinessContactSettings />}<BusinessInfoPanel /></div>}
     {(tab === 'contact' || tab === 'services' || tab === 'areas') && <NetworkProfileForm key={tab} workspaceId={workspaceId} section={tab} />}
     {tab === 'documents' && (preview.active ? <p className="ds-support">No demo documents.</p> : owner ? <ProviderCredentialsPanel /> : <p className="ds-support">Legacy documents are available to their owner only.</p>)}
     {tab === 'verification' && <section className="space-y-5">
