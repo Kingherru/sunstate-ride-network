@@ -22,7 +22,7 @@ export function CustomerPricing({ workspaceId }: { workspaceId: string }) {
     setBusy(true); try { await save({ data: { workspaceId, rates: parsed.data, expectedVersion: q.data.version, confirmed: true } }); toast.success('Customer rates saved for new quotes and trips.'); setReview(false); setConfirmed(false); await q.refetch(); } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save rates'); } finally { setBusy(false); }
   }
   if (!preview.active && q.isLoading) return <p className="ds-support" role="status">Loading customer rates…</p>;
-  if (!preview.active && q.error) return <p className="ds-support text-ds-error" role="alert">{q.error.message}</p>;
+  if (!preview.active && q.error) return <p className="ds-support text-ds-error" role="alert">{q.error instanceof Error ? q.error.message : 'Customer pricing unavailable.'}</p>;
   const rate = rates[service];
   return <div className="portal-business-form min-w-0 space-y-5">
     <div><h2 className="ds-subheading uppercase text-ds-primary">Customer Pricing</h2><p className="ds-support mt-2">Private rates for your patients, facilities and customers. Platform membership, Network fees and settlement terms are separate.</p><p className="ds-caption mt-2">{preview.active ? 'Synthetic preview — no active customer rates.' : q.data?.version ? `Active version ${q.data.version} · effective ${new Date(q.data.effectiveAt ?? '').toLocaleString()}` : 'Not configured. Review legacy reference values before confirming your first customer rate version.'}</p>{q.data?.legacyUnavailable && !preview.active && <p className="ds-caption mt-2">Legacy person-owned rates are unavailable to this account. Zero values are placeholders, not saved rates.</p>}</div>
