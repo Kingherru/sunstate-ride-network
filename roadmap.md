@@ -1,3 +1,23 @@
+# Florida MVP launch sequence
+1. [ ] Onboarding foundation — Pass 4B; reuse existing signup, verified email, profiles, workspaces and protected credentials.
+2. [ ] Provider Settings rebuild and provider-owned pricing.
+   - Business & Operations; Pricing; Credentials & Verification; Team & Integrations; Billing & Payouts; Account & Security.
+   - Provider Pricing controls provider customer rates only. Admin Pricing controls platform membership, Referral Network add-on, platform fees and system guardrails.
+   - Rate changes apply to new quotes/drafts only, never booked, paid, completed or historical trips.
+   - Consolidate duplicate Provider Settings panels only after confirming shared authoritative data/actions.
+3. [ ] Account linking, Who Referred You, and invitations.
+4. [ ] Patient trip visibility, status timeline, and history.
+5. [ ] Provider/Facility New Trip with live invoice or referral funding.
+6. [ ] Linked-patient invoicing and secure payments.
+7. [ ] Patient trip reminders and status communications.
+8. [ ] Public five-minute-trip conversion/explainer page.
+9. [ ] Provider Network proximity search using safe public locations.
+10. [ ] Stripe/lifecycle/domain/legal/phone/launch configuration.
+11. [ ] Final focused validation and publishing.
+
+Regional mynnemt.com branding is planned after the Florida MVP and is not a Florida launch blocker.
+Historical evidence and blockers remain below; unfinished shared commerce is retained rather than assumed complete.
+
 # Shared commerce checkout
 - [ ] Finish existing shared cart selection, secure embedded checkout, pay-now/trial selection and truthful purchase confirmation.
 - [ ] Preserve authoritative paid-base verification, course ownership, preview blocking and webhook retry behavior; run focused rules and automatic compilation checks without real payments or activation.
