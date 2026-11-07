@@ -14,6 +14,7 @@ import { AdminRequestActions } from './AdminRequestActions';
 import { useAdminLevel } from '@/lib/use-admin-level';
 import { PatientTimeline } from './PatientTimeline';
 import { TripInvoiceDetails } from './TripInvoiceDetails';
+import { AssignedDriverContactConsent } from './TripCommunicationSettings';
 
 const money = (c: number) => (c / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const words = (s: string) => s.replaceAll('_', ' ');
@@ -59,6 +60,7 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
         {q.isPending ? <p role="status">Loading details…</p> : q.error || !ok ? <p role="alert">Details not available.</p> : <div className="space-y-6">
           {ok.request.deactivated_at && <DetailSection tone="warning" title="Deactivated"><p>This request was deactivated on {fmtDateTime(String(ok.request.deactivated_at))}. All history is preserved.</p></DetailSection>}
           <RequestDetail r={ok.request} showSource />
+          {!ok.patient && target.kind==='trip' && typeof ok.request.driver_id==='string' && ok.invoices.some(i=>i.canManage) && <AssignedDriverContactConsent tripId={target.id} driverId={ok.request.driver_id}/>}
           {ok.patient && <div className="grid gap-5 lg:grid-cols-2"><DetailSection title="Your trip timeline"><PatientTimeline stage={ok.patient.stage} events={ok.patient.timeline}/></DetailSection><DetailSection title="Trip communications"><p className="ds-body">Dispatch: {ok.patient.contacts?.dispatchPhone??'Not available'}</p><p className="ds-body mt-3">Driver: {ok.patient.contacts?.driverName??'Not available'}</p><p className="ds-body mt-3">Driver phone: {ok.patient.contacts?.driverPhone??'Not shared'}</p></DetailSection></div>}
           {ok.invoices.length>0?<div className="grid gap-5 lg:grid-cols-2">{ok.invoices.map(invoice=><DetailSection key={invoice.id} title="Invoice & payment summary"><TripInvoiceDetails invoice={invoice}/></DetailSection>)}</div>:<DetailSection title="Invoice & payment summary"><p className="ds-body">No invoice available</p>{ok.patient?.payments.map(p=><p key={p.reference} className="ds-support mt-3">{p.status} · <span className="portal-money">{money(p.amountCents)}</span> · {fmtDateTime(p.createdAt)}</p>)}</DetailSection>}
           <div className="grid gap-6 lg:grid-cols-2">

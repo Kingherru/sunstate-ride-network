@@ -482,7 +482,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   return (
     <section className={portal ? "" : "bg-ds-bg px-5 py-16 sm:px-6 lg:py-20"}>
       <div className={commerce ? 'min-w-0' : 'mx-auto max-w-3xl'}>
-        {portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>}
+        {!commerce && (portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>)}
         <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
           Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.
         </p>
@@ -494,13 +494,13 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 
         <fieldset className="mb-8">
           <legend className="ds-label mb-3 block text-ds-on-surface">What do you need? <span className="text-ds-accent-active">*</span></legend>
-          <div role="radiogroup" aria-label="Service" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div role="radiogroup" aria-label="Service" className="grid gap-3 sm:grid-cols-2">
             {SERVICE_CHOICES.map((c) => {
               const on = c.kind === "delivery" ? kind === "delivery" : kind === "ride" && form.transportType === c.type;
               return (
                 <button key={c.id} type="button" role="radio" aria-checked={on}
                   onClick={() => { setKind(c.kind); if (c.type) upd("transportType", c.type); }}
-                  className={`ds-button-text min-h-12 whitespace-nowrap rounded-ds-sm px-4 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus ${on ? "bg-ds-action text-ds-on-action" : "bg-ds-sky text-ds-primary hover:bg-ds-hover"}`}>
+                  className={`ds-button-text min-h-12 min-w-0 rounded-ds-sm px-3 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus ${on ? "bg-ds-action text-ds-on-action" : "bg-ds-sky text-ds-primary hover:bg-ds-hover"}`}>
                   {c.label}
                 </button>
               );
@@ -985,7 +985,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <button
               type="submit"
               disabled={submitting}
-              className="min-w-0 flex-1 whitespace-nowrap px-8 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm tracking-widest uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
+              className="min-w-0 flex-1 px-4 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
             >
               {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
             </button>
