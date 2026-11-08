@@ -1,4 +1,12 @@
 # Florida MVP launch sequence
+## Pass 4N — communications preparation (in progress)
+- [ ] Reuse notification/audit history for workspace-scoped prepared communication events, deduplication and safe previews; no delivery or scheduler.
+- [ ] Prepare safe trip status/reminder rules with explicit recipients, authoritative timezone, schedule versions and future-unsent cancellation.
+- [ ] Extend existing sharing Settings, invoice review, invitation/connection and authoritative email-change workflows without widening permissions.
+- [ ] Extend Admin Messaging oversight using scoped permissions; narrow synthetic boundary tests and read-only preservation checks.
+- All real sends, jobs, money, checkout/PDF/guide and exact public contact lookup remain OFF. Invitation creation/resend requires an existing authoritative durable rate-limit primitive or stays blocked.
+- Next passes only: **4M → 4L → 4O → 4P**. Existing financial blockers remain; regional/header/full-fixture/publishing work is excluded.
+
 ## Pass 4K — built presentation and safe review; live financial completion still blocked
 - [x] Single 0.3%-contrast stationary micro-dot token applied to shared portal/Admin main gray canvas, gray detail gutters and new public gray bands. Existing public pale-blue/white sections stay unchanged and untextured; no actual gray public bands existed outside the new page. White forms/status/Notes/maps/navigation excluded; forced-colors, increased contrast and print disable texture.
 - [x] /why-my-florida-nemt explains both peer connections, independent-business responsibilities and truthful five-minute form completion. Existing homepage and How It Works link naturally; booking and Provider-selected signup reused. Unique metadata/canonical/AboutPage JSON-LD and both sitemap entries, no header expansion.
