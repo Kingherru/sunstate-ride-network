@@ -33,7 +33,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
   const [relationship,setRelationship]=useState(data.legacy?.patient_relationship ?? '');
   const [form, setForm] = useState({
     firstName: data.person.first_name ?? '', lastName: data.person.last_name ?? '', phone: data.person.phone ?? '',
-    display_name: data.workspace.display_name, legal_business_name: data.workspace.legal_business_name ?? '', business_phone: data.workspace.business_phone ?? '', dispatch_phone: data.workspace.dispatch_phone ?? '', business_address: data.workspace.business_address ?? '', operating_hours: data.workspace.operating_hours ?? '', npi: data.legacy?.npi ?? '', medicaid_number: data.legacy?.medicaid_number ?? '',
+    display_name: data.workspace.display_name, legal_business_name: data.workspace.legal_business_name ?? '', business_phone: data.workspace.business_phone ?? '', dispatch_phone: data.workspace.dispatch_phone ?? '', business_address: data.workspace.business_address ?? '', mailing_address:data.workspace.mailing_address ?? '', operating_hours: data.workspace.operating_hours ?? '', npi: data.legacy?.npi ?? '', medicaid_number: data.legacy?.medicaid_number ?? '',
     first_name: data.patient?.first_name ?? data.person.first_name ?? '', last_name: data.patient?.last_name ?? data.person.last_name ?? '', mobility: data.patient?.mobility ?? 'ambulatory',
   });
   const field = (key: keyof typeof form, label: string, required = false, type = 'text', max = 160) => <DsField label={`${label} — ${required ? 'Required' : 'Optional'}`}>{p => <DsInput {...p} type={type} maxLength={max} required={required} value={form[key]} onChange={e => { setSaved(false); setForm(prev => ({ ...prev, [key]: e.target.value })); }} />}</DsField>;
@@ -45,7 +45,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
       if (step === 0) await save({ data: { section: 'personal', firstName: form.firstName, lastName: form.lastName, phone: form.phone } });
       if (step === 1) {
         if (personal) await save({ data: { section: 'patient', accountFor: accountFor as 'myself' | 'another', first_name: accountFor === 'myself' ? form.firstName : form.first_name, last_name: accountFor === 'myself' ? form.lastName : form.last_name, relationship, mobility: form.mobility as 'ambulatory' | 'wheelchair' | 'stretcher' } });
-        else await save({ data: { section: 'business', display_name: form.display_name, legal_business_name: form.legal_business_name, business_phone: form.business_phone, dispatch_phone: form.dispatch_phone, business_address: form.business_address, operating_hours: form.operating_hours, npi: provider ? form.npi : '', medicaid_number: provider ? form.medicaid_number : '' } });
+        else await save({ data: { section: 'business', display_name: form.display_name, legal_business_name: form.legal_business_name, business_phone: form.business_phone, dispatch_phone: form.dispatch_phone, business_address: form.business_address, mailing_address:form.mailing_address, operating_hours: form.operating_hours, npi: provider && !npiUnavailable ? form.npi : '', medicaid_number: provider ? form.medicaid_number : '' } });
       }
       const next = later ? step : Math.min(step + 1, 4);
       await progress({ data: { step: next, complete: !later && step === 4, policyConfirmed } });

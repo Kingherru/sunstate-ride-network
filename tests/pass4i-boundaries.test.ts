@@ -6,6 +6,7 @@ import { calculateCustomerQuote, customerQuoteInput, customerRatesFromLegacy } f
 import { patientStage } from '../src/lib/patient-timeline';
 const migration = readFileSync('drizzle/migrations/0068_pass4i_shared_settings_and_confirmed_connections.sql','utf8');
 const lookup = readFileSync('drizzle/migrations/0069_pass4i_new_profile_and_lookup_boundaries.sql','utf8');
+const safety = readFileSync('drizzle/migrations/0070_pass4i_connection_token_and_notification_safety.sql','utf8');
 describe('Pass 4I changed boundaries',()=>{
  it('preserves the existing guide identity, price key and $50 amount',()=>{expect([STARTUP_GUIDE.slug,STARTUP_GUIDE.priceKey,STARTUP_GUIDE.priceCents]).toEqual(['nemt-startup-guide','nemt_startup_guide_50',5000]);});
  it('uses only the approved authoritative private edition',()=>expect([STARTUP_GUIDE.bucket,STARTUP_GUIDE.path]).toEqual(['paid-resources','guides/MY-FLORIDA-NEMT-30-Day-Planning-Guide.pdf']));
@@ -20,4 +21,6 @@ describe('Pass 4I changed boundaries',()=>{
  it('requires both workspace IDs in an active connection for a usual provider',()=>{expect(migration).toContain('c.active AND c.workspace_a=least(NEW.workspace_id,NEW.preferred_provider_id) AND c.workspace_b=greatest(NEW.workspace_id,NEW.preferred_provider_id)');});
  it('denies exact contact lookup until approved rate limiting exists',()=>{expect(lookup).toContain("_mode IS DISTINCT FROM 'name' THEN RETURN");expect(lookup).not.toContain('business_contact_email');expect(lookup).not.toContain('business_contact_phone');});
  it('binds acceptance to the intended recipient workspace and confirmed email',()=>{expect(lookup).toContain('NEW.recipient_workspace_id IS DISTINCT FROM OLD.recipient_workspace_id');expect(lookup).toContain("NEW.status='accepted'");expect(lookup).toContain('email_confirmed_at IS NOT NULL');});
+ it('uses the installed cryptographic namespace and retains hash-only drafts',()=>{expect(safety).toContain("encode(extensions.gen_random_bytes(32),'hex')");expect(safety).toContain("delivery_status='not_sent'");});
+ it('notification-only saves never rewrite identity fields',()=>{const body=safety.slice(safety.indexOf('CREATE FUNCTION public.save_notification_settings'));expect(body).not.toMatch(/SET\s+(first_name|last_name|display_name|phone)\s*=/i);expect(body).toContain("notification_preferences=coalesce(notification_preferences,'{}'::jsonb)||jsonb_build_object");});
 });

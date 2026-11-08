@@ -70,7 +70,7 @@ function Account() {
       {setupLink}
       <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
       <section className={`${panelCls} p-5 sm:p-6`}>
-        {tab === "profile" && <><PersonalSettings />{!provider && ws?.type !== 'private_pay' && ws?.role === 'owner' && <div className="my-6"><BusinessContactSettings /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+        {tab === "profile" && <><PersonalSettings />{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}
