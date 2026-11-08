@@ -50,7 +50,7 @@ export function StatusBadge({ status }: { status: string | null }) {
     needs_attention: ['error', 'Needs attention'],
   };
   const [tone, label] = map[s] ?? ["neutral", s ? titleCase(s) : "Unknown"];
-  return <StatusPill status={label} tone={tone === 'pending' ? 'yellow' : tone === 'success' ? 'green' : tone === 'error' ? 'red' : tone === 'info' ? 'blue' : 'neutral'} />;
+  return <StatusPill status={label} tone={tone === 'pending' ? 'yellow' : tone === 'success' ? 'green' : tone === 'error' ? 'red' : tone === 'info' ? 'neutral' : 'neutral'} />;
 }
 
 export const fmtDateTime = (iso: string) =>
