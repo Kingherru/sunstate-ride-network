@@ -21,6 +21,7 @@ import { TrainingCartIcon } from '@/components/training/TrainingCart';
 import { getPortalPreferences } from '@/lib/portal-preferences.functions';
 import { getActivityIndicators, ACTIVITY_KEYS } from '@/lib/indicators.functions';
 import { markTabViewed } from '@/lib/unread.functions';
+import {getAccountProfileVerification} from '@/lib/account-profile-verification.functions';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -85,6 +86,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 }) {
   const [open, setOpen] = useState(false);
   const prefs = usePortalQuery({ queryKey: ['portal-preferences'], queryFn: () => getPortalPreferences() });
+  const accountEvidence=usePortalQuery({queryKey:['account-profile-verification'],queryFn:()=>getAccountProfileVerification(),staleTime:0,gcTime:0});
   const density = (prefs.data as { interface_density?: string } | undefined)?.interface_density ?? 'standard';
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
@@ -159,6 +161,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       {identity && <div className="px-3 pb-2">
         {identity.name && identity.name !== "MY FLORIDA NEMT" && <p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>}
         {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80">{identity.mfnId}</p>}
+        {accountEvidence.data?.some(e=>e.status==='verified') && <p className="ds-support mt-2 flex items-center gap-1.5 text-ds-on-primary"><ShieldCheck className="size-4 text-ds-success" aria-hidden />Verified account profile</p>}
       </div>}
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}
         className={cn(footCls, "text-ds-accent hover:bg-ds-primary-hover")}>
