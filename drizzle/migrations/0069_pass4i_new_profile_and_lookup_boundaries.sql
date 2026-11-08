@@ -1,0 +1,13 @@
+CREATE FUNCTION public.initialize_new_signup_names() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE meta jsonb; BEGIN SELECT raw_user_meta_data INTO meta FROM auth.users WHERE id=NEW.user_id; NEW.first_name:=coalesce(NEW.first_name,nullif(left(btrim(meta->>'first_name'),80),'')); NEW.last_name:=coalesce(NEW.last_name,nullif(left(btrim(meta->>'last_name'),80),'')); RETURN NEW; END $$;
+CREATE TRIGGER initialize_signup_names BEFORE INSERT ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION public.initialize_new_signup_names();
+REVOKE ALL ON FUNCTION public.initialize_new_signup_names() FROM PUBLIC,anon,authenticated;
+CREATE OR REPLACE FUNCTION public.search_connection_businesses(_ws uuid,_mode text,_value text) RETURNS TABLE(workspace_id uuid,business_name text,mfn_id text,business_type text,location text) LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=public AS $$ BEGIN
+ IF NOT public.can_manage_account_connections(_ws) OR length(coalesce(_value,'')) NOT BETWEEN 2 AND 254 OR _mode IS DISTINCT FROM 'name' THEN RETURN; END IF;
+ RETURN QUERY SELECT p.workspace_id,p.business_name,p.mfn_id,p.business_type,p.location FROM public.search_business_identities('signed_in','') p WHERE p.workspace_id<>_ws AND p.business_name ILIKE '%'||_value||'%' ORDER BY p.business_name LIMIT 20;
+ END $$;
+COMMENT ON FUNCTION public.search_connection_businesses(uuid,text,text) IS 'Safe opted-in name search. Exact contact matching intentionally OFF pending owner-approved rate limiting; no private contact enumeration.';
+CREATE FUNCTION public.connection_recipient_confirmation_guard() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+ IF NEW.status IN ('accepted','declined') AND OLD.status='pending' AND OLD.recipient_workspace_id IS NOT NULL AND NEW.recipient_workspace_id IS DISTINCT FROM OLD.recipient_workspace_id THEN RAISE EXCEPTION 'Connection unavailable'; END IF;
+ IF NEW.status='accepted' AND OLD.status='pending' AND NOT EXISTS(SELECT 1 FROM auth.users WHERE id=auth.uid() AND email_confirmed_at IS NOT NULL) THEN RAISE EXCEPTION 'Connection unavailable'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER connection_recipient_confirmation BEFORE UPDATE ON public.account_connection_invitations FOR EACH ROW EXECUTE FUNCTION public.connection_recipient_confirmation_guard();
+COMMENT ON COLUMN public.workspaces.mailing_address IS 'Private business mailing address; never directory or proximity evidence.';
