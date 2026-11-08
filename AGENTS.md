@@ -1,4 +1,5 @@
 # Architecture decisions
+- Sandbox review extends existing commerce/events; no Stripe calls or timer-only release. Why: preparation never proves funding.
 
 - App MCP (src/lib/mcp) is OAuth-only with public-info tools; consent returns via login/create-account `redirect`. Why: no private data to ChatGPT.
 - Managed emails retain signed deduped history; legacy Maps/driver queues stay separate. Schedule preparation uses RLS and minimal account_security_audit confirmation, never sends. Why: preview never sends.

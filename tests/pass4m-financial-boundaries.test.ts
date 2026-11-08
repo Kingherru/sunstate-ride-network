@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { reconstructCart, paidEntitlements, priceProtectionThrough, evidenceMismatch, convergeEvidence, connectChecklist, referralAccounting, ledgerBalanced, lockedHold, financialActivationAllowed, FINANCIAL_GATES, type CatalogLine, type Obligation } from '../src/lib/financial-preparation-rules';
+import { effectiveSettlementState } from '../src/lib/network-settlement-rules';
 const line=(productId:string,kind:CatalogLine['kind'],unitCents:number):CatalogLine=>({productId,kind,title:productId,unitCents,priceKey:productId,stripeProductId:null,stripePriceId:null,currency:'usd',recurrence:['base','network_addon'].includes(kind)?'month':null,quantity:1,catalogVersion:'v1',environment:'sandbox',termsVersion:'t1',refundVersion:'r1'});
 const catalog=[line('base','base',2000),line('addon','network_addon',1000),line('course','course',5000),line('guide','digital_guide',5000)];
 const ctx={provider:true,baseReserved:false,addonReserved:false,owned:[],trialUsed:false};
@@ -25,4 +26,5 @@ describe('Pass 4M financial boundaries',()=>{
  test('dispute or incomplete evidence never releases',()=>{expect(lockedHold('gold','2026-11-01','2026-11-03',true,9999999999999).eligible).toBe(false);expect(lockedHold('gold',null,'2026-11-03',false,9999999999999).eligible).toBe(false);});
  test('every activation flag defaults off and policy prerequisite mandatory',()=>{expect(financialActivationAllowed({},true)).toBe(false);const flags=Object.fromEntries(FINANCIAL_GATES.map(k=>[k,true]));expect(financialActivationAllowed(flags,false)).toBe(false);for(const k of FINANCIAL_GATES)expect(financialActivationAllowed({...flags,[k]:false},true)).toBe(false);});
  test('browser success is not payment evidence',()=>expect(evidenceMismatch(obligation,{...obligation,objectId:'success_redirect',livemode:false,eventId:'evt_none',eventCreated:0})).toBe('objectId_mismatch'));
+ test('elapsed hold time never invents available money',()=>expect(effectiveSettlementState({state:'held',review_window_ends_at:null,payment_deadline_at:null,release_eligible_at:'2020-01-01',transferred:false,paid_out:false},Date.parse('2026-11-08'))).toBe('held'));
 });
