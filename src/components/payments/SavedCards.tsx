@@ -26,8 +26,7 @@ export function SavedCards({ assignToPatient = false }: { assignToPatient?: bool
   const start = useMutation({
     mutationFn: async () => {
       const r = await createSetupIntent({ data: { environment: getStripeEnvironment() } });
-      if ("error" in r) throw new Error(r.error);
-      return r.clientSecret;
+      throw new Error(r.error);
     },
     onSuccess: (cs) => { setClientSecret(cs); setAdding(true); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
