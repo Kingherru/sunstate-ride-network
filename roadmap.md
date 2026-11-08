@@ -1,4 +1,10 @@
 # Florida MVP launch sequence
+## Pass 4M — in progress, sandbox preparation only
+- [ ] Extend existing versioned catalog, workspace trial/entitlement evidence and shared combined-cart review.
+- [ ] Prepare owner-scoped Connect readiness, distinct payment purposes, exact reconciliation and immutable referral accounting/locked holds.
+- [ ] Integrate read-only membership/invoice/earnings/Admin review; narrow synthetic financial tests and preservation checks only.
+- All Stripe writes require separate exact-object owner approval. Checkout, collection, entitlements, transfers, payouts, communications and jobs stay OFF. Pass 4L is the mandatory policy gate, followed by 4O and 4P.
+
 ## Pass 4N — safe foundations built; live/populated workflows not exercised
 - [x] Notifications extended with immutable workspace/recipient/template/version/dedupe evidence and scoped history RPC; existing business conversations/sent-email history separate. Status preparation RPC is OFF-gated, no worker/queue/scheduler or event rows created.
 - [x] Read-only linked-patient status/reminder previews, explicit relationship/confirmed-email checks, IANA timezone and DST ambiguity rejection; future-unsent cancellation RPC and authoritative email-change invalidation append corrections. Missing reminder timing suppresses scheduling, no guessed delivery time.
