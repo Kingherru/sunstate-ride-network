@@ -52,3 +52,7 @@ export const getSecureEmailChangeState = createServerFn({ method: 'GET' }).middl
  if (pendingError || data.user?.id !== context.userId) throw new Error('Email confirmation state unavailable.');
  return { confirmedEmail: current.user.email_confirmed_at ? current.user.email ?? null : null, pendingEmail: data.user.new_email ?? null, pending: !!data.user.new_email, unattendedExpirationSupported: false };
 });
+
+export const saveTripCommunicationOverride = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+ .inputValidator((i:unknown)=>z.object({tripId:z.string().uuid(),withhold:z.boolean(),timezone:z.string().min(1).max(100),confirmed:z.literal(true)}).strict().parse(i))
+ .handler(async({data,context})=>{const {error}=await context.supabase.rpc('set_trip_communication_override',{_trip:data.tripId,_withhold:data.withhold,_timezone:data.timezone});if(error)throw new Error('Trip communication settings unavailable.');return {ok:true};});

@@ -23,7 +23,7 @@ export function deliveryDecision(required: boolean, preference: boolean | undefi
   if (!required && preference === false) return { state: 'suppressed' as const, reason: 'optional_preference_disabled' };
   return { state: configured ? 'prepared' as const : 'not_configured' as const, reason: 'delivery_off' };
 }
-export type ReminderInput = { tripId: string; recipientId: string; version: string; status: string; passenger: boolean; authorized: boolean; confirmedEmail: boolean; activeRelationship: boolean; communicationPermission: boolean; pickupDate: string | null; pickupTime: string | null; timezone: string | null; now: number };
+export type ReminderInput = { tripId: string; recipientId: string; version: string; status: string; passenger: boolean; authorized: boolean; confirmedEmail: boolean; activeRelationship: boolean; communicationPermission: boolean; pickupDate: string | null; pickupTime: string | null; timezone: string | null; now: number; timingApproved?: boolean };
 function zonedParts(epoch: number, timezone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(epoch);
   const part = (name: string) => Number(parts.find(p => p.type === name)?.value);
@@ -54,6 +54,7 @@ export function prepareReminders(input: ReminderInput) {
   else if (!input.confirmedEmail) reason = 'confirmed_email_required';
   else if (!input.passenger || !['approved','confirmed','accepted','reserved','assigned','scheduled','dispatched','in_progress'].includes(input.status)) reason = 'trip_not_eligible';
   else if (!input.timezone) reason = 'timezone_required';
+  else if (!input.timingApproved) reason = 'reminder_timing_not_configured';
   else if (!input.pickupDate || !input.pickupTime) reason = 'pickup_datetime_required';
   const pickup = !reason && input.pickupDate && input.pickupTime && input.timezone ? resolveLocalPickup(input.pickupDate, input.pickupTime, input.timezone) : null;
   if (!reason && pickup === null) reason = 'timezone_or_pickup_ambiguous';

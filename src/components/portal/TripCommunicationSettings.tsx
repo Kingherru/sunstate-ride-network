@@ -3,7 +3,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { toast } from 'sonner';
 import { DsButton, DsCheckbox, DsField, DsInput } from '@/components/ds/controls';
 import { setTripDispatchContact, setPatientDriverContact } from '@/lib/trip-invoices.functions';
-import { getCustomerCommunicationSettings, saveCustomerCommunicationSettings } from '@/lib/communications.functions';
+import { getCustomerCommunicationSettings, saveCustomerCommunicationSettings, saveTripCommunicationOverride } from '@/lib/communications.functions';
 import { usePortalQuery, usePortalPreview, previewBlocked } from './preview-data';
 export function TripDispatchSettings({ workspaceId }: { workspaceId: string }) {
   const preview = usePortalPreview(), get = useServerFn(getCustomerCommunicationSettings), save = useServerFn(saveCustomerCommunicationSettings);
@@ -25,4 +25,10 @@ export function TripDispatchSettings({ workspaceId }: { workspaceId: string }) {
 export function AssignedDriverContactConsent({ tripId, driverId }: { tripId: string; driverId: string }) {
   const preview = usePortalPreview(); const save = useServerFn(setPatientDriverContact); const [phone, setPhone] = useState(''); const [providerConfirmed, setProviderConfirmed] = useState(false); const [driverConfirmed, setDriverConfirmed] = useState(false); const [busy, setBusy] = useState(false);
   return <section className="space-y-4 border-t border-ds-border pt-4"><h3 className="ds-label">This assigned trip's driver contact</h3><DsField label="Trip-approved driver phone (blank removes sharing)">{p => <DsInput {...p} type="tel" maxLength={32} value={phone} onChange={e => { setPhone(e.target.value); setProviderConfirmed(false); setDriverConfirmed(false); }}/>}</DsField><DsCheckbox label="Provider confirms sharing this number for this trip only" checked={providerConfirmed} onChange={e => setProviderConfirmed(e.target.checked)}/><DsCheckbox label="The assigned driver has confirmed sharing this number for this trip" checked={driverConfirmed} onChange={e => setDriverConfirmed(e.target.checked)}/><DsButton disabled={busy || !providerConfirmed || !driverConfirmed} onClick={async () => { if (preview.active) return previewBlocked(); setBusy(true); try { await save({ data: { tripId, driverId, phone: phone || null, providerConfirmed: true, driverConfirmed: true } }); toast.success('Trip contact preference saved.'); } catch { toast.error('Assigned trip contact unavailable.'); } finally { setBusy(false); } }}>Confirm per-trip contact</DsButton></section>;
+}
+
+export function TripCommunicationOverride({tripId}:{tripId:string}) {
+ const preview=usePortalPreview(),save=useServerFn(saveTripCommunicationOverride);
+ const [timezone,setTimezone]=useState(''),[withhold,setWithhold]=useState(true),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false);
+ return <section className="space-y-3 border-t border-ds-border pt-4"><h3 className="ds-label">Customer communications — this trip</h3><DsField label="Confirmed pickup timezone (IANA)">{p=><DsInput {...p} value={timezone} onChange={e=>{setTimezone(e.target.value);setConfirmed(false);}}/>}</DsField><DsCheckbox label="Withhold driver name and phone from customer updates" checked={withhold} onChange={e=>{setWithhold(e.target.checked);setConfirmed(false);}}/><DsCheckbox label="I confirm these explicit trip settings; assignment and pickup schedule remain unchanged" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/><DsButton disabled={preview.active||busy||!confirmed||!timezone} onClick={async()=>{if(preview.active)return previewBlocked();setBusy(true);try{await save({data:{tripId,timezone,withhold,confirmed:true}});setConfirmed(false);toast.success('Trip communication settings saved.');}catch{toast.error('Trip communication settings unavailable.');}finally{setBusy(false);}}}>Confirm trip settings</DsButton></section>;
 }
