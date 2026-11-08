@@ -185,7 +185,11 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
         }
         const env: StripeEnv = rawEnv;
         try {
-          const event = await verifyWebhook(request, env) as { id?: string; type: string; account?: string; data: { object: any } };
+          const event = await verifyWebhook(request, env) as { id?: string; type: string; account?: string; livemode?:boolean; created?:number; data: { object: any } };
+          if(env==='sandbox') {
+            const result=await (await import('@/lib/sandbox-reconciliation.server')).prepareSandboxReconciliation(event,'platform');
+            return Response.json({received:true,...result});
+          }
           const np = await import('@/lib/network-payments.server');
           if (await np.alreadyProcessed(event.id)) return Response.json({ received: true, duplicate: true });
           switch (event.type) {
@@ -243,7 +247,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           await np.markProcessed(event.id, event.type, env, 'platform');
           return Response.json({ received: true });
         } catch (e) {
-          console.error("Webhook error:", e);
+          console.error("payment_webhook_rejected");
           return new Response("Webhook error", { status: 400 });
         }
       },
