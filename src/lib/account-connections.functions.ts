@@ -19,7 +19,7 @@ export const getAccountConnections = createServerFn({ method: 'POST' }).middlewa
     const email = typeof context.claims.email === 'string' ? context.claims.email.trim().toLowerCase() : '';
     const { data: incoming } = await supabaseAdmin.from('account_connection_invitations').select(invitationColumns).eq('recipient_email', email).neq('inviter_workspace_id', data.workspaceId).order('created_at', { ascending: false }).limit(100);
     const { data: ws } = await context.supabase.from('workspaces').select('account_type').eq('id', data.workspaceId).single();
-    const filtered = (incoming ?? []).filter(i => i.intended_account_type==='patient'?ws?.account_type==='private_pay':i.intended_type === 'provider' ? ws?.account_type === 'provider' : ['facility','hospital'].includes(ws?.account_type ?? ''));
+    const filtered = (incoming ?? []).filter(i => (!i.recipient_workspace_id || i.recipient_workspace_id===data.workspaceId) && (i.intended_account_type==='patient'?ws?.account_type==='private_pay':i.intended_type === 'provider' ? ws?.account_type === 'provider' : ['facility','hospital'].includes(ws?.account_type ?? '')));
     const ids = new Set<string>();
     for (const c of connections ?? []) { ids.add(c.workspace_a); ids.add(c.workspace_b); }
     for (const i of [...(sent ?? []), ...filtered]) { ids.add(i.inviter_workspace_id); if (i.recipient_workspace_id) ids.add(i.recipient_workspace_id); }

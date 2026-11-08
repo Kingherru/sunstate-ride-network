@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { personalSettingsInput } from './account-settings-rules';
+import { z } from 'zod';
+export const saveNotificationSettings=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({inApp:z.boolean(),email:z.boolean()}).strict().parse(i)).handler(async({data,context})=>{const {error}=await context.supabase.rpc('save_notification_settings',{_in_app:data.inApp,_email:data.email});if(error)throw new Error('Could not save notification preferences.');return {ok:true};});
 
 export const getPersonalSettings = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const { data, error } = await context.supabase.from('user_profiles').select('first_name,last_name,display_name,phone,mfn_id,notification_preferences,status').eq('user_id', context.userId).maybeSingle();

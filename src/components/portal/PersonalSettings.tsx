@@ -3,7 +3,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { DsButton, DsField, DsInput, DsCheckbox } from '@/components/ds/controls';
-import { getPersonalSettings, savePersonalSettings } from '@/lib/account-settings.functions';
+import { getPersonalSettings, savePersonalSettings, saveNotificationSettings } from '@/lib/account-settings.functions';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 import { StatusPill } from '@/components/ds/status';
 import { useRouteContext } from '@tanstack/react-router';
@@ -15,6 +15,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
   const qc = useQueryClient();
   const get = useServerFn(getPersonalSettings);
   const save = useServerFn(savePersonalSettings);
+  const saveNotifications=useServerFn(saveNotificationSettings);
   const q = usePortalQuery({ queryKey: ['personal-settings'], queryFn: () => get() });
   const [firstName, setFirst] = useState('');
   const [lastName, setLast] = useState('');
@@ -32,7 +33,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
     e.preventDefault();
     if (preview.active) { previewBlocked(); return; }
     setBusy(true);
-    try { await save({ data: { firstName, lastName, phone, preferences: { in_app: inApp, email } } }); await qc.invalidateQueries({ queryKey: ['personal-settings'] }); toast.success('Personal settings saved.'); }
+    try { if(section==='notifications')await saveNotifications({data:{inApp,email}});else await save({ data: { firstName, lastName, phone, preferences: { in_app: inApp, email } } }); await qc.invalidateQueries({ queryKey: ['personal-settings'] }); toast.success('Personal settings saved.'); }
     catch { toast.error('Could not save personal settings.'); } finally { setBusy(false); }
   }
   return <form onSubmit={submit} className="portal-business-form min-w-0 space-y-4">

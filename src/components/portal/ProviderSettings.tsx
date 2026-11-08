@@ -38,7 +38,7 @@ const legacySections: Record<string, string> = { connections: 'team', contact: '
 /** Legacy person-owned documents/integrations remain owner-only, not implicitly shared. */
 export function ProviderSettings({ workspaceId, role, email, initialSection = 'business', accountDetails, teamMessaging, financialTools }: { workspaceId: string; role: string; email?: string | null; initialSection?: string; accountDetails?: React.ReactNode; teamMessaging?: React.ReactNode; financialTools?: React.ReactNode }) {
   const [tab, setTab] = useState(legacySections[initialSection] ?? (sections.some(s => s.value === initialSection) ? initialSection : 'business')); const preview = usePortalPreview(); const owner = role === 'owner';
-  return <div className="grid min-w-0 gap-5 lg:grid-cols-[14rem_minmax(0,1fr)]">
+  return <div className="grid min-w-0 gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]">
     <nav aria-label="Provider settings sections" className="flex flex-wrap gap-2 self-start lg:sticky lg:top-4 lg:flex-col">{sections.map(section => <DsButton key={section.value} variant={tab === section.value ? 'secondary' : 'ghost'} className="justify-start text-left" aria-current={tab === section.value ? 'page' : undefined} onClick={() => setTab(section.value)}><section.icon className="size-4 shrink-0" />{section.label}</DsButton>)}</nav>
     <div className="portal-business-form min-w-0 space-y-5">
     <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
