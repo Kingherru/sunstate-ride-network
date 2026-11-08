@@ -33,7 +33,7 @@ export const previewMyTripCommunications = createServerFn({ method: 'GET' }).mid
 
 export const getCustomerCommunicationSettings = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
  .inputValidator((i: unknown) => z.object({ workspaceId: z.string().uuid() }).strict().parse(i)).handler(async ({ data, context }) => {
-  const { data: allowed } = await context.supabase.rpc('can_manage_provider_customer_pricing', { _ws: data.workspaceId });
+  const { data: allowed } = await context.supabase.rpc('can_manage_provider_customer_pricing', { _workspace: data.workspaceId });
   if (!allowed) throw new Error('Communication settings unavailable.');
   const { data: profile, error } = await context.supabase.from('provider_network_profiles').select('customer_communication_settings,trip_dispatch_phone,trip_dispatch_phone_designated').eq('workspace_id', data.workspaceId).maybeSingle();
   if (error) throw new Error('Communication settings unavailable.');
