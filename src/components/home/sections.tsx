@@ -142,7 +142,7 @@ export function Membership() {
           <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
             {benefits.map(f => { const Icon = icons[f.name as keyof typeof icons]; return <div key={f.name} className="flex h-full min-w-0 items-start gap-3 rounded-ds-sm bg-ds-surface/80 p-5 shadow-ds"><Icon className="mt-1 size-6 shrink-0 text-ds-accent-active" aria-hidden /><div className="min-w-0"><h3 className="ds-subheading text-ds-primary">{f.name === 'Pricing Rules' ? 'Your customer rates' : f.name === 'Vehicles' ? 'Fleet records' : f.name === 'Schedule' ? 'Daily scheduling' : 'Trips & history'}</h3><p className="ds-body mt-2 text-ds-text-2">{f.name === 'Pricing Rules' ? 'Manage your service rates.' : f.name === 'Vehicles' ? 'Keep vehicle details organized.' : f.name === 'Schedule' ? 'Plan drivers and vehicles.' : 'Keep owned trips organized.'}</p></div></div>; })}
           </div>
-          <p className="ds-support mt-5 text-ds-text-2">Network usage fees are separate: the sender covers the 2% platform fee and applicable processing costs. Checkout remains unavailable.</p>
+          <p className="ds-support mt-5 text-ds-text-2">Network usage fees are separate: the sender covers the 2% platform fee and applicable processing costs. </p>
         </div>
       </HomeReveal>
     </section>

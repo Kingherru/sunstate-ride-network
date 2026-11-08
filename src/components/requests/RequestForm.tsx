@@ -282,7 +282,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setForm((f) => ({ ...f, [k]: v }));
 
   // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
-  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; mobility?:string|null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
+  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; mobility?:string|null; patient_workspace_id?:string|null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
   const [payers, setPayers] = useState<{ id: string; name: string; email: string | null; phone: string | null; active: boolean | null }[]>([]);
   const [patientChoice, setPatientChoice] = useState("");
   const [payerNote, setPayerNote] = useState<string | null>(null);
