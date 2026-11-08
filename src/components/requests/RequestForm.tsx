@@ -37,7 +37,7 @@ import { PatientProviderPicker } from '@/components/network/PatientProviderPicke
 import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
 import { LinkedPatientSelector } from '@/components/portal/LinkedPatientSelector';
 import { TripCommerceContext } from './trip-commerce-context';
-import {getTripDefaults} from '@/lib/trip-defaults.functions';
+import {getTripDefaults,getFacilityAuthorizedPatients} from '@/lib/trip-defaults.functions';
 import {fillEmptyTripDefaults,approvedPatientDefaults} from '@/lib/trip-defaults.rules';
 import {PayerDialog} from '@/components/dashboard/PayersPanel';
 import {ContactDialog} from '@/components/dashboard/ContactsPanel';
@@ -289,6 +289,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const [addingPayer,setAddingPayer]=useState(false);
   const [addingContact,setAddingContact]=useState(false);
   const [contacts,setContacts]=useState<Awaited<ReturnType<typeof listContacts>>>([]);
+  const [facilityPatients,setFacilityPatients]=useState<Awaited<ReturnType<typeof getFacilityAuthorizedPatients>>>([]);
+  const loadFacilityPatients=useServerFn(getFacilityAuthorizedPatients);
   const loadDefaults=useServerFn(getTripDefaults);
   const loadContacts=useServerFn(listContacts);
   const loadPayers=useServerFn(listMyPayers);
@@ -310,6 +312,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
         setPayers(pys as any[]);
         setContacts(cts);
+        if(defaults.workspaceId && defaults.accountType==='provider'){const linked=await loadFacilityPatients({data:{sourceId:defaults.workspaceId}});if(!cancelled)setFacilityPatients(linked);}
         const basicDefaults=defaults.defaults;
         if(!initialDraft && basicDefaults)setForm(f=>({...fillEmptyTripDefaults(f,basicDefaults),...(f.patientFirstName||f.patientLastName?{}:{transportType:basicDefaults.transportType??f.transportType})}));
         if (!initialDraft && prefs.default_payer_id) applyPayer(prefs.default_payer_id, pys as any[]);
@@ -322,7 +325,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setPatientChoice(id);
     const p = patients.find((x) => x.id === id);
     if (!p) return;
-    setForm((f) => ({ ...f,...approvedPatientDefaults(p),savedPatientId:p.id,patientWorkspaceId:null }));
+    setForm((f) => ({ ...f,...approvedPatientDefaults(p),savedPatientId:p.id,patientWorkspaceId:(p as {patient_workspace_id?:string|null}).patient_workspace_id??null }));
     if (p.default_payer_id) applyPayer(p.default_payer_id);
   };
 
@@ -531,6 +534,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
           {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => setForm(f=>({...f,patientWorkspaceId:id,savedPatientId:null}))} onDefaults={d=>setForm(f=>({...f,...d,savedPatientId:null}))} />}
+          {facilityPatients.length>0 && <Field label="Facility-authorized linked patient"><select className={inputCls} value={form.savedPatientId??''} onChange={e=>{const p=facilityPatients.find(p=>p.savedPatientId===e.target.value);if(p && confirm('Attach this confirmed patient and fill only basic trip details?'))setForm(f=>({...f,patientFirstName:p.patientFirstName??'',patientLastName:p.patientLastName??'',patientPhone:p.patientPhone??'',patientEmail:p.patientEmail??'',transportType:p.transportType??'ambulatory',patientWorkspaceId:p.patientWorkspaceId,savedPatientId:p.savedPatientId}));}}><option value="">Choose authorized patient</option>{facilityPatients.map(p=><option key={p.savedPatientId} value={p.savedPatientId}>{p.patientFirstName} {p.patientLastName} · {p.facilityMfnId}</option>)}</select></Field>}
 
           {/* Patient */}
           <fieldset className="space-y-6">

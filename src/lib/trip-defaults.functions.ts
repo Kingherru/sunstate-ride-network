@@ -19,3 +19,8 @@ export const getLinkedPatientTripDefaults=createServerFn({method:'POST'}).middle
  if(error || !out)throw new Error('Patient not available');
  return out as unknown as BasicTripDefaults;
 });
+export const getFacilityAuthorizedPatients=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({sourceId:z.string().uuid()}).strict().parse(i)).handler(async({data,context})=>{
+ const {data:rows,error}=await context.supabase.rpc('list_facility_authorized_patients',{_source:data.sourceId});
+ if(error)throw new Error('Patient not available');
+ return rows as unknown as (BasicTripDefaults & {savedPatientId:string;facilityMfnId:string})[];
+});
