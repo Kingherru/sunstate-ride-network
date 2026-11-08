@@ -6,6 +6,7 @@ import { HOME_IMAGES as IMG, LINKS } from "@/lib/site-config";
 import { btnAction, btnBlue, btnOnBlue } from "./buttons";
 import { HomeReveal } from "./HomeReveal";
 import { publicFeatures } from '@/lib/feature-catalog';
+import { Link } from '@tanstack/react-router';
 
 export { btnAction as btnPrimary };
 
@@ -63,6 +64,7 @@ export function NetworkConnect() {
           <p className="ds-label text-ds-accent-active">How it works</p>
           <h2 id="connect-title" className="ds-page-title mt-2 uppercase text-ds-primary"><span className="lg:block">ONE FLORIDA NEMT NETWORK.</span> <span className="lg:block">TWO WAYS TO CONNECT.</span></h2>
           <p className="ds-body-lg mx-auto mt-4 max-w-[44rem] text-ds-text-2">MY FLORIDA NEMT connects customers and facilities with participating transportation providers while also giving independent NEMT businesses a practical way to connect with one another.</p>
+          <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:flex-wrap"><Link to="/why-my-florida-nemt" className="ds-label text-ds-link underline underline-offset-4">What MY FLORIDA NEMT is</Link><Link to="/why-my-florida-nemt" hash="five-minute-request" className="ds-label text-ds-link underline underline-offset-4">The about-five-minute request path</Link></div>
         </HomeReveal>
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {PATHS.map((p) => (
