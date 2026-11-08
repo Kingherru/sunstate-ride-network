@@ -526,6 +526,13 @@
       "when": 1794107876495,
       "tag": "0074_pass4j_usual_provider_and_facility_status",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1794107921719,
+      "tag": "0075_pass4j_evidence_trigger_scope_hardening",
+      "breakpoints": true
     }
   ]
 }
