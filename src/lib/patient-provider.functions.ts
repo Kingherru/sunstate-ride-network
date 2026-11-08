@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { z } from 'zod';
+import type {NetworkProviderRow} from './facility-providers.functions';
+export const getConfirmedUsualProvider=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{const {data,error}=await context.supabase.rpc('my_confirmed_usual_provider');if(error)throw new Error('Provider not available');return data as unknown as NetworkProviderRow|null;});
 export const listTargetedPatientRequests = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const { data, error } = await context.supabase.rpc('list_targeted_patient_requests');
   if (error) throw new Error('Could not load targeted requests.');
