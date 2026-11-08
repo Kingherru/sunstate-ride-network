@@ -1,4 +1,10 @@
 # Florida MVP launch sequence
+## Pass 4I — active build
+- [ ] Replace authoritative private guide and all current product wording without changing product/price/history.
+- [ ] Consolidate Provider Settings into five areas with shared fields, authorization and safe preview.
+- [ ] Finish existing pricing estimate/version integration and role-based resumable signup safeguards.
+- [ ] Connect optional privacy-safe referral requests and confirmed linked-patient visibility; no sends or Network auto-share.
+- [ ] Run focused boundary checks; record actual completion and blockers. All money, delivery and automated communications remain OFF.
 ## Pass 4H — implemented safe connections; financial activation incomplete
 - [x] Facility trip-specific quote request → provider confirmed proposal → facility acceptance → immutable agreement/draft quote → atomic invoice attachment in existing shared New Trip. Facility bill-to/payer, creator MFN, linked patient, version/source audit retained; private provider rates never returned. No real quote/agreement/request/invoice created or end-to-end write fixture exercised.
 - [x] Owned-trip explicit Fund/share preparation links existing invoice/distribution, exact sender fee review and policy confirmation; locked retry reuse. Funding-required offers remain ineligible before authoritative funding. No automatic Network submission, offer send or payment. Receiver compensation unchanged; 2% sender fee, configured processing, 10/4-day holds and 24-hour dispute preserved.
