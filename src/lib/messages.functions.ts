@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -171,11 +172,12 @@ export const getThreadMessages = createServerFn({ method: "POST" })
       .eq("thread_id", data.thread_id)
       .order("created_at", { ascending: true });
     if (error) return { ok: false as const, error: error.message };
-    await supabase
+    const {error:readError} = await supabase
       .from("thread_participants")
       .update({ last_read_at: new Date().toISOString() })
       .eq("thread_id", data.thread_id)
       .eq("user_id", userId);
+    if(readError) return {ok:false as const,error:"Could not mark thread read."};
     return { ok: true as const, messages: msgs ?? [] };
   });
 
@@ -184,11 +186,12 @@ export const markThreadRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { thread_id: string }) => input)
   .handler(async ({ data, context }) => {
-    await context.supabase
+    const {error} = await context.supabase
       .from("thread_participants")
       .update({ last_read_at: new Date().toISOString() })
       .eq("thread_id", data.thread_id)
       .eq("user_id", context.userId);
+    if(error)throw new Error("Could not mark thread read.");
     return { ok: true as const };
   });
 
@@ -476,3 +479,13 @@ export const listDispatchZones = createServerFn({ method: "GET" })
     if (error) return { ok: false as const, error: error.message, zones: [] };
     return { ok: true as const, zones: (data ?? []) as { id: string; name: string; code: string | null }[] };
   });
+
+export const markAllThreadsRead=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+ const {data:parts,error}=await context.supabase.from('thread_participants').select('thread_id').eq('user_id',context.userId);
+ if(error)throw new Error('Thread access unavailable.');
+ const ids=(parts??[]).map(p=>p.thread_id);if(!ids.length)return {ok:true as const};
+ const {data:threads,error:readError}=await context.supabase.from('message_threads').select('id').in('id',ids);
+ if(readError)throw new Error('Thread access unavailable.');const accessible=(threads??[]).map(t=>t.id);if(!accessible.length)return {ok:true as const};
+ const {error:updateError}=await context.supabase.from('thread_participants').update({last_read_at:new Date().toISOString()}).eq('user_id',context.userId).in('thread_id',accessible);
+ if(updateError)throw new Error('Could not mark threads read.');return {ok:true as const};
+});
