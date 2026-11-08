@@ -13,7 +13,7 @@ export function TripDispatchSettings({ workspaceId }: { workspaceId: string }) {
   useEffect(()=>{if(q.data&&!preview.active)setSettings(q.data);},[q.data,preview.active]);
   const change=(key: keyof typeof settings,value:string|boolean)=>{setSettings(s=>({...s,[key]:value}));setConfirmed(false);};
   return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Customer-facing trip contacts</h2><div className="portal-business-body space-y-4">
-   {q.error && <p role="alert" className="ds-status-red p-3">Communication settings unavailable.</p>}
+   {!!q.error && <p role="alert" className="ds-status-red p-3">Communication settings unavailable.</p>}
    <div className="grid gap-4 sm:grid-cols-2"><DsField label="Approved business / dispatch name">{p=><DsInput {...p} maxLength={160} value={settings.businessName} onChange={e=>change('businessName',e.target.value)}/>}</DsField><DsField label="Approved dispatch phone">{p=><DsInput {...p} type="tel" maxLength={32} value={settings.dispatchPhone} onChange={e=>change('dispatchPhone',e.target.value)}/>}</DsField><DsField label="Customer-facing email — optional">{p=><DsInput {...p} type="email" maxLength={254} value={settings.email} onChange={e=>change('email',e.target.value)}/>}</DsField></div>
    <DsCheckbox label="Allow assigned driver name in customer updates" checked={settings.shareDriverName} onChange={e=>change('shareDriverName',e.target.checked)}/>
    <DsCheckbox label="Allow driver phone only with separate provider and driver confirmation for each assigned trip" checked={settings.shareDriverPhone} onChange={e=>change('shareDriverPhone',e.target.checked)}/>
