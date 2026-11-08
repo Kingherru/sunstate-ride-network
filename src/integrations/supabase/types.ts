@@ -3922,8 +3922,11 @@ export type Database = {
       }
       provider_contacts: {
         Row: {
+          active: boolean
+          billing_allowed: boolean
           company_name: string | null
           contact_type: string
+          coordination_allowed: boolean
           created_at: string
           created_by: string | null
           creator_mfn_id: string | null
@@ -3939,12 +3942,16 @@ export type Database = {
           payer: string | null
           payer_id: string | null
           phone: string | null
+          relationship: string | null
           updated_at: string
           workspace_id: string | null
         }
         Insert: {
+          active?: boolean
+          billing_allowed?: boolean
           company_name?: string | null
           contact_type: string
+          coordination_allowed?: boolean
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -3960,12 +3967,16 @@ export type Database = {
           payer?: string | null
           payer_id?: string | null
           phone?: string | null
+          relationship?: string | null
           updated_at?: string
           workspace_id?: string | null
         }
         Update: {
+          active?: boolean
+          billing_allowed?: boolean
           company_name?: string | null
           contact_type?: string
+          coordination_allowed?: boolean
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -3981,6 +3992,7 @@ export type Database = {
           payer?: string | null
           payer_id?: string | null
           phone?: string | null
+          relationship?: string | null
           updated_at?: string
           workspace_id?: string | null
         }
@@ -8451,6 +8463,7 @@ export type Database = {
       workspaces: {
         Row: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          account_verification_evidence: Json | null
           automatic_verification_level: string | null
           business_address: string | null
           business_phone: string | null
@@ -8474,6 +8487,7 @@ export type Database = {
         }
         Insert: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          account_verification_evidence?: Json | null
           automatic_verification_level?: string | null
           business_address?: string | null
           business_phone?: string | null
@@ -8497,6 +8511,7 @@ export type Database = {
         }
         Update: {
           account_type?: Database["public"]["Enums"]["workspace_type"]
+          account_verification_evidence?: Json | null
           automatic_verification_level?: string | null
           business_address?: string | null
           business_phone?: string | null
@@ -8825,6 +8840,7 @@ export type Database = {
       }
       accept_facility_quote: { Args: { _proposal: string }; Returns: string }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
+      account_profile_evidence: { Args: { _ws: string }; Returns: Json }
       admin_account_conversation_access: {
         Args: { _thread: string; _write?: boolean }
         Returns: boolean
@@ -9434,6 +9450,7 @@ export type Database = {
         Returns: number
       }
       my_access_state: { Args: never; Returns: Json }
+      my_account_profile_verification: { Args: never; Returns: Json }
       network_accept_offer: {
         Args: { _approve?: boolean; _offer: string }
         Returns: Json
