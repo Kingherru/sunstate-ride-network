@@ -5046,6 +5046,42 @@ export type Database = {
         }
         Relationships: []
       }
+      refund_policy_versions: {
+        Row: {
+          created_at: string
+          created_by: string
+          effective_from: string | null
+          effective_through: string | null
+          matrix: Json
+          source_version: string | null
+          state: string
+          terms_version: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          effective_from?: string | null
+          effective_through?: string | null
+          matrix: Json
+          source_version?: string | null
+          state?: string
+          terms_version: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          effective_from?: string | null
+          effective_through?: string | null
+          matrix?: Json
+          source_version?: string | null
+          state?: string
+          terms_version?: string
+          version?: string
+        }
+        Relationships: []
+      }
       request_status_events: {
         Row: {
           action: string
@@ -7988,6 +8024,7 @@ export type Database = {
         Row: {
           default_payer_id: string | null
           default_payment_method_id: string | null
+          detail_columns: number[] | null
           interface_density: string
           pay_by_invoice: boolean
           updated_at: string
@@ -7996,6 +8033,7 @@ export type Database = {
         Insert: {
           default_payer_id?: string | null
           default_payment_method_id?: string | null
+          detail_columns?: number[] | null
           interface_density?: string
           pay_by_invoice?: boolean
           updated_at?: string
@@ -8004,6 +8042,7 @@ export type Database = {
         Update: {
           default_payer_id?: string | null
           default_payment_method_id?: string | null
+          detail_columns?: number[] | null
           interface_density?: string
           pay_by_invoice?: boolean
           updated_at?: string
@@ -9557,6 +9596,10 @@ export type Database = {
       manages_zone: {
         Args: { _user_id: string; _zone_id: string }
         Returns: boolean
+      }
+      mark_accessible_conversations_read: {
+        Args: { _ids?: string[] }
+        Returns: number
       }
       move_to_dlq: {
         Args: {

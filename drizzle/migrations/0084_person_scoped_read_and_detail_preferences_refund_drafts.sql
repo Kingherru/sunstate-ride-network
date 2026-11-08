@@ -1,0 +1,18 @@
+ALTER TABLE public.user_portal_preferences ADD COLUMN detail_columns integer[];
+ALTER TABLE public.user_portal_preferences ADD CONSTRAINT detail_columns_bounds CHECK (detail_columns IS NULL OR (array_length(detail_columns,1)=3 AND detail_columns[1] BETWEEN 20 AND 60 AND detail_columns[2] BETWEEN 20 AND 60 AND detail_columns[3] BETWEEN 20 AND 60 AND detail_columns[1]+detail_columns[2]+detail_columns[3]=100));
+CREATE TABLE public.refund_policy_versions (version text PRIMARY KEY, state text NOT NULL DEFAULT 'draft' CHECK (state IN ('draft','approved','retired')), terms_version text NOT NULL, matrix jsonb NOT NULL, effective_from timestamptz, effective_through timestamptz, created_by uuid NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), source_version text);
+GRANT SELECT, INSERT ON public.refund_policy_versions TO authenticated;
+GRANT ALL ON public.refund_policy_versions TO service_role;
+ALTER TABLE public.refund_policy_versions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY refund_policy_master_read ON public.refund_policy_versions FOR SELECT TO authenticated USING (public.is_master_admin(auth.uid()));
+CREATE POLICY refund_policy_master_draft ON public.refund_policy_versions FOR INSERT TO authenticated WITH CHECK (public.is_master_admin(auth.uid()) AND created_by=auth.uid() AND state='draft' AND effective_from IS NULL AND effective_through IS NULL);
+CREATE FUNCTION public.guard_refund_policy_version() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF TG_OP <> 'INSERT' THEN RAISE EXCEPTION 'Policy versions are immutable; append a new draft'; END IF; IF NEW.state <> 'draft' OR NEW.effective_from IS NOT NULL OR NEW.effective_through IS NOT NULL THEN RAISE EXCEPTION 'Policy approval and execution are OFF'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER immutable_refund_policy_version BEFORE INSERT OR UPDATE OR DELETE ON public.refund_policy_versions FOR EACH ROW EXECUTE FUNCTION public.guard_refund_policy_version();
+CREATE FUNCTION public.mark_accessible_conversations_read(_ids uuid[] DEFAULT NULL) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE changed integer; BEGIN IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Unauthorized'; END IF;
+WITH accessible AS (SELECT c.id FROM public.workspace_conversations c WHERE (_ids IS NULL OR c.id=ANY(_ids)) AND ((public.can_access_workspace_messages(c.workspace_a_id) OR public.can_access_workspace_messages(c.workspace_b_id)) OR (public.admin_can('messaging','read') AND (public.admin_can_account(c.workspace_a_id) OR public.admin_can_account(c.workspace_b_id)))))
+INSERT INTO public.tab_view_marks(user_id,tab_key,last_viewed_at) SELECT auth.uid(),'convo:'||id::text,now() FROM accessible ON CONFLICT(user_id,tab_key) DO UPDATE SET last_viewed_at=greatest(public.tab_view_marks.last_viewed_at,excluded.last_viewed_at);
+GET DIAGNOSTICS changed=ROW_COUNT; RETURN changed; END $$;
+REVOKE ALL ON FUNCTION public.mark_accessible_conversations_read(uuid[]) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.mark_accessible_conversations_read(uuid[]) TO authenticated;
+COMMENT ON TABLE public.refund_policy_versions IS 'Immutable owner-only DRAFT review configuration; approval and financial execution unavailable. No historical public acceptance is rewritten.';
+COMMENT ON COLUMN public.user_portal_preferences.detail_columns IS 'UI-only percentage widths; never stores patient, trip or financial content.';
