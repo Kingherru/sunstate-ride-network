@@ -14,7 +14,7 @@ import { AdminRequestActions } from './AdminRequestActions';
 import { useAdminLevel } from '@/lib/use-admin-level';
 import { PatientTimeline } from './PatientTimeline';
 import { TripInvoiceDetails } from './TripInvoiceDetails';
-import { AssignedDriverContactConsent } from './TripCommunicationSettings';
+import { AssignedDriverContactConsent, TripCommunicationOverride } from './TripCommunicationSettings';
 import { patientDetailFields } from '@/lib/patient-detail-presentation';
 
 const money = (c: number) => (c / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -62,6 +62,7 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
           {ok.request.deactivated_at && <DetailSection tone="warning" title="Deactivated"><p>This request was deactivated on {fmtDateTime(String(ok.request.deactivated_at))}. All history is preserved.</p></DetailSection>}
           {ok.patient ? <DetailSection tone="trip" title="Trip details"><dl className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">{patientDetailFields(ok.request).map(field=><div key={field.label} className="min-w-0 py-3"><dt className="ds-support font-semibold">{field.label}</dt><dd className="ds-body mt-1 break-words">{field.value}</dd></div>)}</dl></DetailSection> : <RequestDetail r={ok.request} showSource />}
           {!ok.patient && target.kind==='trip' && typeof ok.request.driver_id==='string' && ok.invoices.some(i=>i.canManage) && <AssignedDriverContactConsent tripId={target.id} driverId={ok.request.driver_id}/>}
+          {!ok.patient && target.kind==='trip' && ok.invoices.some(i=>i.canManage) && <TripCommunicationOverride tripId={target.id}/>}
           {ok.patient && <div className="grid gap-5 lg:grid-cols-2"><DetailSection title="Your trip timeline"><PatientTimeline stage={ok.patient.stage} events={ok.patient.timeline}/></DetailSection><DetailSection title="Trip communications"><p className="ds-body">Provider: {ok.patient.providerName??'Not Available'}</p><p className="ds-body mt-3">Dispatch: {ok.patient.contacts?.dispatchPhone??'Not Available'}</p><p className="ds-body mt-3">Driver: {ok.patient.contacts?.driverName??'Not Available'}</p><p className="ds-body mt-3">Driver phone: {ok.patient.contacts?.driverPhone??'Not Available'}</p></DetailSection></div>}
           {ok.invoices.length>0?<div className="grid gap-5 lg:grid-cols-2">{ok.invoices.map(invoice=><DetailSection key={invoice.id} title="Invoice & payment summary"><TripInvoiceDetails invoice={invoice}/></DetailSection>)}</div>:<DetailSection title="Invoice & payment summary"><p className="ds-body">No invoice available</p>{ok.patient?.payments.map(p=><p key={p.reference} className="ds-support mt-3">{p.status} · <span className="portal-money">{money(p.amountCents)}</span> · {fmtDateTime(p.createdAt)}</p>)}</DetailSection>}
           {!ok.patient && <div className="grid gap-6 lg:grid-cols-2">

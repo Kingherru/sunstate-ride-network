@@ -1,9 +1,10 @@
 # Florida MVP launch sequence
-## Pass 4N — communications preparation (in progress)
-- [ ] Reuse notification/audit history for workspace-scoped prepared communication events, deduplication and safe previews; no delivery or scheduler.
-- [ ] Prepare safe trip status/reminder rules with explicit recipients, authoritative timezone, schedule versions and future-unsent cancellation.
-- [ ] Extend existing sharing Settings, invoice review, invitation/connection and authoritative email-change workflows without widening permissions.
-- [ ] Extend Admin Messaging oversight using scoped permissions; narrow synthetic boundary tests and read-only preservation checks.
+## Pass 4N — safe foundations built; live/populated workflows not exercised
+- [x] Notifications extended with immutable workspace/recipient/template/version/dedupe evidence and scoped history RPC; existing business conversations/sent-email history separate. Status preparation RPC is OFF-gated, no worker/queue/scheduler or event rows created.
+- [x] Read-only linked-patient status/reminder previews, explicit relationship/confirmed-email checks, IANA timezone and DST ambiguity rejection; future-unsent cancellation RPC and authoritative email-change invalidation append corrections. Missing reminder timing suppresses scheduling, no guessed delivery time.
+- [x] Provider owner/admin customer contact settings and per-trip withholding/timezone controls reuse shared details and audited RPCs. Hash-only invoice review binds customer/provider/quote/environment, legacy unbound tokens fail closed; no payment/PDF. Hosted email state displays actual pending confirmation only. Opted-in business requests retained; private email invitation create/renew fails closed pending durable limits.
+- [x] Existing Admin Messaging Communications tab: scoped safe history/template/reason search, no send/retry/cancel activation. 22 focused tests passed; authenticated owner read-only empty-history and generic invalid-link browser checks passed without page errors; automatic build checked. No populated write/readback under no-real-write/no-fixture rules.
+- [ ] Remaining: Facility external-recipient evidence, comprehensive persisted reminder preparation/reschedule producer linkage, contact/invoice/connection correction producers, full event-category producers, configured Admin cancellation controls and populated preview/readback. Blocked by missing authoritative timing/recipient/configuration and owner-prohibited fixture writes; do not claim unified delivery complete.
 - All real sends, jobs, money, checkout/PDF/guide and exact public contact lookup remain OFF. Invitation creation/resend requires an existing authoritative durable rate-limit primitive or stays blocked.
 - Next passes only: **4M → 4L → 4O → 4P**. Existing financial blockers remain; regional/header/full-fixture/publishing work is excluded.
 
