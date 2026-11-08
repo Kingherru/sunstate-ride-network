@@ -33,3 +33,6 @@
 - Uploads (CSV/XLSX/PDF) only create owner drafts via uploads.functions.ts; originals stay 7 days in private `import-uploads`. Exports use src/lib/table-export.ts. Why: uploads never submit; one exporter.
 - Provider API (/api/public/provider/v1/*) is read-only, Bearer-only, hash-matched, rate-limited, workspace-scoped; driver schedule sends stop before any write while their flag is off. Why: keys never widen access.
 - Launch Readiness (/admin/launch) is Master-Admin-only, read-only, statuses only (flags missing=off, secret presence never values). Why: no activation path.
+- Provider Settings uses five presentation areas and workspace-scoped business-settings RPCs; person-owned credentials remain owner-only, published pricing remains append-only. Why: consolidate controls without reassigning legacy evidence or widening ownership.
+- Setup acknowledgment is separate from purchase clickwrap; completed progress is retained and existing identity classification never changes on resume. Why: onboarding cannot retroactively alter consent, access or verification.
+- Existing-account connection requests reuse invitation records with server-resolved recipients and no delivery; usual-provider changes require active bilateral connections. Exact contact lookup stays disabled until owner-approved rate limiting. Why: no enumeration or implied trip access.

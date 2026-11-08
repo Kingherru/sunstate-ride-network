@@ -25,14 +25,15 @@ export const Route = createFileRoute("/create-account")({
 });
 
 const TYPES = [
-  { value: "private_pay", label: "Patient / Personal", desc: "For yourself or another patient." },
-  { value: "facility", label: "Facility", desc: "Assisted living, dialysis, clinics and similar." },
   { value: "provider", label: "Provider", desc: "Independent NEMT transportation businesses." },
+  { value: "private_pay", label: "Patient / Personal", desc: "For yourself or another patient." },
+  { value: "facility", label: "Facility / Organization", desc: "Assisted living, dialysis, clinics and similar." },
 ] as const;
 type AccountType = (typeof TYPES)[number]["value"];
 
 const schema = z.object({
-  name: z.string().trim().min(2, "Enter your full name.").max(120),
+  firstName: z.string().trim().min(1, "Enter your first name.").max(80),
+  lastName: z.string().trim().min(1, "Enter your last name.").max(80),
   email: z.string().trim().email("Enter a valid email address.").max(255),
   phone: z.string().trim().regex(/^[0-9+().\-\s]{7,20}$/, "Enter a valid phone number."),
   org: z.string().trim().max(160),
@@ -46,7 +47,7 @@ function CreateAccount() {
   const [type, setType] = useState<AccountType | null>(null);
   const [facilityType, setFacilityType] = useState('general_facility');
   const [step, setStep] = useState(0);
-  const [f, setF] = useState({ name: "", email: "", phone: "", org: "", password: "", confirm: "", terms: false });
+  const [f, setF] = useState({ firstName: "", lastName: "", email: "", phone: "", org: "", password: "", confirm: "", terms: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -70,8 +71,8 @@ function CreateAccount() {
       email: f.email.trim(),
       password: f.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login?verified=1${returnTo ? `&redirect=${encodeURIComponent(returnTo)}` : ""}`,
-        data: { display_name: f.name.trim(), phone: f.phone.trim(), account_type: type === 'facility' && facilityType === 'hospital' ? 'hospital' : type, organization_type: type === 'facility' ? facilityType : type === 'provider' ? 'transportation_provider' : 'private_pay_patient', organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
+        emailRedirectTo: `${window.location.origin}/login?verified=1&redirect=${encodeURIComponent(returnTo ?? '/onboarding')}`,
+        data: { display_name: `${f.firstName.trim()} ${f.lastName.trim()}`, first_name:f.firstName.trim(), last_name:f.lastName.trim(), phone: f.phone.trim(), account_type: type === 'facility' && facilityType === 'hospital' ? 'hospital' : type, organization_type: type === 'facility' ? facilityType : type === 'provider' ? 'transportation_provider' : 'private_pay_patient', organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
       },
     });
     setBusy(false);
@@ -94,7 +95,7 @@ function CreateAccount() {
     );
   }
 
-  const field = (k: "name" | "email" | "phone" | "org", label: string, type = "text", auto?: string) => (
+  const field = (k: "firstName" | "lastName" | "email" | "phone" | "org", label: string, type = "text", auto?: string) => (
     <div>
       <label htmlFor={k} className={authLabel}>{label}</label>
       <input id={k} type={type} autoComplete={auto} className={authField} value={f[k]} onChange={set(k)} aria-invalid={errors[k] ? true : undefined} aria-describedby={errors[k] ? `${k}-err` : undefined} />
@@ -129,7 +130,7 @@ function CreateAccount() {
         {type && step === 1 && (
           <div className="auth-message flex flex-col gap-5">
             {formError && <AuthMessage tone="error">{formError}</AuthMessage>}
-            {field("name", "Full name", "text", "name")}
+            <div className="grid gap-5 sm:grid-cols-2">{field("firstName", "First name", "text", "given-name")}{field("lastName", "Last name", "text", "family-name")}</div>
             {needsOrg && field("org", type === "provider" ? "Business name" : "Organization name", "text", "organization")}
             {type === 'facility' && <div><label htmlFor="facility-type" className={authLabel}>Facility type — Required</label><DsSelect id="facility-type" value={facilityType} onChange={e => setFacilityType(e.target.value)}><option value="hospital">Hospital</option><option value="nursing_home">Nursing Home / Skilled Nursing</option><option value="group_home">Group Home</option><option value="general_facility">Assisted Living</option><option value="medical_facility">Clinic / Medical Office / Dialysis / Rehabilitation</option><option value="broker">Broker</option><option value="insurance_company">Insurance Company</option><option value="other_organization">Other</option></DsSelect></div>}
             <div className="grid gap-5 sm:grid-cols-2">
@@ -151,7 +152,7 @@ function CreateAccount() {
             <div>
               <label className="ds-body inline-flex items-start gap-2.5">
                 <input type="checkbox" className="mt-1 size-5 accent-[var(--ds-primary)]" checked={f.terms} onChange={set("terms")} />
-                <span>I agree to the <Link to="/terms" className="text-ds-link underline">Terms of Use</Link> and <Link to="/privacy" className="text-ds-link underline">Privacy Policy</Link>.</span>
+                <span>I acknowledge the <Link to="/policies" hash="terms" className="text-ds-link underline">Terms and Conditions</Link> and <Link to="/policies" hash="privacy" className="text-ds-link underline">Privacy</Link> sections of OUR POLICIES.</span>
               </label>
               {errors.terms && <p className="auth-message ds-caption mt-1.5 !text-ds-error">{errors.terms}</p>}
             </div>
