@@ -5,7 +5,7 @@ export const downloadPurchasedGuide=createServerFn({method:'POST'}).middleware([
  try{
  const {data:person}=await context.supabase.from('user_profiles').select('status,is_test_account,deleted_at').eq('user_id',context.userId).maybeSingle();
  if(!person||person.status!=='active'||person.is_test_account||person.deleted_at)throw new Error('Account unavailable.');
- const {data:course}=await context.supabase.from('courses').select('id').eq('slug',STARTUP_GUIDE.slug).eq('product_kind','digital_guide').maybeSingle();
+ const {data:course}=await context.supabase.from('courses').select('id,private_file_path').eq('slug',STARTUP_GUIDE.slug).eq('product_kind','digital_guide').maybeSingle();
  if(!course)throw new Error('Guide unavailable.');
  const {data:purchase}=await context.supabase.from('course_enrollments').select('id,user_id,stripe_session_id,status').eq('user_id',context.userId).eq('course_id',course.id).maybeSingle();
  if(!purchase?.stripe_session_id||!['active','completed'].includes(purchase.status))throw new Error('A successful guide purchase is required.');
@@ -26,7 +26,8 @@ export const downloadPurchasedGuide=createServerFn({method:'POST'}).middleware([
  const charges=await stripe.charges.list({payment_intent:intent.id,limit:100});
  if(charges.has_more||!charges.data.length)throw new Error('Payment review required.');
  if(!verifiedGuidePurchase({ownerId:session.metadata?.userId??'',userId:context.userId,complete:session.status==='complete',paid:session.payment_status==='paid',environment:session.livemode?'live':'sandbox',priceMatches,refunded:charges.data.some(c=>c.amount_refunded>0||c.disputed)}))throw new Error('Successful non-reversed purchase required.');
- const {data:link,error}=await supabaseAdmin.storage.from(STARTUP_GUIDE.bucket).createSignedUrl(STARTUP_GUIDE.path,60,{download:'MY-FLORIDA-NEMT-30-Day-Startup-Guide.pdf'});
+ if(course.private_file_path!==STARTUP_GUIDE.path)throw new Error('Private edition unavailable.');
+ const {data:link,error}=await supabaseAdmin.storage.from(STARTUP_GUIDE.bucket).createSignedUrl(STARTUP_GUIDE.path,60,{download:'MY-FLORIDA-NEMT-30-Day-Planning-Guide.pdf'});
  if(error||!link)throw new Error('Private file unavailable.');
  const {error:audit}=await supabaseAdmin.from('digital_guide_download_events').insert({user_id:context.userId,course_id:course.id,enrollment_id:purchase.id,action:'signed_access_issued'});
  if(audit)throw new Error('Download evidence unavailable.');return {url:link.signedUrl};

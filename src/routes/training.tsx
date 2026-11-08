@@ -5,6 +5,7 @@ import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, PageHero, Reveal, SectionHead, ldScript, pageHead, SITE, btnAction } from "@/components/public/page-kit";
 import { listPublicCourses } from "@/lib/courses.functions";
 import { LINKS } from "@/lib/site-config";
+import { STARTUP_GUIDE } from '@/lib/digital-guide';
 
 const coursesQO = queryOptions({ queryKey: ["shop", "courses"], queryFn: () => listPublicCourses() });
 
@@ -48,7 +49,7 @@ function TrainingPage() {
           <p className="ds-body mt-8 text-center text-ds-text-2">Already purchased? <a href="/learn" className="text-ds-link underline underline-offset-4">Go to my courses</a> · Pricing is subject to change.</p>
         </div>
       </section>
-      <section className="mfn-section bg-ds-sky"><div className="mfn-container text-center"><h2 className="ds-section-title uppercase text-ds-primary">DIGITAL BUSINESS GUIDE</h2><p className="ds-body-lg mx-auto mt-4 max-w-2xl">How to Start an NEMT Business in 30 Days or Less · $50 one-time. Simplified educational guidance, not a certification or approval.</p><a href="/shop/nemt-startup-guide" className={`${btnAction} mt-6`}>View guide</a></div></section>
+      <section className="mfn-section bg-ds-sky"><div className="mfn-container text-center"><h2 className="ds-section-title uppercase text-ds-primary">{STARTUP_GUIDE.title}</h2><p className="ds-body-lg mx-auto mt-4 max-w-2xl">{STARTUP_GUIDE.summary} · $50 one-time.</p><a href="/shop/nemt-startup-guide" className={`${btnAction} mt-6`}>View guide</a></div></section>
       <CtaBand title="Training for your whole team" text="Running an NEMT business? Join the provider network and keep your team's training in one place." actions={[{ label: "Join the Provider Network", to: LINKS.join, icon: GraduationCap }]} />
     </PublicPage>
   );

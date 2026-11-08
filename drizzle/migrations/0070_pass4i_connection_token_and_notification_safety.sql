@@ -1,0 +1,14 @@
+CREATE OR REPLACE FUNCTION public.request_existing_account_connection(_ws uuid,_target uuid,_confirmed boolean) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE recipient text; kind text; invitation uuid; BEGIN
+ IF _confirmed IS DISTINCT FROM true OR NOT public.can_manage_account_connections(_ws) OR _ws=_target OR NOT EXISTS(SELECT 1 FROM public.workspaces WHERE id=_ws AND account_type IN ('private_pay','facility','hospital')) OR NOT EXISTS(SELECT 1 FROM public.search_business_identities('signed_in','') WHERE workspace_id=_target) OR NOT EXISTS(SELECT 1 FROM auth.users WHERE id=auth.uid() AND email_confirmed_at IS NOT NULL) THEN RAISE EXCEPTION 'Connection unavailable'; END IF;
+ PERFORM 1 FROM public.workspaces WHERE id=_ws FOR UPDATE;
+ SELECT i.id INTO invitation FROM public.account_connection_invitations i WHERE i.inviter_workspace_id=_ws AND i.recipient_workspace_id=_target AND i.status='pending' AND i.expires_at>now() ORDER BY i.created_at DESC LIMIT 1; IF invitation IS NOT NULL THEN RETURN invitation; END IF;
+ SELECT lower(u.email),CASE WHEN w.account_type='provider' THEN 'provider' ELSE 'facility' END INTO recipient,kind FROM public.workspace_members m JOIN auth.users u ON u.id=m.user_id JOIN public.workspaces w ON w.id=m.workspace_id JOIN public.user_profiles p ON p.user_id=m.user_id WHERE m.workspace_id=_target AND m.role='owner' AND NOT m.is_contractor AND m.removed_at IS NULL AND u.email_confirmed_at IS NOT NULL AND p.status='active' AND NOT p.is_test_account AND p.deleted_at IS NULL ORDER BY m.created_at LIMIT 1;
+ IF recipient IS NULL THEN RAISE EXCEPTION 'Connection unavailable'; END IF;
+ invitation:=public.manage_account_invitation(_ws,'send',NULL,recipient,kind,encode(extensions.gen_random_bytes(32),'hex'),true);
+ UPDATE public.account_connection_invitations SET recipient_workspace_id=_target,delivery_status='not_sent' WHERE id=invitation;
+ RETURN invitation; END $$;
+CREATE FUNCTION public.save_notification_settings(_in_app boolean,_email boolean) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+ IF _in_app IS NULL OR _email IS NULL OR NOT EXISTS(SELECT 1 FROM public.user_profiles WHERE user_id=auth.uid() AND status='active' AND NOT is_test_account AND deleted_at IS NULL) THEN RAISE EXCEPTION 'Settings unavailable'; END IF;
+ UPDATE public.user_profiles SET notification_preferences=coalesce(notification_preferences,'{}'::jsonb)||jsonb_build_object('in_app',_in_app,'email',_email) WHERE user_id=auth.uid();
+ INSERT INTO public.account_security_audit(user_id,sender_mfn_id,event_type,result) SELECT auth.uid(),mfn_id,'notification_settings_updated','saved' FROM public.user_profiles WHERE user_id=auth.uid(); END $$;
+REVOKE ALL ON FUNCTION public.save_notification_settings(boolean,boolean) FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.save_notification_settings(boolean,boolean) TO authenticated;

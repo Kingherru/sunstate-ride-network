@@ -19,7 +19,7 @@ export const getAccountConnections = createServerFn({ method: 'POST' }).middlewa
     const email = typeof context.claims.email === 'string' ? context.claims.email.trim().toLowerCase() : '';
     const { data: incoming } = await supabaseAdmin.from('account_connection_invitations').select(invitationColumns).eq('recipient_email', email).neq('inviter_workspace_id', data.workspaceId).order('created_at', { ascending: false }).limit(100);
     const { data: ws } = await context.supabase.from('workspaces').select('account_type').eq('id', data.workspaceId).single();
-    const filtered = (incoming ?? []).filter(i => i.intended_account_type==='patient'?ws?.account_type==='private_pay':i.intended_type === 'provider' ? ws?.account_type === 'provider' : ['facility','hospital'].includes(ws?.account_type ?? ''));
+    const filtered = (incoming ?? []).filter(i => (!i.recipient_workspace_id || i.recipient_workspace_id===data.workspaceId) && (i.intended_account_type==='patient'?ws?.account_type==='private_pay':i.intended_type === 'provider' ? ws?.account_type === 'provider' : ['facility','hospital'].includes(ws?.account_type ?? '')));
     const ids = new Set<string>();
     for (const c of connections ?? []) { ids.add(c.workspace_a); ids.add(c.workspace_b); }
     for (const i of [...(sent ?? []), ...filtered]) { ids.add(i.inviter_workspace_id); if (i.recipient_workspace_id) ids.add(i.recipient_workspace_id); }
@@ -31,7 +31,11 @@ export const getAccountConnections = createServerFn({ method: 'POST' }).middlewa
 
 export const searchConnectionBusinesses = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ workspaceId: z.string().uuid(), mode: z.enum(['name','email','phone']), value: z.string().trim().min(2).max(254) }).strict().parse(i))
-  .handler(async ({ data, context }) => { const { data: rows, error } = await context.supabase.rpc('search_connection_businesses', { _ws: data.workspaceId, _mode: data.mode, _value: normalizeBusinessMatch(data.mode,data.value) }); if (error) throw new Error('Business search unavailable.'); return rows ?? []; });
+  .handler(async ({ data, context }) => { if(data.mode!=='name')return []; const { data: rows, error } = await context.supabase.rpc('search_connection_businesses', { _ws: data.workspaceId, _mode: data.mode, _value: normalizeBusinessMatch(data.mode,data.value) }); if (error) return []; return rows ?? []; });
+
+export const requestAccountConnection = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+  .inputValidator((i:unknown)=>z.object({workspaceId:z.string().uuid(),targetId:z.string().uuid(),confirmed:z.literal(true)}).strict().parse(i))
+  .handler(async({data,context})=>{const {error}=await context.supabase.rpc('request_existing_account_connection',{_ws:data.workspaceId,_target:data.targetId,_confirmed:true});if(error)throw new Error('Connection unavailable.');return {ok:true};});
 
 export const saveRelationshipPreference = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ workspaceId: z.string().uuid(), kind: z.enum(['referral','preferred']), targetId: z.string().uuid().nullable(), name: z.string().trim().max(200).default(''), confirmed: z.literal(true), source: z.enum(['settings','onboarding']) }).strict().parse(i))
@@ -52,17 +56,8 @@ export const manageConnectionInvitation = createServerFn({ method: 'POST' }).mid
     const { data: row } = await supabaseAdmin.from('account_connection_invitations').select('recipient_email,mfn_id,intended_type,intended_account_type,generation').eq('id', invitationId).single();
     const { data: inviter } = await context.supabase.from('workspaces').select('display_name').eq('id', data.workspaceId).single();
     if (!row) throw new Error('Invitation saved but delivery unavailable.');
-    const { sendTemplateEmail } = await import('./email-templates/send-email');
-    try {
-      // Fixed transactional template for ONE explicitly invited recipient; never a broadcast or arbitrary template.
-      const result = await sendTemplateEmail('business-connection-invitation', row.recipient_email, { templateData: { reference: row.mfn_id, inviterName: inviter?.display_name ?? 'An account', intendedType: row.intended_account_type ?? row.intended_type, reviewUrl: `https://myfloridanemt.com/connection-invitation#${token}` }, idempotencyKey: `business-invitation:${invitationId}:${row.generation}` });
-      const delivery = result.sent ? 'sent' : 'suppressed';
-      await supabaseAdmin.from('account_connection_invitations').update({ delivery_status: delivery }).eq('id',invitationId);
-      return { ok: true, delivery };
-    } catch {
-      await supabaseAdmin.from('account_connection_invitations').update({ delivery_status: 'failed' }).eq('id',invitationId);
-      return { ok: true, delivery: 'failed' };
-    }
+    // Preserve the hash-only expiring draft. No token/link is returned or delivered while communications are OFF.
+    return { ok: true, delivery: 'draft_only' };
   });
 
 export const removeAccountConnection = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])

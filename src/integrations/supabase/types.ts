@@ -7945,6 +7945,8 @@ export type Database = {
           mfn_id: string | null
           notification_preferences: Json
           onboarding_completed_at: string | null
+          onboarding_policy_accepted_at: string | null
+          onboarding_policy_version: string | null
           onboarding_step: number | null
           phone: string | null
           status: Database["public"]["Enums"]["profile_status"]
@@ -7962,6 +7964,8 @@ export type Database = {
           mfn_id?: string | null
           notification_preferences?: Json
           onboarding_completed_at?: string | null
+          onboarding_policy_accepted_at?: string | null
+          onboarding_policy_version?: string | null
           onboarding_step?: number | null
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
@@ -7979,6 +7983,8 @@ export type Database = {
           mfn_id?: string | null
           notification_preferences?: Json
           onboarding_completed_at?: string | null
+          onboarding_policy_accepted_at?: string | null
+          onboarding_policy_version?: string | null
           onboarding_step?: number | null
           phone?: string | null
           status?: Database["public"]["Enums"]["profile_status"]
@@ -8456,6 +8462,7 @@ export type Database = {
           is_test_account: boolean
           legacy_backfilled: boolean
           legal_business_name: string | null
+          mailing_address: string | null
           mfn_id: string | null
           operating_hours: string | null
           organization_type: string
@@ -8478,6 +8485,7 @@ export type Database = {
           is_test_account?: boolean
           legacy_backfilled?: boolean
           legal_business_name?: string | null
+          mailing_address?: string | null
           mfn_id?: string | null
           operating_hours?: string | null
           organization_type?: string
@@ -8500,6 +8508,7 @@ export type Database = {
           is_test_account?: boolean
           legacy_backfilled?: boolean
           legal_business_name?: string | null
+          mailing_address?: string | null
           mfn_id?: string | null
           operating_hours?: string | null
           organization_type?: string
@@ -8962,6 +8971,10 @@ export type Database = {
           _status: string
         }
         Returns: string
+      }
+      confirm_onboarding_policy: {
+        Args: { _confirmed: boolean; _version: string }
+        Returns: undefined
       }
       confirm_schedule_email_preview: {
         Args: { _drivers: string[]; _end: string; _start: string }
@@ -9793,6 +9806,10 @@ export type Database = {
         Args: { _trip_id: string }
         Returns: string
       }
+      request_existing_account_connection: {
+        Args: { _confirmed: boolean; _target: string; _ws: string }
+        Returns: string
+      }
       request_facility_quote: { Args: { _draft: string }; Returns: string }
       request_lifecycle_allowed: {
         Args: { _from: string; _to: string }
@@ -9824,6 +9841,10 @@ export type Database = {
           _target: string
           _ws: string
         }
+        Returns: undefined
+      }
+      save_notification_settings: {
+        Args: { _email: boolean; _in_app: boolean }
         Returns: undefined
       }
       save_onboarding_progress: {
@@ -9865,6 +9886,10 @@ export type Database = {
           _phone_public: boolean
           _ws: string
         }
+        Returns: undefined
+      }
+      save_workspace_business_settings: {
+        Args: { _details: Json; _ws: string }
         Returns: undefined
       }
       search_business_identities: {

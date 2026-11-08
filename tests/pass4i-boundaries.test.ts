@@ -1,0 +1,26 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { STARTUP_GUIDE, verifiedGuidePurchase } from '../src/lib/digital-guide';
+import { onboardingInput, shouldResumeOnboarding } from '../src/lib/onboarding-rules';
+import { calculateCustomerQuote, customerQuoteInput, customerRatesFromLegacy } from '../src/lib/provider-customer-pricing';
+import { patientStage } from '../src/lib/patient-timeline';
+const migration = readFileSync('drizzle/migrations/0068_pass4i_shared_settings_and_confirmed_connections.sql','utf8');
+const lookup = readFileSync('drizzle/migrations/0069_pass4i_new_profile_and_lookup_boundaries.sql','utf8');
+const safety = readFileSync('drizzle/migrations/0070_pass4i_connection_token_and_notification_safety.sql','utf8');
+describe('Pass 4I changed boundaries',()=>{
+ it('preserves the existing guide identity, price key and $50 amount',()=>{expect([STARTUP_GUIDE.slug,STARTUP_GUIDE.priceKey,STARTUP_GUIDE.priceCents]).toEqual(['nemt-startup-guide','nemt_startup_guide_50',5000]);});
+ it('uses only the approved authoritative private edition',()=>expect([STARTUP_GUIDE.bucket,STARTUP_GUIDE.path]).toEqual(['paid-resources','guides/MY-FLORIDA-NEMT-30-Day-Planning-Guide.pdf']));
+ it('denies another purchaser’s file and unpaid sandbox evidence',()=>{const p={ownerId:'a',userId:'a',complete:true,paid:true,environment:'live',priceMatches:true,refunded:false};expect(verifiedGuidePurchase(p)).toBe(true);expect(verifiedGuidePurchase({...p,userId:'b'})).toBe(false);expect(verifiedGuidePurchase({...p,environment:'sandbox'})).toBe(false);});
+ it('completed records never require a restart',()=>expect(shouldResumeOnboarding(3,'2026-11-08T01:57:00Z')).toBe(false));
+ it('resumes an unfinished saved step',()=>expect(shouldResumeOnboarding(3,null)).toBe(true));
+ it('does not accept classification or privilege from a progress form',()=>expect(onboardingInput.safeParse({section:'patient',accountFor:'another',first_name:'Demo',last_name:'Patient',mobility:'ambulatory',role:'admin',account_type:'provider'}).success).toBe(false));
+ it('retains the old quote when current rates change',()=>{const rates=customerRatesFromLegacy(null);rates.ambulatory.base_cents=2000;rates.ambulatory.per_mile_cents=300;const original=structuredClone(rates);const input=customerQuoteInput.parse({service:'ambulatory',miles:5,pickupDate:'2026-11-08',pickupTime:'12:00'});const quote=calculateCustomerQuote(original,input);rates.ambulatory.per_mile_cents=900;expect(quote.totalCents).toBe(3500);expect(calculateCustomerQuote(original,input).totalCents).toBe(3500);expect(calculateCustomerQuote(rates,input).totalCents).toBe(6500);});
+ it('uses pending, approved and actual invoice-due stages',()=>{expect(patientStage('pending')).toBe('Pending');expect(patientStage('approved')).toBe('Approved');expect(patientStage('pending',true)).toBe('Waiting on Payment');expect(patientStage('completed',true)).toBe('Completed');});
+ it('keeps schema additions non-destructive and leaves historical rows untouched',()=>{expect(migration).not.toMatch(/DROP\s+(TABLE|COLUMN)|TRUNCATE|DELETE\s+FROM/i);expect(lookup).not.toMatch(/DROP\s+(TABLE|COLUMN)|TRUNCATE|DELETE\s+FROM/i);});
+ it('binds business writes to active managers and confirmed email',()=>{expect(migration).toContain('NOT public.can_manage_account_connections(_ws)');expect(migration).toContain('email_confirmed_at IS NOT NULL');expect(migration).toContain("FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.save_workspace_business_settings");});
+ it('requires both workspace IDs in an active connection for a usual provider',()=>{expect(migration).toContain('c.active AND c.workspace_a=least(NEW.workspace_id,NEW.preferred_provider_id) AND c.workspace_b=greatest(NEW.workspace_id,NEW.preferred_provider_id)');});
+ it('denies exact contact lookup until approved rate limiting exists',()=>{expect(lookup).toContain("_mode IS DISTINCT FROM 'name' THEN RETURN");expect(lookup).not.toContain('business_contact_email');expect(lookup).not.toContain('business_contact_phone');});
+ it('binds acceptance to the intended recipient workspace and confirmed email',()=>{expect(lookup).toContain('NEW.recipient_workspace_id IS DISTINCT FROM OLD.recipient_workspace_id');expect(lookup).toContain("NEW.status='accepted'");expect(lookup).toContain('email_confirmed_at IS NOT NULL');});
+ it('uses the installed cryptographic namespace and retains hash-only drafts',()=>{expect(safety).toContain("encode(extensions.gen_random_bytes(32),'hex')");expect(safety).toContain("delivery_status='not_sent'");});
+ it('notification-only saves never rewrite identity fields',()=>{const body=safety.slice(safety.indexOf('CREATE FUNCTION public.save_notification_settings'));expect(body).not.toMatch(/SET\s+(first_name|last_name|display_name|phone)\s*=/i);expect(body).toContain("notification_preferences=coalesce(notification_preferences,'{}'::jsonb)||jsonb_build_object");});
+});

@@ -21,5 +21,5 @@ export async function readCustomerPricing(client: SupabaseClient<Database>, work
 export async function quoteNewProviderCustomerTrip(client: SupabaseClient<Database>, workspaceId: string, trip: CustomerQuoteInput) {
   const current = await readCustomerPricing(client, workspaceId);
   if (!current.version || !current.effectiveAt) throw new Error('Confirm Customer Pricing before preparing a new customer quote.');
-  return { ...calculateCustomerQuote(current.rates, trip), pricingSnapshot: { workspaceId, rateVersionId: current.history[0]?.id ?? null, version: current.version, effectiveAt: current.effectiveAt, rates: current.rates }, quotedAt: new Date().toISOString() };
+  return { ...calculateCustomerQuote(current.rates, trip), pricingSnapshot: { workspaceId, rateVersionId: current.history[0]?.id ?? null, version: current.version, effectiveAt: current.effectiveAt, rates: structuredClone(current.rates) }, quotedAt: new Date().toISOString() };
 }

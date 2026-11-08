@@ -1,8 +1,12 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
-import { customerPricingInput, customerQuoteInput } from './provider-customer-pricing';
+import { customerPricingInput, customerQuoteInput, customerRateBook, calculateCustomerQuote } from './provider-customer-pricing';
 const workspaceInput = z.object({ workspaceId: z.string().uuid() }).strict();
+/** Unsaved estimate only; uses the same validated formula as immutable new-trip quotes. */
+export const previewCustomerPricing = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+  .inputValidator((i:unknown)=>workspaceInput.extend({rates:customerRateBook,trip:customerQuoteInput}).strict().parse(i))
+  .handler(async({data,context})=>{const {data:allowed}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_workspace:data.workspaceId});if(!allowed)throw new Error('Customer pricing unavailable.');return calculateCustomerQuote(data.rates,data.trip);});
 export const getCustomerPricing = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => workspaceInput.parse(input))
   .handler(async ({ data, context }) => {
