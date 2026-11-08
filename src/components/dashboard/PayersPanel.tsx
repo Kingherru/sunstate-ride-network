@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
 import { listMyPayers, createPayer, updatePayer, deletePayer } from "@/lib/payers.functions";
 import type { ContactOption } from "@/components/dashboard/ContactsPayersPanel";
+import {DsButton} from '@/components/ds/controls';
 
 type Payer = Awaited<ReturnType<typeof listMyPayers>>[number];
 
@@ -30,7 +31,7 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="min-w-0 flex-1 text-xs text-muted-foreground">
-          Payers are billing parties only. They get no access to your account unless you invite them separately. Saved billing methods are managed in a later update.
+          Payers are billing contacts, not account members. Payment-method collection is unavailable until secure tokenized setup is activated.
         </p>
         <button onClick={() => setEditing({ active: true, multi_load_ok: false })}
           className="shrink-0 whitespace-nowrap rounded-sm bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90">
@@ -90,7 +91,7 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
   );
 }
 
-function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Partial<Payer>; contacts: ContactOption[]; onClose: () => void; onSaved: () => void }) {
+export function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Partial<Payer>; contacts: ContactOption[]; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState<any>({
     name: payer.name ?? "",
     email: payer.email ?? "",
@@ -135,7 +136,7 @@ function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Partial<Pay
   const cap = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label="Payer details" className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/40 p-4" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => { e.preventDefault(); save.mutate(); }}
         className="grid max-h-[90vh] w-full max-w-2xl gap-3 overflow-auto rounded-sm bg-card p-6 sm:grid-cols-2">
@@ -195,11 +196,10 @@ function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Partial<Pay
           <textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} className={inp} /></label>
 
         <div className="flex justify-end gap-2 pt-2 sm:col-span-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-          <button disabled={save.isPending}
-            className="rounded-sm bg-primary px-5 py-2 font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+          <DsButton type="button" variant="ghost" onClick={onClose}>Cancel</DsButton>
+          <DsButton disabled={save.isPending}>
             {save.isPending ? "Saving…" : "Save payer"}
-          </button>
+          </DsButton>
         </div>
       </form>
     </div>

@@ -2,14 +2,20 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Search } from "lucide-react";
-import { listContacts, upsertContact, deleteContact, CONTACT_TYPES } from "@/lib/crm.functions";
+import { listContacts, upsertContact, deleteContact } from "@/lib/crm.functions";
+import { CONTACT_TYPES } from '@/lib/contact-rules';
+import {DsButton} from '@/components/ds/controls';
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
 export type PayerOption = { id: string; name: string };
 
 export const CONTACT_TYPE_LABELS: Record<string, string> = {
-  personal: "Personal Contact",
+  personal: "Authorized Contact",
+  patient: "Patient",
+  caregiver: "Caregiver / Authorized Contact",
+  broker: "Broker",
+  organization: "Organization",
   facility: "Facility Contact",
   business: "Business Contact",
   payer: "Payer Contact",
@@ -25,7 +31,8 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
 
   const del = usePortalMutation({
     mutationFn: (id: string) => deleteContact({ data: { id } }),
-    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["contacts"] }); },
+    onSuccess: () => { toast.success("Contact disabled; history retained"); qc.invalidateQueries({ queryKey: ["contacts"] }); },
+    onError: () => toast.error('Contact not available'),
   });
 
   const contacts = (q.data ?? []).filter((c: Contact) => {
@@ -46,13 +53,12 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
             className="w-full rounded-sm border border-border py-2 pr-3 text-sm"
           />
         </div>
-        <button onClick={() => setEditing({ contact_type: "personal" })}
-                className="shrink-0 whitespace-nowrap rounded-sm bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+        <DsButton onClick={() => setEditing({ contact_type: "personal" })} className="shrink-0 whitespace-nowrap">
           + New contact
-        </button>
+        </DsButton>
       </div>
 
-      {q.isLoading ? (
+      {q.isError ? <p role="alert" className="text-destructive">Contacts not available. Try again.</p> : q.isLoading ? (
         <p className="text-muted-foreground">Loading…</p>
       ) : contacts.length === 0 ? (
         <div className="rounded-sm border border-border bg-card p-8 text-center text-muted-foreground">
@@ -67,6 +73,7 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
                 <th className="px-3 py-2 text-left">Name</th>
                 <th className="px-3 py-2 text-left">Contact</th>
                 <th className="px-3 py-2 text-left">Payer</th>
+                <th className="px-3 py-2 text-left">Relationship / use</th>
                 <th className="px-3 py-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -85,9 +92,8 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
                     {(c as any).payer_id ? payers.find((p) => p.id === (c as any).payer_id)?.name ?? "Linked payer" : c.payer ?? "—"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-right">
-                    <button onClick={() => setEditing(c)} className="mr-3 text-xs font-bold text-primary hover:underline">Edit</button>
-                    <button onClick={() => { if (confirm("Delete this contact?")) del.mutate(c.id); }}
-                            className="text-xs font-bold text-red-600 hover:underline">Delete</button>
+                    <DsButton variant="ghost" size="sm" onClick={() => setEditing(c)}>Edit</DsButton>
+                    <DsButton variant="ghost" size="sm" disabled={!c.active} onClick={() => { if (confirm("Disable this contact? Historical references remain.")) del.mutate(c.id); }}>Disable</DsButton>
                   </td>
                 </tr>
               ))}
@@ -104,7 +110,7 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
   );
 }
 
-function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial<Contact>; payers: PayerOption[]; onClose: () => void; onSaved: () => void }) {
+export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial<Contact>; payers: PayerOption[]; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState<any>({
     contact_type: contact.contact_type ?? "personal",
     first_name: contact.first_name ?? "",
@@ -116,6 +122,7 @@ function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial
     payer_id: (contact as any).payer_id ?? "",
     mobility_notes: contact.mobility_notes ?? "",
     notes: contact.notes ?? "",
+    relationship:contact.relationship??'',active:contact.active??true,billing_allowed:contact.billing_allowed??false,coordination_allowed:contact.coordination_allowed??false,
   });
   const m = usePortalMutation({
     mutationFn: () => upsertContact({ data: { ...form, payer_id: form.payer_id || null, id: contact.id } }),
@@ -124,7 +131,7 @@ function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label={contact.id?'Edit contact':'New contact'} className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/40 p-4" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()}
             onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
             className="grid max-h-[90vh] w-full max-w-2xl gap-3 overflow-auto rounded-sm bg-card p-6 sm:grid-cols-2">
@@ -141,6 +148,8 @@ function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial
         <Inp l="Company / organization" v={form.company_name} on={(v) => setForm({ ...form, company_name: v })} cs={2} />
         <Inp l="Phone" v={form.phone} on={(v) => setForm({ ...form, phone: v })} />
         <Inp l="Email" v={form.email} on={(v) => setForm({ ...form, email: v })} type="email" />
+        <Inp l="Relationship" v={form.relationship} on={v=>setForm({...form,relationship:v})} cs={2}/>
+        <div className="grid gap-2 text-sm sm:col-span-2"><label><input type="checkbox" checked={form.active} onChange={e=>setForm({...form,active:e.target.checked})}/> Active</label><label><input type="checkbox" checked={form.billing_allowed} onChange={e=>setForm({...form,billing_allowed:e.target.checked})}/> Authorized for billing coordination</label><label><input type="checkbox" checked={form.coordination_allowed} onChange={e=>setForm({...form,coordination_allowed:e.target.checked})}/> Authorized for trip coordination</label></div>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Linked payer</span>
           <select value={form.payer_id} onChange={(e) => setForm({ ...form, payer_id: e.target.value })}
@@ -153,11 +162,10 @@ function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial
         <Area l="Mobility notes" v={form.mobility_notes} on={(v) => setForm({ ...form, mobility_notes: v })} />
         <Area l="Notes" v={form.notes} on={(v) => setForm({ ...form, notes: v })} />
         <div className="flex justify-end gap-2 pt-2 sm:col-span-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-          <button disabled={m.isPending}
-                  className="rounded-sm bg-primary px-5 py-2 font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+          <DsButton type="button" variant="ghost" onClick={onClose}>Cancel</DsButton>
+          <DsButton disabled={m.isPending}>
             {m.isPending ? "Saving…" : "Save"}
-          </button>
+          </DsButton>
         </div>
       </form>
     </div>
