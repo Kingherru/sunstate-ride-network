@@ -59,7 +59,7 @@ async function managedWorkspaces(supabase: any, userId: string) {
 
 async function checkPayer(supabase: any, userId: string, payerId: string | null | undefined) {
   if (!payerId) return;
-  const { data } = await supabase.from("payers").select("id").eq("id", payerId).eq("owner_user_id", userId).maybeSingle();
+  const { data } = await supabase.from("payers").select("id").eq("id", payerId).eq('active',true).maybeSingle();
   if (!data) throw new Error("Choose one of your payers.");
 }
 

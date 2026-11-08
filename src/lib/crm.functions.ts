@@ -31,7 +31,7 @@ export const upsertContact = createServerFn({ method: "POST" })
     }
     const q = data.id
       ? supabase.from("provider_contacts").update(row).eq("id", data.id).select().single()
-      : supabase.from("provider_contacts").insert(row).select().single();
+      : supabase.from("provider_contacts").insert({...values,owner_id:userId}).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
     return out;

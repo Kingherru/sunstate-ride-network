@@ -113,14 +113,17 @@ export const createPayer = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object(payerFields).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true; id: string } | { error: string }> => {
     try {
-      await requireFacilityOrProvider(context);
+      const {data:members}=await context.supabase.from('workspace_members').select('workspace_id,role,is_contractor,record_permissions').eq('user_id',context.userId).is('removed_at',null);
+      if(!(members??[]).some(m=>!m.is_contractor && (['owner','admin'].includes(m.role)||(m.record_permissions as Record<string,string>)?.payers==='manage')))return {error:'Payer not available'};
     } catch (e: any) {
       return { error: e.message };
     }
     if (data.linked_contact_id) {
-      const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).maybeSingle();
+      const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).eq('active',true).maybeSingle();
       if (!c) return { error: "Linked contact not found" };
     }
+    const {data:existing}=await context.supabase.from('payers').select('id').eq('created_by',context.userId).eq('name',data.name).eq('active',true).eq('email',data.email||'').eq('phone',data.phone||'').limit(1).maybeSingle();
+    if(existing)return {ok:true,id:existing.id};
     const { data: row, error } = await context.supabase
       .from("payers")
       .insert(payerRow(data, context.userId))
@@ -141,7 +144,7 @@ export const updatePayer = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("payers")
       .update(payerRow(data, context.userId))
-      .eq("id", data.id);
+      .eq("id", data.id).select('id').single();
     if (error) return { error: error.message };
     return { ok: true };
   });
@@ -152,8 +155,8 @@ export const deletePayer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
     const { error } = await context.supabase
       .from("payers")
-      .delete()
-      .eq("id", data.id);
+      .update({active:false})
+      .eq("id", data.id).select('id').single();
     if (error) return { error: error.message };
     return { ok: true };
   });
@@ -169,6 +172,7 @@ export const createPayerSetupIntent = createServerFn({ method: "POST" })
     }).parse(i),
   )
   .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
+    return {error:'Secure payment-method collection is not activated.'};
     try {
       // Verify owner
       const { data: payer } = await context.supabase
@@ -207,6 +211,7 @@ export const recordPayerPaymentMethod = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
     try {
+      return {error:'Payment-method replacement requires future secure re-verification and is not activated.'};
       const { data: payer } = await context.supabase
         .from("payers")
         .select("id")
@@ -276,6 +281,7 @@ export const deletePayerCard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    return {error:'Payment-method changes are not activated.'};
     const { data: row } = await context.supabase
       .from("payer_payment_methods")
       .select("id, environment, stripe_payment_method_id, payer_id, payers!inner(owner_user_id)")
