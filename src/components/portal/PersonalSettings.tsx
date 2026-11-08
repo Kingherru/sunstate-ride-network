@@ -7,6 +7,7 @@ import { getPersonalSettings, savePersonalSettings, saveNotificationSettings } f
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 import { StatusPill } from '@/components/ds/status';
 import { useRouteContext } from '@tanstack/react-router';
+import {getAccountProfileVerification} from '@/lib/account-profile-verification.functions';
 
 export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profile' | 'notifications' | 'status' }) {
   const preview = usePortalPreview();
@@ -17,6 +18,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
   const save = useServerFn(savePersonalSettings);
   const saveNotifications=useServerFn(saveNotificationSettings);
   const q = usePortalQuery({ queryKey: ['personal-settings'], queryFn: () => get() });
+  const evidence=usePortalQuery({queryKey:['account-profile-verification'],queryFn:()=>getAccountProfileVerification(),gcTime:0,staleTime:0});
   const [firstName, setFirst] = useState('');
   const [lastName, setLast] = useState('');
   const [phone, setPhone] = useState('');
@@ -33,12 +35,13 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
     e.preventDefault();
     if (preview.active) { previewBlocked(); return; }
     setBusy(true);
-    try { if(section==='notifications')await saveNotifications({data:{inApp,email}});else await save({ data: { firstName, lastName, phone, preferences: { in_app: inApp, email } } }); await qc.invalidateQueries({ queryKey: ['personal-settings'] }); toast.success('Personal settings saved.'); }
+    try { if(section==='notifications')await saveNotifications({data:{inApp,email}});else await save({ data: { firstName, lastName, phone, preferences: { in_app: inApp, email } } }); await qc.invalidateQueries({ queryKey: ['personal-settings'] });await qc.invalidateQueries({queryKey:['account-profile-verification']}); toast.success('Personal settings saved.'); }
     catch { toast.error('Could not save personal settings.'); } finally { setBusy(false); }
   }
   return <form onSubmit={submit} className="portal-business-form min-w-0 space-y-4">
     {q.isLoading && <p role="status" className="ds-support">Loading…</p>}
     {q.isError && <p role="alert" className="ds-support rounded-ds-sm ds-status-red px-3 py-2">Account settings unavailable.</p>}
+    {(section==='profile'||section==='all') && evidence.data?.filter(e=>e.reasons.length>0).map(e=><section key={e.workspace_mfn_id} className="portal-business-section"><h2 className="portal-business-heading ds-label">Account completion</h2><div className="portal-business-body grid gap-2 sm:grid-cols-2">{e.reasons.map(reason=><p key={reason} className="ds-support">{({account_inactive:'Account must be active',primary_owner_required:'Primary account owner required',email_confirmation_required:'Confirm your email',owner_name_required:'Complete owner first and last name',current_policy_required:'Acknowledge current account policies',valid_phone_required:'Complete a valid phone number',patient_choice_required:'Choose self or another patient',patient_transport_details_required:'Complete patient identity and transportation need',authorized_relationship_required:'Complete authorized-contact relationship',business_name_required:'Complete business name',facility_type_required:'Choose a supported facility type',business_address_required:'Complete business address'} as Record<string,string>)[reason]??'Complete account evidence'}</p>)}</div></section>)}
     {(section==='profile'||section==='all') && <section className="portal-business-section"><h2 className="portal-business-heading ds-label">Setup checklist</h2><ul className="portal-business-body grid gap-2 ds-support sm:grid-cols-2"><li>Owner name · {firstName&&lastName?'Complete':'Incomplete'}</li><li>Phone · {phone?'Complete':'Incomplete'}</li><li>Policy acknowledgment · {q.data?.onboarding_policy_accepted_at?'Recorded':'Not recorded'}</li><li>Guided setup · {q.data?.onboarding_completed_at?'Complete':'Available in account setup'}</li></ul></section>}
     {section !== 'notifications' && q.data?.display_name && !q.data.first_name && <p className="ds-support">Current name: {q.data.display_name}</p>}
     {(section === 'all' || section === 'profile') && <><section className="portal-business-section">

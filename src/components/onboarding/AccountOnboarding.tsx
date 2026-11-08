@@ -26,7 +26,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
   const steps = ['Owner & contact', personal ? 'Patient & needs' : 'Business information', provider ? 'Services & coverage' : 'Who referred you? / Connections', provider ? 'Credentials' : 'Account review', 'Finish'];
   const [step, setStep] = useState(data.person.onboarding_completed_at ? 0 : data.person.onboarding_step ?? 0);
   const [busy, setBusy] = useState(false);
-  const [accountFor, setAccountFor] = useState(data.legacy?.patient_type === 'other' ? 'another' : 'myself');
+  const [accountFor, setAccountFor] = useState(data.legacy?.patient_type === 'other' ? 'another' : data.legacy?.patient_type === 'self' ? 'myself' : '');
   const [saved, setSaved] = useState(false);
   const [policyConfirmed,setPolicyConfirmed]=useState(false);
   const [npiUnavailable,setNpiUnavailable]=useState(false);
@@ -34,7 +34,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
   const [form, setForm] = useState({
     firstName: data.person.first_name ?? '', lastName: data.person.last_name ?? '', phone: data.person.phone ?? '',
     display_name: data.workspace.display_name, legal_business_name: data.workspace.legal_business_name ?? '', business_phone: data.workspace.business_phone ?? '', dispatch_phone: data.workspace.dispatch_phone ?? '', business_address: data.workspace.business_address ?? '', mailing_address:data.workspace.mailing_address ?? '', operating_hours: data.workspace.operating_hours ?? '', npi: data.legacy?.npi ?? '', medicaid_number: data.legacy?.medicaid_number ?? '',
-    first_name: data.patient?.first_name ?? data.person.first_name ?? '', last_name: data.patient?.last_name ?? data.person.last_name ?? '', mobility: data.patient?.mobility ?? 'ambulatory',
+    first_name: data.patient?.first_name ?? data.person.first_name ?? '', last_name: data.patient?.last_name ?? data.person.last_name ?? '', mobility: data.patient?.mobility ?? '',
   });
   const field = (key: keyof typeof form, label: string, required = false, type = 'text', max = 160) => <DsField label={`${label} — ${required ? 'Required' : 'Optional'}`}>{p => <DsInput {...p} type={type} maxLength={max} required={required} value={form[key]} onChange={e => { setSaved(false); setForm(prev => ({ ...prev, [key]: e.target.value })); }} />}</DsField>;
 
