@@ -36,6 +36,7 @@ import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
+import { Route as WhyMyFloridaNemtRouteImport } from './routes/why-my-florida-nemt'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAccountSetupRouteImport } from './routes/_authenticated/account-setup'
 import { Route as AuthenticatedAccountStatusRouteImport } from './routes/_authenticated/account-status'
@@ -250,6 +251,11 @@ const TermsRoute = TermsRouteImport.update({
 const TrainingRoute = TrainingRouteImport.update({
   id: '/training',
   path: '/training',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhyMyFloridaNemtRoute = WhyMyFloridaNemtRouteImport.update({
+  id: '/why-my-florida-nemt',
+  path: '/why-my-florida-nemt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
@@ -739,6 +745,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/why-my-florida-nemt': typeof WhyMyFloridaNemtRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
@@ -846,6 +853,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/why-my-florida-nemt': typeof WhyMyFloridaNemtRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account-setup': typeof AuthenticatedAccountSetupRoute
   '/account-status': typeof AuthenticatedAccountStatusRoute
@@ -953,6 +961,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/why-my-florida-nemt': typeof WhyMyFloridaNemtRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account-setup': typeof AuthenticatedAccountSetupRoute
   '/_authenticated/account-status': typeof AuthenticatedAccountStatusRoute
@@ -1063,6 +1072,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/training'
+    | '/why-my-florida-nemt'
     | '/.well-known/oauth-protected-resource'
     | '/account-setup'
     | '/account-status'
@@ -1170,6 +1180,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/training'
+    | '/why-my-florida-nemt'
     | '/.well-known/oauth-protected-resource'
     | '/account-setup'
     | '/account-status'
@@ -1276,6 +1287,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/training'
+    | '/why-my-florida-nemt'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account-setup'
     | '/_authenticated/account-status'
@@ -1386,6 +1398,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   TrainingRoute: typeof TrainingRoute
+  WhyMyFloridaNemtRoute: typeof WhyMyFloridaNemtRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
@@ -1604,6 +1617,13 @@ declare module '@tanstack/react-router' {
       path: '/training'
       fullPath: '/training'
       preLoaderRoute: typeof TrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/why-my-florida-nemt': {
+      id: '/why-my-florida-nemt'
+      path: '/why-my-florida-nemt'
+      fullPath: '/why-my-florida-nemt'
+      preLoaderRoute: typeof WhyMyFloridaNemtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.well-known/oauth-protected-resource': {
@@ -2348,6 +2368,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   TrainingRoute: TrainingRoute,
+  WhyMyFloridaNemtRoute: WhyMyFloridaNemtRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,

@@ -74,6 +74,9 @@
   --mfn-orange: #E07A1F;
   --mfn-white: #FFFFFF;
   --mfn-gray: #F4F5F7;
+  /* Gray-canvas-only 0.3% compositing contrast; never change the base color. */
+  --ds-canvas-dot: rgb(0 0 0 / 0.003);
+  --ds-canvas-dot-pattern: radial-gradient(circle at 1px 1px, var(--ds-canvas-dot) 0.6px, transparent 0.8px);
   --mfn-sky: #EAF2F8;
   --mfn-green: #EDF4ED;
   --mfn-peach: #FAE9DD;
@@ -647,3 +650,17 @@
 .theme-portal .portal-danger-control:not(:disabled):hover { background: var(--ds-error); color: var(--ds-status-red-text); }
 .theme-portal .portal-permission-matrix td:has(input:checked) { background: var(--ds-sky); }
 .theme-portal .portal-permission-matrix[data-read-only="true"] { background: var(--ds-hover); }
+
+.ds-gray-canvas { background-color: var(--mfn-gray); }
+.ds-canvas-texture { background-image: var(--ds-canvas-dot-pattern); background-size: 8px 8px; background-repeat: repeat; }
+.portal-detail-frame.ds-canvas-texture > .portal-window-body { background-color: var(--ds-bg); background-image: var(--ds-canvas-dot-pattern); background-size: 8px 8px; }
+.trip-workspace :is(input:not([type="checkbox"]):not([type="radio"]), select) { min-height: 46px; }
+.trip-workspace button { white-space: nowrap; }
+.trip-workspace :is(label, legend) { line-height: 1.4; }
+.trip-workspace aside { border-radius: var(--ds-radius); }
+@media (min-width: 1024px) {
+  .trip-financial-panel { position: sticky; top: 5rem; max-height: calc(100dvh - 6rem); overflow-y: auto; overscroll-behavior: contain; }
+}
+@media (forced-colors: active), (prefers-contrast: more), print {
+  .ds-canvas-texture, .portal-detail-frame.ds-canvas-texture > .portal-window-body { background-image: none !important; }
+}

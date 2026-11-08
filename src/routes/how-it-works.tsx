@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeftRight, ArrowRight, CalendarPlus, Check, Minus, Network, UserPlus, Users } from "lucide-react";
 import { PublicPage } from "@/components/public/PublicPage";
 import { CtaBand, PageHero, Reveal, SectionHead, Steps, pageHead } from "@/components/public/page-kit";
@@ -57,6 +57,7 @@ function HowPage() {
           <Reveal direction="right"><Path id="path-b" icon={ArrowLeftRight} title="For NEMT providers" steps={PATH_B} tone="bg-ds-membership" cta={{ href: "/for-providers", label: "Providers page" }} /></Reveal>
         </div>
         <p className="ds-body-lg mfn-container mx-auto mt-8 max-w-3xl text-center text-ds-text-2">Submitting a request does not guarantee acceptance or availability. Participating providers remain independent businesses responsible for their own licensing, insurance, vehicles and operations.</p>
+        <p className="mt-5 text-center"><Link to="/why-my-florida-nemt" className="ds-label inline-flex items-center gap-2 text-ds-link underline underline-offset-4">Why MY FLORIDA NEMT<ArrowRight className="size-4" aria-hidden /></Link></p>
       </div>
 
       <section aria-labelledby="role-title" className="mfn-section bg-ds-primary text-ds-on-primary">
