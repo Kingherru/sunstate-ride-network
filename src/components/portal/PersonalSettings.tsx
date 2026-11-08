@@ -39,6 +39,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
   return <form onSubmit={submit} className="portal-business-form min-w-0 space-y-4">
     {q.isLoading && <p role="status" className="ds-support">Loading…</p>}
     {q.isError && <p role="alert" className="ds-support rounded-ds-sm ds-status-red px-3 py-2">Account settings unavailable.</p>}
+    {(section==='profile'||section==='all') && <section className="portal-business-section"><h2 className="portal-business-heading ds-label">Setup checklist</h2><ul className="portal-business-body grid gap-2 ds-support sm:grid-cols-2"><li>Owner name · {firstName&&lastName?'Complete':'Incomplete'}</li><li>Phone · {phone?'Complete':'Incomplete'}</li><li>Policy acknowledgment · {q.data?.onboarding_policy_accepted_at?'Recorded':'Not recorded'}</li><li>Guided setup · {q.data?.onboarding_completed_at?'Complete':'Available in account setup'}</li></ul></section>}
     {section !== 'notifications' && q.data?.display_name && !q.data.first_name && <p className="ds-support">Current name: {q.data.display_name}</p>}
     {(section === 'all' || section === 'profile') && <><section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Profile</h2>

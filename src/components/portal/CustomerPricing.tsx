@@ -20,7 +20,7 @@ export function CustomerPricing({ workspaceId }: { workspaceId: string }) {
   function change<K extends keyof CustomerRate>(key: K, value: CustomerRate[K]) { setEstimate(null);setReview(false); setConfirmed(false); setRates(prev => ({ ...prev, [service]: { ...prev[service], [key]: value } })); }
   async function submit() {
     if (preview.active) return previewBlocked();
-    if (!confirmed || !q.data) return;
+    if (!confirmed || !q.data || !estimate) return;
     const parsed = customerRateBook.safeParse(rates); if (!parsed.success) { toast.error('Enter nonnegative amounts with at most two decimal places and valid pricing options.'); return; }
     setBusy(true); try { await save({ data: { workspaceId, rates: parsed.data, expectedVersion: q.data.version, confirmed: true } }); toast.success('Customer rates saved for new quotes and trips.'); setReview(false); setConfirmed(false); await q.refetch(); } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save rates'); } finally { setBusy(false); }
   }

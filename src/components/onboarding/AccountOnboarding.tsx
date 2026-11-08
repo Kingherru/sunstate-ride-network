@@ -74,7 +74,7 @@ export function AccountOnboarding({ data }: { data: SetupData }) {
     </div></section>
     <div className="portal-business-actions flex flex-wrap items-center gap-2">
       <DsButton variant="ghost" disabled={busy || step === 0} onClick={() => { setSaved(false); setStep(s => Math.max(0, s - 1)); }}><ArrowLeft className="size-4" />Back</DsButton>
-      <DsButton variant="secondary" disabled={busy} onClick={() => void persist(true)}><Save className="size-4" />Save for later</DsButton>
+      <DsButton variant="secondary" disabled={preview.active || busy} onClick={() => void persist(true)}><Save className="size-4" />Save for later</DsButton>
       <DsButton disabled={preview.active || busy || (step===4 && !policyConfirmed)} type={step < 2 ? 'submit' : 'button'} form={step < 2 ? 'onboarding-form' : undefined} onClick={step < 2 ? undefined : () => void persist(false)}>{busy ? 'Saving…' : step === 4 ? 'Complete setup' : 'Continue'}{step === 4 ? <Check className="size-4" /> : <ArrowRight className="size-4" />}</DsButton>
       <Link to="/portal" className="ds-support text-ds-link underline">Go to portal</Link>
     </div>
