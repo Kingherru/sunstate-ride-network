@@ -49,6 +49,7 @@ export const markNotificationsRead = createServerFn({ method: "POST" })
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("user_id", userId)
+      .is("communication", null)
       .in("id", data.ids)
       .is("read_at", null);
     if (error) throw new Error(error.message);
@@ -63,6 +64,7 @@ export const markAllNotificationsRead = createServerFn({ method: "POST" })
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("user_id", userId)
+      .is("communication", null)
       .is("read_at", null);
     if (error) throw new Error(error.message);
     return { ok: true as const };

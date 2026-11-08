@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Monitor, Users } from "lucide-react";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
-import { PersonalSecurity } from "@/components/portal/PersonalSecurity";
+import { PersonalSettings } from '@/components/portal/PersonalSettings';
+import { InterfaceSize } from '@/components/portal/InterfaceSize';
+import { SecureEmailChange } from '@/components/portal/SecureEmailChange';
+import { SettingsShell } from '@/components/portal/SettingsShell';
+import { useState } from 'react';
 import { NetworkTimingSettings } from '@/components/portal/TripNetwork';
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
@@ -20,12 +24,18 @@ const PREVIEWS = [
 
 function AdminSettings() {
   const { access } = Route.useRouteContext();
+  const [tab,setTab]=useState('profile');
   return (
     <>
       <PageHead title="Settings">
         Your own profile, password and admin preview tools. Nothing here changes data unless you submit a form.
       </PageHead>
 
+      <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Interface'},{value:'tools',label:'Administration'}]}>
+      {tab==='profile'&&<><PersonalSettings section="profile"/><SecureEmailChange/><Link to="/admin/security" className="ds-label text-ds-link underline">Security & sign-in</Link></>}
+      {tab==='notifications'&&<PersonalSettings section="notifications"/>}
+      {tab==='interface'&&<InterfaceSize/>}
+      {tab==='tools'&&<>
       {access.isMasterAdmin && (
         <section className={`${panelCls} mb-6`} aria-labelledby="portal-previews-h">
           <h2 id="portal-previews-h" className="ds-subheading flex items-center gap-2 border-b border-ds-border px-4 py-3 uppercase text-ds-primary sm:px-5">
@@ -72,10 +82,8 @@ function AdminSettings() {
         </ul>
       </section>
 
-      <section className={`${panelCls} p-4 sm:p-6`} aria-labelledby="security-h">
-        <h2 id="security-h" className="ds-subheading mb-4 uppercase text-ds-primary">Your profile &amp; security</h2>
-        <PersonalSecurity />
-      </section>
+      </>}
+      </SettingsShell>
     </>
   );
 }

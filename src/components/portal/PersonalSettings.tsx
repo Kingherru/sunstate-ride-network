@@ -53,7 +53,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
     </section>
     <section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Contact information</h2>
-      <div className="portal-business-body"><DsField label="Phone number">{p => <DsInput {...p} type="tel" maxLength={32} autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} />}</DsField></div>
+      <div className="portal-business-body space-y-4"><div><p className="ds-label">Confirmed email</p><p className="ds-body break-words">{q.data?.confirmed_email??'Email confirmation required'}</p>{q.data?.pending_email&&<p className="ds-caption break-words">Pending confirmation: {q.data.pending_email}</p>}</div><DsField label="Phone number">{p => <DsInput {...p} required type="tel" maxLength={32} autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} />}</DsField></div>
     </section>
     </>}
     {(section === 'all' || section === 'status') && <section className="portal-business-section">

@@ -7,7 +7,9 @@ export const saveNotificationSettings=createServerFn({method:'POST'}).middleware
 export const getPersonalSettings = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const { data, error } = await context.supabase.from('user_profiles').select('first_name,last_name,display_name,phone,mfn_id,notification_preferences,status,onboarding_completed_at,onboarding_policy_accepted_at').eq('user_id', context.userId).maybeSingle();
   if (error || !data) throw new Error('Account settings unavailable.');
-  return data;
+  const {data:auth,error:authError}=await context.supabase.auth.getUser();
+  if(authError||!auth.user)throw new Error('Confirmed identity unavailable.');
+  return {...data,confirmed_email:auth.user.email_confirmed_at?auth.user.email:null,pending_email:auth.user.new_email??null};
 });
 export const savePersonalSettings = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => personalSettingsInput.parse(v)).handler(async ({ data, context }) => {

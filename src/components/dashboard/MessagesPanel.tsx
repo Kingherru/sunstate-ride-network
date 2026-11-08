@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  listThreads,
+  listThreads, markThreadRead, markAllThreadsRead,
   getThreadMessages,
   sendMessage,
   startDirectThread,
@@ -78,6 +78,9 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
   const qc = useQueryClient();
   const caps = useCapabilities();
   const listFn = useServerFn(listThreads);
+  const markFn=useServerFn(markThreadRead);const markAllFn=useServerFn(markAllThreadsRead);
+  const [readBusy,setReadBusy]=useState(false);const [readError,setReadError]=useState('');
+  async function mark(ids?:string){setReadBusy(true);setReadError('');try{if(ids)await markFn({data:{thread_id:ids}});else await markAllFn();qc.setQueryData<{threads:Thread[];total_unread:number}>(['msg-threads'],old=>{if(!old)return old;const threads=old.threads.map(t=>!ids||t.id===ids?{...t,unread_count:0}:t);return {threads,total_unread:threads.reduce((sum,t)=>sum+t.unread_count,0)};});await qc.invalidateQueries({queryKey:['msg-unread-total']});await qc.invalidateQueries({queryKey:['msg-threads']});}catch{setReadError('Could not mark conversations read.');}finally{setReadBusy(false);}}
   const msgsFn = useServerFn(getThreadMessages);
   const sendFn = useServerFn(sendMessage);
   const startFn = useServerFn(startDirectThread);
@@ -318,14 +321,14 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
     return t.participants.map((p) => p.name).join(", ") || "Direct message";
   }
 
-  return (<>
+  return (<>{active?.unread_count ? <DsButton size="sm" variant="secondary" disabled={readBusy} onClick={()=>mark(active.id)}>Mark as read</DsButton> : null}
     <div className="grid grid-cols-1 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] gap-4 min-h-[560px]">
       <aside className={`rounded-lg border border-border bg-card flex flex-col ${activeThread || composeOpen ? "hidden md:flex" : ""}`}>
         <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-semibold text-sm">
             Conversations
             {(threadsQ.data?.total_unread ?? 0) > 0 && (
-              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-error px-1.5 text-[10px] font-bold text-ds-on-primary align-middle">
+              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-primary px-1.5 text-[10px] font-bold text-ds-on-primary align-middle">
                 {threadsQ.data?.total_unread}
               </span>
             )}
@@ -339,7 +342,7 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
             </button>
           )}
         </div>
-        <div className="p-2 border-b border-border space-y-2">
+        <div className="p-2 border-b border-border space-y-2"><DsButton size="sm" variant="secondary" disabled={readBusy || !(threadsQ.data?.total_unread)} onClick={()=>mark()}>Mark all as read</DsButton>{readError&&<p role="alert" className="ds-support text-ds-error">{readError}</p>}
           <div className="portal-search"><Search className="size-4" aria-hidden /><input
             aria-label="Search conversations" value={threadSearch}
             onChange={(e) => setThreadSearch(e.target.value)}
@@ -402,7 +405,7 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium">{threadTitle(t)}</span>
                     {t.unread_count > 0 && (
-                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-error px-1.5 text-[10px] font-bold text-ds-on-primary">
+                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-primary px-1.5 text-[10px] font-bold text-ds-on-primary">
                         {t.unread_count}
                       </span>
                     )}

@@ -7,7 +7,7 @@ import { DsButton } from "@/components/ds/controls";
 import {
   listMyMessagingWorkspaces, listConversations, getConversation, sendMessage, markRead, archiveConversation,
   listAdminConversations, getAdminConversation, adminSendMessage, adminArchiveConversation,
-  type ConversationRow, type MessageRow,
+  markAccessibleConversationsRead, type ConversationRow, type MessageRow,
 } from "@/lib/workspace-messages.functions";
 import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
 import { previewConversations, PREVIEW_SELF_WORKSPACE } from "@/components/messaging/preview-conversations";
@@ -28,7 +28,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   const listMineConvos = useServerFn(listConversations);
   const getConvo = useServerFn(getConversation);
   const send = useServerFn(sendMessage);
-  const markReadFn = useServerFn(markRead);
+  const markReadFn = useServerFn(markAccessibleConversationsRead);
   const archiveFn = useServerFn(archiveConversation);
   const listAdminConvos = useServerFn(listAdminConversations);
   const getAdminConvo = useServerFn(getAdminConversation);
@@ -74,13 +74,16 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
     enabled: !demo && !!selected && (mode === "admin" || !!effectiveWorkspaceId),
   });
 
-  useEffect(() => {
-    if (!demo && mode === "portal" && selected && effectiveWorkspaceId && threadQuery.data?.ok) {
-      markReadFn({ data: { workspaceId: effectiveWorkspaceId, conversationId: selected } }).then(() => {
-        qc.invalidateQueries({ queryKey: ["workspace-conversations", mode, effectiveWorkspaceId] });
-      });
-    }
-  }, [selected, threadQuery.data, effectiveWorkspaceId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [reading, setReading] = useState(false);
+  async function onRead(ids?: string[]) {
+    if(demo) return previewBlocked();
+    setReading(true);
+    try { await markReadFn({data:{ids}});
+      qc.setQueriesData<ConversationRow[]>({queryKey:['workspace-conversations']},old=>old?.map(c=>!ids||ids.includes(c.id)?{...c,unreadCount:0}:c));
+      await Promise.all([qc.invalidateQueries({queryKey:['workspace-conversations']}),qc.invalidateQueries({queryKey:['messaging-unread']}),qc.invalidateQueries({queryKey:['workspace-conversation']})]);
+      toast.success('Marked as read.');
+    } catch {toast.error('Could not mark conversations read.');} finally {setReading(false);}
+  }
 
   async function onSend() {
     const body = draft.trim();
@@ -118,7 +121,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
 
   const demoThread = demo?.find((d) => d.convo.id === selected);
   const thread = demoThread ? { ok: true as const, conversation: demoThread.convo, messages: demoThread.messages } : threadQuery.data?.ok ? threadQuery.data : null;
-  const canCompose = !readOnly && (mode === "portal" ? !thread?.conversation.archived : true);
+  const canCompose = !readOnly && !!effectiveWorkspaceId && (mode === "portal" ? !thread?.conversation.archived : true);
 
   return (
     <div className="space-y-3">
@@ -133,6 +136,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
             </label>
           )}
         </div>
+        <DsButton size="sm" variant="secondary" disabled={reading || !conversations.some(c=>c.unreadCount>0)} onClick={()=>onRead()}>Mark all as read</DsButton>
         <div className="portal-search"><Search className="size-4" aria-hidden /><input aria-label="Search workspace conversations" placeholder="Search accounts, senders, messages…" value={search} onChange={(e) => setSearch(e.target.value)} className="portal-input w-full" /></div>
         <div className="max-h-[28rem] space-y-1 overflow-y-auto rounded-ds-sm border border-ds-border">
           {!demo && convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
@@ -144,7 +148,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
               <div className="flex items-center justify-between gap-2">
                 <span className={`ds-body truncate ${c.unreadCount > 0 ? "font-bold text-ds-primary" : "font-semibold"}`}>{c.otherName}</span>
                 {c.lastMessageAt && <span className="ds-caption ml-auto shrink-0 text-ds-text-2">{new Date(c.lastMessageAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</span>}
-                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm bg-ds-error px-2 py-0.5 text-ds-on-action" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
+                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm bg-ds-primary px-2 py-0.5 text-ds-on-primary" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
               {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
@@ -168,6 +172,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 <h3 className="ds-body truncate font-bold text-ds-primary">{thread.conversation.otherName}</h3>
                 {thread.conversation.otherMfnId && <p className="ds-support font-mono">{thread.conversation.otherMfnId}</p>}
               </div>
+              {conversations.find(c=>c.id===selected)?.unreadCount ? <DsButton size="sm" variant="secondary" disabled={reading} onClick={()=>selected&&onRead([selected])}>Mark as read</DsButton> : null}
               {!readOnly && (
                 <button onClick={() => onToggleArchive(!thread.conversation.archived)}
                   className="ds-glass-btn min-h-9 shrink-0 px-3 text-sm">
@@ -203,6 +208,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 <p className="ds-support mt-1 text-right text-ds-on-bg/50">{draft.length}/2000</p>
               </div>
             )}
+            {mode === "admin" && !effectiveWorkspaceId && !readOnly && <p className="ds-support p-3">Reply unavailable — no authorized sender workspace selected.</p>}
             {readOnly && <p className="ds-support border-t border-ds-border bg-ds-surface-muted px-4 py-2 text-ds-text-2">Read-only access — replies are turned off for your role.</p>}
             {demo && <p className="ds-support border-t border-ds-border bg-ds-peach px-4 py-2">Demo conversation — preview only. Nothing is saved or sent.</p>}
             {thread.conversation.archived && mode === "portal" && !readOnly && (

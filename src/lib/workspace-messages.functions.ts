@@ -1,3 +1,4 @@
+import { unreadAfter } from './portal-read-rules';
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -108,9 +109,9 @@ export const listConversations = createServerFn({ method: "POST" })
       const { data: lastMsg } = await context.supabase
         .from("workspace_messages").select("body, created_at, sent_by_user_id").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
       const { data: sender } = lastMsg ? await supabaseAdmin.from("user_profiles").select("display_name").eq("user_id", lastMsg.sent_by_user_id).maybeSingle() : { data: null };
-      const { count } = await context.supabase
-        .from("workspace_messages").select("id", { count: "exact", head: true })
-        .eq("conversation_id", c.id).eq("recipient_workspace_id", data.workspaceId).is("read_at", null);
+      const { data: mark } = await context.supabase.from('tab_view_marks').select('last_viewed_at').eq('user_id',context.userId).eq('tab_key',`convo:${c.id}`).maybeSingle();
+      const { data: unread } = await context.supabase.from('workspace_messages').select('created_at,read_at').eq('conversation_id',c.id).eq('recipient_workspace_id',data.workspaceId);
+      const count = (unread??[]).filter(m=>unreadAfter(m.created_at,mark?.last_viewed_at??m.read_at)).length;
       results.push({
         id: c.id, otherWorkspaceId: otherId, otherName: other?.display_name ?? "Unknown business", otherMfnId: other?.mfn_id ?? null,
         lastSenderName: sender ? sender.display_name : null, lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount: count ?? 0, archived: !!c.archived_at, isTest: !!c.is_test,
@@ -181,10 +182,10 @@ export const markRead = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => convInput.parse(i))
   .handler(async ({ data, context }) => {
     await assertCanAccess(context, data.workspaceId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("workspace_messages").update({ read_at: new Date().toISOString() })
-      .eq("conversation_id", data.conversationId).eq("recipient_workspace_id", data.workspaceId).is("read_at", null);
+    const { error } = await context.supabase.rpc('mark_accessible_conversations_read', {_ids:[data.conversationId]});
+    if(error) throw new Error('Could not mark conversation read.');
     return { ok: true };
+
   });
 
 const archiveInput = z.object({ workspaceId: z.string().uuid(), conversationId: z.string().uuid(), archived: z.boolean() }).strict();
@@ -207,20 +208,19 @@ export const archiveConversation = createServerFn({ method: "POST" })
 export const getMessagingUnreadCount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<number> => {
-    const { data: memberships } = await context.supabase
-      .from("workspace_members")
-      .select("workspace_id, role, can_message_for_workspace, workspaces!inner(status)")
-      .eq("user_id", context.userId);
-    const wsIds = (memberships ?? [])
-      .filter((r: any) => r.workspaces.status === "active" && (r.role === "owner" || r.role === "admin" || r.can_message_for_workspace))
-      .map((r: any) => r.workspace_id as string);
-    if (wsIds.length === 0) return 0;
-    const { count } = await context.supabase
-      .from("workspace_messages")
-      .select("id", { count: "exact", head: true })
-      .in("recipient_workspace_id", wsIds)
-      .is("read_at", null);
-    return count ?? 0;
+    const {data:marks,error:markError}=await context.supabase.from('tab_view_marks').select('tab_key,last_viewed_at').eq('user_id',context.userId);
+    if(markError) throw new Error('Unread state unavailable.');
+    const readMap=new Map((marks??[]).map(m=>[m.tab_key,m.last_viewed_at]));
+    const {data:memberships}=await context.supabase.from('workspace_members').select('workspace_id').eq('user_id',context.userId).is('removed_at',null);
+    const permitted:string[]=[];
+    for(const m of memberships??[]) {const {data:allowed}=await context.supabase.rpc('can_access_workspace_messages',{ws:m.workspace_id});if(allowed)permitted.push(m.workspace_id);}
+    const {data:admin}=await context.supabase.rpc('admin_can',{_section:'messaging',_level:'read'});
+    let query=context.supabase.from('workspace_messages').select('conversation_id,created_at,read_at');
+    if(!admin){if(!permitted.length)return 0;query=query.in('recipient_workspace_id',permitted);}
+    const {data:messages,error}=await query;
+    if(error)throw new Error('Unread messages unavailable.');
+    return (messages??[]).filter(m=>unreadAfter(m.created_at,readMap.get(`convo:${m.conversation_id}`)??m.read_at)).length;
+
   });
 
 /* ---------------- Admin variants: admins read through RLS; manage requires messaging:manage ---------------- */
@@ -247,11 +247,14 @@ export const listAdminConversations = createServerFn({ method: "GET" })
       const { data: lastMsg } = await context.supabase.from("workspace_messages").select("body, created_at, sent_by_user_id").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
       const { data: sender } = lastMsg ? await supabaseAdmin.from("user_profiles").select("display_name").eq("user_id", lastMsg.sent_by_user_id).maybeSingle() : { data: null };
       const a = map.get(c.workspace_a_id); const b = map.get(c.workspace_b_id);
+      const {data:mark}=await context.supabase.from('tab_view_marks').select('last_viewed_at').eq('user_id',context.userId).eq('tab_key',`convo:${c.id}`).maybeSingle();
+      const {data:messages}=await context.supabase.from('workspace_messages').select('created_at,read_at').eq('conversation_id',c.id);
+      const unreadCount=(messages??[]).filter(m=>unreadAfter(m.created_at,mark?.last_viewed_at??m.read_at)).length;
       results.push({
         id: c.id, otherWorkspaceId: c.workspace_b_id,
         otherName: `${a?.display_name ?? "Unknown"} ↔ ${b?.display_name ?? "Unknown"}`,
         otherMfnId: [a?.mfn_id, b?.mfn_id].filter(Boolean).join(" / ") || null,
-        lastSenderName: sender ? sender.display_name : null, lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount: 0, archived: !!c.archived_at, isTest: !!c.is_test,
+        lastSenderName: sender ? sender.display_name : null, lastMessage: lastMsg?.body ?? null, lastMessageAt: c.last_message_at, unreadCount, archived: !!c.archived_at, isTest: !!c.is_test,
       });
     }
     return results;
@@ -414,3 +417,8 @@ export const openReferralConversation = createServerFn({ method: "POST" })
     if (error || !conversationId) throw new Error("Could not start that conversation.");
     return { ok: true as const, conversationId: conversationId as string };
   });
+
+/** Explicit actor-scoped read watermark; never changes other recipients' message rows. */
+export const markAccessibleConversationsRead = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+ .inputValidator((v:unknown)=>z.object({ids:z.array(z.string().uuid()).max(300).optional()}).strict().parse(v))
+ .handler(async({data,context})=>{const {error}=await context.supabase.rpc('mark_accessible_conversations_read',{_ids:data.ids});if(error)throw new Error('Could not mark conversations read.');return {ok:true as const};});

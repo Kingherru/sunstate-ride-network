@@ -5,6 +5,7 @@ import type { RequestDetailRow, RequestListRow } from "@/lib/portal-requests.fun
 import { useRequestDetails } from './request-detail-context';
 import { DsButton } from '@/components/ds/controls';
 import { detailValue, selectedService, selectedTripType, NOT_AVAILABLE } from '@/lib/request-detail-fields';
+import { displayPhone } from '@/lib/portal-read-rules';
 import { DetailSection } from './DetailSection';
 
 export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
@@ -48,8 +49,8 @@ export function StatusBadge({ status }: { status: string | null }) {
     provider_selected: ['info', 'Provider selected'],
     needs_attention: ['error', 'Needs attention'],
   };
-  const [, label] = map[s] ?? ["neutral", s ? titleCase(s) : "Unknown"];
-  return <StatusPill status={label} />;
+  const [tone, label] = map[s] ?? ["neutral", s ? titleCase(s) : "Unknown"];
+  return <StatusPill status={label} tone={tone === 'pending' ? 'yellow' : tone === 'success' ? 'green' : tone === 'error' ? 'red' : tone === 'info' ? 'neutral' : 'neutral'} />;
 }
 
 export const fmtDateTime = (iso: string) =>
@@ -74,7 +75,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
           </li>
         ))}
       </ul>
-      <table className="hidden w-full text-left md:table">
+      <div className="portal-history-scroll hidden md:block"><table className="portal-history-table w-full text-left">
         <thead className="ds-support uppercase tracking-[0.06em]">
           <tr className="border-b border-ds-border">
             <th scope="col" className="px-4 py-3 font-semibold">Request</th>
@@ -99,7 +100,7 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </>
   );
 }
@@ -135,9 +136,9 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
     </dl></DetailSection>
     <DetailSection tone="contact" title={delivery ? 'Contact and requester' : 'Passenger and requester'}><dl className={fields}>
       <Row label={delivery ? 'Contact name' : 'Passenger name'} value={name || value('patient_first_name')} />
-      <Row label="Phone" value={value('patient_phone')} /><Row label="Email" value={value('patient_email')} />
+      <Row label="Phone" value={displayPhone(value('patient_phone'))} /><Row label="Email" value={value('patient_email')} />
       <Row label="Requesting person" value={value('requester_name')} /><Row label="Person MFN ID" value={value('requester_mfn_id')} />
-      <Row label="Requester phone" value={value('requester_phone')} /><Row label="Requester email" value={value('requester_email')} />
+      <Row label="Requester phone" value={displayPhone(value('requester_phone'))} /><Row label="Requester email" value={value('requester_email')} />
     </dl></DetailSection>
     <DetailSection tone="trip" title={delivery ? 'Pickup and delivery' : 'Locations and times'}><dl className={fields}>
       <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup ZIP" value={value('pickup_zip')} /><Row label="Pickup location details" value={value('pickup_address_details')} />

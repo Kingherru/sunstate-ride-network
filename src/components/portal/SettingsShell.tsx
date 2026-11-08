@@ -1,0 +1,4 @@
+import { DsButton } from '@/components/ds/controls';
+export function SettingsShell<T extends string>({ value, onChange, sections, children }: { value: T; onChange: (value: T) => void; sections: { value: T; label: string }[]; children: React.ReactNode }) {
+  return <div className="grid min-w-0 gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]"><nav aria-label="Settings sections" className="flex flex-wrap gap-2 self-start lg:sticky lg:top-4 lg:flex-col">{sections.map(s => <DsButton key={s.value} variant={value === s.value ? 'secondary' : 'ghost'} className="justify-start text-left" aria-current={value === s.value ? 'page' : undefined} onClick={() => onChange(s.value)}>{s.label}</DsButton>)}</nav><div className="portal-business-form min-w-0 space-y-5">{children}</div></div>;
+}

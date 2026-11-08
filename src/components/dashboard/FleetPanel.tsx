@@ -1,3 +1,4 @@
+import { DetailOverlayFrame } from '@/components/portal/DetailOverlayFrame';
 import { useState } from "react";
 import { X } from 'lucide-react';
 import { DsButton } from '@/components/ds/controls';
@@ -248,10 +249,8 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   });
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4 z-50" onClick={onClose}>
-      <form {...detailWindow.windowProps} onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="portal-custom-dialog bg-card rounded-sm max-w-2xl w-full p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="sm:col-span-2 flex items-center justify-between gap-3"><h3 className="text-lg font-extrabold">{d.id ? "Edit driver" : "New driver"}</h3><div className="flex shrink-0 items-center gap-1">{detailWindow.control}<DsButton type="button" variant="ghost" aria-label="Close" className="!size-11 !p-0" onClick={onClose}><X className="size-4" /></DsButton></div></div>
+    <DetailOverlayFrame title={d.id ? 'Edit driver' : 'New driver'} onClose={onClose}>
+      <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <section className="portal-dialog-section sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
@@ -385,7 +384,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
 
 
 
-        <div className="portal-dialog-section col-span-2 border border-border rounded-sm p-3">
+        <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-sm">Weekly availability</span>
             <label className="flex items-center gap-2 text-xs">
@@ -440,14 +439,14 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
           )}
         </div>
 
-        <div className="portal-dialog-actions col-span-2 flex justify-end gap-2 pt-2">
+        <div className="portal-dialog-actions sm:col-span-2 flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
             {m.isPending ? "Saving…" : "Save"}
           </button>
         </div>
       </form>
-    </div>
+    </DetailOverlayFrame>
   );
 }
 
@@ -557,11 +556,8 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="portal-custom-dialog bg-card rounded-sm max-w-lg w-full p-6 grid grid-cols-2 gap-3 max-h-[90vh] overflow-y-auto">
-        <h3 className="col-span-2 text-lg font-extrabold">{v.id ? "Edit vehicle" : "New vehicle"}</h3>
-
+    <DetailOverlayFrame title={v.id ? 'Edit vehicle' : 'New vehicle'} onClose={onClose}>
+      <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
         <I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} />
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />
@@ -582,7 +578,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm col-span-2">
+        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Primary driver</span>
           <select value={f.assigned_driver_id} onChange={(e) => set({ ...f, assigned_driver_id: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
@@ -595,7 +591,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
             Driver primarily assigned to this vehicle. Used across scheduling and dispatch. Saving will also update the driver's primary vehicle.
           </span>
         </label>
-        <div className="portal-dialog-section col-span-2 border border-border rounded-sm p-3">
+        <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
           <div className="font-bold text-sm mb-2">Service capabilities</div>
           <div className="flex flex-wrap gap-3 text-xs">
             {SERVICE_CAPABILITIES.map(c => (
@@ -610,7 +606,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
             What this vehicle can transport. Combine as needed (e.g. wheelchair-accessible van that also handles ambulatory riders).
           </p>
         </div>
-        <div className="portal-dialog-actions col-span-2 flex justify-end gap-2 pt-2">
+        <div className="portal-dialog-actions sm:col-span-2 flex justify-end gap-2 pt-2">
 
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
           <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
@@ -618,13 +614,13 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
           </button>
         </div>
       </form>
-    </div>
+    </DetailOverlayFrame>
   );
 }
 
 function I({ l, v, on, type = "text", req, cs }: { l: string; v: string; on: (v: string) => void; type?: string; req?: boolean; cs?: number }) {
   return (
-    <label className={`flex flex-col gap-1 text-sm ${cs === 2 ? "col-span-2" : ""}`}>
+    <label className={`flex flex-col gap-1 text-sm ${cs === 2 ? "sm:col-span-2" : ""}`}>
       <span className="font-bold">{l}{req && " *"}</span>
       <input required={req} type={type} value={v} onChange={(e) => on(e.target.value)}
              className="border border-border rounded-sm px-3 py-2 bg-background" />

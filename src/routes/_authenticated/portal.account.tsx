@@ -1,3 +1,5 @@
+import { SettingsShell } from '@/components/portal/SettingsShell';
+import { SecureEmailChange } from '@/components/portal/SecureEmailChange';
 import { useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -66,11 +68,10 @@ function Account() {
 
   return (
     <>
-      <PageHead title="Account" />
+      <PageHead title="Settings" />
       {setupLink}
-      <div className="mb-5"><SegTabs label="Account sections" value={tab} onChange={setTab} options={tabs} /></div>
-      <section className={`${panelCls} p-5 sm:p-6`}>
-        {tab === "profile" && <><PersonalSettings />{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+      <SettingsShell value={tab} onChange={setTab} sections={tabs}>
+        {tab === "profile" && <><PersonalSettings section="profile" /><SecureEmailChange/>{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}
@@ -82,8 +83,8 @@ function Account() {
         {tab === "patients" && <PatientManagement />}
         {tab === "billing" && <CustomerBilling />}
         {tab === 'connections' && ws && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <AccountConnections workspaceId={ws.id} provider={provider} />}
-        {tab === "notifications" && <div className="space-y-4"><PersonalSettings /><Link to="/portal/notifications" className="ds-support font-semibold text-ds-link underline">Open notifications inbox</Link></div>}
-      </section>
+        {tab === "notifications" && <div className="space-y-4"><PersonalSettings section="notifications" /><Link to="/portal/notifications" className="ds-support font-semibold text-ds-link underline">Open notifications inbox</Link></div>}
+      </SettingsShell>
     </>
   );
 }
@@ -151,7 +152,7 @@ function Profile({ email }: { email: string | null }) {
 
 function Security() {
   const { user } = Route.useRouteContext();
-  return <PersonalSecurity email={user.email ?? null} />;
+  return <PersonalSecurity email={user.email ?? null} securityOnly />;
 }
 
 function TeamMessaging({ workspaceId }: { workspaceId: string }) {

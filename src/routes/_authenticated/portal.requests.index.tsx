@@ -154,7 +154,7 @@ function History({ rows }: { rows: RequestListRow[] }) {
             ))}
           </ul>
           {/* Desktop: table */}
-          <table className="hidden w-full text-left md:table">
+          <div className="portal-history-scroll hidden md:block"><table className="portal-history-table w-full text-left">
             <thead className="ds-support uppercase tracking-[0.06em]">
               <tr className="border-b border-ds-border">
                 <th scope="col" className="px-4 py-3 font-semibold">Request</th>
@@ -188,7 +188,7 @@ function History({ rows }: { rows: RequestListRow[] }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
           {filtered.length > shown && (
             <div className="border-t border-ds-border px-4 py-3 text-center sm:px-5">
               <DsButton variant="secondary" onClick={() => setShown((n) => n + PAGE)}>
