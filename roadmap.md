@@ -1,4 +1,35 @@
 # Florida MVP launch sequence
+## Pass 4L — in progress: functionality and draft policy gate
+- [ ] Authorized Messaging/Notifications single/all read actions, immediate confirmed-success counts and semantic notification tones.
+- [ ] Consolidated read-only PAYOUTS: Overview / Held / Available / Paid / Refunds / Reconciliation; immutable owner-review draft matrix, no execution.
+- [ ] Shared Settings/Profile/Security foundation, authoritative email and functional Interface Size; preserve Provider Settings reference.
+- [ ] Shared detail width +20%, row dividers/default and Master comparison, safe resizable columns, Fleet/Driver reuse, table wrapping and 0.45% texture.
+- [ ] Narrow synthetic changed-boundary tests, automatic compilation and read-only preservation checks; no real writes or Stripe calls.
+
+## Pass 4O — prioritized work packages (deferred)
+### 4O-A — People and Settings
+- [ ] Patient Find + Saved Providers combined, or Saved Providers tab under Contacts/People based on existing architecture.
+- [ ] Functional Patient Interface Size and owner-versus-patient relationships.
+- [ ] Facility and Provider PEOPLE pages with Patients/Contacts/Payers tabs.
+- [ ] Multiple patient profiles and explicit links to providers/family/contacts/payers.
+- [ ] Bidirectional authorized contact/payer links; payer-specific billing rates.
+- [ ] Family notifications with explicit authorization, recipient verification, minimal necessary information, multiple confirmations and HIPAA-safe audit; billing optional.
+- [ ] Patient/Facility/Admin Settings fully aligned to Provider Settings.
+### 4O-B — Trip Creation, Invoice and Schedule
+- [ ] Duplicate one trip across multiple selected dates with per-copy date/time editing.
+- [ ] Recurring schedules by weekdays, selected dates or monthly rules with preview, exceptions and duplicate prevention.
+- [ ] Shared Provider/Facility two-column New Trip with form left and live invoice/referral funding right; authoritative provider pricing recalculation.
+- [ ] Drag drivers and vehicles to schedule days/time slots with real saved assignments/conflict checks.
+- [ ] Driver email/phone/daily route-log preparation; no real sends until communications activation.
+### 4O-C — Network, People and Purchases
+- [ ] Network detail dividers and unread/update indicators for Received Offers, Sent Offers, Negotiations, Accepted, Active, Settlements, Patient Requests and Provider Directory.
+- [ ] Inactive paid Network features gray but legible with JOIN OUR NETWORK; adds $10 add-on to existing combined cart, no duplicate cart.
+- [ ] Settings clearly show subscriptions, charges and what account pays for.
+- [ ] Rename Training & Tests to broader purchasable-resources destination for PDFs/training/tests/future products.
+- [ ] Purchased PDFs securely viewable after authoritative entitlement; purchased training/reviewable completed tests retain existing access rules.
+### 4O-D — Regional/Public/Final Visual Polish
+- [ ] Previously deferred regional/national behavior, mobile/tablet SIGN IN + CALL US secondary header, and final front-end/portal polish.
+
 ## Pass 4M — partial safe foundations built; not financially complete
 - [x] Shared cart server review reconstructs allowed catalog IDs/amounts/types, resolves authorized Provider workspace, checks duplicate membership/trial/purchase evidence, binds review hash and resets consent; trial + one-time timing fails closed. Stripe IDs remain unverified/null, not invented.
 - [x] One additive migration (0083) extends catalog/subscription/Connect/event/settlement evidence; immutable trial/enrolled snapshots and locked sandbox event claims prepared behind missing=OFF gates. Distinct purposes, exact invoice evidence comparison, conservative policy-review convergence, balanced sender-side referral accounting and 10/4-day hold rules have focused synthetic tests.
