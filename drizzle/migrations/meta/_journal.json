@@ -477,6 +477,13 @@
       "when": 1794089156666,
       "tag": "0067_private_guide_and_facility_confirmation_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1794103266741,
+      "tag": "0068_pass4i_shared_settings_and_confirmed_connections",
+      "breakpoints": true
     }
   ]
 }
