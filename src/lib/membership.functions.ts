@@ -158,6 +158,7 @@ export const setNetworkAddon = createServerFn({ method: 'POST' }).middleware([re
     } catch (e) {
       return { error: getStripeErrorMessage(e) };
     }
+    */
   });
 
 export const getNetworkEntitlement = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])

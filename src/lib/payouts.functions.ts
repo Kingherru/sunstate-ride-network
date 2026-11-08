@@ -25,6 +25,8 @@ export const createConnectOnboardingLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId, claims } = context;
+    return { ok: false as const, error: 'Connect onboarding is off pending explicit sandbox activation and Pass 4L. No account or link was created.' };
+    /* Retained future implementation; unreachable while preparation is OFF.
     const env = pickEnv();
 
     const { data: memberships } = await supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id', userId).eq('role', 'owner').eq('is_contractor', false).is('removed_at', null);
@@ -72,6 +74,7 @@ export const createConnectOnboardingLink = createServerFn({ method: "POST" })
     } catch (e) {
       return { ok: false as const, error: getStripeErrorMessage(e) };
     }
+    */
   });
 
 /** Pull latest status from Stripe and write it to provider_payout_accounts. */
