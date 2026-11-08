@@ -498,6 +498,62 @@
       "when": 1794103654015,
       "tag": "0070_pass4i_connection_token_and_notification_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1794107622392,
+      "tag": "0071_pass4j_contact_and_account_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1794107723518,
+      "tag": "0072_pass4j_trip_contact_and_linked_defaults",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1794107758751,
+      "tag": "0073_pass4j_trip_attachment_guard_correction",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1794107876495,
+      "tag": "0074_pass4j_usual_provider_and_facility_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1794107921719,
+      "tag": "0075_pass4j_evidence_trigger_scope_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1794107934879,
+      "tag": "0076_pass4j_evidence_trigger_record_safety",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1794108135336,
+      "tag": "0077_pass4j_authorized_facility_patient_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1794108173380,
+      "tag": "0078_pass4j_contact_audit_recursion_guard",
+      "breakpoints": true
     }
   ]
 }

@@ -3922,8 +3922,11 @@ export type Database = {
       }
       provider_contacts: {
         Row: {
+          active: boolean
+          billing_allowed: boolean
           company_name: string | null
           contact_type: string
+          coordination_allowed: boolean
           created_at: string
           created_by: string | null
           creator_mfn_id: string | null
@@ -3939,12 +3942,17 @@ export type Database = {
           payer: string | null
           payer_id: string | null
           phone: string | null
+          relationship: string | null
           updated_at: string
           workspace_id: string | null
+          workspace_mfn_id: string | null
         }
         Insert: {
+          active?: boolean
+          billing_allowed?: boolean
           company_name?: string | null
           contact_type: string
+          coordination_allowed?: boolean
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -3960,12 +3968,17 @@ export type Database = {
           payer?: string | null
           payer_id?: string | null
           phone?: string | null
+          relationship?: string | null
           updated_at?: string
           workspace_id?: string | null
+          workspace_mfn_id?: string | null
         }
         Update: {
+          active?: boolean
+          billing_allowed?: boolean
           company_name?: string | null
           contact_type?: string
+          coordination_allowed?: boolean
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -3981,8 +3994,10 @@ export type Database = {
           payer?: string | null
           payer_id?: string | null
           phone?: string | null
+          relationship?: string | null
           updated_at?: string
           workspace_id?: string | null
+          workspace_mfn_id?: string | null
         }
         Relationships: [
           {
@@ -5193,6 +5208,7 @@ export type Database = {
           black_tie_vehicle: string | null
           cancel_reason: string | null
           canceled_at: string | null
+          coordination_contact_id: string | null
           created_at: string
           creator_person_mfn_id: string | null
           customer_quote_draft_id: string | null
@@ -5287,6 +5303,7 @@ export type Database = {
           round_trip: boolean
           route_computed_at: string | null
           route_polyline: string | null
+          saved_patient_id: string | null
           scheduled_start_time: string | null
           selected_provider_mfn_id: string | null
           selected_provider_workspace_id: string | null
@@ -5319,6 +5336,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          coordination_contact_id?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
           customer_quote_draft_id?: string | null
@@ -5413,6 +5431,7 @@ export type Database = {
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
+          saved_patient_id?: string | null
           scheduled_start_time?: string | null
           selected_provider_mfn_id?: string | null
           selected_provider_workspace_id?: string | null
@@ -5445,6 +5464,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          coordination_contact_id?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
           customer_quote_draft_id?: string | null
@@ -5539,6 +5559,7 @@ export type Database = {
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
+          saved_patient_id?: string | null
           scheduled_start_time?: string | null
           selected_provider_mfn_id?: string | null
           selected_provider_workspace_id?: string | null
@@ -5570,6 +5591,13 @@ export type Database = {
             columns: ["assigned_vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_coordination_contact_id_fkey"
+            columns: ["coordination_contact_id"]
+            isOneToOne: false
+            referencedRelation: "provider_contacts"
             referencedColumns: ["id"]
           },
           {
@@ -5619,6 +5647,13 @@ export type Database = {
             columns: ["promoted_trip_id"]
             isOneToOne: false
             referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_saved_patient_id_fkey"
+            columns: ["saved_patient_id"]
+            isOneToOne: false
+            referencedRelation: "saved_patients"
             referencedColumns: ["id"]
           },
           {
@@ -5799,6 +5834,7 @@ export type Database = {
           notes: string | null
           owner_id: string
           oxygen_required: boolean
+          patient_workspace_id: string | null
           payer: string | null
           phone: string | null
           service_requirements: string | null
@@ -5841,6 +5877,7 @@ export type Database = {
           notes?: string | null
           owner_id: string
           oxygen_required?: boolean
+          patient_workspace_id?: string | null
           payer?: string | null
           phone?: string | null
           service_requirements?: string | null
@@ -5883,6 +5920,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           oxygen_required?: boolean
+          patient_workspace_id?: string | null
           payer?: string | null
           phone?: string | null
           service_requirements?: string | null
@@ -5899,6 +5937,13 @@ export type Database = {
             columns: ["default_payer_id"]
             isOneToOne: false
             referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_patients_patient_workspace_id_fkey"
+            columns: ["patient_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
           {
@@ -8451,6 +8496,7 @@ export type Database = {
       workspaces: {
         Row: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          account_verification_evidence: Json | null
           automatic_verification_level: string | null
           business_address: string | null
           business_phone: string | null
@@ -8474,6 +8520,7 @@ export type Database = {
         }
         Insert: {
           account_type: Database["public"]["Enums"]["workspace_type"]
+          account_verification_evidence?: Json | null
           automatic_verification_level?: string | null
           business_address?: string | null
           business_phone?: string | null
@@ -8497,6 +8544,7 @@ export type Database = {
         }
         Update: {
           account_type?: Database["public"]["Enums"]["workspace_type"]
+          account_verification_evidence?: Json | null
           automatic_verification_level?: string | null
           business_address?: string | null
           business_phone?: string | null
@@ -8825,6 +8873,7 @@ export type Database = {
       }
       accept_facility_quote: { Args: { _proposal: string }; Returns: string }
       accept_trip: { Args: { _trip_id: string }; Returns: undefined }
+      account_profile_evidence: { Args: { _ws: string }; Returns: Json }
       admin_account_conversation_access: {
         Args: { _thread: string; _write?: boolean }
         Returns: boolean
@@ -8915,6 +8964,10 @@ export type Database = {
       audit_email_change_failure: {
         Args: { _expired?: boolean; _user: string }
         Returns: undefined
+      }
+      authorized_trip_record: {
+        Args: { _actor: string; _id: string; _kind: string; _ws: string }
+        Returns: boolean
       }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       business_record_access: {
@@ -9257,6 +9310,10 @@ export type Database = {
         Returns: boolean
       }
       launch_flag_enabled: { Args: { _key: string }; Returns: boolean }
+      linked_patient_trip_defaults: {
+        Args: { _patient: string; _source: string }
+        Returns: Json
+      }
       list_eligible_providers: {
         Args: never
         Returns: {
@@ -9299,6 +9356,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_facility_authorized_patients: {
+        Args: { _source: string }
+        Returns: Json
       }
       list_linked_patient_accounts: {
         Args: { _ws: string }
@@ -9434,6 +9495,8 @@ export type Database = {
         Returns: number
       }
       my_access_state: { Args: never; Returns: Json }
+      my_account_profile_verification: { Args: never; Returns: Json }
+      my_confirmed_usual_provider: { Args: never; Returns: Json }
       network_accept_offer: {
         Args: { _approve?: boolean; _offer: string }
         Returns: Json

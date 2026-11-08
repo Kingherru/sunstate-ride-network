@@ -39,6 +39,7 @@ const patientSchema = z.object({
   service_requirements: z.string().trim().max(500).optional().nullable().or(z.literal("")),
   default_payer_id: z.string().uuid().optional().nullable(),
   workspace_id: z.string().uuid().optional().nullable(),
+  patient_workspace_id:z.string().uuid().optional().nullable(),
 });
 
 function clean(input: z.infer<typeof patientSchema>) {
@@ -59,7 +60,7 @@ async function managedWorkspaces(supabase: any, userId: string) {
 
 async function checkPayer(supabase: any, userId: string, payerId: string | null | undefined) {
   if (!payerId) return;
-  const { data } = await supabase.from("payers").select("id").eq("id", payerId).eq("owner_user_id", userId).maybeSingle();
+  const { data } = await supabase.from("payers").select("id").eq("id", payerId).eq('active',true).maybeSingle();
   if (!data) throw new Error("Choose one of your payers.");
 }
 
@@ -73,6 +74,14 @@ export const listSavedPatients = createServerFn({ method: "GET" })
     if (error) throw new Error("Could not load patient profiles.");
     return data ?? [];
   });
+
+/** New Trip exposes only permitted identity/contact defaults, never clinical notes or credentials. */
+export const listTripPatients=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+ const ws=await managedWorkspaces(context.supabase,context.userId);
+ let q=context.supabase.from('saved_patients').select('id,first_name,last_name,phone,email,mobility,default_payer_id,patient_workspace_id,active,kind').eq('active',true).eq('kind','patient');
+ q=ws.ids.length?q.or(`owner_id.eq.${context.userId},workspace_id.in.(${ws.ids.join(',')})`):q.eq('owner_id',context.userId);
+ const {data,error}=await q.order('last_name');if(error)throw new Error('Patient not available');return data??[];
+});
 
 export const getPatientScope = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

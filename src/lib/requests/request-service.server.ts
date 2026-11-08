@@ -64,6 +64,9 @@ export async function notifyNewRequest(opts: {
   requesterEmail?: string | null;
   embedProviderId?: string | null;
 }) {
+  // Automated request communications remain fail-closed during the launch build.
+  const {data:communicationFlag}=await supabaseAdmin.from('platform_launch_flags').select('enabled').eq('key','request_communications_enabled').maybeSingle();
+  if(communicationFlag?.enabled!==true)return;
   const shortId = opts.id.slice(0, 8).toUpperCase();
   const notify = await import("@/lib/trips/notify.server");
   if (opts.requesterEmail) {
@@ -142,6 +145,9 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     trip_kind: "passenger",
     selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
     patient_workspace_id: data.patientWorkspaceId ?? null,
+    saved_patient_id:data.savedPatientId??null,
+    payer_id:data.payerId??null,
+    coordination_contact_id:data.coordinationContactId??null,
     customer_quote_draft_id: data.customerQuoteDraftId ?? null,
     customer_quote_id: data.customerQuoteId ?? null,
     patient_first_name: data.patientFirstName, patient_last_name: data.patientLastName,

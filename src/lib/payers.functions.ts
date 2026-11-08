@@ -110,17 +110,23 @@ export const listMyPayers = createServerFn({ method: "GET" })
 
 export const createPayer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object(payerFields).parse(i))
+  .inputValidator((i: unknown) => z.object(payerFields).strict().parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true; id: string } | { error: string }> => {
     try {
-      await requireFacilityOrProvider(context);
+      const {data:members}=await context.supabase.from('workspace_members').select('workspace_id,role,is_contractor,record_permissions').eq('user_id',context.userId).is('removed_at',null);
+      if(!(members??[]).some(m=>!m.is_contractor && (['owner','admin'].includes(m.role)||(m.record_permissions as Record<string,string>)?.payers==='manage')))return {error:'Payer not available'};
     } catch (e: any) {
       return { error: e.message };
     }
     if (data.linked_contact_id) {
-      const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).maybeSingle();
+      const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).eq('active',true).maybeSingle();
       if (!c) return { error: "Linked contact not found" };
     }
+    let duplicate=context.supabase.from('payers').select('id').eq('created_by',context.userId).eq('name',data.name).eq('active',true);
+    duplicate=data.email?duplicate.eq('email',data.email):duplicate.is('email',null);
+    duplicate=data.phone?duplicate.eq('phone',data.phone):duplicate.is('phone',null);
+    const {data:existing}=await duplicate.limit(1).maybeSingle();
+    if(existing)return {ok:true,id:existing.id};
     const { data: row, error } = await context.supabase
       .from("payers")
       .insert(payerRow(data, context.userId))
@@ -132,7 +138,7 @@ export const createPayer = createServerFn({ method: "POST" })
 
 export const updatePayer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), ...payerFields }).parse(i))
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), ...payerFields }).strict().parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
     if (data.linked_contact_id) {
       const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).maybeSingle();
@@ -141,7 +147,7 @@ export const updatePayer = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("payers")
       .update(payerRow(data, context.userId))
-      .eq("id", data.id);
+      .eq("id", data.id).select('id').single();
     if (error) return { error: error.message };
     return { ok: true };
   });
@@ -152,8 +158,8 @@ export const deletePayer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
     const { error } = await context.supabase
       .from("payers")
-      .delete()
-      .eq("id", data.id);
+      .update({active:false})
+      .eq("id", data.id).select('id').single();
     if (error) return { error: error.message };
     return { ok: true };
   });
@@ -168,31 +174,7 @@ export const createPayerSetupIntent = createServerFn({ method: "POST" })
       environment: z.enum(["sandbox", "live"]),
     }).parse(i),
   )
-  .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
-    try {
-      // Verify owner
-      const { data: payer } = await context.supabase
-        .from("payers")
-        .select("id")
-        .eq("id", data.payer_id)
-        .eq("owner_user_id", context.userId)
-        .maybeSingle();
-      if (!payer) return { error: "Payer not found" };
-
-      const env = data.environment as StripeEnv;
-      const customerId = await ensurePayerCustomer(env, data.payer_id);
-      const stripe = createStripeClient(env);
-      const si = await stripe.setupIntents.create({
-        customer: customerId,
-        usage: "off_session",
-        payment_method_types: ["card"],
-        metadata: { payerId: data.payer_id, ownerUserId: context.userId },
-      });
-      return { clientSecret: si.client_secret ?? "" };
-    } catch (e) {
-      return { error: getStripeErrorMessage(e) };
-    }
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Secure payment-method collection is not activated.'}));
 
 export const recordPayerPaymentMethod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -205,58 +187,7 @@ export const recordPayerPaymentMethod = createServerFn({ method: "POST" })
       label: z.string().trim().max(120).optional().or(z.literal("")),
     }).parse(i),
   )
-  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
-    try {
-      const { data: payer } = await context.supabase
-        .from("payers")
-        .select("id")
-        .eq("id", data.payer_id)
-        .eq("owner_user_id", context.userId)
-        .maybeSingle();
-      if (!payer) return { error: "Payer not found" };
-
-      const env = data.environment as StripeEnv;
-      const stripe = createStripeClient(env);
-      const pm = await stripe.paymentMethods.retrieve(data.payment_method_id);
-
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: cust } = await (supabaseAdmin as any)
-        .from("payer_stripe_customers")
-        .select("stripe_customer_id")
-        .eq("payer_id", data.payer_id)
-        .eq("environment", env)
-        .maybeSingle();
-      if (!cust?.stripe_customer_id || pm.customer !== cust.stripe_customer_id) {
-        return { error: "Card does not belong to this payer" };
-      }
-
-      const card = (pm as any).card;
-      const ins = await (supabaseAdmin as any).from("payer_payment_methods").insert({
-        payer_id: data.payer_id,
-        environment: env,
-        stripe_payment_method_id: pm.id,
-        brand: card?.brand ?? null,
-        last4: card?.last4 ?? null,
-        exp_month: card?.exp_month ?? null,
-        exp_year: card?.exp_year ?? null,
-        is_default: !!data.make_default,
-        label: data.label || null,
-      });
-      if (ins.error) return { error: ins.error.message };
-
-      if (data.make_default) {
-        await (supabaseAdmin as any)
-          .from("payer_payment_methods")
-          .update({ is_default: false })
-          .eq("payer_id", data.payer_id)
-          .eq("environment", env)
-          .neq("stripe_payment_method_id", pm.id);
-      }
-      return { ok: true };
-    } catch (e) {
-      return { error: getStripeErrorMessage(e) };
-    }
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Payment-method replacement requires future secure re-verification and is not activated.'}));
 
 export const listPayerCards = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -275,26 +206,7 @@ export const listPayerCards = createServerFn({ method: "GET" })
 export const deletePayerCard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
-  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
-    const { data: row } = await context.supabase
-      .from("payer_payment_methods")
-      .select("id, environment, stripe_payment_method_id, payer_id, payers!inner(owner_user_id)")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (!row || (row as any).payers?.owner_user_id !== context.userId) {
-      return { error: "Not found" };
-    }
-    try {
-      const stripe = createStripeClient(row.environment as StripeEnv);
-      await stripe.paymentMethods.detach(row.stripe_payment_method_id as string).catch(() => {});
-    } catch {}
-    const { error } = await context.supabase
-      .from("payer_payment_methods")
-      .delete()
-      .eq("id", data.id);
-    if (error) return { error: error.message };
-    return { ok: true };
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Payment-method changes are not activated.'}));
 
 /* ---------- Assignment ---------- */
 

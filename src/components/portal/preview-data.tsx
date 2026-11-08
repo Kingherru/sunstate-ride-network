@@ -28,6 +28,8 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'account-profile-verification':[],
+  'confirmed-usual-provider':null,
   'business-visibility': {workspace:{display_name:'Demo transportation business',account_type:'provider'},profile:null,consent:null},
   'business-search': [{workspace_id:'demo-business',business_name:'Demo Florida Facility',mfn_id:'MFN-A-DEMO',business_type:'facility',location:'Orlando',description:'Synthetic facility example.',facility_category:'Clinic',service_types:[],counties:[],cities:['Orlando'],medical_delivery:false,accepting_connections:true,business_contact_email:null,business_contact_phone:null,verification_level:null}],
   'patient-link-context': {workspaceId:'demo-source',patients:[{workspace_id:'demo-patient',display_name:'Demo Patient',mfn_id:'MFN-A-DEMO-PATIENT'}]},

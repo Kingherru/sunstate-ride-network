@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { contactInput } from './contact-rules';
+export { CONTACT_TYPES, type ContactType } from './contact-types';
 
 export const listContacts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -12,36 +14,24 @@ export const listContacts = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-export const CONTACT_TYPES = ["personal", "facility", "business", "payer"] as const;
-export type ContactType = (typeof CONTACT_TYPES)[number];
-
 export const upsertContact = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: {
-    id?: string;
-    contact_type: ContactType;
-    first_name?: string;
-    last_name?: string;
-    company_name?: string;
-    phone?: string;
-    email?: string;
-    payer?: string;
-    payer_id?: string | null;
-    mobility_notes?: string;
-    notes?: string;
-    default_pickup_location_id?: string | null;
-    default_dropoff_location_id?: string | null;
-  }) => input)
+  .inputValidator((input: unknown) => contactInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (data.payer_id) {
-      const { data: p } = await supabase.from("payers").select("id").eq("id", data.payer_id).eq("owner_user_id", userId).maybeSingle();
+      const { data: p } = await supabase.from("payers").select("id").eq("id", data.payer_id).eq('active',true).maybeSingle();
       if (!p) throw new Error("Linked payer not found");
     }
-    const row = { ...data, owner_id: userId };
+    const {id,...values}=data;
+    const row = { ...values, ...(id ? {} : {owner_id:userId}) };
+    if (!id) {
+      const {data:existing}=await supabase.from('provider_contacts').select('id').eq('created_by',userId).eq('contact_type',data.contact_type).eq('first_name',data.first_name).eq('last_name',data.last_name).eq('company_name',data.company_name).eq('phone',data.phone).eq('email',data.email).eq('active',true).limit(1).maybeSingle();
+      if(existing)return existing;
+    }
     const q = data.id
       ? supabase.from("provider_contacts").update(row).eq("id", data.id).select().single()
-      : supabase.from("provider_contacts").insert(row).select().single();
+      : supabase.from("provider_contacts").insert({...values,owner_id:userId}).select().single();
     const { data: out, error } = await q;
     if (error) throw error;
     return out;
@@ -52,7 +42,7 @@ export const deleteContact = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("provider_contacts").delete().eq("id", data.id);
+      .from("provider_contacts").update({active:false}).eq("id", data.id).select('id').single();
     if (error) throw error;
     return { ok: true };
   });

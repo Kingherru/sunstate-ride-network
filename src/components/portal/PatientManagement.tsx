@@ -7,6 +7,7 @@ import { createSavedPatient, getPatientScope, listSavedPatientHistory, listSaved
 import { listMyPayers } from '@/lib/payers.functions';
 import { listSavedPaymentMethods, setPaymentMethodPatient } from '@/lib/saved-payments.functions';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
+import {LinkedPatientSelector} from './LinkedPatientSelector';
 
 type F = { key: string; label: string; type?: 'text' | 'date' | 'email' | 'tel' | 'number' | 'textarea'; max?: number };
 const GROUPS: { title: string; fields: F[] }[] = [
@@ -24,6 +25,7 @@ function toPayload(form: Record<string, any>) {
   for (const k of KEYS) out[k] = k === 'weight_lbs' ? (form[k] ? Number(form[k]) : null) : (form[k] ?? '');
   out.oxygen_required = !!form.oxygen_required;
   out.default_payer_id = form.default_payer_id || null;
+  out.patient_workspace_id=form.patient_workspace_id||null;
   return out;
 }
 
@@ -97,6 +99,7 @@ export function PatientManagement() {
   if (editing) return (
     <form onSubmit={submit} className="space-y-5" aria-label="Patient profile">
       <h2 className="ds-subheading uppercase text-ds-primary">{editing.id ? 'Edit patient' : 'Add patient'}</h2>
+      {!privateOnly && <LinkedPatientSelector value={editing.patient_workspace_id} onChange={id=>setEditing({...editing,patient_workspace_id:id})}/>}
       {GROUPS.map(g => <fieldset key={g.title} className="rounded-ds bg-ds-surface-muted p-4 sm:p-5"><legend className="ds-label text-ds-primary px-1">{g.title}</legend>
         <div className="grid gap-4 sm:grid-cols-2">{g.fields.map(f => <div key={f.key} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}><DsField label={f.label}>{p => f.type === 'textarea'
           ? <DsTextarea {...p} maxLength={f.max ?? 500} value={editing[f.key] ?? ''} onChange={e => setEditing({ ...editing, [f.key]: e.target.value })} />
@@ -125,7 +128,7 @@ export function PatientManagement() {
               <DsButton size="sm" variant="ghost" onClick={() => openHistory(p.id)}>History</DsButton>
             </div>
           </div>
-          {!privateOnly && p.active !== false && cardRows.length > 0 && <div className="max-w-sm"><DsField label="Payment card for this patient">{f => <DsSelect {...f} value={cardRows.find(c => c.patient_id === p.id)?.id ?? ''} onChange={e => changeCard(p.id, e.target.value)}><option value="">No patient card (use account default)</option>{cardRows.filter(c => !c.patient_id || c.patient_id === p.id).map(c => <option key={c.id} value={c.id}>{String(c.brand ?? 'Card').toUpperCase()} •••• {c.last4} · exp {String(c.exp_month).padStart(2, '0')}/{String(c.exp_year).slice(-2)}</option>)}</DsSelect>}</DsField></div>}
+          {!privateOnly && p.active !== false && cardRows.length > 0 && <div className="max-w-sm"><DsField label="Payment card for this patient" hint="Changes unavailable until secure re-verification is activated.">{f => <DsSelect {...f} disabled value={cardRows.find(c => c.patient_id === p.id)?.id ?? ''}><option value="">No patient card (use account default)</option>{cardRows.filter(c => !c.patient_id || c.patient_id === p.id).map(c => <option key={c.id} value={c.id}>{String(c.brand ?? 'Card').toUpperCase()} •••• {c.last4} · exp {String(c.exp_month).padStart(2, '0')}/{String(c.exp_year).slice(-2)}</option>)}</DsSelect>}</DsField></div>}
           {statusFor?.id === p.id && <div role="alertdialog" aria-label="Confirm status change" className="space-y-3 rounded-ds bg-ds-surface-muted p-4">
             <DsField label={`Reason to ${statusFor!.active ? 'restore' : 'deactivate'}`}>{f => <DsTextarea {...f} minLength={3} maxLength={300} value={reason} onChange={e => setReason(e.target.value)} />}</DsField>
             <div className="flex gap-2"><DsButton size="sm" disabled={busy || reason.trim().length < 3} onClick={changeStatus}>Confirm {statusFor!.active ? 'restore' : 'deactivation'}</DsButton><DsButton size="sm" variant="ghost" onClick={() => setStatusFor(null)}>Cancel</DsButton></div>

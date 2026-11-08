@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { HOME_IMAGES as IMG, LINKS } from "@/lib/site-config";
 import { btnAction, btnBlue, btnOnBlue } from "./buttons";
 import { HomeReveal } from "./HomeReveal";
+import { publicFeatures } from '@/lib/feature-catalog';
 
 export { btnAction as btnPrimary };
 
@@ -125,11 +126,8 @@ export function Services() {
 
 /* Membership */
 export function Membership() {
-  const terms = [
-    { icon: LayoutGrid, t: <>30 days free, then <strong>$20 per month</strong> base</> },
-    { icon: BadgePercent, t: <><strong>2% platform fee</strong> on completed trips received through the provider network</> },
-    { icon: CreditCard, t: "Payment-processing fees may apply" },
-  ];
+  const icons = { Trips: CalendarPlus, Schedule: ClipboardCheck, Vehicles: Truck, 'Pricing Rules': CreditCard };
+  const benefits = publicFeatures().filter(f => f.name in icons);
   return (
     <section id="membership" aria-labelledby="member-title" className="public-membership mfn-section scroll-mt-20 bg-ds-membership text-ds-primary">
       <HomeReveal className="mfn-container grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
@@ -137,13 +135,15 @@ export function Membership() {
           <p className="ds-label flex items-center gap-2 text-ds-accent-active"><Truck className="size-5" aria-hidden />Provider membership</p>
           <h2 id="member-title" className="mt-4 font-heading text-6xl font-bold uppercase leading-none sm:text-7xl">30 DAYS <span className="text-ds-accent">FREE</span></h2>
           <p className="ds-section-title mt-5 uppercase">TRY THE COMPLETE PROVIDER NETWORK FREE FOR 30 DAYS.</p>
-          <div className="mt-7"><a href={LINKS.join} className={`${btnAction} home-primary-cta`}><Network aria-hidden />Join the Provider Network</a></div>
+          <p className="ds-body mt-5 text-ds-text-2">Provider Membership: <strong>$20/month after the 30-day trial.</strong><br />Referral Network access: optional <strong>$10/month add-on.</strong></p>
+          <div className="mt-7"><a href="/create-account?type=provider" className={`${btnAction} home-primary-cta whitespace-nowrap`}><UserPlus aria-hidden />Create Provider Account</a></div>
         </div>
-        <ul className="grid gap-3">
-          {terms.map(({ icon: Icon, t }, i) => (
-            <li key={i} className="ds-body-lg flex items-center gap-4 rounded-ds-sm bg-ds-surface p-5 text-[1.125rem] shadow-ds"><Icon className="size-6 shrink-0 text-ds-accent-active" aria-hidden />{t}</li>
-          ))}
-        </ul>
+        <div>
+          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
+            {benefits.map(f => { const Icon = icons[f.name as keyof typeof icons]; return <div key={f.name} className="flex h-full min-w-0 items-start gap-3 rounded-ds-sm bg-ds-surface/80 p-5 shadow-ds"><Icon className="mt-1 size-6 shrink-0 text-ds-accent-active" aria-hidden /><div className="min-w-0"><h3 className="ds-subheading text-ds-primary">{f.name === 'Pricing Rules' ? 'Your customer rates' : f.name === 'Vehicles' ? 'Fleet records' : f.name === 'Schedule' ? 'Daily scheduling' : 'Trips & history'}</h3><p className="ds-body mt-2 text-ds-text-2">{f.name === 'Pricing Rules' ? 'Manage your service rates.' : f.name === 'Vehicles' ? 'Keep vehicle details organized.' : f.name === 'Schedule' ? 'Plan drivers and vehicles.' : 'Keep owned trips organized.'}</p></div></div>; })}
+          </div>
+          <p className="ds-support mt-5 text-ds-text-2">Network usage fees are separate: the sender covers the 2% platform fee and applicable processing costs. </p>
+        </div>
       </HomeReveal>
     </section>
   );
