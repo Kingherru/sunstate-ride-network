@@ -110,7 +110,7 @@ export const listMyPayers = createServerFn({ method: "GET" })
 
 export const createPayer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object(payerFields).parse(i))
+  .inputValidator((i: unknown) => z.object(payerFields).strict().parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true; id: string } | { error: string }> => {
     try {
       const {data:members}=await context.supabase.from('workspace_members').select('workspace_id,role,is_contractor,record_permissions').eq('user_id',context.userId).is('removed_at',null);
@@ -122,7 +122,10 @@ export const createPayer = createServerFn({ method: "POST" })
       const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).eq('active',true).maybeSingle();
       if (!c) return { error: "Linked contact not found" };
     }
-    const {data:existing}=await context.supabase.from('payers').select('id').eq('created_by',context.userId).eq('name',data.name).eq('active',true).eq('email',data.email||'').eq('phone',data.phone||'').limit(1).maybeSingle();
+    let duplicate=context.supabase.from('payers').select('id').eq('created_by',context.userId).eq('name',data.name).eq('active',true);
+    duplicate=data.email?duplicate.eq('email',data.email):duplicate.is('email',null);
+    duplicate=data.phone?duplicate.eq('phone',data.phone):duplicate.is('phone',null);
+    const {data:existing}=await duplicate.limit(1).maybeSingle();
     if(existing)return {ok:true,id:existing.id};
     const { data: row, error } = await context.supabase
       .from("payers")
@@ -135,7 +138,7 @@ export const createPayer = createServerFn({ method: "POST" })
 
 export const updatePayer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), ...payerFields }).parse(i))
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), ...payerFields }).strict().parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
     if (data.linked_contact_id) {
       const { data: c } = await context.supabase.from("provider_contacts").select("id").eq("id", data.linked_contact_id).maybeSingle();
