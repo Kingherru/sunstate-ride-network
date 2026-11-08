@@ -28,6 +28,7 @@ export const listMyNotifications = createServerFn({ method: "GET" })
       .from("notifications")
       .select("id, type, title, body, link, ride_request_id, read_at, created_at", { count: "exact" })
       .eq("user_id", userId)
+      .is('communication', null)
       .order("created_at", { ascending: false })
       .range(data.offset, data.offset + data.limit - 1);
     if (data.filter === "unread") q = q.is("read_at", null);
