@@ -5205,6 +5205,7 @@ export type Database = {
           black_tie_vehicle: string | null
           cancel_reason: string | null
           canceled_at: string | null
+          coordination_contact_id: string | null
           created_at: string
           creator_person_mfn_id: string | null
           customer_quote_draft_id: string | null
@@ -5299,6 +5300,7 @@ export type Database = {
           round_trip: boolean
           route_computed_at: string | null
           route_polyline: string | null
+          saved_patient_id: string | null
           scheduled_start_time: string | null
           selected_provider_mfn_id: string | null
           selected_provider_workspace_id: string | null
@@ -5331,6 +5333,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          coordination_contact_id?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
           customer_quote_draft_id?: string | null
@@ -5425,6 +5428,7 @@ export type Database = {
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
+          saved_patient_id?: string | null
           scheduled_start_time?: string | null
           selected_provider_mfn_id?: string | null
           selected_provider_workspace_id?: string | null
@@ -5457,6 +5461,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          coordination_contact_id?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
           customer_quote_draft_id?: string | null
@@ -5551,6 +5556,7 @@ export type Database = {
           round_trip?: boolean
           route_computed_at?: string | null
           route_polyline?: string | null
+          saved_patient_id?: string | null
           scheduled_start_time?: string | null
           selected_provider_mfn_id?: string | null
           selected_provider_workspace_id?: string | null
@@ -5582,6 +5588,13 @@ export type Database = {
             columns: ["assigned_vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_coordination_contact_id_fkey"
+            columns: ["coordination_contact_id"]
+            isOneToOne: false
+            referencedRelation: "provider_contacts"
             referencedColumns: ["id"]
           },
           {
@@ -5631,6 +5644,13 @@ export type Database = {
             columns: ["promoted_trip_id"]
             isOneToOne: false
             referencedRelation: "trips_admin_metadata"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_saved_patient_id_fkey"
+            columns: ["saved_patient_id"]
+            isOneToOne: false
+            referencedRelation: "saved_patients"
             referencedColumns: ["id"]
           },
           {
@@ -8932,6 +8952,10 @@ export type Database = {
         Args: { _expired?: boolean; _user: string }
         Returns: undefined
       }
+      authorized_trip_record: {
+        Args: { _actor: string; _id: string; _kind: string; _ws: string }
+        Returns: boolean
+      }
       auto_assign_trip: { Args: { _trip_id: string }; Returns: string }
       business_record_access: {
         Args: { _id: string; _kind: string; _level: string; _ws: string }
@@ -9273,6 +9297,10 @@ export type Database = {
         Returns: boolean
       }
       launch_flag_enabled: { Args: { _key: string }; Returns: boolean }
+      linked_patient_trip_defaults: {
+        Args: { _patient: string; _source: string }
+        Returns: Json
+      }
       list_eligible_providers: {
         Args: never
         Returns: {

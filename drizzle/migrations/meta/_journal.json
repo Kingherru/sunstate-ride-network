@@ -505,6 +505,13 @@
       "when": 1794107622392,
       "tag": "0071_pass4j_contact_and_account_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1794107723518,
+      "tag": "0072_pass4j_trip_contact_and_linked_defaults",
+      "breakpoints": true
     }
   ]
 }
