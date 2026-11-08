@@ -9,7 +9,7 @@ import { safeReturnPath } from "@/lib/access.functions";
 import { DsButton, DsSelect } from '@/components/ds/controls';
 
 export const Route = createFileRoute("/create-account")({
-  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: safeReturnPath(s.redirect) ?? undefined }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string; type?: 'provider' } => ({ redirect: safeReturnPath(s.redirect) ?? undefined, type: s.type === 'provider' ? 'provider' : undefined }),
   head: () => ({
     meta: [
       { title: "Create Account — MY FLORIDA NEMT" },
@@ -43,8 +43,8 @@ const schema = z.object({
 });
 
 function CreateAccount() {
-  const { redirect: returnTo } = Route.useSearch();
-  const [type, setType] = useState<AccountType | null>(null);
+  const { redirect: returnTo, type: initialType } = Route.useSearch();
+  const [type, setType] = useState<AccountType | null>(initialType ?? null);
   const [facilityType, setFacilityType] = useState('general_facility');
   const [step, setStep] = useState(0);
   const [f, setF] = useState({ firstName: "", lastName: "", email: "", phone: "", org: "", password: "", confirm: "", terms: false });
