@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeftRight, ArrowRight, CalendarDays, CalendarPlus, ClipboardCheck, Clock3, FileText, Handshake, MapPin, Network, NotebookPen, ShieldCheck, Truck, UserPlus, Users, Wallet, type LucideIcon } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, CalendarDays, CalendarPlus, ClipboardCheck, FileText, Handshake, MapPin, Network, NotebookPen, ShieldCheck, UserPlus, Users, Wallet, type LucideIcon } from 'lucide-react';
 import { PublicPage } from '@/components/public/PublicPage';
 import { BrandName } from '@/components/brand/BrandName';
 import { PageHero, Reveal, SectionHead, pageHead } from '@/components/public/page-kit';
@@ -37,9 +37,9 @@ function Benefits({ items }: { items: typeof patientBenefits }) {
 }
 function PlatformActions() {
   return <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
-    <Link to="/book" className={buttonVariants({ variant: 'default', className: 'whitespace-nowrap uppercase' })}><CalendarPlus aria-hidden />Book a Trip</Link>
-    <Link to="/create-account" className={buttonVariants({ variant: 'secondary', className: 'whitespace-nowrap uppercase' })}><UserPlus aria-hidden />Create an Account</Link>
-    <Link to="/create-account" search={{ type: 'provider' }} className={buttonVariants({ variant: 'secondary', className: 'whitespace-nowrap uppercase' })}><Network aria-hidden />Join the Provider Network</Link>
+    <Link to="/book" className={buttonVariants({ variant: 'default', className: '!bg-ds-action !text-ds-on-action hover:!bg-ds-action-hover min-h-11 h-auto whitespace-nowrap uppercase rounded-ds-sm' })}><CalendarPlus aria-hidden />Book a Trip</Link>
+    <Link to="/create-account" className={buttonVariants({ variant: 'secondary', className: '!bg-ds-primary !text-ds-on-primary hover:!bg-ds-primary-hover min-h-11 h-auto whitespace-nowrap uppercase rounded-ds-sm' })}><UserPlus aria-hidden />Create an Account</Link>
+    <Link to="/create-account" search={{ type: 'provider' }} className={buttonVariants({ variant: 'secondary', className: '!bg-ds-primary !text-ds-on-primary hover:!bg-ds-primary-hover min-h-11 h-auto whitespace-nowrap uppercase rounded-ds-sm' })}><Network aria-hidden />Join the Provider Network</Link>
   </div>;
 }
 function PlatformPage() {

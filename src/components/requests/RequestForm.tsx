@@ -504,7 +504,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
       <div className={commerce ? 'min-w-0' : 'mx-auto max-w-3xl'}>
         {!commerce && (portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>)}
         <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
-          Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.
+          {commerce ? allowProviderSelection ? 'Prepare a request for your selected provider. Your facility’s billing responsibility and approved agreement are reviewed separately. Acceptance is not guaranteed.' : 'Prepare your own workspace trip. Saving or submitting does not share it to the Referral Network, send an invoice or collect payment.' : 'Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.'}
         </p>
         <div role="note" className="ds-body-lg mx-auto mt-6 mb-6 max-w-[46rem] rounded-ds bg-ds-membership p-5 text-center text-ds-primary">
           <strong>We recommend submitting requests 48–72 hours in advance.</strong> Short-notice requests may be submitted for review, but availability and acceptance are not guaranteed.

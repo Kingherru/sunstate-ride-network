@@ -15,6 +15,7 @@ import { useAdminLevel } from '@/lib/use-admin-level';
 import { PatientTimeline } from './PatientTimeline';
 import { TripInvoiceDetails } from './TripInvoiceDetails';
 import { AssignedDriverContactConsent } from './TripCommunicationSettings';
+import { patientDetailFields } from '@/lib/patient-detail-presentation';
 
 const money = (c: number) => (c / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const words = (s: string) => s.replaceAll('_', ' ');
@@ -59,17 +60,17 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
     {target && <DetailOverlayFrame onClose={() => setTarget(null)} title={ok ? titleFor(target, delivery) : 'Information'} idLabel={ok ? ok.request.mfn_id || null : null}>
         {q.isPending ? <p role="status">Loading details…</p> : q.error || !ok ? <p role="alert">Details not available.</p> : <div className="space-y-6">
           {ok.request.deactivated_at && <DetailSection tone="warning" title="Deactivated"><p>This request was deactivated on {fmtDateTime(String(ok.request.deactivated_at))}. All history is preserved.</p></DetailSection>}
-          <RequestDetail r={ok.request} showSource />
+          {ok.patient ? <DetailSection tone="trip" title="Trip details"><dl className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">{patientDetailFields(ok.request).map(field=><div key={field.label} className="min-w-0 py-3"><dt className="ds-support font-semibold">{field.label}</dt><dd className="ds-body mt-1 break-words">{field.value}</dd></div>)}</dl></DetailSection> : <RequestDetail r={ok.request} showSource />}
           {!ok.patient && target.kind==='trip' && typeof ok.request.driver_id==='string' && ok.invoices.some(i=>i.canManage) && <AssignedDriverContactConsent tripId={target.id} driverId={ok.request.driver_id}/>}
-          {ok.patient && <div className="grid gap-5 lg:grid-cols-2"><DetailSection title="Your trip timeline"><PatientTimeline stage={ok.patient.stage} events={ok.patient.timeline}/></DetailSection><DetailSection title="Trip communications"><p className="ds-body">Dispatch: {ok.patient.contacts?.dispatchPhone??'Not available'}</p><p className="ds-body mt-3">Driver: {ok.patient.contacts?.driverName??'Not available'}</p><p className="ds-body mt-3">Driver phone: {ok.patient.contacts?.driverPhone??'Not shared'}</p></DetailSection></div>}
+          {ok.patient && <div className="grid gap-5 lg:grid-cols-2"><DetailSection title="Your trip timeline"><PatientTimeline stage={ok.patient.stage} events={ok.patient.timeline}/></DetailSection><DetailSection title="Trip communications"><p className="ds-body">Provider: {ok.patient.providerName??'Not Available'}</p><p className="ds-body mt-3">Dispatch: {ok.patient.contacts?.dispatchPhone??'Not Available'}</p><p className="ds-body mt-3">Driver: {ok.patient.contacts?.driverName??'Not Available'}</p><p className="ds-body mt-3">Driver phone: {ok.patient.contacts?.driverPhone??'Not Available'}</p></DetailSection></div>}
           {ok.invoices.length>0?<div className="grid gap-5 lg:grid-cols-2">{ok.invoices.map(invoice=><DetailSection key={invoice.id} title="Invoice & payment summary"><TripInvoiceDetails invoice={invoice}/></DetailSection>)}</div>:<DetailSection title="Invoice & payment summary"><p className="ds-body">No invoice available</p>{ok.patient?.payments.map(p=><p key={p.reference} className="ds-support mt-3">{p.status} · <span className="portal-money">{money(p.amountCents)}</span> · {fmtDateTime(p.createdAt)}</p>)}</DetailSection>}
-          <div className="grid gap-6 lg:grid-cols-2">
+          {!ok.patient && <div className="grid gap-6 lg:grid-cols-2">
             <DetailSection tone="contact" title="Request account"><p className="ds-body">{ok.account ? `${ok.account.display_name} · ${ok.account.mfn_id}` : 'Not Available'}</p></DetailSection>
             <DetailSection title="Assignment and activity">
               <p className="ds-body">{ok.assignment || 'Not Available'}</p>
               {ok.history.length > 0 && <ol className="mt-2 divide-y divide-ds-sky-border">{ok.history.map((h, i) => <li key={i} className="ds-support py-2">{words(h.action)} · {fmtDateTime(h.at)}{h.actor ? ` · ${h.actor}` : ''}</li>)}</ol>}
             </DetailSection>
-          </div>
+          </div>}
           {ok.distributions.length > 0 && <DetailSection tone="payment" title="Distribution waves and offers">{ok.distributions.map(d => <div key={d.id} className="mt-3 border-t border-ds-green-border pt-3 first:mt-0 first:border-0 first:pt-0"><p className="ds-label">{d.mfn_id} · {words(d.status)}</p>{d.waves.map(w => <p key={w.id} className="ds-support">{w.radius_miles}-mile wave · {fmtDateTime(w.sent_at)}</p>)}{d.offers.map(o => <p key={o.id} className="ds-support">{o.mfn_id} · {words(o.status)} · <span className="portal-money">{Number.isFinite(o.amount_cents) ? money(o.amount_cents) : 'Not Available'}</span></p>)}{d.negotiations.map(n => <p key={n.id} className="ds-support mt-2">{n.side} · {words(n.action)}{n.amount_cents != null ? <> · <span className="portal-money">{money(n.amount_cents)}</span></> : ''} · {fmtDateTime(n.created_at)}</p>)}</div>)}</DetailSection>}
           {isAdmin && requestId && <AdminLifecycle id={requestId} />}
           {isAdmin && target.kind === 'request' && <AdminRequestActions r={ok.request} delivery={delivery} />}
