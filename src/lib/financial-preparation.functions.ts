@@ -17,7 +17,7 @@ export const reviewFinancialCart = createServerFn({method:'POST'}).middleware([r
       const eligible=(members??[]).filter(m=>m.workspaces.account_type==='provider'&&m.workspaces.status==='active'&&!m.workspaces.is_test_account);
       if(error||eligible.length!==1||!eligible[0]) throw new Error('One authorized active Provider business required');
       workspaceId=eligible[0].workspace_id;
-      const {data:allowed,error:permissionError}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_ws:workspaceId});
+      const {data:allowed,error:permissionError}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_workspace:workspaceId});
       if(permissionError||!allowed) throw new Error('Business permission required');
       const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
       const [{data:subs,error:subError},{data:trial,error:trialError}]=await Promise.all([
@@ -51,7 +51,7 @@ export const reviewFinancialCart = createServerFn({method:'POST'}).middleware([r
 export const getWorkspaceConnectPreparation = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
   .inputValidator((v:unknown)=>z.object({workspaceId:z.string().uuid(),environment:z.literal('sandbox')}).strict().parse(v))
   .handler(async({data,context})=>{
-    const {data:allowed,error}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_ws:data.workspaceId});
+    const {data:allowed,error}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_workspace:data.workspaceId});
     if(error||!allowed)throw new Error('Provider business permission required');
     const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
     const {data:rows,error:readError}=await supabaseAdmin.from('provider_payout_accounts').select('status,charges_enabled,payouts_enabled,details_submitted,requirements_due').eq('workspace_id',data.workspaceId).eq('environment','sandbox');

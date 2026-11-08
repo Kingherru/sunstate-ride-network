@@ -23,7 +23,7 @@ function originFromRequest(req: Request | undefined): string {
 /** Start (or resume) Stripe Connect Express onboarding for the signed-in provider. */
 export const createConnectOnboardingLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<{ok:false;error:string}|{ok:true;url:string}> => {
     const { supabase, userId, claims } = context;
     return { ok: false as const, error: 'Connect onboarding is off pending explicit sandbox activation and Pass 4L. No account or link was created.' };
     /* Retained future implementation; unreachable while preparation is OFF.
