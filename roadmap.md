@@ -1,4 +1,11 @@
 # Florida MVP launch sequence
+## Pass 4J — focused completion in progress
+- [ ] Polish existing 30-day homepage trial benefits and show $20 base / optional $10 add-on; signup only.
+- [ ] Shared Contacts & Payers crash fix, scoped contact/payer selection and inline trip preparation; tokenized payment collection OFF.
+- [ ] Idempotent evidence-based Patient/Facility verification, history and identity display; Provider evaluator unchanged.
+- [ ] Confirmed-link trip selection, authorized defaults, safe patient detail/timeline, no automatic Network sharing.
+- [ ] Focused authorization/migration tests and automatic compilation; preserve all records/seven disabled accounts, no sends/payments/publishing.
+- Exact email/phone lookup, reminders, guide delivery, checkout and deferred secondary public header remain OFF/deferred.
 ## Pass 4I — safe implementation, remaining consolidation limits
 - [x] Existing $50 guide updated without changing ID/slug/price/history. Authoritative private object: paid-resources/guides/MY-FLORIDA-NEMT-30-Day-Planning-Guide.pdf, 73,310 bytes, SHA256 e502a78ffdd1bc5837812542cba4587765d2ba4bdb81065bc87ec8ee9f34d3fa; authenticated bytes match upload. Prior object remains private and unused. No public/repository copy; checkout and delivery OFF.
 - [x] Five Provider Settings areas, compact icon navigation, separated profile/notification controls, workspace-scoped owner/admin business contact and mailing-address saves, existing services/coverage/privacy controls, credentials, membership/security/integrations/exports reused. Preview saves blocked. Legacy aliases retained. Sidebar identity/Change Log/Sign Out and deferred public header unchanged.
