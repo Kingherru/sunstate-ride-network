@@ -9479,6 +9479,7 @@ export type Database = {
       }
       my_access_state: { Args: never; Returns: Json }
       my_account_profile_verification: { Args: never; Returns: Json }
+      my_confirmed_usual_provider: { Args: never; Returns: Json }
       network_accept_offer: {
         Args: { _approve?: boolean; _offer: string }
         Returns: Json
