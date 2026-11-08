@@ -53,7 +53,7 @@ export function ProviderSettings({ workspaceId, role, email, initialSection = 'b
       <VerificationEvidence workspaceId={workspaceId} />
       <div className="space-y-2">
         <h3 className="ds-label text-ds-primary">Semi-Verified — Light Blue</h3>
-        <p className="ds-body">Requires the first successful ${PROVIDER_VERIFICATION_POLICY.membershipCents / 100} monthly Provider Membership payment after the {PROVIDER_VERIFICATION_POLICY.trialDays}-day free trial, with membership current and in good standing.</p>
+        <p className="ds-body">Requires a successful qualifying Provider Base Membership payment, with membership current and in good standing. The {PROVIDER_VERIFICATION_POLICY.trialDays}-day free trial alone does not qualify.</p>
         <p className="ds-support">The free trial, trip platform fees, Stripe fees, pending or failed payments and refunds do not qualify.</p>
       </div>
       <div className="space-y-2">

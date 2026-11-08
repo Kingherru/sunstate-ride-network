@@ -192,9 +192,9 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
         <label className="inline-flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={medicalDelivery} onChange={(e) => setMedicalDelivery(e.target.checked)} /> Medical delivery
         </label>
-        <label className="inline-flex items-center gap-2 text-sm font-bold">
+        {section !== 'operations' && <label className="inline-flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
-        </label>
+        </label>}
         <p className="ds-caption">Search visibility is managed separately in Settings → Services, Areas & Pricing → Business identity & search visibility.</p>
       </div>}
 
