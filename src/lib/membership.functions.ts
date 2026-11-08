@@ -101,6 +101,9 @@ export const getMembershipBilling = createServerFn({ method: 'POST' }).middlewar
     const { admin, role } = await authorizeWorkspace(context, data.workspaceId, false);
     const { _sub, ...summary } = await buildSummary(admin, data.workspaceId, data.environment);
     const owner = role === 'owner';
+    // Pass 4M reviews stored evidence only; no live Stripe reads or card retrieval.
+    return { summary, invoices: owner ? [] : null, card: null, owner };
+    /* Future sandbox-enabled billing management:
     if (!owner || !_sub?.stripe_customer_id || _sub.environment !== data.environment) return { summary, invoices: owner ? [] : null, card: null, owner };
     try {
       const stripe = createStripeClient(data.environment as StripeEnv);
@@ -117,14 +120,17 @@ export const getMembershipBilling = createServerFn({ method: 'POST' }).middlewar
     } catch (e) {
       return { summary, owner, invoices: [], card: null, stripeError: getStripeErrorMessage(e) };
     }
+    */
   });
 
 /** Adds or removes the add-on on the existing base subscription; never creates a second subscription or a new trial. */
 export const setNetworkAddon = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => envInput.extend({ enabled: z.boolean() }).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: true; status: AddonStatus; effectiveAt: string | null } | { error: string }> => {
+    return { error: 'Subscription changes are off pending secure sandbox management and Pass 4L policy approval.' };
+    /* Future explicitly enabled management:
     const { admin } = await authorizeWorkspace(context, data.workspaceId, true);
-    const { _sub } = await buildSummary(admin, data.workspaceId, data.environment);
+      const { _sub } = await buildSummary(admin, data.workspaceId, data.environment);
     if (!_sub) return { error: 'Start your Base Provider Membership first.' };
     if (_sub.price_id === LEGACY_MEMBERSHIP_PRICE) return { error: 'Your current membership already includes the Network until its renewal transition.' };
     if (!['active', 'trialing'].includes(_sub.status)) return { error: 'Your base membership must be active or trialing.' };

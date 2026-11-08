@@ -28,6 +28,7 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'connect-preparation': {state:'Not started',customerReady:false,networkReady:false,signingConfigured:false,activation:false,environment:'sandbox'},
   'account-profile-verification':[],
   'confirmed-usual-provider':null,
   'business-visibility': {workspace:{display_name:'Demo transportation business',account_type:'provider'},profile:null,consent:null},

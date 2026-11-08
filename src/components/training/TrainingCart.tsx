@@ -10,6 +10,8 @@ import { eligibleCartItems, type CartCourse } from '@/lib/training/cart-rules';
 import { CheckoutAcknowledgment } from '@/components/payments/CheckoutAcknowledgment';
 import { currentCheckoutConsent } from '@/lib/payment-policy';
 import { createCommerceCheckout } from '@/lib/commerce.functions';
+import { reviewFinancialCart } from '@/lib/financial-preparation.functions';
+import { TERMS_VERSION, PAYMENT_POLICY_VERSION } from '@/lib/payment-policy';
 import { commerceTotals, confirmationComplete, normalizeSelection, type Confirmation } from '@/lib/commerce-rules';
 import { MEMBERSHIP_PRICING } from '@/lib/membership-pricing';
 import { getStripe, getStripeEnvironment } from '@/lib/stripe';
@@ -47,6 +49,9 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
   const [confirm, setConfirm] = useState<Confirmation>({ recurring: false, oneTime: false, terms: false });
   const [signedIn, setSignedIn] = useState(false);
   const [error, setError] = useState('');
+  const reviewCart = useServerFn(reviewFinancialCart);
+  const [review, setReview] = useState<Awaited<ReturnType<typeof reviewFinancialCart>> | null>(null);
+  const [reviewing, setReviewing] = useState(false);
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user));
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
@@ -59,8 +64,8 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
   const count = sel.courses.length + (sel.base ? 1 : 0) + (sel.network ? 1 : 0);
   const hasRecurring = sel.base || sel.network;
   const ready = confirmationComplete(sel, confirm);
-  const selectionKey = JSON.stringify([sel.base,sel.network,sel.courses.map(c=>[c.id,c.price_cents]),membership.trialEligible]);
-  useEffect(() => { setConfirm({recurring:false,oneTime:false,terms:false}); setReq(null); }, [selectionKey]);
+  const selectionKey = JSON.stringify([sel.base,sel.network,sel.courses.map(c=>[c.id,c.price_cents,c.price_id,c.product_kind]),membership.trialEligible,TERMS_VERSION,PAYMENT_POLICY_VERSION]);
+  useEffect(() => { setConfirm({recurring:false,oneTime:false,terms:false}); setReq(null); setReview(null); }, [selectionKey]);
   const setMembership = (m: Partial<Membership>) => setM(prev => {
     const next = { ...prev, ...m };
     if (!next.base && !next.baseActive) next.network = false; // add-on never stands alone
@@ -93,7 +98,8 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
             <p className="ds-support">Exact processor/tax total and product-specific refund eligibility are not yet approved for payment preparation. No extra fee is assumed; checkout remains off.</p>
             <CheckoutAcknowledgment accepted={confirm.terms} onChange={accepted => setConfirm(c => ({...c,terms:accepted}))}/>
 
-            <DsButton disabled={!ready} onClick={() => { try { getStripeEnvironment(); setReq({ base: sel.base, network: sel.network, ids: sel.courses.map(c => c.id), confirm }); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } }}>Review checkout availability</DsButton>
+            <DsButton disabled={!ready || reviewing} onClick={async () => { setReviewing(true); setError(''); try { if(getStripeEnvironment()!=='sandbox') throw new Error('Sandbox preparation only'); const result=await reviewCart({data:{base:sel.base,network:sel.network,courseIds:sel.courses.map(c=>c.id),environment:'sandbox'}}); setReview(result); setConfirm({recurring:false,oneTime:false,terms:false}); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } finally {setReviewing(false);} }}>{reviewing?'Reviewing…':'Review checkout availability'}</DsButton>
+            {review && <div role="status" className="space-y-2 ds-support"><p>Server-reviewed catalog {review.catalogVersion} · Terms {review.termsVersion} · Refund policy {review.refundVersion}</p><p>Recurring after trial: {usd(review.recurringCents)}/month · One-time items: {usd(review.oneTimeCents)} · Initial amount: {review.dueNowCents===null?'NOT CONFIGURED — trial billing timing requires confirmation':`${usd(review.dueNowCents)} before unconfigured tax/fees`}</p><p>Introductory trial: {review.trialDays} days · First renewal date: not yet determined.</p><ul className="list-disc pl-5">{review.blockers.map(b=><li key={b}>{b}</li>)}</ul><p>Checkout unavailable. No acceptance, card, payment or entitlement was created.</p></div>}
           </fieldset>}
           {error && <p role="alert" className="text-ds-error">{error}</p>}
           {req && <><p role="status" className="ds-body">Checkout is off pending approved purchase-specific terms and exact final fee/tax review. Nothing was saved or charged.</p><DsButton variant="secondary" onClick={()=>{setReq(null);setConfirm({recurring:false,oneTime:false,terms:false});}}>Correct cart / return to review</DsButton></>}
