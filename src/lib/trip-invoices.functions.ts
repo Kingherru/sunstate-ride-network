@@ -82,7 +82,8 @@ export const prepareSecureInvoicePayment = createServerFn({ method: 'POST' }).mi
     assertCheckoutConsent(data.policyConsent);
     const { data: invoice } = await context.supabase.rpc('get_trip_invoice_snapshot', { _invoice: data.invoiceId });
     if (!invoice) return { error: 'Invoice unavailable.' };
-    return { error: 'Secure invoice collection is not enabled. Connected-account payment events and approved customer-processing configuration are required. No payment was created.' };
+    const snapshot=invoice as unknown as {totalCents?:number;currency?:string};
+    return { purpose:'provider_customer_invoice' as const,environment:'sandbox' as const,invoiceId:data.invoiceId,amountCents:Number.isSafeInteger(snapshot.totalCents)?snapshot.totalCents:null,currency:snapshot.currency??'usd',creationAllowed:false as const,policyAcceptanceRecorded:false as const,idempotencyRequired:true as const,chargeModel:null,feeTreatment:null,taxTreatment:null,error: 'Secure invoice collection is not enabled. Connect readiness, exact immutable invoice/account/acceptance binding, charge model, fee/tax configuration and Pass 4L approval are required. No payment was created.' };
   });
 export const getReferralFundingPreparation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => z.object({ workspaceId: z.string().uuid(), receiverCents: z.number().int().positive().max(2147483647), environment: z.enum(['sandbox', 'live']) }).strict().parse(v))

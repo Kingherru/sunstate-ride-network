@@ -26,6 +26,7 @@ import { InterfaceSize } from './InterfaceSize';
 import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
 import { AccountConnections } from './AccountConnections';
 import { TripDispatchSettings } from './TripCommunicationSettings';
+import { ConnectPreparation } from './ConnectPreparation';
 
 const sections = [
   { value: 'business', label: 'Profile & Business', icon: Building2 },
@@ -43,7 +44,7 @@ export function ProviderSettings({ workspaceId, role, email, initialSection = 'b
     <div className="portal-business-form min-w-0 space-y-5">
     <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
     {tab === 'business' && <><PersonalSettings section="profile" /><section className="portal-business-section"><h2 className="portal-business-heading ds-label">Account email</h2><p className="portal-business-body ds-body break-words">{email ?? 'Not available'}</p></section></>}
-    {tab === 'team' && <><PersonalSettings section="notifications" /><TripDispatchSettings workspaceId={workspaceId}/><AccountConnections workspaceId={workspaceId} provider showVisibility={false} /></>}
+    {tab === 'team' && <><PersonalSettings section="notifications" /><TripDispatchSettings workspaceId={workspaceId}/><AccountConnections workspaceId={workspaceId} provider showVisibility={false} /><ConnectPreparation workspaceId={workspaceId}/></>}
     {tab === 'business' && <div className="space-y-5"><BusinessContactSettings workspaceId={workspaceId} /><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Legal identity & operations attestation</h2><div className="portal-business-body"><p className="ds-caption">Verification identity and service-base attestation remain separate from workspace contact details; existing values are retained.</p>{preview.active ? <p className="ds-support mt-3">Preview only. Business attestations cannot be saved.</p> : <BusinessEvidenceEditor workspaceId={workspaceId} />}</div></section><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Legacy application & HIPAA acknowledgment</summary><div className="portal-business-body"><BusinessInfoPanel /></div></details></div>}
     {tab === 'pricing' && <div className="space-y-5"><section className="portal-business-section"><div className="portal-business-body"><NetworkProfileForm workspaceId={workspaceId} section="operations" /></div></section><BusinessVisibility workspaceId={workspaceId} /><CustomerPricing workspaceId={workspaceId} /><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Existing provider operating rules</summary><div className="portal-business-body"><RulesPanel /></div></details></div>}
     {tab === 'credentials' && <div className="space-y-5">{preview.active ? <p className="ds-support">Preview only. Document uploads are unavailable.</p> : owner ? <ProviderCredentialsPanel /> : <p className="ds-support">Legacy documents are available to their owner only.</p>}

@@ -71,6 +71,7 @@ export async function verifyWebhook(req: Request, env: StripeEnv, source: "platf
     if (key === "v1") v1Signatures.push(value);
   }
   if (!timestamp || v1Signatures.length === 0) throw new Error("Invalid signature format");
+  if(!/^\d+$/.test(timestamp))throw new Error('Invalid webhook timestamp');
   const age = Math.abs(Date.now() / 1000 - Number(timestamp));
   if (age > 300) throw new Error("Webhook timestamp too old");
 
@@ -83,7 +84,8 @@ export async function verifyWebhook(req: Request, env: StripeEnv, source: "platf
   );
   const signed = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${body}`));
   const expected = Buffer.from(new Uint8Array(signed)).toString("hex");
-  if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
+  const valid=v1Signatures.some(value=>{ if(!/^[a-f0-9]{64}$/.test(value))return false; let difference=0; for(let i=0;i<64;i++)difference|=value.charCodeAt(i)^expected.charCodeAt(i); return difference===0; });
+  if (!valid) throw new Error("Invalid webhook signature");
 
   return JSON.parse(body);
 }

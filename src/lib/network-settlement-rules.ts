@@ -23,7 +23,9 @@ export function effectiveSettlementState(s: SettlementTimes, now = Date.now()): 
   if (['disputed', 'refunded', 'failed', 'canceled'].includes(s.state)) return s.state as SettlementState;
   if (s.paid_out) return 'paid_out';
   if (s.transferred) return 'payout_pending';
-  if (s.state === 'held') return s.release_eligible_at && now >= Date.parse(s.release_eligible_at) ? 'available_for_transfer' : 'held';
+  // Elapsed time alone is not authoritative release evidence. Database must mark availability.
+  if (s.state === 'held') return 'held';
+  if (s.state === 'available_for_transfer') return 'available_for_transfer';
   if (s.state === 'under_review') {
     if (s.review_window_ends_at && now < Date.parse(s.review_window_ends_at)) return 'under_review';
     return s.payment_deadline_at && now > Date.parse(s.payment_deadline_at) ? 'overdue' : 'payment_due';

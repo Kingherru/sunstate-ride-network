@@ -1,8 +1,12 @@
 # Florida MVP launch sequence
-## Pass 4M — in progress, sandbox preparation only
-- [ ] Extend existing versioned catalog, workspace trial/entitlement evidence and shared combined-cart review.
-- [ ] Prepare owner-scoped Connect readiness, distinct payment purposes, exact reconciliation and immutable referral accounting/locked holds.
-- [ ] Integrate read-only membership/invoice/earnings/Admin review; narrow synthetic financial tests and preservation checks only.
+## Pass 4M — partial safe foundations built; not financially complete
+- [x] Shared cart server review reconstructs allowed catalog IDs/amounts/types, resolves authorized Provider workspace, checks duplicate membership/trial/purchase evidence, binds review hash and resets consent; trial + one-time timing fails closed. Stripe IDs remain unverified/null, not invented.
+- [x] One additive migration (0083) extends catalog/subscription/Connect/event/settlement evidence; immutable trial/enrolled snapshots and locked sandbox event claims prepared behind missing=OFF gates. Distinct purposes, exact invoice evidence comparison, conservative policy-review convergence, balanced sender-side referral accounting and 10/4-day hold rules have focused synthetic tests.
+- [x] Existing Settings has owner/admin scoped sandbox Connect checklist; account/link creation and subscription mutation blocked. Membership reads no Stripe/card data. Existing Admin Payouts has Master-only safe reconciliation search, amounts/reasons; existing invoice preparation returns explicit single-purpose unavailable contract. Timer-only settlement availability removed.
+- [x] 29 narrow tests passed; automatic type/production build OK. Own authenticated Master Admin reconciliation page loaded read-only. No populated cart/invoice/referral flow verified, no financial rows or Stripe calls created.
+- [ ] Durable price mapping/enrollment and cart acceptance/replay/session reservations, complete Connect workspace binding/capability persistence, platform/referral event application and refund/dispute freeze producers remain unfinished. Blocked until verified sandbox mappings, secure Connect signing configuration and owner-approved billing/fee/charge rules; see docs/pass4m-owner-blockers.md.
+- [ ] Immutable accounting append/reverse RPC and fully funded-before-executable referral enforcement, production release computation, purpose-linked earnings breakdown and populated synthetic readback remain unfinished; no claim that an executable ledger or full reconciliation is complete. Current helpers are isolated preparation, not financial authority.
+- Preservation: 28 profiles, seven disabled accounts, five trips, ten requests, one subscription, zero payments/events/accounting rows. Original profile/disabled/trip/request/notification fingerprints match; subscription original columns match (new nullable columns explain whole-row hash change). No data backfill or real-row writes.
 - All Stripe writes require separate exact-object owner approval. Checkout, collection, entitlements, transfers, payouts, communications and jobs stay OFF. Pass 4L is the mandatory policy gate, followed by 4O and 4P.
 
 ## Pass 4N — safe foundations built; live/populated workflows not exercised

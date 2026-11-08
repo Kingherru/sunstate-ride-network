@@ -12,7 +12,8 @@ export const Route = createFileRoute("/api/public/payments/connect-webhook")({
         const env: StripeEnv = rawEnv;
         if (!connectWebhookSecretConfigured(env)) return new Response("Connected-account webhook is not configured", { status: 503 });
         try {
-          const event = await verifyWebhook(request, env, "connect") as { id?: string; type: string; account?: string; data: { object: any } };
+          const event = await verifyWebhook(request, env, "connect") as { id?: string; type: string; account?: string; livemode?:boolean; created?:number; data: { object: any } };
+          if(env==='sandbox')return Response.json({received:true,...await (await import('@/lib/sandbox-reconciliation.server')).prepareSandboxReconciliation(event,'connect')});
           const np = await import("@/lib/network-payments.server");
           if (await np.alreadyProcessed(event.id)) return Response.json({ received: true, duplicate: true });
           switch (event.type) {

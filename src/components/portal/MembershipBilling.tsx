@@ -23,7 +23,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
   const get = useServerFn(getMembershipBilling);
   const addon = useServerFn(setNetworkAddon);
   const portal = useServerFn(createPortalSession);
-  const q = usePortalQuery({ queryKey: ['membership-billing', workspaceId], queryFn: () => get({ data: { environment: env!, workspaceId } }), enabled: !!env || preview.active });
+  const q = usePortalQuery({ queryKey: ['membership-billing', workspaceId], queryFn: () => { if(!env) throw new Error('Payments not configured'); return get({ data: { environment: env, workspaceId } }); }, enabled: !!env || preview.active });
   const [confirm, setConfirm] = useState<null | boolean>(null);
   const [busy, setBusy] = useState(false);
   const cart = useTrainingCart();
@@ -35,9 +35,10 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
 
   async function toggle(enabled: boolean) {
     if (preview.active) return previewBlocked();
+    if(!env)return;
     setBusy(true);
     try {
-      const r = await addon({ data: { environment: env!, workspaceId, enabled } });
+      const r = await addon({ data: { environment: env, workspaceId, enabled } });
       if ('error' in r) throw new Error(r.error);
       toast.success(enabled ? 'Referral Network add-on added.' : r.effectiveAt ? `Add-on ends ${date(r.effectiveAt)}.` : 'Add-on removed.');
       setConfirm(null);
@@ -46,9 +47,10 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
   }
   async function manage() {
     if (preview.active) return previewBlocked();
+    if(!env)return;
     setBusy(true);
     try {
-      const r = await portal({ data: { environment: env!, returnUrl: window.location.href } });
+      const r = await portal({ data: { environment: env, returnUrl: window.location.href } });
       if ('error' in r) throw new Error(r.error);
       window.open(r.url, '_blank');
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Billing management unavailable.'); } finally { setBusy(false); }
@@ -84,7 +86,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
           {s.addon === 'canceling' && <p className="ds-support">Access continues until {date(s.addonCancelAt)}.</p>}
           {!s.legacy && s.linked && (s.base === 'active' || s.base === 'trialing') && (
             confirm === null ? (
-              <DsButton className="mt-4" size="sm" variant={addonOn ? 'secondary' : 'primary'} disabled={!!disabledReason || busy || s.addon === 'canceling'} onClick={() => setConfirm(!addonOn)}>{addonOn ? 'Cancel add-on' : 'Add Referral Network'}</DsButton>
+              <DsButton className="mt-4" size="sm" variant={addonOn ? 'secondary' : 'primary'} disabled onClick={() => setConfirm(!addonOn)}>{addonOn ? 'Cancel add-on' : 'Add Referral Network'}</DsButton>
             ) : (
               <div className={`${soft} mt-4 space-y-3`} role="alertdialog" aria-label="Confirm add-on change">
                 <p className="ds-body">{confirm ? `Add the Referral Network for ${money(MEMBERSHIP_PRICING.networkCents)}/month to your existing membership? No second subscription is created.` : 'Cancel the Referral Network add-on? Access continues until the end of the current paid period.'}</p>
@@ -95,6 +97,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
         </article>
       </div>
       {disabledReason && <p className="ds-support">{disabledReason}</p>}
+      <p className="ds-support">Subscription updates, cancellation and saved-card changes remain off pending secure sandbox management and Pass 4L. The optional Network add-on never blocks ordinary provider portal access. Enrolled price versions require an effective-through snapshot; no permanent price is promised.</p>
 
       <div className={soft}>
         <h3 className="ds-label text-ds-primary">Recurring total</h3>
@@ -108,7 +111,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
         <div className={box}>
           <h3 className="ds-label text-ds-primary">Payment method</h3>
           {d?.card ? <p className="ds-body mt-2 capitalize">{d.card.brand} •••• {d.card.last4} · exp {String(d.card.expMonth).padStart(2, '0')}/{d.card.expYear}</p> : <p className="ds-support mt-2">{owner ? 'No card on file.' : 'Visible to the business owner only.'}</p>}
-          <DsButton className="mt-3" size="sm" variant="secondary" disabled={!!disabledReason || busy || !s.stripeLinked} onClick={manage}>Manage billing</DsButton>
+          <DsButton className="mt-3" size="sm" variant="secondary" disabled onClick={manage}>Manage billing unavailable</DsButton>
           {!s.stripeLinked && !disabledReason && <p className="ds-caption mt-2">Available after your membership is linked to billing.</p>}
         </div>
         <div className={box}>

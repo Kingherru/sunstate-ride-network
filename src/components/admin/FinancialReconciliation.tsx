@@ -1,0 +1,12 @@
+import { useState } from 'react';
+import { useServerFn } from '@tanstack/react-start';
+import { useQuery } from '@tanstack/react-query';
+import { listFinancialReconciliation } from '@/lib/financial-preparation.functions';
+export function FinancialReconciliation(){
+  const get=useServerFn(listFinancialReconciliation);const [search,setSearch]=useState('');
+  const q=useQuery({queryKey:['financial-reconciliation'],queryFn:()=>get(),retry:false});
+  if(q.isError)return <p className="ds-support">Transactional reconciliation is restricted to the Master Admin.</p>;
+  const rows=(q.data?.rows??[]).filter(r=>JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
+  const evidence=(v:unknown)=>{if(!v||typeof v!=='object'||Array.isArray(v))return null;const e=v as Record<string,unknown>;return {purpose:typeof e.purpose==='string'?e.purpose:'Unbound',expected:typeof e.expectedCents==='number'?e.expectedCents:null,actual:typeof e.authoritativeCents==='number'?e.authoritativeCents:null,currency:typeof e.currency==='string'?e.currency:'—',outcome:typeof e.outcome==='string'?e.outcome:'Not configured',reason:typeof e.reason==='string'?e.reason:'—'};};
+  return <section className="space-y-4"><h2 className="ds-subheading uppercase text-ds-primary">Sandbox reconciliation</h2><p className="ds-support">Read only. Refunds, reversals and disputed evidence require Pass 4L policy review; no manual paid state or release.</p><input aria-label="Search reconciliation references" className="ds-input w-full" placeholder="Search event or obligation reference" value={search} onChange={e=>setSearch(e.target.value)}/><div className="overflow-x-auto"><table className="w-full text-left ds-support"><thead><tr><th className="p-2">Event</th><th className="p-2">Purpose / environment</th><th className="p-2">Expected / authoritative</th><th className="p-2">Outcome / reason</th></tr></thead><tbody>{rows.map(r=>{const e=evidence(r.preparation_evidence);return <tr key={r.event_id} className="border-t border-ds-border"><td className="p-2 break-all">{r.event_id}<br/>{r.event_type}</td><td className="p-2">{e?.purpose??'Legacy unbound'}<br/>{r.environment} · {r.source}</td><td className="p-2">{e?.expected??'—'} / {e?.actual??'—'} {e?.currency??''} minor units</td><td className="p-2">{e?.outcome??'Legacy evidence — not remapped'}<br/>{e?.reason}</td></tr>;})}</tbody></table></div>{!rows.length&&<p className="ds-support">No matching sandbox events.</p>}</section>;
+}
