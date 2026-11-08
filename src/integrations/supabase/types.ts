@@ -3043,6 +3043,7 @@ export type Database = {
       notifications: {
         Row: {
           body: string | null
+          communication: Json | null
           created_at: string
           id: string
           link: string | null
@@ -3054,6 +3055,7 @@ export type Database = {
         }
         Insert: {
           body?: string | null
+          communication?: Json | null
           created_at?: string
           id?: string
           link?: string | null
@@ -3065,6 +3067,7 @@ export type Database = {
         }
         Update: {
           body?: string | null
+          communication?: Json | null
           created_at?: string
           id?: string
           link?: string | null
@@ -4443,6 +4446,7 @@ export type Database = {
           contact_email_public: boolean
           contact_phone_public: boolean
           counties: string[]
+          customer_communication_settings: Json | null
           description: string | null
           eligibility_expires_at: string | null
           facility_category: string | null
@@ -4477,6 +4481,7 @@ export type Database = {
           contact_email_public?: boolean
           contact_phone_public?: boolean
           counties?: string[]
+          customer_communication_settings?: Json | null
           description?: string | null
           eligibility_expires_at?: string | null
           facility_category?: string | null
@@ -4511,6 +4516,7 @@ export type Database = {
           contact_email_public?: boolean
           contact_phone_public?: boolean
           counties?: string[]
+          customer_communication_settings?: Json | null
           description?: string | null
           eligibility_expires_at?: string | null
           facility_category?: string | null
@@ -6651,9 +6657,14 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          customer_workspace_id: string | null
+          environment: string | null
           expires_at: string
+          first_view_at: string | null
           id: string
           invoice_id: string
+          invoice_version: string | null
+          provider_workspace_id: string | null
           revoked_at: string | null
           scope: string
           token_hash: string
@@ -6661,9 +6672,14 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          customer_workspace_id?: string | null
+          environment?: string | null
           expires_at: string
+          first_view_at?: string | null
           id?: string
           invoice_id: string
+          invoice_version?: string | null
+          provider_workspace_id?: string | null
           revoked_at?: string | null
           scope: string
           token_hash: string
@@ -6671,9 +6687,14 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          customer_workspace_id?: string | null
+          environment?: string | null
           expires_at?: string
+          first_view_at?: string | null
           id?: string
           invoice_id?: string
+          invoice_version?: string | null
+          provider_workspace_id?: string | null
           revoked_at?: string | null
           scope?: string
           token_hash?: string
@@ -7279,6 +7300,7 @@ export type Database = {
           authorization_number: string | null
           auto_assigned_at: string | null
           cancel_reason: string | null
+          communication_timezone: string | null
           completed_at: string | null
           completed_by: string | null
           completion_attested: boolean
@@ -7290,6 +7312,7 @@ export type Database = {
           cost_total: number | null
           created_at: string
           created_by: string | null
+          customer_driver_withheld: boolean | null
           delivery_hazmat: boolean
           delivery_item_description: string | null
           delivery_item_type:
@@ -7456,6 +7479,7 @@ export type Database = {
           authorization_number?: string | null
           auto_assigned_at?: string | null
           cancel_reason?: string | null
+          communication_timezone?: string | null
           completed_at?: string | null
           completed_by?: string | null
           completion_attested?: boolean
@@ -7467,6 +7491,7 @@ export type Database = {
           cost_total?: number | null
           created_at?: string
           created_by?: string | null
+          customer_driver_withheld?: boolean | null
           delivery_hazmat?: boolean
           delivery_item_description?: string | null
           delivery_item_type?:
@@ -7633,6 +7658,7 @@ export type Database = {
           authorization_number?: string | null
           auto_assigned_at?: string | null
           cancel_reason?: string | null
+          communication_timezone?: string | null
           completed_at?: string | null
           completed_by?: string | null
           completion_attested?: boolean
@@ -7644,6 +7670,7 @@ export type Database = {
           cost_total?: number | null
           created_at?: string
           created_by?: string | null
+          customer_driver_withheld?: boolean | null
           delivery_hazmat?: boolean
           delivery_item_description?: string | null
           delivery_item_type?:
@@ -9001,6 +9028,10 @@ export type Database = {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
+      cancel_communication_preparation: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {
@@ -9313,6 +9344,27 @@ export type Database = {
       linked_patient_trip_defaults: {
         Args: { _patient: string; _source: string }
         Returns: Json
+      }
+      list_communication_preparations: {
+        Args: { _admin?: boolean }
+        Returns: {
+          body: string | null
+          communication: Json | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          ride_request_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notifications"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       list_eligible_providers: {
         Args: never
@@ -9763,6 +9815,10 @@ export type Database = {
         }
         Returns: string
       }
+      prepare_patient_status_notice: {
+        Args: { _channel: string; _request: string }
+        Returns: string
+      }
       prepare_referral_funding_version: {
         Args: {
           _distribution: string
@@ -9772,6 +9828,7 @@ export type Database = {
         }
         Returns: Json
       }
+      preview_patient_communication_context: { Args: never; Returns: Json[] }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
@@ -9906,6 +9963,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      save_customer_communication_settings: {
+        Args: { _settings: Json; _ws: string }
+        Returns: undefined
+      }
       save_notification_settings: {
         Args: { _email: boolean; _in_app: boolean }
         Returns: undefined
@@ -10036,6 +10097,10 @@ export type Database = {
           _provider_confirmed: boolean
           _trip: string
         }
+        Returns: undefined
+      }
+      set_trip_communication_override: {
+        Args: { _timezone: string; _trip: string; _withhold: boolean }
         Returns: undefined
       }
       set_trip_dispatch_contact: {

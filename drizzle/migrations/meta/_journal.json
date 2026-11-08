@@ -554,6 +554,34 @@
       "when": 1794108173380,
       "tag": "0078_pass4j_contact_audit_recursion_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1794112934505,
+      "tag": "0079_pass4n_communication_preparation",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1794113032187,
+      "tag": "0080_pass4n_authorized_preview_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1794113172917,
+      "tag": "0081_pass4n_invitation_privacy_fail_closed",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1794113196256,
+      "tag": "0082_pass4n_notice_preparation_and_email_invalidation",
+      "breakpoints": true
     }
   ]
 }

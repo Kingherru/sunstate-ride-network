@@ -12,9 +12,10 @@ import { NetworkSettlements } from "@/components/portal/NetworkSettlements";
 import { AdminDisputeQueue } from "@/components/admin/AdminDisputeQueue";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
+import { Communications } from '@/components/portal/Communications';
 
-type Tab = "messages" | "requests" | "business" | "contacts";
-const TABS: Tab[] = ["messages", "requests", "business", "contacts"];
+type Tab = "messages" | "requests" | "business" | "contacts" | "communications";
+const TABS: Tab[] = ["messages", "requests", "business", "contacts", "communications"];
 
 export const Route = createFileRoute("/_authenticated/admin/messaging")({
   validateSearch: (s: Record<string, unknown>): { tab?: Tab; to?: string } => ({
@@ -38,9 +39,11 @@ function AdminMessaging() {
         <SegTabs label="Messaging sections" value={tab} onChange={(t) => navigate({ search: { tab: t === "messages" ? undefined : t } })} options={[
           { value: "messages", label: "Messages" }, { value: "requests", label: "Requests" },
           { value: "business", label: "Business Conversations" }, { value: "contacts", label: "Frontend Contacts" },
+          { value: 'communications', label: 'Communications' },
         ]} />
       </div>
       <section className={`${panelCls} p-4 sm:p-6`}>
+        {tab === 'communications' && <Communications admin />}
         {tab === "requests" && <AdminPlatformRequests canManage={!readOnly} />}
         {tab === "messages" && <>{to && <p className="ds-support mb-3 border-b border-ds-border pb-3">Opened from People &amp; Accounts — the conversation with this person is selected when one exists. Start one from their account details if none appears.</p>}<MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} focusUserId={to} emptyFallback={<DemoConversations kind="messages" />} /></>}
         {tab === "contacts" && <FrontendContacts canManage={!readOnly} />}

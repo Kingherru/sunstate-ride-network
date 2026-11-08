@@ -136,7 +136,7 @@ export function NotificationsPanel() {
     filtered.forEach((n) => {
       const k = groupLabel(n.created_at);
       if (!g.has(k)) g.set(k, []);
-      g.get(k)!.push(n);
+      g.get(k)?.push(n);
     });
     return Array.from(g.entries()).sort(
       (a, b) => GROUP_ORDER.indexOf(a[0]) - GROUP_ORDER.indexOf(b[0]),
@@ -191,6 +191,7 @@ export function NotificationsPanel() {
   const onOpen = (n: NotificationRow) => {
     if (preview.active) { previewBlocked(); return; }
     if (!n.read_at) markFn({ data: { ids: [n.id] } }).then(invalidateAll);
+    if (n.ride_request_id) { openDetails({ kind: 'request', id: n.ride_request_id }); return; }
     if (n.link) {
       // Trip/request notifications open the shared permission-filtered detail
       // overlay instead of navigating away.

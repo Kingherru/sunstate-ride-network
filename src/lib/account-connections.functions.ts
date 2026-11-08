@@ -43,21 +43,15 @@ export const saveRelationshipPreference = createServerFn({ method: 'POST' }).mid
 
 export const manageConnectionInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((i: unknown) => invitationActionInput.parse(i))
   .handler(async ({ data, context }) => {
-    const { generateInvitationToken, hashInvitationToken } = await import('./account-connections-token.server');
-    const send = data.action === 'send' || data.action === 'resend';
-    const token = send ? generateInvitationToken() : data.token;
+    if(data.action==='send'||data.action==='resend')return {ok:false,delivery:'not_configured',error:'Private invitation preparation is unavailable until person, account and destination rate limits are approved. No account lookup or delivery occurred.'};
+    const { hashInvitationToken } = await import('./account-connections-token.server');
+    const token = data.token;
     const hash = token ? await hashInvitationToken(token) : null;
     // PostgreSQL nullable arguments are emitted as non-nullable by generated types; null is intentional for inapp acceptance and clear-preference actions.
     const args = { _ws: data.workspaceId, _action: data.action, _id: data.invitationId ?? null, _email: data.email ?? null, _type: data.intendedType ?? null, _hash: hash, _confirmed: true };
     const { data: invitationId, error } = await context.supabase.rpc('manage_account_invitation', args as never);
     if (error || !invitationId) throw new Error('Invitation unavailable. Check the invited email, business type, account permissions and expiration; wait before resending.');
-    if (!send || !token) return { ok: true, delivery: 'not_requested' };
-    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    const { data: row } = await supabaseAdmin.from('account_connection_invitations').select('recipient_email,mfn_id,intended_type,intended_account_type,generation').eq('id', invitationId).single();
-    const { data: inviter } = await context.supabase.from('workspaces').select('display_name').eq('id', data.workspaceId).single();
-    if (!row) throw new Error('Invitation saved but delivery unavailable.');
-    // Preserve the hash-only expiring draft. No token/link is returned or delivered while communications are OFF.
-    return { ok: true, delivery: 'draft_only' };
+    return { ok: true, delivery: 'not_requested' };
   });
 
 export const removeAccountConnection = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
