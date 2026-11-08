@@ -37,6 +37,11 @@ import { PatientProviderPicker } from '@/components/network/PatientProviderPicke
 import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
 import { LinkedPatientSelector } from '@/components/portal/LinkedPatientSelector';
 import { TripCommerceContext } from './trip-commerce-context';
+import {getTripDefaults} from '@/lib/trip-defaults.functions';
+import {fillEmptyTripDefaults,approvedPatientDefaults} from '@/lib/trip-defaults.rules';
+import {PayerDialog} from '@/components/dashboard/PayersPanel';
+import {ContactDialog} from '@/components/dashboard/ContactsPanel';
+import {listContacts} from '@/lib/crm.functions';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -71,6 +76,7 @@ const empty: RideRequestInput = {
   patientPhone: "",
   patientEmail: "",
   patientWorkspaceId: null,
+  payerId:null,savedPatientId:null,coordinationContactId:null,
   pickupAddress: "",
   pickupAddressDetails: "",
   pickupCity: "",
@@ -276,16 +282,22 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setForm((f) => ({ ...f, [k]: v }));
 
   // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
-  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
+  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; mobility?:string|null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
   const [payers, setPayers] = useState<{ id: string; name: string; email: string | null; phone: string | null; active: boolean | null }[]>([]);
   const [patientChoice, setPatientChoice] = useState("");
   const [payerNote, setPayerNote] = useState<string | null>(null);
+  const [addingPayer,setAddingPayer]=useState(false);
+  const [addingContact,setAddingContact]=useState(false);
+  const [contacts,setContacts]=useState<Awaited<ReturnType<typeof listContacts>>>([]);
+  const loadDefaults=useServerFn(getTripDefaults);
+  const loadContacts=useServerFn(listContacts);
+  const loadPayers=useServerFn(listMyPayers);
   const applyPayer = (payerId: string | null | undefined, list = payers) => {
     const p = list.find((x) => x.id === payerId && x.active !== false);
     if (!p) return;
     const [first, ...rest] = p.name.trim().split(/\s+/);
     setCustomBilling({ firstName: first ?? "", lastName: rest.join(" ") || first || "", email: p.email ?? "", phone: p.phone ?? "" });
-    setForm((f) => ({ ...f, billingSource: "custom" }));
+    setForm((f) => ({ ...f, billingSource: "custom",payerId:p.id }));
     setPayerNote(`Billing prefilled from payer “${p.name}”. Review before submitting.`);
   };
   useEffect(() => {
@@ -293,10 +305,12 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     let cancelled = false;
     (async () => {
       try {
-        const [pts, pys, prefs] = await Promise.all([listSavedPatients(), listMyPayers(), getPortalPreferences()]);
+        const [pts, pys, prefs,defaults,cts] = await Promise.all([listSavedPatients(), listMyPayers(), getPortalPreferences(),loadDefaults(),loadContacts()]);
         if (cancelled) return;
         setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
         setPayers(pys as any[]);
+        setContacts(cts);
+        if(!initialDraft && defaults.defaults)setForm(f=>({...fillEmptyTripDefaults(f,defaults.defaults),...(f.patientFirstName||f.patientLastName?{}:{transportType:defaults.defaults?.transportType??f.transportType})}));
         if (!initialDraft && prefs.default_payer_id) applyPayer(prefs.default_payer_id, pys as any[]);
       } catch { /* optional helpers only */ }
     })();
@@ -307,7 +321,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setPatientChoice(id);
     const p = patients.find((x) => x.id === id);
     if (!p) return;
-    setForm((f) => ({ ...f, patientFirstName: p.first_name, patientLastName: p.last_name, patientPhone: p.phone ?? f.patientPhone, patientEmail: p.email ?? f.patientEmail }));
+    setForm((f) => ({ ...f,...approvedPatientDefaults(p),savedPatientId:p.id,patientWorkspaceId:null }));
     if (p.default_payer_id) applyPayer(p.default_payer_id);
   };
 
@@ -515,7 +529,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-4 sm:p-6 rounded-ds-sm">
 
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
-          {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId',id)} />}
+          {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => setForm(f=>({...f,patientWorkspaceId:id,savedPatientId:null}))} onDefaults={d=>setForm(f=>({...f,...d,savedPatientId:null}))} />}
 
           {/* Patient */}
           <fieldset className="space-y-6">
@@ -903,13 +917,14 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Billing information
             </legend>
+            {portal && <div className="space-y-3"><Field label="Authorized payer"><select className={inputCls} value={form.payerId??''} onChange={e=>{if(e.target.value)applyPayer(e.target.value);else upd('payerId',null);}}><option value="">No saved payer selected</option>{payers.filter(p=>p.active!==false).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="Trip coordination contact"><select className={inputCls} value={form.coordinationContactId??''} onChange={e=>upd('coordinationContactId',e.target.value||null)}><option value="">No contact selected</option>{contacts.filter(c=>c.active && c.coordination_allowed).map(c=><option key={c.id} value={c.id}>{c.company_name||`${c.first_name??''} ${c.last_name??''}`}</option>)}</select></Field><div className="flex flex-wrap gap-2"><DsButton type="button" variant="ghost" onClick={()=>setAddingPayer(true)}>Add payer</DsButton><DsButton type="button" variant="ghost" onClick={()=>setAddingContact(true)}>Add contact</DsButton></div><p className="ds-support">Billing and trip coordination only. Secure payment-method collection is not activated.</p></div>}
             <label className="flex items-start gap-3 text-sm">
               <input
                 type="checkbox"
                 className="mt-1"
                 checked={form.billingSource === "account"}
                 onChange={(e) =>
-                  upd("billingSource", e.target.checked ? "account" : (savedBilling ? "saved" : "custom"))
+                  setForm(f=>({...f,billingSource:e.target.checked?'account':savedBilling?'saved':'custom',payerId:null}))
                 }
               />
               <span>Use same information as account holder</span>
