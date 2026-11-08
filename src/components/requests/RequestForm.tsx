@@ -312,6 +312,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
         setPayers(pys as any[]);
         setContacts(cts);
+        if(!initialDraft && defaults.billing)setSavedBilling(current=>current??defaults.billing);
         if(defaults.workspaceId && defaults.accountType==='provider'){const linked=await loadFacilityPatients({data:{sourceId:defaults.workspaceId}});if(!cancelled)setFacilityPatients(linked);}
         const basicDefaults=defaults.defaults;
         if(!initialDraft && basicDefaults)setForm(f=>({...fillEmptyTripDefaults(f,basicDefaults),...(f.patientFirstName||f.patientLastName?{}:{transportType:basicDefaults.transportType??f.transportType})}));

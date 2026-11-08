@@ -52,16 +52,16 @@ export function SavedCards({ assignToPatient = false }: { assignToPatient?: bool
         <div>
           <h3 className="text-lg font-extrabold">Saved payment methods</h3>
           <p className="text-xs text-muted-foreground">
-            Card details are stored by Stripe — never on our servers. {assignToPatient ? "Assign each card to one patient." : "Only you can see or use them."}
+            Only existing token metadata is shown. Secure collection, replacement and payment actions are not activated.
           </p>
         </div>
         {!adding && (
           <button
             onClick={() => start.mutate()}
-            disabled={start.isPending}
+            disabled
             className="bg-primary text-primary-foreground font-bold px-4 py-2 rounded-sm hover:bg-primary/90 disabled:opacity-50"
           >
-            {start.isPending ? "Loading…" : "Add card"}
+            Secure setup unavailable
           </button>
         )}
       </div>
@@ -83,9 +83,9 @@ export function SavedCards({ assignToPatient = false }: { assignToPatient?: bool
             </div>
             <div className="flex gap-3 text-sm font-bold">
               {!c.is_default && (
-                <button onClick={() => setDef.mutate(c.id)} className="text-primary hover:underline">Set default</button>
+                <button disabled className="text-muted-foreground">Set default unavailable</button>
               )}
-              <button onClick={() => { if (confirm("Remove this card?")) del.mutate(c.id); }} className="text-destructive hover:underline">Remove</button>
+              <button disabled className="text-muted-foreground">Replacement unavailable</button>
             </div>
           </li>
         ))}
