@@ -533,6 +533,13 @@
       "when": 1794107921719,
       "tag": "0075_pass4j_evidence_trigger_scope_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1794107934879,
+      "tag": "0076_pass4j_evidence_trigger_record_safety",
+      "breakpoints": true
     }
   ]
 }
