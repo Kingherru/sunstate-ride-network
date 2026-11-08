@@ -74,8 +74,8 @@
   --mfn-orange: #E07A1F;
   --mfn-white: #FFFFFF;
   --mfn-gray: #F4F5F7;
-  /* Gray-canvas-only 0.3% compositing contrast; never change the base color. */
-  --ds-canvas-dot: rgb(0 0 0 / 0.003);
+  /* Gray-canvas-only 0.45% compositing contrast; never change the base color. */
+  --ds-canvas-dot: rgb(0 0 0 / 0.0045);
   --ds-canvas-dot-pattern: radial-gradient(circle at 1px 1px, var(--ds-canvas-dot) 0.6px, transparent 0.8px);
   --mfn-sky: #EAF2F8;
   --mfn-green: #EDF4ED;
@@ -557,7 +557,7 @@
 /* Pass 3Y: opt-in large details only. No content scaling or browser fullscreen. */
 .theme-portal [data-detail-window], .theme-portal[data-detail-window] {
   --detail-compact-width: 57.6rem;
-  width: min(75.2vw, var(--detail-compact-width)) !important;
+  width: min(90.24vw, calc(var(--detail-compact-width) * 1.2)) !important;
   max-width: calc(100vw - 2rem) !important;
   max-height: 73.6dvh !important;
   margin-block: 0 !important;
@@ -664,3 +664,24 @@
 @media (forced-colors: active), (prefers-contrast: more), print {
   .ds-canvas-texture, .portal-detail-frame.ds-canvas-texture > .portal-window-body { background-image: none !important; }
 }
+
+/* Shared readable worksheets; data and navigation remain unchanged. */
+.theme-portal table th { white-space: nowrap; overflow-wrap: normal; word-break: normal; }
+.theme-portal table td { overflow-wrap: break-word; word-break: normal; }
+.portal-history-scroll { overflow-x: auto; max-width: 100%; }
+.portal-history-table { min-width: 1120px; table-layout: auto; }
+.portal-history-table td:nth-child(1), .portal-history-table td:nth-child(6), .portal-history-table td:nth-child(7) { white-space: nowrap; }
+.portal-history-table td:nth-child(2), .portal-history-table td:nth-child(3) { min-width: 140px; }
+.detail-presentation [data-detail-section] { padding: 1rem; }
+.detail-presentation [data-detail-section] dl > div { border-bottom: 1px solid var(--row-divider); padding-block: .75rem; min-width: 0; }
+.detail-presentation[data-detail-variant="cells"] [data-detail-section] dl { gap: 0; }
+.detail-presentation[data-detail-variant="cells"] [data-detail-section] dl > div { border: 1px solid var(--row-divider); padding: .75rem; }
+.detail-resize-bar { min-height: 2rem; border-bottom: 1px solid var(--row-divider); margin-bottom: .75rem; }
+.detail-resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 12px; cursor: col-resize; touch-action: none; border-right: 2px solid var(--ds-border); }
+.detail-resize-handle:focus-visible { outline: 2px solid var(--ds-focus); }
+@media (min-width: 1024px) { .detail-presentation [data-detail-section] dl.grid { grid-template-columns: var(--detail-columns, 34fr 33fr 33fr); } }
+@media (max-width: 639px) { .detail-presentation [data-detail-section] dl.grid { grid-template-columns: minmax(0,1fr); } }
+.portal-root[data-density="compact"] { --portal-control-height: 2.5rem; --portal-control-space: .375rem; }
+.portal-root[data-density="standard"] { --portal-control-height: 2.875rem; --portal-control-space: .625rem; }
+.portal-root[data-density="comfortable"] { --portal-control-height: 3.25rem; --portal-control-space: .875rem; }
+.portal-root main :is(.ds-input, .portal-input, .portal-business-form input:not([type="checkbox"]):not([type="radio"]), .portal-business-form select, .portal-business-form button) { min-height: var(--portal-control-height); padding-block: var(--portal-control-space); }

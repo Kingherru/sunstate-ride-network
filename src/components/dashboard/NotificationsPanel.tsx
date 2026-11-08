@@ -1,3 +1,4 @@
+import { notificationTone } from '@/lib/portal-read-rules';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,22 +30,9 @@ import {
 
 type Filter = "all" | "unread" | "read";
 
-function severityFor(type: string): "green" | "yellow" | "red" | "gray" {
-  const t = (type ?? "").toLowerCase();
-  if (/(fail|error|denied|expired|urgent|reject|cancel)/.test(t)) return "red";
-  if (/(pending|review|caution|reminder|attention|missing)/.test(t)) return "yellow";
-  if (/(approved|complete|paid|success|assigned|booked|new)/.test(t)) return "green";
-  return "gray";
-}
-
+const severityFor = notificationTone;
 function dotColor(sev: ReturnType<typeof severityFor>) {
-  return sev === "green"
-    ? "bg-emerald-500"
-    : sev === "yellow"
-    ? "bg-amber-500"
-    : sev === "red"
-    ? "bg-red-500"
-    : "bg-muted-foreground";
+  return { green: 'bg-ds-success', yellow: 'bg-ds-warning', red: 'bg-ds-error', blue: 'bg-ds-primary' }[sev];
 }
 
 function categoryFor(type: string): string {
@@ -151,7 +139,8 @@ export function NotificationsPanel() {
 
   const markSelected = usePortalMutation({
     mutationFn: (ids: string[]) => markFn({ data: { ids } }),
-    onSuccess: () => {
+    onSuccess: (_, ids) => {
+      qc.setQueriesData<{rows: NotificationRow[]; total:number}>({queryKey:["notifications"]}, old => old ? {...old,rows:old.rows.map(r=>ids.includes(r.id)?{...r,read_at:r.read_at??new Date().toISOString()}:r)} : old);
       setSelected(new Set());
       invalidateAll();
       toast.success("Marked as read");
@@ -164,6 +153,7 @@ export function NotificationsPanel() {
     onSuccess: () => {
       setSelected(new Set());
       invalidateAll();
+      qc.setQueriesData<{rows: NotificationRow[]; total:number}>({queryKey:["notifications"]}, old => old ? {...old,rows:old.rows.map(r=>({...r,read_at:r.read_at??new Date().toISOString()}))} : old);
       toast.success("All notifications marked as read");
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to mark all read"),
@@ -190,7 +180,7 @@ export function NotificationsPanel() {
   const openDetails = useRequestDetails();
   const onOpen = (n: NotificationRow) => {
     if (preview.active) { previewBlocked(); return; }
-    if (!n.read_at) markFn({ data: { ids: [n.id] } }).then(invalidateAll);
+    if (!n.read_at) markSelected.mutate([n.id]);
     if (n.ride_request_id) { openDetails({ kind: 'request', id: n.ride_request_id }); return; }
     if (n.link) {
       // Trip/request notifications open the shared permission-filtered detail
@@ -210,7 +200,7 @@ export function NotificationsPanel() {
           <Bell className="h-5 w-5" />
           <h2 className="text-xl font-bold tracking-tight">Notifications</h2>
           {unreadCount > 0 && (
-            <Badge className="bg-red-600 text-white hover:bg-red-600">{unreadCount} unread</Badge>
+            <Badge className="ds-status-blue">{unreadCount} unread</Badge>
           )}
         </div>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -353,7 +343,7 @@ export function NotificationsPanel() {
                               {n.type}
                             </span>
                             {isUnread && (
-                              <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">
+                              <span className="text-[10px] font-bold text-ds-primary uppercase tracking-wider">
                                 New
                               </span>
                             )}
@@ -364,6 +354,7 @@ export function NotificationsPanel() {
                             )}
                           </div>
                         </button>
+                        {isUnread && <Button size="sm" variant="ghost" onClick={() => markSelected.mutate([n.id])} disabled={markSelected.isPending}><Check className="size-4" />Mark as read</Button>}
                         <Button
                           variant="ghost"
                           size="icon"
