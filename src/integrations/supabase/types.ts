@@ -759,6 +759,7 @@ export type Database = {
       courses: {
         Row: {
           cert_validity_months: number
+          commerce_catalog_version: Json | null
           cover_image: string | null
           created_at: string
           description: string
@@ -777,6 +778,7 @@ export type Database = {
         }
         Insert: {
           cert_validity_months?: number
+          commerce_catalog_version?: Json | null
           cover_image?: string | null
           created_at?: string
           description?: string
@@ -795,6 +797,7 @@ export type Database = {
         }
         Update: {
           cert_validity_months?: number
+          commerce_catalog_version?: Json | null
           cover_image?: string | null
           created_at?: string
           description?: string
@@ -2718,6 +2721,7 @@ export type Database = {
       }
       network_settlement_events: {
         Row: {
+          accounting_evidence: Json | null
           actor_mfn_id: string | null
           created_at: string
           details: Json
@@ -2726,6 +2730,7 @@ export type Database = {
           settlement_id: string
         }
         Insert: {
+          accounting_evidence?: Json | null
           actor_mfn_id?: string | null
           created_at?: string
           details?: Json
@@ -2734,6 +2739,7 @@ export type Database = {
           settlement_id: string
         }
         Update: {
+          accounting_evidence?: Json | null
           actor_mfn_id?: string | null
           created_at?: string
           details?: Json
@@ -2921,6 +2927,7 @@ export type Database = {
           environment: string
           event_id: string
           event_type: string
+          preparation_evidence: Json | null
           processed_at: string
           source: string
         }
@@ -2928,6 +2935,7 @@ export type Database = {
           environment: string
           event_id: string
           event_type: string
+          preparation_evidence?: Json | null
           processed_at?: string
           source?: string
         }
@@ -2935,6 +2943,7 @@ export type Database = {
           environment?: string
           event_id?: string
           event_type?: string
+          preparation_evidence?: Json | null
           processed_at?: string
           source?: string
         }
@@ -4554,9 +4563,11 @@ export type Database = {
       }
       provider_payout_accounts: {
         Row: {
+          capability_readiness: Json | null
           charges_enabled: boolean
           created_at: string
           details_submitted: boolean
+          disabled_reason_code: string | null
           environment: string | null
           identity_ready: boolean
           payouts_enabled: boolean
@@ -4568,9 +4579,11 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          capability_readiness?: Json | null
           charges_enabled?: boolean
           created_at?: string
           details_submitted?: boolean
+          disabled_reason_code?: string | null
           environment?: string | null
           identity_ready?: boolean
           payouts_enabled?: boolean
@@ -4582,9 +4595,11 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          capability_readiness?: Json | null
           charges_enabled?: boolean
           created_at?: string
           details_submitted?: boolean
+          disabled_reason_code?: string | null
           environment?: string | null
           identity_ready?: boolean
           payouts_enabled?: boolean
@@ -6129,6 +6144,7 @@ export type Database = {
           created_at: string | null
           current_period_end: string | null
           current_period_start: string | null
+          entitlement_version_snapshot: Json | null
           environment: string
           id: string
           initial_policy_acceptance_id: string | null
@@ -6139,6 +6155,7 @@ export type Database = {
           membership_payment_state: string | null
           network_addon_cancel_at: string | null
           network_addon_status: string
+          price_effective_through: string | null
           price_id: string
           product_id: string
           status: string
@@ -6155,6 +6172,7 @@ export type Database = {
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          entitlement_version_snapshot?: Json | null
           environment?: string
           id?: string
           initial_policy_acceptance_id?: string | null
@@ -6165,6 +6183,7 @@ export type Database = {
           membership_payment_state?: string | null
           network_addon_cancel_at?: string | null
           network_addon_status?: string
+          price_effective_through?: string | null
           price_id: string
           product_id: string
           status?: string
@@ -6181,6 +6200,7 @@ export type Database = {
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          entitlement_version_snapshot?: Json | null
           environment?: string
           id?: string
           initial_policy_acceptance_id?: string | null
@@ -6191,6 +6211,7 @@ export type Database = {
           membership_payment_state?: string | null
           network_addon_cancel_at?: string | null
           network_addon_status?: string
+          price_effective_through?: string | null
           price_id?: string
           product_id?: string
           status?: string
@@ -9769,6 +9790,34 @@ export type Database = {
       }
       open_dispatch_thread: { Args: { _zone_id?: string }; Returns: string }
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
+      pass4m_claim_sandbox_event: {
+        Args: { _evidence: Json; _id: string; _source: string; _type: string }
+        Returns: boolean
+      }
+      pass4m_finish_sandbox_event: {
+        Args: { _id: string; _outcome: string; _reason: string }
+        Returns: undefined
+      }
+      pass4m_list_reconciliation: {
+        Args: never
+        Returns: {
+          environment: string
+          event_id: string
+          event_type: string
+          preparation_evidence: Json
+          processed_at: string
+          source: string
+        }[]
+      }
+      pass4m_reserve_workspace_trial: {
+        Args: {
+          _env: string
+          _started: string
+          _subscription: string
+          _workspace: string
+        }
+        Returns: boolean
+      }
       patient_request_access: { Args: { _request: string }; Returns: boolean }
       patient_request_snapshot: { Args: { _request: string }; Returns: Json }
       patient_trip_contacts: { Args: { _request: string }; Returns: Json }
