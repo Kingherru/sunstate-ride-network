@@ -1,4 +1,12 @@
 # Florida MVP launch sequence
+## Pass 4K — in progress
+- [ ] Shared barely-visible gray-only canvas texture, unchanged colors; exclude forms/status/Notes/maps/navigation and disable in high contrast/print.
+- [ ] One platform explanation destination with both peer connections, independent-business responsibilities, five-minute form estimate and existing signup/booking links.
+- [ ] Refine existing Provider/Facility New Trip layout, live estimate freshness, quote snapshot attachment and explicit referral preparation; no new form or payment actions.
+- [ ] Consistent patient-safe timeline/detail presentation using existing scoped projections.
+- [ ] Focused in-memory tests and automatic compilation; no real writes, migrations unless necessary, publishing, sends or activation.
+- Deferred items remain below: exact contact lookup, real cards/checkout/guide, Connect money, communications, regions, secondary public header and populated write/readback.
+
 ## Pass 4J — built safe preparation; populated write/readback remains prohibited
 - [x] Existing pale-orange 30-day CTA now uses four complete approved icon benefits, equal-height two-column rows and explicit $20 base / optional $10 add-on. Main CTA selects Provider on existing signup, no temporary email/checkout; homepage order/motion unchanged.
 - [x] Contacts & Payers shared destination (including provider); New Contact uses client-safe option constants, validates supported categories, relationship/status/coordination flags; same shared forms open inline on New Trip. Same-workspace active payer/contact guards, immutable request references, creator/workspace MFN attribution and existing security audit; removal soft-disables with history retained. Duplicate exact records reused on retry. Secure saved/payer card collection/replacement disabled server-side; only token metadata retained.
