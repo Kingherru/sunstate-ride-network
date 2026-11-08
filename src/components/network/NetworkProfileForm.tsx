@@ -43,7 +43,7 @@ function ListEditor({ label, values, onChange, placeholder }: { label: string; v
   );
 }
 
-export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = false }: { workspaceId: string; section?: 'all' | 'contact' | 'services' | 'areas'; onboarding?: boolean }) {
+export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = false }: { workspaceId: string; section?: 'all' | 'contact' | 'services' | 'areas' | 'operations'; onboarding?: boolean }) {
   const preview = usePortalPreview();
   const qc = useQueryClient();
   const getFn = useServerFn(getMyNetworkProfile);
@@ -139,7 +139,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
     <form onSubmit={onSave} className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="ds-subheading uppercase text-ds-primary">{section === 'contact' ? 'Contact information' : section === 'services' ? 'Services & operating hours' : section === 'areas' ? 'Service areas' : 'Network profile'}</h2>
+          <h2 className="ds-subheading uppercase text-ds-primary">{section === 'contact' ? 'Contact information' : section === 'services' ? 'Services & operating hours' : section === 'areas' ? 'Service areas' : section === 'operations' ? 'Services, hours & areas' : 'Network profile'}</h2>
           <p className="text-sm text-muted-foreground">Controls what other accounts see about you in the Provider Network directory.</p>
         </div>
         <span className={`ds-caption px-2 py-1 rounded-ds-sm border inline-flex items-center gap-1 ${verified ? 'border-ds-sky-border bg-ds-sky text-ds-primary' : 'border-ds-border text-ds-text-2'}`}>
@@ -166,8 +166,8 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
         </label>
       </div>}
 
-      {(section === 'all' || section === 'services') && <fieldset><legend className="ds-label mb-3">Services offered — Required for verification</legend><div className="flex flex-wrap gap-4">{[['ambulatory', 'Ambulatory'], ['wheelchair', 'Wheelchair'], ['stretcher', 'Gurney / Stretcher']].map(([value, label]) => <label key={value} className="ds-body flex items-center gap-2"><input type="checkbox" checked={serviceTypes.includes(value)} onChange={e => setServiceTypes(prev => e.target.checked ? [...prev, value] : prev.filter(v => v !== value))} />{label}</label>)}</div>{serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).length > 0 && <p className="ds-caption mt-2">Other existing services: {serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).join(', ')}</p>}</fieldset>}
-      {(section === 'all' || section === 'areas') && <>
+      {(section === 'all' || section === 'services' || section === 'operations') && <fieldset><legend className="ds-label mb-3">Services offered — Required for verification</legend><div className="flex flex-wrap gap-4">{[['ambulatory', 'Ambulatory'], ['wheelchair', 'Wheelchair'], ['stretcher', 'Gurney / Stretcher']].map(([value, label]) => <label key={value} className="ds-body flex items-center gap-2"><input type="checkbox" checked={serviceTypes.includes(value)} onChange={e => setServiceTypes(prev => e.target.checked ? [...prev, value] : prev.filter(v => v !== value))} />{label}</label>)}</div>{serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).length > 0 && <p className="ds-caption mt-2">Other existing services: {serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).join(', ')}</p>}</fieldset>}
+      {(section === 'all' || section === 'areas' || section === 'operations') && <>
       <DsField label="Private service-base location" hint="Not shown in the directory; controlled distance offers retain verified-base requirements.">{p=><DsInput {...p} maxLength={300} value={serviceBase} onChange={e=>setServiceBase(e.target.value)} />}</DsField>
       <div className="grid gap-4 sm:grid-cols-2">
         <DsField label="City">{p => <DsInput {...p} value={locationCity} maxLength={100} onChange={e => setLocationCity(e.target.value)} />}</DsField>
@@ -182,23 +182,23 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
       <ListEditor label="ZIP codes served" values={zips} onChange={setZips} placeholder="e.g. 32256" />
       </>}
 
-      {(section === 'all' || section === 'services') && <label className="block">
+      {(section === 'all' || section === 'services' || section === 'operations') && <label className="block">
         <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Hours</span>
         <input value={hours} onChange={(e) => setHours(e.target.value)} maxLength={500}
           className="mt-1 w-full border border-border rounded-sm px-3 py-2 text-sm" />
       </label>}
 
-      {(section === 'all' || section === 'services') && <div className="flex flex-wrap items-center gap-4">
+      {(section === 'all' || section === 'services' || section === 'operations') && <div className="flex flex-wrap items-center gap-4">
         <label className="inline-flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={medicalDelivery} onChange={(e) => setMedicalDelivery(e.target.checked)} /> Medical delivery
         </label>
         <label className="inline-flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
         </label>
-        <p className="ds-caption">Search visibility is managed separately in Settings → Team & Integrations → Business identity & search visibility.</p>
+        <p className="ds-caption">Search visibility is managed separately in Settings → Services, Areas & Pricing → Business identity & search visibility.</p>
       </div>}
 
-      <DsButton type="submit" size="sm" disabled={busy}>
+      <DsButton type="submit" size="sm" disabled={busy || preview.active}>
         {busy ? "Saving…" : "Save network profile"}
       </DsButton>
     </form>
