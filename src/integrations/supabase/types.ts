@@ -9843,6 +9843,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      save_notification_settings: {
+        Args: { _email: boolean; _in_app: boolean }
+        Returns: undefined
+      }
       save_onboarding_progress: {
         Args: { _complete?: boolean; _step: number }
         Returns: undefined
