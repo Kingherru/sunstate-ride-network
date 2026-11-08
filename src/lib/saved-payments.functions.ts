@@ -32,24 +32,8 @@ async function ensureCustomer(env: StripeEnv, userId: string, email?: string): P
 export const createSetupIntent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ environment: z.enum(["sandbox", "live"]) }).parse(i))
-  .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
-    try {
-      const email = (context.claims as any)?.email as string | undefined;
-      const customerId = await ensureCustomer(data.environment as StripeEnv, context.userId, email);
-      const stripe = createStripeClient(data.environment as StripeEnv);
-      const si = await stripe.setupIntents.create({
-        customer: customerId,
-        usage: "off_session",
-        payment_method_types: ["card"],
-        metadata: { userId: context.userId },
-      });
-      return { clientSecret: si.client_secret ?? "" };
-    } catch (e) {
-      return { error: getStripeErrorMessage(e) };
-    }
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Secure payment-method setup and replacement are not activated.'}));
 
-/** Persist a freshly attached PaymentMethod into our DB after Stripe confirms it. */
 export const recordSavedPaymentMethod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({
@@ -59,50 +43,7 @@ export const recordSavedPaymentMethod = createServerFn({ method: "POST" })
     patient_id: z.string().uuid().optional().nullable(),
     label: z.string().trim().max(120).optional().nullable(),
   }).parse(i))
-  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
-    try {
-      const stripe = createStripeClient(data.environment as StripeEnv);
-      const pm = await stripe.paymentMethods.retrieve(data.payment_method_id);
-      // Verify the PM belongs to this user's customer
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: cust } = await supabaseAdmin
-        .from("stripe_customers").select("stripe_customer_id")
-        .eq("user_id", context.userId).eq("environment", data.environment).maybeSingle();
-      if (!cust?.stripe_customer_id || pm.customer !== cust.stripe_customer_id) {
-        return { error: "Payment method does not belong to this user" };
-      }
-      // If patient_id provided, validate it belongs to this user
-      if (data.patient_id) {
-        const { data: pat } = await supabaseAdmin
-          .from("saved_patients").select("id")
-          .eq("id", data.patient_id).eq("owner_id", context.userId).maybeSingle();
-        if (!pat) return { error: "Patient not found for this account" };
-      }
-      const card = pm.card;
-      const insert = await supabaseAdmin.from("saved_payment_methods").insert({
-        user_id: context.userId,
-        environment: data.environment,
-        stripe_payment_method_id: pm.id,
-        brand: card?.brand ?? null,
-        last4: card?.last4 ?? null,
-        exp_month: card?.exp_month ?? null,
-        exp_year: card?.exp_year ?? null,
-        is_default: !!data.make_default,
-        patient_id: data.patient_id ?? null,
-        label: data.label ?? null,
-      });
-      if (insert.error) return { error: insert.error.message };
-      if (data.make_default) {
-        await supabaseAdmin.from("saved_payment_methods")
-          .update({ is_default: false })
-          .eq("user_id", context.userId).eq("environment", data.environment)
-          .neq("stripe_payment_method_id", pm.id);
-      }
-      return { ok: true };
-    } catch (e) {
-      return { error: getStripeErrorMessage(e) };
-    }
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Secure payment-method setup and replacement are not activated.'}));
 
 export const listSavedPaymentMethods = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -121,57 +62,18 @@ export const listSavedPaymentMethods = createServerFn({ method: "GET" })
 export const deleteSavedPaymentMethod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
-  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
-    const { data: row } = await context.supabase
-      .from("saved_payment_methods")
-      .select("stripe_payment_method_id, environment")
-      .eq("id", data.id).eq("user_id", context.userId).maybeSingle();
-    if (!row) return { error: "Not found" };
-    try {
-      const stripe = createStripeClient(row.environment as StripeEnv);
-      await stripe.paymentMethods.detach(row.stripe_payment_method_id as string).catch(() => {});
-    } catch {}
-    const { error } = await context.supabase
-      .from("saved_payment_methods").delete().eq("id", data.id).eq("user_id", context.userId);
-    if (error) return { error: error.message };
-    return { ok: true };
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Secure payment-method setup and replacement are not activated.'}));
 
 export const setDefaultPaymentMethod = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
-  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
-    const { data: row } = await context.supabase
-      .from("saved_payment_methods").select("environment").eq("id", data.id).eq("user_id", context.userId).maybeSingle();
-    if (!row) return { error: "Not found" };
-    const a = await context.supabase.from("saved_payment_methods")
-      .update({ is_default: false })
-      .eq("user_id", context.userId).eq("environment", row.environment);
-    if (a.error) return { error: a.error.message };
-    const b = await context.supabase.from("saved_payment_methods")
-      .update({ is_default: true }).eq("id", data.id).eq("user_id", context.userId);
-    if (b.error) return { error: b.error.message };
-    return { ok: true };
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Secure payment-method setup and replacement are not activated.'}));
 
-/** Link (or unlink with null) a saved card reference to one of the caller's
- *  patient profiles. Only the reference changes — the Stripe method and past
- *  payments are untouched, and no card data is copied anywhere. */
 export const setPaymentMethodPatient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), patient_id: z.string().uuid().nullable() }).strict().parse(i))
-  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
-    const { data: row } = await context.supabase.from("saved_payment_methods").select("id").eq("id", data.id).eq("user_id", context.userId).maybeSingle();
-    if (!row) return { error: "That card isn't available." };
-    if (data.patient_id) {
-      const { data: p } = await context.supabase.from("saved_patients").select("id").eq("id", data.patient_id).eq("owner_id", context.userId).maybeSingle();
-      if (!p) return { error: "That patient profile isn't available." };
-    }
-    const { error } = await context.supabase.from("saved_payment_methods").update({ patient_id: data.patient_id }).eq("id", data.id).eq("user_id", context.userId);
-    return error ? { error: "Could not update the card link." } : { ok: true };
-  });
+  .handler(async (): Promise<{ error: string }> => ({error:'Secure payment-method setup and replacement are not activated.'}));
 
-/** Charge a confirmed ride request using a saved card or a fresh one provided client-side. */
 export const payForConfirmedTrip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({
