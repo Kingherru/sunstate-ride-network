@@ -43,6 +43,7 @@ export const saveRelationshipPreference = createServerFn({ method: 'POST' }).mid
 
 export const manageConnectionInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((i: unknown) => invitationActionInput.parse(i))
   .handler(async ({ data, context }) => {
+    if(data.action==='send'||data.action==='resend')return {ok:false,delivery:'not_configured',error:'Private invitation preparation is unavailable until person, account and destination rate limits are approved. No account lookup or delivery occurred.'};
     const { generateInvitationToken, hashInvitationToken } = await import('./account-connections-token.server');
     const send = data.action === 'send' || data.action === 'resend';
     const token = send ? generateInvitationToken() : data.token;
