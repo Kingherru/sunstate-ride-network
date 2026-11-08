@@ -1,10 +1,11 @@
 # Florida MVP launch sequence
-## Pass 4K — in progress
-- [ ] Shared barely-visible gray-only canvas texture, unchanged colors; exclude forms/status/Notes/maps/navigation and disable in high contrast/print.
-- [ ] One platform explanation destination with both peer connections, independent-business responsibilities, five-minute form estimate and existing signup/booking links.
-- [ ] Refine existing Provider/Facility New Trip layout, live estimate freshness, quote snapshot attachment and explicit referral preparation; no new form or payment actions.
-- [ ] Consistent patient-safe timeline/detail presentation using existing scoped projections.
-- [ ] Focused in-memory tests and automatic compilation; no real writes, migrations unless necessary, publishing, sends or activation.
+## Pass 4K — built presentation and safe review; live financial completion still blocked
+- [x] Single 0.3%-contrast stationary micro-dot token applied to shared portal/Admin main gray canvas, gray detail gutters and new public gray bands. Existing public pale-blue/white sections stay unchanged and untextured; no actual gray public bands existed outside the new page. White forms/status/Notes/maps/navigation excluded; forced-colors, increased contrast and print disable texture.
+- [x] /why-my-florida-nemt explains both peer connections, independent-business responsibilities and truthful five-minute form completion. Existing homepage and How It Works link naturally; booking and Provider-selected signup reused. Unique metadata/canonical/AboutPage JSON-LD and both sitemap entries, no header expansion.
+- [x] Existing Provider/Facility New Trip uses a 1024px two-column layout, scroll-constrained sticky financial panel and phone summary toggle. Read-only server estimate refresh on supported date/time/service/mileage/wait/return/stop changes; missing rate configuration blocks estimates. Complete trip + pricing review identity prevents stale quote attachment; canonical key ordering supports returned JSONB Facility agreements. Confirmed Facility customer quote lines/version/bill-to are shown, no private provider rates. Authorized adjustment controls/history preserved; unconfirmed adjustments explicitly excluded from estimate. Existing linked selectors, drafts and server insertion path unchanged.
+- [x] Safe status history expandable on trip rows; wide shared overlay uses a second explicit patient field allowlist, provider/approved contacts, invoice/payment and timeline only. No provider notes, internal rates, Network/staff history or credentials; existing server scope remains authoritative.
+- [x] 36 focused tests passed; automatic type/production compilation build OK. Browser checked public explanation → Provider signup, XML sitemap uniqueness, Provider referral toggle, Facility shared screen, safe patient timeline, texture exclusion/print/forced-colors and new-page phone layout; no runtime page errors. No database changes/migrations, real record writes, sends, publishing or activation.
+- [ ] Populated Provider/Facility quote→save→invoice→patient overlay readback remains untested under the owner’s no-real-write and deferred test-fixture restrictions. Referral preparation still does not fund/send an offer; authoritative funding receipt/margin/session/event linkage, configured customer fee/tax/charge type, Connect sandbox signing secret and secure-token PDF/payment remain the existing financial blockers. No new owner decision needed for further safe presentation work.
 - Deferred items remain below: exact contact lookup, real cards/checkout/guide, Connect money, communications, regions, secondary public header and populated write/readback.
 
 ## Pass 4J — built safe preparation; populated write/readback remains prohibited
@@ -80,7 +81,7 @@
    - Verification: 31 focused rate/invoice/schema tests passed, including an in-memory synthetic PDF. Automatic compilation build OK. Authorized synthetic invoice/referral panels checked on desktop/phone without page errors or horizontal overflow; live submit/invoice/email/payment/contact end-to-end checks deliberately not exercised under no-real-write restrictions. Read-only counts confirm zero invoices, invoice events/payments, confirmed quotes, dispatch/driver consents and enabled new flags.
    - [x] Owner refund discussion reached in Pass 4G: hybrid responsibility approved; exact membership/add-on/training eligibility remains unapproved. No refund controls, automation or Stripe refund calls.
 7. [ ] Patient trip reminders and status communications — excluded from Pass 4G; requires separate owner authorization and completed invoice/payment foundation.
-8. [ ] Public five-minute-trip conversion/explainer page.
+8. [x] Public five-minute-trip conversion/explainer page — Pass 4K; time estimates form completion only, no provider outcome promise.
 9. [ ] Provider Network proximity search using safe public locations.
 10. [ ] Stripe/lifecycle/domain/legal/phone/launch configuration.
 11. [ ] Final focused validation and publishing.

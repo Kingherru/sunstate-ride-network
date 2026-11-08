@@ -58,7 +58,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
     return () => { canceled = true; window.clearTimeout(timer); };
   }, [estimateKey, provider, network, preview.active, workspaceId, calculate]);
   const demoLines: InvoiceLine[] = [{ label: 'Pickup / loading', cents: 4000 }, { label: 'Mileage after included miles', cents: 3000 }];
-  const shown = preview.active && examples ? { lines: demoLines, totalCents: 7000 } : unchanged && confirmed ? confirmed : calculated;
+  const shown = preview.active && examples && provider ? { lines: demoLines, totalCents: 7000 } : unchanged && confirmed ? confirmed : calculated;
   function tripInput() {
     if (!quoteInput) throw new Error('Enter pickup date/time and confirmed route mileage first.');
     return quoteInput;
