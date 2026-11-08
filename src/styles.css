@@ -679,7 +679,7 @@
 .detail-resize-bar { min-height: 2rem; border-bottom: 1px solid var(--row-divider); margin-bottom: .75rem; }
 .detail-resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 12px; cursor: col-resize; touch-action: none; border-right: 2px solid var(--ds-border); }
 .detail-resize-handle:focus-visible { outline: 2px solid var(--ds-focus); }
-@media (min-width: 1024px) { .detail-presentation [data-detail-section] dl.grid { grid-template-columns: var(--detail-columns, 34fr 33fr 33fr); } }
+@media (min-width: 640px) { .detail-presentation [data-detail-section] dl.grid { grid-template-columns: var(--detail-columns, 34fr 33fr 33fr); } }
 @media (max-width: 639px) { .detail-presentation [data-detail-section] dl.grid { grid-template-columns: minmax(0,1fr); } }
 .portal-root[data-density="compact"] { --portal-control-height: 2.5rem; --portal-control-space: .375rem; }
 .portal-root[data-density="standard"] { --portal-control-height: 2.875rem; --portal-control-space: .625rem; }

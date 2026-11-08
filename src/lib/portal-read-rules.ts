@@ -22,3 +22,10 @@ export function displayPhone(value: string) {
   const digits = value.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
   return digits.length === 10 ? `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}` : value;
 }
+export function payoutBucket(row: { state: string; paid_out: boolean; transferred: boolean; payment_succeeded_at: string | null; dispute_opened_at: string | null; dispute_resolved_at: string | null; refunded_at?: string | null; attempt_status?: string | null }) {
+  if (row.refunded_at || row.state === 'refunded' || row.state === 'failed' || row.state === 'canceled' || (row.dispute_opened_at && !row.dispute_resolved_at) || ['failed','disputed','refunded','reversed','pending_policy_review'].includes(row.attempt_status??'')) return 'frozen';
+  if (row.paid_out) return 'paid';
+  if (row.state === 'available_for_transfer' && row.payment_succeeded_at && !row.transferred) return 'available';
+  if (row.payment_succeeded_at && !row.transferred) return 'held';
+  return 'pending';
+}

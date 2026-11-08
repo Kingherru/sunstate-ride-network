@@ -7,12 +7,13 @@ import { SegTabs } from '@/components/portal/SegTabs';
 import { StatusPill } from '@/components/ds/status';
 import { DetailSection } from '@/components/portal/DetailSection';
 import { FinancialReconciliation } from './FinancialReconciliation';
+import { payoutBucket } from '@/lib/portal-read-rules';
 const options=['Overview','Held','Available','Paid','Refunds','Reconciliation'].map(label=>({value:label,label}));
 const money=(v:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(v/100);
 export function PayoutsReview(){
  const get=useServerFn(getAdminPayoutReview);const q=useQuery({queryKey:['admin-payout-review'],queryFn:()=>get()});const [tab,setTab]=useState('Overview');const [search,setSearch]=useState('');
  const rows=(q.data?.rows??[]).filter(r=>[r.mfn_id,r.source_mfn_id,r.sender_workspace_mfn_id,r.receiver_workspace_mfn_id,r.state].join(' ').toLowerCase().includes(search.toLowerCase()));
- const held=rows.filter(r=>!r.paid_out&&!r.transferred&&r.payment_succeeded_at);const available=rows.filter(r=>r.state==='available'&&!r.dispute_opened_at&&!r.refunded_at);const paid=rows.filter(r=>r.paid_out);
+ const held=rows.filter(r=>payoutBucket(r)==='held');const available=rows.filter(r=>payoutBucket(r)==='available');const paid=rows.filter(r=>payoutBucket(r)==='paid');
  const shown=tab==='Held'?held:tab==='Available'?available:tab==='Paid'?paid:rows;
  return <div className="space-y-5"><StatusPill tone="yellow" status="Financial execution OFF · pending owner policy review"/><SegTabs label="Payouts sections" value={tab} onChange={setTab} options={options}/>
  {q.isLoading&&<p role="status">Loading evidence…</p>}{q.isError&&<p role="alert" className="ds-support text-ds-error">Payout evidence unavailable.</p>}

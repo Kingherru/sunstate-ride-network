@@ -18,9 +18,10 @@ export function DetailPresentation({ children }: { children: React.ReactNode }) 
   useEffect(() => { if (q.data?.detail_columns) setColumns(q.data.detail_columns); }, [q.data]);
   useEffect(() => { current.current = columns; }, [columns]);
   async function persist(next: number[]) {
+    const previous = q.data?.detail_columns ?? DEFAULT_COLUMNS;
     setColumns(next); if (preview.active) return;
     setBusy(true); try { await save({ data: { detail_columns: next } }); await qc.invalidateQueries({ queryKey: ['portal-preferences'] }); }
-    catch { toast.error('Column preference could not be saved.'); } finally { setBusy(false); }
+    catch { setColumns(previous); toast.error('Column preference could not be saved.'); } finally { setBusy(false); }
   }
   return <Context.Provider value={columns}><div data-detail-variant={variant} className="detail-presentation min-w-0">
     <div className="mb-3 flex flex-wrap items-center gap-2">
