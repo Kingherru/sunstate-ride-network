@@ -16,7 +16,7 @@ import { SecureEmailChange } from './SecureEmailChange';
  *  reset link to self, sign out, sign out of other sessions. Reused behind
  *  every portal's top-header Settings action and the admin Security tab.
  *  Never displays or stores a password; uses Supabase Auth directly. */
-export function PersonalSecurity({ email }: { email?: string | null }) {
+export function PersonalSecurity({ email, securityOnly = false }: { email?: string | null; securityOnly?: boolean }) {
   const preview = usePortalPreview();
   const [pw, setPw] = useState("");
   const [currentPw, setCurrentPw] = useState('');
@@ -25,7 +25,7 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   const [resetBusy, setResetBusy] = useState(false);
   const [signOutBusy, setSignOutBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [tab, setTab] = useState<'profile' | 'password' | 'sessions' | 'security'>('profile');
+  const [tab, setTab] = useState<'profile' | 'password' | 'sessions' | 'security'>(securityOnly ? 'password' : 'profile');
   const [showPw, setShowPw] = useState(false);
   const [ok, setOk] = useState<string | null>(null);
   const auditFn = useServerFn(listPersonalSecurityAudit);
@@ -91,7 +91,7 @@ export function PersonalSecurity({ email }: { email?: string | null }) {
   const H = ({ icon: I, children }: { icon: typeof KeyRound; children: React.ReactNode }) => <h2 className="ds-subheading flex items-center gap-2 border-b border-ds-border pb-3 uppercase text-ds-primary"><I className="size-4 shrink-0" aria-hidden />{children}</h2>;
   return (
     <div className="portal-business-form min-w-0 w-full space-y-4">
-      <SegTabs label="Profile and security" value={tab} onChange={setTab} options={[{ value: 'profile', label: 'Profile & contact' }, { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} />
+      <SegTabs label="Profile and security" value={tab} onChange={setTab} options={[...(securityOnly ? [] : [{ value: 'profile' as const, label: 'Profile & contact' }]), { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} />
       {tab === 'profile' && <div className="space-y-5">
         <PersonalSettings />
         <section className={`${card} space-y-4`}>
