@@ -91,6 +91,7 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
                   <td className="px-3 py-2 text-xs">
                     {(c as any).payer_id ? payers.find((p) => p.id === (c as any).payer_id)?.name ?? "Linked payer" : c.payer ?? "—"}
                   </td>
+                  <td className="px-3 py-2 text-xs"><div>{c.relationship||'Not provided'}</div><div className={c.active?'text-ds-success':'text-ds-error'}>{c.active?'Active':'Disabled'}</div><div>{c.billing_allowed?'Billing coordination':'No billing authorization'} · {c.coordination_allowed?'Trip coordination':'No trip coordination'}</div></td>
                   <td className="whitespace-nowrap px-3 py-2 text-right">
                     <DsButton variant="ghost" size="sm" onClick={() => setEditing(c)}>Edit</DsButton>
                     <DsButton variant="ghost" size="sm" disabled={!c.active} onClick={() => { if (confirm("Disable this contact? Historical references remain.")) del.mutate(c.id); }}>Disable</DsButton>

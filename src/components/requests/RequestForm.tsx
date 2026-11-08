@@ -310,7 +310,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
         setPayers(pys as any[]);
         setContacts(cts);
-        if(!initialDraft && defaults.defaults)setForm(f=>({...fillEmptyTripDefaults(f,defaults.defaults),...(f.patientFirstName||f.patientLastName?{}:{transportType:defaults.defaults?.transportType??f.transportType})}));
+        const basicDefaults=defaults.defaults;
+        if(!initialDraft && basicDefaults)setForm(f=>({...fillEmptyTripDefaults(f,basicDefaults),...(f.patientFirstName||f.patientLastName?{}:{transportType:basicDefaults.transportType??f.transportType})}));
         if (!initialDraft && prefs.default_payer_id) applyPayer(prefs.default_payer_id, pys as any[]);
       } catch { /* optional helpers only */ }
     })();
@@ -1011,6 +1012,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
           </p>
         </form>
         )}
+        {addingPayer && <PayerDialog payer={{active:true}} contacts={contacts.map(c=>({id:c.id,name:c.company_name||`${c.first_name??''} ${c.last_name??''}`}))} onClose={()=>setAddingPayer(false)} onSaved={()=>{setAddingPayer(false);if(!preview.active)void loadPayers().then(setPayers);}}/>}
+        {addingContact && <ContactDialog contact={{contact_type:'personal',coordination_allowed:true}} payers={payers.map(p=>({id:p.id,name:p.name}))} onClose={()=>setAddingContact(false)} onSaved={()=>{setAddingContact(false);if(!preview.active)void loadContacts().then(setContacts);}}/>}
       </div>
     </section>
   );
