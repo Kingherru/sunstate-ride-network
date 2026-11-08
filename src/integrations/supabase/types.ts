@@ -3945,6 +3945,7 @@ export type Database = {
           relationship: string | null
           updated_at: string
           workspace_id: string | null
+          workspace_mfn_id: string | null
         }
         Insert: {
           active?: boolean
@@ -3970,6 +3971,7 @@ export type Database = {
           relationship?: string | null
           updated_at?: string
           workspace_id?: string | null
+          workspace_mfn_id?: string | null
         }
         Update: {
           active?: boolean
@@ -3995,6 +3997,7 @@ export type Database = {
           relationship?: string | null
           updated_at?: string
           workspace_id?: string | null
+          workspace_mfn_id?: string | null
         }
         Relationships: [
           {
@@ -5831,6 +5834,7 @@ export type Database = {
           notes: string | null
           owner_id: string
           oxygen_required: boolean
+          patient_workspace_id: string | null
           payer: string | null
           phone: string | null
           service_requirements: string | null
@@ -5873,6 +5877,7 @@ export type Database = {
           notes?: string | null
           owner_id: string
           oxygen_required?: boolean
+          patient_workspace_id?: string | null
           payer?: string | null
           phone?: string | null
           service_requirements?: string | null
@@ -5915,6 +5920,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           oxygen_required?: boolean
+          patient_workspace_id?: string | null
           payer?: string | null
           phone?: string | null
           service_requirements?: string | null
@@ -5931,6 +5937,13 @@ export type Database = {
             columns: ["default_payer_id"]
             isOneToOne: false
             referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_patients_patient_workspace_id_fkey"
+            columns: ["patient_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
           {
@@ -9343,6 +9356,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_facility_authorized_patients: {
+        Args: { _source: string }
+        Returns: Json
       }
       list_linked_patient_accounts: {
         Args: { _ws: string }
