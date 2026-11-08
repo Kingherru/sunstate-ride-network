@@ -2,12 +2,13 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { onboardingInput } from './onboarding-rules';
+import { PAYMENT_POLICY_VERSION } from './payment-policy';
 
 export const getOnboarding = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: person, error } = await context.supabase.from('user_profiles').select('first_name,last_name,display_name,phone,mfn_id,status,is_test_account,deleted_at,notification_preferences,onboarding_step,onboarding_completed_at').eq('user_id', context.userId).single();
+    const { data: person, error } = await context.supabase.from('user_profiles').select('first_name,last_name,display_name,phone,mfn_id,status,is_test_account,deleted_at,notification_preferences,onboarding_step,onboarding_completed_at,onboarding_policy_version,onboarding_policy_accepted_at').eq('user_id', context.userId).single();
     if (error || !person || person.status !== 'active' || person.is_test_account || person.deleted_at) throw new Error('Account setup unavailable');
-    const { data: memberships, error: memberError } = await context.supabase.from('workspace_members').select('workspace_id,role,is_contractor,workspaces!inner(id,account_type,display_name,mfn_id,status,is_test_account,organization_type,legal_business_name,business_phone,dispatch_phone,business_address,operating_hours)').eq('user_id', context.userId).is('removed_at', null).eq('role', 'owner').eq('is_contractor', false);
+    const { data: memberships, error: memberError } = await context.supabase.from('workspace_members').select('workspace_id,role,is_contractor,workspaces!inner(id,account_type,display_name,mfn_id,status,is_test_account,organization_type,legal_business_name,business_phone,dispatch_phone,business_address,mailing_address,operating_hours)').eq('user_id', context.userId).is('removed_at', null).eq('role', 'owner').eq('is_contractor', false);
     if (memberError) throw new Error('Account setup unavailable');
     const eligible = (memberships ?? []).filter(m => m.workspaces.status === 'active' && !m.workspaces.is_test_account);
     if (eligible.length !== 1) throw new Error('Setup requires one active owned account. Your existing portals remain available.');
@@ -40,8 +41,8 @@ export const saveOnboardingSection = createServerFn({ method: 'POST' }).middlewa
       if (owner.workspaces.account_type === 'private_pay') throw new Error('Business account required');
       const { npi, medicaid_number } = data;
       // Empty optional fields never erase established values.
-      const populated = { display_name: data.display_name, ...(data.legal_business_name && { legal_business_name: data.legal_business_name }), ...(data.business_phone && { business_phone: data.business_phone }), ...(data.dispatch_phone && { dispatch_phone: data.dispatch_phone }), ...(data.business_address && { business_address: data.business_address }), ...(data.operating_hours && { operating_hours: data.operating_hours }) };
-      const { error } = await context.supabase.from('workspaces').update(populated).eq('id', owner.workspace_id).select('id').single();
+      const { npi: _npi, medicaid_number: _medicaid, section: _section, ...populated } = data;
+      const { error } = await context.supabase.rpc('save_workspace_business_settings', { _ws: owner.workspace_id, _details: populated });
       if (error) throw new Error('Could not save business information');
       if (owner.workspaces.account_type === 'provider' && (npi || medicaid_number)) {
         const { error: legacyError } = await context.supabase.from('member_profiles').upsert({ user_id: context.userId, ...(npi && { npi }), ...(medicaid_number && { medicaid_number }) }, { onConflict: 'user_id' });
@@ -55,15 +56,19 @@ export const saveOnboardingSection = createServerFn({ method: 'POST' }).middlewa
       const patient = patients?.[0];
       const result = patient ? await context.supabase.from('saved_patients').update(values).eq('id', patient.id).eq('owner_id', context.userId) : await context.supabase.from('saved_patients').insert({ ...values, owner_id: context.userId, workspace_id: null, kind: 'patient' });
       if (result.error) throw new Error('Could not save patient information');
-      const { error: legacyError } = await context.supabase.from('member_profiles').upsert({ user_id: context.userId, patient_type: data.accountFor === 'myself' ? 'self' : 'other' }, { onConflict: 'user_id' });
+      const { error: legacyError } = await context.supabase.from('member_profiles').upsert({ user_id: context.userId, patient_type: data.accountFor === 'myself' ? 'self' : 'other', ...(data.accountFor === 'another' && data.relationship ? {patient_relationship:data.relationship} : {}) }, { onConflict: 'user_id' });
       if (legacyError) throw new Error('Patient saved; account preference could not be saved. Please retry.');
     }
     return { ok: true };
   });
 
 export const saveOnboardingProgress = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ step: z.number().int().min(0).max(4), complete: z.boolean().default(false) }).strict().parse(input))
+  .inputValidator((input: unknown) => z.object({ step: z.number().int().min(0).max(4), complete: z.boolean().default(false), policyConfirmed: z.boolean().default(false) }).strict().parse(input))
   .handler(async ({ data, context }) => {
+    if(data.complete && data.policyConfirmed) {
+      const {error:policyError}=await context.supabase.rpc('confirm_onboarding_policy',{_version:PAYMENT_POLICY_VERSION,_confirmed:true});
+      if(policyError)throw new Error('Confirm your email and policy acknowledgment.');
+    }
     const { error } = await context.supabase.rpc('save_onboarding_progress', { _step: data.step, _complete: data.complete });
     if (error) throw new Error('Could not save setup progress');
     return { ok: true };
