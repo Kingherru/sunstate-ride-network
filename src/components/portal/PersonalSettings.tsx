@@ -8,7 +8,7 @@ import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data
 import { StatusPill } from '@/components/ds/status';
 import { useRouteContext } from '@tanstack/react-router';
 
-export function PersonalSettings() {
+export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profile' | 'notifications' | 'status' }) {
   const preview = usePortalPreview();
   const { access } = useRouteContext({ strict: false });
   const workspace = preview.active ? null : access?.primary;
@@ -38,8 +38,8 @@ export function PersonalSettings() {
   return <form onSubmit={submit} className="portal-business-form min-w-0 space-y-4">
     {q.isLoading && <p role="status" className="ds-support">Loading…</p>}
     {q.isError && <p role="alert" className="ds-support rounded-ds-sm ds-status-red px-3 py-2">Account settings unavailable.</p>}
-    {q.data?.display_name && !q.data.first_name && <p className="ds-support">Current name: {q.data.display_name}</p>}
-    <section className="portal-business-section">
+    {section !== 'notifications' && q.data?.display_name && !q.data.first_name && <p className="ds-support">Current name: {q.data.display_name}</p>}
+    {(section === 'all' || section === 'profile') && <><section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Profile</h2>
       <div className="portal-business-body grid gap-4 sm:grid-cols-2">
       <DsField label="First name">{p => <DsInput {...p} required maxLength={80} autoComplete="given-name" value={firstName} onChange={e => setFirst(e.target.value)} />}</DsField>
@@ -50,7 +50,8 @@ export function PersonalSettings() {
       <h2 className="portal-business-heading ds-subheading uppercase">Contact information</h2>
       <div className="portal-business-body"><DsField label="Phone number">{p => <DsInput {...p} type="tel" maxLength={32} autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} />}</DsField></div>
     </section>
-    <section className="portal-business-section">
+    </>}
+    {(section === 'all' || section === 'status') && <section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Account status &amp; type</h2>
       <div className="portal-business-body space-y-3"><dl className="grid gap-4 sm:grid-cols-2">
         <div className="min-w-0"><dt className="ds-label">MFN ID</dt><dd className="ds-body break-words font-mono">{q.data?.mfn_id ?? '—'}</dd></div>
@@ -58,8 +59,8 @@ export function PersonalSettings() {
         {(preview.active || workspace) && <div className="min-w-0"><dt className="ds-label">Account name</dt><dd className="ds-body break-words">{preview.active ? 'Demo Account' : workspace?.name || '—'}</dd></div>}
         <div className="min-w-0"><dt className="ds-label">Account type / role</dt><dd className="ds-body break-words">{preview.active ? `${preview.kind === 'provider' ? 'Provider' : preview.accountType.replace(/_/g, ' ')} · Demo` : workspace ? `${workspace.is_contractor ? 'Contractor' : workspace.type.replace(/_/g, ' ')} · ${workspace.role.replace(/_/g, ' ')}` : access?.isMasterAdmin ? 'Master Admin' : access?.isAdmin ? 'Administrator' : 'Learner'}</dd></div>
       </dl><p className="ds-caption">Read-only. Account type and role labels are managed by authorized administrators and never grant permissions on their own.</p></div>
-    </section>
-    <section className="portal-business-section">
+    </section>}
+    {(section === 'all' || section === 'notifications') && <section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Notification preferences</h2>
       <fieldset className="portal-business-body space-y-3"><legend className="sr-only">Notification preferences</legend>
       <DsCheckbox label="Optional in-app Network opportunities" checked={inApp} onChange={e => setInApp(e.target.checked)} />
@@ -67,7 +68,7 @@ export function PersonalSettings() {
       <p className="ds-caption">Email preference is saved. No optional email category is currently connected to this setting.</p>
       <div className="border-t border-ds-border pt-3"><p className="ds-label">Required notices — always enabled</p><p className="ds-caption mt-1">Security, account access, billing and payments, disputes, deadlines, and active-trip operations cannot be disabled.</p></div>
       </fieldset>
-    </section>
-    <div className="portal-business-actions"><DsButton disabled={busy || (!preview.active && !q.data)} type="submit">{busy ? 'Saving…' : 'Save settings'}</DsButton></div>
+    </section>}
+    {section !== 'status' && <div className="portal-business-actions"><DsButton disabled={preview.active || busy || !q.data} type="submit">{busy ? 'Saving…' : 'Save settings'}</DsButton></div>}
   </form>;
 }
