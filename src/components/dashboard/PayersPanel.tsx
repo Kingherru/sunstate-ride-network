@@ -18,7 +18,7 @@ const maskEin = (ein: string | null) => (ein ? `•••••${ein.replace(/\D
 
 export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
   const qc = useQueryClient();
-  const q = usePortalQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers() });
+  const q = usePortalQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers(),staleTime:0,gcTime:0 });
   const [editing, setEditing] = useState<Partial<Payer> | null>(null);
 
   const del = usePortalMutation({

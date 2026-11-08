@@ -25,7 +25,7 @@ const contactTypeLabel = (t: string | null) =>
 
 export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
   const qc = useQueryClient();
-  const q = usePortalQuery({ queryKey: ["contacts"], queryFn: () => listContacts() });
+  const q = usePortalQuery({ queryKey: ["contacts"], queryFn: () => listContacts(),staleTime:0,gcTime:0 });
   const [editing, setEditing] = useState<Partial<Contact> | null>(null);
   const [filter, setFilter] = useState("");
 

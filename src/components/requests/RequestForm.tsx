@@ -23,7 +23,7 @@ import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TimePickerField, TimeSelect } from "@/components/ui/time-picker-field";
 import { RoutePreview, googleRouteUrl, formatMinutes } from "@/components/maps/RoutePreview";
 import { supabase } from "@/integrations/supabase/client";
-import { listSavedPatients } from "@/lib/saved-patients.functions";
+import { listTripPatients } from "@/lib/saved-patients.functions";
 import { listMyPayers } from "@/lib/payers.functions";
 import { getPortalPreferences } from "@/lib/portal-preferences.functions";
 import { NonEmergencyNotice } from "@/components/public/page-kit";
@@ -307,7 +307,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     let cancelled = false;
     (async () => {
       try {
-        const [pts, pys, prefs,defaults,cts] = await Promise.all([listSavedPatients(), listMyPayers(), getPortalPreferences(),loadDefaults(),loadContacts()]);
+        const [pts, pys, prefs,defaults,cts] = await Promise.all([listTripPatients(), listMyPayers(), getPortalPreferences(),loadDefaults(),loadContacts()]);
         if (cancelled) return;
         setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
         setPayers(pys as any[]);

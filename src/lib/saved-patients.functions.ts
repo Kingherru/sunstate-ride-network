@@ -75,6 +75,14 @@ export const listSavedPatients = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+/** New Trip exposes only permitted identity/contact defaults, never clinical notes or credentials. */
+export const listTripPatients=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+ const ws=await managedWorkspaces(context.supabase,context.userId);
+ let q=context.supabase.from('saved_patients').select('id,first_name,last_name,phone,email,mobility,default_payer_id,patient_workspace_id,active,kind').eq('active',true).eq('kind','patient');
+ q=ws.ids.length?q.or(`owner_id.eq.${context.userId},workspace_id.in.(${ws.ids.join(',')})`):q.eq('owner_id',context.userId);
+ const {data,error}=await q.order('last_name');if(error)throw new Error('Patient not available');return data??[];
+});
+
 export const getPatientScope = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => managedWorkspaces(context.supabase, context.userId));
