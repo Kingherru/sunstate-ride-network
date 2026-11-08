@@ -21,7 +21,13 @@ export function workspaceQuoteInput(form: RideRequestInput | DeliveryRequestInpu
 /** In-memory review identity only. No trip information is persisted in the browser. */
 export function tripReviewKey(form: unknown, pricingInputs?: unknown): string | null {
   if (!form) return null;
-  return JSON.stringify({ form, pricingInputs: pricingInputs ?? null });
+  // JSONB may reorder object keys; equivalent server-returned payloads still match.
+  return JSON.stringify({ form, pricingInputs: pricingInputs ?? null }, (_key, value: unknown) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)));
+    }
+    return value;
+  });
 }
 
 export function canAttachTripQuote(input: { currentKey: string | null; confirmedKey: string | null; quoteId: string | null; draftId: string | null; referral: boolean }): boolean {

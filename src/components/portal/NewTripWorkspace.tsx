@@ -31,7 +31,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
   const [confirmed, setConfirmed] = useState<Quote | null>(history.at(-1) ?? null); const [draftId, setDraftId] = useState<string | null>(initialDraft?.id ?? null);
   // Resumed snapshots stay historical until the current trip AND mileage/adjustments are confirmed.
   const [quoteForm, setQuoteForm] = useState<string | null>(null);
-  const [calculated, setCalculated] = useState<{ lines: InvoiceLine[]; totalCents: number } | null>(null);
+  const [calculated, setCalculated] = useState<{ lines: InvoiceLine[]; totalCents: number; pricingSnapshot?: {version:number} } | null>(null);
   const [funding, setFunding] = useState<{ networkFeeCents: number; processingCents: number | null; totalCents: number | null; blocker: string; policyVersion: number | null } | null>(null);
   const [details, setDetails] = useState(false); const [examples, setExamples] = useState(true);
   const [estimateMessage, setEstimateMessage] = useState('');
@@ -86,7 +86,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
     <div className="trip-workspace grid min-w-0 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
       <div className="min-w-0"><h1 className="ds-section-title uppercase text-ds-primary">{provider ? 'Provider-owned New Trip' : 'Facility New Trip'}</h1><p className="ds-support mt-2">{provider ? 'Saved trips stay in your workspace. Network preparation is a separate choice.' : 'Responsible billing party: your facility account or an explicitly authorized payer. Provider rates stay private.'}</p><RequestForm context="portal" initialDraft={initialDraft} allowProviderSelection={!provider}/></div>
       <aside className="trip-financial-panel min-w-0 self-start border border-ds-border bg-ds-surface" aria-label={network ? 'Referral funding preparation' : 'Live invoice estimate'}>
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-border bg-ds-sky p-4"><h2 className="ds-subheading uppercase">{network ? 'Fund Referral' : 'Live Invoice'}</h2><FileText className="size-5 text-ds-primary"/></header>
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border bg-ds-sky p-4"><h2 className="ds-subheading uppercase">{network ? 'Fund Referral' : 'Live Invoice'}</h2><FileText className="size-5 shrink-0 text-ds-primary"/></header>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border p-4"><div className="min-w-0"><p className="ds-caption">{network ? 'Not funded' : unchanged && confirmed ? 'Confirmed Quote' : 'Estimate'}</p><span className="portal-money">{network ? funding?.totalCents != null ? money(funding.totalCents) : 'Funding required' : estimating ? 'Updating…' : shown ? money(shown.totalCents) : 'Quote required'}</span></div><DsButton variant="ghost" className="lg:hidden" onClick={() => setDetails(!details)} aria-expanded={details}>{details ? 'Hide details' : 'View details'}</DsButton></div>
         <div className={`${details ? 'block' : 'hidden'} space-y-5 p-4 lg:block`}>
           {preview.active && <div className="flex flex-wrap gap-2"><p className="ds-caption">Synthetic example — all financial actions blocked.</p><DsButton variant="ghost" onClick={() => setExamples(!examples)}>{examples ? 'Remove example' : 'Show example'}</DsButton></div>}
@@ -109,7 +109,8 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
             <p className="ds-support">Return travel uses the confirmed total mileage; pickup charges follow your active round-trip rate. Wait time, after-hours and supported extras use only configured rates. Taxes and processing: Not Configured — not applied.</p>
             {(Number(discount) !== 0 || Number(adjustment) !== 0) && !unchanged && <p className="ds-caption">The live estimate excludes pending adjustments. Confirm the authorized adjustment and its reason to retain the exact adjusted quote.</p>}
             <p className="ds-caption">Download PDF, Email Invoice and Pay Now are unavailable here until an invoice is issued and the respective secure connection is enabled. No invoice sent or payment collected.</p>
-            <DsButton disabled={busy || !manualConfirmed} onClick={confirmQuote}>{confirmed ? 'Confirm replacement quote' : 'Confirm quote snapshot'}</DsButton>
+            {calculated?.pricingSnapshot && <p className="ds-caption">Customer pricing version {calculated.pricingSnapshot.version} · USD</p>}
+            <DsButton disabled={preview.active || busy || !manualConfirmed || !quoteInput} onClick={confirmQuote}>{confirmed ? 'Confirm replacement quote' : 'Confirm quote snapshot'}</DsButton>
             <FacilityQuoteInbox workspaceId={workspaceId}/>
             {confirmed && <p className="ds-support">Quote version {confirmed.version} · {unchanged ? 'Confirmed for this trip' : 'Trip or price inputs changed — confirm replacement before attaching invoice'}</p>}
           </>}

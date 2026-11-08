@@ -27,6 +27,7 @@ describe('Shared trip review and safe patient presentation', () => {
     const accepted = tripReviewKey(form);
     expect(canAttachTripQuote({ ...attachment, confirmedKey: accepted, currentKey: tripReviewKey(form) })).toBe(true);
     expect(canAttachTripQuote({ ...attachment, confirmedKey: accepted, currentKey: tripReviewKey({ ...form, payerId: 'another-payer' }) })).toBe(false);
+    expect(tripReviewKey({ b: 2, a: { y: 2, x: 1 } })).toBe(tripReviewKey({ a: { x: 1, y: 2 }, b: 2 }));
   });
   it('patient detail allowlist cannot return notes, rates, offers, credentials or other patients', () => {
     const safe = patientDetailFields({ pickup_address: 'Synthetic pickup', transport_type: 'wheelchair', trip_type: 'one_way', special_instructions: 'PRIVATE', provider_notes: 'PRIVATE', margin: 'PRIVATE', offers: 'PRIVATE', card_number: 'PRIVATE', patient_first_name: 'PRIVATE', documents: 'PRIVATE' });

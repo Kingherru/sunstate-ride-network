@@ -111,7 +111,7 @@ function Unavailable({ what }: { what: string }) {
 
 /** Real portal components, fed by preview fixtures (usePortalQuery) and with
  *  every write blocked (usePortalMutation). No real account is impersonated. */
-function realPage(kind: Kind, page: string): React.ReactNode {
+function realPage(kind: Kind, page: string, accountType: string): React.ReactNode {
   if (kind === "provider") {
     switch (page) {
       case "trips": return <Panel><ProviderTrips userId={PREVIEW_USER} /></Panel>;
@@ -130,7 +130,7 @@ function realPage(kind: Kind, page: string): React.ReactNode {
     }
   }
   switch (page) {
-    case "requests/new": return <RequestForm context="portal" allowProviderSelection />;
+    case "requests/new": return accountType === 'private_pay_patient' ? <RequestForm context="portal" allowProviderSelection /> : <NewTripWorkspace workspaceId="preview-ws" provider={false}/>;
     case "account": return <Panel><div className="space-y-5"><PersonalSecurity email="demo@example.com" /><AccountConnections workspaceId="preview-ws" /></div></Panel>;
     case "requests": return <Panel><PatientTrips/></Panel>;
     case "upload-csv": return <Unavailable what="CSV upload" />;
@@ -149,7 +149,7 @@ function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accou
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
       {!(kind === 'provider' && page === 'network') && <PageHead title={label} />}
-      {page === 'onboarding' ? <OnboardingDemo provider={kind === 'provider'} personal={accountType === 'private_pay_patient'} /> : realPage(kind, page)}
+      {page === 'onboarding' ? <OnboardingDemo provider={kind === 'provider'} personal={accountType === 'private_pay_patient'} /> : realPage(kind, page, accountType)}
     </PortalPreviewContext.Provider>
   );
 }
