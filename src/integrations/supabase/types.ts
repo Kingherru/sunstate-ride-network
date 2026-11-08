@@ -9028,6 +9028,10 @@ export type Database = {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
+      cancel_communication_preparation: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {
@@ -9820,6 +9824,7 @@ export type Database = {
         }
         Returns: Json
       }
+      preview_patient_communication_context: { Args: never; Returns: Json[] }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
