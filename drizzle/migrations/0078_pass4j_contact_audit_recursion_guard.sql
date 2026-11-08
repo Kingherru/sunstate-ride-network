@@ -1,0 +1,5 @@
+CREATE OR REPLACE FUNCTION public.audit_contact_payer_change() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF pg_trigger_depth()>1 THEN RETURN NEW; END IF;
+IF TG_TABLE_NAME='provider_contacts' AND NEW.workspace_id IS NOT NULL THEN UPDATE public.provider_contacts SET workspace_mfn_id=(SELECT mfn_id FROM public.workspaces WHERE id=NEW.workspace_id) WHERE id=NEW.id AND workspace_mfn_id IS NULL; END IF;
+INSERT INTO public.account_security_audit(user_id,sender_mfn_id,workspace_id,workspace_mfn_id,event_type,result) VALUES(auth.uid(),(SELECT mfn_id FROM public.user_profiles WHERE user_id=auth.uid()),NEW.workspace_id,(SELECT mfn_id FROM public.workspaces WHERE id=NEW.workspace_id),'contact_payer_'||lower(TG_OP),jsonb_build_object('record_kind',TG_TABLE_NAME,'record_id',NEW.id)::text);
+RETURN NEW; END $$;
