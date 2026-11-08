@@ -9815,6 +9815,10 @@ export type Database = {
         }
         Returns: string
       }
+      prepare_patient_status_notice: {
+        Args: { _channel: string; _request: string }
+        Returns: string
+      }
       prepare_referral_funding_version: {
         Args: {
           _distribution: string
