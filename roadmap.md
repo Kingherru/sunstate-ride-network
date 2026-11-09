@@ -1,4 +1,10 @@
 # Florida MVP launch sequence
+## Pass 4O-A — implementation
+- [ ] Final inset quiet cell grouping across shared detail modules; remove comparison switch.
+- [ ] Shared accessible rail/horizontal tabs with preserved URL state across existing portal/Admin sections.
+- [ ] People navigation, unified Patient Providers and consistent separated Profile/Security; preserve existing relationship records.
+- [ ] Focused tab/deep-link/cell checks; no real writes, migration unless required, activation or publication.
+
 ## Pass 4L — in progress: functionality and draft policy gate
 - [ ] Authorized Messaging/Notifications single/all read actions, immediate confirmed-success counts and semantic notification tones.
 - [ ] Consolidated read-only PAYOUTS: Overview / Held / Available / Paid / Refunds / Reconciliation; immutable owner-review draft matrix, no execution.
