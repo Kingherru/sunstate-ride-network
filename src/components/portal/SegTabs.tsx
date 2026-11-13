@@ -24,7 +24,7 @@ export function SegTabs<T extends string>({ label, value, onChange, options, var
   function choose(next: T) {
     onChange(next);
     const params = Object.fromEntries(new URLSearchParams(searchStr));
-    void router.navigate({ search: { ...params, [key]: next }, resetScroll: false });
+    void router.navigate({ to: ".", search: { ...params, [key]: next } as never, resetScroll: false });
   }
   return <div role="tablist" aria-label={label} className={`portal-tabs portal-tabs-${variant}`}>
     {options.map(o => {
