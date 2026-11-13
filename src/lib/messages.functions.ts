@@ -470,8 +470,10 @@ export const submitFeedbackMessage = createServerFn({ method: "POST" })
 /** List dispatch zones (id + name) so users can pick a zone for zone-manager threads. */
 export const listDispatchZones = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+  .handler(async () => {
+    // Zone names/codes only; caller already authenticated.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("dispatch_zones")
       .select("id, name, code")
       .order("sort_order", { ascending: true })
