@@ -12,7 +12,7 @@ import { usePortalPreview } from "@/components/portal/preview-data";
 export function EarningsPayments({ userId }: { userId: string }) {
   const [tab, setTab] = useState<"drivers" | "network" | "provider" | "payouts">("drivers");
   const preview = usePortalPreview();
-  return <div className="space-y-5"><SegTabs label="Earnings sections" value={tab} onChange={setTab} options={[
+  return <div className="space-y-5"><SegTabs label="Earnings sections" queryKey="view" value={tab} onChange={setTab} options={[
     { value: "drivers", label: "Driver & contractor earnings" }, { value: "network", label: "Network settlements" },
     { value: "provider", label: "Provider balance" }, { value: "payouts", label: "Payment & payout history" },
   ]} />

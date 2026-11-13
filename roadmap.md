@@ -1,9 +1,12 @@
 # Florida MVP launch sequence
 ## Pass 4O-A — implementation
-- [ ] Final inset quiet cell grouping across shared detail modules; remove comparison switch.
-- [ ] Shared accessible rail/horizontal tabs with preserved URL state across existing portal/Admin sections.
-- [ ] People navigation, unified Patient Providers and consistent separated Profile/Security; preserve existing relationship records.
-- [ ] Focused tab/deep-link/cell checks; no real writes, migration unless required, activation or publication.
+- [x] Recovery: shared tab compile fix and migrations, People and Patient Providers, existing patient relationship controls and per-user authorized Page after sign in. One additive nullable preference column; no backfills or real-row writes.
+- [x] Final inset quiet cell grouping retained across shared details and Fleet/Driver editors; no comparison switch.
+- [x] Shared accessible rail/horizontal tabs with explicit URL ownership across Trips, Network, Messaging, Notifications, People, Settings, Earnings, Fleet and existing Training sections; parent-controlled Admin Requests/Messaging preserve search context.
+- [x] People uses existing Patients/Contacts/Payers; Patient Providers uses existing directory Find/Saved with legacy Saved redirect. Owner/contact and transported patient separated; relationship reuses existing single-patient onboarding evidence, not new relational authority.
+- [x] Focused tab/deep-link/back/refresh, authorized preference dropdown and desktop/phone populated detail checks; compilation OK. Sign-in preference writes and live patient saves deliberately unexercised under no-real-record-change rule.
+- Deferred: multi-patient family/contact/payer relationship expansion and populated save-to-login/patient readback require separately authorized isolated records. Existing financial/communication blockers remain; no later pass, activation or publication.
+- Preservation: 28 profiles, seven disabled test accounts, five trips and ten requests retained; profile/trip/request fingerprints identical before and after read-only checks.
 
 ## Pass 4L — in progress: functionality and draft policy gate
 - [ ] Authorized Messaging/Notifications single/all read actions, immediate confirmed-success counts and semantic notification tones.

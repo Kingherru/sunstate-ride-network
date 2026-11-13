@@ -1,4 +1,5 @@
 import { notificationTone } from '@/lib/portal-read-rules';
+import { SegTabs } from '@/components/portal/SegTabs';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -252,22 +253,7 @@ export function NotificationsPanel() {
             ))}
           </SelectContent>
         </Select>
-        <div className="flex rounded-md border border-border overflow-hidden">
-          {(["all", "unread", "read"] as Filter[]).map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
-                filter === f
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        <SegTabs label="Notification sections" queryKey="filter" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'unread', label: 'Unread' }, { value: 'read', label: 'Read' }]} />
       </div>
 
       {/* List */}

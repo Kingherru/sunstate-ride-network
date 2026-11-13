@@ -1,4 +1,5 @@
 import { SettingsShell } from '@/components/portal/SettingsShell';
+import { PatientRelationship } from '@/components/portal/PatientRelationship';
 import { SecureEmailChange } from '@/components/portal/SecureEmailChange';
 import { useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
@@ -71,7 +72,7 @@ function Account() {
       <PageHead title="Settings" />
       {setupLink}
       <SettingsShell value={tab} onChange={setTab} sections={tabs}>
-        {tab === "profile" && <><PersonalSettings section="profile" /><SecureEmailChange/>{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+        {tab === "profile" && <><PersonalSettings section="profile" />{ws?.type === 'private_pay' && ws.role === 'owner' && !ws.is_contractor && <PatientRelationship />}<SecureEmailChange/>{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}

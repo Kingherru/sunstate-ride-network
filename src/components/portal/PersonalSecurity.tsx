@@ -91,7 +91,7 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
   const H = ({ icon: I, children }: { icon: typeof KeyRound; children: React.ReactNode }) => <h2 className="ds-subheading flex items-center gap-2 border-b border-ds-border pb-3 uppercase text-ds-primary"><I className="size-4 shrink-0" aria-hidden />{children}</h2>;
   return (
     <div className="portal-business-form min-w-0 w-full space-y-4">
-      <SegTabs label="Profile and security" value={tab} onChange={setTab} options={[...(securityOnly ? [] : [{ value: 'profile' as const, label: 'Profile & contact' }]), { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} />
+      <SegTabs label="Profile and security" queryKey="securityView" value={tab} onChange={setTab} options={[...(securityOnly ? [] : [{ value: 'profile' as const, label: 'Profile & contact' }]), { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} />
       {tab === 'profile' && <div className="space-y-5">
         <PersonalSettings />
         <section className={`${card} space-y-4`}>

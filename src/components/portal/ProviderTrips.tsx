@@ -18,7 +18,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
   const navigate = useNavigate();
   return (
     <div className="space-y-5">
-      <SegTabs label="Trip views" value={view} onChange={setView}
+      <SegTabs label="Trip views" queryKey="view" value={view} onChange={setView}
         options={[
           { value: "new", label: "New trips" },
           { value: "reservations", label: "Reservations" },

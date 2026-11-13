@@ -7,6 +7,7 @@ import { actionCls, panelCls } from "@/components/portal/PortalShell";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { DsButton } from '@/components/ds/controls';
 import { useTrainingCart } from '@/components/training/TrainingCart';
+import { SegTabs } from './SegTabs';
 
 const price = (c: number) => `$${(c / 100).toFixed(0)}`;
 
@@ -38,7 +39,7 @@ export function TrainingTests() {
 
   return (
     <div className="space-y-5">
-      <div role="tablist" aria-label="Training views" className="flex flex-wrap gap-2">{tabs.map(t => <DsButton key={t} role="tab" aria-selected={tab === t} variant={tab === t ? 'secondary' : 'ghost'} size="sm" onClick={() => setTab(t)}>{t}</DsButton>)}</div>
+      <SegTabs label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} />
       {!rows.length && <DsEmpty title={tab === 'Completed Tests' ? 'No completed tests yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
       <div className="grid gap-5 md:grid-cols-2">
       {rows.map((c) => {

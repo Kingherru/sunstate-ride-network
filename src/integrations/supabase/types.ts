@@ -8026,6 +8026,7 @@ export type Database = {
           default_payment_method_id: string | null
           detail_columns: number[] | null
           interface_density: string
+          page_after_sign_in: string | null
           pay_by_invoice: boolean
           updated_at: string
           user_id: string
@@ -8035,6 +8036,7 @@ export type Database = {
           default_payment_method_id?: string | null
           detail_columns?: number[] | null
           interface_density?: string
+          page_after_sign_in?: string | null
           pay_by_invoice?: boolean
           updated_at?: string
           user_id: string
@@ -8044,6 +8046,7 @@ export type Database = {
           default_payment_method_id?: string | null
           detail_columns?: number[] | null
           interface_density?: string
+          page_after_sign_in?: string | null
           pay_by_invoice?: boolean
           updated_at?: string
           user_id?: string

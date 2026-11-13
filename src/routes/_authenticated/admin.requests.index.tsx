@@ -26,7 +26,7 @@ function AdminRequests() {
   const canCreate = useAdminLevel("requests") === "manage";
   return (
     <>
-      {canCreate && <div className="mb-5"><SegTabs label="Request sections" value={tab} onChange={(t) => navigate({ search: { tab: t === "new" ? "new" : undefined } })} options={[{ value: "all", label: "All requests" }, { value: "new", label: "New for a customer" }]} /></div>}
+      {canCreate && <div className="mb-5"><SegTabs label="Request sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "new" ? "new" : undefined }) })} options={[{ value: "all", label: "All requests" }, { value: "new", label: "New for a customer" }]} /></div>}
       {tab === "new" && canCreate ? <OnBehalfRequest rows={candidates} /> : (
         <>
           <PageHead title="Requests">Select any request to open its details.</PageHead>

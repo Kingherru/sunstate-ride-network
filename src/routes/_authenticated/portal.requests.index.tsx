@@ -34,7 +34,7 @@ function Requests() {
       <PageHead title="Trip history" action={<Link to="/portal/requests/new" className={actionCls}>New trip</Link>}>
         Only requests you're authorized to view are shown.
       </PageHead>
-      <SegTabs label="Trip history sections" value={tab} onChange={setTab} options={[{ value: "history", label: "History" }, { value: "drafts", label: "Drafts" }]} />
+      <SegTabs label="Trip history sections" queryKey="view" value={tab} onChange={setTab} options={[{ value: "history", label: "History" }, { value: "drafts", label: "Drafts" }]} />
       <div className="mt-4">{tab === "history" ? access.primary?.type==='private_pay'?<PatientTrips/>:<History rows={rows} /> : <Drafts />}</div>
     </>
   );

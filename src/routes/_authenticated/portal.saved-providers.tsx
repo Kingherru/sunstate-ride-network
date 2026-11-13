@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { ProviderDirectory } from "@/components/network/ProviderDirectory";
 
 export const Route = createFileRoute("/_authenticated/portal/saved-providers")({
-  head: () => ({ meta: [{ title: "Saved Providers — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Saved Providers — MY FLORIDA NEMT" }, { name: 'description', content: 'Your saved transportation providers.' }, { property: 'og:title', content: 'Saved Providers — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Your saved transportation providers.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
+  beforeLoad: () => { throw redirect({ to: '/portal/find-providers', search: { tab: 'saved' } }); },
   component: PortalSavedProviders,
 });
 

@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getPortalPreferences, savePortalPreferences, type InterfaceDensity, type PortalPreferences } from '@/lib/portal-preferences.functions';
 import { SegTabs } from './SegTabs';
+import { SignInPreference } from './SignInPreference';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 
 export function InterfaceSize() {
@@ -21,6 +22,6 @@ export function InterfaceSize() {
     try { await save({ data: { interface_density: v } }); await qc.invalidateQueries({ queryKey: ['portal-preferences'] }); toast.success('Interface size saved.'); }
     catch { toast.error('Could not save interface size.'); } finally {setBusy(false);}
   }
-  return <div className="space-y-2"><h3 className="ds-label text-ds-primary">Interface size</h3>
+  return <div className="space-y-4"><SignInPreference /><h3 className="ds-label text-ds-primary">Interface size</h3>
     <div className="flex flex-wrap gap-2">{(['compact','standard','comfortable'] as InterfaceDensity[]).map(v=><DsButton key={v} disabled={busy||preview.active} variant={v===value?'secondary':'ghost'} aria-pressed={v===value} onClick={()=>change(v)}>{v[0].toUpperCase()+v.slice(1)}</DsButton>)}</div></div>;
 }

@@ -5,7 +5,7 @@ import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 export const Route = createFileRoute("/_authenticated/admin/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Admin Notifications — MY FLORIDA NEMT" }, { name: 'description', content: 'Your authorized administrator notifications.' }, { property: 'og:title', content: 'Admin Notifications — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Your authorized administrator notifications.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AdminNotifications,
 });
 

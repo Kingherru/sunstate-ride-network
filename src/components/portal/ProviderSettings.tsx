@@ -41,7 +41,7 @@ const legacySections: Record<string, string> = { connections: 'team', contact: '
 export function ProviderSettings({ workspaceId, role, email, initialSection = 'business', accountDetails, teamMessaging, financialTools }: { workspaceId: string; role: string; email?: string | null; initialSection?: string; accountDetails?: React.ReactNode; teamMessaging?: React.ReactNode; financialTools?: React.ReactNode }) {
   const [tab, setTab] = useState(legacySections[initialSection] ?? (sections.some(s => s.value === initialSection) ? initialSection : 'business')); const preview = usePortalPreview(); const owner = role === 'owner';
   return <div className="grid min-w-0 gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]">
-    <SegTabs label="Provider settings sections" variant="rail" queryKey="section" value={tab} onChange={setTab} options={sections}/>
+    <SegTabs label="Provider settings sections" variant="rail" queryKey="section" aliases={legacySections} value={tab} onChange={setTab} options={sections}/>
     <div className="portal-business-form min-w-0 space-y-5">
     <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
     {tab === 'business' && <PersonalSettings section="profile" />}

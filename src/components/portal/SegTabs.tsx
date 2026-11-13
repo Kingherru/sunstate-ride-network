@@ -5,29 +5,33 @@ import { DsButton } from '@/components/ds/controls';
 import { tabIcon } from './tab-icons';
 
 /** One controlled navigation surface; URL state is UI-only, never record data. */
-export function SegTabs<T extends string>({ label, value, onChange, options, variant = 'horizontal', queryKey }: {
+export function SegTabs<T extends string>({ label, value, onChange, options, variant = 'horizontal', queryKey, aliases }: {
   label: string; value: T; onChange: (v: T) => void;
   options: { value: T; label: string; icon?: LucideIcon; badge?: React.ReactNode }[];
-  variant?: 'horizontal' | 'rail'; queryKey?: string;
+  variant?: 'horizontal' | 'rail'; queryKey?: string; aliases?: Record<string, T>;
 }) {
   const router = useRouter();
-  const searchStr = useRouterState({ select: s => s.location.searchStr });
+  const search = useRouterState({ select: s => s.location.search });
   const refs = useRef(new Map<T, HTMLButtonElement>());
   // URL ownership is opt-in via queryKey; without it the parent owns navigation.
-  const selected = queryKey ? new URLSearchParams(searchStr).get(queryKey) : null;
-  const valid = options.find(o => o.value === selected)?.value;
+  const selected = queryKey ? (search as Record<string, unknown>)[queryKey] : null;
+  const resolved = typeof selected === 'string' ? aliases?.[selected] ?? selected : selected;
+  const valid = options.find(o => o.value === resolved)?.value;
+  const initialValue = useRef(value);
+  const changeRef = useRef(onChange);
+  changeRef.current = onChange;
+  const restored = valid ?? (selected == null && options.some(o => o.value === initialValue.current) ? initialValue.current : options[0]?.value);
   useEffect(() => {
-    if (queryKey && valid && valid !== value) onChange(valid);
-  }, [searchStr, valid]); // URL/back/forward restores only an explicit param; never snap back to the first tab.
+    if (queryKey && restored && restored !== value) changeRef.current(restored);
+  }, [queryKey, restored, value]);
   function choose(next: T) {
     if (queryKey) {
-      const params = Object.fromEntries(new URLSearchParams(searchStr));
-      void router.navigate({ to: ".", search: { ...params, [queryKey]: next } as never, resetScroll: false });
+      void router.navigate({ to: '.', search: prev => ({ ...prev, [queryKey]: next }), resetScroll: false });
       return; // the effect above applies the change once the URL updates
     }
     onChange(next);
   }
-  return <div role="tablist" aria-label={label} className={`portal-tabs portal-tabs-${variant}`}>
+  return <div role="tablist" aria-label={label} aria-orientation={variant === 'rail' ? 'vertical' : 'horizontal'} className={`portal-tabs portal-tabs-${variant}`}>
     {options.map(o => {
       const Icon = o.icon ?? tabIcon(o.label);
       return <DsButton ref={node => { if (node) refs.current.set(o.value, node); else refs.current.delete(o.value); }} key={o.value}

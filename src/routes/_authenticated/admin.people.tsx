@@ -123,7 +123,7 @@ function People() {
   return (
     <>
       <PageHead title="People & Accounts">Everyone who can sign in, and the accounts they belong to. {peopleReadOnly && <ReadOnlyBadge />}</PageHead>
-      <div className="mb-4"><SegTabs label="People views" value={view} onChange={setView} options={[
+      <div className="mb-4"><SegTabs label="People views" queryKey="view" value={view} onChange={setView} options={[
         { value: "all", label: `Users (${rows.length})` },
         { value: "providers", label: `Providers (${counts("providers")})` },
         { value: "private_pay", label: `Private pay (${counts("private_pay")})` },

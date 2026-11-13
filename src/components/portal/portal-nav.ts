@@ -9,7 +9,7 @@ export const PROVIDER_NAV: NavItem[] = [
   { to: "/portal/fleet", label: "Fleet & Drivers" },
   { to: "/portal/earnings", label: "Earnings & Payments" },
   { to: "/portal/network", label: "Network" },
-  { to: '/portal/contacts', label: 'Contacts & payers' },
+  { to: '/portal/contacts', label: 'People' },
   { to: "/portal/training", label: "Training & Tests" },
   { to: "/portal/messaging", label: "Messaging" },
 ];
@@ -25,9 +25,8 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal/requests/new", label: "New trip" },
   { to: "/portal/requests", label: "Trip history", exact: true },
   { to: "/portal/upload-csv", label: "Uploads" },
-  { to: "/portal/saved-providers", label: "Saved providers" },
-  { to: "/portal/find-providers", label: "Find providers" },
-  { to: "/portal/contacts", label: "Contacts & payers" },
+  { to: "/portal/find-providers", label: "Providers" },
+  { to: "/portal/contacts", label: "People" },
   { to: "/portal/notifications", label: "Notifications" },
   { to: "/portal/messaging", label: "Messaging" },
 ];

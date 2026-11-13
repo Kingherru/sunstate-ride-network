@@ -45,7 +45,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
     {(section==='profile'||section==='all') && <section className="portal-business-section"><h2 className="portal-business-heading ds-label">Setup checklist</h2><ul className="portal-business-body grid gap-2 ds-support sm:grid-cols-2"><li>Owner name · {firstName&&lastName?'Complete':'Incomplete'}</li><li>Phone · {phone?'Complete':'Incomplete'}</li><li>Policy acknowledgment · {q.data?.onboarding_policy_accepted_at?'Recorded':'Not recorded'}</li><li>Guided setup · {q.data?.onboarding_completed_at?'Complete':'Available in account setup'}</li></ul></section>}
     {section !== 'notifications' && q.data?.display_name && !q.data.first_name && <p className="ds-support">Current name: {q.data.display_name}</p>}
     {(section === 'all' || section === 'profile') && <><section className="portal-business-section">
-      <h2 className="portal-business-heading ds-subheading uppercase">Profile</h2>
+      <h2 className="portal-business-heading ds-subheading uppercase">Account owner / contact</h2>
       <div className="portal-business-body grid gap-4 sm:grid-cols-2">
       <DsField label="First name">{p => <DsInput {...p} required maxLength={80} autoComplete="given-name" value={firstName} onChange={e => setFirst(e.target.value)} />}</DsField>
       <DsField label="Last name">{p => <DsInput {...p} required maxLength={80} autoComplete="family-name" value={lastName} onChange={e => setLast(e.target.value)} />}</DsField>

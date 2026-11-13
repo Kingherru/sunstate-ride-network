@@ -36,7 +36,7 @@ function AdminMessaging() {
     <>
       <PageHead title="Messaging">{level === "read" && <ReadOnlyBadge />}</PageHead>
       <div className="mb-5">
-        <SegTabs label="Messaging sections" value={tab} onChange={(t) => navigate({ search: { tab: t === "messages" ? undefined : t } })} options={[
+        <SegTabs label="Messaging sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "messages" ? undefined : t }) })} options={[
           { value: "messages", label: "Messages" }, { value: "requests", label: "Requests" },
           { value: "business", label: "Business Conversations" }, { value: "contacts", label: "Frontend Contacts" },
           { value: 'communications', label: 'Communications' },

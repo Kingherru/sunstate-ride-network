@@ -1,18 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SegTabs } from '@/components/portal/SegTabs';
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { ProviderDirectory } from "@/components/network/ProviderDirectory";
 
 export const Route = createFileRoute("/_authenticated/portal/find-providers")({
-  head: () => ({ meta: [{ title: "Find Providers — MY FLORIDA NEMT" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Providers — MY FLORIDA NEMT" }, { name: 'description', content: 'Find authorized directory providers and your saved providers.' }, { property: 'og:title', content: 'Providers — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Find authorized directory providers and your saved providers.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ tab: typeof s.tab === 'string' ? s.tab : 'find' }),
   component: PortalFindProviders,
 });
 
 function PortalFindProviders() {
+  const { tab } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const selected = tab === 'saved' ? 'saved' : 'find';
   return (
     <>
-      <PageHead title="Find Providers">Network providers in your area. Only details providers publish for network discovery are shown.</PageHead>
+      <PageHead title="Providers" />
+      <SegTabs label="Providers sections" value={selected} onChange={t => navigate({ search: prev => ({ ...prev, tab: t }) })} options={[{ value: 'find', label: 'Find' }, { value: 'saved', label: 'Saved' }]} />
       <section className={`${panelCls} p-4 sm:p-6`}>
-        <ProviderDirectory />
+        <ProviderDirectory key={selected} savedOnly={selected === 'saved'} />
       </section>
     </>
   );
