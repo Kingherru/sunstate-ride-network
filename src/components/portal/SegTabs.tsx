@@ -12,19 +12,20 @@ export function SegTabs<T extends string>({ label, value, onChange, options, var
 }) {
   const router = useRouter();
   const searchStr = useRouterState({ select: s => s.location.searchStr });
-  const key = queryKey ?? `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-  const initial = useRef(value);
   const refs = useRef(new Map<T, HTMLButtonElement>());
-  const selected = new URLSearchParams(searchStr).get(key);
+  // URL ownership is opt-in via queryKey; without it the parent owns navigation.
+  const selected = queryKey ? new URLSearchParams(searchStr).get(queryKey) : null;
   const valid = options.find(o => o.value === selected)?.value;
   useEffect(() => {
-    const next = valid ?? initial.current;
-    if (options.some(o => o.value === next) && next !== value) onChange(next);
-  }, [searchStr, valid]); // URL/back/forward owns restoration; controlled updates remain immediate.
+    if (queryKey && valid && valid !== value) onChange(valid);
+  }, [searchStr, valid]); // URL/back/forward restores only an explicit param; never snap back to the first tab.
   function choose(next: T) {
+    if (queryKey) {
+      const params = Object.fromEntries(new URLSearchParams(searchStr));
+      void router.navigate({ to: ".", search: { ...params, [queryKey]: next } as never, resetScroll: false });
+      return; // the effect above applies the change once the URL updates
+    }
     onChange(next);
-    const params = Object.fromEntries(new URLSearchParams(searchStr));
-    void router.navigate({ to: ".", search: { ...params, [key]: next } as never, resetScroll: false });
   }
   return <div role="tablist" aria-label={label} className={`portal-tabs portal-tabs-${variant}`}>
     {options.map(o => {

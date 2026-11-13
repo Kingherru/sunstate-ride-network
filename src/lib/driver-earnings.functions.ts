@@ -81,7 +81,7 @@ export const getDriverEarnings = createServerFn({ method: "GET" })
     // Fetch trips in date range for this driver
     const { data: trips, error: tErr } = await supabase
       .from("trips")
-      .select("id,status,pickup_date,round_trip,actual_miles,estimated_miles,wait_minutes,actual_pickup_at,actual_dropoff_at,scheduled_start_time,scheduled_end_time")
+      .select("id,status,pickup_date,round_trip,actual_miles,estimated_miles,wait_minutes,actual_pickup_at,actual_dropoff_at")
       .eq("driver_id", data.driver_id)
       .gte("pickup_date", data.start)
       .lte("pickup_date", data.end);
@@ -107,9 +107,7 @@ export const getDriverEarnings = createServerFn({ method: "GET" })
       totalMiles += Number(t.actual_miles ?? t.estimated_miles ?? 0) || 0;
       pickupLegs += t.round_trip ? 2 : 1;
       waitMinutes += Number(t.wait_minutes ?? 0) || 0;
-      const dur = hoursBetween(t.actual_pickup_at, t.actual_dropoff_at)
-        || hoursBetween(t.scheduled_start_time, t.scheduled_end_time);
-      workedHours += dur;
+      workedHours += hoursBetween(t.actual_pickup_at, t.actual_dropoff_at);
     }
 
     // Compute earnings lines
