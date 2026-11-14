@@ -2,8 +2,8 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
-export type InterfaceDensity = 'compact' | 'standard' | 'comfortable';
-export type PortalPreferences = { detail_columns: number[] | null; interface_density: InterfaceDensity; default_payer_id: string | null; default_payment_method_id: string | null; pay_by_invoice: boolean; invoiceEligible: boolean };
+export type InterfaceDensity = 'compact' | 'standard' | 'comfortable' | 'extra_large';
+export type PortalPreferences = { high_contrast: boolean; detail_columns: number[] | null; interface_density: InterfaceDensity; default_payer_id: string | null; default_payment_method_id: string | null; pay_by_invoice: boolean; invoiceEligible: boolean };
 
 /** Pay by Invoice: any account type; only the individual account owner or a workspace owner/admin may set it. It never marks invoices paid, grants credit or charges. */
 async function invoiceEligible(supabase: any, userId: string) {
@@ -14,10 +14,11 @@ async function invoiceEligible(supabase: any, userId: string) {
 export const getPortalPreferences = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PortalPreferences> => {
     const [{ data }, eligible] = await Promise.all([
-      context.supabase.from('user_portal_preferences').select('detail_columns,interface_density,default_payer_id,default_payment_method_id,pay_by_invoice').eq('user_id', context.userId).maybeSingle(),
+      context.supabase.from('user_portal_preferences').select('high_contrast,detail_columns,interface_density,default_payer_id,default_payment_method_id,pay_by_invoice').eq('user_id', context.userId).maybeSingle(),
       invoiceEligible(context.supabase, context.userId),
     ]);
     return {
+      high_contrast: data?.high_contrast ?? false,
       detail_columns: data?.detail_columns ?? null,
       interface_density: (data?.interface_density as InterfaceDensity) ?? 'standard',
       default_payer_id: data?.default_payer_id ?? null,
@@ -30,7 +31,8 @@ export const getPortalPreferences = createServerFn({ method: 'GET' }).middleware
 export const savePortalPreferences = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({
     detail_columns: z.array(z.number().int().min(20).max(60)).length(3).refine(v => v.reduce((a,b)=>a+b,0) === 100).optional(),
-    interface_density: z.enum(['compact', 'standard', 'comfortable']).optional(),
+    interface_density: z.enum(['compact', 'standard', 'comfortable', 'extra_large']).optional(),
+    high_contrast: z.boolean().optional(),
     default_payer_id: z.string().uuid().nullable().optional(),
     default_payment_method_id: z.string().uuid().nullable().optional(),
     pay_by_invoice: z.boolean().optional(),
@@ -39,6 +41,7 @@ export const savePortalPreferences = createServerFn({ method: 'POST' }).middlewa
     const patch: Record<string, unknown> = { user_id: context.userId, updated_at: new Date().toISOString() };
     if (data.detail_columns) patch.detail_columns = data.detail_columns;
     if (data.interface_density) patch.interface_density = data.interface_density;
+    if (data.high_contrast !== undefined) patch.high_contrast = data.high_contrast;
     if (data.default_payer_id !== undefined) {
       if (data.default_payer_id) {
         const { data: p } = await context.supabase.from('payers').select('id').eq('id', data.default_payer_id).eq('owner_user_id', context.userId).eq('active', true).maybeSingle();

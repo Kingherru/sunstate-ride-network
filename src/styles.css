@@ -700,3 +700,26 @@
 .portal-root[data-density="standard"] { --portal-control-height: 2.875rem; --portal-control-space: .625rem; }
 .portal-root[data-density="comfortable"] { --portal-control-height: 3.25rem; --portal-control-space: .875rem; }
 .portal-root main :is(.ds-input, .portal-input, .portal-business-form input:not([type="checkbox"]):not([type="radio"]), .portal-business-form select, .portal-business-form button) { min-height: var(--portal-control-height); padding-block: var(--portal-control-space); }
+
+/* Person-scoped portal accessibility; public theme deliberately untouched. */
+body[data-portal-density="compact"] .theme-portal { --portal-type-scale: .9375; }
+body[data-portal-density="standard"] .theme-portal { --portal-type-scale: 1; }
+body[data-portal-density="comfortable"] .theme-portal { --portal-type-scale: 1.125; }
+body[data-portal-density="extra_large"] .theme-portal { --portal-type-scale: 1.25; --portal-control-height: 3.5rem; --portal-control-space: .875rem; }
+body[data-portal-density] .theme-portal { font-size: calc(1rem * var(--portal-type-scale, 1)); }
+body[data-portal-density] .theme-portal :is(.ds-body,.ds-button-text,input,select,textarea,button,.text-sm) { font-size: calc(1rem * var(--portal-type-scale, 1)); }
+body[data-portal-density] .theme-portal :is(.ds-support,.ds-label) { font-size: calc(.9375rem * var(--portal-type-scale, 1)); }
+body[data-portal-density] .theme-portal :is(.ds-caption,.text-xs,.portal-tab-badge) { font-size: calc(.8125rem * var(--portal-type-scale, 1)); }
+body[data-portal-density] .theme-portal :is(.ds-page-title,.ds-section-title) { font-size: calc(1.875rem * var(--portal-type-scale, 1)); letter-spacing: 0; }
+body[data-portal-density] .theme-portal .ds-subheading { font-size: calc(1.25rem * var(--portal-type-scale, 1)); }
+body[data-portal-density] .theme-portal :is(button,a) { overflow-wrap: anywhere; }
+body[data-portal-density] .theme-portal .portal-tab { flex-shrink: 0; white-space: normal; }
+body[data-portal-density] .theme-portal .portal-sidebar a span { white-space: normal; overflow: visible; }
+body[data-portal-contrast="true"] .theme-portal {
+ --ds-text-2: #263b50; --ds-on-bg: #10283f; --ds-border: #60768b; --row-divider: #60768b; --ds-focus: #be5200; --ds-action: #a84600; --ds-action-hover: #893900; --ds-on-action: #ffffff;
+ --mfn-text-2: #263b50; --muted-foreground: #263b50; --border: #60768b;
+}
+body[data-portal-contrast="true"] .theme-portal :is(input,select,textarea,.portal-tab,[data-detail-section] dl > div) { border-color: var(--ds-border); border-width: 2px; }
+body[data-portal-contrast="true"] .theme-portal :where(.text-ds-on-primary\/85,.text-ds-on-primary\/80) { color: var(--ds-on-primary); }
+body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-image: none; }
+@media (prefers-reduced-motion: reduce) { body[data-portal-density] .theme-portal * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

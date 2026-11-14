@@ -88,6 +88,13 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const prefs = usePortalQuery({ queryKey: ['portal-preferences'], queryFn: () => getPortalPreferences() });
   const accountEvidence=usePortalQuery({queryKey:['account-profile-verification'],queryFn:()=>getAccountProfileVerification(),staleTime:0,gcTime:0});
   const density = (prefs.data as { interface_density?: string } | undefined)?.interface_density ?? 'standard';
+  const highContrast = prefs.data?.high_contrast ?? false;
+  useEffect(() => {
+    // Portalled dialogs inherit these on their body-level theme wrapper too.
+    document.body.dataset.portalDensity = density;
+    document.body.dataset.portalContrast = String(highContrast);
+    return () => { delete document.body.dataset.portalDensity; delete document.body.dataset.portalContrast; };
+  }, [density, highContrast]);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -196,7 +203,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   );
 
   return (
-    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg" data-density={density}>
+    <div className="portal-root theme-portal min-h-screen bg-ds-bg text-ds-on-bg" data-density={density} data-high-contrast={highContrast}>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-ds-sm focus:bg-ds-surface focus:px-4 focus:py-2">Skip to content</a>
 
       {/* Desktop sidebar */}

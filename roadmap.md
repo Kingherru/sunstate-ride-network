@@ -1,4 +1,15 @@
 # Florida MVP launch sequence
+## Pass 4P — foundation built; blocked completion items explicit
+- [x] Shared portal-only Accessibility tab, four existing preference sizes, high contrast and reset; demo write blocking. Synthetic person-scoped save/readback passes; live saving intentionally not exercised.
+- [x] Additive workspace subtype defaults existing 13 accounts to Business without reclassification; incomplete owners select once in setup before provider questions. Existing Fleet and private credentials/coverage reused; license option and subtype checklist added.
+- [ ] Complete conditional contractor flow: dedicated one-primary-vehicle simplified intake, pre-account signup choice, conditional business-only controls and platform-configured additional checklist. Blocker: review/attestation requirements and configuration need owner decisions; existing tools remain available.
+- [x] Database contractor Ambulatory-only profile/vehicle/driver/assignment and offer-selection gates, private storage object checks, vehicle completeness and protected/invalidation-aware evidence status.
+- [ ] Contractor Requirement Satisfied review workflow and approved public capability read-time projection across discovery. Blocker: platform reviewer criteria/tooling not defined; contractor eligibility fails closed and no contractor is activated.
+- [x] Workspace pickup-delay 5/10/15/Custom (1–120 minutes); evidence/settings only, automation OFF.
+- [x] Focused synthetic checks and desktop/phone Accessibility layout (no overflow), automatic build OK; no real accounts/documents/record writes or publication. Existing 28 profile/10 request/5 trip fingerprints unchanged; seven suspended test accounts retained, 13 workspaces remain Business.
+- Save-to-login, document-upload and contractor acceptance readback not exercised against real records; requires isolated authorized fixtures.
+- Next pass only: contractor Network profiles/opt-in/discovery/applications/invitations/relationships/controlled offers; separate $20 contractor subscription (existing prices unchanged pending review); contractor marketing/CTAs; contact and trip imports/exports.
+
 ## Pass 4O-A — implementation
 - [x] Recovery: shared tab compile fix and migrations, People and Patient Providers, existing patient relationship controls and per-user authorized Page after sign in. One additive nullable preference column; no backfills or real-row writes.
 - [x] Final inset quiet cell grouping retained across shared details and Fleet/Driver editors; no comparison switch.

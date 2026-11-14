@@ -610,6 +610,27 @@
       "when": 1794613764928,
       "tag": "0086_personal_sign_in_destination",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1794614517855,
+      "tag": "0087_portal_accessibility_provider_subtype_vehicle_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1794614668375,
+      "tag": "0088_contractor_evidence_invalidation_and_safe_profile_updates",
+      "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1794614839047,
+      "tag": "0089_contractor_current_tax_evidence_and_driver_capability_guard",
+      "breakpoints": true
     }
   ]
 }

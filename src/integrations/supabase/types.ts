@@ -8025,6 +8025,7 @@ export type Database = {
           default_payer_id: string | null
           default_payment_method_id: string | null
           detail_columns: number[] | null
+          high_contrast: boolean
           interface_density: string
           page_after_sign_in: string | null
           pay_by_invoice: boolean
@@ -8035,6 +8036,7 @@ export type Database = {
           default_payer_id?: string | null
           default_payment_method_id?: string | null
           detail_columns?: number[] | null
+          high_contrast?: boolean
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
@@ -8045,6 +8047,7 @@ export type Database = {
           default_payer_id?: string | null
           default_payment_method_id?: string | null
           detail_columns?: number[] | null
+          high_contrast?: boolean
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
@@ -8151,14 +8154,19 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          accessibility_equipment: string | null
           assigned_driver_id: string | null
           capacity: number
           created_at: string
           created_by: string | null
           creator_mfn_id: string | null
+          evidence_status: string
           id: string
           insurance_doc_path: string | null
           insurance_expiry: string | null
+          make: string | null
+          model: string | null
+          model_year: number | null
           name: string
           notes: string | null
           owner_id: string
@@ -8168,19 +8176,25 @@ export type Database = {
           service_capabilities: string[]
           status: string
           updated_at: string
+          vehicle_category: string | null
           vehicle_type: string
           wheelchair_capacity: number | null
           workspace_id: string | null
         }
         Insert: {
+          accessibility_equipment?: string | null
           assigned_driver_id?: string | null
           capacity?: number
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
+          evidence_status?: string
           id?: string
           insurance_doc_path?: string | null
           insurance_expiry?: string | null
+          make?: string | null
+          model?: string | null
+          model_year?: number | null
           name: string
           notes?: string | null
           owner_id: string
@@ -8190,19 +8204,25 @@ export type Database = {
           service_capabilities?: string[]
           status?: string
           updated_at?: string
+          vehicle_category?: string | null
           vehicle_type?: string
           wheelchair_capacity?: number | null
           workspace_id?: string | null
         }
         Update: {
+          accessibility_equipment?: string | null
           assigned_driver_id?: string | null
           capacity?: number
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
+          evidence_status?: string
           id?: string
           insurance_doc_path?: string | null
           insurance_expiry?: string | null
+          make?: string | null
+          model?: string | null
+          model_year?: number | null
           name?: string
           notes?: string | null
           owner_id?: string
@@ -8212,6 +8232,7 @@ export type Database = {
           service_capabilities?: string[]
           status?: string
           updated_at?: string
+          vehicle_category?: string | null
           vehicle_type?: string
           wheelchair_capacity?: number | null
           workspace_id?: string | null
@@ -8602,6 +8623,9 @@ export type Database = {
           mfn_id: string | null
           operating_hours: string | null
           organization_type: string
+          pickup_delay_minutes: number | null
+          provider_subtype: string
+          provider_subtype_selected_at: string | null
           provider_verified: boolean
           status: Database["public"]["Enums"]["workspace_status"]
           updated_at: string
@@ -8626,6 +8650,9 @@ export type Database = {
           mfn_id?: string | null
           operating_hours?: string | null
           organization_type?: string
+          pickup_delay_minutes?: number | null
+          provider_subtype?: string
+          provider_subtype_selected_at?: string | null
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
@@ -8650,6 +8677,9 @@ export type Database = {
           mfn_id?: string | null
           operating_hours?: string | null
           organization_type?: string
+          pickup_delay_minutes?: number | null
+          provider_subtype?: string
+          provider_subtype_selected_at?: string | null
           provider_verified?: boolean
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
@@ -9864,6 +9894,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      pass4p_document_present: {
+        Args: { _kind: string; _ws: string }
+        Returns: boolean
+      }
+      pass4p_service_eligible: {
+        Args: { _service: string; _vehicle?: string; _ws: string }
+        Returns: boolean
+      }
+      pass4p_vehicle_complete: { Args: { _v: string }; Returns: boolean }
       patient_request_access: { Args: { _request: string }; Returns: boolean }
       patient_request_snapshot: { Args: { _request: string }; Returns: Json }
       patient_trip_contacts: { Args: { _request: string }; Returns: Json }
@@ -10161,6 +10200,10 @@ export type Database = {
           user_id: string
           zone_name: string
         }[]
+      }
+      select_provider_subtype: {
+        Args: { _subtype: string; _ws: string }
+        Returns: undefined
       }
       set_business_member_permissions: {
         Args: {

@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { DsButton } from '@/components/ds/controls';
+import { DsButton, DsCheckbox, DsField, DsSelect } from '@/components/ds/controls';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getPortalPreferences, savePortalPreferences, type InterfaceDensity, type PortalPreferences } from '@/lib/portal-preferences.functions';
-import { SegTabs } from './SegTabs';
-import { SignInPreference } from './SignInPreference';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 
 export function InterfaceSize() {
@@ -16,12 +14,11 @@ export function InterfaceSize() {
   const q = usePortalQuery({ queryKey: ['portal-preferences'], queryFn: () => get() });
   const value = ((q.data as PortalPreferences | undefined)?.interface_density ?? 'standard') as InterfaceDensity;
   const [busy,setBusy]=useState(false);
-  async function change(v: InterfaceDensity) {
+  async function change(patch: {interface_density?: InterfaceDensity; high_contrast?: boolean}) {
     if (preview.active) return previewBlocked();
     setBusy(true);
-    try { await save({ data: { interface_density: v } }); await qc.invalidateQueries({ queryKey: ['portal-preferences'] }); toast.success('Interface size saved.'); }
+    try { await save({ data: patch }); await qc.invalidateQueries({ queryKey: ['portal-preferences'] }); toast.success('Accessibility settings saved.'); }
     catch { toast.error('Could not save interface size.'); } finally {setBusy(false);}
   }
-  return <div className="space-y-4"><SignInPreference /><h3 className="ds-label text-ds-primary">Interface size</h3>
-    <div className="flex flex-wrap gap-2">{(['compact','standard','comfortable'] as InterfaceDensity[]).map(v=><DsButton key={v} disabled={busy||preview.active} variant={v===value?'secondary':'ghost'} aria-pressed={v===value} onClick={()=>change(v)}>{v[0].toUpperCase()+v.slice(1)}</DsButton>)}</div></div>;
+  return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Accessibility</h2><div className="portal-business-body space-y-5"><DsCheckbox label="High Contrast Mode" disabled={busy||preview.active||q.isError} checked={q.data?.high_contrast ?? false} onChange={e=>void change({high_contrast:e.target.checked})}/><DsField label="Text size">{p=><DsSelect {...p} disabled={busy||preview.active||q.isError} value={value} onChange={e=>void change({interface_density:e.target.value as InterfaceDensity})}><option value="compact">Smaller</option><option value="standard">Default</option><option value="comfortable">Large</option><option value="extra_large">Extra Large</option></DsSelect>}</DsField><DsButton variant="secondary" disabled={busy||preview.active||q.isError} onClick={()=>void change({interface_density:'standard',high_contrast:false})}>Reset to Default</DsButton>{q.isError&&<p role="alert" className="ds-support">Accessibility settings unavailable. Please try again.</p>}</div></section>;
 }

@@ -110,10 +110,10 @@ export const getMyNetworkProfile = createServerFn({ method: "POST" })
     if (error) return { ok: false as const, error: error.message };
     const { data: ws } = await context.supabase
       .from("workspaces")
-      .select("provider_verified")
+      .select("provider_verified,provider_subtype")
       .eq("id", data.workspace_id)
       .maybeSingle();
-    return { ok: true as const, profile: row, verified: !!ws?.provider_verified };
+    return { ok: true as const, profile: row, verified: !!ws?.provider_verified, subtype: ws?.provider_subtype ?? 'nemt_business' };
   });
 
 const profileSchema = z.object({
@@ -146,8 +146,9 @@ export const saveNetworkProfile = createServerFn({ method: "POST" })
     const { workspace_id, ...rest } = data;
     const {data:allowed}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_workspace:workspace_id});
     if(!allowed)return {ok:false as const,error:'Active provider manager required.'};
-    const { data: membership } = await context.supabase.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status)').eq('workspace_id', workspace_id).eq('user_id', context.userId).is('removed_at', null).maybeSingle();
+    const { data: membership } = await context.supabase.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status,provider_subtype)').eq('workspace_id', workspace_id).eq('user_id', context.userId).is('removed_at', null).maybeSingle();
     if (!membership || membership.is_contractor || !['owner', 'admin'].includes(membership.role) || membership.workspaces.account_type !== 'provider' || membership.workspaces.status !== 'active') return { ok: false as const, error: 'Active provider manager required.' };
+    if (membership.workspaces.provider_subtype === 'independent_contractor' && (rest.medical_delivery || rest.service_types.some(s=>s!=='ambulatory'))) return {ok:false as const,error:'Independent Contractor supports Ambulatory only. Wheelchair and Gurney / Stretcher require an eligible NEMT business account.'};
     const { error } = await context.supabase
       .from("provider_network_profiles")
       .upsert({ workspace_id, ...rest, business_contact_email: rest.business_contact_email || null }, { onConflict: "workspace_id" });

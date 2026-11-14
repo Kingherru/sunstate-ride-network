@@ -116,6 +116,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   .inputValidator((input: {
     id?: string;
     name: string;
+    make?: string; model?: string; model_year?: number; vehicle_category?: string; accessibility_equipment?: string;
     plate?: string;
     vehicle_type?: "sedan" | "suv" | "van" | "wheelchair_van" | "stretcher_van" | "ambulance";
     capacity?: number;
@@ -128,6 +129,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    if (!data.make?.trim() || !data.model?.trim() || !data.plate?.trim() || !['ambulatory','wheelchair','stretcher','other'].includes(data.vehicle_category ?? '') || !Number.isInteger(data.model_year) || Number(data.model_year)<1900 || Number(data.model_year)>new Date().getUTCFullYear()+1 || !Number.isInteger(data.capacity) || Number(data.capacity)<1 || Number(data.capacity)>100) throw new Error('Vehicle category, make/model/year, plate and passenger capacity are required.');
     if (data.wheelchair_capacity !== undefined && (!Number.isInteger(data.wheelchair_capacity) || data.wheelchair_capacity < 0)) throw new Error('Wheelchair positions must be a nonnegative whole number.');
     if (data.service_capabilities === undefined) delete row.service_capabilities;
     if (data.assigned_driver_id === undefined) delete row.assigned_driver_id;

@@ -11,6 +11,7 @@ import {
   listVehicles, upsertVehicle,
   sendDriverWeeklySchedule,
 } from "@/lib/fleet.functions";
+import { vehicleCategories } from '@/lib/pass4p-rules';
 import { FleetStatusControl, FleetFilterBar, useFleetFilter, applyFleetFilter } from "@/components/portal/FleetStatusControl";
 
 export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
@@ -540,7 +541,7 @@ function VehiclesCard() {
 
 function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[]; onClose: () => void; onSaved: () => void }) {
   const [f, set] = useState({
-    name: v.name ?? "", plate: v.plate ?? "",
+    name: v.name ?? "", plate: v.plate ?? "", make:v.make ?? "",model:v.model ?? "",model_year:v.model_year ?? "",vehicle_category:v.vehicle_category ?? "",accessibility_equipment:v.accessibility_equipment ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
     capacity: v.capacity ?? 4, wheelchair_capacity: v.wheelchair_capacity ?? 0, status: v.status ?? "active", notes: v.notes ?? "",
     service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
@@ -551,7 +552,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
       ? f.service_capabilities.filter(x => x !== val)
       : [...f.service_capabilities, val] });
   const m = usePortalMutation({
-    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, capacity: Number(f.capacity), assigned_driver_id: f.assigned_driver_id || null } as any }),
+    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, model_year:Number(f.model_year), capacity: Number(f.capacity), assigned_driver_id: f.assigned_driver_id || null } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
@@ -559,7 +560,8 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
     <DetailOverlayFrame title={v.id ? 'Edit vehicle' : 'New vehicle'} onClose={onClose}>
       <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
-        <I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} />
+        <I l="Make" v={f.make} on={x=>set({...f,make:x})} req/><I l="Model" v={f.model} on={x=>set({...f,model:x})} req/><I l="Year" v={String(f.model_year)} on={x=>set({...f,model_year:x})} type="number" req/><I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} req />
+        <label className="flex flex-col gap-1 ds-body"><span className="ds-label">Vehicle category</span><select required value={f.vehicle_category} onChange={e=>set({...f,vehicle_category:e.target.value})}><option value="">Choose category</option>{vehicleCategories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></label><I l="Accessibility equipment" v={f.accessibility_equipment} on={x=>set({...f,accessibility_equipment:x})}/><p className="ds-support sm:col-span-2">Evidence: {v.evidence_status==='satisfied'?'Requirement Satisfied':v.evidence_status==='expired'?'Expired':'Under Review / Unable to Validate'}. Vehicle details do not verify documents.</p>
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />
         <I l="Wheelchair positions" v={String(f.wheelchair_capacity)} on={(x) => set({ ...f, wheelchair_capacity: Math.max(0, Number(x) || 0) })} type="number" />
         <label className="flex flex-col gap-1 text-sm">

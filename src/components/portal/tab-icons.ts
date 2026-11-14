@@ -1,5 +1,6 @@
-import { Bell, Building2, CalendarDays, Car, CheckCheck, CircleDollarSign, ClipboardList, FileClock, FileText, History, Inbox, KeyRound, MapPin, MessageSquare, Monitor, Network, Search, Settings, ShieldCheck, Star, Truck, UserRound, Users, Wallet } from 'lucide-react';
+import { Accessibility, Bell, Building2, CalendarDays, Car, CheckCheck, CircleDollarSign, ClipboardList, FileClock, FileText, History, Inbox, KeyRound, MapPin, MessageSquare, Monitor, Network, Search, Settings, ShieldCheck, Star, Truck, UserRound, Users, Wallet } from 'lucide-react';
 export function tabIcon(label: string) {
+  if (/accessibility/i.test(label)) return Accessibility;
   if (/security|credential|verification|administrator/i.test(label)) return ShieldCheck;
   if (/password|sign.in/i.test(label)) return KeyRound;
   if (/session|interface/i.test(label)) return Monitor;

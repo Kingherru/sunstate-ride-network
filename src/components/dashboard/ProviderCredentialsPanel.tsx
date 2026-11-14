@@ -9,6 +9,7 @@ import {
 } from "@/lib/medicaid.functions";
 
 const KIND_OPTIONS = [
+  {value: "driver_license", label: "Driver License (private)"},
   { value: "general_liability", label: "General Liability Insurance" },
   { value: "auto_insurance", label: "Auto/Commercial Insurance" },
   { value: "workers_comp", label: "Workers' Compensation" },
@@ -109,7 +110,7 @@ export function ProviderCredentialsPanel() {
         <div>
           <h3 className="text-lg font-extrabold tracking-tight">Credentials & Compliance</h3>
           <p className="text-xs text-muted-foreground">
-            Dispatch is notified when a credential expires. Expired credentials block new trip assignments.
+            Private evidence is reviewed separately. Upload presence does not prove legal sufficiency or suitable insurance.
           </p>
         </div>
         <button className="portal-btn-primary px-3 py-2 text-sm"

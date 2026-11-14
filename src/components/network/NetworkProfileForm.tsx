@@ -99,6 +99,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
   if (q.data && !q.data.ok) return <div className="text-sm text-destructive">{q.data.error}</div>;
 
   const verified = q.data && q.data.ok ? q.data.verified : false;
+  const contractor = q.data?.ok && 'subtype' in q.data && q.data.subtype === 'independent_contractor';
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
@@ -166,7 +167,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
         </label>
       </div>}
 
-      {(section === 'all' || section === 'services' || section === 'operations') && <fieldset><legend className="ds-label mb-3">Services offered — Required for verification</legend><div className="flex flex-wrap gap-4">{[['ambulatory', 'Ambulatory'], ['wheelchair', 'Wheelchair'], ['stretcher', 'Gurney / Stretcher']].map(([value, label]) => <label key={value} className="ds-body flex items-center gap-2"><input type="checkbox" checked={serviceTypes.includes(value)} onChange={e => setServiceTypes(prev => e.target.checked ? [...prev, value] : prev.filter(v => v !== value))} />{label}</label>)}</div>{serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).length > 0 && <p className="ds-caption mt-2">Other existing services: {serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).join(', ')}</p>}</fieldset>}
+      {(section === 'all' || section === 'services' || section === 'operations') && <fieldset><legend className="ds-label mb-3">Services offered — Required for verification</legend><div className="flex flex-wrap gap-4">{[['ambulatory', 'Ambulatory'], ['wheelchair', 'Wheelchair'], ['stretcher', 'Gurney / Stretcher']].map(([value, label]) => <label key={value} className="ds-body flex items-center gap-2"><input type="checkbox" disabled={!!contractor && value!=='ambulatory'} checked={serviceTypes.includes(value)} onChange={e => setServiceTypes(prev => e.target.checked ? [...prev, value] : prev.filter(v => v !== value))} />{label}</label>)}</div>{serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).length > 0 && <p className="ds-caption mt-2">Other existing services: {serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).join(', ')}</p>}</fieldset>}
       {(section === 'all' || section === 'areas' || section === 'operations') && <>
       <DsField label="Private service-base location" hint="Not shown in the directory; controlled distance offers retain verified-base requirements.">{p=><DsInput {...p} maxLength={300} value={serviceBase} onChange={e=>setServiceBase(e.target.value)} />}</DsField>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -190,7 +191,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
 
       {(section === 'all' || section === 'services' || section === 'operations') && <div className="flex flex-wrap items-center gap-4">
         <label className="inline-flex items-center gap-2 text-sm font-bold">
-          <input type="checkbox" checked={medicalDelivery} onChange={(e) => setMedicalDelivery(e.target.checked)} /> Medical delivery
+          <input type="checkbox" disabled={!!contractor} checked={medicalDelivery} onChange={(e) => setMedicalDelivery(e.target.checked)} /> Medical delivery
         </label>
         {section !== 'operations' && <label className="inline-flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections

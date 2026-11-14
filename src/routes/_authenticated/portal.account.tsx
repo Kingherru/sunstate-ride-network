@@ -30,6 +30,7 @@ import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificat
 import { MembershipBilling } from '@/components/portal/MembershipBilling';
 import { CustomerBilling } from '@/components/portal/CustomerBilling';
 import { PatientManagement } from '@/components/portal/PatientManagement';
+import { SignInPreference } from '@/components/portal/SignInPreference';
 import { InterfaceSize } from '@/components/portal/InterfaceSize';
 import { Link } from '@tanstack/react-router';
 import { DsButton } from '@/components/ds/controls';
@@ -37,7 +38,7 @@ import { BusinessContactSettings } from '@/components/onboarding/BusinessContact
 import { AccountConnections } from '@/components/portal/AccountConnections';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
-type Tab = "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications" | "connections";
+type Tab = "accessibility" | "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications" | "connections";
 
 export const Route = createFileRoute("/_authenticated/portal/account")({
   head: () => ({ meta: [{ title: "Account — MY FLORIDA NEMT Portal" }, { name: 'description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:title', content: 'Account — MY FLORIDA NEMT Portal' }, { property: 'og:description', content: 'Manage your account and authorized business permissions.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -71,8 +72,9 @@ function Account() {
     <>
       <PageHead title="Settings" />
       {setupLink}
-      <SettingsShell value={tab} onChange={setTab} sections={tabs}>
-        {tab === "profile" && <><PersonalSettings section="profile" />{ws?.type === 'private_pay' && ws.role === 'owner' && !ws.is_contractor && <PatientRelationship />}<SecureEmailChange/>{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><InterfaceSize /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+      <SettingsShell value={tab} onChange={setTab} sections={[...tabs,{value:'accessibility',label:'Accessibility'}]}>
+        {tab === "profile" && <><PersonalSettings section="profile" />{ws?.type === 'private_pay' && ws.role === 'owner' && !ws.is_contractor && <PatientRelationship />}<SecureEmailChange/>{!provider && ws && ws.type !== 'private_pay' && !ws.is_contractor && ['owner','admin'].includes(ws.role) && <div className="my-6"><BusinessContactSettings workspaceId={ws.id} /></div>}<div className="my-6"><SignInPreference /></div><Profile email={s.email} />{ws && (ws.role === 'owner' || ws.role === 'admin') && <BusinessPermissions workspaceId={ws.id} />}</>}
+        {tab === "accessibility" && <InterfaceSize/>}
         {tab === "business" && <BusinessInfoPanel />}
         {tab === "pricing" && <div className="space-y-10"><PricingPanel /><RulesPanel /></div>}
         {tab === "integrations" && <IntegrationsPanel />}

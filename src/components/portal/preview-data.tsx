@@ -28,6 +28,8 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'provider-setup': {provider_subtype:'nemt_business',provider_subtype_selected_at:null,pickup_delay_minutes:null,canSelect:false,vehicles:[]},
+  'portal-preferences': {interface_density:'standard',high_contrast:false,detail_columns:null},
   'connect-preparation': {state:'Not started',customerReady:false,networkReady:false,signingConfigured:false,activation:false,environment:'sandbox'},
   'account-profile-verification':[],
   'confirmed-usual-provider':null,

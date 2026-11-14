@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Monitor, Users } from "lucide-react";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
 import { PersonalSettings } from '@/components/portal/PersonalSettings';
+import { SignInPreference } from '@/components/portal/SignInPreference';
 import { InterfaceSize } from '@/components/portal/InterfaceSize';
 import { SecureEmailChange } from '@/components/portal/SecureEmailChange';
 import { SettingsShell } from '@/components/portal/SettingsShell';
@@ -31,10 +32,10 @@ function AdminSettings() {
         Your own profile, password and admin preview tools. Nothing here changes data unless you submit a form.
       </PageHead>
 
-      <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Interface'},{value:'tools',label:'Administration'}]}>
+      <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'}]}>
       {tab==='profile'&&<><PersonalSettings section="profile"/><SecureEmailChange/><Link to="/admin/security" className="ds-label text-ds-link underline">Security & sign-in</Link></>}
       {tab==='notifications'&&<PersonalSettings section="notifications"/>}
-      {tab==='interface'&&<InterfaceSize/>}
+      {tab==='interface'&&<SignInPreference/>}{tab==='accessibility'&&<InterfaceSize/>}
       {tab==='tools'&&<>
       {access.isMasterAdmin && (
         <section className={`${panelCls} mb-6`} aria-labelledby="portal-previews-h">
