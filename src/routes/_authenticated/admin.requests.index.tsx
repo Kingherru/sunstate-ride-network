@@ -4,7 +4,7 @@ import { listOnBehalfCandidates } from "@/lib/admin-on-behalf.functions";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { RequestTable } from "@/components/portal/request-display";
 import { DsEmpty } from "@/components/ds/feedback";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { OnBehalfRequest } from "@/components/admin/OnBehalfRequest";
 import { useAdminLevel } from "@/lib/use-admin-level";
 
@@ -26,7 +26,7 @@ function AdminRequests() {
   const canCreate = useAdminLevel("requests") === "manage";
   return (
     <>
-      {canCreate && <div className="mb-5"><SegTabs label="Request sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "new" ? "new" : undefined }) })} options={[{ value: "all", label: "All requests" }, { value: "new", label: "New for a customer" }]} /></div>}
+      <PortalTabbedLayout label="Request sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "new" ? "new" : undefined }) })} options={canCreate ? [{ value: "all", label: "All requests" }, { value: "new", label: "New for a customer" }] : [{ value: "all", label: "All requests" }]}>
       {tab === "new" && canCreate ? <OnBehalfRequest rows={candidates} /> : (
         <>
           <PageHead title="Requests">Select any request to open its details.</PageHead>
@@ -35,6 +35,7 @@ function AdminRequests() {
           </section>
         </>
       )}
+      </PortalTabbedLayout>
     </>
   );
 }

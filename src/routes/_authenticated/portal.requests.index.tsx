@@ -7,7 +7,7 @@ import { Search, Copy, Trash2, FilePenLine } from "lucide-react";
 import { copyRequestToDraft, listPortalRequests, type RequestListRow } from "@/lib/portal-requests.functions";
 import { deleteTripDraft, listTripDrafts, saveTripDraft } from "@/lib/trip-drafts.functions";
 import { PageHead, actionCls, panelCls } from "@/components/portal/PortalShell";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { StatusBadge, categoryLabel, fmtDateTime, isDelivery, serviceLabel, shortId, sourceLabel } from "@/components/portal/request-display";
 import { useRequestDetails } from "@/components/portal/request-detail-context";
 import { usePortalMutation, usePortalQuery, previewBlocked, usePortalPreview } from "@/components/portal/preview-data";
@@ -34,8 +34,9 @@ function Requests() {
       <PageHead title="Trip history" action={<Link to="/portal/requests/new" className={actionCls}>New trip</Link>}>
         Only requests you're authorized to view are shown.
       </PageHead>
-      <SegTabs label="Trip history sections" queryKey="view" value={tab} onChange={setTab} options={[{ value: "history", label: "History" }, { value: "drafts", label: "Drafts" }]} />
+      <PortalTabbedLayout label="Trip history sections" queryKey="view" value={tab} onChange={setTab} options={[{ value: "history", label: "History" }, { value: "drafts", label: "Drafts" }]} >
       <div className="mt-4">{tab === "history" ? access.primary?.type==='private_pay'?<PatientTrips/>:<History rows={rows} /> : <Drafts />}</div>
+    </PortalTabbedLayout>
     </>
   );
 }

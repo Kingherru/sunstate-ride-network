@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import { Communications } from '@/components/portal/Communications';
-import { SegTabs } from '@/components/portal/SegTabs';
+import { PortalTabbedLayout } from '@/components/portal/PortalTabbedLayout';
 import { useState } from 'react';
 
 export const Route = createFileRoute("/_authenticated/portal/notifications")({
@@ -15,11 +15,12 @@ function PortalNotifications() {
   return (
     <>
       <PageHead title="Notifications" />
-      <SegTabs label="Notification views" queryKey="view" value={tab} onChange={setTab} options={[{ value: 'inbox', label: 'Inbox' }, { value: 'communications', label: 'Communications' }]} />
+      <PortalTabbedLayout label="Notification views" queryKey="view" value={tab} onChange={setTab} options={[{ value: 'inbox', label: 'Inbox' }, { value: 'communications', label: 'Communications' }]} >
       <section hidden={tab !== 'inbox'} className={`${panelCls} p-4 sm:p-6`}>
         <NotificationsPanel />
       </section>
       <section hidden={tab !== 'communications'} className="mt-6 border-t border-ds-border pt-5"><Communications /></section>
+    </PortalTabbedLayout>
     </>
   );
 }

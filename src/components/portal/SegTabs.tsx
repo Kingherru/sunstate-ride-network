@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
 import { DsButton } from '@/components/ds/controls';
@@ -13,6 +13,17 @@ export function SegTabs<T extends string>({ label, value, onChange, options, var
   const router = useRouter();
   const search = useRouterState({ select: s => s.location.search });
   const refs = useRef(new Map<T, HTMLButtonElement>());
+  const listRef = useRef<HTMLDivElement>(null);
+  const [vertical, setVertical] = useState(false);
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const update = () => setVertical(getComputedStyle(list).flexDirection === 'column');
+    const observer = new ResizeObserver(update);
+    observer.observe(list);
+    update();
+    return () => observer.disconnect();
+  }, [variant]);
   // URL ownership is opt-in via queryKey; without it the parent owns navigation.
   const selected = queryKey ? (search as Record<string, unknown>)[queryKey] : null;
   const resolved = typeof selected === 'string' ? aliases?.[selected] ?? selected : selected;
@@ -31,7 +42,7 @@ export function SegTabs<T extends string>({ label, value, onChange, options, var
     }
     onChange(next);
   }
-  return <div role="tablist" aria-label={label} aria-orientation={variant === 'rail' ? 'vertical' : 'horizontal'} className={`portal-tabs portal-tabs-${variant}`}>
+  return <div ref={listRef} role="tablist" aria-label={label} aria-orientation={vertical ? 'vertical' : 'horizontal'} className={`portal-tabs portal-tabs-${variant}`}>
     {options.map(o => {
       const Icon = o.icon ?? tabIcon(o.label);
       return <DsButton ref={node => { if (node) refs.current.set(o.value, node); else refs.current.delete(o.value); }} key={o.value}
@@ -47,7 +58,7 @@ export function SegTabs<T extends string>({ label, value, onChange, options, var
           else return;
           e.preventDefault(); const item = options[target]; if (!item) return;
           choose(item.value); refs.current.get(item.value)?.focus(); refs.current.get(item.value)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-        }}><Icon className="size-4 shrink-0" aria-hidden /><span className="whitespace-nowrap">{o.label}</span>{o.badge != null && <span className="portal-tab-badge">{o.badge}</span>}</DsButton>;
+        }}><Icon className="size-4 shrink-0" aria-hidden /><span className="portal-tab-label">{o.label}</span>{o.badge != null && <span className="portal-tab-badge">{o.badge}</span>}</DsButton>;
     })}
   </div>;
 }

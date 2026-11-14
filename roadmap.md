@@ -1,4 +1,7 @@
 # Florida MVP launch sequence
+## Pass 4R-C — primary rail correction
+- [x] Primary Trips/History, Network/relationships, People/Providers, Fleet, Messaging, portal Notifications, Earnings, Training, Admin Requests/People/Messaging/Payouts and all Settings share the Settings-style left rail/content shell. Secondary notification read-state, reservation status, Scheduler period and Notes archive filters plus guided intake progress remain horizontal.
+- [x] Provider Trips and Patient Trips synthetic previews plus signed-in Admin People checked at 1280/390: correct dark-blue/white selection, icons, Admin badges, URL changes, Home/End/back, content switch and no page overflow/errors. Automatic type/production build OK. No data/server/permission changes or publication. No unmigrated primary tab caller found; single-section Admin Notifications retains only its read-state filter.
 ## Pass 4R — safe foundations built; remaining integration explicit
 - [x] Shared portal reference borders/grouping, wider content and removable main-content top accent; six Settings groups, duplicate Accessibility removed, preview People fallback repaired and direct People URL checked.
 - [x] Additive owner-controlled service roles preserve primary subtype; private manager-only VIN storage/masked lists, insurance credential linkage, vehicle service geography; active driver/vehicle action-time gates and preferred-driver selector/suggestion in reservation review.

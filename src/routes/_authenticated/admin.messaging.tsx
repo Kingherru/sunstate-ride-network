@@ -7,7 +7,7 @@ import { FrontendContacts } from "@/components/messaging/FrontendContacts";
 import { DistributionActivity } from "@/components/portal/TripNetwork";
 import { NetworkEligibility } from "@/components/portal/NetworkEligibility";
 import { DemoConversations } from "@/components/messaging/DemoConversations";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { NetworkSettlements } from "@/components/portal/NetworkSettlements";
 import { AdminDisputeQueue } from "@/components/admin/AdminDisputeQueue";
 import { useAdminLevel } from "@/lib/use-admin-level";
@@ -35,13 +35,11 @@ function AdminMessaging() {
   return (
     <>
       <PageHead title="Messaging">{level === "read" && <ReadOnlyBadge />}</PageHead>
-      <div className="mb-5">
-        <SegTabs label="Messaging sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "messages" ? undefined : t }) })} options={[
+      <PortalTabbedLayout label="Messaging sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "messages" ? undefined : t }) })} options={[
           { value: "messages", label: "Messages" }, { value: "requests", label: "Requests" },
           { value: "business", label: "Business Conversations" }, { value: "contacts", label: "Frontend Contacts" },
           { value: 'communications', label: 'Communications' },
-        ]} />
-      </div>
+        ]}>
       <section className={`${panelCls} p-4 sm:p-6`}>
         {tab === 'communications' && <Communications admin />}
         {tab === "requests" && <AdminPlatformRequests canManage={!readOnly} />}
@@ -61,6 +59,7 @@ function AdminMessaging() {
           </>
         )}
       </section>
+      </PortalTabbedLayout>
     </>
   );
 }

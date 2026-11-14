@@ -1,16 +1,16 @@
 import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { usePortalQuery } from "@/components/portal/preview-data";
 import { listMyDrivers } from "@/lib/schedule-board.functions";
 
 type Section = "vehicles" | "drivers" | "availability";
 export function FleetDrivers({ initial = "vehicles" }: { initial?: "vehicles" | "drivers" }) {
   const [section, setSection] = useState<Section>(initial);
-  return <div className="min-w-0 max-w-full space-y-5"><SegTabs label="Fleet sections" queryKey="view" value={section} onChange={setSection} options={[
+  return <div className="min-w-0 max-w-full space-y-5"><PortalTabbedLayout label="Fleet sections" queryKey="view" value={section} onChange={setSection} options={[
     { value: "vehicles", label: "Vehicles" }, { value: "drivers", label: "Drivers & Contractors" }, { value: "availability", label: "Assignments & Availability" },
-  ]} />{section === "availability" ? <Availability /> : <FleetPanel key={section} only={section} />}</div>;
+  ]} >{section === "availability" ? <Availability /> : <FleetPanel key={section} only={section} />}</PortalTabbedLayout></div>;
 }
 
 /** Read-only availability summary over the same authorized driver records; assignment happens on the Schedule day board. */

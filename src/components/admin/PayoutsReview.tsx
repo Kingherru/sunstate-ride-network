@@ -3,7 +3,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminPayoutReview } from '@/lib/admin-payout-review.functions';
 import { REFUND_DRAFT, OWNER_DECISIONS } from '@/lib/refund-policy-draft';
-import { SegTabs } from '@/components/portal/SegTabs';
+import { PortalTabbedLayout } from '@/components/portal/PortalTabbedLayout';
 import { StatusPill } from '@/components/ds/status';
 import { DetailSection } from '@/components/portal/DetailSection';
 import { FinancialReconciliation } from './FinancialReconciliation';
@@ -15,7 +15,7 @@ export function PayoutsReview(){
  const rows=(q.data?.rows??[]).filter(r=>[r.mfn_id,r.source_mfn_id,r.sender_workspace_mfn_id,r.receiver_workspace_mfn_id,r.state].join(' ').toLowerCase().includes(search.toLowerCase()));
  const held=rows.filter(r=>payoutBucket(r)==='held');const available=rows.filter(r=>payoutBucket(r)==='available');const paid=rows.filter(r=>payoutBucket(r)==='paid');
  const shown=tab==='Held'?held:tab==='Available'?available:tab==='Paid'?paid:rows;
- return <div className="space-y-5"><StatusPill tone="yellow" status="Financial execution OFF · pending owner policy review"/><SegTabs label="Payouts sections" queryKey="view" value={tab} onChange={setTab} options={options}/>
+ return <div className="space-y-5"><StatusPill tone="yellow" status="Financial execution OFF · pending owner policy review"/><PortalTabbedLayout label="Payouts sections" queryKey="view" value={tab} onChange={setTab} options={options}>
  {q.isLoading&&<p role="status">Loading evidence…</p>}{q.isError&&<p role="alert" className="ds-support text-ds-error">Payout evidence unavailable.</p>}
  {tab==='Reconciliation'?(q.data?.master?<FinancialReconciliation/>:<p className="ds-support">Reconciliation is restricted to the Master Admin.</p>):tab==='Refunds'?<div className="space-y-5"><h2 className="ds-subheading uppercase">Refunds</h2><p className="ds-support">Platform purchases, provider customer invoices and Network referral funding remain distinct. No refund, reversal or release actions are available.</p>
  {q.data?.master?<><DetailSection title="Owner decisions"><p className="ds-label">DRAFT · {REFUND_DRAFT.version} · Terms {REFUND_DRAFT.termsVersion}</p><ul className="mt-3 divide-y divide-ds-border">{OWNER_DECISIONS.map(d=><li className="py-3 ds-body" key={d}>{d} · <strong>NOT CONFIGURED</strong></li>)}</ul></DetailSection>
@@ -26,5 +26,5 @@ export function PayoutsReview(){
  <input className="portal-input w-full" aria-label="Search payout references" placeholder="Search authorized MFN references or state" value={search} onChange={e=>setSearch(e.target.value)}/>
  <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left ds-support"><thead><tr><th className="p-3">Reference / purpose</th><th className="p-3">Sender / receiver</th><th className="p-3">Compensation</th><th className="p-3">Hold / expected date</th><th className="p-3">State / evidence</th></tr></thead><tbody>{shown.map(r=><tr key={r.id} className="border-t border-ds-border"><td className="p-3">{r.mfn_id}<br/>Network referral funding · {r.stripe_environment}<br/>{r.source_mfn_id}</td><td className="p-3">{r.sender_workspace_mfn_id}<br/>{r.receiver_workspace_mfn_id}</td><td className="p-3 portal-money">{money(r.receiver_payout_cents)}</td><td className="p-3">{r.hold_days==null?'Not configured':`${r.hold_days} days`} · {r.verification_tier_snapshot??'No snapshot'}<br/>{r.release_eligible_at??'No authoritative start'}<br/>Timer alone never releases funds.</td><td className="p-3"><StatusPill status={r.state}/>{r.dispute_opened_at&&!r.dispute_resolved_at&&<p>Disputed / frozen</p>}{r.refunded_at&&<p>Refund evidence — frozen for review</p>}<details><summary>Audit history</summary>{r.events.map((e,i)=><p key={i}>{e.event_type} · {e.actor_mfn_id} · {e.created_at}</p>)}</details></td></tr>)}</tbody></table></div>{!shown.length&&<p className="ds-support">No authorized {tab.toLowerCase()} evidence. No synthetic balances are included.</p>}
  <p className="ds-caption">Locked standard hold 10 days; eligible Super/Gold snapshot 4 days. Dispute window 24 hours. Processing/tax amounts remain NOT CONFIGURED until authoritative rules exist.</p></>}
- </div>;
+ </PortalTabbedLayout></div>;
 }

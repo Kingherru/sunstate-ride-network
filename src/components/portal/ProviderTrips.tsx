@@ -4,7 +4,7 @@ import { ReservationsPanel, ReferralReservationsSection } from "@/components/das
 import { TripHistoryPanel } from "@/components/dashboard/TripHistoryPanel";
 import { SavedTripsPanel } from "@/components/dashboard/SavedTripsPanel";
 import { actionCls } from "@/components/portal/PortalShell";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 
 export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 
@@ -18,13 +18,13 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
   const navigate = useNavigate();
   return (
     <div className="space-y-5">
-      <SegTabs label="Trip views" queryKey="view" value={view} onChange={setView}
+      <PortalTabbedLayout label="Trip views" queryKey="view" value={view} onChange={setView}
         options={[
           { value: "new", label: "New trips" },
           { value: "reservations", label: "Reservations" },
           { value: "drafts", label: "Drafts" },
           { value: "history", label: "History" },
-        ]} />
+        ]} >
       {view === "new" && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3 border border-ds-sky-border bg-ds-sky p-4 rounded-ds">
@@ -40,6 +40,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
         <SavedTripsPanel variant="drafts" onResume={(draft) => navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
       )}
       {view === "history" && <TripHistoryPanel userId={userId} />}
+    </PortalTabbedLayout>
     </div>
   );
 }

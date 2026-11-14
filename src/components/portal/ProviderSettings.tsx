@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Building2, MapPin, ShieldCheck, Bell, LockKeyhole, Accessibility } from 'lucide-react';
 import { BusinessVisibility } from './BusinessVisibility';
-import { SegTabs } from './SegTabs';
+import { PortalTabbedLayout } from './PortalTabbedLayout';
 import { DsButton } from '@/components/ds/controls';
 import { CustomerPricing } from './CustomerPricing';
 import { BusinessPermissions } from './BusinessPermissions';
@@ -51,8 +51,7 @@ const legacySections: Record<string, string> = { connections: 'team', contact: '
 export function ProviderSettings({ workspaceId, role, email, initialSection = 'business', accountDetails, teamMessaging, financialTools }: { workspaceId: string; role: string; email?: string | null; initialSection?: string; accountDetails?: React.ReactNode; teamMessaging?: React.ReactNode; financialTools?: React.ReactNode }) {
   const [tab, setTab] = useState(legacySections[initialSection] ?? (sections.some(s => s.value === initialSection) ? initialSection : 'business')); const preview = usePortalPreview(); const owner = role === 'owner';
   const getSetup=useServerFn(getProviderSetup);const setup=usePortalQuery({queryKey:['provider-setup',workspaceId],queryFn:()=>getSetup({data:{workspaceId}})});const contractor=setup.data?.provider_subtype==='independent_contractor';
-  return <div className="grid min-w-0 gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]">
-    <SegTabs label="Provider settings sections" variant="rail" queryKey="section" aliases={legacySections} value={tab} onChange={setTab} options={sections}/>
+  return <PortalTabbedLayout label="Provider settings sections" variant="rail" queryKey="section" aliases={legacySections} value={tab} onChange={setTab} options={sections}>
     <div className="portal-business-form min-w-0 space-y-5">
     <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
     {tab === 'business' && <><ProviderClassification workspaceId={workspaceId}/>{contractor&&<><ContractorEligibility workspaceId={workspaceId}/><Link to="/onboarding" className="ds-label text-ds-link underline">Continue contractor intake</Link></>}<PersonalSettings section="profile" /></>}
@@ -97,5 +96,5 @@ export function ProviderSettings({ workspaceId, role, email, initialSection = 'b
     {tab === 'accessibility' && <InterfaceSize/>}
     {tab === 'account' && <div className="space-y-5">{accountDetails ?? <PersonalSettings section="status" />}<SignInPreference /><PersonalSecurity email={email} securityOnly /><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Notification preferences</summary><div className="portal-business-body"><PersonalSettings section="notifications" /></div></details><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Platform Requests & help</h2><div className="portal-business-body"><ProviderPlatformRequests workspaceId={workspaceId} /></div></section></div>}
     </div>
-  </div>;
+  </PortalTabbedLayout>;
 }

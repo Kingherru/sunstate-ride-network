@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { listContacts } from "@/lib/crm.functions";
 import { listMyPayers } from "@/lib/payers.functions";
 import { usePortalQuery } from "@/components/portal/preview-data";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { PayersPanel } from "@/components/dashboard/PayersPanel";
 import { PatientManagement } from '@/components/portal/PatientManagement';
@@ -32,13 +32,14 @@ export function ContactsPayersPanel({ tab, onTab }: { tab: "patients" | "contact
 
   return (
     <div className="space-y-4">
-      <SegTabs
+      <PortalTabbedLayout
         label="People sections"
         value={tab}
         onChange={onTab}
         options={[{ value: "patients", label: "Patients" }, { value: "contacts", label: "Contacts" }, { value: "payers", label: "Payers" },{value:'connections',label:'New Connections'}]}
-      />
+      >
       {tab==='connections'?<NewConnections/>:tab === "patients" ? <PatientManagement /> : tab === "contacts" ? <ContactsPanel payers={payerOptions} /> : <PayersPanel contacts={contactOptions} />}
+    </PortalTabbedLayout>
     </div>
   );
 }

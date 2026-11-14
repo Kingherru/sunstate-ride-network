@@ -7,7 +7,7 @@ import { actionCls, panelCls } from "@/components/portal/PortalShell";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { DsButton } from '@/components/ds/controls';
 import { useTrainingCart } from '@/components/training/TrainingCart';
-import { SegTabs } from './SegTabs';
+import { PortalTabbedLayout } from './PortalTabbedLayout';
 
 const price = (c: number) => `$${(c / 100).toFixed(0)}`;
 
@@ -39,7 +39,7 @@ export function TrainingTests() {
 
   return (
     <div className="space-y-5">
-      <SegTabs label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} />
+      <PortalTabbedLayout label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} >
       {!rows.length && <DsEmpty title={tab === 'Completed Tests' ? 'No completed tests yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
       <div className="grid gap-5 md:grid-cols-2">
       {rows.map((c) => {
@@ -83,6 +83,7 @@ export function TrainingTests() {
       })}
       </div>
       {(mine.data ?? []).filter(e => !byCourse.has(e.course_id) || !(courses.data ?? []).some(c => c.id === e.course_id)).map(e => <Link key={e.id} to="/learn/$slug" params={{ slug: e.courses.slug }} className="block ds-label text-ds-link underline">{e.courses.title} — {e.status}</Link>)}
+    </PortalTabbedLayout>
     </div>
   );
 }

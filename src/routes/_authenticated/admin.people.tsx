@@ -8,7 +8,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { listPeopleAndAccounts, type PersonRow } from "@/lib/portal-account.functions";
 import { organizationLabel } from "@/lib/account-types";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
-import { SegTabs } from "@/components/portal/SegTabs";
+import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { StatusPill } from "@/components/ds/status";
 import { ACCOUNT_TYPE_LABEL } from "@/components/portal/request-display";
 import { DsEmpty } from "@/components/ds/feedback";
@@ -124,15 +124,15 @@ function People() {
   return (
     <>
       <PageHead title="People & Accounts">Everyone who can sign in, and the accounts they belong to. {peopleReadOnly && <ReadOnlyBadge />}</PageHead>
-      <div className="mb-4"><SegTabs label="People views" queryKey="view" value={view} onChange={setView} options={[
-        { value: "all", label: `Users (${rows.length})` },
-        { value: "providers", label: `Providers (${counts("providers")})` },
-        { value: "private_pay", label: `Private pay (${counts("private_pay")})` },
-        { value: "organizations", label: `Facilities & orgs (${counts("organizations")})` },
-        { value: "learners", label: `Training only (${counts("learners")})` },
-        { value: "review", label: `Needs review (${counts("review")})` },
+      <PortalTabbedLayout label="People views" queryKey="view" value={view} onChange={setView} options={[
+        { value: "all", label: "Users", badge: rows.length },
+        { value: "providers", label: "Providers", badge: counts("providers") },
+        { value: "private_pay", label: "Private pay", badge: counts("private_pay") },
+        { value: "organizations", label: "Facilities & orgs", badge: counts("organizations") },
+        { value: "learners", label: "Training only", badge: counts("learners") },
+        { value: "review", label: "Needs review", badge: counts("review") },
         {value:'connections',label:'New Connections'},
-      ]} /></div>
+      ]}>
       {view==='connections'&&<NewConnections/>}
       {reviewCounts.data && (
         <p className="ds-support mb-4 text-ds-text-2">
@@ -185,6 +185,7 @@ function People() {
       </section>
       <div className="mt-6"><MembershipTransitionsList /></div>
       <div className="mt-6"><GrandfatheringList /></div>
+      </PortalTabbedLayout>
       {selected && <PersonDetails person={selected} canManage={canManagePeople} onClose={() => setSelected(null)} />}
     </>
   );

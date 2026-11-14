@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SegTabs } from '@/components/portal/SegTabs';
+import { PortalTabbedLayout } from '@/components/portal/PortalTabbedLayout';
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { ProviderDirectory } from "@/components/network/ProviderDirectory";
 
@@ -16,10 +16,11 @@ function PortalFindProviders() {
   return (
     <>
       <PageHead title="Providers" />
-      <SegTabs label="Providers sections" value={selected} onChange={t => navigate({ search: prev => ({ ...prev, tab: t }) })} options={[{ value: 'find', label: 'Find' }, { value: 'saved', label: 'Saved' }]} />
+      <PortalTabbedLayout label="Providers sections" value={selected} onChange={t => navigate({ search: prev => ({ ...prev, tab: t }) })} options={[{ value: 'find', label: 'Find' }, { value: 'saved', label: 'Saved' }]} >
       <section className={`${panelCls} p-4 sm:p-6`}>
         <ProviderDirectory key={selected} savedOnly={selected === 'saved'} />
       </section>
+    </PortalTabbedLayout>
     </>
   );
 }
