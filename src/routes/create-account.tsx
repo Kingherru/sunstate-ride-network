@@ -9,7 +9,7 @@ import { safeReturnPath } from "@/lib/access.functions";
 import { DsButton, DsSelect } from '@/components/ds/controls';
 
 export const Route = createFileRoute("/create-account")({
-  validateSearch: (s: Record<string, unknown>): { redirect?: string; type?: 'provider' } => ({ redirect: safeReturnPath(s.redirect) ?? undefined, type: s.type === 'provider' ? 'provider' : undefined }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string; type?: 'provider'; subtype?: 'independent_contractor' } => ({ redirect: safeReturnPath(s.redirect) ?? undefined, type: s.type === 'provider' || s.subtype === 'independent_contractor' ? 'provider' : undefined, subtype: s.subtype === 'independent_contractor' ? 'independent_contractor' : undefined }),
   head: () => ({
     meta: [
       { title: "Create Account — MY FLORIDA NEMT" },
@@ -43,7 +43,8 @@ const schema = z.object({
 });
 
 function CreateAccount() {
-  const { redirect: returnTo, type: initialType } = Route.useSearch();
+  const { redirect: returnTo, type: initialType, subtype: initialSubtype } = Route.useSearch();
+  const [subtype, setSubtype] = useState<'nemt_business' | 'independent_contractor' | ''>(initialSubtype ?? '');
   const [type, setType] = useState<AccountType | null>(initialType ?? null);
   const [facilityType, setFacilityType] = useState('general_facility');
   const [step, setStep] = useState(0);
@@ -57,7 +58,7 @@ function CreateAccount() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (busy || !type) return;
+    if (busy || !type || (type === 'provider' && !subtype)) return;
     const r = schema.safeParse(f);
     const errs: Record<string, string> = {};
     if (!r.success) for (const i of r.error.issues) errs[String(i.path[0])] ??= i.message;
@@ -72,7 +73,7 @@ function CreateAccount() {
       password: f.password,
       options: {
         emailRedirectTo: `${window.location.origin}/login?verified=1&redirect=${encodeURIComponent(returnTo ?? '/onboarding')}`,
-        data: { display_name: `${f.firstName.trim()} ${f.lastName.trim()}`, first_name:f.firstName.trim(), last_name:f.lastName.trim(), phone: f.phone.trim(), account_type: type === 'facility' && facilityType === 'hospital' ? 'hospital' : type, organization_type: type === 'facility' ? facilityType : type === 'provider' ? 'transportation_provider' : 'private_pay_patient', organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
+        data: { display_name: `${f.firstName.trim()} ${f.lastName.trim()}`, first_name:f.firstName.trim(), last_name:f.lastName.trim(), phone: f.phone.trim(), account_type: type === 'facility' && facilityType === 'hospital' ? 'hospital' : type, provider_subtype: type === 'provider' ? subtype : null, organization_type: type === 'facility' ? facilityType : type === 'provider' ? 'transportation_provider' : 'private_pay_patient', organization_name: needsOrg ? f.org.trim() : null, terms_accepted_at: new Date().toISOString() },
       },
     });
     setBusy(false);
@@ -120,7 +121,8 @@ function CreateAccount() {
             ))}
           </div>
         </fieldset>
-        <DsButton type="button" disabled={!type} onClick={() => setStep(1)}>Continue</DsButton>
+        {type === 'provider' && <DsFieldSubtype value={subtype} onChange={setSubtype} />}
+        <DsButton type="button" disabled={!type || (type === 'provider' && !subtype)} onClick={() => setStep(1)}>Continue</DsButton>
         </>}
 
         {type === "provider" && (
@@ -131,7 +133,7 @@ function CreateAccount() {
           <div className="auth-message flex flex-col gap-5">
             {formError && <AuthMessage tone="error">{formError}</AuthMessage>}
             <div className="grid gap-5 sm:grid-cols-2">{field("firstName", "First name", "text", "given-name")}{field("lastName", "Last name", "text", "family-name")}</div>
-            {needsOrg && field("org", type === "provider" ? "Business name" : "Organization name", "text", "organization")}
+            {needsOrg && field("org", type === "provider" ? subtype === 'independent_contractor' ? "Public display name" : "Business name" : "Organization name", "text", "organization")}
             {type === 'facility' && <div><label htmlFor="facility-type" className={authLabel}>Facility type — Required</label><DsSelect id="facility-type" value={facilityType} onChange={e => setFacilityType(e.target.value)}><option value="hospital">Hospital</option><option value="nursing_home">Nursing Home / Skilled Nursing</option><option value="group_home">Group Home</option><option value="general_facility">Assisted Living</option><option value="medical_facility">Clinic / Medical Office / Dialysis / Rehabilitation</option><option value="broker">Broker</option><option value="insurance_company">Insurance Company</option><option value="other_organization">Other</option></DsSelect></div>}
             <div className="grid gap-5 sm:grid-cols-2">
               {field("email", "Email", "email", "email")}
@@ -164,4 +166,8 @@ function CreateAccount() {
       </form>
     </AuthShell>
   );
+}
+
+function DsFieldSubtype({value,onChange}:{value:string;onChange:(v:'nemt_business'|'independent_contractor'|'')=>void}) {
+  return <div><label htmlFor="provider-subtype" className={authLabel}>Provider subtype — Required</label><DsSelect id="provider-subtype" value={value} onChange={e=>{const v=e.target.value;if(v===''||v==='nemt_business'||v==='independent_contractor')onChange(v);}}><option value="">Choose provider subtype</option><option value="nemt_business">NEMT Business Provider</option><option value="independent_contractor">Independent Contractor</option></DsSelect></div>;
 }

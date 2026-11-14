@@ -144,7 +144,7 @@ export const saveNetworkProfile = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => profileSchema.parse(i))
   .handler(async ({ data, context }) => {
     const { workspace_id, ...rest } = data;
-    const {data:allowed}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_workspace:workspace_id});
+    const {data:allowed}=await context.supabase.rpc('network_workspace_access',{_ws:workspace_id,_manage:true});
     if(!allowed)return {ok:false as const,error:'Active provider manager required.'};
     const { data: membership } = await context.supabase.from('workspace_members').select('role,is_contractor,workspaces!inner(account_type,status,provider_subtype)').eq('workspace_id', workspace_id).eq('user_id', context.userId).is('removed_at', null).maybeSingle();
     if (!membership || membership.is_contractor || !['owner', 'admin'].includes(membership.role) || membership.workspaces.account_type !== 'provider' || membership.workspaces.status !== 'active') return { ok: false as const, error: 'Active provider manager required.' };

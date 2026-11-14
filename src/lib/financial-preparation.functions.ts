@@ -7,18 +7,20 @@ import { TERMS_VERSION, PAYMENT_POLICY_VERSION } from './payment-policy';
 
 /** No Stripe reads or writes, no acceptance/event inserts. Amounts and targets are reconstructed here. */
 export const reviewFinancialCart = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
-  .inputValidator((v:unknown)=>z.object({base:z.boolean(),network:z.boolean(),courseIds:z.array(z.string().uuid()).max(20),environment:z.literal('sandbox')}).strict().parse(v))
+  .inputValidator((v:unknown)=>z.object({base:z.boolean(),network:z.boolean(),contractor:z.boolean().default(false),courseIds:z.array(z.string().uuid()).max(20),environment:z.literal('sandbox')}).strict().parse(v))
   .handler(async({data,context})=>{
     const {data:profile,error:profileError}=await context.supabase.from('user_profiles').select('status,is_test_account,deleted_at').eq('user_id',context.userId).maybeSingle();
     if(profileError || !profile || profile.status!=='active' || profile.is_test_account || profile.deleted_at) throw new Error('Active purchasing account required');
-    let workspaceId:string|null=null,baseReserved=false,addonReserved=false,trialUsed=true;
-    if(data.base||data.network){
-      const {data:members,error}=await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id',context.userId).in('role',['owner','admin']).eq('is_contractor',false).is('removed_at',null);
+    let workspaceId:string|null=null,baseReserved=false,addonReserved=false,trialUsed=true,isContractor=false;
+    if(data.base||data.network||data.contractor){
+      const {data:members,error}=await context.supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account,provider_subtype)').eq('user_id',context.userId).in('role',['owner','admin']).eq('is_contractor',false).is('removed_at',null);
       const eligible=(members??[]).filter(m=>m.workspaces.account_type==='provider'&&m.workspaces.status==='active'&&!m.workspaces.is_test_account);
       if(error||eligible.length!==1||!eligible[0]) throw new Error('One authorized active Provider business required');
       workspaceId=eligible[0].workspace_id;
+      isContractor=eligible[0].workspaces.provider_subtype==='independent_contractor';
+      if(data.contractor!==isContractor)throw new Error('Choose the membership for your provider subtype');
       const {data:allowed,error:permissionError}=await context.supabase.rpc('can_manage_provider_customer_pricing',{_workspace:workspaceId});
-      if(permissionError||!allowed) throw new Error('Business permission required');
+      if(!isContractor&&(permissionError||!allowed)) throw new Error('Business permission required');
       const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
       const [{data:subs,error:subError},{data:trial,error:trialError}]=await Promise.all([
         supabaseAdmin.from('subscriptions').select('status,current_period_end,network_addon_status').eq('workspace_id',workspaceId).eq('environment','sandbox'),
@@ -36,12 +38,12 @@ export const reviewFinancialCart = createServerFn({method:'POST'}).middleware([r
     ]);
     if(courseError||ownedError||(courses?.length??0)!==ids.length)throw new Error('Catalog unavailable');
     const line=(productId:string,kind:CatalogLine['kind'],title:string,priceKey:string,unitCents:number,recurrence:'month'|null):CatalogLine=>({productId,kind,title,priceKey,unitCents,recurrence,stripeProductId:null,stripePriceId:null,quantity:1,currency:'usd',catalogVersion:FINANCIAL_VERSION,environment:'sandbox',termsVersion:TERMS_VERSION,refundVersion:PAYMENT_POLICY_VERSION});
-    const catalog:CatalogLine[]=[line('provider_base','base','Provider Base Membership',BASE_MEMBERSHIP_PRICE,2000,'month'),line('network_addon','network_addon','Referral Network add-on',NETWORK_ADDON_PRICE,1000,'month'),...(courses??[]).map(c=>{
+    const catalog:CatalogLine[]=[line('contractor_membership','contractor','Independent Contractor Membership','unmapped',2000,'month'),line('provider_base','base','Provider Base Membership',BASE_MEMBERSHIP_PRICE,2000,'month'),line('network_addon','network_addon','Referral Network add-on',NETWORK_ADDON_PRICE,1000,'month'),...(courses??[]).map(c=>{
       if(!c.price_id||c.price_cents===null)throw new Error('Price configuration required');
       const kind:CatalogLine['kind']=c.product_kind==='digital_guide'?'digital_guide':c.product_kind==='test'?'test':'course';
       return line(c.id,kind,c.title,c.price_id,c.price_cents,null);
     })];
-    const review=reconstructCart([...(data.base?['provider_base']:[]),...(data.network?['network_addon']:[]),...ids],catalog,'sandbox',{provider:!!workspaceId,baseReserved,addonReserved,owned:(owned??[]).map(o=>o.course_id),trialUsed});
+    const review=reconstructCart([...(data.contractor?['contractor_membership']:[]),...(data.base?['provider_base']:[]),...(data.network?['network_addon']:[]),...ids],catalog,'sandbox',{provider:!!workspaceId&&!isContractor,contractor:isContractor,baseReserved,addonReserved,owned:(owned??[]).map(o=>o.course_id),trialUsed});
     const binding={personId:context.userId,workspaceId,environment:'sandbox',review,termsVersion:TERMS_VERSION,refundVersion:PAYMENT_POLICY_VERSION,tax:'not_configured',processing:'not_configured'};
     const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(binding)));
     const cartHash=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');

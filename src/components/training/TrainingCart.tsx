@@ -19,9 +19,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePortalPreview, previewBlocked } from '@/components/portal/preview-data';
 import { CheckoutErrorBoundary } from './CheckoutErrorBoundary';
 
-type Membership = { base: boolean; network: boolean; baseActive: boolean; addonActive: boolean; trialEligible: boolean };
+type Membership = { base: boolean; network: boolean; contractor: boolean; baseActive: boolean; addonActive: boolean; trialEligible: boolean };
 type CartState = { items: CartCourse[]; membership: Membership; add: (item: CartCourse, ownedIds: string[]) => void; setMembership: (m: Partial<Membership>) => void; open: () => void; remove: (id: string) => void };
-const emptyMembership: Membership = { base: false, network: false, baseActive: false, addonActive: false, trialEligible: true };
+const emptyMembership: Membership = { base: false, network: false, contractor:false, baseActive: false, addonActive: false, trialEligible: true };
 const CartContext = createContext<CartState>({ items: [], membership: emptyMembership, add: () => {}, setMembership: () => {}, open: () => {}, remove: () => {} });
 export const useTrainingCart = () => useContext(CartContext);
 const usd = (c: number) => `$${(c / 100).toFixed(2)}`;
@@ -59,15 +59,17 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
     });
     return () => data.subscription.unsubscribe();
   }, []);
-  const sel = normalizeSelection({ base: membership.base, network: membership.network, courses: items }, { ownedCourseIds: [], baseActive: membership.baseActive, addonActive: membership.addonActive });
+  const sel = normalizeSelection({ base: membership.base, network: membership.network, contractor:membership.contractor, courses: items }, { ownedCourseIds: [], baseActive: membership.baseActive, addonActive: membership.addonActive });
   const totals = commerceTotals(sel, membership.trialEligible);
-  const count = sel.courses.length + (sel.base ? 1 : 0) + (sel.network ? 1 : 0);
-  const hasRecurring = sel.base || sel.network;
+  const count = sel.courses.length + (sel.base ? 1 : 0) + (sel.network ? 1 : 0) + (sel.contractor ? 1 : 0);
+  const hasRecurring = sel.base || sel.network || sel.contractor;
   const ready = confirmationComplete(sel, confirm);
-  const selectionKey = JSON.stringify([sel.base,sel.network,sel.courses.map(c=>[c.id,c.price_cents,c.price_id,c.product_kind]),membership.trialEligible,TERMS_VERSION,PAYMENT_POLICY_VERSION]);
+  const selectionKey = JSON.stringify([sel.base,sel.network,sel.contractor,sel.courses.map(c=>[c.id,c.price_cents,c.price_id,c.product_kind]),membership.trialEligible,TERMS_VERSION,PAYMENT_POLICY_VERSION]);
   useEffect(() => { setConfirm({recurring:false,oneTime:false,terms:false}); setReq(null); setReview(null); }, [selectionKey]);
   const setMembership = (m: Partial<Membership>) => setM(prev => {
     const next = { ...prev, ...m };
+    if(m.base || m.network)next.contractor=false;
+    if(m.contractor){next.base=false;next.network=false;}
     if (!next.base && !next.baseActive) next.network = false; // add-on never stands alone
     return next;
   });
@@ -79,6 +81,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
         <DialogTitle className="pr-8 text-ds-primary">Your cart</DialogTitle><DialogDescription className="sr-only">Selected membership items, courses and secure checkout</DialogDescription>
         {!count ? <p className="ds-body">Your cart is empty.</p> : <>
           <ul className="divide-y divide-ds-border">
+            {sel.contractor && <Line label="Independent Contractor Membership" kind="monthly · eligibility still required · checkout unavailable" cents={2000} locked={!!req} onRemove={()=>setMembership({contractor:false})}/>}
             {sel.base && <Line label="Provider Base Membership" kind="monthly" cents={MEMBERSHIP_PRICING.baseCents} locked={!!req} onRemove={() => setMembership({ base: false })} />}
             {sel.network && <Line label="Referral Network Add-On" kind="monthly, requires base membership" cents={MEMBERSHIP_PRICING.networkCents} locked={!!req} onRemove={() => setMembership({ network: false })} />}
             {sel.courses.map(c => <Line key={c.id} label={c.title} kind={c.product_kind==='digital_guide'?'one-time digital guide':'one-time training / test'} cents={c.price_cents} locked={!!req} onRemove={() => setItems(prev => prev.filter(i => i.id !== c.id))} />)}
@@ -98,7 +101,7 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
             <p className="ds-support">Exact processor/tax total and product-specific refund eligibility are not yet approved for payment preparation. No extra fee is assumed; checkout remains off.</p>
             <CheckoutAcknowledgment accepted={confirm.terms} onChange={accepted => setConfirm(c => ({...c,terms:accepted}))}/>
 
-            <DsButton disabled={!ready || reviewing} onClick={async () => { setReviewing(true); setError(''); try { if(getStripeEnvironment()!=='sandbox') throw new Error('Sandbox preparation only'); const result=await reviewCart({data:{base:sel.base,network:sel.network,courseIds:sel.courses.map(c=>c.id),environment:'sandbox'}}); setReview(result); setConfirm({recurring:false,oneTime:false,terms:false}); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } finally {setReviewing(false);} }}>{reviewing?'Reviewing…':'Review checkout availability'}</DsButton>
+            <DsButton disabled={!ready || reviewing} onClick={async () => { setReviewing(true); setError(''); try { if(getStripeEnvironment()!=='sandbox') throw new Error('Sandbox preparation only'); const result=await reviewCart({data:{base:sel.base,network:sel.network,contractor:sel.contractor,courseIds:sel.courses.map(c=>c.id),environment:'sandbox'}}); setReview(result); setConfirm({recurring:false,oneTime:false,terms:false}); } catch (e) { setError(e instanceof Error ? e.message : 'Checkout unavailable'); } finally {setReviewing(false);} }}>{reviewing?'Reviewing…':'Review checkout availability'}</DsButton>
             {review && <div role="status" className="space-y-2 ds-support"><p>Server-reviewed catalog {review.catalogVersion} · Terms {review.termsVersion} · Refund policy {review.refundVersion}</p><p>Recurring after trial: {usd(review.recurringCents)}/month · One-time items: {usd(review.oneTimeCents)} · Initial amount: {review.dueNowCents===null?'NOT CONFIGURED — trial billing timing requires confirmation':`${usd(review.dueNowCents)} before unconfigured tax/fees`}</p><p>Introductory trial: {review.trialDays} days · First renewal date: not yet determined.</p><ul className="list-disc pl-5">{review.blockers.map(b=><li key={b}>{b}</li>)}</ul><p>Checkout unavailable. No acceptance, card, payment or entitlement was created.</p></div>}
           </fieldset>}
           {error && <p role="alert" className="text-ds-error">{error}</p>}
@@ -112,5 +115,6 @@ export function TrainingCartProvider({ children }: { children: React.ReactNode }
 export function TrainingCartIcon({ onBlue = true }: { onBlue?: boolean }) {
   const cart = useTrainingCart();
   const preview = usePortalPreview();
-  return <DsButton variant="ghost" size="sm" aria-label="Training cart" title="Cart" onClick={preview.active ? previewBlocked : cart.open} className={`portal-header-cart relative !size-10 !min-h-10 !p-0 ${onBlue ? '!text-ds-on-primary hover:!bg-ds-primary-hover' : ''}`}><ShoppingCart className="size-5" />{(cart.items.length + (cart.membership.base ? 1 : 0) + (cart.membership.network ? 1 : 0)) > 0 && <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-ds-sm bg-ds-action text-xs font-bold text-ds-on-action">{cart.items.length + (cart.membership.base ? 1 : 0) + (cart.membership.network ? 1 : 0)}</span>}</DsButton>;
+  const count=cart.items.length+Number(cart.membership.base)+Number(cart.membership.network)+Number(cart.membership.contractor);
+  return <DsButton variant="ghost" size="sm" aria-label="Training cart" title="Cart" onClick={preview.active ? previewBlocked : cart.open} className={`portal-header-cart relative !size-10 !min-h-10 !p-0 ${onBlue ? '!text-ds-on-primary hover:!bg-ds-primary-hover' : ''}`}><ShoppingCart className="size-5" />{count>0&&<span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-ds-sm bg-ds-action text-xs font-bold text-ds-on-action">{count}</span>}</DsButton>;
 }

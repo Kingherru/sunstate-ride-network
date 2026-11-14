@@ -22,6 +22,7 @@ export type Database = {
           id: string
           invitation_id: string
           person_mfn_id: string
+          relationship_kind: string
           updated_at: string
           workspace_a: string
           workspace_b: string
@@ -33,6 +34,7 @@ export type Database = {
           id?: string
           invitation_id: string
           person_mfn_id: string
+          relationship_kind?: string
           updated_at?: string
           workspace_a: string
           workspace_b: string
@@ -44,6 +46,7 @@ export type Database = {
           id?: string
           invitation_id?: string
           person_mfn_id?: string
+          relationship_kind?: string
           updated_at?: string
           workspace_a?: string
           workspace_b?: string
@@ -87,6 +90,7 @@ export type Database = {
           person_mfn_id: string
           recipient_email: string
           recipient_workspace_id: string | null
+          relationship_kind: string
           status: string
           token_hash: string
           updated_at: string
@@ -106,6 +110,7 @@ export type Database = {
           person_mfn_id: string
           recipient_email: string
           recipient_workspace_id?: string | null
+          relationship_kind?: string
           status?: string
           token_hash: string
           updated_at?: string
@@ -125,6 +130,7 @@ export type Database = {
           person_mfn_id?: string
           recipient_email?: string
           recipient_workspace_id?: string | null
+          relationship_kind?: string
           status?: string
           token_hash?: string
           updated_at?: string
@@ -518,6 +524,120 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      contractor_requirement_responses: {
+        Row: {
+          acknowledged_at: string | null
+          actor_id: string
+          credential_id: string | null
+          expires_on: string | null
+          requirement_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          actor_id: string
+          credential_id?: string | null
+          expires_on?: string | null
+          requirement_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          actor_id?: string
+          credential_id?: string | null
+          expires_on?: string | null
+          requirement_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_requirement_responses_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "provider_credentials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_requirement_responses_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_requirements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_requirement_responses_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_requirements: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          kind: string
+          label: string
+          notes: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind: string
+          label: string
+          notes?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string
+          notes?: string
+        }
+        Relationships: []
+      }
+      contractor_safety_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          hold: boolean
+          id: string
+          reason: string
+          workspace_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          hold: boolean
+          id?: string
+          reason: string
+          workspace_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          hold?: boolean
+          id?: string
+          reason?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_safety_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       course_attempts: {
         Row: {
@@ -4463,9 +4583,11 @@ export type Database = {
           location_city: string | null
           location_county: string | null
           location_zip: string | null
+          looking_for_work: boolean
           medical_delivery: boolean
           public_center_lat: number | null
           public_center_lng: number | null
+          seeking_contractors: boolean
           service_base_address: string | null
           service_base_lat: number | null
           service_base_lng: number | null
@@ -4498,9 +4620,11 @@ export type Database = {
           location_city?: string | null
           location_county?: string | null
           location_zip?: string | null
+          looking_for_work?: boolean
           medical_delivery?: boolean
           public_center_lat?: number | null
           public_center_lng?: number | null
+          seeking_contractors?: boolean
           service_base_address?: string | null
           service_base_lat?: number | null
           service_base_lng?: number | null
@@ -4533,9 +4657,11 @@ export type Database = {
           location_city?: string | null
           location_county?: string | null
           location_zip?: string | null
+          looking_for_work?: boolean
           medical_delivery?: boolean
           public_center_lat?: number | null
           public_center_lng?: number | null
+          seeking_contractors?: boolean
           service_base_address?: string | null
           service_base_lat?: number | null
           service_base_lng?: number | null
@@ -6186,6 +6312,7 @@ export type Database = {
           initial_policy_acceptance_id: string | null
           membership_currency: string | null
           membership_invoice_id: string | null
+          membership_kind: string | null
           membership_paid_at: string | null
           membership_paid_cents: number | null
           membership_payment_state: string | null
@@ -6214,6 +6341,7 @@ export type Database = {
           initial_policy_acceptance_id?: string | null
           membership_currency?: string | null
           membership_invoice_id?: string | null
+          membership_kind?: string | null
           membership_paid_at?: string | null
           membership_paid_cents?: number | null
           membership_payment_state?: string | null
@@ -6242,6 +6370,7 @@ export type Database = {
           initial_policy_acceptance_id?: string | null
           membership_currency?: string | null
           membership_invoice_id?: string | null
+          membership_kind?: string | null
           membership_paid_at?: string | null
           membership_paid_cents?: number | null
           membership_payment_state?: string | null
@@ -9156,6 +9285,40 @@ export type Database = {
       confirm_schedule_email_preview: {
         Args: { _drivers: string[]; _end: string; _start: string }
         Returns: string
+      }
+      contractor_admin_configuration: {
+        Args: { _action: string; _details: Json }
+        Returns: undefined
+      }
+      contractor_connected: {
+        Args: { _business: string; _contractor: string }
+        Returns: boolean
+      }
+      contractor_eligibility: { Args: { _ws: string }; Returns: Json }
+      contractor_evidence_summary: { Args: { _ws: string }; Returns: Json }
+      contractor_network_directory: { Args: never; Returns: Json }
+      contractor_relationship_action: {
+        Args: { _action: string; _id?: string; _target: string; _ws: string }
+        Returns: string
+      }
+      contractor_requirement_save: {
+        Args: {
+          _ack?: boolean
+          _credential?: string
+          _expires?: string
+          _req: string
+          _ws: string
+        }
+        Returns: undefined
+      }
+      contractor_set_listing: {
+        Args: {
+          _looking: boolean
+          _seeking: boolean
+          _visible: boolean
+          _ws: string
+        }
+        Returns: undefined
       }
       customer_quote_fingerprint: { Args: { _form: Json }; Returns: string }
       deactivate_account_connection: {

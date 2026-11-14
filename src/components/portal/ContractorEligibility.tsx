@@ -1,0 +1,4 @@
+import {useServerFn} from '@tanstack/react-start';
+import {getContractorSummary} from '@/lib/contractor.functions';
+import {usePortalQuery} from './preview-data';
+export function ContractorEligibility({workspaceId}:{workspaceId:string}){const get=useServerFn(getContractorSummary);const q=usePortalQuery({queryKey:['contractor-eligibility',workspaceId],queryFn:()=>get({data:{workspaceId}})});return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Contractor eligibility</h2><div className="portal-business-body space-y-3">{q.isError?<p role="alert">Evidence summary unavailable.</p>:<ul className="ds-body space-y-2">{q.data?.reasons.map(s=><li key={s}>{s}</li>)}</ul>}<p className="ds-support">Ambulatory only. Current uploaded evidence does not establish document authenticity, insurance suitability or legal sufficiency. No routine administrator registration approval is required.</p></div></section>;}

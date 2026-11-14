@@ -1,4 +1,11 @@
 # Florida MVP launch sequence
+## Pass 4Q — active build
+- [ ] Registration subtype continuity and seven-step contractor intake using existing private records.
+- [ ] Authoritative eligibility, configurable extra requirements and audited safety holds.
+- [ ] Controlled contractor discovery/relationships and assignment gates in the same Network; synthetic preview only.
+- [ ] Separate $20/month contractor catalog/cart definition; mapping and financial lifecycle remain OFF.
+- [ ] Contractor public page/home section and both sitemaps; focused synthetic/mobile and preservation checks.
+
 ## Pass 4P — foundation built; blocked completion items explicit
 - [x] Shared portal-only Accessibility tab, four existing preference sizes, high contrast and reset; demo write blocking. Synthetic person-scoped save/readback passes; live saving intentionally not exercised.
 - [x] Additive workspace subtype defaults existing 13 accounts to Business without reclassification; incomplete owners select once in setup before provider questions. Existing Fleet and private credentials/coverage reused; license option and subtype checklist added.

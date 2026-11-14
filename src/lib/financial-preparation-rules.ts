@@ -8,21 +8,25 @@ export function financialActivationAllowed(flags: Partial<Record<typeof FINANCIA
   return prerequisites && FINANCIAL_GATES.every(key => flags[key] === true);
 }
 export type CatalogLine = {
-  productId: string; kind: 'base' | 'network_addon' | 'course' | 'test' | 'digital_guide'; title: string;
+  productId: string; kind: 'base' | 'network_addon' | 'contractor' | 'course' | 'test' | 'digital_guide'; title: string;
   priceKey: string; stripeProductId: string | null; stripePriceId: string | null;
   unitCents: number; currency: string; recurrence: 'month' | null; quantity: number;
   catalogVersion: string; environment: FinancialEnvironment; termsVersion: string; refundVersion: string;
 };
-export function reconstructCart(ids: readonly string[], catalog: readonly CatalogLine[], environment: FinancialEnvironment, context: { provider: boolean; baseReserved: boolean; addonReserved: boolean; owned: readonly string[]; trialUsed: boolean }) {
+export function reconstructCart(ids: readonly string[], catalog: readonly CatalogLine[], environment: FinancialEnvironment, context: { provider: boolean; contractor?: boolean; baseReserved: boolean; addonReserved: boolean; owned: readonly string[]; trialUsed: boolean }) {
   if (environment !== 'sandbox') throw new Error('Sandbox preparation only');
   if (!ids.length || ids.length > 22 || new Set(ids).size !== ids.length) throw new Error('Invalid cart selection');
   const lines = ids.map(id => {
     const item = catalog.find(c => c.productId === id && c.environment === environment);
     if (!item || !Number.isSafeInteger(item.unitCents) || item.unitCents < 0 || item.currency !== 'usd' || item.quantity !== 1 || context.owned.includes(id)) throw new Error('Item unavailable');
     if ((item.kind === 'base' || item.kind === 'network_addon') && !context.provider) throw new Error('Provider business required');
+    if(item.kind==='contractor'&&(!context.contractor||item.unitCents!==2000||item.recurrence!=='month'))throw new Error('Contractor membership requires a contractor account and authoritative $20 monthly price');
     return { ...item };
   });
   const base = lines.some(c => c.kind === 'base'), addon = lines.some(c => c.kind === 'network_addon');
+  const contractor=lines.some(c=>c.kind==='contractor');
+  if(contractor&&(base||addon))throw new Error('Contractor membership is separate from business membership');
+  if(contractor&&context.baseReserved)throw new Error('Existing contractor subscription requires management');
   if (base && context.baseReserved) throw new Error('Existing base subscription requires management');
   if (addon && context.addonReserved) throw new Error('Existing Network add-on');
   if (addon && !base) throw new Error('Later add-on requires authoritative subscription and proration review');
@@ -30,7 +34,7 @@ export function reconstructCart(ids: readonly string[], catalog: readonly Catalo
   const recurringCents = lines.filter(c => c.recurrence).reduce((n,c) => n+c.unitCents*c.quantity,0);
   const oneTimeCents = lines.filter(c => !c.recurrence).reduce((n,c) => n+c.unitCents*c.quantity,0);
   // Stripe trial + one-time billing timing must be confirmed before a due-now promise is made.
-  return { lines, trialDays, recurringCents, oneTimeCents, dueNowCents: trialDays && oneTimeCents ? null : oneTimeCents+(trialDays ? 0 : recurringCents), firstRenewalAt: null, mode: base ? 'subscription' as const : 'payment' as const };
+  return { lines, trialDays, recurringCents, oneTimeCents, dueNowCents: trialDays && oneTimeCents ? null : oneTimeCents+(trialDays ? 0 : recurringCents), firstRenewalAt: null, mode: base || contractor ? 'subscription' as const : 'payment' as const };
 }
 export function paidEntitlements(s: { status: string; paidState: string | null; paidThrough: string | null; addonStatus: string; addonPaid: boolean; frozen: boolean }, now: number) {
   const current = s.paidThrough !== null && Date.parse(s.paidThrough) > now;
