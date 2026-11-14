@@ -666,6 +666,34 @@
       "when": 1794616305243,
       "tag": "0094_contractor_legacy_discovery_and_private_evidence_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1794623267796,
+      "tag": "0095_portal_roles_vehicle_preferences_connection_alerts",
+      "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1794623479943,
+      "tag": "0096_vehicle_private_insurance_and_trip_driver_suggestions",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1794623789943,
+      "tag": "0097_fleet_gate_decline_safety_and_private_vehicle_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1794623827083,
+      "tag": "0098_private_vehicle_identifiers_manager_boundary",
+      "breakpoints": true
     }
   ]
 }

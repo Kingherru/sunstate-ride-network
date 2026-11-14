@@ -1,0 +1,2 @@
+import {defineConfig} from 'vitest/config';
+export default defineConfig({resolve:{alias:{'@':new URL('../src',import.meta.url).pathname}},test:{include:['tests/pass4r-rules.test.ts','tests/pass4r-handlers.test.ts','tests/pass4p-rules.test.ts','tests/sign-in-preference.test.ts'],environment:'node'}});

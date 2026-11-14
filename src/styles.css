@@ -370,12 +370,14 @@
 
 /* Shared activity edge stays inside the sidebar, including above the top bar.
    Shadow is cast inward, so it cannot bleed across the workspace/header. */
-.theme-portal { --sidebar-activity-shadow: -2px 0 7px 1px color-mix(in oklab, var(--ds-accent) 58%, transparent); }
+.theme-portal { --portal-content-accent: color-mix(in oklab, var(--ds-accent) 55%, transparent); }
 .portal-sidebar { z-index: 21; }
-.portal-sidebar::after, .portal-drawer::after { content: ""; position: absolute; inset-block: 0; right: 0; width: 1px; background: var(--ds-accent); box-shadow: var(--sidebar-activity-shadow); clip-path: inset(0 0 0 -10px); opacity: .08; transition: opacity 160ms ease; pointer-events: none; }
-.portal-root:has(> main:hover, > main:focus-within) .portal-sidebar::after { opacity: 1; }
+.portal-sidebar::after, .portal-drawer::after { content: none; }
+.portal-root > main { position: relative; }
+.portal-root > main::before { content: ""; position: absolute; top: 0; inset-inline: 0; height: 1px; background: var(--portal-content-accent); opacity: 0; pointer-events: none; }
+.portal-root > main:is(:hover, :focus-within)::before { opacity: 1; }
+.portal-content { max-width: 86.4rem; }
 .portal-drawer { isolation: isolate; }
-.portal-drawer::after { opacity: .3; box-shadow: none; }
 
 /* Pass 3I: matching subtle edges on colored portal panels only. */
 .theme-portal :where(.bg-ds-sky, .bg-ds-info-soft) { border: 1px solid var(--ds-sky-border); }
@@ -635,6 +637,10 @@
   background: var(--ds-sky); color: var(--ds-primary); border-radius: var(--ds-radius) var(--ds-radius) 0 0;
 }
 .theme-portal .portal-business-body { min-width: 0; padding: 1rem; }
+.theme-portal main .rounded-ds.bg-ds-surface { border-color: var(--section-edge); }
+.theme-portal :is(.portal-business-section, .portal-dialog-section) { border-color: var(--section-edge); }
+.theme-portal .portal-business-form fieldset { min-width: 0; border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); }
+.theme-portal .portal-business-form legend { color: var(--ds-primary); font-weight: 700; }
 .theme-portal .portal-business-actions {
   display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
   border-top: 1px solid var(--section-edge); padding-top: 1rem;

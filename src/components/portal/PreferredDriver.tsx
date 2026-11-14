@@ -1,0 +1,7 @@
+import {DsField,DsSelect} from '@/components/ds/controls';
+import {listDrivers} from '@/lib/fleet.functions';
+import {usePortalQuery} from './preview-data';
+export function PreferredDriver({workspaceId,value,onChange}:{workspaceId:string;value:string|null;onChange:(id:string|null)=>void}){
+ const q=usePortalQuery({queryKey:['drivers'],queryFn:()=>listDrivers()});const drivers=(q.data??[]).filter(d=>d.workspace_id===workspaceId&&d.status==='active'&&(!d.license_expiry||d.license_expiry>=new Date().toISOString().slice(0,10)));
+ return <section className="portal-business-section"><h3 className="portal-business-heading ds-label">Preferred driver</h3><div className="portal-business-body"><DsField label="Preferred active driver" hint="A suggestion only; authorized providers may override it.">{p=><DsSelect {...p} value={value??''} onChange={e=>onChange(e.target.value||null)}><option value="">No preferred driver</option>{drivers.map(d=><option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>)}</DsSelect>}</DsField>{value&&!drivers.some(d=>d.id===value)&&<p role="status" className="ds-support mt-3">Preferred driver is unavailable. The existing preference is retained until you choose another driver.</p>}</div></section>;
+}

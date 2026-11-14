@@ -8,6 +8,7 @@ import { SecureEmailChange } from '@/components/portal/SecureEmailChange';
 import { SettingsShell } from '@/components/portal/SettingsShell';
 import { useState } from 'react';
 import { NetworkTimingSettings } from '@/components/portal/TripNetwork';
+import {TrainingAdministration} from '@/components/admin/TrainingAdministration';
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   head: () => ({ meta: [{ title: "Admin Settings — MY FLORIDA NEMT" }, { name: 'description', content: 'Admin preview tools and future distribution timing settings.' }, { property: 'og:title', content: 'Admin Settings — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Admin preview tools and future distribution timing settings.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -32,7 +33,8 @@ function AdminSettings() {
         Your own profile, password and admin preview tools. Nothing here changes data unless you submit a form.
       </PageHead>
 
-      <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'}]}>
+      <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'},...(access.isMasterAdmin?[{value:'training',label:'Training administration'}]:[])]}>
+      {tab==='training'&&access.isMasterAdmin&&<TrainingAdministration/>}
       {tab==='profile'&&<><PersonalSettings section="profile"/><SecureEmailChange/><Link to="/admin/security" className="ds-label text-ds-link underline">Security & sign-in</Link></>}
       {tab==='notifications'&&<PersonalSettings section="notifications"/>}
       {tab==='interface'&&<SignInPreference/>}{tab==='accessibility'&&<InterfaceSize/>}

@@ -248,7 +248,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       <div className="lg:ml-64">{topHeader}</div>
       <main id="main" className="ds-canvas-texture min-h-[calc(100dvh-3.5rem)] min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-10 lg:py-10">
         {/* Contacts pages get a modestly wider shared white panel; columns stay balanced. */}
-        <div className={cn("portal-enter mx-auto w-full", pathname.endsWith("/contacts") ? "max-w-7xl" : "max-w-6xl")}><RequestDetailProvider>{children}</RequestDetailProvider></div>
+        <div className="portal-content portal-enter mx-auto w-full"><RequestDetailProvider>{children}</RequestDetailProvider></div>
       </main>
     </div>
   );
@@ -256,7 +256,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 
 export function PageHead({ title, action, children }: { title: string; action?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
       <div className="min-w-0">
         <h2 className="ds-section-title uppercase text-ds-primary">{title}</h2>
         {children && <div className="ds-body mt-1 text-ds-text-2">{children}</div>}

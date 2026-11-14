@@ -1,0 +1,9 @@
+import {useState} from 'react';
+import {useServerFn} from '@tanstack/react-start';
+import {useQueryClient} from '@tanstack/react-query';
+import {toast} from 'sonner';
+import {DsButton} from '@/components/ds/controls';
+import {getTripDriverSuggestion} from '@/lib/pass4r.functions';
+import {assignDriverSlot} from '@/lib/schedule-board.functions';
+import {usePortalPreview,usePortalQuery} from './preview-data';
+export function TripDriverSuggestion({tripId,scheduledTime}:{tripId:string;scheduledTime?:string|null}){const preview=usePortalPreview();const qc=useQueryClient();const get=useServerFn(getTripDriverSuggestion);const assign=useServerFn(assignDriverSlot);const q=usePortalQuery({queryKey:['trip-driver-suggestion',tripId],queryFn:()=>get({data:{tripId}})});const [busy,setBusy]=useState(false);if(!q.data?.driverId&&!q.data?.warning)return null;return <section className="portal-business-section"><h3 className="portal-business-heading ds-label">Driver suggestion</h3><div className="portal-business-body space-y-3">{q.data?.warning&&<p role="status" className="ds-support">{q.data.warning}</p>}{q.data?.driverId&&<><p className="ds-support">{q.data.source==='preferred'?'Patient’s preferred eligible driver':'Driver from the most recent completed trip'}. You may override this in Schedule.</p><DsButton variant="secondary" disabled={preview.active||busy} onClick={async()=>{const driverId=q.data?.driverId;if(!driverId)return;setBusy(true);try{await assign({data:{reservation_id:tripId,driver_id:driverId,scheduled_start_time:scheduledTime??null}});await qc.invalidateQueries({queryKey:['schedule-board']});toast.success('Suggested driver assigned.');}catch{toast.error('Driver assignment unavailable. Choose an eligible driver in Schedule.');}finally{setBusy(false);}}}>Use suggested driver</DsButton></>}</div></section>;}

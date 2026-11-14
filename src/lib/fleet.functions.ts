@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {maskVin} from './pass4r-rules';
 
 /* ---- Drivers ---- */
 export const listDrivers = createServerFn({ method: "GET" })
@@ -108,8 +109,12 @@ export const listVehicles = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("vehicles").select("*").order("name");
     if (error) throw error;
-    return data ?? [];
+    return await Promise.all((data??[]).map(async v=>{const {data:masked}=await context.supabase.rpc('vehicle_masked_vin',{_vehicle:v.id});return {...v,vin:undefined,masked_vin:masked??'Not recorded'};}));
   });
+
+export const getVehicleForEditing=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:{id:string})=>i).handler(async({data,context})=>{
+ const {data:v,error}=await context.supabase.from('vehicles').select('*').eq('id',data.id).single();if(error||!v||!v.workspace_id)throw new Error('Vehicle unavailable');const {data:allowed}=await context.supabase.rpc('business_record_access',{_ws:v.workspace_id,_kind:'vehicles',_id:v.id,_level:'manage'});if(!allowed)throw new Error('Authorized vehicle editing required');const {data:privateRow}=await context.supabase.from('vehicle_private_identifiers').select('vin').eq('vehicle_id',v.id).maybeSingle();return {...v,vin:privateRow?.vin??''};
+});
 
 export const upsertVehicle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -124,11 +129,16 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     status?: "active" | "inactive" | "maintenance";
     notes?: string;
     assigned_driver_id?: string | null;
+    vin?:string; insurance_credential_id?:string|null; insurance_expiry?:string|null; service_regions?:string[];service_counties?:string[];service_cities?:string[];service_zips?:string[];travel_radius_miles?:number|null;
     service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    delete row.vin;
+    if(data.vin && !/^[A-HJ-NPR-Z0-9]{17}$/i.test(data.vin))throw new Error('VIN must contain 17 valid letters and digits.');
+    if(data.travel_radius_miles!=null&&(!Number.isInteger(data.travel_radius_miles)||data.travel_radius_miles<0||data.travel_radius_miles>500))throw new Error('Travel radius must be 0–500 miles.');
+    for(const key of ['service_regions','service_counties','service_cities','service_zips'] as const)if(data[key]&&(data[key].length>100||data[key].some(v=>v.length>120)))throw new Error('Service area values are too long.');
     if (!data.make?.trim() || !data.model?.trim() || !data.plate?.trim() || !['ambulatory','wheelchair','stretcher','other'].includes(data.vehicle_category ?? '') || !Number.isInteger(data.model_year) || Number(data.model_year)<1900 || Number(data.model_year)>new Date().getUTCFullYear()+1 || !Number.isInteger(data.capacity) || Number(data.capacity)<1 || Number(data.capacity)>100) throw new Error('Vehicle category, make/model/year, plate and passenger capacity are required.');
     if (data.wheelchair_capacity !== undefined && (!Number.isInteger(data.wheelchair_capacity) || data.wheelchair_capacity < 0)) throw new Error('Wheelchair positions must be a nonnegative whole number.');
     if (data.service_capabilities === undefined) delete row.service_capabilities;
@@ -139,6 +149,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     const { data: out, error } = await q;
     if (error) throw error;
 
+    if(data.vin?.trim()&&out?.workspace_id){const {error:vinError}=await supabase.from('vehicle_private_identifiers').upsert({vehicle_id:out.id,workspace_id:out.workspace_id,vin:data.vin.toUpperCase()});if(vinError)throw new Error('Vehicle saved, but private VIN could not be saved. Reopen authorized editing to retry.');}
     if (out?.workspace_id && data.assigned_driver_id !== undefined) {
       const vehId = (out as any).id as string;
       const driverId = data.assigned_driver_id;

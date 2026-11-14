@@ -40,6 +40,7 @@ const patientSchema = z.object({
   default_payer_id: z.string().uuid().optional().nullable(),
   workspace_id: z.string().uuid().optional().nullable(),
   patient_workspace_id:z.string().uuid().optional().nullable(),
+  preferred_driver_id:z.string().uuid().optional().nullable(),
 });
 
 function clean(input: z.infer<typeof patientSchema>) {

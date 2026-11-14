@@ -8,6 +8,7 @@ import { listMyPayers } from '@/lib/payers.functions';
 import { listSavedPaymentMethods, setPaymentMethodPatient } from '@/lib/saved-payments.functions';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 import {LinkedPatientSelector} from './LinkedPatientSelector';
+import {PreferredDriver} from './PreferredDriver';
 
 type F = { key: string; label: string; type?: 'text' | 'date' | 'email' | 'tel' | 'number' | 'textarea'; max?: number };
 const GROUPS: { title: string; fields: F[] }[] = [
@@ -26,6 +27,7 @@ function toPayload(form: Record<string, any>) {
   out.oxygen_required = !!form.oxygen_required;
   out.default_payer_id = form.default_payer_id || null;
   out.patient_workspace_id=form.patient_workspace_id||null;
+  if(form.preferred_driver_id!==undefined)out.preferred_driver_id=form.preferred_driver_id||null;
   return out;
 }
 
@@ -100,6 +102,7 @@ export function PatientManagement() {
     <form onSubmit={submit} className="space-y-5" aria-label="Patient profile">
       <h2 className="ds-subheading uppercase text-ds-primary">{editing.id ? 'Edit patient' : 'Add patient'}</h2>
       {!privateOnly && <LinkedPatientSelector value={editing.patient_workspace_id} onChange={id=>setEditing({...editing,patient_workspace_id:id})}/>}
+      {!privateOnly&&editing.workspace_id&&<PreferredDriver workspaceId={editing.workspace_id} value={editing.preferred_driver_id??null} onChange={id=>setEditing({...editing,preferred_driver_id:id})}/>}
       {GROUPS.map(g => <fieldset key={g.title} className="rounded-ds bg-ds-surface-muted p-4 sm:p-5"><legend className="ds-label text-ds-primary px-1">{g.title}</legend>
         <div className="grid gap-4 sm:grid-cols-2">{g.fields.map(f => <div key={f.key} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}><DsField label={f.label}>{p => f.type === 'textarea'
           ? <DsTextarea {...p} maxLength={f.max ?? 500} value={editing[f.key] ?? ''} onChange={e => setEditing({ ...editing, [f.key]: e.target.value })} />

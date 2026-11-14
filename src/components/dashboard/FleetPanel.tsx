@@ -12,6 +12,8 @@ import {
   sendDriverWeeklySchedule,
 } from "@/lib/fleet.functions";
 import { vehicleCategories } from '@/lib/pass4p-rules';
+import {getVehicleForEditing} from '@/lib/fleet.functions';
+import {listMyCredentials} from '@/lib/medicaid.functions';
 import { FleetStatusControl, FleetFilterBar, useFleetFilter, applyFleetFilter } from "@/components/portal/FleetStatusControl";
 
 export function FleetPanel({ only, primaryOnly=false }: { only?: "drivers" | "vehicles"; primaryOnly?:boolean } = {}) {
@@ -35,7 +37,7 @@ function DriversCard() {
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (d: any) => `${d.first_name} ${d.last_name} ${d.phone ?? ""} ${d.email ?? ""}`);
 
   return (
-    <section className="min-w-0 bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
+    <section className="portal-business-section min-w-0 p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Drivers</h2>
         <button onClick={() => setEditing({ status: "active" })} className="text-xs font-bold text-primary hover:underline">+ Add driver</button>
@@ -53,6 +55,7 @@ function DriversCard() {
             <li key={d.id} className="py-2 flex items-center justify-between gap-2 flex-wrap">
               <div className="min-w-0 break-words">
                 <div className="font-bold">{d.first_name} {d.last_name}
+                  <span className="ds-caption ml-2 rounded-ds bg-ds-sky px-2 py-1 text-ds-primary">{d.employment_type==='independent_contractor'?'Independent Contractor':'Company Driver'}</span>
                   <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">{String(d.status ?? "Not set").replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
@@ -493,7 +496,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
   const [filter, setFilter] = useFleetFilter();
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (v: any) => `${v.name} ${v.plate ?? ""} ${v.vehicle_type ?? ""}`);
   return (
-    <section className="min-w-0 bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
+    <section className="portal-business-section min-w-0 p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">{primaryOnly?'Primary ambulatory vehicle':'Vehicles'}</h2>
         {(!primaryOnly||q.data?.length===0)&&<DsButton variant="ghost" size="sm" onClick={() => setEditing({ vehicle_type: "sedan", status: "active", capacity: 4,...(primaryOnly?{vehicle_category:'ambulatory',service_capabilities:['ambulatory']}:{} ) })}>+ Add vehicle</DsButton>}
@@ -514,6 +517,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{String(v.vehicle_type ?? v.type ?? "Not set").replace("_"," ")}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">{v.plate ?? "No plate"} · {v.capacity ?? 0} seats · {v.wheelchair_capacity ?? 0} wheelchair positions · {v.status ?? "Not set"}</div>
+                <p className="ds-caption mt-1">VIN: {v.masked_vin??'Not recorded'} · Insurance expiry: {v.insurance_expiry??'Missing'}</p>
                 {(v.service_capabilities?.length ?? 0) > 0 && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
                     Services: {(v.service_capabilities as string[]).map(capLabel).join(", ")}
@@ -524,7 +528,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                 </div>
               </div>
               <div className="text-xs">
-                <button onClick={() => setEditing(v)} className="font-bold text-primary hover:underline mr-3">Edit</button>
+                <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>Edit</DsButton>
                 <FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />
               </div>
             </li>
@@ -539,19 +543,21 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
 }
 
 function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[]; onClose: () => void; onSaved: () => void }) {
+  const docs=usePortalQuery({queryKey:['my-credentials'],queryFn:()=>listMyCredentials()});
   const [f, set] = useState({
     name: v.name ?? "", plate: v.plate ?? "", make:v.make ?? "",model:v.model ?? "",model_year:v.model_year ?? "",vehicle_category:v.vehicle_category ?? "",accessibility_equipment:v.accessibility_equipment ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
     capacity: v.capacity ?? 4, wheelchair_capacity: v.wheelchair_capacity ?? 0, status: v.status ?? "active", notes: v.notes ?? "",
     service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
     assigned_driver_id: (v.assigned_driver_id ?? "") as string,
+    vin:v.vin??'',insurance_credential_id:v.insurance_credential_id??null,insurance_expiry:v.insurance_expiry??'',service_regions:(v.service_regions??[]).join(', '),service_counties:(v.service_counties??[]).join(', '),service_cities:(v.service_cities??[]).join(', '),service_zips:(v.service_zips??[]).join(', '),travel_radius_miles:v.travel_radius_miles??'',
   });
   const toggleCap = (val: "ambulatory" | "wheelchair" | "stretcher") =>
     set({ ...f, service_capabilities: f.service_capabilities.includes(val)
       ? f.service_capabilities.filter(x => x !== val)
       : [...f.service_capabilities, val] });
   const m = usePortalMutation({
-    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, model_year:Number(f.model_year), capacity: Number(f.capacity), assigned_driver_id: f.assigned_driver_id || null } as any }),
+    mutationFn: () => upsertVehicle({ data: { ...f, id: v.id, model_year:Number(f.model_year), capacity: Number(f.capacity), insurance_expiry:f.insurance_expiry||null,travel_radius_miles:f.travel_radius_miles===''?null:Number(f.travel_radius_miles),service_regions:f.service_regions.split(',').map((s:string)=>s.trim()).filter(Boolean),service_counties:f.service_counties.split(',').map((s:string)=>s.trim()).filter(Boolean),service_cities:f.service_cities.split(',').map((s:string)=>s.trim()).filter(Boolean),service_zips:f.service_zips.split(',').map((s:string)=>s.trim()).filter(Boolean),assigned_driver_id: f.assigned_driver_id || null } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
@@ -559,6 +565,9 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
     <DetailOverlayFrame title={v.id ? 'Edit vehicle' : 'New vehicle'} onClose={onClose}>
       <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
+        <I l="Full VIN — authorized editing only" v={f.vin} on={x=>set({...f,vin:x.toUpperCase()})}/><I l="Vehicle insurance expiration" type="date" v={f.insurance_expiry} on={x=>set({...f,insurance_expiry:x})}/>
+        <label className="flex flex-col gap-1 ds-body sm:col-span-2"><span className="ds-label">Private vehicle insurance record</span><select value={f.insurance_credential_id??''} onChange={e=>{const doc=docs.data?.find(d=>d.id===e.target.value);set({...f,insurance_credential_id:e.target.value||null,insurance_expiry:doc?.expires_at??f.insurance_expiry});}}><option value="">No insurance evidence linked</option>{(docs.data??[]).filter(d=>d.workspace_id===v.workspace_id&&d.kind==='auto_insurance').map(d=><option key={d.id} value={d.id}>{d.label} · {d.expires_at??'Expiry not recorded'}</option>)}</select><span className="ds-caption">Add private insurance evidence in Settings → Credentials & Documents, then link it here. Upload presence does not establish legal sufficiency.</span></label>
+        <I l="Service regions (comma separated)" v={f.service_regions} on={x=>set({...f,service_regions:x})}/><I l="Counties (comma separated)" v={f.service_counties} on={x=>set({...f,service_counties:x})}/><I l="Cities (comma separated)" v={f.service_cities} on={x=>set({...f,service_cities:x})}/><I l="ZIP codes (comma separated)" v={f.service_zips} on={x=>set({...f,service_zips:x})}/><I l="Travel radius (miles)" type="number" v={String(f.travel_radius_miles)} on={x=>set({...f,travel_radius_miles:x})}/>
         <I l="Make" v={f.make} on={x=>set({...f,make:x})} req/><I l="Model" v={f.model} on={x=>set({...f,model:x})} req/><I l="Year" v={String(f.model_year)} on={x=>set({...f,model_year:x})} type="number" req/><I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} req />
         <label className="flex flex-col gap-1 ds-body"><span className="ds-label">Vehicle category</span><select required value={f.vehicle_category} onChange={e=>set({...f,vehicle_category:e.target.value})}><option value="">Choose category</option>{vehicleCategories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></label><I l="Accessibility equipment" v={f.accessibility_equipment} on={x=>set({...f,accessibility_equipment:x})}/><p className="ds-support sm:col-span-2">Evidence: {v.evidence_status==='satisfied'?'Requirement Satisfied':v.evidence_status==='expired'?'Expired':'Under Review / Unable to Validate'}. Vehicle details do not verify documents.</p>
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />

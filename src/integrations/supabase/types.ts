@@ -3174,6 +3174,7 @@ export type Database = {
           body: string | null
           communication: Json | null
           created_at: string
+          dismissed_at: string | null
           id: string
           link: string | null
           read_at: string | null
@@ -3186,6 +3187,7 @@ export type Database = {
           body?: string | null
           communication?: Json | null
           created_at?: string
+          dismissed_at?: string | null
           id?: string
           link?: string | null
           read_at?: string | null
@@ -3198,6 +3200,7 @@ export type Database = {
           body?: string | null
           communication?: Json | null
           created_at?: string
+          dismissed_at?: string | null
           id?: string
           link?: string | null
           read_at?: string | null
@@ -6023,6 +6026,7 @@ export type Database = {
           patient_workspace_id: string | null
           payer: string | null
           phone: string | null
+          preferred_driver_id: string | null
           service_requirements: string | null
           state: string | null
           updated_at: string
@@ -6066,6 +6070,7 @@ export type Database = {
           patient_workspace_id?: string | null
           payer?: string | null
           phone?: string | null
+          preferred_driver_id?: string | null
           service_requirements?: string | null
           state?: string | null
           updated_at?: string
@@ -6109,6 +6114,7 @@ export type Database = {
           patient_workspace_id?: string | null
           payer?: string | null
           phone?: string | null
+          preferred_driver_id?: string | null
           service_requirements?: string | null
           state?: string | null
           updated_at?: string
@@ -6130,6 +6136,13 @@ export type Database = {
             columns: ["patient_workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_patients_preferred_driver_id_fkey"
+            columns: ["preferred_driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
           {
@@ -8168,6 +8181,7 @@ export type Database = {
           default_payment_method_id: string | null
           detail_columns: number[] | null
           high_contrast: boolean
+          history_columns: Json | null
           interface_density: string
           page_after_sign_in: string | null
           pay_by_invoice: boolean
@@ -8179,6 +8193,7 @@ export type Database = {
           default_payment_method_id?: string | null
           detail_columns?: number[] | null
           high_contrast?: boolean
+          history_columns?: Json | null
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
@@ -8190,6 +8205,7 @@ export type Database = {
           default_payment_method_id?: string | null
           detail_columns?: number[] | null
           high_contrast?: boolean
+          history_columns?: Json | null
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
@@ -8294,6 +8310,32 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_private_identifiers: {
+        Row: {
+          vehicle_id: string
+          vin: string
+          workspace_id: string
+        }
+        Insert: {
+          vehicle_id: string
+          vin: string
+          workspace_id: string
+        }
+        Update: {
+          vehicle_id?: string
+          vin?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_private_identifiers_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: true
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vehicles: {
         Row: {
           accessibility_equipment: string | null
@@ -8304,6 +8346,7 @@ export type Database = {
           creator_mfn_id: string | null
           evidence_status: string
           id: string
+          insurance_credential_id: string | null
           insurance_doc_path: string | null
           insurance_expiry: string | null
           make: string | null
@@ -8316,10 +8359,16 @@ export type Database = {
           registration_doc_path: string | null
           registration_expiry: string | null
           service_capabilities: string[]
+          service_cities: string[]
+          service_counties: string[]
+          service_regions: string[]
+          service_zips: string[]
           status: string
+          travel_radius_miles: number | null
           updated_at: string
           vehicle_category: string | null
           vehicle_type: string
+          vin: string | null
           wheelchair_capacity: number | null
           workspace_id: string | null
         }
@@ -8332,6 +8381,7 @@ export type Database = {
           creator_mfn_id?: string | null
           evidence_status?: string
           id?: string
+          insurance_credential_id?: string | null
           insurance_doc_path?: string | null
           insurance_expiry?: string | null
           make?: string | null
@@ -8344,10 +8394,16 @@ export type Database = {
           registration_doc_path?: string | null
           registration_expiry?: string | null
           service_capabilities?: string[]
+          service_cities?: string[]
+          service_counties?: string[]
+          service_regions?: string[]
+          service_zips?: string[]
           status?: string
+          travel_radius_miles?: number | null
           updated_at?: string
           vehicle_category?: string | null
           vehicle_type?: string
+          vin?: string | null
           wheelchair_capacity?: number | null
           workspace_id?: string | null
         }
@@ -8360,6 +8416,7 @@ export type Database = {
           creator_mfn_id?: string | null
           evidence_status?: string
           id?: string
+          insurance_credential_id?: string | null
           insurance_doc_path?: string | null
           insurance_expiry?: string | null
           make?: string | null
@@ -8372,10 +8429,16 @@ export type Database = {
           registration_doc_path?: string | null
           registration_expiry?: string | null
           service_capabilities?: string[]
+          service_cities?: string[]
+          service_counties?: string[]
+          service_regions?: string[]
+          service_zips?: string[]
           status?: string
+          travel_radius_miles?: number | null
           updated_at?: string
           vehicle_category?: string | null
           vehicle_type?: string
+          vin?: string | null
           wheelchair_capacity?: number | null
           workspace_id?: string | null
         }
@@ -8385,6 +8448,13 @@ export type Database = {
             columns: ["assigned_driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicles_insurance_credential_id_fkey"
+            columns: ["insurance_credential_id"]
+            isOneToOne: false
+            referencedRelation: "provider_credentials"
             referencedColumns: ["id"]
           },
         ]
@@ -8767,6 +8837,7 @@ export type Database = {
           operating_hours: string | null
           organization_type: string
           pickup_delay_minutes: number | null
+          provider_service_roles: string[]
           provider_subtype: string
           provider_subtype_selected_at: string | null
           provider_verified: boolean
@@ -8795,6 +8866,7 @@ export type Database = {
           operating_hours?: string | null
           organization_type?: string
           pickup_delay_minutes?: number | null
+          provider_service_roles?: string[]
           provider_subtype?: string
           provider_subtype_selected_at?: string | null
           provider_verified?: boolean
@@ -8823,6 +8895,7 @@ export type Database = {
           operating_hours?: string | null
           organization_type?: string
           pickup_delay_minutes?: number | null
+          provider_service_roles?: string[]
           provider_subtype?: string
           provider_subtype_selected_at?: string | null
           provider_verified?: boolean
@@ -9642,6 +9715,7 @@ export type Database = {
           body: string | null
           communication: Json | null
           created_at: string
+          dismissed_at: string | null
           id: string
           link: string | null
           read_at: string | null
@@ -10101,6 +10175,10 @@ export type Database = {
         Returns: boolean
       }
       pass4p_vehicle_complete: { Args: { _v: string }; Returns: boolean }
+      patient_driver_suggestion: {
+        Args: { _date?: string; _patient: string; _service?: string }
+        Returns: Json
+      }
       patient_request_access: { Args: { _request: string }; Returns: boolean }
       patient_request_snapshot: { Args: { _request: string }; Returns: Json }
       patient_trip_contacts: { Args: { _request: string }; Returns: Json }
@@ -10170,6 +10248,10 @@ export type Database = {
       propose_facility_quote: {
         Args: { _cents: number; _policy: string; _request: string }
         Returns: string
+      }
+      provider_active_fleet: {
+        Args: { _service: string; _ws: string }
+        Returns: boolean
       }
       provider_can_serve_ride: {
         Args: {
@@ -10324,6 +10406,10 @@ export type Database = {
           _workspace: string
         }
         Returns: string
+      }
+      save_provider_service_roles: {
+        Args: { _roles: string[]; _ws: string }
+        Returns: undefined
       }
       save_provider_verification_details: {
         Args: { _details: Json; _workspace: string }
@@ -10493,10 +10579,12 @@ export type Database = {
         Args: { _note?: string; _request: string; _to: string }
         Returns: string
       }
+      trip_driver_suggestion: { Args: { _trip: string }; Returns: Json }
       trip_invoice_access: {
         Args: { _invoice: string; _manage?: boolean }
         Returns: boolean
       }
+      vehicle_masked_vin: { Args: { _vehicle: string }; Returns: string }
       verification_normalize_name: { Args: { _name: string }; Returns: string }
       verify_course_certificate: {
         Args: { _token: string }

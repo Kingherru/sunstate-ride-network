@@ -1,0 +1,14 @@
+import {useServerFn} from '@tanstack/react-start';
+import {useQueryClient} from '@tanstack/react-query';
+import {useState} from 'react';
+import {toast} from 'sonner';
+import {Link} from '@tanstack/react-router';
+import {DsButton} from '@/components/ds/controls';
+import {listConnectionAlerts,updateConnectionAlerts} from '@/lib/pass4r.functions';
+import {usePortalPreview,usePortalQuery} from './preview-data';
+import {AccountConnections} from './AccountConnections';
+export function NewConnections(){
+ const preview=usePortalPreview();const qc=useQueryClient();const list=useServerFn(listConnectionAlerts);const update=useServerFn(updateConnectionAlerts);const q=usePortalQuery({queryKey:['connection-alerts'],queryFn:()=>list()});const [opened,setOpened]=useState<string|null>(null);const [busy,setBusy]=useState(false);
+ async function change(action:'read'|'dismiss',id?:string){if(preview.active)return;setBusy(true);try{await update({data:{action,...(id?{ids:[id]}:{})}});await qc.invalidateQueries({queryKey:['connection-alerts']});toast.success(action==='read'?'Marked as read.':'Alert dismissed. Connection retained.');}catch{toast.error('Connection alert update unavailable.');}finally{setBusy(false);}}
+ return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">New Connections</h2><div className="portal-business-body space-y-4"><DsButton variant="secondary" disabled={busy||preview.active||!q.data?.some(n=>!n.readAt)} onClick={()=>void change('read')}>Mark all as read</DsButton>{q.isError?<p role="alert">Connection alerts unavailable.</p>:!q.data?.length?<p className="ds-support">No new accepted connections.</p>:<ul className="divide-y divide-ds-border">{q.data.map(n=><li key={n.id} className="space-y-3 py-4"><div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3"><div className="min-w-0"><h3 className="ds-label text-ds-primary">{n.name}{!n.readAt?' · Unread':''}</h3><p className="ds-support">{n.accountType} · {n.relationshipType} · {new Date(n.connectedAt).toLocaleDateString()}</p></div><DsButton variant="ghost" onClick={()=>setOpened(opened===n.workspaceId?null:n.workspaceId)}>Open connection</DsButton></div><div className="flex flex-wrap gap-2"><DsButton variant="secondary" size="sm" disabled={busy||!!n.readAt} onClick={()=>void change('read',n.id)}>Mark as read</DsButton><DsButton variant="ghost" size="sm" disabled={busy} onClick={()=>void change('dismiss',n.id)}>Dismiss notification</DsButton></div>{opened===n.workspaceId&&<AccountConnections workspaceId={n.workspaceId} showVisibility={false}/>}</li>)}</ul>}<p className="ds-caption">Only accepted connections appear here. Dismissing an alert does not remove the relationship. Email delivery remains off.</p></div></section>;
+}

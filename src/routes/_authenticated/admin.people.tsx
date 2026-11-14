@@ -20,8 +20,9 @@ import { MembershipTransitionsList, GrandfatheringList } from '@/components/admi
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 import { matchesPeopleFilters } from '@/lib/people-filters';
 import { ProviderBadgeControl } from '@/components/admin/ProviderBadgeControl';
+import {NewConnections} from '@/components/portal/NewConnections';
 
-type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review";
+type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review" | "connections";
 const ORG_TYPES = new Set(["facility", "hospital"]);
 
 export const Route = createFileRoute("/_authenticated/admin/people")({
@@ -130,7 +131,9 @@ function People() {
         { value: "organizations", label: `Facilities & orgs (${counts("organizations")})` },
         { value: "learners", label: `Training only (${counts("learners")})` },
         { value: "review", label: `Needs review (${counts("review")})` },
+        {value:'connections',label:'New Connections'},
       ]} /></div>
+      {view==='connections'&&<NewConnections/>}
       {reviewCounts.data && (
         <p className="ds-support mb-4 text-ds-text-2">
           <span className="font-semibold">People needing review:</span> {reviewCounts.data.peopleNeedingReview}

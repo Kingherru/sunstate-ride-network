@@ -2,12 +2,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { ContactsPayersPanel } from "@/components/dashboard/ContactsPayersPanel";
 
-type ContactsSearch = { tab?: "patients" | "contacts" | "payers" };
+type ContactsSearch = { tab?: "patients" | "contacts" | "payers" | "connections" };
 
 export const Route = createFileRoute("/_authenticated/portal/contacts")({
   head: () => ({ meta: [{ title: "People — MY FLORIDA NEMT" }, { name: 'description', content: 'Your authorized patients, contacts and payers.' }, { property: 'og:title', content: 'People — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Your authorized patients, contacts and payers.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
   validateSearch: (s: Record<string, unknown>): ContactsSearch => ({
-    tab: s.tab === 'patients' ? 'patients' : s.tab === "payers" ? "payers" : "contacts",
+    tab: s.tab === 'connections' ? 'connections' : s.tab === 'patients' ? 'patients' : s.tab === "payers" ? "payers" : "contacts",
   }),
   component: PortalContacts,
 });

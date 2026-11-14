@@ -16,6 +16,7 @@ import { TimeSelect } from "@/components/ui/time-picker-field";
 import { ManualCompletionDialog } from "@/components/dashboard/ManualCompletionDialog";
 import { TripSyncTimeline } from "@/components/dashboard/TripSyncTimeline";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import {TripDriverSuggestion} from '@/components/portal/TripDriverSuggestion';
 
 type Row = {
   id: string;
@@ -436,6 +437,7 @@ export function ReservationReviewDialog({
 
         {!editing ? (
           <div className="space-y-4 py-2">
+            {(canApprove||canComplete)&&!isDelivery&&<TripDriverSuggestion tripId={row.id}/>}
             {canApprove && isUnconfirmed && !isPendingReferral && (
               <section className="border-2 border-primary/40 bg-primary/5 rounded-sm p-4">
                 <h3 className="text-xs font-extrabold uppercase tracking-[0.16em] text-foreground mb-2">

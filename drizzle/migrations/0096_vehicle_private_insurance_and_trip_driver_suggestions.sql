@@ -1,0 +1,13 @@
+ALTER TABLE public.vehicles ADD COLUMN insurance_credential_id uuid REFERENCES public.provider_credentials(id);
+CREATE FUNCTION public.vehicle_private_profile_guard() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF NEW.vin IS NOT NULL AND NEW.vin<>'' AND NEW.vin !~ '^[A-HJ-NPR-Z0-9]{17}$' THEN RAISE EXCEPTION 'VIN must contain 17 valid letters and digits';END IF;
+IF NEW.insurance_credential_id IS NOT NULL AND (TG_OP='INSERT' OR NEW.insurance_credential_id IS DISTINCT FROM OLD.insurance_credential_id OR NEW.workspace_id IS DISTINCT FROM OLD.workspace_id) AND NOT EXISTS(SELECT 1 FROM public.provider_credentials c WHERE c.id=NEW.insurance_credential_id AND c.workspace_id=NEW.workspace_id AND c.kind='auto_insurance' AND c.provider_user_id=auth.uid()) THEN RAISE EXCEPTION 'Choose vehicle insurance evidence owned by this workspace and account';END IF;RETURN NEW;END $$;
+CREATE TRIGGER vehicle_private_profile_guard BEFORE INSERT OR UPDATE ON public.vehicles FOR EACH ROW EXECUTE FUNCTION public.vehicle_private_profile_guard();
+CREATE FUNCTION public.trip_driver_suggestion(_trip uuid) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=public AS $$ DECLARE t public.trips;r public.ride_requests;BEGIN
+SELECT * INTO t FROM public.trips WHERE id=_trip;SELECT * INTO r FROM public.ride_requests WHERE id=t.ride_request_id;
+IF r.saved_patient_id IS NULL THEN RETURN jsonb_build_object('driverId',null,'warning',null,'source','unassigned');END IF;
+RETURN public.patient_driver_suggestion(r.saved_patient_id,t.transport_type,t.pickup_date);END $$;
+REVOKE ALL ON FUNCTION public.trip_driver_suggestion(uuid) FROM PUBLIC,anon;GRANT EXECUTE ON FUNCTION public.trip_driver_suggestion(uuid) TO authenticated;
+CREATE FUNCTION public.provider_service_roles_guard() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF NEW.provider_service_roles IS DISTINCT FROM OLD.provider_service_roles AND NOT EXISTS(SELECT 1 FROM public.workspace_members m JOIN public.user_profiles p ON p.user_id=m.user_id WHERE m.workspace_id=OLD.id AND m.user_id=auth.uid() AND m.role='owner' AND NOT m.is_contractor AND m.removed_at IS NULL AND p.status='active') THEN RAISE EXCEPTION 'Authorized provider owner required';END IF;RETURN NEW;END $$;
+CREATE TRIGGER provider_service_roles_guard BEFORE UPDATE ON public.workspaces FOR EACH ROW EXECUTE FUNCTION public.provider_service_roles_guard();

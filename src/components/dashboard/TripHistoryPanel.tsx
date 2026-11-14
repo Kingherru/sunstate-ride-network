@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { useRequestDetails } from '@/components/portal/request-detail-context';
+import {HistoryTable} from '@/components/portal/HistoryTable';
+import {DsButton} from '@/components/ds/controls';
 
 /**
  * TripHistoryPanel
@@ -160,6 +162,7 @@ function groupKeyDaily(dateIso: string): string {
 
 export function TripHistoryPanel({ userId }: { userId: string }) {
   const preview = usePortalPreview();
+  const openDetails=useRequestDetails();
   const qc = useQueryClient();
   const [preset, setPreset] = useState<Preset>("30d");
   const initialRange = presetRange("30d")!;
@@ -479,15 +482,15 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
                 · {trips.length} trip{trips.length === 1 ? "" : "s"}
               </span>
             </div>
-            <div className="space-y-2">
-              {trips.map((t) => (
-                <TripHistoryCard
-                  key={t.id}
-                  trip={t}
-                  driverName={t.driver_id ? driverMap.get(t.driver_id) ?? null : null}
-                />
-              ))}
-            </div>
+            <HistoryTable rows={trips} columns={[
+              {id:'date',label:'Date & time',render:t=>`${t.pickup_date} ${t.pickup_time??''}`},
+              {id:'patient',label:'Patient',render:t=>`${t.patient_first_name??''} ${t.patient_last_name??''}`},
+              {id:'route',label:'Route',render:t=><>{t.pickup_city} → {t.dropoff_city}</>},
+              {id:'driver',label:'Driver',render:t=>t.driver_id?driverMap.get(t.driver_id)??'Not available':'Unassigned'},
+              {id:'payment',label:'Payment',render:t=>t.payment_status??'Not recorded'},
+              {id:'payout',label:'Payout',render:t=>fmtUsd(t.provider_payout_cents)},
+              {id:'actions',label:'Trip',render:t=><DsButton variant="ghost" size="sm" onClick={()=>openDetails({kind:'trip',id:t.id})}>{t.trip_number??'Open trip'}</DsButton>},
+            ]}/>
           </section>
         ))}
       </div>

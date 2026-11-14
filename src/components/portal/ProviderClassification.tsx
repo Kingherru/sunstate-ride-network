@@ -1,0 +1,15 @@
+import { useEffect,useState } from 'react';
+import {useServerFn} from '@tanstack/react-start';
+import {useQueryClient} from '@tanstack/react-query';
+import {toast} from 'sonner';
+import {DsButton,DsCheckbox} from '@/components/ds/controls';
+import {getProviderSetup} from '@/lib/provider-setup.functions';
+import {saveServiceRoles} from '@/lib/pass4r.functions';
+import {serviceRoles} from '@/lib/pass4r-rules';
+import {usePortalPreview,usePortalQuery} from './preview-data';
+const labels={nemt_business:'NEMT Business',independent_contractor:"I’m an Independent Contractor",medical_delivery_driver:'Medical Delivery Driver'};
+export function ProviderClassification({workspaceId}:{workspaceId:string}){
+ const preview=usePortalPreview();const qc=useQueryClient();const get=useServerFn(getProviderSetup);const save=useServerFn(saveServiceRoles);const q=usePortalQuery({queryKey:['provider-setup',workspaceId],queryFn:()=>get({data:{workspaceId}})});const [roles,setRoles]=useState<string[]>([]);const [busy,setBusy]=useState(false);
+ useEffect(()=>{if(q.data)setRoles(q.data.provider_service_roles.length?q.data.provider_service_roles:[q.data.provider_subtype]);},[q.data]);
+ return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Provider classifications</h2><div className="portal-business-body space-y-4"><p className="ds-support">Primary account: {q.data?.provider_subtype==='independent_contractor'?'Independent Contractor':'NEMT Business'}. Additional roles do not replace your primary subtype, evidence, membership or permissions.</p><div className="grid gap-3">{serviceRoles.map(role=><DsCheckbox key={role} label={labels[role]} checked={roles.includes(role)} disabled={preview.active||!q.data?.isOwner||busy} onChange={e=>setRoles(e.target.checked?[...roles,role]:roles.filter(r=>r!==role))}/>)}</div><p className="ds-support">All roles use the same portal. Service eligibility still requires applicable vehicle, driver, insurance, training and evidence. Contractor wheelchair and stretcher opportunities remain restricted.</p><DsButton disabled={preview.active||!q.data?.isOwner||busy} onClick={async()=>{if(!window.confirm('Save additional provider roles without changing your primary subtype? Contractor requirements and eligibility still apply; no subscription or service is activated.'))return;setBusy(true);try{await save({data:{workspaceId,roles:roles.filter((r):r is typeof serviceRoles[number]=>serviceRoles.some(s=>s===r)),confirmed:true}});await qc.invalidateQueries({queryKey:['provider-setup',workspaceId]});toast.success('Provider roles saved.');}catch(e){toast.error(e instanceof Error?e.message:'Could not save');}finally{setBusy(false);}}}>Save provider roles</DsButton>{roles.includes('independent_contractor')&&<p className="ds-support">Driver license, primary ambulatory vehicle, insurance, W-9, service area, availability and membership requirements remain separate. Adding this role does not activate contractor opportunities or reclassify an established business.</p>}</div></section>;
+}

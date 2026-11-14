@@ -9,7 +9,6 @@ export function ConnectPreparation({workspaceId}:{workspaceId:string}) {
   return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Stripe Connect — test preparation</h2><div className="portal-business-body space-y-3">
     <p className="ds-body">{q.isError?'Readiness unavailable':d?.state??'Not started'}</p>
     <ul className="ds-support space-y-1"><li>Customer payments: {d?.customerReady?'Stripe readiness recorded':'Not ready'}</li><li>Network payouts: {d?.networkReady?'Stripe readiness recorded':'Not ready'}</li><li>Connect event verification: {d?.signingConfigured?'Configured':'Secure configuration required'}</li></ul>
-    <p className="ds-support">Setup and payment activation remain off pending sandbox configuration and Pass 4L policy review. Returning from Stripe never confirms readiness.</p>
-    <DsButton disabled variant="secondary">Connect setup unavailable</DsButton>
+    <p className="ds-support">Setup is unavailable until the owner confirms payout liability and Stripe Accounts v2 with Express Dashboard access is configured. Policy review and verified configuration are also required. No connected account, Account Link or payment is created.</p>
   </div></section>;
 }

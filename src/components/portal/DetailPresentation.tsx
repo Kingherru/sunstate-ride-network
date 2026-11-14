@@ -22,9 +22,6 @@ export function DetailPresentation({ children }: { children: React.ReactNode }) 
     catch { setColumns(previous); toast.error('Column preference could not be saved.'); } finally { setBusy(false); }
   }
   return <Context.Provider value={columns}><div data-detail-variant="cells" className="detail-presentation min-w-0">
-    <div className="mb-3 flex flex-wrap items-center gap-2">
-      <DsButton size="sm" variant="ghost" className="hidden sm:inline-flex" disabled={busy} onClick={() => persist(DEFAULT_COLUMNS)}>Reset columns</DsButton>
-    </div>
     <div className="detail-resize-bar hidden sm:flex" aria-label="Detail column sizing">{[0,1,2].map((i) => <div key={i} className="relative min-w-0" style={{ flexBasis: `${columns[i]}%` }}><span className="ds-caption">Column {i + 1} · {columns[i]}%</span>{i < 2 && <div role="separator" tabIndex={0} aria-label={`Resize columns ${i+1} and ${i+2}`} aria-orientation="vertical" aria-valuemin={20} aria-valuemax={60} aria-valuenow={columns[i]} className="detail-resize-handle"
       onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); void persist(resizeColumns(current.current,i,e.key==='ArrowRight'?2:-2)); } }}
       onPointerDown={e => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); const start=e.clientX; const initial=[...current.current]; const width=e.currentTarget.closest('.detail-resize-bar')?.getBoundingClientRect().width ?? 1; const node=e.currentTarget;

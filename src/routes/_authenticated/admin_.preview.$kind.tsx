@@ -1,6 +1,6 @@
 import { WorkspaceMessaging } from "@/components/messaging/WorkspaceMessaging";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo,useState } from "react";
 import { getAccessState } from "@/lib/access.functions";
 import { PortalShell, PageHead, actionCls, panelCls, type NavItem } from "@/components/portal/PortalShell";
 import { PortalPreviewContext } from "@/components/portal/preview-data";
@@ -29,6 +29,8 @@ import { OnboardingDemo } from '@/components/onboarding/OnboardingDemo';
 import { DsButton } from '@/components/ds/controls';
 import {PatientTrips} from '@/components/portal/PatientTrips';
 import {NewTripWorkspace} from '@/components/portal/NewTripWorkspace';
+import {ContactsPayersPanel} from '@/components/dashboard/ContactsPayersPanel';
+function PreviewPeople(){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab}/></Panel>;}
 
 type Kind = "provider" | "customer";
 
@@ -126,6 +128,7 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
       case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;
       case "drivers": return <Panel><div className="space-y-8"><FleetPanel only="drivers" /><DriverEarningsPanel /></div></Panel>;
       case "network": return <ProviderNetworkPage />;
+      case 'contacts':return <PreviewPeople/>;
       case "training": return <TrainingTests />;
       case "messaging": return <Panel><WorkspaceMessaging mode="portal" /></Panel>;
       default: return <ProviderOverview workspaceId="preview-ws" userId={PREVIEW_USER} />;
@@ -138,7 +141,7 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
     case "upload-csv": return <Unavailable what="CSV upload" />;
     case "find-providers": return <Panel><ProviderDirectory /></Panel>;
     case "saved-providers": return <Panel><ProviderDirectory savedOnly /></Panel>;
-    case "contacts": return <Panel><ContactsPanel /></Panel>;
+    case "contacts": return <PreviewPeople/>;
     case "payers": return <Panel><PayersPanel /></Panel>;
     case "notifications": return <Panel><NotificationsPanel /></Panel>;
     case "messaging": return <SampleConversations initiallyOpen />;

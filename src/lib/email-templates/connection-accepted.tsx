@@ -1,0 +1,4 @@
+import {Body,Container,Head,Heading,Html,Preview,Text} from '@react-email/components';
+import type {TemplateEntry} from './registry';
+function ConnectionAccepted({name='Connected account'}:{name?:string}){return <Html lang="en"><Head/><Preview>Your account connection has been accepted</Preview><Body style={{backgroundColor:'#ffffff',fontFamily:'Arial, sans-serif'}}><Container style={{padding:'24px',maxWidth:'560px'}}><Heading style={{color:'#13335A'}}>MY FLORIDA NEMT</Heading><Text>Your connection with {name} has been accepted.</Text><Text>Sign in to view the authorized relationship. This connection does not merge accounts or grant access to private trip, tax, banking or license records.</Text></Container></Body></Html>;}
+export const template={component:ConnectionAccepted,subject:'MY FLORIDA NEMT — connection accepted',displayName:'Connection accepted',previewData:{name:'Demo provider'}} satisfies TemplateEntry;

@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import {template as connectionAccepted} from './connection-accepted'
 import { template as driverEarningsReport } from './driver-earnings-report'
 import { template as providerFundsAvailable } from './provider-funds-available'
 import { template as providerCashoutCompleted } from './provider-cashout-completed'
@@ -27,6 +28,7 @@ export interface TemplateEntry {
  * Import and register new templates here after creating them in this directory.
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'connection-accepted': connectionAccepted,
   'customer-trip-invoice': customerTripInvoice,
   'business-connection-invitation': businessConnectionInvitation,
   'driver-earnings-report': driverEarningsReport,

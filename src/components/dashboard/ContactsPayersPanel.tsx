@@ -6,13 +6,14 @@ import { SegTabs } from "@/components/portal/SegTabs";
 import { ContactsPanel } from "@/components/dashboard/ContactsPanel";
 import { PayersPanel } from "@/components/dashboard/PayersPanel";
 import { PatientManagement } from '@/components/portal/PatientManagement';
+import {NewConnections} from '@/components/portal/NewConnections';
 
 export type ContactOption = { id: string; name: string };
 
 /** Merged Patient/Facility Contacts & Payers page: two tabs over the same
  *  underlying records, so a linked payer contact appears on both tabs without
  *  being duplicated. */
-export function ContactsPayersPanel({ tab, onTab }: { tab: "patients" | "contacts" | "payers"; onTab: (t: "patients" | "contacts" | "payers") => void }) {
+export function ContactsPayersPanel({ tab, onTab }: { tab: "patients" | "contacts" | "payers" | "connections"; onTab: (t: "patients" | "contacts" | "payers" | "connections") => void }) {
   const contactsQ = usePortalQuery({ queryKey: ["contacts"], queryFn: () => listContacts() });
   const payersQ = usePortalQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers() });
 
@@ -35,9 +36,9 @@ export function ContactsPayersPanel({ tab, onTab }: { tab: "patients" | "contact
         label="People sections"
         value={tab}
         onChange={onTab}
-        options={[{ value: "patients", label: "Patients" }, { value: "contacts", label: "Contacts" }, { value: "payers", label: "Payers" }]}
+        options={[{ value: "patients", label: "Patients" }, { value: "contacts", label: "Contacts" }, { value: "payers", label: "Payers" },{value:'connections',label:'New Connections'}]}
       />
-      {tab === "patients" ? <PatientManagement /> : tab === "contacts" ? <ContactsPanel payers={payerOptions} /> : <PayersPanel contacts={contactOptions} />}
+      {tab==='connections'?<NewConnections/>:tab === "patients" ? <PatientManagement /> : tab === "contacts" ? <ContactsPanel payers={payerOptions} /> : <PayersPanel contacts={contactOptions} />}
     </div>
   );
 }
