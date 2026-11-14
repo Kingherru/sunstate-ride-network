@@ -68,5 +68,4 @@ export const ADMIN_NAV: NavItem[] = [
   { to: "/admin/payouts", label: "Payouts" },
   { to: "/admin/integrations", label: "Integrations" },
   { to: "/admin/admins", label: "Administrators" },
-  { to: "/admin/security", label: "Security" },
 ];

@@ -7,6 +7,8 @@ import {
   FL_MARKET_DEFAULTS, FL_MEDICAID_DEFAULTS, type MarketPricing,
 } from "@/lib/admin-pricing.functions";
 import { useAdminLevel } from "@/lib/use-admin-level";
+import { DsButton } from "@/components/ds/controls";
+import { DollarSign, RotateCcw, Save } from "lucide-react";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 
 const GROUPS: Array<{ label: string; fields: Array<{ key: keyof MarketPricing; label: string }> }> = [
@@ -46,43 +48,29 @@ const GROUPS: Array<{ label: string; fields: Array<{ key: keyof MarketPricing; l
 ];
 
 function PricingColumn({
-  title, subtitle, values, onChange, onReset, accent, readOnly,
+  title, subtitle, values, onChange, onReset, readOnly,
 }: {
   title: string; subtitle: string; values: MarketPricing;
-  onChange: (v: MarketPricing) => void; onReset: () => void; accent: string; readOnly: boolean;
+  onChange: (v: MarketPricing) => void; onReset: () => void; readOnly: boolean;
 }) {
   return (
-    <div className="bg-card border border-border rounded-sm p-5 space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className={`text-lg font-extrabold tracking-tight ${accent}`}>{title}</h3>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        </div>
-        {!readOnly && <button type="button" onClick={onReset}
-          className="text-xs font-bold uppercase tracking-wider border border-border rounded-sm px-3 py-1.5 hover:bg-secondary">
-          Reset to FL avg
-        </button>}
+    <section className="portal-business-section">
+      <div className="portal-business-heading flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0"><h3 className="ds-subheading flex items-center gap-2 uppercase"><DollarSign className="size-4 shrink-0" aria-hidden />{title}</h3><p className="ds-support mt-1">{subtitle}</p></div>
+        {!readOnly && <DsButton type="button" size="sm" variant="secondary" onClick={onReset}><RotateCcw className="size-4 shrink-0" aria-hidden />Reset to FL avg</DsButton>}
       </div>
-      {GROUPS.map((g) => (
-        <div key={g.label} className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{g.label}</p>
-          <div className="grid grid-cols-2 gap-2">
-            {g.fields.map((f) => (
-              <label key={String(f.key)} className="flex flex-col gap-1 text-xs">
-                <span className="font-bold">{f.label}</span>
-                <div className="flex items-center border border-border rounded-sm bg-background overflow-hidden">
-                  <span className="px-2 text-muted-foreground">$</span>
-                  <input type="number" min="0" step="0.01" disabled={readOnly}
-                    value={String(values[f.key] ?? 0)}
-                    onChange={(e) => onChange({ ...values, [f.key]: Number(e.target.value) || 0 })}
-                    className="portal-money-input flex-1 px-2 py-1.5 bg-transparent focus:outline-none text-sm disabled:opacity-60" />
-                </div>
-              </label>
-            ))}
-          </div>
+      <div className="portal-business-body space-y-4">
+      {GROUPS.map(g => <section key={g.label} className="portal-business-section">
+        <h4 className="portal-business-heading ds-label uppercase">{g.label}</h4>
+        <div className="portal-business-body grid gap-3 sm:grid-cols-2">
+          {g.fields.map(f => <label key={String(f.key)} className="min-w-0 space-y-1">
+            <span className="ds-label block">{f.label}</span>
+            <span className="portal-pricing-input"><span aria-hidden>$</span><input aria-label={`${title}: ${f.label} in dollars`} type="number" min="0" step="0.01" disabled={readOnly} value={String(values[f.key] ?? 0)} onChange={e => onChange({ ...values, [f.key]: Number(e.target.value) || 0 })} className="portal-money-input" /></span>
+          </label>)}
         </div>
-      ))}
-    </div>
+      </section>)}
+      </div>
+    </section>
   );
 }
 
@@ -114,23 +102,22 @@ export function AdminPricingPanel() {
   });
 
   return (
-    <div className="space-y-5">
-      <div className="bg-card border border-border rounded-sm p-5">
-        <div className="flex items-center gap-2"><h2 className="text-xl font-extrabold tracking-tight">Statewide pricing defaults</h2>{readOnly && <ReadOnlyBadge />}</div>
-        <p className="text-sm text-muted-foreground mt-1">
+    <div className="portal-business-form space-y-5">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2"><h2 className="ds-subheading uppercase text-ds-primary">Statewide pricing defaults</h2>{readOnly && <ReadOnlyBadge />}</div>
+        <p className="ds-support text-ds-text-2">
           Recommended Florida market averages and Medicaid managed-care rates. These seed new
           provider pricing books and power quote estimates on public service pages.
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-5">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <PricingColumn
           title="Florida market average"
           subtitle="Typical private-pay retail rates across FL NEMT providers."
           values={market}
           onChange={setMarket}
           onReset={() => setMarket(FL_MARKET_DEFAULTS)}
-          accent="text-foreground"
           readOnly={readOnly}
         />
         <PricingColumn
@@ -139,20 +126,11 @@ export function AdminPricingPanel() {
           values={medicaid}
           onChange={setMedicaid}
           onReset={() => setMedicaid(FL_MEDICAID_DEFAULTS)}
-          accent="text-accent"
           readOnly={readOnly}
         />
       </div>
 
-      {!readOnly && <div className="flex justify-end">
-        <button
-          type="button"
-          disabled={m.isPending || q.isLoading}
-          onClick={() => m.mutate()}
-          className="bg-primary text-primary-foreground font-bold px-6 py-3 rounded-sm hover:bg-primary/90 disabled:opacity-50">
-          {m.isPending ? "Saving…" : "Save pricing defaults"}
-        </button>
-      </div>}
+      {!readOnly && <div className="portal-business-actions justify-end"><DsButton type="button" disabled={m.isPending || q.isLoading} onClick={() => m.mutate()}><Save className="size-4" aria-hidden />{m.isPending ? "Saving…" : "Save pricing defaults"}</DsButton></div>}
     </div>
   );
 }

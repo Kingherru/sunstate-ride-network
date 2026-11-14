@@ -16,7 +16,7 @@ import { SecureEmailChange } from './SecureEmailChange';
  *  reset link to self, sign out, sign out of other sessions. Reused behind
  *  every portal's top-header Settings action and the admin Security tab.
  *  Never displays or stores a password; uses Supabase Auth directly. */
-export function PersonalSecurity({ email, securityOnly = false }: { email?: string | null; securityOnly?: boolean }) {
+export function PersonalSecurity({ email, securityOnly = false, inline = false }: { email?: string | null; securityOnly?: boolean; inline?: boolean }) {
   const preview = usePortalPreview();
   const [pw, setPw] = useState("");
   const [currentPw, setCurrentPw] = useState('');
@@ -29,7 +29,7 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
   const [showPw, setShowPw] = useState(false);
   const [ok, setOk] = useState<string | null>(null);
   const auditFn = useServerFn(listPersonalSecurityAudit);
-  const audit = usePortalQuery({ queryKey: ['personal-security-audit'], queryFn: () => auditFn(), enabled: tab === 'security' });
+  const audit = usePortalQuery({ queryKey: ['personal-security-audit'], queryFn: () => auditFn(), enabled: inline || tab === 'security' });
   const [currentEmail, setCurrentEmail] = useState<string | null | undefined>(email);
 
   useEffect(() => {
@@ -88,11 +88,12 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
 
   const pwType = showPw ? "text" : "password";
   const card = "portal-business-section p-4 sm:p-5";
-  const H = ({ icon: I, children }: { icon: typeof KeyRound; children: React.ReactNode }) => <h2 className="ds-subheading flex items-center gap-2 border-b border-ds-border pb-3 uppercase text-ds-primary"><I className="size-4 shrink-0" aria-hidden />{children}</h2>;
+  const H = ({ icon: I, children }: { icon: typeof KeyRound; children: React.ReactNode }) => <h2 className="portal-business-heading ds-subheading flex items-center gap-2 uppercase"><I className="size-4 shrink-0" aria-hidden />{children}</h2>;
+  const Layout = inline ? InlineSecurity : PortalTabbedLayout;
   return (
     <div className="portal-business-form min-w-0 w-full space-y-4">
-      <PortalTabbedLayout label="Profile and security" queryKey="securityView" value={tab} onChange={setTab} options={[...(securityOnly ? [] : [{ value: 'profile' as const, label: 'Profile & contact' }]), { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} >
-      {tab === 'profile' && <div className="space-y-5">
+      <Layout label="Profile and security" queryKey="securityView" value={tab} onChange={setTab} options={[...(securityOnly ? [] : [{ value: 'profile' as const, label: 'Profile & contact' }]), { value: 'password', label: 'Password & sign-in' }, { value: 'sessions', label: 'Sessions & devices' }, { value: 'security', label: 'Security activity' }]} >
+      {!securityOnly && (inline || tab === 'profile') && <div className="space-y-5">
         <PersonalSettings />
         <section className={`${card} space-y-4`}>
           <H icon={UserRound}>Email &amp; confirmation</H>
@@ -100,7 +101,7 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
           <SecureEmailChange />
         </section>
       </div>}
-      {tab === 'password' && <div className="space-y-5">
+      {(inline || tab === 'password') && <div className="space-y-5">
         <form onSubmit={submit} className={`${card} space-y-4`} noValidate>
           <H icon={KeyRound}>Change password</H>
           <div><label htmlFor="ps-current" className="portal-label">Current password</label><input id="ps-current" type={pwType} autoComplete="current-password" className="portal-input" value={currentPw} onChange={e => setCurrentPw(e.target.value)} /></div>
@@ -120,7 +121,7 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
           <DsButton type="button" size="sm" variant="secondary" onClick={sendResetLink} disabled={resetBusy || !currentEmail}>{resetBusy ? "Sending…" : "Send password reset link"}</DsButton>
         </section>
       </div>}
-      {tab === 'sessions' && <section className={`${card} space-y-4`}>
+      {(inline || tab === 'sessions') && <section className={`${card} space-y-4`}>
         <H icon={MonitorSmartphone}>Sessions &amp; devices</H>
         <p className="ds-support">You are signed in on this device. Signing out of other devices ends every other session and keeps this one active. Session identifiers are never shown.</p>
         <div className="portal-business-actions">
@@ -128,7 +129,7 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
           <DsButton type="button" size="sm" variant="secondary" onClick={signOutEverywhere} disabled={signOutBusy}>Sign out of other devices</DsButton>
         </div>
       </section>}
-      {tab === 'security' && <section className={`${card} space-y-4`}>
+      {(inline || tab === 'security') && <section className={`${card} space-y-4`}>
         <H icon={ShieldCheck}>Security activity</H>
         <p className="ds-support">Recent account security events. Passwords, tokens and secrets are never stored or shown.</p>
         {audit.isLoading && <p role="status" className="ds-support">Loading…</p>}
@@ -140,7 +141,11 @@ export function PersonalSecurity({ email, securityOnly = false }: { email?: stri
           <span className="ds-caption">{new Date(a.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET</span>
         </li>)}</ul>
       </section>}
-    </PortalTabbedLayout>
+    </Layout>
     </div>
   );
+}
+
+function InlineSecurity({ children }: { children: React.ReactNode; label: string; queryKey: string; value: string; onChange: (value: 'profile' | 'password' | 'sessions' | 'security') => void; options: { value: string; label: string }[] }) {
+  return <div className="space-y-5">{children}</div>;
 }

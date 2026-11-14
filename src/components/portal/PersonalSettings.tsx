@@ -9,7 +9,7 @@ import { StatusPill } from '@/components/ds/status';
 import { useRouteContext } from '@tanstack/react-router';
 import {getAccountProfileVerification} from '@/lib/account-profile-verification.functions';
 
-export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profile' | 'notifications' | 'status' }) {
+export function PersonalSettings({ section = 'all', requiredInApp = false }: { section?: 'all' | 'profile' | 'notifications' | 'status'; requiredInApp?: boolean }) {
   const preview = usePortalPreview();
   const { access } = useRouteContext({ strict: false });
   const workspace = preview.active ? null : access?.primary;
@@ -68,7 +68,7 @@ export function PersonalSettings({ section = 'all' }: { section?: 'all' | 'profi
     {(section === 'all' || section === 'notifications') && <section className="portal-business-section">
       <h2 className="portal-business-heading ds-subheading uppercase">Notification preferences</h2>
       <fieldset className="portal-business-body space-y-3"><legend className="sr-only">Notification preferences</legend>
-      <DsCheckbox label="Optional in-app Network opportunities" checked={inApp} onChange={e => setInApp(e.target.checked)} />
+      {requiredInApp ? <p className="ds-label">In-app notifications · Required and always enabled</p> : <DsCheckbox label="Optional in-app Network opportunities" checked={inApp} onChange={e => setInApp(e.target.checked)} />}
       <div><DsCheckbox label="Optional email notifications" checked={email} onChange={e => setEmail(e.target.checked)} /></div>
       <p className="ds-caption">Email preference is saved. No optional email category is currently connected to this setting.</p>
       <div className="border-t border-ds-border pt-3"><p className="ds-label">Required notices — always enabled</p><p className="ds-caption mt-1">Security, account access, billing and payments, disputes, deadlines, and active-trip operations cannot be disabled.</p></div>

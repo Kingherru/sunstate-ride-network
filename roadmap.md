@@ -1,4 +1,11 @@
 # Florida MVP launch sequence
+## Current vehicle backfill
+- [ ] Await correct missing vehicle details: six vehicles have no recorded model year and two have no plate; do not fabricate values or partially categorize legacy vehicles in a way that disables compatibility.
+## Pass 4S — Admin visual consistency
+- [x] Admin Security controls moved inline into Settings Profile → Account & Access, no Security tab; Master-only oversight and legacy redirect retained. Existing required profile fields and mandatory notices remain; email optional.
+- [x] Admin Pricing and Administrators grouped headers, borders, amounts, icons and existing actions modernized; no pricing, server or permission changes.
+- [x] PortalShell main-module padding uses one token: desktop 24px, tablet 20px, phone 16px; no nested cell inflation.
+- [x] Signed-in Settings/Pricing/Administrators and Provider synthetic Trips checked desktop/phone: no overflow; Security redirects to Settings Profile. Harness compilation OK; 11 permission and 8 navigation tests plus 3 focused personal boundary tests pass. Existing unrelated $10 membership assertion fails against newer pricing, left untouched. No data mutations, sends or publication. Exact per-pass credits unavailable from date-aggregated ledger.
 ## Pass 4R-C — primary rail correction
 - [x] Primary Trips/History, Network/relationships, People/Providers, Fleet, Messaging, portal Notifications, Earnings, Training, Admin Requests/People/Messaging/Payouts and all Settings share the Settings-style left rail/content shell. Secondary notification read-state, reservation status, Scheduler period and Notes archive filters plus guided intake progress remain horizontal.
 - [x] Provider Trips and Patient Trips synthetic previews plus signed-in Admin People checked at 1280/390: correct dark-blue/white selection, icons, Admin badges, URL changes, Home/End/back, content switch and no page overflow/errors. Automatic type/production build OK. No data/server/permission changes or publication. No unmigrated primary tab caller found; single-section Admin Notifications retains only its read-state filter.

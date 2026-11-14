@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHead, panelCls } from "@/components/portal/PortalShell";
+import { PageHead } from "@/components/portal/PortalShell";
 import { AdminPricingPanel } from "@/components/admin/AdminPricingPanel";
 import {ContractorConfiguration} from '@/components/admin/ContractorConfiguration';
 
@@ -12,9 +12,9 @@ function AdminPricing() {
   return (
     <>
       <PageHead title="Pricing">Changes here affect future price estimates only. No money moves from this page.</PageHead>
-      <section className={`${panelCls} p-4 sm:p-6`}>
+      <section className="portal-admin-module">
         <AdminPricingPanel />
-        <div className="mt-8 border-t border-ds-border pt-6"><ContractorConfiguration/></div>
+        <section className="portal-business-section mt-6"><h2 className="portal-business-heading ds-subheading uppercase">Contractor membership & requirements</h2><div className="portal-business-body"><ContractorConfiguration/></div></section>
       </section>
     </>
   );

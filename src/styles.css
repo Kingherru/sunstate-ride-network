@@ -377,6 +377,17 @@
 .portal-root > main::before { content: ""; position: absolute; top: 0; inset-inline: 0; height: 1px; background: var(--portal-content-accent); opacity: 0; pointer-events: none; }
 .portal-root > main:is(:hover, :focus-within)::before { opacity: 1; }
 .portal-content { max-width: 86.4rem; }
+.theme-portal { --portal-main-padding: 1rem; }
+.portal-main-module { min-width: 0; padding: var(--portal-main-padding); border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); }
+@media (min-width: 640px) { .theme-portal { --portal-main-padding: 1.25rem; } }
+@media (min-width: 1024px) { .theme-portal { --portal-main-padding: 1.5rem; } }
+.portal-admin-module { min-width: 0; border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); padding: var(--portal-main-padding); }
+.portal-pricing-input { display: flex; align-items: center; min-width: 0; border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); }
+.portal-pricing-input:focus-within { outline: 2px solid var(--ds-focus); outline-offset: 2px; }
+.portal-pricing-input > span { padding-inline-start: .75rem; color: var(--ds-primary); font-weight: 700; }
+.portal-pricing-input > input { width: 100%; min-width: 0; padding-inline: .5rem; background: transparent; color: var(--ds-on-surface); font-weight: 700; outline: none; }
+.portal-admin-editor { min-width: 0; display: grid; gap: 1.25rem; }
+.portal-admin-editor-header { padding: 1rem; border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-sky); }
 .portal-drawer { isolation: isolate; }
 
 /* Pass 3I: matching subtle edges on colored portal panels only. */

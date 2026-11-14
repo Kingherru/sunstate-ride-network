@@ -9,6 +9,10 @@ import { SettingsShell } from '@/components/portal/SettingsShell';
 import { useState } from 'react';
 import { NetworkTimingSettings } from '@/components/portal/TripNetwork';
 import {TrainingAdministration} from '@/components/admin/TrainingAdministration';
+import { PersonalSecurity } from '@/components/portal/PersonalSecurity';
+import { AdminRolesPanel } from '@/components/admin/AdminRolesPanel';
+import { AuditLogPanel } from '@/components/AuditLogPanel';
+import { ExpiringCredentialsPanel } from '@/components/ExpiringCredentialsPanel';
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   head: () => ({ meta: [{ title: "Admin Settings — MY FLORIDA NEMT" }, { name: 'description', content: 'Admin preview tools and future distribution timing settings.' }, { property: 'og:title', content: 'Admin Settings — MY FLORIDA NEMT' }, { property: 'og:description', content: 'Admin preview tools and future distribution timing settings.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: "robots", content: "noindex, nofollow" }] }),
@@ -25,7 +29,7 @@ const PREVIEWS = [
 ] as const;
 
 function AdminSettings() {
-  const { access } = Route.useRouteContext();
+  const { access, user } = Route.useRouteContext();
   const [tab,setTab]=useState('profile');
   return (
     <>
@@ -35,8 +39,8 @@ function AdminSettings() {
 
       <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'},...(access.isMasterAdmin?[{value:'training',label:'Training administration'}]:[])]}>
       {tab==='training'&&access.isMasterAdmin&&<TrainingAdministration/>}
-      {tab==='profile'&&<><PersonalSettings section="profile"/><SecureEmailChange/><Link to="/admin/security" className="ds-label text-ds-link underline">Security & sign-in</Link></>}
-      {tab==='notifications'&&<PersonalSettings section="notifications"/>}
+      {tab==='profile'&&<div className="space-y-5"><PersonalSettings section="profile"/><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Email & confirmation</h2><div className="portal-business-body"><SecureEmailChange/></div></section><div className="space-y-5" aria-labelledby="admin-account-access"><h2 id="admin-account-access" className="ds-subheading uppercase text-ds-primary">Account & Access</h2><PersonalSecurity email={user.email} securityOnly inline/>{access.isMasterAdmin&&<section className="portal-business-section"><h3 className="portal-business-heading ds-subheading uppercase">Protected administration</h3><div className="portal-business-body space-y-5"><p className="ds-support">Master Admin access is protected; personal profile fields never change permissions.</p><AdminRolesPanel/><AuditLogPanel/><ExpiringCredentialsPanel/></div></section>}</div></div>}
+      {tab==='notifications'&&<PersonalSettings section="notifications" requiredInApp/>}
       {tab==='interface'&&<SignInPreference/>}{tab==='accessibility'&&<InterfaceSize/>}
       {tab==='tools'&&<>
       {access.isMasterAdmin && (

@@ -1,3 +1,4 @@
+import { ShieldCheck, Users, UserPlus, History, SlidersHorizontal, Building2, Save, UserMinus } from "lucide-react";
 import { useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -9,7 +10,7 @@ import { DsEmpty } from "@/components/ds/feedback";
 import { DsButton } from '@/components/ds/controls';
 import { StatusPill, humanStatus } from '@/components/ds/status';
 
-const groupCls = 'portal-business-section p-4';
+const groupCls = 'portal-business-section';
 const headCls = 'ds-subheading uppercase text-ds-primary';
 
 export const Route = createFileRoute("/_authenticated/admin/admins")({
@@ -36,10 +37,11 @@ function AdminsPage() {
   return (
     <>
       <PageHead title="Administrators">Only you, the Master Admin, can add, change or remove regular administrators. New administrators start with no sections and no accounts.</PageHead>
-      <div className="portal-business-form grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
+      <div className="mb-4 flex items-center gap-2 ds-support text-ds-primary"><ShieldCheck className="size-4 shrink-0" aria-hidden />Master Admin identity and full access remain protected.</div>
+      <div className="portal-admin-module portal-business-form grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
         <aside className="min-w-0 space-y-5">
           <section aria-labelledby="current-admins" className="portal-business-section">
-            <h2 id="current-admins" className={`${headCls} portal-business-heading`}>Administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
+            <h2 id="current-admins" className={`${headCls} portal-business-heading flex items-center gap-2`}><Users className="size-4 shrink-0" aria-hidden />Administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
             {admins.length === 0 ? <DsEmpty title="No regular administrators" /> : <ul className="divide-y divide-ds-border">{admins.map(a => <li key={a.userId}>
               <DsButton variant="ghost" className="w-full justify-start rounded-none px-4 py-3 text-left" data-admin-selected={selectedId === a.userId} aria-pressed={selectedId === a.userId} onClick={() => setSelectedId(a.userId)}>
                 <span className="min-w-0 flex-1 space-y-1">
@@ -53,7 +55,7 @@ function AdminsPage() {
             </li>)}</ul>}
           </section>
           <section aria-labelledby="add-admin" className="portal-business-section">
-            <h2 id="add-admin" className={`${headCls} portal-business-heading`}>Add administrator</h2>
+            <h2 id="add-admin" className={`${headCls} portal-business-heading flex items-center gap-2`}><UserPlus className="size-4 shrink-0" aria-hidden />Add administrator</h2>
             <div className="portal-business-body">
             <p className="ds-support mt-1">Promotes an existing account. New administrators start with No Access and no account scope.</p>
             <form onSubmit={onPromote} className="mt-4 space-y-3">
@@ -64,7 +66,7 @@ function AdminsPage() {
             </div>
           </section>
           <section aria-labelledby="perm-history" className="portal-business-section">
-            <h2 id="perm-history" className={`${headCls} portal-business-heading`}>Recent permission history</h2>
+            <h2 id="perm-history" className={`${headCls} portal-business-heading flex items-center gap-2`}><History className="size-4 shrink-0" aria-hidden />Recent permission history</h2>
             {audit.length === 0 ? <DsEmpty title="No changes yet" /> : (
               <ul className="max-h-[32rem] divide-y divide-ds-border overflow-y-auto">{audit.map((r: any) => (
                 <li key={r.id} className="ds-support min-w-0 px-4 py-3 sm:px-5"><span className="block font-semibold text-ds-on-surface">{humanStatus(r.action)}</span><span className="ds-caption">{new Date(r.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET</span>
@@ -107,8 +109,8 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
   }
 
   return (
-    <section className="portal-business-section p-4 sm:p-5" aria-labelledby={`adm-${id}`}>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+    <section className="portal-admin-editor" aria-labelledby={`adm-${id}`}>
+      <div className="portal-admin-editor-header flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 id={`adm-${id}`} className="ds-subheading break-words text-ds-primary">{admin.name || admin.email}</h3>
           <p className="ds-support break-all">{admin.email} · <span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
@@ -116,8 +118,8 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
         <StatusPill status={active ? 'Active' : 'Suspended'} tone={active ? 'green' : 'red'} />
       </div>
       <p className="ds-support mt-2 text-ds-text-2">{scope === 'selected' ? `${ws.size} selected accounts` : scope === 'all' ? 'All eligible accounts' : 'No account access'} · {Object.values(eff).filter(v => v === 'manage').length} Manage / {Object.values(eff).filter(v => v === 'read').length} Read-only sections</p>
-      <div className={`${groupCls} mt-4 space-y-4`}>
-        <h4 className="ds-label border-b border-ds-border pb-3 uppercase text-ds-primary">Permission preset / custom access</h4>
+      <div className={groupCls}>
+        <h4 className="portal-business-heading ds-label flex items-center gap-2 uppercase"><SlidersHorizontal className="size-4" aria-hidden />Permission preset / custom access</h4><div className="portal-business-body space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={`preset-${id}`} className="portal-label">Preset</label>
@@ -149,9 +151,10 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
           </div>
           <p className="ds-caption mt-2">Security settings and administrator management always stay with the Master Admin.</p>
         </fieldset>
+        </div>
       </div>
-      <div className={`${groupCls} mt-4 space-y-3`}>
-        <h4 className="ds-label border-b border-ds-border pb-3 uppercase text-ds-primary">Covered accounts</h4>
+      <div className={groupCls}>
+        <h4 className="portal-business-heading ds-label flex items-center gap-2 uppercase"><Building2 className="size-4" aria-hidden />Assigned account scope</h4><div className="portal-business-body space-y-3">
         <div className="max-w-sm">
           <label htmlFor={`scope-${id}`} className="portal-label">Accounts this administrator may act on</label>
           <select id={`scope-${id}`} className="portal-input" value={scope} onChange={(e) => setScope(e.target.value as any)}>
@@ -171,12 +174,13 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
             </div>
           </fieldset>
         )}
+        </div>
       </div>
       <div className="portal-business-actions mt-4">
-        <DsButton onClick={onSave}>Save permissions</DsButton>
+        <DsButton onClick={onSave}><Save className="size-4" aria-hidden />Save permissions</DsButton>
       </div>
       <div className="portal-business-actions mt-4">
-        {!confirmRevoke ? <DsButton variant="ghost" className="portal-danger-control" onClick={() => setConfirmRevoke(true)}>Remove administrator</DsButton>
+        {!confirmRevoke ? <DsButton variant="ghost" className="portal-danger-control" onClick={() => setConfirmRevoke(true)}><UserMinus className="size-4" aria-hidden />Remove administrator</DsButton>
           : <div role="alertdialog" aria-label="Confirm administrator removal" className="flex w-full flex-wrap items-center gap-3 rounded-ds-sm ds-status-yellow px-3 py-2"><span className="ds-support font-semibold">Remove this administrator's access? History is kept.</span><DsButton className="portal-danger-control" onClick={onRevoke}>Confirm removal</DsButton><DsButton variant="ghost" onClick={() => setConfirmRevoke(false)}>Cancel</DsButton></div>}
       </div>
     </section>
