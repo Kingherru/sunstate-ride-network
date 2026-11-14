@@ -9312,6 +9312,13 @@ export type Database = {
         Args: { _id: string; _kind: string; _level: string; _ws: string }
         Returns: boolean
       }
+      business_vehicle_service_eligible: {
+        Args: {
+          _service: string
+          _v: Database["public"]["Tables"]["vehicles"]["Row"]
+        }
+        Returns: boolean
+      }
       can_access_workspace_messages: { Args: { ws: string }; Returns: boolean }
       can_create_workspace_requests: {
         Args: { _user_id: string; _workspace_id: string }

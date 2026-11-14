@@ -694,6 +694,13 @@
       "when": 1794623827083,
       "tag": "0098_private_vehicle_identifiers_manager_boundary",
       "breakpoints": true
+    },
+    {
+      "idx": 99,
+      "version": "7",
+      "when": 1794626468025,
+      "tag": "0099_restore_legacy_business_vehicle_eligibility",
+      "breakpoints": true
     }
   ]
 }
