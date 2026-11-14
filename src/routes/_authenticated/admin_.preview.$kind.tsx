@@ -82,6 +82,7 @@ function PortalPreview() {
         <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Preview mode — demo information only, nothing is saved</p>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
         <DsButton variant="ghost" onClick={() => navigate({ search: prev => ({ ...prev, page: 'onboarding' }) })}>Preview account setup</DsButton>
+        {isProvider&&<DsButton variant="ghost" onClick={()=>navigate({search:prev=>({...prev,page:'contractor-intake'})})}>Preview contractor intake</DsButton>}
       </div>
 
       {!isProvider && (
@@ -115,6 +116,7 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
   if (kind === "provider") {
     switch (page) {
       case "trips": return <Panel><ProviderTrips userId={PREVIEW_USER} /></Panel>;
+      case 'contractor-intake':return <OnboardingDemo provider personal={false} contractor/>;
       case "schedule": return <Panel><ScheduleCalendarPanel /></Panel>;
       case "fleet": return <FleetDrivers />;
       case "earnings": return <EarningsPayments userId={PREVIEW_USER} />;

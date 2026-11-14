@@ -9319,8 +9319,14 @@ export type Database = {
         Args: { _business: string; _contractor: string }
         Returns: boolean
       }
+      contractor_documented_hold: {
+        Args: { _hold: boolean; _reason: string; _ws: string }
+        Returns: undefined
+      }
       contractor_eligibility: { Args: { _ws: string }; Returns: Json }
+      contractor_evidence_access: { Args: { _ws: string }; Returns: boolean }
       contractor_evidence_summary: { Args: { _ws: string }; Returns: Json }
+      contractor_hold_scope: { Args: { _ws: string }; Returns: boolean }
       contractor_network_directory: { Args: never; Returns: Json }
       contractor_relationship_action: {
         Args: { _action: string; _id?: string; _target: string; _ws: string }

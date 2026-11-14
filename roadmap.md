@@ -1,10 +1,13 @@
 # Florida MVP launch sequence
-## Pass 4Q — active build
-- [ ] Registration subtype continuity and seven-step contractor intake using existing private records.
-- [ ] Authoritative eligibility, configurable extra requirements and audited safety holds.
-- [ ] Controlled contractor discovery/relationships and assignment gates in the same Network; synthetic preview only.
-- [ ] Separate $20/month contractor catalog/cart definition; mapping and financial lifecycle remain OFF.
-- [ ] Contractor public page/home section and both sitemaps; focused synthetic/mobile and preservation checks.
+## Pass 4Q — safe build complete; activation/readback blockers explicit
+- [x] Required registration subtype saved in pending Auth metadata and frozen on new workspace INSERT; existing Business accounts untouched. Seven-step owner intake resumes from workspace progress; existing one-primary Fleet/credentials/coverage/hours reused. Reviewed steps never imply eligibility.
+- [x] One protected database summary checks current private objects/evidence, complete active ambulatory vehicle, identity/confirmed email, coverage/hours, current contractor entitlement and safety hold. Configurable document/acknowledgment/expiry requirements and scoped audited holds; no legal sufficiency or routine registration approval claims.
+- [x] Same Network contractor/business filters and safe cards, Pending/Active/Ended applications/invitations/relationships and existing Messaging entry. Relationship approval creates no workspace membership. Controlled assignment options added to Trips/Schedule, action-time eligibility/relationship triggers block wheelchair/stretcher. Removable Master synthetic discovery/intake/invitation/application/active/ended/assignment fixtures, writes blocked.
+- [x] Separate $20/month contractor catalog/cart selection with existing training/guide items and server reconstruction; business $20/$10 pricing unchanged. Admin mapping reference preparation remains unverified; all checkout/lifecycle OFF.
+- [x] Contractor homepage band and /for-contractors with unique metadata/canonical/JSON-LD, both sitemaps and subtype-preselected registration; sign-in/create-account Network return preserved. 65 focused synthetic tests pass; desktop/390px public/Network/intake preview checks and automatic compilation pass.
+- [ ] Activation and populated persistence readback: blocked by unverified sandbox/live Stripe price mapping, durable subscription/session/acceptance/webhook entitlement linkage, approved purchase/refund/fee/tax configuration, and this pass's prohibition on creating accounts/documents/relationships/trips/purchases. Existing distance-offer base/verification and funding rules remain prerequisites rather than bypassed.
+- Preservation: 28 profiles, seven disabled test accounts, 13 Business workspaces, five trips, ten requests, one existing subscription; original profile/trip/request fingerprints match. No contractor accounts/relationships/messages/documents/subscriptions or real data changes, delivery, charges, transfers, jobs or publication.
+- Contact/trip imports/exports remain the separate deferred pass. See docs/pass4q-blockers.md.
 
 ## Pass 4P — foundation built; blocked completion items explicit
 - [x] Shared portal-only Accessibility tab, four existing preference sizes, high contrast and reset; demo write blocking. Synthetic person-scoped save/readback passes; live saving intentionally not exercised.
