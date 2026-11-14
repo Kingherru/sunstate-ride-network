@@ -24,11 +24,11 @@ const fee = (c: number) => Math.round(c * 0.02);
 /* ---------- Fleet ---------- */
 export const DEMO_DRIVERS = [
   { id: "preview-driver-1", first_name: "Dana", last_name: "Driverly (Demo)", phone: "(555) 010-0001", email: "dana.demo@example.com", status: "active", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "weekly", days: {} }, service_capabilities: ["wheelchair"], primary_vehicle_id: "preview-vehicle-1", contractor_pricing: {} },
-  { id: "preview-driver-2", first_name: "Sam", last_name: "Sample (Demo)", phone: "(555) 010-0002", email: "", status: "active", employment_type: "independent_contractor", pay_type: "independent_contractor", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
+  { id: "preview-driver-2", workspace_id:'preview-ws', first_name: "Sam", last_name: "Sample (Demo)", phone: "(555) 010-0002", email: "", status: "active", employment_type: "independent_contractor", pay_type: "independent_contractor", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
   { id: "preview-driver-3", first_name: "Rae", last_name: "Retired (Demo)", phone: "(555) 010-0003", email: "", status: "inactive", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
 ];
 export const DEMO_VEHICLES = [
-  { id: "preview-vehicle-1", name: "Van 02 (Demo)", plate: "DEMO01", type: "wheelchair", capacity: 4, wheelchair_positions: 2, status: "active", assigned_driver_id: "preview-driver-1" },
+  { id: "preview-vehicle-1", workspace_id:'preview-ws', name: "Van 02 (Demo)", make:'Demo',model:'Accessible Van',model_year:2024,vehicle_category:'wheelchair',vehicle_type:'wheelchair_van',service_capabilities:['wheelchair'],accessibility_equipment:'Demo ramp', plate: "DEMO01", type: "wheelchair", capacity: 4, wheelchair_capacity:2, wheelchair_positions: 2, status: "active", assigned_driver_id: "preview-driver-1" },
   { id: "preview-vehicle-2", name: "Van 05 (Demo)", plate: "DEMO02", type: "ambulatory", capacity: 4, wheelchair_positions: 0, status: "active", assigned_driver_id: null },
 ];
 

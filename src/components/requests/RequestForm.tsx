@@ -1,6 +1,6 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { adminSubmitRideRequest, adminSubmitDeliveryRequest } from "@/lib/admin-on-behalf.functions";
 import { toast } from "sonner";
 import {
@@ -29,7 +29,7 @@ import { getPortalPreferences } from "@/lib/portal-preferences.functions";
 import { NonEmergencyNotice } from "@/components/public/page-kit";
 import { LINKS } from "@/lib/site-config";
 import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPreview";
-import { usePortalPreview, previewBlocked } from "@/components/portal/preview-data";
+import { usePortalPreview, previewBlocked, previewFixtureFor } from "@/components/portal/preview-data";
 import { saveTripDraft, deleteTripDraft } from '@/lib/trip-drafts.functions';
 import { restoreDraftFields } from '@/lib/draft-fields';
 import { DsButton } from '@/components/ds/controls';
@@ -42,6 +42,7 @@ import {fillEmptyTripDefaults,approvedPatientDefaults} from '@/lib/trip-defaults
 import {PayerDialog} from '@/components/dashboard/PayersPanel';
 import {ContactDialog} from '@/components/dashboard/ContactsPanel';
 import {listContacts} from '@/lib/crm.functions';
+import {PatientDriverSuggestion} from '@/components/portal/PatientDriverSuggestion';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -76,7 +77,7 @@ const empty: RideRequestInput = {
   patientPhone: "",
   patientEmail: "",
   patientWorkspaceId: null,
-  payerId:null,savedPatientId:null,coordinationContactId:null,
+  payerId:null,savedPatientId:null,coordinationContactId:null,confirmedProviderDriverId:null,
   pickupAddress: "",
   pickupAddressDetails: "",
   pickupCity: "",
@@ -226,6 +227,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const [draftId, setDraftId] = useState(initialDraft?.id);
   const [selectedProvider, setSelectedProvider] = useState<NetworkProviderRow | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
+  const confirmDriver = useCallback((id:string|null)=>setForm(f=>f.confirmedProviderDriverId===id?f:{...f,confirmedProviderDriverId:id}),[]);
   const saveDraft = useServerFn(saveTripDraft);
   const removeDraft = useServerFn(deleteTripDraft);
   async function onSaveDraft() {
@@ -303,7 +305,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setPayerNote(`Billing prefilled from payer “${p.name}”. Review before submitting.`);
   };
   useEffect(() => {
-    if (preview.active || !portal) return;
+    if(preview.active && portal){setPatients(previewFixtureFor(['saved-patients']) as typeof patients);return;}
+    if (!portal) return;
     let cancelled = false;
     (async () => {
       try {
@@ -534,6 +537,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-4 sm:p-6 rounded-ds-sm">
 
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
+          {commerce?.provider && form.savedPatientId && <PatientDriverSuggestion patientId={form.savedPatientId} service={form.transportType==='gurney'?'stretcher':form.transportType} date={form.pickupDate||undefined} onConfirm={confirmDriver}/>}
           {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => setForm(f=>({...f,patientWorkspaceId:id,savedPatientId:null}))} onDefaults={d=>setForm(f=>({...f,...d,savedPatientId:null}))} />}
           {facilityPatients.length>0 && <Field label="Facility-authorized linked patient"><select className={inputCls} value={form.savedPatientId??''} onChange={e=>{const p=facilityPatients.find(p=>p.savedPatientId===e.target.value);if(p && confirm('Attach this confirmed patient and fill only basic trip details?'))setForm(f=>({...f,patientFirstName:p.patientFirstName??'',patientLastName:p.patientLastName??'',patientPhone:p.patientPhone??'',patientEmail:p.patientEmail??'',transportType:p.transportType??'ambulatory',patientWorkspaceId:p.patientWorkspaceId,savedPatientId:p.savedPatientId}));}}><option value="">Choose authorized patient</option>{facilityPatients.map(p=><option key={p.savedPatientId} value={p.savedPatientId}>{p.patientFirstName} {p.patientLastName} · {p.facilityMfnId}</option>)}</select></Field>}
 

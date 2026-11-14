@@ -30,6 +30,10 @@ export function previewBlocked() {
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
   'provider-setup': {provider_subtype:'nemt_business',provider_service_roles:[],isOwner:true,provider_subtype_selected_at:null,pickup_delay_minutes:null,canSelect:false,vehicles:[]},
+  'sign-in-preference': {value:null,options:[{to:'/portal',label:'Overview'},{to:'/portal/trips',label:'Trips'},{to:'/portal/fleet',label:'Fleet & Drivers'}]},
+  'patient-driver-suggestion': {driverId:'preview-driver-2',preferredDriverId:'preview-driver-2',lastDriverId:'preview-driver-2',source:'preferred',warning:null,options:[{id:'preview-driver-2',name:'Sam Sample (Demo)'}]},
+  'patient-scope': {ids:['preview-ws'],privateOnly:false},
+  'saved-patients': [{id:'preview-patient',workspace_id:'preview-ws',first_name:'Pat',last_name:'Patient (Demo)',active:true,kind:'patient',mobility:'ambulatory',preferred_driver_id:'preview-driver-2'}],
   'portal-preferences': {interface_density:'standard',high_contrast:false,detail_columns:null},
   'connect-preparation': {state:'Not started',customerReady:false,networkReady:false,signingConfigured:false,activation:false,environment:'sandbox'},
   'account-profile-verification':[],

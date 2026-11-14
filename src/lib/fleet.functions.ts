@@ -135,6 +135,11 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
+    let workspaceId:string|null=null;
+    if(data.id){const {data:existing}=await supabase.from('vehicles').select('workspace_id').eq('id',data.id).single();workspaceId=existing?.workspace_id??null;const {data:allowed}=await supabase.rpc('business_record_access',{_ws:workspaceId??'',_kind:'vehicles',_id:data.id,_level:'manage'});if(!workspaceId||!allowed)throw new Error('Authorized vehicle editing required');}
+    else {const {data:members}=await supabase.from('workspace_members').select('workspace_id,workspaces!inner(account_type,status,is_test_account)').eq('user_id',userId).in('role',['owner','admin']).eq('is_contractor',false).is('removed_at',null);const providers=(members??[]).filter(m=>m.workspaces.account_type==='provider'&&m.workspaces.status==='active'&&!m.workspaces.is_test_account);if(providers.length!==1)throw new Error('One authorized provider workspace required');workspaceId=providers[0]?.workspace_id??null;row.workspace_id=workspaceId;}
+    if(data.assigned_driver_id){const {data:driver}=await supabase.from('drivers').select('id').eq('id',data.assigned_driver_id).eq('workspace_id',workspaceId??'').eq('status','active').maybeSingle();if(!driver)throw new Error('Choose an active driver in this vehicle workspace');}
+    if(data.insurance_credential_id){const {data:insurance}=await supabase.from('provider_credentials').select('id').eq('id',data.insurance_credential_id).eq('workspace_id',workspaceId??'').eq('kind','auto_insurance').maybeSingle();if(!insurance)throw new Error('Choose private insurance evidence in this vehicle workspace');}
     delete row.vin;
     if(data.vin && !/^[A-HJ-NPR-Z0-9]{17}$/i.test(data.vin))throw new Error('VIN must contain 17 valid letters and digits.');
     if(data.travel_radius_miles!=null&&(!Number.isInteger(data.travel_radius_miles)||data.travel_radius_miles<0||data.travel_radius_miles>500))throw new Error('Travel radius must be 0–500 miles.');

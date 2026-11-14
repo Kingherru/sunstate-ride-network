@@ -13,6 +13,8 @@ import {
 } from "@/lib/fleet.functions";
 import { vehicleCategories } from '@/lib/pass4p-rules';
 import {getVehicleForEditing} from '@/lib/fleet.functions';
+import {vehicleMissingFields} from '@/lib/provider-operations-rules';
+import {StatusPill} from '@/components/ds/status';
 import {listMyCredentials} from '@/lib/medicaid.functions';
 import { FleetStatusControl, FleetFilterBar, useFleetFilter, applyFleetFilter } from "@/components/portal/FleetStatusControl";
 
@@ -489,6 +491,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
 }
 
 function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
+  const preview=usePortalPreview();
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const dq = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
@@ -499,7 +502,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
     <section className="portal-business-section min-w-0 p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">{primaryOnly?'Primary ambulatory vehicle':'Vehicles'}</h2>
-        {(!primaryOnly||q.data?.length===0)&&<DsButton variant="ghost" size="sm" onClick={() => setEditing({ vehicle_type: "sedan", status: "active", capacity: 4,...(primaryOnly?{vehicle_category:'ambulatory',service_capabilities:['ambulatory']}:{} ) })}>+ Add vehicle</DsButton>}
+        <DsButton variant="ghost" size="sm" onClick={() => setEditing({ vehicle_type: "sedan", status: "active",...(primaryOnly?{vehicle_category:'ambulatory',service_capabilities:['ambulatory']}:{} ) })}>+ Add vehicle</DsButton>
       </div>
       {q.isError ? <div role="alert" className="ds-support text-ds-error">Vehicles couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
        : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
@@ -516,7 +519,9 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                 <div className="font-bold">{v.name}
                   <span className="ml-2 text-xs uppercase text-muted-foreground">{String(v.vehicle_type ?? v.type ?? "Not set").replace("_"," ")}</span>
                 </div>
-                <div className="text-xs text-muted-foreground">{v.plate ?? "No plate"} · {v.capacity ?? 0} seats · {v.wheelchair_capacity ?? 0} wheelchair positions · {v.status ?? "Not set"}</div>
+                <p className="ds-support">{[v.make,v.model,v.model_year].filter(Boolean).join(' ')||'Make / model / year not recorded'}</p>
+                {vehicleMissingFields(v).length>0&&<p className="ds-caption mt-1"><StatusPill status="Incomplete" tone="yellow"/> Missing: {vehicleMissingFields(v).join(', ')}</p>}
+                <div className="text-xs text-muted-foreground">{v.plate || "Plate not recorded"} · {v.capacity ?? 'Not recorded'} seats · {v.wheelchair_capacity ?? 'Not recorded'} wheelchair positions · {v.status ?? "Not set"}</div>
                 <p className="ds-caption mt-1">VIN: {v.masked_vin??'Not recorded'} · Insurance expiry: {v.insurance_expiry??'Missing'}</p>
                 {(v.service_capabilities?.length ?? 0) > 0 && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -528,7 +533,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                 </div>
               </div>
               <div className="text-xs">
-                <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>Edit</DsButton>
+                <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;if(preview.active){setEditing({...v,vin:''});return;}try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>Edit</DsButton>
                 <FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />
               </div>
             </li>
@@ -547,7 +552,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
   const [f, set] = useState({
     name: v.name ?? "", plate: v.plate ?? "", make:v.make ?? "",model:v.model ?? "",model_year:v.model_year ?? "",vehicle_category:v.vehicle_category ?? "",accessibility_equipment:v.accessibility_equipment ?? "",
     vehicle_type: v.vehicle_type ?? "sedan",
-    capacity: v.capacity ?? 4, wheelchair_capacity: v.wheelchair_capacity ?? 0, status: v.status ?? "active", notes: v.notes ?? "",
+    capacity: v.capacity ?? '', wheelchair_capacity: v.wheelchair_capacity ?? '', status: v.status ?? "active", notes: v.notes ?? "",
     service_capabilities: (v.service_capabilities ?? []) as Array<"ambulatory" | "wheelchair" | "stretcher">,
     assigned_driver_id: (v.assigned_driver_id ?? "") as string,
     vin:v.vin??'',insurance_credential_id:v.insurance_credential_id??null,insurance_expiry:v.insurance_expiry??'',service_regions:(v.service_regions??[]).join(', '),service_counties:(v.service_counties??[]).join(', '),service_cities:(v.service_cities??[]).join(', '),service_zips:(v.service_zips??[]).join(', '),travel_radius_miles:v.travel_radius_miles??'',
@@ -564,7 +569,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
   return (
     <DetailOverlayFrame title={v.id ? 'Edit vehicle' : 'New vehicle'} onClose={onClose}>
       <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
-        <I l="Name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
+        <I l="Custom vehicle name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
         <I l="Full VIN — authorized editing only" v={f.vin} on={x=>set({...f,vin:x.toUpperCase()})}/><I l="Vehicle insurance expiration" type="date" v={f.insurance_expiry} on={x=>set({...f,insurance_expiry:x})}/>
         <label className="flex flex-col gap-1 ds-body sm:col-span-2"><span className="ds-label">Private vehicle insurance record</span><select value={f.insurance_credential_id??''} onChange={e=>{const doc=docs.data?.find(d=>d.id===e.target.value);set({...f,insurance_credential_id:e.target.value||null,insurance_expiry:doc?.expires_at??f.insurance_expiry});}}><option value="">No insurance evidence linked</option>{(docs.data??[]).filter(d=>d.workspace_id===v.workspace_id&&d.kind==='auto_insurance').map(d=><option key={d.id} value={d.id}>{d.label} · {d.expires_at??'Expiry not recorded'}</option>)}</select><span className="ds-caption">Add private insurance evidence in Settings → Credentials & Documents, then link it here. Upload presence does not establish legal sufficiency.</span></label>
         <I l="Service regions (comma separated)" v={f.service_regions} on={x=>set({...f,service_regions:x})}/><I l="Counties (comma separated)" v={f.service_counties} on={x=>set({...f,service_counties:x})}/><I l="Cities (comma separated)" v={f.service_cities} on={x=>set({...f,service_cities:x})}/><I l="ZIP codes (comma separated)" v={f.service_zips} on={x=>set({...f,service_zips:x})}/><I l="Travel radius (miles)" type="number" v={String(f.travel_radius_miles)} on={x=>set({...f,travel_radius_miles:x})}/>
@@ -593,7 +598,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
           <select value={f.assigned_driver_id} onChange={(e) => set({ ...f, assigned_driver_id: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="">— None —</option>
-            {drivers.filter((d: any) => d.status === "active" || d.id === f.assigned_driver_id).map((d: any) => (
+            {drivers.filter((d: any) => (!v.workspace_id||d.workspace_id===v.workspace_id)&&(d.status === "active" || d.id === f.assigned_driver_id)).map((d: any) => (
               <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
             ))}
           </select>

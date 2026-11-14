@@ -5397,6 +5397,7 @@ export type Database = {
           black_tie_vehicle: string | null
           cancel_reason: string | null
           canceled_at: string | null
+          confirmed_provider_driver_id: string | null
           coordination_contact_id: string | null
           created_at: string
           creator_person_mfn_id: string | null
@@ -5525,6 +5526,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          confirmed_provider_driver_id?: string | null
           coordination_contact_id?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
@@ -5653,6 +5655,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          confirmed_provider_driver_id?: string | null
           coordination_contact_id?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
@@ -5780,6 +5783,13 @@ export type Database = {
             columns: ["assigned_vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_requests_confirmed_provider_driver_id_fkey"
+            columns: ["confirmed_provider_driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
           {
@@ -9350,6 +9360,10 @@ export type Database = {
         Args: { _id: string }
         Returns: undefined
       }
+      change_provider_subtype: {
+        Args: { _confirmed: boolean; _subtype: string; _ws: string }
+        Returns: undefined
+      }
       complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {
@@ -10278,6 +10292,10 @@ export type Database = {
           _provider_id: string
           _trip_miles: number
         }
+        Returns: boolean
+      }
+      provider_driver_available: {
+        Args: { _date: string; _driver: string; _service: string; _ws: string }
         Returns: boolean
       }
       provider_has_valid_credentials: {

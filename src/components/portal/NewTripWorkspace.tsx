@@ -82,7 +82,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
     if (preview.active) return previewBlocked(); if (!ack) return;
     setBusy(true); try { setFunding(await prepareFunding({ data: { workspaceId, receiverCents: Number(receiver), environment: 'sandbox' } })); } catch (e) { toast.error(e instanceof Error ? e.message : 'Funding unavailable.'); } finally { setBusy(false); }
   }
-  return <TripCommerceContext.Provider value={{ onChange: change, quote: attachment, business: true, submissionBlocked: network || !!confirmed && !unchanged }}>
+  return <TripCommerceContext.Provider value={{ onChange: change, quote: attachment, business: true, provider, submissionBlocked: network || !!confirmed && !unchanged }}>
     <div className="trip-workspace grid min-w-0 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
       <div className="min-w-0"><h1 className="ds-section-title uppercase text-ds-primary">{provider ? 'Provider-owned New Trip' : 'Facility New Trip'}</h1><p className="ds-support mt-2">{provider ? 'Saved trips stay in your workspace. Network preparation is a separate choice.' : 'Responsible billing party: your facility account or an explicitly authorized payer. Provider rates stay private.'}</p><RequestForm context="portal" initialDraft={initialDraft} allowProviderSelection={!provider}/></div>
       <aside className="trip-financial-panel min-w-0 self-start border border-ds-border bg-ds-surface" aria-label={network ? 'Referral funding preparation' : 'Live invoice estimate'}>

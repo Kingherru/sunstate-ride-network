@@ -1,4 +1,12 @@
 # Florida MVP launch sequence
+## Pass 4T — provider operations wiring
+- [x] Confirmed audited owner subtype change uses existing workspace field; unchanged provider navigation, identity/evidence/subscription records and action-time restrictions. Shared onboarding contact, numbers/hours, Network operations and Fleet records reused.
+- [x] Existing contractor application/invitation flows and Settings connected summary wired; repeat acceptance/decline idempotent and ended relationships reuse original connection. Existing unique pair/conversation/notification evidence and delivery OFF retained.
+- [x] Fleet vehicle profile fields, private VIN manager edit, scoped insurance/driver linking and truthful Incomplete display completed; missing values never fabricated and authorized contractors may add further vehicles.
+- [x] Patient Profile displays saved preference and separate eligible completed driver; New Trip defaults to a suggestion with explicit submission confirmation, owner-scoped immutable request confirmation and atomic trip assignment. Unavailable saved preference leaves unselected.
+- [x] Shared authorized dropdown renamed Page shown after sign in with Overview default; existing validation/return-to preserved. Stale $10 verification assertion corrected to retained $15 evidence without changing pricing or billing logic.
+- [x] 47 focused rule/handler tests, 16 retained account tests and six isolated SQL persistence/resolution checks pass; Settings/Fleet/Patient/New Trip preview desktop/phone checked, suggestion selected without writes, vehicle dialog settled bounds correct. Harness compilation OK; no real writes/sends/billing/publication.
+- [ ] Live populated subtype/relationship/vehicle/patient/driver submit readback not exercised: owner prohibits changing real records and creating accounts; synthetic checks only. Contractor checkout/entitlements stay OFF pending existing verified mapping/lifecycle blockers. Exact per-pass credit attribution unavailable from the exposed date-aggregate ledger.
 ## Current vehicle backfill
 - [ ] Await correct missing vehicle details: six vehicles have no recorded model year and two have no plate; do not fabricate values or partially categorize legacy vehicles in a way that disables compatibility.
 ## Pass 4S — Admin visual consistency

@@ -21,9 +21,10 @@ describe('safe dispatch exports', () => {
 
 describe('approved verification policy — fail closed, no badge writes', () => {
   const now = Date.parse('2026-10-27T12:00:00Z');
-  const membership = { workspaceLinked: true, requiredMembership: true, environment: 'live' as const, amountPaidCents: 1000, paymentStatus: 'succeeded' as const, subscriptionStatus: 'active', currentPeriodEnd: now + 86400000, goodStanding: true };
-  test('only a successful $10 current membership qualifies, not the free trial or fees', () => {
+  const membership = { workspaceLinked: true, requiredMembership: true, environment: 'live' as const, amountPaidCents: 1500, paymentStatus: 'succeeded' as const, subscriptionStatus: 'active', currentPeriodEnd: now + 86400000, goodStanding: true };
+  test('retained legacy $15 verification evidence qualifies, not add-on-only $10 or free trial', () => {
     expect(qualifiesForSemiVerified(membership, now)).toBe(true);
+    expect(qualifiesForSemiVerified({ ...membership, amountPaidCents: 1000 }, now)).toBe(false);
     expect(qualifiesForSemiVerified({ ...membership, subscriptionStatus: 'trialing' }, now)).toBe(false);
     expect(qualifiesForSemiVerified({ ...membership, requiredMembership: false }, now)).toBe(false);
     expect(qualifiesForSemiVerified({ ...membership, amountPaidCents: 0 }, now)).toBe(false);

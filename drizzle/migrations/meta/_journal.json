@@ -701,6 +701,20 @@
       "when": 1794626468025,
       "tag": "0099_restore_legacy_business_vehicle_eligibility",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1794698077965,
+      "tag": "0100_provider_subtype_and_driver_suggestion_wiring",
+      "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1794698397925,
+      "tag": "0101_contractor_relationship_idempotent_reacceptance",
+      "breakpoints": true
     }
   ]
 }

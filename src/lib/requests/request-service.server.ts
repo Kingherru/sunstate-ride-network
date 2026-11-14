@@ -146,6 +146,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
     patient_workspace_id: data.patientWorkspaceId ?? null,
     saved_patient_id:data.savedPatientId??null,
+    confirmed_provider_driver_id:data.confirmedProviderDriverId??null,
     payer_id:data.payerId??null,
     coordination_contact_id:data.coordinationContactId??null,
     customer_quote_draft_id: data.customerQuoteDraftId ?? null,

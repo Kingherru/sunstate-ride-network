@@ -102,7 +102,7 @@ export function PatientManagement() {
     <form onSubmit={submit} className="space-y-5" aria-label="Patient profile">
       <h2 className="ds-subheading uppercase text-ds-primary">{editing.id ? 'Edit patient' : 'Add patient'}</h2>
       {!privateOnly && <LinkedPatientSelector value={editing.patient_workspace_id} onChange={id=>setEditing({...editing,patient_workspace_id:id})}/>}
-      {!privateOnly&&editing.workspace_id&&<PreferredDriver workspaceId={editing.workspace_id} value={editing.preferred_driver_id??null} onChange={id=>setEditing({...editing,preferred_driver_id:id})}/>}
+      {!privateOnly&&editing.workspace_id&&<PreferredDriver workspaceId={editing.workspace_id} patientId={editing.id} service={editing.mobility==='wheelchair'?'wheelchair':editing.mobility==='stretcher'||editing.mobility==='gurney'?'stretcher':'ambulatory'} value={editing.preferred_driver_id??null} onChange={id=>setEditing({...editing,preferred_driver_id:id})}/>}
       {GROUPS.map(g => <fieldset key={g.title} className="rounded-ds bg-ds-surface-muted p-4 sm:p-5"><legend className="ds-label text-ds-primary px-1">{g.title}</legend>
         <div className="grid gap-4 sm:grid-cols-2">{g.fields.map(f => <div key={f.key} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}><DsField label={f.label}>{p => f.type === 'textarea'
           ? <DsTextarea {...p} maxLength={f.max ?? 500} value={editing[f.key] ?? ''} onChange={e => setEditing({ ...editing, [f.key]: e.target.value })} />
@@ -132,12 +132,12 @@ export function PatientManagement() {
             </div>
           </div>
           {!privateOnly && p.active !== false && cardRows.length > 0 && <div className="max-w-sm"><DsField label="Payment card for this patient" hint="Changes unavailable until secure re-verification is activated.">{f => <DsSelect {...f} disabled value={cardRows.find(c => c.patient_id === p.id)?.id ?? ''}><option value="">No patient card (use account default)</option>{cardRows.filter(c => !c.patient_id || c.patient_id === p.id).map(c => <option key={c.id} value={c.id}>{String(c.brand ?? 'Card').toUpperCase()} •••• {c.last4} · exp {String(c.exp_month).padStart(2, '0')}/{String(c.exp_year).slice(-2)}</option>)}</DsSelect>}</DsField></div>}
-          {statusFor?.id === p.id && <div role="alertdialog" aria-label="Confirm status change" className="space-y-3 rounded-ds bg-ds-surface-muted p-4">
-            <DsField label={`Reason to ${statusFor!.active ? 'restore' : 'deactivate'}`}>{f => <DsTextarea {...f} minLength={3} maxLength={300} value={reason} onChange={e => setReason(e.target.value)} />}</DsField>
-            <div className="flex gap-2"><DsButton size="sm" disabled={busy || reason.trim().length < 3} onClick={changeStatus}>Confirm {statusFor!.active ? 'restore' : 'deactivation'}</DsButton><DsButton size="sm" variant="ghost" onClick={() => setStatusFor(null)}>Cancel</DsButton></div>
+          {statusFor && statusFor.id === p.id && <div role="alertdialog" aria-label="Confirm status change" className="space-y-3 rounded-ds bg-ds-surface-muted p-4">
+            <DsField label={`Reason to ${statusFor.active ? 'restore' : 'deactivate'}`}>{f => <DsTextarea {...f} minLength={3} maxLength={300} value={reason} onChange={e => setReason(e.target.value)} />}</DsField>
+            <div className="flex gap-2"><DsButton size="sm" disabled={busy || reason.trim().length < 3} onClick={changeStatus}>Confirm {statusFor.active ? 'restore' : 'deactivation'}</DsButton><DsButton size="sm" variant="ghost" onClick={() => setStatusFor(null)}>Cancel</DsButton></div>
           </div>}
-          {history?.id === p.id && <div className="rounded-ds bg-ds-surface-muted p-4"><div className="flex justify-between"><h3 className="ds-label text-ds-primary">Audit history</h3><button className="ds-support underline" onClick={() => setHistory(null)}>Close</button></div>
-            {history!.rows.length ? <ul className="ds-support mt-2 space-y-1">{history!.rows.map(h => <li key={h.id}>{new Date(h.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} · {h.action} · {h.actor_mfn_id ?? '—'}{h.reason ? ` · ${h.reason}` : ''}</li>)}</ul> : <p className="ds-support mt-2">No history recorded.</p>}</div>}
+          {history && history.id === p.id && <div className="rounded-ds bg-ds-surface-muted p-4"><div className="flex justify-between"><h3 className="ds-label text-ds-primary">Audit history</h3><button className="ds-support underline" onClick={() => setHistory(null)}>Close</button></div>
+            {history.rows.length ? <ul className="ds-support mt-2 space-y-1">{history.rows.map(h => <li key={h.id}>{new Date(h.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} · {h.action} · {h.actor_mfn_id ?? '—'}{h.reason ? ` · ${h.reason}` : ''}</li>)}</ul> : <p className="ds-support mt-2">No history recorded.</p>}</div>}
         </li>)}</ul>
       )}
     </section>

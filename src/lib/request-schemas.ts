@@ -74,6 +74,7 @@ export const rideRequestSchema = z.object({
   selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
   patientWorkspaceId: z.string().uuid().optional().nullable(),
   savedPatientId:z.string().uuid().optional().nullable(),
+  confirmedProviderDriverId:z.string().uuid().optional().nullable(),
   payerId:z.string().uuid().optional().nullable(),
   coordinationContactId:z.string().uuid().optional().nullable(),
   customerQuoteDraftId: z.string().uuid().optional().nullable(),
