@@ -1,0 +1,12 @@
+import {describe,it,expect,vi} from 'vitest';
+vi.mock('@tanstack/react-start',()=>({createServerFn:()=>{const b:any={middleware:()=>b,inputValidator:()=>b,handler:(h:any)=>h};return b;}}));
+vi.mock('../src/integrations/supabase/auth-middleware',()=>({requireSupabaseAuth:{}}));
+import {getContractorSummary,contractorRelationshipAction} from '../src/lib/contractor.functions';
+import {saveContractorProgress,getContractorProgress} from '../src/lib/contractor-intake.functions';
+import {assignConnectedContractor} from '../src/lib/contractor-assignment.functions';
+describe('synthetic server boundaries',()=>{
+ it('uses authoritative eligibility not client assertions',async()=>{const rpc=vi.fn(async()=>({data:{eligible:false,reasons:['Subscription inactive']},error:null}));const r=await (getContractorSummary as any)({data:{workspaceId:'owned',eligible:true},context:{supabase:{rpc}}});expect(r.eligible).toBe(false);expect(rpc).toHaveBeenCalledWith('contractor_eligibility',{_ws:'owned'});});
+ it('saves and resumes the same workspace progress',async()=>{let saved:any;const rpc=vi.fn(async(name,args)=>{if(name==='network_workspace_access')return {data:true};saved=args;return {error:null};});const q:any={select:()=>q,eq:()=>q,single:async()=>({data:{contractor_intake_progress:{step:saved._step,completed:[saved._reviewed]}},error:null})};const context={supabase:{rpc,from:()=>q}};await (saveContractorProgress as any)({data:{workspaceId:'owned',step:4,reviewed:3},context});const r=await (getContractorProgress as any)({data:{workspaceId:'owned'},context});expect(r).toEqual({step:4,completed:[3]});expect(saved._ws).toBe('owned');});
+ it('denied relationship cannot report success',async()=>{const context={supabase:{rpc:vi.fn(async()=>({error:{message:'denied'}}))}};await expect((contractorRelationshipAction as any)({data:{workspaceId:'unrelated',targetId:'target',action:'accept',id:'request'},context})).rejects.toThrow();});
+ it('rejected assignment cannot report success',async()=>{const rpc=vi.fn(async()=>({error:{message:'not connected'}}));await expect((assignConnectedContractor as any)({data:{tripId:'trip',contractorId:'foreign'},context:{supabase:{rpc}}})).rejects.toThrow();expect(rpc).toHaveBeenCalledWith('contractor_assign_trip',{_trip:'trip',_contractor:'foreign'});});
+});

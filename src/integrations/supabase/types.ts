@@ -3505,6 +3505,7 @@ export type Database = {
       }
       platform_settings: {
         Row: {
+          contractor_price_mapping: Json | null
           id: boolean
           market_pricing: Json
           medicaid_pricing: Json
@@ -3516,6 +3517,7 @@ export type Database = {
           zip_fallback_zone_id: string | null
         }
         Insert: {
+          contractor_price_mapping?: Json | null
           id?: boolean
           market_pricing?: Json
           medicaid_pricing?: Json
@@ -3527,6 +3529,7 @@ export type Database = {
           zip_fallback_zone_id?: string | null
         }
         Update: {
+          contractor_price_mapping?: Json | null
           id?: boolean
           market_pricing?: Json
           medicaid_pricing?: Json
@@ -7494,6 +7497,7 @@ export type Database = {
           completion_attested_by: string | null
           completion_source: string | null
           contact_id: string | null
+          contractor_assigned_workspace_id: string | null
           cost_breakdown: Json | null
           cost_total: number | null
           created_at: string
@@ -7673,6 +7677,7 @@ export type Database = {
           completion_attested_by?: string | null
           completion_source?: string | null
           contact_id?: string | null
+          contractor_assigned_workspace_id?: string | null
           cost_breakdown?: Json | null
           cost_total?: number | null
           created_at?: string
@@ -7852,6 +7857,7 @@ export type Database = {
           completion_attested_by?: string | null
           completion_source?: string | null
           contact_id?: string | null
+          contractor_assigned_workspace_id?: string | null
           cost_breakdown?: Json | null
           cost_total?: number | null
           created_at?: string
@@ -8018,6 +8024,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "provider_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_contractor_assigned_workspace_id_fkey"
+            columns: ["contractor_assigned_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
           {
@@ -8740,6 +8753,7 @@ export type Database = {
           automatic_verification_level: string | null
           business_address: string | null
           business_phone: string | null
+          contractor_intake_progress: Json | null
           created_at: string
           created_by: string
           dispatch_phone: string | null
@@ -8767,6 +8781,7 @@ export type Database = {
           automatic_verification_level?: string | null
           business_address?: string | null
           business_phone?: string | null
+          contractor_intake_progress?: Json | null
           created_at?: string
           created_by: string
           dispatch_phone?: string | null
@@ -8794,6 +8809,7 @@ export type Database = {
           automatic_verification_level?: string | null
           business_address?: string | null
           business_phone?: string | null
+          contractor_intake_progress?: Json | null
           created_at?: string
           created_by?: string
           dispatch_phone?: string | null
@@ -9290,6 +9306,15 @@ export type Database = {
         Args: { _action: string; _details: Json }
         Returns: undefined
       }
+      contractor_assign_trip: {
+        Args: { _contractor: string; _trip: string }
+        Returns: undefined
+      }
+      contractor_assignment_options: { Args: { _trip: string }; Returns: Json }
+      contractor_configure_mapping: {
+        Args: { _environment: string; _price: string }
+        Returns: undefined
+      }
       contractor_connected: {
         Args: { _business: string; _contractor: string }
         Returns: boolean
@@ -9309,6 +9334,10 @@ export type Database = {
           _req: string
           _ws: string
         }
+        Returns: undefined
+      }
+      contractor_save_progress: {
+        Args: { _reviewed: number; _step: number; _ws: string }
         Returns: undefined
       }
       contractor_set_listing: {

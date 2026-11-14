@@ -16,9 +16,14 @@ import { PAYMENT_POLICY_VERSION } from '@/lib/payment-policy';
 import { ProviderSetup } from '@/components/portal/ProviderSetup';
 import { FleetPanel } from '@/components/dashboard/FleetPanel';
 import { BusinessVisibility } from '@/components/portal/BusinessVisibility';
+import {ContractorIntake} from './ContractorIntake';
 
 type SetupData = Awaited<ReturnType<typeof getOnboarding>>;
 export function AccountOnboarding({ data }: { data: SetupData }) {
+  if(data.workspace.provider_subtype==='independent_contractor')return <ContractorIntake data={data}/>;
+  return <BusinessAccountOnboarding data={data}/>;
+}
+function BusinessAccountOnboarding({data}:{data:SetupData}){
   const preview = usePortalPreview();
   const router = useRouter();
   const save = useServerFn(saveOnboardingSection);

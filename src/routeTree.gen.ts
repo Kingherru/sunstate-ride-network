@@ -18,6 +18,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as FindSupportRouteImport } from './routes/find-support'
+import { Route as ForContractorsRouteImport } from './routes/for-contractors'
 import { Route as ForFacilitiesRouteImport } from './routes/for-facilities'
 import { Route as ForProvidersRouteImport } from './routes/for-providers'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -160,6 +161,11 @@ const DesignSystemRoute = DesignSystemRouteImport.update({
 const FindSupportRoute = FindSupportRouteImport.update({
   id: '/find-support',
   path: '/find-support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForContractorsRoute = ForContractorsRouteImport.update({
+  id: '/for-contractors',
+  path: '/for-contractors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForFacilitiesRoute = ForFacilitiesRouteImport.update({
@@ -727,6 +733,7 @@ export interface FileRoutesByFullPath {
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/find-support': typeof FindSupportRoute
+  '/for-contractors': typeof ForContractorsRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -836,6 +843,7 @@ export interface FileRoutesByTo {
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/find-support': typeof FindSupportRoute
+  '/for-contractors': typeof ForContractorsRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -943,6 +951,7 @@ export interface FileRoutesById {
   '/create-account': typeof CreateAccountRoute
   '/design-system': typeof DesignSystemRoute
   '/find-support': typeof FindSupportRoute
+  '/for-contractors': typeof ForContractorsRoute
   '/for-facilities': typeof ForFacilitiesRoute
   '/for-providers': typeof ForProvidersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -1054,6 +1063,7 @@ export interface FileRouteTypes {
     | '/create-account'
     | '/design-system'
     | '/find-support'
+    | '/for-contractors'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -1163,6 +1173,7 @@ export interface FileRouteTypes {
     | '/create-account'
     | '/design-system'
     | '/find-support'
+    | '/for-contractors'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -1269,6 +1280,7 @@ export interface FileRouteTypes {
     | '/create-account'
     | '/design-system'
     | '/find-support'
+    | '/for-contractors'
     | '/for-facilities'
     | '/for-providers'
     | '/forgot-password'
@@ -1380,6 +1392,7 @@ export interface RootRouteChildren {
   CreateAccountRoute: typeof CreateAccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
   FindSupportRoute: typeof FindSupportRoute
+  ForContractorsRoute: typeof ForContractorsRoute
   ForFacilitiesRoute: typeof ForFacilitiesRoute
   ForProvidersRoute: typeof ForProvidersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -1491,6 +1504,13 @@ declare module '@tanstack/react-router' {
       path: '/find-support'
       fullPath: '/find-support'
       preLoaderRoute: typeof FindSupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-contractors': {
+      id: '/for-contractors'
+      path: '/for-contractors'
+      fullPath: '/for-contractors'
+      preLoaderRoute: typeof ForContractorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-facilities': {
@@ -2350,6 +2370,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateAccountRoute: CreateAccountRoute,
   DesignSystemRoute: DesignSystemRoute,
   FindSupportRoute: FindSupportRoute,
+  ForContractorsRoute: ForContractorsRoute,
   ForFacilitiesRoute: ForFacilitiesRoute,
   ForProvidersRoute: ForProvidersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,

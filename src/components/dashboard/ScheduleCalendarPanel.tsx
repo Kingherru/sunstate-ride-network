@@ -8,6 +8,7 @@ import { DriverDetailModal } from "./DriverDetailModal";
 import { listVehicles } from "@/lib/fleet.functions";
 import { conflictingSlots } from "@/lib/trip-network-rules";
 import { useRequestDetails } from '@/components/portal/request-detail-context';
+import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
 
 export const RESV_DND_MIME = "application/x-reservation-id";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
@@ -326,6 +327,7 @@ export function ScheduleCalendarPanel() {
             </div>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {unassigned.map((r:any)=><div key={`contractor-${r.id}`} className="min-w-0"><ContractorAssignment tripId={r.id} service={r.transport_type}/></div>)}
             {drivers.map((d: any) => {
               const dTrips = reservations
                 .filter((r: any) => r.assigned_driver_id === d.id)

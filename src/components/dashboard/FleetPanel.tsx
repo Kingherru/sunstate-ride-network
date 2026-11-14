@@ -14,9 +14,9 @@ import {
 import { vehicleCategories } from '@/lib/pass4p-rules';
 import { FleetStatusControl, FleetFilterBar, useFleetFilter, applyFleetFilter } from "@/components/portal/FleetStatusControl";
 
-export function FleetPanel({ only }: { only?: "drivers" | "vehicles" } = {}) {
+export function FleetPanel({ only, primaryOnly=false }: { only?: "drivers" | "vehicles"; primaryOnly?:boolean } = {}) {
   if (only === "drivers") return <DriversCard />;
-  if (only === "vehicles") return <VehiclesCard />;
+  if (only === "vehicles") return <VehiclesCard primaryOnly={primaryOnly} />;
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <DriversCard />
@@ -485,7 +485,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
   );
 }
 
-function VehiclesCard() {
+function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
   const dq = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
@@ -495,9 +495,8 @@ function VehiclesCard() {
   return (
     <section className="min-w-0 bg-ds-sky border border-ds-primary/15 rounded-ds p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-extrabold tracking-tight">Vehicles</h2>
-        <button onClick={() => setEditing({ vehicle_type: "sedan", status: "active", capacity: 4 })}
-                className="text-xs font-bold text-primary hover:underline">+ Add vehicle</button>
+        <h2 className="text-lg font-extrabold tracking-tight">{primaryOnly?'Primary ambulatory vehicle':'Vehicles'}</h2>
+        {(!primaryOnly||q.data?.length===0)&&<DsButton variant="ghost" size="sm" onClick={() => setEditing({ vehicle_type: "sedan", status: "active", capacity: 4,...(primaryOnly?{vehicle_category:'ambulatory',service_capabilities:['ambulatory']}:{} ) })}>+ Add vehicle</DsButton>}
       </div>
       {q.isError ? <div role="alert" className="ds-support text-ds-error">Vehicles couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
        : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>

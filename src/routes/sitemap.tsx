@@ -26,7 +26,7 @@ export const Route = createFileRoute("/sitemap")({
 const GROUPS: { h: string; items: { label: string; href: string }[] }[] = [
   { h: "Public Pages", items: [
     { label: "Home", href: "/" }, { label: "How It Works", href: "/how-it-works" }, { label: "Why MY FLORIDA NEMT", href: "/why-my-florida-nemt" }, { label: "Providers", href: "/for-providers" },
-    { label: "Patients and Facilities", href: "/for-facilities" }, { label: "Coverage", href: "/florida-coverage" },
+    { label: "Independent Contractors", href: "/for-contractors" }, { label: "Patients and Facilities", href: "/for-facilities" }, { label: "Coverage", href: "/florida-coverage" },
     { label: "Join the Provider Network", href: "/join" }, { label: "Submit Trip Request", href: "/book" },
   ] },
   { h: "Services", items: [

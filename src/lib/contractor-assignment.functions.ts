@@ -1,0 +1,5 @@
+import {createServerFn} from '@tanstack/react-start';
+import {z} from 'zod';
+import {requireSupabaseAuth} from '@/integrations/supabase/auth-middleware';
+export const listContractorAssignmentOptions=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({tripId:z.string().uuid()}).strict().parse(i)).handler(async({data,context})=>{const {data:r,error}=await context.supabase.rpc('contractor_assignment_options',{_trip:data.tripId});if(error)throw new Error('Contractor assignment unavailable');return (r??[]) as unknown as {workspace_id:string;business_name:string}[];});
+export const assignConnectedContractor=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({tripId:z.string().uuid(),contractorId:z.string().uuid(),confirmed:z.literal(true)}).strict().parse(i)).handler(async({data,context})=>{const {error}=await context.supabase.rpc('contractor_assign_trip',{_trip:data.tripId,_contractor:data.contractorId});if(error)throw new Error('Current active relationship and ambulatory eligibility are required.');return {ok:true};});

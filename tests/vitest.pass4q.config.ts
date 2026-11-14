@@ -1,0 +1,1 @@
+export default {resolve:{alias:{'@':`${process.cwd()}/src`}},test:{include:['tests/pass4q-rules.test.ts','tests/pass4q-handlers.test.ts','tests/pass4p-rules.test.ts','tests/pass4m-financial-boundaries.test.ts','tests/onboarding-rules.test.ts']}};

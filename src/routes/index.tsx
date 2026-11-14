@@ -3,6 +3,7 @@ import { PublicPage } from "@/components/public/PublicPage";
 import { Hero, NetworkConnect, Services, Membership } from "@/components/home/sections";
 import { ProductDemo } from "@/components/home/ProductDemo";
 import { FloridaMap } from "@/components/home/FloridaMap";
+import { ContractorSection } from '@/components/home/ContractorSection';
 
 const TITLE = "MY FLORIDA NEMT | Florida Peer-to-Peer NEMT Network & Trip Booking";
 const DESC = "A peer-to-peer Florida NEMT network: request transportation from independent providers, or connect provider-to-provider to share and review trip opportunities.";
@@ -44,6 +45,7 @@ function Home() {
       <ProductDemo motion />
       <FloridaMap motion />
       <Services />
+      <ContractorSection />
       <Membership />
     </PublicPage>
   );

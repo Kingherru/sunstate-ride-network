@@ -13,7 +13,7 @@ import {
 } from "@/lib/facility-providers.functions";
 import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorkspace } from "@/lib/workspace-messages.functions";
 import { cn } from "@/lib/utils";
-import { DsButton } from '@/components/ds/controls';
+import { DsButton,DsSelect } from '@/components/ds/controls';
 import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
 
@@ -35,6 +35,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
 
   const [search, setSearch] = useState("");
   const [serviceType, setServiceType] = useState("");
+  const [providerType,setProviderType]=useState<''|'nemt_business'|'independent_contractor'>('');
   const [county, setCounty] = useState("");
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
@@ -47,6 +48,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   const [radius, setRadius] = useState(50);
 
   const filters = {
+    provider_subtype:providerType||undefined,
     search: search.trim() || undefined,
     service_type: serviceType.trim() || undefined,
     county: county.trim() || undefined,
@@ -119,6 +121,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               className="w-full rounded-sm border border-border py-2 pr-3 text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <DsSelect aria-label="Network provider subtype" value={providerType} onChange={e=>{const t=e.target.value;if(t===''||t==='nemt_business'||t==='independent_contractor')setProviderType(t);}}><option value="">All provider types</option><option value="nemt_business">NEMT Business</option><option value="independent_contractor">Independent Contractor</option></DsSelect>
             <input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Service type" aria-label="Service type" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
             <input value={county} onChange={(e) => setCounty(e.target.value)} placeholder="County" aria-label="County" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
             <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" aria-label="City" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
@@ -156,7 +159,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm font-extrabold">{r.business_name}</span>
                 <span className="flex shrink-0 items-center gap-1.5">
-                  <ProviderVerificationBadge workspaceId={r.workspace_id} legacyVerified />
+                  {r.provider_subtype==='independent_contractor'?<span className="ds-caption text-ds-primary">Independent Contractor</span>:<ProviderVerificationBadge workspaceId={r.workspace_id} legacyVerified />}
                   {r.is_saved && <BookmarkCheck className="size-4 text-accent" aria-label="Saved" />}
                 </span>
               </div>
@@ -232,7 +235,7 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack, onS
             <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-muted-foreground"><IdCard className="size-3.5" /> {row.mfn_id}</p>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <ProviderVerificationBadge workspaceId={row.workspace_id} legacyVerified />
+            {row.provider_subtype==='independent_contractor'?<span className="ds-caption text-ds-primary">Independent Contractor · Current platform evidence, not legal sufficiency</span>:<ProviderVerificationBadge workspaceId={row.workspace_id} legacyVerified />}
             {row.medical_delivery && (
               <span className="inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground">
                 <Truck className="size-3" /> Medical delivery

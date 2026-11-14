@@ -15,6 +15,7 @@ import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { ShareTripControl } from '@/components/portal/TripNetwork';
 import { useRequestDetails } from '@/components/portal/request-detail-context';
+import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
 
 
 
@@ -578,6 +579,7 @@ export function ReservationsPanel({
                   <div className="flex flex-col gap-2 shrink-0">
                     <button type="button" onClick={() => openDetails({ kind: 'trip', id: r.id })} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">View details</button>
                     {(scope === 'provider' || scope === 'ops') && <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Manage reservation</button>}
+                    {scope==='provider'&&<ContractorAssignment tripId={r.id} service={r.transport_type}/>}
                     {scope==='provider' && r.can_share_network && <ShareTripControl tripId={r.id} />}
                     {(state === "unconfirmed" || state === "booked") && (
                       <button

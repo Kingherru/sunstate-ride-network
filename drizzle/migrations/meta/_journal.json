@@ -638,6 +638,27 @@
       "when": 1794615295699,
       "tag": "0090_contractor_intake_eligibility_relationship_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1794615518975,
+      "tag": "0091_contractor_progress_mapping_and_assignment_boundaries",
+      "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "7",
+      "when": 1794615638695,
+      "tag": "0092_contractor_controlled_trip_assignment",
+      "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1794615733705,
+      "tag": "0093_contractor_assignment_option_and_audit_repair",
+      "breakpoints": true
     }
   ]
 }

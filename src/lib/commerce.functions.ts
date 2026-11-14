@@ -14,7 +14,7 @@ import { confirmationComplete, normalizeSelection } from '@/lib/commerce-rules';
 export const createCommerceCheckout = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({
-    base: z.boolean(), network: z.boolean(),
+    base: z.boolean(), network: z.boolean(), contractor:z.boolean().default(false),
     policyConsent: z.object({accepted:z.boolean(),termsVersion:z.string(),refundVersion:z.string()}).optional(),
     courseIds: z.array(z.string().uuid()).max(20),
     confirm: z.object({ recurring: z.boolean(), oneTime: z.boolean(), terms: z.boolean() }),
@@ -22,6 +22,7 @@ export const createCommerceCheckout = createServerFn({ method: 'POST' })
   }).parse(input))
   .handler(async ({ data, context }): Promise<{ clientSecret: string } | { error: string }> => {
     try {
+      if(data.contractor)return {error:'Independent Contractor Membership checkout is unavailable pending verified Stripe price mapping and lifecycle configuration. No payment or entitlement was created.'};
       assertCheckoutConsent(data.policyConsent);
       const { requireCheckoutPreparationEnabled, requireApprovedPurchaseTerms, recordCheckoutAcceptance } = await import('./checkout-policy.server');
       await requireCheckoutPreparationEnabled();

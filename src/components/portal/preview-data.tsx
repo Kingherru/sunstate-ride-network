@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import { toast } from "sonner";
 import { PROVIDER_DEMO_FIXTURES, providerDemoKeyed } from "./demo-fixtures/provider-demo";
+import {contractorFixtures} from './demo-fixtures/contractor-demo';
 import { useMutation, useQuery, type UseMutationOptions, type UseMutationResult, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query";
 
 /** Shared state for Master-Admin portal previews: which kind of portal is
@@ -73,6 +74,7 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
 
 export function previewFixtureFor(queryKey: readonly unknown[]): unknown {
   const key = String(queryKey[0] ?? "");
+  if(key in contractorFixtures)return contractorFixtures[key];
   const keyed = providerDemoKeyed(queryKey);
   if (keyed !== undefined) return keyed;
   if (key === "my-drivers") return PROVIDER_DEMO_FIXTURES.drivers ?? [];

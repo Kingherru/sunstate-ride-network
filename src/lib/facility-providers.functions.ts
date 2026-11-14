@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { approximateMiles, serviceCompatibility } from './account-settings-rules';
+import {publicContractorFields} from './contractor-rules';
 
 export type NetworkProviderRow = {
   workspace_id: string;
@@ -20,9 +21,12 @@ export type NetworkProviderRow = {
   is_saved: boolean;
   distance_miles?: number | null;
   compatibility?: string;
+  provider_subtype?: string;
+  evidence_language?: string;
 };
 
 const filtersSchema = z.object({
+  provider_subtype:z.enum(['nemt_business','independent_contractor']).optional(),
   search: z.string().max(200).optional(),
   service_type: z.string().max(100).optional(),
   county: z.string().max(100).optional(),
@@ -64,7 +68,13 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
     const { data: centers, error: centerError } = await context.supabase.rpc('network_public_service_centers');
     if (centerError) return { ok: false as const, error: 'Provider service locations unavailable.' };
     const origin = data.origin_lat !== undefined && data.origin_lng !== undefined ? { lat: data.origin_lat, lng: data.origin_lng } : null;
-    const results = ((rows ?? []) as NetworkProviderRow[]).map(row => {
+    const {data:contractors,error:contractorError}=await context.supabase.rpc('contractor_network_directory');
+    if(contractorError)return {ok:false as const,error:'Contractor eligibility unavailable.'};
+    const contractorRows=((contractors??[]) as unknown as Record<string,unknown>[]).filter(r=>r.provider_subtype==='independent_contractor').map(raw=>{
+      const r=publicContractorFields(raw);return {...r,description:null,business_contact_email:null,business_contact_phone:null,medical_delivery:false,accepting_connections:true,is_saved:false} as unknown as NetworkProviderRow;
+    });
+    const combined=[...(rows??[]).map(r=>({...r,provider_subtype:'nemt_business'})),...contractorRows.filter(r=>!data.saved_only)];
+    const results = combined.filter(r=>(!data.provider_subtype||r.provider_subtype===data.provider_subtype)&&(!data.search||r.business_name.toLowerCase().includes(data.search.toLowerCase()))&&(!data.service_type||r.service_types.includes(data.service_type))&&(!data.county||r.counties.includes(data.county))&&(!data.city||r.cities.includes(data.city))&&(!data.zip||r.zips.includes(data.zip))&&(!data.medical_delivery||r.medical_delivery)).map(row => {
       const center = centers?.find(p => p.workspace_id === row.workspace_id);
       const distance = origin && center?.lat != null && center?.lng != null ? approximateMiles(origin, { lat: center.lat, lng: center.lng }) : null;
       return { ...row, distance_miles: distance == null ? null : Math.round(distance * 10) / 10, compatibility: serviceCompatibility(distance, center?.radius_miles ?? null, data.county, row.counties) };

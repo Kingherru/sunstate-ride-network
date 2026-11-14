@@ -15,7 +15,13 @@ import { IntegrationsPanel } from '@/components/dashboard/IntegrationsPanel';
 import { ProviderPlatformRequests } from '@/components/messaging/PlatformRequests';
 import { ProviderExports } from './ProviderExports';
 import { ApiCredentials } from './ApiCredentials';
-import { usePortalPreview } from './preview-data';
+import { usePortalPreview,usePortalQuery } from './preview-data';
+import {useServerFn} from '@tanstack/react-start';
+import {getProviderSetup} from '@/lib/provider-setup.functions';
+import {ContractorEligibility} from './ContractorEligibility';
+import {ContractorRequirements} from './ContractorRequirements';
+import {ContractorMembership} from './ContractorMembership';
+import {ContractorListing} from './ContractorListing';
 import { PROVIDER_VERIFICATION_POLICY } from '@/lib/account-settings-rules';
 import { ProviderVerificationBadge } from './ProviderVerificationBadge';
 import { VerificationEvidence, BusinessEvidenceEditor } from './VerificationEvidence';
@@ -43,15 +49,17 @@ const legacySections: Record<string, string> = { connections: 'team', contact: '
 /** Legacy person-owned documents/integrations remain owner-only, not implicitly shared. */
 export function ProviderSettings({ workspaceId, role, email, initialSection = 'business', accountDetails, teamMessaging, financialTools }: { workspaceId: string; role: string; email?: string | null; initialSection?: string; accountDetails?: React.ReactNode; teamMessaging?: React.ReactNode; financialTools?: React.ReactNode }) {
   const [tab, setTab] = useState(legacySections[initialSection] ?? (sections.some(s => s.value === initialSection) ? initialSection : 'business')); const preview = usePortalPreview(); const owner = role === 'owner';
+  const getSetup=useServerFn(getProviderSetup);const setup=usePortalQuery({queryKey:['provider-setup',workspaceId],queryFn:()=>getSetup({data:{workspaceId}})});const contractor=setup.data?.provider_subtype==='independent_contractor';
   return <div className="grid min-w-0 gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]">
     <SegTabs label="Provider settings sections" variant="rail" queryKey="section" aliases={legacySections} value={tab} onChange={setTab} options={sections}/>
     <div className="portal-business-form min-w-0 space-y-5">
     <p className="ds-caption border-b border-ds-border pb-3">Setup details may be completed later; missing information does not prevent portal access.</p>
-    {tab === 'business' && <><ProviderSetup workspaceId={workspaceId}/><PersonalSettings section="profile" /></>}
+    {tab === 'business' && <><ProviderSetup workspaceId={workspaceId}/>{contractor&&<><ContractorEligibility workspaceId={workspaceId}/><Link to="/onboarding" className="ds-label text-ds-link underline">Continue contractor intake</Link></>}<PersonalSettings section="profile" /></>}
     {tab === 'team' && <><PersonalSettings section="notifications" /><ProviderSetup workspaceId={workspaceId} delay/><TripDispatchSettings workspaceId={workspaceId}/><AccountConnections workspaceId={workspaceId} provider showVisibility={false} /><ConnectPreparation workspaceId={workspaceId}/></>}
     {tab === 'business' && <div className="space-y-5"><BusinessContactSettings workspaceId={workspaceId} /><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Legal identity & operations attestation</h2><div className="portal-business-body"><p className="ds-caption">Verification identity and service-base attestation remain separate from workspace contact details; existing values are retained.</p>{preview.active ? <p className="ds-support mt-3">Preview only. Business attestations cannot be saved.</p> : <BusinessEvidenceEditor workspaceId={workspaceId} />}</div></section><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Legacy application & HIPAA acknowledgment</summary><div className="portal-business-body"><BusinessInfoPanel /></div></details></div>}
-    {tab === 'pricing' && <div className="space-y-5"><section className="portal-business-section"><div className="portal-business-body"><NetworkProfileForm workspaceId={workspaceId} section="operations" /></div></section><BusinessVisibility workspaceId={workspaceId} /><CustomerPricing workspaceId={workspaceId} /><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Existing provider operating rules</summary><div className="portal-business-body"><RulesPanel /></div></details></div>}
+    {tab === 'pricing' && <div className="space-y-5"><section className="portal-business-section"><div className="portal-business-body"><NetworkProfileForm workspaceId={workspaceId} section="operations" /></div></section><ContractorListing workspaceId={workspaceId} contractor={contractor}/>{contractor?<ContractorEligibility workspaceId={workspaceId}/>:<><BusinessVisibility workspaceId={workspaceId} /><CustomerPricing workspaceId={workspaceId} /><details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Existing provider operating rules</summary><div className="portal-business-body"><RulesPanel /></div></details></>}</div>}
     {tab === 'credentials' && <div className="space-y-5">{preview.active ? <p className="ds-support">Preview only. Document uploads are unavailable.</p> : owner ? <ProviderCredentialsPanel /> : <p className="ds-support">Legacy documents are available to their owner only.</p>}
+    {contractor&&<><ContractorEligibility workspaceId={workspaceId}/><ContractorRequirements workspaceId={workspaceId}/></>}
     <section className="portal-business-section"><div className="portal-business-body space-y-5">
       <h2 className="ds-subheading uppercase text-ds-primary">Business verification</h2>
       <ProviderVerificationBadge workspaceId={workspaceId} />
@@ -84,7 +92,7 @@ export function ProviderSettings({ workspaceId, role, email, initialSection = 'b
       </div>
     </div></section></div>}
     {tab === 'accessibility' && <InterfaceSize/>}
-    {tab === 'account' && <div className="space-y-5"><MembershipBilling workspaceId={workspaceId} role={role} />{owner && <><BillingDefaults showPaymentMethod={false} />{financialTools ?? <p className="ds-support">Preview only. No payout actions are available.</p>}{!preview.active && <Link to="/portal/earnings" className="ds-label text-ds-link underline">Earnings, settlement & payment history</Link>}</>}{!owner && <p className="ds-support">Financial records and payout controls remain limited to the business owner.</p>}</div>}
+    {tab === 'account' && <div className="space-y-5">{contractor?<ContractorMembership/>:<MembershipBilling workspaceId={workspaceId} role={role} />}{owner && <><BillingDefaults showPaymentMethod={false} />{financialTools ?? <p className="ds-support">Preview only. No payout actions are available.</p>}{!preview.active && <Link to="/portal/earnings" className="ds-label text-ds-link underline">Earnings, settlement & payment history</Link>}</>}{!owner && <p className="ds-support">Financial records and payout controls remain limited to the business owner.</p>}</div>}
     {tab === 'team' && <div className="space-y-6"><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Team & contractors</h2><div className="portal-business-body"><BusinessPermissions workspaceId={workspaceId} />{teamMessaging ?? <p className="ds-support">Preview only. Team messaging permissions cannot be changed.</p>}</div></section><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">API & exports</h2><div className="portal-business-body space-y-5"><ProviderExports /><ApiCredentials /></div></section><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Dispatch software integrations</h2><div className="portal-business-body"><p className="ds-support mb-4">Saving credentials does not verify a live connection; no vendor is connected in this release.</p>{owner ? <IntegrationsPanel /> : <p className="ds-support">Integration setup is limited to the account owner.</p>}</div></section></div>}
     {tab === 'accessibility' && <InterfaceSize/>}
     {tab === 'account' && <div className="space-y-5">{accountDetails ?? <PersonalSettings section="status" />}<SignInPreference /><PersonalSecurity email={email} securityOnly /><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Platform Requests & help</h2><div className="portal-business-body"><ProviderPlatformRequests workspaceId={workspaceId} /></div></section></div>}
