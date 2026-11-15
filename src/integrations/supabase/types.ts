@@ -4645,6 +4645,7 @@ export type Database = {
           nearby_opt_in: boolean
           public_center_lat: number | null
           public_center_lng: number | null
+          regional_service_areas: Json | null
           seeking_contractors: boolean
           service_base_address: string | null
           service_base_lat: number | null
@@ -4685,6 +4686,7 @@ export type Database = {
           nearby_opt_in?: boolean
           public_center_lat?: number | null
           public_center_lng?: number | null
+          regional_service_areas?: Json | null
           seeking_contractors?: boolean
           service_base_address?: string | null
           service_base_lat?: number | null
@@ -4725,6 +4727,7 @@ export type Database = {
           nearby_opt_in?: boolean
           public_center_lat?: number | null
           public_center_lng?: number | null
+          regional_service_areas?: Json | null
           seeking_contractors?: boolean
           service_base_address?: string | null
           service_base_lat?: number | null
@@ -5288,6 +5291,27 @@ export type Database = {
         }
         Relationships: []
       }
+      regional_configuration: {
+        Row: {
+          configuration: Json
+          state_code: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          configuration?: Json
+          state_code: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          configuration?: Json
+          state_code?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       request_status_events: {
         Row: {
           action: string
@@ -5497,8 +5521,11 @@ export type Database = {
           distance_miles: number | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_county: string | null
           dropoff_lat: number | null
           dropoff_lng: number | null
+          dropoff_state: string | null
+          dropoff_timezone: string | null
           dropoff_zip: string | null
           embed_provider_id: string | null
           embed_token: string | null
@@ -5543,10 +5570,13 @@ export type Database = {
           pickup_address: string
           pickup_address_details: string | null
           pickup_city: string
+          pickup_county: string | null
           pickup_date: string
           pickup_lat: number | null
           pickup_lng: number | null
+          pickup_state: string | null
           pickup_time: string
+          pickup_timezone: string | null
           pickup_zip: string | null
           promoted_at: string | null
           promoted_trip_id: string | null
@@ -5556,6 +5586,7 @@ export type Database = {
           recurrence_end_date: string | null
           recurrence_exceptions: string[]
           recurrence_rule: string | null
+          regional_evidence: Json | null
           requester_email: string | null
           requester_phone: string | null
           requester_user_id: string | null
@@ -5633,8 +5664,11 @@ export type Database = {
           distance_miles?: number | null
           dropoff_address: string
           dropoff_city: string
+          dropoff_county?: string | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          dropoff_state?: string | null
+          dropoff_timezone?: string | null
           dropoff_zip?: string | null
           embed_provider_id?: string | null
           embed_token?: string | null
@@ -5679,10 +5713,13 @@ export type Database = {
           pickup_address: string
           pickup_address_details?: string | null
           pickup_city: string
+          pickup_county?: string | null
           pickup_date: string
           pickup_lat?: number | null
           pickup_lng?: number | null
+          pickup_state?: string | null
           pickup_time: string
+          pickup_timezone?: string | null
           pickup_zip?: string | null
           promoted_at?: string | null
           promoted_trip_id?: string | null
@@ -5692,6 +5729,7 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
           recurrence_rule?: string | null
+          regional_evidence?: Json | null
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
@@ -5769,8 +5807,11 @@ export type Database = {
           distance_miles?: number | null
           dropoff_address?: string
           dropoff_city?: string
+          dropoff_county?: string | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          dropoff_state?: string | null
+          dropoff_timezone?: string | null
           dropoff_zip?: string | null
           embed_provider_id?: string | null
           embed_token?: string | null
@@ -5815,10 +5856,13 @@ export type Database = {
           pickup_address?: string
           pickup_address_details?: string | null
           pickup_city?: string
+          pickup_county?: string | null
           pickup_date?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
+          pickup_state?: string | null
           pickup_time?: string
+          pickup_timezone?: string | null
           pickup_zip?: string | null
           promoted_at?: string | null
           promoted_trip_id?: string | null
@@ -5828,6 +5872,7 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_exceptions?: string[]
           recurrence_rule?: string | null
+          regional_evidence?: Json | null
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
@@ -6714,6 +6759,8 @@ export type Database = {
           current_radius: number | null
           customer_invoice_document_id: string | null
           destination_area: string
+          destination_state: string | null
+          destination_timezone: string | null
           dispute_opened_at: string | null
           dispute_reason_code: string | null
           dispute_resolved_at: string | null
@@ -6742,6 +6789,7 @@ export type Database = {
           pickup_geography_evidence: Json
           pickup_lat: number
           pickup_lng: number
+          pickup_state: string | null
           pickup_time: string
           pickup_timezone: string | null
           pilot_wave: boolean
@@ -6770,6 +6818,8 @@ export type Database = {
           current_radius?: number | null
           customer_invoice_document_id?: string | null
           destination_area: string
+          destination_state?: string | null
+          destination_timezone?: string | null
           dispute_opened_at?: string | null
           dispute_reason_code?: string | null
           dispute_resolved_at?: string | null
@@ -6798,6 +6848,7 @@ export type Database = {
           pickup_geography_evidence?: Json
           pickup_lat: number
           pickup_lng: number
+          pickup_state?: string | null
           pickup_time: string
           pickup_timezone?: string | null
           pilot_wave?: boolean
@@ -6826,6 +6877,8 @@ export type Database = {
           current_radius?: number | null
           customer_invoice_document_id?: string | null
           destination_area?: string
+          destination_state?: string | null
+          destination_timezone?: string | null
           dispute_opened_at?: string | null
           dispute_reason_code?: string | null
           dispute_resolved_at?: string | null
@@ -6854,6 +6907,7 @@ export type Database = {
           pickup_geography_evidence?: Json
           pickup_lat?: number
           pickup_lng?: number
+          pickup_state?: string | null
           pickup_time?: string
           pickup_timezone?: string | null
           pilot_wave?: boolean
@@ -7676,9 +7730,12 @@ export type Database = {
           dropoff_address: string
           dropoff_arrived_at: string | null
           dropoff_city: string
+          dropoff_county: string | null
           dropoff_lat: number | null
           dropoff_lng: number | null
           dropoff_location_id: string | null
+          dropoff_state: string | null
+          dropoff_timezone: string | null
           dropoff_zip: string | null
           duet_last_event: string | null
           duet_last_event_at: string | null
@@ -7758,11 +7815,14 @@ export type Database = {
           pickup_address: string
           pickup_address_details: string | null
           pickup_city: string
+          pickup_county: string | null
           pickup_date: string
           pickup_lat: number | null
           pickup_lng: number | null
           pickup_location_id: string | null
+          pickup_state: string | null
           pickup_time: string
+          pickup_timezone: string | null
           pickup_zip: string | null
           platform_fee_cents: number | null
           priority_offer_accepted_at: string | null
@@ -7782,6 +7842,7 @@ export type Database = {
           referral_status: string | null
           referral_target_id: string | null
           region: string | null
+          regional_evidence: Json | null
           reservation_state: string | null
           return_date: string | null
           return_dropoff_at: string | null
@@ -7859,9 +7920,12 @@ export type Database = {
           dropoff_address: string
           dropoff_arrived_at?: string | null
           dropoff_city: string
+          dropoff_county?: string | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           dropoff_location_id?: string | null
+          dropoff_state?: string | null
+          dropoff_timezone?: string | null
           dropoff_zip?: string | null
           duet_last_event?: string | null
           duet_last_event_at?: string | null
@@ -7941,11 +8005,14 @@ export type Database = {
           pickup_address: string
           pickup_address_details?: string | null
           pickup_city: string
+          pickup_county?: string | null
           pickup_date: string
           pickup_lat?: number | null
           pickup_lng?: number | null
           pickup_location_id?: string | null
+          pickup_state?: string | null
           pickup_time: string
+          pickup_timezone?: string | null
           pickup_zip?: string | null
           platform_fee_cents?: number | null
           priority_offer_accepted_at?: string | null
@@ -7965,6 +8032,7 @@ export type Database = {
           referral_status?: string | null
           referral_target_id?: string | null
           region?: string | null
+          regional_evidence?: Json | null
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_at?: string | null
@@ -8042,9 +8110,12 @@ export type Database = {
           dropoff_address?: string
           dropoff_arrived_at?: string | null
           dropoff_city?: string
+          dropoff_county?: string | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           dropoff_location_id?: string | null
+          dropoff_state?: string | null
+          dropoff_timezone?: string | null
           dropoff_zip?: string | null
           duet_last_event?: string | null
           duet_last_event_at?: string | null
@@ -8124,11 +8195,14 @@ export type Database = {
           pickup_address?: string
           pickup_address_details?: string | null
           pickup_city?: string
+          pickup_county?: string | null
           pickup_date?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
           pickup_location_id?: string | null
+          pickup_state?: string | null
           pickup_time?: string
+          pickup_timezone?: string | null
           pickup_zip?: string | null
           platform_fee_cents?: number | null
           priority_offer_accepted_at?: string | null
@@ -8148,6 +8222,7 @@ export type Database = {
           referral_status?: string | null
           referral_target_id?: string | null
           region?: string | null
+          regional_evidence?: Json | null
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_at?: string | null
@@ -8329,6 +8404,7 @@ export type Database = {
           detail_columns: number[] | null
           high_contrast: boolean
           history_columns: Json | null
+          home_state: string | null
           interface_density: string
           page_after_sign_in: string | null
           pay_by_invoice: boolean
@@ -8341,6 +8417,7 @@ export type Database = {
           detail_columns?: number[] | null
           high_contrast?: boolean
           history_columns?: Json | null
+          home_state?: string | null
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
@@ -8353,6 +8430,7 @@ export type Database = {
           detail_columns?: number[] | null
           high_contrast?: boolean
           history_columns?: Json | null
+          home_state?: string | null
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
@@ -8501,6 +8579,7 @@ export type Database = {
           model_year: number | null
           name: string
           notes: string | null
+          operating_timezone: string | null
           operation_type: string
           owner_id: string
           plate: string | null
@@ -8510,6 +8589,7 @@ export type Database = {
           service_cities: string[]
           service_counties: string[]
           service_regions: string[]
+          service_states: string[] | null
           service_zips: string[]
           status: string
           travel_radius_miles: number | null
@@ -8537,6 +8617,7 @@ export type Database = {
           model_year?: number | null
           name: string
           notes?: string | null
+          operating_timezone?: string | null
           operation_type?: string
           owner_id: string
           plate?: string | null
@@ -8546,6 +8627,7 @@ export type Database = {
           service_cities?: string[]
           service_counties?: string[]
           service_regions?: string[]
+          service_states?: string[] | null
           service_zips?: string[]
           status?: string
           travel_radius_miles?: number | null
@@ -8573,6 +8655,7 @@ export type Database = {
           model_year?: number | null
           name?: string
           notes?: string | null
+          operating_timezone?: string | null
           operation_type?: string
           owner_id?: string
           plate?: string | null
@@ -8582,6 +8665,7 @@ export type Database = {
           service_cities?: string[]
           service_counties?: string[]
           service_regions?: string[]
+          service_states?: string[] | null
           service_zips?: string[]
           status?: string
           travel_radius_miles?: number | null
@@ -9250,6 +9334,15 @@ export type Database = {
           avg_professionalism: number | null
           provider_id: string | null
           ratings_count: number | null
+        }
+        Relationships: []
+      }
+      regional_state_foundations: {
+        Row: {
+          availability: string | null
+          country: string | null
+          state_code: string | null
+          state_name: string | null
         }
         Relationships: []
       }
@@ -10616,6 +10709,23 @@ export type Database = {
         Args: { _trip_id: string }
         Returns: string
       }
+      regional_geography_rank: {
+        Args: {
+          _areas: Json
+          _cross_state: boolean
+          _destination: Json
+          _eligibility: boolean
+          _gates: boolean
+          _hours: boolean
+          _pickup: Json
+          _state_only?: boolean
+        }
+        Returns: Json
+      }
+      regional_state_eligibility: {
+        Args: { _service: string; _state: string }
+        Returns: Json
+      }
       request_existing_account_connection: {
         Args: { _confirmed: boolean; _target: string; _ws: string }
         Returns: string
@@ -10657,6 +10767,7 @@ export type Database = {
         Args: { _settings: Json; _ws: string }
         Returns: undefined
       }
+      save_home_state: { Args: { _state: string }; Returns: undefined }
       save_matching_pilot: {
         Args: { _config: Json; _reason: string }
         Returns: undefined
@@ -10720,6 +10831,14 @@ export type Database = {
       }
       save_provider_verification_details: {
         Args: { _details: Json; _workspace: string }
+        Returns: undefined
+      }
+      save_regional_configuration: {
+        Args: { _configuration: Json; _reason: string; _state: string }
+        Returns: undefined
+      }
+      save_regional_service_areas: {
+        Args: { _areas: Json; _ws: string }
         Returns: undefined
       }
       save_shared_business_identity: {
@@ -10896,6 +11015,8 @@ export type Database = {
         Args: { _invoice: string; _manage?: boolean }
         Returns: boolean
       }
+      us_regional_readiness: { Args: never; Returns: Json }
+      us_state_catalog: { Args: never; Returns: Json }
       vehicle_masked_vin: { Args: { _vehicle: string }; Returns: string }
       verification_normalize_name: { Args: { _name: string }; Returns: string }
       verify_course_certificate: {

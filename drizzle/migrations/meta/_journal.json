@@ -960,6 +960,34 @@
       "when": 1794715461191,
       "tag": "0136_pilot_missing_geography_fail_closed",
       "breakpoints": true
+    },
+    {
+      "idx": 137,
+      "version": "7",
+      "when": 1794715798836,
+      "tag": "0137_us_regional_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1794715956396,
+      "tag": "0138_regional_matching_and_safe_projections",
+      "breakpoints": true
+    },
+    {
+      "idx": 139,
+      "version": "7",
+      "when": 1794716376768,
+      "tag": "0139_regional_quote_binding_and_evidence_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1794716447323,
+      "tag": "0140_vehicle_regional_context",
+      "breakpoints": true
     }
   ]
 }

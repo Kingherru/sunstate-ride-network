@@ -129,7 +129,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
     status?: "active" | "inactive" | "maintenance";
     notes?: string;
     assigned_driver_id?: string | null;
-    vin?:string; insurance_credential_id?:string|null; insurance_expiry?:string|null; service_regions?:string[];service_counties?:string[];service_cities?:string[];service_zips?:string[];travel_radius_miles?:number|null;
+    service_states?:string[];operating_timezone?:string;vin?:string; insurance_credential_id?:string|null; insurance_expiry?:string|null; service_regions?:string[];service_counties?:string[];service_cities?:string[];service_zips?:string[];travel_radius_miles?:number|null;
     service_capabilities?: Array<"ambulatory" | "wheelchair" | "stretcher">;
   }) => input)
   .handler(async ({ data, context }) => {

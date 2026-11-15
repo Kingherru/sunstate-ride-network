@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
+import { Route as AvailabilityRouteImport } from './routes/availability'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as ConnectionInvitationRouteImport } from './routes/connection-invitation'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -131,6 +132,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AccessibilityRoute = AccessibilityRouteImport.update({
   id: '/accessibility',
   path: '/accessibility',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvailabilityRoute = AvailabilityRouteImport.update({
+  id: '/availability',
+  path: '/availability',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -727,6 +733,7 @@ const ApiPublicProviderV1ExportsTripsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
+  '/availability': typeof AvailabilityRoute
   '/book': typeof BookRoute
   '/connection-invitation': typeof ConnectionInvitationRoute
   '/contact': typeof ContactRoute
@@ -837,6 +844,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
+  '/availability': typeof AvailabilityRoute
   '/book': typeof BookRoute
   '/connection-invitation': typeof ConnectionInvitationRoute
   '/contact': typeof ContactRoute
@@ -945,6 +953,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accessibility': typeof AccessibilityRoute
+  '/availability': typeof AvailabilityRoute
   '/book': typeof BookRoute
   '/connection-invitation': typeof ConnectionInvitationRoute
   '/contact': typeof ContactRoute
@@ -1057,6 +1066,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/accessibility'
+    | '/availability'
     | '/book'
     | '/connection-invitation'
     | '/contact'
@@ -1167,6 +1177,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accessibility'
+    | '/availability'
     | '/book'
     | '/connection-invitation'
     | '/contact'
@@ -1274,6 +1285,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/accessibility'
+    | '/availability'
     | '/book'
     | '/connection-invitation'
     | '/contact'
@@ -1386,6 +1398,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AccessibilityRoute: typeof AccessibilityRoute
+  AvailabilityRoute: typeof AvailabilityRoute
   BookRoute: typeof BookRoute
   ConnectionInvitationRoute: typeof ConnectionInvitationRoute
   ContactRoute: typeof ContactRoute
@@ -1462,6 +1475,13 @@ declare module '@tanstack/react-router' {
       path: '/accessibility'
       fullPath: '/accessibility'
       preLoaderRoute: typeof AccessibilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/availability': {
+      id: '/availability'
+      path: '/availability'
+      fullPath: '/availability'
+      preLoaderRoute: typeof AvailabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book': {
@@ -2364,6 +2384,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AccessibilityRoute: AccessibilityRoute,
+  AvailabilityRoute: AvailabilityRoute,
   BookRoute: BookRoute,
   ConnectionInvitationRoute: ConnectionInvitationRoute,
   ContactRoute: ContactRoute,

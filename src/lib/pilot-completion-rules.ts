@@ -1,5 +1,6 @@
 import {resolveLocalPickup} from './communication-rules';
 import {REGIONS} from './coverage';
+import {supportedTimezone} from './us-timezone';
 export const PILOT_CHECKS=['Selected sender workspaces','Selected receiving workspaces','Service scope','Geography scope','Nearby opportunity consent','Provider directory independence','Network entitlement mapping','Verification evidence','Vehicle and driver capability','Offer screens','Pre-acceptance messaging','Acceptance-time recheck','Atomic assignment','Concurrency protection','In-app notifications','External delivery intentionally off','Stripe and settlement intentionally separate','Emergency stop','Audit history'] as const;
 export function unreadOffer(revision:number,watermark:number|null){return watermark===null||revision>watermark;}
 export function checklistAllows(items:{ready:boolean}[]){return items.length===PILOT_CHECKS.length&&items.every(i=>i.ready);}
@@ -15,7 +16,7 @@ export function geographyMatch(input:{state:string;verified:boolean;county:strin
  return null;
 }
 export function providerLocalTime(date:string,time:string,tripZone:string,providerZone:string){
- if(!['America/New_York','America/Chicago'].includes(tripZone)||!['America/New_York','America/Chicago'].includes(providerZone))return null;
+ if(!supportedTimezone(tripZone)||!supportedTimezone(providerZone))return null;
  const instant=resolveLocalPickup(date,time,tripZone);if(instant===null)return null;
  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:providerZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(instant);
  const get=(k:string)=>parts.find(p=>p.type===k)?.value??'';

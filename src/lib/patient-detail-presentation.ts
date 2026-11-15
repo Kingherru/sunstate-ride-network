@@ -9,10 +9,14 @@ export function patientDetailFields(row: Record<string, unknown>) {
     { label: 'Service type', value: services[String(row.transport_type)] ?? 'Not Available' },
     { label: 'Pickup', value: text('pickup_address') },
     { label: 'Pickup city', value: text('pickup_city') },
+    { label: 'Pickup state', value: text('pickup_state') },
+    { label: 'Pickup timezone', value: text('pickup_timezone') },
     { label: 'Pickup date', value: text('pickup_date') },
     { label: 'Requested pickup time', value: text('pickup_time') },
     { label: 'Drop-off', value: text('dropoff_address') },
     { label: 'Drop-off city', value: text('dropoff_city') },
+    { label: 'Destination state', value: text('dropoff_state') },
+    { label: 'Destination timezone', value: text('dropoff_timezone') },
     { label: 'Requested drop-off / appointment time', value: text('appointment_time') },
   ];
   if (row.trip_type === 'round_trip' || row.round_trip === true) fields.push(

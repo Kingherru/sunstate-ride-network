@@ -1,5 +1,6 @@
 /** Client-safe request validation shared by the public form and server functions. */
 import { z } from "zod";
+import {tripGeographyFields, stateCodeSchema, timezoneSchema} from './us-geography';
 
 export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
 export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
@@ -41,6 +42,7 @@ export const BLACK_TIE_QUOTE_STATUSES = [
 export type BlackTieQuoteStatus = (typeof BLACK_TIE_QUOTE_STATUSES)[number];
 
 export const additionalStopSchema = z.object({
+  state: stateCodeSchema.optional(), zip: tripGeographyFields.pickupZip, county: z.string().max(120).optional(), timezone: timezoneSchema,
   address: z.string().trim().min(3).max(300),
   city: z.string().trim().min(1).max(100),
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
@@ -70,6 +72,7 @@ export const dateString = z
 export const REQUEST_CATEGORIES = ["passenger_transport", "medical_delivery"] as const;
 
 export const rideRequestSchema = z.object({
+  ...tripGeographyFields,
   requestCategory: z.literal("passenger_transport").optional(),
   selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
   patientWorkspaceId: z.string().uuid().optional().nullable(),
@@ -167,6 +170,7 @@ export const DELIVERY_CATEGORY_LABELS: Record<(typeof DELIVERY_CATEGORY_OPTIONS)
 
 export const deliveryRequestSchema = z
   .object({
+    ...tripGeographyFields,
     requestCategory: z.literal("medical_delivery"),
     patientWorkspaceId: z.string().uuid().optional().nullable(),
     customerQuoteDraftId: z.string().uuid().optional().nullable(),

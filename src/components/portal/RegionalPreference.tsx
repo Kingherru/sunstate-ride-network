@@ -1,0 +1,8 @@
+import {useEffect,useState} from 'react';
+import {useServerFn} from '@tanstack/react-start';
+import {toast} from 'sonner';
+import {DsButton,DsField,DsSelect} from '@/components/ds/controls';
+import {US_STATES} from '@/lib/us-geography';
+import {readHomeState,saveHomeState} from '@/lib/regional.functions';
+import {usePortalPreview,usePortalQuery} from './preview-data';
+export function RegionalPreference(){const preview=usePortalPreview(),read=useServerFn(readHomeState),save=useServerFn(saveHomeState);const q=usePortalQuery({queryKey:['regional-home'],queryFn:()=>read()});const [state,setState]=useState(''),[busy,setBusy]=useState(false);useEffect(()=>{if(q.data)setState(q.data.state??'');},[q.data]);return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Regional preference</h2><div className="portal-business-body space-y-3"><DsField label="Home state" hint="Preference only — does not change eligibility, ownership or access.">{p=><DsSelect {...p} value={state} onChange={e=>setState(e.target.value)}><option value="">Not selected</option>{US_STATES.map(s=><option key={s.code} value={s.code}>{s.name}</option>)}</DsSelect>}</DsField>{!!q.error&&<p role="alert">Regional preference unavailable.</p>}<DsButton disabled={!state||busy||preview.active} onClick={async()=>{setBusy(true);try{await save({data:{state}});await q.refetch();toast.success('Regional preference saved.');}catch{toast.error('Could not save preference.');}finally{setBusy(false);}}}>Save preference</DsButton></div></section>;}

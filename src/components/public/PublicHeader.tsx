@@ -4,6 +4,7 @@ import { CalendarPlus, LogIn, Menu, Phone, X } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL, PUBLIC_PHONE_VALID } from "@/lib/site-config";
+import {PublicRegionSelect} from './PublicRegionSelect';
 
 const NAV = [
   { label: "Services", to: "/services" },
@@ -52,6 +53,7 @@ export function PublicHeader() {
           <BrandName on="blue" className="public-brand text-xl sm:text-2xl" />
         </Link>
         <nav aria-label="Main" className="hidden items-center xl:flex">
+          <PublicRegionSelect/>
           {NAV.map((n) => <Link key={n.to} to={n.to} className={navLink}>{n.label}</Link>)}
         </nav>
         <div className="public-mobile-actions flex items-center gap-3">

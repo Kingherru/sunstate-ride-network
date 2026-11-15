@@ -44,6 +44,7 @@ import {ContactDialog} from '@/components/dashboard/ContactsPanel';
 import {listContacts} from '@/lib/crm.functions';
 import {TripSeriesBuilder} from '@/components/portal/TripSeriesBuilder';
 import {PatientDriverSuggestion} from '@/components/portal/PatientDriverSuggestion';
+import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 
 
 const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
@@ -73,6 +74,7 @@ export function RequestForm({ context = "public", initialService, initialDraft, 
 }
 
 const empty: RideRequestInput = {
+  pickupState:'FL',dropoffState:'FL',pickupZip:'',dropoffZip:'',pickupCounty:'',dropoffCounty:'',pickupTimezone:'',dropoffTimezone:'',
   patientFirstName: "",
   patientLastName: "",
   patientPhone: "",
@@ -108,8 +110,8 @@ const empty: RideRequestInput = {
 };
 
 function buildLegs(f: RideRequestInput): LegInput[] {
-  const pickup = [f.pickupAddress, f.pickupCity].filter(Boolean).join(", ");
-  const dropoff = [f.dropoffAddress, f.dropoffCity].filter(Boolean).join(", ");
+  const pickup = [f.pickupAddress, f.pickupCity, f.pickupState, f.pickupZip].filter(Boolean).join(", ");
+  const dropoff = [f.dropoffAddress, f.dropoffCity, f.dropoffState, f.dropoffZip].filter(Boolean).join(", ");
   const legs: LegInput[] = [];
   // Leg 1: primary pickup → drop-off (or first stop for multi-trip)
   const firstTo =
@@ -225,7 +227,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const submit = (a: { data: RideRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const enrich = useServerFn(enrichRideRequest);
-  const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
+  const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, pickupState:undefined,dropoffState:undefined, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [draftId, setDraftId] = useState(initialDraft?.id);
   const [selectedProvider, setSelectedProvider] = useState<NetworkProviderRow | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -586,6 +588,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 onSelect={(sel: AddressSelection) => {
                   upd("pickupAddress", sel.address);
                   if (sel.city) upd("pickupCity", sel.city);
+                  setForm(f=>({...f,pickupState:sel.state||undefined,pickupZip:sel.zip,pickupCounty:sel.county,pickupTimezone:''}));
                   setPickupMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
                 }}
                 placeholder="Street, suite/unit"
@@ -619,11 +622,11 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                   required
                 />
               </Field>
-              <Field label="Pickup time" required error={errors.pickupTime}>
+              <Field label={`Pickup time${form.pickupTimezone?' · '+form.pickupTimezone:''}`} required error={errors.pickupTime}>
                 <TimePickerField
                   value={form.pickupTime}
                   pickupDate={form.pickupDate}
-                  enforceLeadTime
+                enforceLeadTime={form.pickupState==='FL' && (!form.pickupTimezone||form.pickupTimezone==='America/New_York')}
                   onChange={(v) => {
                     setForm((f) => ({
                       ...f,
@@ -635,7 +638,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 />
               </Field>
             </div>
-            <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
+            <RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
+            <Field label={`Appointment time (drop-off arrival)${form.dropoffTimezone?' · '+form.dropoffTimezone:''}`} error={errors.appointmentTime}>
               <TimeSelect
                 value={form.appointmentTime ?? ""}
                 onChange={(v) => upd("appointmentTime", v)}
@@ -658,6 +662,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 onSelect={(sel: AddressSelection) => {
                   upd("dropoffAddress", sel.address);
                   if (sel.city) upd("dropoffCity", sel.city);
+                  setForm(f=>({...f,dropoffState:sel.state||undefined,dropoffZip:sel.zip,dropoffCounty:sel.county,dropoffTimezone:''}));
                   setDropoffMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
                 }}
                 className={inputCls}
@@ -666,7 +671,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
-            {!commerce && (
+            <RegionalAddressFields value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
+            {!commerce && form.pickupState==='FL' && form.dropoffState==='FL' && (
               <PriceEstimate
                 pickupZip={pickupMeta.zip}
                 miles={estimatedMiles}
@@ -996,6 +1002,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 }
 
 const emptyDelivery: DeliveryRequestInput = {
+  pickupState:'FL',dropoffState:'FL',pickupZip:'',dropoffZip:'',pickupCounty:'',dropoffCounty:'',pickupTimezone:'',dropoffTimezone:'',
   requestCategory: "medical_delivery",
   contactFirstName: "",
   contactLastName: "",
@@ -1026,7 +1033,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   const onBehalf = useContext(OnBehalfContext);
   const submit = (a: { data: DeliveryRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
-  const [form, setForm] = useState<DeliveryRequestInput>(() => initialDraft ? { ...emptyDelivery, deliveryCategory: "" as DeliveryRequestInput["deliveryCategory"], ...restoreDraftFields(initialDraft.payload, Object.keys(emptyDelivery)) } as DeliveryRequestInput : emptyDelivery);
+  const [form, setForm] = useState<DeliveryRequestInput>(() => initialDraft ? { ...emptyDelivery,pickupState:undefined,dropoffState:undefined, deliveryCategory: "" as DeliveryRequestInput["deliveryCategory"], ...restoreDraftFields(initialDraft.payload, Object.keys(emptyDelivery)) } as DeliveryRequestInput : emptyDelivery);
   useEffect(() => { commerce?.onChange(form); }, [form, commerce?.onChange]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -1108,6 +1115,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
 
       <fieldset className="space-y-6">
         <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Pickup location</legend>
+        <RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as DeliveryRequestInput)}/>
         <Field label="Pickup address" required error={errors.pickupAddress}><input className={inputCls} value={form.pickupAddress} onChange={(e) => upd("pickupAddress", e.target.value)} maxLength={300} /></Field>
         <div className="grid gap-6 md:grid-cols-2">
           <Field label="City" required error={errors.pickupCity}><input className={inputCls} list="fl-cities-delivery" value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} maxLength={100} /></Field>
@@ -1117,6 +1125,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
 
       <fieldset className="space-y-6">
         <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Delivery destination</legend>
+        <RegionalAddressFields value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as DeliveryRequestInput)}/>
         <Field label="Delivery address" required error={errors.dropoffAddress}><input className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} maxLength={300} /></Field>
         <Field label="City" required error={errors.dropoffCity}><input className={inputCls} list="fl-cities-delivery" value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} maxLength={100} /></Field>
       </fieldset>

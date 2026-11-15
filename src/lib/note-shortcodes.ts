@@ -17,6 +17,7 @@
  *    With an explicit colon the value is always taken as written.
  */
 
+import {stateCodeSchema,timezoneSchema} from './us-geography';
 import { DELIVERY_CATEGORY_OPTIONS, DELIVERY_CATEGORY_LABELS, RECURRENCE_OPTIONS } from "@/lib/request-schemas";
 
 export type ShortcodeGroup = {
@@ -280,7 +281,13 @@ const DEFS: Def[] = [
   { code: "EXCEPT", label: "Excluded dates", op: { kind: "note" }, value: true },
   // Locations
   { code: "PUZIP", label: "Pickup ZIP code", op: { kind: "zip" }, value: true },
-  { code: "DOZIP", label: "Drop-off ZIP code", op: { kind: "note" }, value: true },
+  { code: "DOZIP", label: "Drop-off ZIP code", op: { kind: "field", field:"dropoffZip" }, value: true },
+  { code: "PUSTATE", label: "Pickup state", op: {kind:"field",field:"pickupState"}, value:true },
+  { code: "DOSTATE", label: "Destination state", op: {kind:"field",field:"dropoffState"}, value:true },
+  { code: "PUCOUNTY", label: "Pickup county-equivalent", op: {kind:"field",field:"pickupCounty"}, value:true },
+  { code: "DOCOUNTY", label: "Destination county-equivalent", op: {kind:"field",field:"dropoffCounty"}, value:true },
+  { code: "PUTZ", label: "Pickup timezone", op: {kind:"field",field:"pickupTimezone"}, value:true },
+  { code: "DOTZ", label: "Destination timezone", op: {kind:"field",field:"dropoffTimezone"}, value:true },
   { code: "FAC", label: "Facility name", op: { kind: "note" }, value: true },
   { code: "UNIT", label: "Unit or department", op: { kind: "note" }, value: true },
   { code: "ROOM", label: "Room number", op: { kind: "note" }, value: true },
@@ -535,6 +542,8 @@ export function parseNoteShortcodes(text: string): ParsedNote {
       const token = line.slice(start, start + m[1].length);
       const upper = token === token.toUpperCase() && /[A-Z]/.test(token);
       const atLineStart = line.slice(0, start).trim() === "";
+      const previous=found[found.length-1];
+      if(previous?.def.op.kind==='field'&&['pickupState','dropoffState','pickupTimezone','dropoffTimezone','pickupCounty','dropoffCounty'].includes(previous.def.op.field)&&!colon)continue;
       if (!upper && !atLineStart) continue;
       // "…, Annapolis, MD" — a comma means the word belongs to the value before it.
       if (line.slice(0, start).replace(/\s+$/, "").endsWith(",")) continue;
@@ -621,6 +630,9 @@ export function parseNoteShortcodes(text: string): ParsedNote {
         return;
       }
       case "field": {
+        if(['pickupState','dropoffState'].includes(op.field)&&!stateCodeSchema.safeParse(value.toUpperCase()).success || ['pickupTimezone','dropoffTimezone'].includes(op.field)&&!timezoneSchema.safeParse(value).success || op.field==='dropoffZip'&&!isZipLike(value)){unreadable.push(`${def.code}: ${value}`);return;}
+        if(['pickupState','dropoffState'].includes(op.field)){payload[op.field]=value.toUpperCase();placed.push({code:def.code,label:def.label});return;}
+
         if (op.field === "pickupAddress" || op.field === "dropoffAddress") {
           const { address, city } = splitAddress(value);
           payload[op.field] = address;
@@ -672,6 +684,7 @@ export function parseNoteShortcodes(text: string): ParsedNote {
           unreadable.push(`${def.code}: ${value}`);
           return;
         }
+        payload.pickupZip=value.trim();
         payload.pickupAddressDetails = joinDetails(payload.pickupAddressDetails, `${def.label}: ${value.trim()}`);
         placed.push({ code: def.code, label: def.label });
         return;
@@ -712,7 +725,7 @@ export function parseNoteShortcodes(text: string): ParsedNote {
 
   if (delivery) {
     const deliveryPayload: Record<string, unknown> = { requestCategory: "medical_delivery" };
-    for (const key of ["pickupAddress", "pickupCity", "pickupAddressDetails", "dropoffAddress", "dropoffCity"]) {
+    for (const key of ["pickupAddress", "pickupCity", "pickupAddressDetails", "dropoffAddress", "dropoffCity","pickupState","dropoffState","pickupZip","dropoffZip","pickupCounty","dropoffCounty","pickupTimezone","dropoffTimezone"]) {
       if (payload[key] !== undefined) deliveryPayload[key] = payload[key];
     }
     if (payload.pickupDate) deliveryPayload.requestedDate = payload.pickupDate;

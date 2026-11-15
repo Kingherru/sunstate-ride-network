@@ -17,6 +17,7 @@ export default (env: ConfigEnv) => {
   Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
   return defineConfig({
     vite: {
+      ssr: { noExternal: ['rrule'] },
       plugins: [mcpPlugin()],
       resolve: { alias: {
         'entities/lib/decode.js': path.resolve(process.cwd(), 'node_modules/entities/lib/decode.js'),

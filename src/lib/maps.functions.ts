@@ -105,17 +105,18 @@ export const enrichRideRequest = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: req, error } = await supabaseAdmin
       .from("ride_requests")
-      .select("id,pickup_address,pickup_city,dropoff_address,dropoff_city,transport_type,trip_type,round_trip,additional_stops,patient_email,patient_first_name,pickup_date,pickup_time")
+      .select("id,pickup_address,pickup_city,pickup_state,pickup_zip,dropoff_address,dropoff_city,dropoff_state,dropoff_zip,transport_type,trip_type,round_trip,additional_stops,patient_email,patient_first_name,pickup_date,pickup_time")
       .eq("id", data.id).single();
     if (error || !req) return { ok: false as const, error: "not_found" };
 
-    const pickupStr = [req.pickup_address, req.pickup_city, "FL"].filter(Boolean).join(", ");
-    const dropoffStr = [req.dropoff_address, req.dropoff_city, "FL"].filter(Boolean).join(", ");
+    if(!req.pickup_state||!req.dropoff_state)return {ok:false as const,error:'regional_review_required'};
+    const pickupStr = [req.pickup_address, req.pickup_city, req.pickup_state,req.pickup_zip].filter(Boolean).join(", ");
+    const dropoffStr = [req.dropoff_address, req.dropoff_city, req.dropoff_state,req.dropoff_zip].filter(Boolean).join(", ");
     const stops = Array.isArray((req as any).additional_stops) ? (req as any).additional_stops : [];
     const [p, d, ...stopGeos] = await Promise.all([
       geocode(pickupStr),
       geocode(dropoffStr),
-      ...stops.map((s: any) => geocode([s?.address, s?.city, "FL"].filter(Boolean).join(", "))),
+      ...stops.map((s: any) => s?.state?geocode([s?.address, s?.city, s.state,s.zip].filter(Boolean).join(", ")):Promise.resolve(null)),
     ]);
     if (!p || !d) {
       if (req.patient_email) {
@@ -131,10 +132,10 @@ export const enrichRideRequest = createServerFn({ method: "POST" })
     // Legs = 1 for one-way, 2 for round trip, or 1 + additional stops for multi-trip.
     const legs = isRoundTrip ? 2 : 1 + validIntermediates.length;
     const adjustedMiles = info.miles != null ? +(info.miles * multiplier).toFixed(2) : null;
-    const cents = adjustedMiles != null ? estimateCostCents(req.transport_type, adjustedMiles, legs) : null;
+    const cents = adjustedMiles != null && req.pickup_state==='FL'&&req.dropoff_state==='FL' ? estimateCostCents(req.transport_type, adjustedMiles, legs) : null;
 
     await supabaseAdmin.from("ride_requests").update({
-      pickup_lat: p.lat, pickup_lng: p.lng, pickup_zip: p.zip,
+      pickup_lat: p.lat, pickup_lng: p.lng, pickup_zip: req.pickup_zip||p.zip,
       dropoff_lat: d.lat, dropoff_lng: d.lng,
       distance_miles: adjustedMiles,
       estimated_cost_cents: cents,

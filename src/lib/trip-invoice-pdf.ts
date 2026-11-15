@@ -18,6 +18,7 @@ export async function renderTripInvoicePdf(invoice: TripInvoice) {
   text('MY FLORIDA NEMT', true, 18); text('INVOICE ' + invoice.mfnId, true, 14);
   text('Provider: ' + invoice.providerName); if (invoice.providerPhone) text('Business contact: ' + invoice.providerPhone);
   text('Bill to: ' + invoice.billTo); text('Trip/request: ' + invoice.requestNumber);
+  if(invoice.regionalContext){text('Pickup state/timezone: '+(invoice.regionalContext.pickupState??'Not recorded')+' / '+(invoice.regionalContext.pickupTimezone??'Not verified'));text('Destination state/timezone: '+(invoice.regionalContext.destinationState??'Not recorded')+' / '+(invoice.regionalContext.destinationTimezone??'Not verified'));}
   text('Quote version: ' + invoice.quoteVersion + ' | Status: ' + invoice.status); text('Issued: ' + invoice.createdAt.slice(0, 10) + ' | Due: ' + (invoice.dueAt?.slice(0, 10) ?? 'Not provided'));
   y -= 12;
   for (const line of invoice.lines) { text(line.label + (line.quantity != null ? ' | Qty ' + line.quantity : '') + (line.rateCents != null ? ' @ ' + money(line.rateCents) : '') + ' | ' + money(line.cents)); if (line.reason) text('Reason: ' + line.reason); }

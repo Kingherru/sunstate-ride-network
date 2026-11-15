@@ -1,0 +1,7 @@
+import {createFileRoute} from '@tanstack/react-router';
+import {z} from 'zod';
+import {PublicRegionSelect} from '@/components/public/PublicRegionSelect';
+import {publicRegionContext} from '@/lib/regional-site';
+import {DsLink} from '@/components/ds/controls';
+export const Route=createFileRoute('/availability')({validateSearch:z.object({state:z.string().max(2).optional()}),head:()=>({meta:[{title:'Regional Availability — MY FLORIDA NEMT'},{name:'description',content:'Current Florida-first service availability.'},{property:'og:title',content:'Regional Availability — MY FLORIDA NEMT'},{property:'og:description',content:'Florida remains our launch service area; other states are not available.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex, nofollow'}]}),component:Availability});
+function Availability(){const {state}=Route.useSearch();const context=publicRegionContext(state??'FL');return <main className="mfn-container py-12 space-y-6 text-center"><h1 className="ds-heading uppercase text-ds-primary">Regional availability</h1><p className="ds-body">{context.available?'Florida remains our launch service area.':'Service in the selected state is not available. No providers or trip availability are being claimed.'}</p><PublicRegionSelect state={state??'FL'} onChange={()=>window.location.assign('/florida-coverage')}/><DsLink href="/florida-coverage">View Florida coverage</DsLink></main>;}

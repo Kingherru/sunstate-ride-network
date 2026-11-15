@@ -11,11 +11,13 @@ export const PASSENGER_COLUMNS = [
   "pickup_address", "pickup_city", "pickup_date", "pickup_time", "appointment_time",
   "dropoff_address", "dropoff_city", "service", "mobility_notes", "special_instructions",
   "trip_type","return_date","return_pickup_time","return_dropoff_time","passenger_count","wheelchair_positions",
+  "pickup_state","dropoff_state","pickup_zip","dropoff_zip","pickup_county","dropoff_county","pickup_timezone","dropoff_timezone",
 ] as const;
 export const DELIVERY_COLUMNS = [
   "contact_first_name", "contact_last_name", "contact_phone", "contact_email",
   "pickup_address", "pickup_city", "dropoff_address", "dropoff_city",
   "requested_date", "requested_time", "delivery_category", "delivery_instructions", "signature_required",
+  "pickup_state","dropoff_state","pickup_zip","dropoff_zip","pickup_county","dropoff_county","pickup_timezone","dropoff_timezone",
 ] as const;
 export function columnsFor(kind: ImportKind): readonly string[] {
   return kind === "passenger" ? PASSENGER_COLUMNS : DELIVERY_COLUMNS;
@@ -68,9 +70,11 @@ const yes = (v: string) => /^(y|yes|true|1)$/i.test(v.trim());
 
 export function mapRow(kind: ImportKind, r: Record<string, string>) {
   const g = (k: string) => (r[k] ?? "").trim();
+  const regional={pickupState:g('pickup_state')||undefined,dropoffState:g('dropoff_state')||undefined,pickupZip:g('pickup_zip'),dropoffZip:g('dropoff_zip'),pickupCounty:g('pickup_county'),dropoffCounty:g('dropoff_county'),pickupTimezone:g('pickup_timezone'),dropoffTimezone:g('dropoff_timezone')};
   if (kind === "passenger") {
     return {
       patientFirstName: g("patient_first_name"), patientLastName: g("patient_last_name"),
+      ...regional,
       patientPhone: g("patient_phone"), patientEmail: g("patient_email"),
       pickupAddress: g("pickup_address"), pickupCity: g("pickup_city"),
       pickupDate: g("pickup_date"), pickupTime: g("pickup_time"), appointmentTime: g("appointment_time"),
@@ -82,6 +86,7 @@ export function mapRow(kind: ImportKind, r: Record<string, string>) {
   }
   return {
     requestCategory: "medical_delivery" as const,
+    ...regional,
     contactFirstName: g("contact_first_name"), contactLastName: g("contact_last_name"),
     contactPhone: g("contact_phone"), contactEmail: g("contact_email"),
     pickupAddress: g("pickup_address"), pickupCity: g("pickup_city"),
@@ -115,7 +120,7 @@ export function validateRows(kind: ImportKind, header: string[], body: string[][
     }
     const m: any = mapped;
     const date = kind === "passenger" ? m.pickupDate : m.requestedDate;
-    const key = [kind,date, kind === "passenger" ? m.pickupTime : m.requestedTime, m.pickupAddress,m.dropoffAddress,m.patientFirstName??m.contactFirstName, m.patientLastName ?? m.contactLastName,m.transportType??m.deliveryCategory].join("|").toLowerCase();
+    const key = [kind,date, kind === "passenger" ? m.pickupTime : m.requestedTime, m.pickupAddress,m.pickupState,m.pickupTimezone,m.dropoffAddress,m.dropoffState,m.dropoffTimezone,m.patientFirstName??m.contactFirstName, m.patientLastName ?? m.contactLastName,m.transportType??m.deliveryCategory].join("|").toLowerCase();
     return { row: i + 2, ok: errors.length === 0, errors, data: p.success ? p.data : null, key, date, service: kind === "passenger" ? String(m.transportType) : String(m.deliveryCategory), dup: seen.has(key) ? seen.get(key) : (seen.set(key, i + 2), undefined) } as any;
   });
 }

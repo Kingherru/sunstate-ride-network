@@ -30,6 +30,8 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'regional-home':{state:'FL'},
+  'regional-service-areas':{regional_service_areas:{areas:[{country:'US',state:'FL',countyEquivalent:'Orange',countyType:'county',locality:'Orlando',postalCode:'32801',timezone:'America/New_York',region:'central',evidence:'provider_entered'}],crossState:false,radius:50},counties:['Orange (synthetic)'],cities:['Orlando (synthetic)'],zips:['32801']},
   'pilot-checklist':PILOT_CHECKS.map((label,i)=>({label,ready:![0,1,4,6,7,8,12,13].includes(i)})),
   'scoped-pilot':{enabled:false,emergencyStop:false,level:'read',workspaces:[{id:'synthetic-workspace',display_name:'Synthetic scoped provider',mfn_id:'MFN-A-DEMO'}],services:['ambulatory']},
   'offer-watermarks':[{id:'00000000-0000-4000-8000-000000000021',revision:2,unread:true}],

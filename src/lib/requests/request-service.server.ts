@@ -143,6 +143,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
   }
   const isRound = data.tripType === "round_trip" || data.roundTrip;
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
+    ...regionalRequestFields(data, own.submittedVia),
     trip_kind: "passenger",
     copy_fingerprint:own.series?.fingerprint??null,
     series_id:own.series?.id??null,series_index:own.series?.index??null,series_evidence:own.series?.evidence??null,
@@ -183,6 +184,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
 
 export async function insertDeliveryRequest(data: DeliveryRequestInput, own: InsertOwnership): Promise<InsertResult> {
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
+    ...regionalRequestFields(data, own.submittedVia),
     trip_kind: "medical_delivery", transport_type: "delivery", trip_type: "one_way", round_trip: false,
     patient_workspace_id: data.patientWorkspaceId ?? null,
     customer_quote_draft_id: data.customerQuoteDraftId ?? null,
@@ -199,4 +201,8 @@ export async function insertDeliveryRequest(data: DeliveryRequestInput, own: Ins
     submitted_via: own.submittedVia, on_behalf_of_user_id: own.onBehalfOfUserId ?? null, import_job_id: own.importJobId ?? null,
   } as any).select("id, mfn_id, is_test, provider_owned_operation").single();
   return finish(row, error, "medical_delivery", data.contactEmail || null, own);
+}
+
+function regionalRequestFields(data: RideRequestInput | DeliveryRequestInput, via: InsertOwnership['submittedVia']) {
+  return {pickup_state:data.pickupState || (via==='public_form'?'FL':null),dropoff_state:data.dropoffState || (via==='public_form'?'FL':null),pickup_zip:data.pickupZip||null,dropoff_zip:data.dropoffZip||null,pickup_county:data.pickupCounty||null,dropoff_county:data.dropoffCounty||null,pickup_timezone:data.pickupTimezone||null,dropoff_timezone:data.dropoffTimezone||null,regional_evidence:{state:'user_selected',county:'user_selected',timezone:'user_selected',review_required:true}};
 }

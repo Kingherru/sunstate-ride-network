@@ -6,22 +6,8 @@
 export type Region = { slug: string; name: string; intro: string; counties: string[] };
 export type City = { slug: string; name: string; county: string; title: string; description: string; h1: string; about: string[]; needs: string[]; landmarks?: string[] };
 
-export const REGIONS: Region[] = [
-  { slug: "panhandle", name: "Panhandle & Big Bend", intro: "Florida's northwest stretches from Pensacola on the Alabama line through Panama City to the state capital in Tallahassee and the rural Big Bend coast. Long distances between towns make planned trips especially important here.",
-    counties: ["Escambia", "Santa Rosa", "Okaloosa", "Walton", "Holmes", "Washington", "Bay", "Jackson", "Calhoun", "Gulf", "Liberty", "Franklin", "Gadsden", "Leon", "Wakulla", "Jefferson", "Madison", "Taylor"] },
-  { slug: "northeast", name: "Northeast", intro: "Northeast Florida centers on Jacksonville and the Atlantic coast down through St. Augustine and Palm Coast, with smaller inland communities along the Georgia border and the Suwannee River valley.",
-    counties: ["Hamilton", "Suwannee", "Lafayette", "Dixie", "Columbia", "Baker", "Union", "Bradford", "Nassau", "Duval", "Clay", "St. Johns", "Putnam", "Flagler"] },
-  { slug: "north-central", name: "North Central", intro: "North Central Florida runs from Gainesville and Ocala to the Nature Coast around Inverness — a mix of university-town neighborhoods, horse country and quiet rural roads.",
-    counties: ["Gilchrist", "Alachua", "Levy", "Marion", "Citrus", "Hernando"] },
-  { slug: "central", name: "Central", intro: "Central Florida spans the Orlando metro, the Space Coast around Melbourne, Daytona Beach on the Atlantic and Lakeland along I-4.",
-    counties: ["Volusia", "Lake", "Sumter", "Seminole", "Orange", "Osceola", "Brevard", "Polk"] },
-  { slug: "tampa-bay", name: "Tampa Bay", intro: "The Tampa Bay region wraps around the bay from Tampa and St. Petersburg south to Sarasota, then inland toward the farm and ranch counties of the Heartland.",
-    counties: ["Pasco", "Pinellas", "Hillsborough", "Manatee", "Sarasota", "Hardee", "DeSoto", "Highlands"] },
-  { slug: "southwest", name: "Southwest", intro: "Southwest Florida follows the Gulf coast from Port Charlotte through Fort Myers to Naples, with inland communities around Lake Okeechobee's western shore.",
-    counties: ["Charlotte", "Lee", "Collier", "Glades", "Hendry"] },
-  { slug: "southeast", name: "Southeast & Treasure Coast", intro: "Southeast Florida runs from the Treasure Coast around Port St. Lucie through West Palm Beach, Fort Lauderdale and Miami, then down the Florida Keys to Key West.",
-    counties: ["Indian River", "St. Lucie", "Okeechobee", "Martin", "Palm Beach", "Broward", "Miami-Dade", "Monroe"] },
-];
+export { FLORIDA_REGIONS as REGIONS } from './us-geography';
+import { FLORIDA_REGIONS as REGIONS } from './us-geography';
 
 const C = (slug: string, name: string, county: string, about: string[], needs: string[], landmarks?: string[]): City => ({
   slug, name, county, about, needs, landmarks,
