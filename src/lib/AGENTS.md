@@ -24,3 +24,4 @@
 - Draft invoice previews/PDF read owner-scoped reviewed quote history and verify the exact form fingerprint; no invoice identity or paid state is fabricated. Why: preview is not invoice issuance or money movement.
 - Patient People links extend saved patient records with same-workspace contacts and active accepted businesses; family consent is audited preparation with unconfirmed recipient email and delivery OFF. Why: a contact or consent checkbox must never grant account access or prove email verification.
 - Patient in-app updates use recipient-scoped immutable event keys; dismissals retain relationships and history. Why: lifecycle retries must not duplicate notices or delete authoritative records.
+- Network activity counts use user read watermarks and existing RLS reads; cart can retain unmapped catalog items but server reconstruction never activates checkout. Why: visible activity and pricing cannot imply paid entitlement.

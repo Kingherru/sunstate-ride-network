@@ -1,10 +1,14 @@
 # Florida MVP launch sequence
 ## Pass 4V — patient operations and shared resources
-- [ ] Verify and complete explicit linked-patient lifecycle/detail visibility without widening account access.
-- [ ] Complete shared People contacts/payers/patients and scoped relationship preparation.
-- [ ] Complete clickable notifications, connections and shared Messaging read/reply controls; external delivery OFF.
-- [ ] Complete readable Network membership gating/activity, shared cart and Training & Resources entitlements.
-- [ ] Focused synthetic authorization/dedupe/cart tests and desktop/phone checks; preserve real records, no publication or money actions.
+- [x] Existing immutable linked-patient authorization reused; owned provider name, creator, custom vehicle name and latest update added to safe patient snapshots; authoritative display status mapping retained.
+- [x] Shared People multi-role contacts and accessible contact dialog, Patient Connections tab, Facility multi-patient management reused. Same-workspace contacts and accepted business links saved through locked RPC; family consent/reference/category/minimum-field preparation audited and revocable, never confirms email or sends.
+- [x] Patient in-app received/status/assignment/invoice notifications use dedupe keys; accepted connections included in notification list/read-all; dismiss preserves history. Shared Messaging header/read/reply controls and actual synthetic conversation previews reused.
+- [x] Network membership banner/cart entry and source-record activity watermarks added; base evidence limited to known membership catalog. Training & Resources tabs, purchase history and unmapped catalog cart review connected; current two courses preserved.
+- [x] Focused checks: 60 retained/new rule tests, 4 new handler tests, 25 consent/guide tests; 6 isolated People and 4 isolated linked-visibility/dedupe SQL assertions rollback. Desktop/390px history/People/contact dialog/Messaging/Network/training checked; active/inactive Network previews and unsent reply checked; real catalog $50 cart add observed without checkout. Harness type/production compilation OK.
+- [ ] Secure purchased PDF viewer remains blocked: existing guide delivery is OFF and authoritative purchase revalidation requires live Stripe calls forbidden in this pass. No substitute file or client entitlement added.
+- [ ] Family email confirmation/send lifecycle and populated upcoming/history recipient previews remain unwired beyond consent/content preparation; no confirmed-recipient system exists for private contacts. Additional payer-specific rate models remain beyond existing confirmed agreements.
+- [ ] Populated live save/readback and recipient trip notifications not exercised because real rows/accounts/messages/submissions are prohibited. Exact per-pass credits unavailable: tool exposes only billing-period usage (578 credits), not this pass.
+- Preservation verified: 28 profiles, seven suspended test accounts, five trips, ten requests, zero contacts/patient profiles/workspace messages, 22 notifications unchanged; no publication, external delivery, Stripe call, charge or trip submission.
 ## Pass 4U — trip operations
 - [x] Shared provider-owned/customer destinations reused; owned workspace Trips/Reservations/History/Scheduler readers connected; no automatic Network distribution and Medical Delivery remains request-only. Saved/usual provider chooser remains in-form; copied references retained and server-revalidated.
 - [x] Bounded individual-date/daily/weekday/weekly/biweekly/monthly generator, exclusions/removable occurrences, per-occurrence pickup/appointment/return times, duplicate preflight, immutable retry keys, series evidence and explicit per-row results. Quotes and assignments are cleared across copies.

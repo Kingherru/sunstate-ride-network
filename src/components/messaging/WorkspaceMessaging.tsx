@@ -164,20 +164,20 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between gap-2 ds-glass rounded-b-none px-4 py-3">
-              <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 ds-glass rounded-b-none px-4 py-3">
+              <div className="min-w-0 basis-full md:flex-1 md:basis-auto">
                 <DsButton variant="ghost" onClick={() => setSelected(null)} className="mb-2 md:hidden">
                   ← Back to conversations
                 </DsButton>
-                <h3 className="ds-body truncate font-bold text-ds-primary">{thread.conversation.otherName}</h3>
+                <h3 className="ds-body break-words font-bold text-ds-primary">{thread.conversation.otherName}</h3>
                 {thread.conversation.otherMfnId && <p className="ds-support font-mono">{thread.conversation.otherMfnId}</p>}
               </div>
               {conversations.find(c=>c.id===selected)?.unreadCount ? <DsButton size="sm" variant="secondary" disabled={reading} onClick={()=>selected&&onRead([selected])}>Mark as read</DsButton> : null}
               {!readOnly && (
-                <button onClick={() => onToggleArchive(!thread.conversation.archived)}
-                  className="ds-glass-btn min-h-9 shrink-0 px-3 text-sm">
+                <DsButton variant="ghost" onClick={() => onToggleArchive(!thread.conversation.archived)}
+                  className="shrink-0">
                   {thread.conversation.archived ? <><ArchiveRestore className="size-3.5" /> Restore</> : <><Archive className="size-3.5" /> Archive</>}
-                </button>
+                </DsButton>
               )}
             </div>
             <div className="max-h-[22rem] min-h-[10rem] flex-1 space-y-3 overflow-y-auto border-y border-ds-border px-4 py-3">

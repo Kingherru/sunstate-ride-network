@@ -1,0 +1,21 @@
+BEGIN;
+CREATE TEMP TABLE ride_requests(id uuid,patient_workspace_id uuid,workspace_id uuid,requester_user_id uuid,is_test boolean);
+CREATE TEMP TABLE workspaces(id uuid,account_type text,status text,is_test_account boolean);
+CREATE TEMP TABLE workspace_members(workspace_id uuid,user_id uuid,role text,is_contractor boolean,removed_at timestamptz);
+CREATE TEMP TABLE user_profiles(user_id uuid,status text,is_test_account boolean,deleted_at timestamptz);
+DO $$ DECLARE d text;BEGIN SELECT pg_get_functiondef(oid) INTO d FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname='patient_request_access';d:=replace(replace(d,'public.','pg_temp.'),'auth.uid()', '''00000000-0000-4000-8000-000000000099''::uuid');EXECUTE d;END $$;
+INSERT INTO pg_temp.workspaces VALUES('00000000-0000-4000-8000-000000000001','private_pay','active',false),('00000000-0000-4000-8000-000000000002','provider','active',false);
+INSERT INTO pg_temp.user_profiles VALUES('00000000-0000-4000-8000-000000000099','active',false,null);
+INSERT INTO pg_temp.workspace_members VALUES('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000099','owner',false,null);
+INSERT INTO pg_temp.ride_requests VALUES('00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002',null,false),('00000000-0000-4000-8000-000000000011',null,'00000000-0000-4000-8000-000000000002',null,false);
+CREATE TEMP TABLE notices(event_key text UNIQUE,recipient uuid);
+INSERT INTO pg_temp.notices VALUES('event:recipient','00000000-0000-4000-8000-000000000099');
+INSERT INTO pg_temp.notices VALUES('event:recipient','00000000-0000-4000-8000-000000000099') ON CONFLICT DO NOTHING;
+DO $$ BEGIN
+IF NOT pg_temp.patient_request_access('00000000-0000-4000-8000-000000000010') THEN RAISE EXCEPTION 'Explicit provider-created linked trip hidden';END IF;
+IF pg_temp.patient_request_access('00000000-0000-4000-8000-000000000011') THEN RAISE EXCEPTION 'Unlinked provider trip exposed';END IF;
+UPDATE pg_temp.workspace_members SET removed_at=now();
+IF pg_temp.patient_request_access('00000000-0000-4000-8000-000000000010') THEN RAISE EXCEPTION 'Removed identity still authorized';END IF;
+IF (SELECT count(*) FROM pg_temp.notices)<>1 THEN RAISE EXCEPTION 'Event retry duplicated recipient notice';END IF;
+RAISE NOTICE 'Four isolated visibility and dedupe assertions passed';END $$;
+ROLLBACK;
