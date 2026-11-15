@@ -47,7 +47,8 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
   const [expires, setExpires] = useState('');
   const [reason, setReason] = useState('');
   const m = usePortalMutation({ mutationFn: async (action: 'accept' | 'counter' | 'decline' | 'revise' | 'reject_counter') => {
-    const r = action === 'accept' ? await accept({ data: { offer_id: offer.id, approve_counter: source } }) : await respond({ data: { offer_id: offer.id, action, ...(action === 'counter' || action === 'revise' ? { amount_cents: Math.round(Number(amount) * 100), expires_at: new Date(expires).toISOString() } : {}), business_note: note || undefined, reason: (reason || undefined) as 'no_driver' | undefined } });
+    if(action==='accept'&&!sd?.offer_version)throw new Error('Review the latest offer before accepting.');
+    const r = action === 'accept' ? await accept({ data: { offer_id: offer.id, approve_counter: source,amount_cents:offer.amount_cents,offer_version:sd?.offer_version??'' } }) : await respond({ data: { offer_id: offer.id, action, ...(action === 'counter' || action === 'revise' ? { amount_cents: Math.round(Number(amount) * 100), expires_at: new Date(expires).toISOString() } : {}), business_note: note || undefined, reason: (reason || undefined) as 'no_driver' | undefined } });
     if (!r.ok) throw new Error(r.error || 'This offer is no longer available');
   }, onSuccess: () => { toast.success('Offer response recorded.'); refresh(); onClose(); }, onError: (e: Error) => toast.error(e.message) });
   return <DetailOverlayFrame title="Offer details" onClose={onClose}>
@@ -62,7 +63,8 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
         <DetailSection tone="notes" title="Offer versions & events">{sd.versions.length ? sd.versions.map(v => <p key={v.created_at} className="ds-support">{v.side} · {label(v.action)}{v.amount_cents ? <> · <span className="portal-money">{money(v.amount_cents)}</span></> : ''} · {new Date(v.created_at).toLocaleString()}</p>) : <p className="ds-support">No counteroffers.</p>}
           {sd.events.map(e => <p key={e.created_at + e.event_type} className="ds-support text-ds-muted">{label(e.event_type)} · {new Date(e.created_at).toLocaleString()}</p>)}</DetailSection>
       </div>}
-      {source && <p className="ds-body rounded-ds-sm ds-status-yellow px-3 py-2 font-semibold">{PAYMENT_RESPONSIBILITY_WARNING}</p>}
+      <p className="ds-body rounded-ds-sm ds-status-yellow px-3 py-2 font-semibold">{PAYMENT_RESPONSIBILITY_WARNING}</p>
+      {sd&&<DetailSection title="Matching & pilot"><p className="ds-body">{sd.sender_business??'Sender business unavailable'}</p><p className="ds-support">{sd.match_explanation?.join(' · ')||'Service area match'}</p>{sd.pilot_reason&&<p className="ds-status-yellow p-2">{sd.pilot_reason}</p>}<DsButton variant="secondary" disabled title="Pre-acceptance messaging authorization is not available. Use negotiation notes.">Message Sender — unavailable before acceptance</DsButton></DetailSection>}
       <p className="ds-support text-ds-muted">Passenger identity and exact trip details remain protected until assignment.</p>
       <DetailSection tone="notes" title="Negotiation history"><details className="ds-history"><summary className="ds-label cursor-pointer">View history</summary>{(history.data??[]).map(h=><p className="ds-support mt-2" key={h.id}>{h.side} · {label(h.action)}{h.amount_cents ? <> · <span className="portal-money">{money(h.amount_cents)}</span></> : ''} · {h.business_note||'—'} · {new Date(h.created_at).toLocaleString()}</p>)}</details></DetailSection>
       {mode === 'review' ? <div className="flex flex-wrap gap-2 border-t-2 border-ds-primary/20 pt-4">
@@ -90,11 +92,12 @@ export function ProviderNetworkOffers() {
       <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span><span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
       <h3 className="ds-subheading text-ds-primary">{o.pickup_area} → {o.destination_area}</h3>
       <p className="ds-support font-mono">{o.source_mfn_id}</p><p className="ds-body">{o.pickup_date} · {o.pickup_time.slice(0,5)} · {label(o.trip_type)}</p>
-      <p className="ds-body">{label(o.service_type)} · {o.capability}{` · ${o.estimated_miles != null ? `about ${o.estimated_miles} miles` : 'Miles Not Provided'}`}</p>
+      <p className="ds-body">{label(o.service_type)} · {o.capability}{` · ${o.estimated_miles != null ? `Approximate route: ${o.estimated_miles} miles` : 'Service area match'}`}</p>
       <OfferCardMeta offerId={o.id} />
       {'match_explanation'in o&&Array.isArray(o.match_explanation)&&<p className="ds-support">{o.match_explanation.filter((x:unknown)=>typeof x==='string').join(' · ')}</p>}
       <div className="flex justify-between gap-3"><strong className="ds-body"><span className="portal-money">{money(o.amount_cents)}</span></strong><span className="ds-support text-ds-muted">{Math.max(0, Math.ceil((Date.parse(o.expires_at)-Date.now())/3600000))} hours remaining</span></div>
-      <DsButton variant="secondary" onClick={() => setReview(o)} disabled={!['pending','revised','countered'].includes(o.status)}>Review offer</DsButton>
+      <p className="ds-support">Respond by {new Date(o.expires_at).toLocaleString()}</p>
+      <DsButton variant="secondary" onClick={() => setReview(o)}>Review offer</DsButton>
     </article>)}</div>
     {review && <OfferResponse offer={review} onClose={() => setReview(null)} />}
   </div>;
@@ -119,7 +122,6 @@ export function DistributionActivity({ admin = false }: { admin?: boolean }) {
       <div className="space-y-4 mt-4"><p className="ds-body">{d.source_business || 'Public request'} · {d.source_mfn_id} · <span className="portal-money">{money(d.amount_cents)}</span> · {d.pickup_date} {d.pickup_time}</p>
         {(d.request_id || d.trip_id) && <DsButton variant="ghost" onClick={() => openDetails({ kind: d.request_id ? 'request' : 'trip', id: d.request_id || d.trip_id || '' })}>View request details</DsButton>}
         {d.can_manage&&<WaveReview distributionId={d.id}/>}
-        {d.can_manage && nextRadius(d.current_radius) && !['provider_selected','closed','canceled','unavailable'].includes(d.status) && <DsButton disabled={m.isPending} onClick={() => { if(confirm(`Send this distribution to eligible providers within ${nextRadius(d.current_radius)} miles? Matching must be explicitly active.`)) m.mutate(d.id); }}><Send className="size-4" />{d.current_radius ? `Review expansion to ${nextRadius(d.current_radius)} miles` : 'Review first wave — 20 miles'}</DsButton>}
         {admin && d.can_manage && d.status==='needs_attention' && <DsButton variant="secondary" disabled={attention.isPending} onClick={()=>attention.mutate()}><AlertTriangle className="size-4"/>Record attention alert</DsButton>}
         <div className="ds-support space-y-2">{d.waves.map(w => <p key={w.id}>{w.radius_miles}-mile wave · {new Date(w.sent_at).toLocaleString()} · {d.offers.filter(o => o.wave_id===w.id).length} recipients</p>)}</div>
         <h3 className="ds-label text-ds-primary">Offers</h3>

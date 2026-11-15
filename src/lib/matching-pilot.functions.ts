@@ -1,0 +1,16 @@
+import {createServerFn} from '@tanstack/react-start';
+import {z} from 'zod';
+import {requireSupabaseAuth} from '@/integrations/supabase/auth-middleware';
+import {pilotConfigSchema,EMPTY_PILOT} from './matching-pilot-rules';
+export const readMatchingPilot=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+ const {data,error}=await context.supabase.rpc('matching_pilot_config');if(error)throw new Error('Master Admin pilot access required.');
+ const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
+ const {data:workspaces,error:workspaceError}=await supabaseAdmin.from('workspaces').select('id,display_name,mfn_id').eq('account_type','provider').eq('status','active').eq('is_test_account',false);
+ if(workspaceError)throw new Error('Pilot workspace choices unavailable.');
+ const {data:history}=await supabaseAdmin.from('account_security_audit').select('id,created_at,details').eq('event_type','matching_pilot_changed').order('created_at',{ascending:false}).limit(20);
+ return {config:pilotConfigSchema.parse(data??EMPTY_PILOT),workspaces:workspaces??[],history:history??[]};
+});
+export const saveMatchingPilot=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({config:pilotConfigSchema,reason:z.string().trim().min(5).max(500)}).strict().parse(i)).handler(async({data,context})=>{
+ const {error}=await context.supabase.rpc('save_matching_pilot',{_config:data.config,_reason:data.reason});if(error)throw new Error('Pilot configuration not saved. Check explicit scope, reason and Master Admin permission.');return {ok:true};
+});
+export const confirmPilotTimezone=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({distributionId:z.string().uuid(),timezone:z.enum(['America/New_York','America/Chicago'])}).parse(i)).handler(async({data,context})=>{const {error}=await context.supabase.rpc('pilot_set_pickup_timezone',{_distribution:data.distributionId,_timezone:data.timezone});if(error)throw new Error('Timezone confirmation unavailable after offers exist.');return {ok:true};});

@@ -1,0 +1,22 @@
+import {describe,it,expect} from 'vitest';
+import {EMPTY_PILOT,pilotAllows,pilotConfigSchema,selectedExportIds} from '../src/lib/matching-pilot-rules';
+import {candidateReasons,type MatchingCandidate} from '../src/lib/nearby-matching-rules';
+const sender='00000000-0000-4000-8000-000000000001',receiver='00000000-0000-4000-8000-000000000002';
+const config={...EMPTY_PILOT,enabled:true,inApp:true,senders:[sender],receivers:[receiver],services:['ambulatory'] as const};
+describe('pilot scope',()=>{
+ it('defaults off and selects nobody',()=>{expect(EMPTY_PILOT.enabled).toBe(false);expect(EMPTY_PILOT.senders).toEqual([]);expect(EMPTY_PILOT.receivers).toEqual([])});
+ it('permits only explicit pilot parties',()=>expect(pilotAllows({...config,services:[...config.services]},sender,receiver,'ambulatory')).toBe(true));
+ for(const key of ['enabled','inApp'] as const)it(`requires ${key}`,()=>expect(pilotAllows({...config,services:[...config.services],[key]:false},sender,receiver,'ambulatory')).toBe(false));
+ it('emergency stop prevents acceptance',()=>expect(pilotAllows({...config,services:[...config.services],emergencyStop:true},sender,receiver,'ambulatory')).toBe(false));
+ it('rejects self offers',()=>expect(pilotAllows({...config,services:[...config.services],receivers:[sender]},sender,sender,'ambulatory')).toBe(false));
+ it('rejects unselected recipient',()=>expect(pilotAllows({...config,services:[...config.services],receivers:[]},sender,receiver,'ambulatory')).toBe(false));
+ it('rejects unapproved service',()=>expect(pilotAllows({...config,services:[...config.services]},sender,receiver,'wheelchair')).toBe(false));
+ it('limits wave size to 25',()=>expect(pilotConfigSchema.safeParse({...EMPTY_PILOT,maxCandidates:26}).success).toBe(false));
+ it('limits response window to 1440 minutes',()=>expect(pilotConfigSchema.safeParse({...EMPTY_PILOT,responseMinutes:1441}).success).toBe(false));
+ it('does not permit global or external activation fields',()=>expect(pilotConfigSchema.safeParse({...EMPTY_PILOT,email:true,global:true}).success).toBe(false));
+});
+describe('current candidate gates',()=>{const base:MatchingCandidate={id:receiver,optedIn:true,active:true,entitled:true,verified:true,subtype:'nemt_business',service:'ambulatory',vehicle:true,driver:true,area:true,hours:true,available:true,safetyClear:true,paymentClear:true,source:false,assigned:false,previousOffer:false};
+ for(const key of ['optedIn','active','entitled','verified','vehicle','driver','area','hours','available','safetyClear','paymentClear'] as const)it(`fails closed without ${key}`,()=>expect(candidateReasons({...base,[key]:false}).length).toBeGreaterThan(0));
+ it('contractors cannot accept wheelchair trips',()=>expect(candidateReasons({...base,subtype:'independent_contractor',service:'wheelchair'})).toContain('Contractor ambulatory only'));
+});
+describe('selected export',()=>{it('deduplicates selected trip IDs',()=>expect(selectedExportIds([sender,sender,receiver])).toEqual([sender,receiver]));it('requires a selection',()=>expect(()=>selectedExportIds([])).toThrow());it('rejects invalid IDs',()=>expect(()=>selectedExportIds(['private-record'])).toThrow());it('bounds selection to 500',()=>expect(()=>selectedExportIds(Array.from({length:501},(_,i)=>`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`))).toThrow());});

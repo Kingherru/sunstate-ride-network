@@ -56,10 +56,10 @@ export const sendNetworkWave = createServerFn({ method: 'POST' }).middleware([re
     return result as { radius: number; recipients: number };
   });
 export const acceptNetworkOffer = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ offer_id: z.string().uuid(), approve_counter: z.boolean().default(false) }).parse(i))
+  .inputValidator((i: unknown) => z.object({ offer_id: z.string().uuid(), approve_counter: z.boolean().default(false), amount_cents:z.number().int().positive(), offer_version:z.string().datetime() }).parse(i))
   .handler(async ({ data, context }) => {
     await requireNetworkAddon(context.supabase, context.userId);
-    const { data: result, error } = await context.supabase.rpc('network_accept_offer', { _offer: data.offer_id, _approve: data.approve_counter });
+    const { data: result, error } = await context.supabase.rpc('pilot_accept_offer', { _offer: data.offer_id, _approve: data.approve_counter, _amount:data.amount_cents,_version:data.offer_version });
     if (error) throw new Error(error.message);
     return result as { ok: boolean; error?: string; trip_id?: string };
   });
@@ -121,6 +121,7 @@ export const verifyNetworkBase = createServerFn({method:'POST'}).middleware([req
  .inputValidator((i:unknown)=>z.object({workspace_id:z.string().uuid(),address:z.string().trim().min(1).max(300),lat:z.number().min(-90).max(90),lng:z.number().min(-180).max(180),services:z.array(z.enum(['ambulatory','wheelchair','stretcher'])).min(1)}).parse(i))
  .handler(async({data,context})=>{const {error}=await context.supabase.rpc('network_set_service_base',{_workspace:data.workspace_id,_address:data.address,_lat:data.lat,_lng:data.lng,_services:data.services});if(error)throw new Error(error.message);return {ok:true};});
 export type OfferSafeDetail = {
+  offer_version?:string;pilot_reason?:string;match_explanation?:string[];sender_business?:string;
   offer_mfn_id: string; status: string; viewer: 'sender' | 'receiver'; distribution_stage_miles: number | null; distribution_status: string;
   stages: { radius_miles: number; sent_at: string }[]; versions: { side: string; action: string; amount_cents: number | null; created_at: string }[];
   events: { event_type: string; created_at: string }[]; latest_negotiation: { side: string; action: string; amount_cents: number | null; created_at: string } | null;

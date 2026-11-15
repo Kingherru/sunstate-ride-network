@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { StatusPill } from "@/components/ds/status";
 import { getLaunchReadiness } from "@/lib/launch-readiness.functions";
+import { MatchingPilot } from '@/components/network/MatchingPilot';
 import { CONNECT_ENDPOINT_URL, CONNECT_SECRET_NAME, CONNECT_WEBHOOK_EVENTS, type ReadinessGroup } from "@/lib/launch-readiness";
 
 export const Route = createFileRoute("/_authenticated/admin/launch")({
@@ -31,8 +32,9 @@ function LaunchReadiness() {
   return (
     <>
       <PageHead title="Launch Readiness">
-        Read-only. Nothing on this page turns anything on. "Code ready", "Configured in Stripe" and "Launch enabled" are separate states.
+        Readiness is read-only. Only the Master Admin pilot section may save controlled pilot settings; global matching stays off.
       </PageHead>
+      <MatchingPilot />
       {q.isLoading && <p className="ds-support text-ds-text-2">Loading…</p>}
       {q.error && <p className="ds-support" role="alert"><StatusPill status="Could not load" tone="red" /> {(q.error as Error).message}</p>}
       {s && (

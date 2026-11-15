@@ -259,6 +259,7 @@ export type Database = {
         Row: {
           correlation_id: string | null
           created_at: string
+          details: Json
           driver_ids: string[]
           event_type: string
           id: string
@@ -273,6 +274,7 @@ export type Database = {
         Insert: {
           correlation_id?: string | null
           created_at?: string
+          details?: Json
           driver_ids?: string[]
           event_type: string
           id?: string
@@ -287,6 +289,7 @@ export type Database = {
         Update: {
           correlation_id?: string | null
           created_at?: string
+          details?: Json
           driver_ids?: string[]
           event_type?: string
           id?: string
@@ -6723,6 +6726,8 @@ export type Database = {
           pickup_lat: number
           pickup_lng: number
           pickup_time: string
+          pickup_timezone: string | null
+          pilot_wave: boolean
           represented_person_id: string | null
           request_id: string | null
           selected_offer_id: string | null
@@ -6776,6 +6781,8 @@ export type Database = {
           pickup_lat: number
           pickup_lng: number
           pickup_time: string
+          pickup_timezone?: string | null
+          pilot_wave?: boolean
           represented_person_id?: string | null
           request_id?: string | null
           selected_offer_id?: string | null
@@ -6829,6 +6836,8 @@ export type Database = {
           pickup_lat?: number
           pickup_lng?: number
           pickup_time?: string
+          pickup_timezone?: string | null
+          pilot_wave?: boolean
           represented_person_id?: string | null
           request_id?: string | null
           selected_offer_id?: string | null
@@ -7210,6 +7219,7 @@ export type Database = {
           id: boolean
           max_candidates: number
           max_radius: number
+          pilot_config: Json
           response_minutes: number
           updated_at: string
           updated_by: string | null
@@ -7222,6 +7232,7 @@ export type Database = {
           id?: boolean
           max_candidates?: number
           max_radius?: number
+          pilot_config?: Json
           response_minutes?: number
           updated_at?: string
           updated_by?: string | null
@@ -7234,6 +7245,7 @@ export type Database = {
           id?: boolean
           max_candidates?: number
           max_radius?: number
+          pilot_config?: Json
           response_minutes?: number
           updated_at?: string
           updated_by?: string | null
@@ -10054,6 +10066,7 @@ export type Database = {
         Args: { _ids?: string[] }
         Returns: number
       }
+      matching_pilot_config: { Args: never; Returns: Json }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -10069,6 +10082,15 @@ export type Database = {
       network_accept_offer: {
         Args: { _approve?: boolean; _offer: string }
         Returns: Json
+      }
+      network_acceptance_candidates: {
+        Args: { _distribution: string; _offer: string; _radius: number }
+        Returns: {
+          excluded: string
+          explanation: Json
+          score: number
+          workspace: string
+        }[]
       }
       network_ack_payment_responsibility: {
         Args: { _distribution: string }
@@ -10377,6 +10399,24 @@ export type Database = {
         }
         Returns: string
       }
+      pilot_accept_offer: {
+        Args: {
+          _amount: number
+          _approve: boolean
+          _offer: string
+          _version: string
+        }
+        Returns: Json
+      }
+      pilot_preview_wave: { Args: { _distribution: string }; Returns: Json }
+      pilot_scope_reason: {
+        Args: { _distribution: string; _receiver?: string }
+        Returns: string
+      }
+      pilot_set_pickup_timezone: {
+        Args: { _distribution: string; _timezone: string }
+        Returns: undefined
+      }
       prepare_customer_invoice_payment: {
         Args: {
           _account: string
@@ -10455,6 +10495,7 @@ export type Database = {
         Returns: boolean
       }
       provider_network_entitled: { Args: { _ws: string }; Returns: boolean }
+      provider_opportunity_ids: { Args: never; Returns: string[] }
       provider_verification_badges: {
         Args: { _workspaces: string[] }
         Returns: Json
@@ -10513,6 +10554,10 @@ export type Database = {
         Args: { _request: string }
         Returns: boolean
       }
+      record_selected_export: {
+        Args: { _columns: string[]; _format: string; _ids: string[] }
+        Returns: undefined
+      }
       refer_next_eligible_provider: {
         Args: { _trip_id: string }
         Returns: string
@@ -10556,6 +10601,10 @@ export type Database = {
       }
       save_customer_communication_settings: {
         Args: { _settings: Json; _ws: string }
+        Returns: undefined
+      }
+      save_matching_pilot: {
+        Args: { _config: Json; _reason: string }
         Returns: undefined
       }
       save_nearby_settings: {
@@ -10692,6 +10741,10 @@ export type Database = {
       select_provider_subtype: {
         Args: { _subtype: string; _ws: string }
         Returns: undefined
+      }
+      selected_trip_export: {
+        Args: { _columns: string[]; _format: string; _ids: string[] }
+        Returns: Json
       }
       set_business_member_permissions: {
         Args: {

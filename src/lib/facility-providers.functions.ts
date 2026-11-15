@@ -29,6 +29,7 @@ export type NetworkProviderRow = {
 };
 
 const filtersSchema = z.object({
+  nearby_opportunities:z.boolean().optional(),
   state:z.string().length(2).optional(),
   region:z.string().max(100).optional(),
   provider_subtype:z.enum(['nemt_business','independent_contractor']).optional(),
@@ -77,7 +78,8 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
     const contractorRows=((contractors??[]) as unknown as Record<string,unknown>[]).filter(r=>r.provider_subtype==='independent_contractor').map(raw=>{
       const r=publicContractorFields(raw);return {workspace_id:r.workspace_id,business_name:r.business_name,mfn_id:r.mfn_id,provider_subtype:r.provider_subtype,counties:r.counties,cities:r.cities,zips:r.zips,hours:r.hours,service_types:r.service_types,evidence_language:r.evidence_language,description:null,business_contact_email:null,business_contact_phone:null,medical_delivery:false,accepting_connections:true,is_saved:false} as unknown as NetworkProviderRow;
     });
-    const combined=[...(rows??[]).map(r=>({...r,provider_subtype:'nemt_business'})),...contractorRows.filter(r=>!data.saved_only)];
+    let combined=[...(rows??[]).map(r=>({...r,provider_subtype:'nemt_business'})),...contractorRows.filter(r=>!data.saved_only)];
+    if(data.nearby_opportunities){const {data:ids,error:operationalError}=await context.supabase.rpc('provider_opportunity_ids');if(operationalError)return {ok:false as const,error:'Opportunity availability is a provider-only filter.'};combined=combined.filter(r=>ids?.includes(r.workspace_id));}
     const results = combined.filter(r=>(!data.state||data.state==='FL')&&(!data.region||r.counties.some(c=>REGIONS.find(region=>region.slug===data.region)?.counties.includes(c)))&&(!data.provider_subtype||r.provider_subtype===data.provider_subtype)&&(!data.search||r.business_name.toLowerCase().includes(data.search.toLowerCase()))&&(!data.service_type||r.service_types.includes(data.service_type))&&(!data.county||r.counties.includes(data.county))&&(!data.city||r.cities.includes(data.city))&&(!data.zip||r.zips.includes(data.zip))&&(!data.medical_delivery||r.medical_delivery)).map(row => {
       const center = centers?.find(p => p.workspace_id === row.workspace_id);
       const distance = origin && center?.lat != null && center?.lng != null ? approximateMiles(origin, { lat: center.lat, lng: center.lng }) : null;

@@ -13,7 +13,7 @@ import {
 } from "@/lib/facility-providers.functions";
 import { listMyMessagingWorkspaces, startOrOpenConversation, type MessagingWorkspace } from "@/lib/workspace-messages.functions";
 import { cn } from "@/lib/utils";
-import { DsButton,DsSelect } from '@/components/ds/controls';
+import { DsButton,DsSelect,DsCheckbox } from '@/components/ds/controls';
 import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
 import {REGIONS} from '@/lib/coverage';
@@ -24,7 +24,7 @@ import {REGIONS} from '@/lib/coverage';
 function capabilityLabels(types: string[]) {
   return Array.from(new Set(types.map((s) => /ambulatory|^amb$/i.test(s) ? "Ambulatory" : /wheelchair|^wc$/i.test(s) ? "Wheelchair" : /gurney|stretcher|^str$/i.test(s) ? "Gurney/Stretcher" : /delivery/i.test(s) ? "Medical Delivery" : /pickup|drop.?off/i.test(s) ? "Pickup and Drop-off" : s)));
 }
-export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?: boolean; onSelect?: (v: NetworkProviderRow) => void }) {
+export function ProviderDirectory({ savedOnly = false, onSelect, providerOperations=false }: { savedOnly?: boolean; onSelect?: (v: NetworkProviderRow) => void;providerOperations?:boolean }) {
   const qc = useQueryClient();
   const listFn = useServerFn(listNetworkProviders);
   const saveFn = useServerFn(saveNetworkProvider);
@@ -43,6 +43,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   const [zip, setZip] = useState("");
   const [medicalDelivery, setMedicalDelivery] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [opportunities,setOpportunities]=useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messageTarget, setMessageTarget] = useState<NetworkProviderRow | null>(null);
   const [originText, setOriginText] = useState('');
@@ -50,6 +51,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   const [radius, setRadius] = useState(50);
 
   const filters = {
+    nearby_opportunities:providerOperations&&opportunities||undefined,
     state,region:region||undefined,
     provider_subtype:providerType||undefined,
     search: search.trim() || undefined,
@@ -133,6 +135,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
             <input value={zip} onChange={(e) => setZip(e.target.value)} maxLength={10} placeholder="ZIP" aria-label="ZIP code" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {providerOperations&&<DsCheckbox label="Accepting nearby opportunities" checked={opportunities} onChange={e=>setOpportunities(e.target.checked)}/>}
             <label className="inline-flex items-center gap-2 text-xs font-bold">
               <input type="checkbox" checked={medicalDelivery} onChange={(e) => setMedicalDelivery(e.target.checked)} /> Medical delivery
             </label>

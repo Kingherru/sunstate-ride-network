@@ -71,5 +71,18 @@ export const getLaunchReadiness = createServerFn({ method: "GET" })
       {label:'External opportunity email/SMS',status:'Intentionally Off',tone:'green',note:'No external delivery or fake send history.'},
     ]});
     void ledger;
+    const {data:pilot}=await context.supabase.rpc('matching_pilot_config');
+    const pc=pilot&&typeof pilot==='object'&&!Array.isArray(pilot)?pilot:{};
+    groups.push({title:'Controlled matching pilot',items:[
+      {label:'Matching foundation',status:'Scoped manual offers and current evidence gates installed',tone:'green'},
+      {label:'Pilot configuration',status:pc.enabled===true?'Explicitly enabled':'Disabled — no automatic selection',tone:pc.enabled===true?'yellow':'green'},
+      {label:'Emergency stop',status:pc.emergencyStop===true?'Stopped — pending pilot offers frozen':'Not activated',tone:pc.emergencyStop===true?'yellow':'green'},
+      {label:'Acceptance-time rechecks',status:'Installed — populated transaction verification required',tone:'yellow',note:'Scope, consent, entitlement, verification, capacity, geography, explicit same timezone, safety/payment hold and locked offer version are rechecked.'},
+      {label:'Atomic assignment & concurrency',status:'Existing locked transaction retained — rollback/concurrency execution unverified',tone:'yellow',note:'Pilot settings, distribution, offer and source-trip locks preserve one winner; no real acceptance test performed.'},
+      {label:'Geography & availability',status:'Missing timezone or authoritative city/ZIP excludes candidates',tone:'yellow',note:'County/region-only and cross-timezone windows remain blocked rather than guessed.'},
+      {label:'Network entitlement mapping',status:'Existing authoritative membership gate required',tone:'yellow'},
+      {label:'Payments & settlement',status:'Separate — funding rules retained, no processor calls',tone:'green'},
+      {label:'Global / automatic / external delivery',status:'Remain OFF; pilot has no global activation control',tone:'green'},
+    ]});
     return { groups, connectSecret };
   });

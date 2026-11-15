@@ -84,7 +84,13 @@ export const DEMO_NETWORK_PAYMENTS: NetworkPaymentRow[] = [
 /* ---------- Network offers & distributions ---------- */
 const OFFER_IN: NetworkOffer = { id: uuid(21), mfn_id: "MFN-O-DEMO21", distribution_id: uuid(31), source_mfn_id: "MFN-A-DEMO11", service_type: "passenger_transportation", pickup_area: "Clearwater, Pinellas", destination_area: "St. Petersburg, Pinellas", pickup_date: day(2), pickup_time: "09:30:00", trip_type: "round_trip", estimated_miles: 14, amount_cents: 9500, capability: "Wheelchair", expires_at: iso(6 * H), status: "pending", provider_workspace_id: "preview-ws" };
 const OFFER_COUNTER: NetworkOffer = { ...OFFER_IN, id: uuid(22), mfn_id: "MFN-O-DEMO22", pickup_area: "Tampa, Hillsborough", destination_area: "Brandon, Hillsborough", trip_type: "one_way", estimated_miles: 11, amount_cents: 7200, capability: "Ambulatory", status: "countered" };
-export const DEMO_OFFERS: NetworkOffer[] = [OFFER_IN, OFFER_COUNTER];
+export const DEMO_OFFERS: NetworkOffer[] = [OFFER_IN, OFFER_COUNTER,
+ {...OFFER_IN,id:uuid(23),mfn_id:'MFN-O-DEMO23',expires_at:iso(5*60000)},
+ {...OFFER_IN,id:uuid(24),mfn_id:'MFN-O-DEMO24',status:'accepted'},
+ {...OFFER_IN,id:uuid(25),mfn_id:'MFN-O-DEMO25',status:'unavailable'},
+ {...OFFER_IN,id:uuid(26),mfn_id:'MFN-O-DEMO26',status:'closed'},
+ {...OFFER_IN,id:uuid(27),mfn_id:'MFN-O-DEMO27',status:'pending'},
+];
 
 export const DEMO_ACTIVITY: NetworkActivity[] = [
   { id: uuid(31), mfn_id: "MFN-D-DEMO31", source_mfn_id: "MFN-A-DEMO00", source_business: "Bayshore Mobility Co. (Demo)", pickup_area: "Largo, Pinellas", destination_area: "Tampa, Hillsborough", pickup_date: day(3), pickup_time: "13:00", capability: "Wheelchair", amount_cents: 11000, expires_at: iso(20 * H), status: "negotiating", current_radius: 20, can_manage: true,
@@ -103,14 +109,15 @@ export function demoOfferDetail(id: string): OfferSafeDetail {
   const o = [...DEMO_OFFERS, ...DEMO_ACTIVITY.flatMap((a) => a.offers)].find((x) => x.id === id) ?? OFFER_IN;
   const open = ["pending", "countered", "revised"].includes(o.status);
   return {
+    offer_version:iso(-H),sender_business:'Bayshore Mobility Co. (Demo)',match_explanation:['Service area match','Eligible vehicle and driver','Explicit operating time reviewed'],pilot_reason:id===uuid(27)?'Pilot emergency stop':id===uuid(25)?'Eligibility evidence unavailable':id===uuid(26)?'Another acceptance won — offer unavailable':undefined,
     offer_mfn_id: o.mfn_id, status: o.status, viewer: "receiver", distribution_stage_miles: 20, distribution_status: o.status === "accepted" ? "provider_selected" : "offers_sent",
     stages: [{ radius_miles: 20, sent_at: iso(-4 * H) }],
     versions: [{ side: "sender", action: "offered", amount_cents: o.amount_cents, created_at: iso(-4 * H) }, ...(o.status === "countered" ? [{ side: "receiver", action: "countered", amount_cents: o.amount_cents + 1300, created_at: iso(-2 * H) }] : [])],
-    events: [{ event_type: "offer_sent", created_at: iso(-4 * H) }],
+    events: [{ event_type: "offer_sent", created_at: iso(-4 * H) },...(o.status==='accepted'?[{event_type:'provider_selected',created_at:iso(-H)},{event_type:'trip_assignment_reserved',created_at:iso(-H)}]:[])],
     latest_negotiation: o.status === "countered" ? { side: "receiver", action: "countered", amount_cents: o.amount_cents + 1300, created_at: iso(-2 * H) } : null,
     verification_tier: "super_verified", receiver_payout_cents: o.amount_cents, network_fee_cents: fee(o.amount_cents), processing_fee_rule: "sandbox_estimate_card",
     sender_total_before_processing_cents: o.amount_cents + fee(o.amount_cents), payment_ack_at: iso(-5 * H), accepted: o.status === "accepted",
-    actions: { accept: open, counter: open, decline: open },
+    actions: { accept: open&&id!==uuid(27), counter: open&&id!==uuid(27), decline: open&&id!==uuid(27) },
   };
 }
 

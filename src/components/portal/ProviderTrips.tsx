@@ -6,6 +6,7 @@ import { SavedTripsPanel } from "@/components/dashboard/SavedTripsPanel";
 import { actionCls } from "@/components/portal/PortalShell";
 import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import {ProviderExports} from './ProviderExports';
+import {SelectedTripExport} from './SelectedTripExport';
 
 export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 
@@ -40,7 +41,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
       {view === "drafts" && (
         <SavedTripsPanel variant="drafts" onResume={(draft) => navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
       )}
-      {view === "history" && <><TripHistoryPanel userId={userId} /><ProviderExports /></>}
+      {view === "history" && <><TripHistoryPanel userId={userId} /><SelectedTripExport /><ProviderExports /></>}
     </PortalTabbedLayout>
     </div>
   );
