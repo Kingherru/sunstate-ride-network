@@ -5397,8 +5397,10 @@ export type Database = {
           black_tie_vehicle: string | null
           cancel_reason: string | null
           canceled_at: string | null
+          confirmed_driver_end_time: string | null
           confirmed_provider_driver_id: string | null
           coordination_contact_id: string | null
+          copy_fingerprint: string | null
           created_at: string
           creator_person_mfn_id: string | null
           customer_quote_draft_id: string | null
@@ -5451,6 +5453,7 @@ export type Database = {
           network_status: string | null
           on_behalf_of_user_id: string | null
           originating_workspace_mfn_id: string | null
+          passenger_count: number | null
           patient_date_of_birth: string | null
           patient_email: string | null
           patient_first_name: string
@@ -5497,6 +5500,9 @@ export type Database = {
           scheduled_start_time: string | null
           selected_provider_mfn_id: string | null
           selected_provider_workspace_id: string | null
+          series_evidence: Json | null
+          series_id: string | null
+          series_index: number | null
           service_level: Database["public"]["Enums"]["service_level"] | null
           special_instructions: string | null
           status: string
@@ -5510,6 +5516,7 @@ export type Database = {
           trip_kind: Database["public"]["Enums"]["trip_kind"]
           trip_type: string
           user_agent: string | null
+          wheelchair_positions: number | null
           workspace_id: string | null
         }
         Insert: {
@@ -5526,8 +5533,10 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          confirmed_driver_end_time?: string | null
           confirmed_provider_driver_id?: string | null
           coordination_contact_id?: string | null
+          copy_fingerprint?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
           customer_quote_draft_id?: string | null
@@ -5580,6 +5589,7 @@ export type Database = {
           network_status?: string | null
           on_behalf_of_user_id?: string | null
           originating_workspace_mfn_id?: string | null
+          passenger_count?: number | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name: string
@@ -5626,6 +5636,9 @@ export type Database = {
           scheduled_start_time?: string | null
           selected_provider_mfn_id?: string | null
           selected_provider_workspace_id?: string | null
+          series_evidence?: Json | null
+          series_id?: string | null
+          series_index?: number | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
@@ -5639,6 +5652,7 @@ export type Database = {
           trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_type?: string
           user_agent?: string | null
+          wheelchair_positions?: number | null
           workspace_id?: string | null
         }
         Update: {
@@ -5655,8 +5669,10 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          confirmed_driver_end_time?: string | null
           confirmed_provider_driver_id?: string | null
           coordination_contact_id?: string | null
+          copy_fingerprint?: string | null
           created_at?: string
           creator_person_mfn_id?: string | null
           customer_quote_draft_id?: string | null
@@ -5709,6 +5725,7 @@ export type Database = {
           network_status?: string | null
           on_behalf_of_user_id?: string | null
           originating_workspace_mfn_id?: string | null
+          passenger_count?: number | null
           patient_date_of_birth?: string | null
           patient_email?: string | null
           patient_first_name?: string
@@ -5755,6 +5772,9 @@ export type Database = {
           scheduled_start_time?: string | null
           selected_provider_mfn_id?: string | null
           selected_provider_workspace_id?: string | null
+          series_evidence?: Json | null
+          series_id?: string | null
+          series_index?: number | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
           special_instructions?: string | null
           status?: string
@@ -5768,6 +5788,7 @@ export type Database = {
           trip_kind?: Database["public"]["Enums"]["trip_kind"]
           trip_type?: string
           user_agent?: string | null
+          wheelchair_positions?: number | null
           workspace_id?: string | null
         }
         Relationships: [
@@ -7509,6 +7530,7 @@ export type Database = {
           additional_stops: Json
           appointment_time: string | null
           assigned_to: string | null
+          assignment_end_time: string | null
           authorization_number: string | null
           auto_assigned_at: string | null
           cancel_reason: string | null
@@ -7601,6 +7623,7 @@ export type Database = {
           no_show_reason: string | null
           odometer_end: number | null
           odometer_start: number | null
+          passenger_count: number | null
           patient_contact_driver_id: string | null
           patient_date_of_birth: string | null
           patient_driver_confirmed: boolean
@@ -7680,6 +7703,7 @@ export type Database = {
           updated_at: string
           vehicle_id: string | null
           wait_minutes: number | null
+          wheelchair_positions: number | null
         }
         Insert: {
           actual_dropoff_at?: string | null
@@ -7689,6 +7713,7 @@ export type Database = {
           additional_stops?: Json
           appointment_time?: string | null
           assigned_to?: string | null
+          assignment_end_time?: string | null
           authorization_number?: string | null
           auto_assigned_at?: string | null
           cancel_reason?: string | null
@@ -7781,6 +7806,7 @@ export type Database = {
           no_show_reason?: string | null
           odometer_end?: number | null
           odometer_start?: number | null
+          passenger_count?: number | null
           patient_contact_driver_id?: string | null
           patient_date_of_birth?: string | null
           patient_driver_confirmed?: boolean
@@ -7860,6 +7886,7 @@ export type Database = {
           updated_at?: string
           vehicle_id?: string | null
           wait_minutes?: number | null
+          wheelchair_positions?: number | null
         }
         Update: {
           actual_dropoff_at?: string | null
@@ -7869,6 +7896,7 @@ export type Database = {
           additional_stops?: Json
           appointment_time?: string | null
           assigned_to?: string | null
+          assignment_end_time?: string | null
           authorization_number?: string | null
           auto_assigned_at?: string | null
           cancel_reason?: string | null
@@ -7961,6 +7989,7 @@ export type Database = {
           no_show_reason?: string | null
           odometer_end?: number | null
           odometer_start?: number | null
+          passenger_count?: number | null
           patient_contact_driver_id?: string | null
           patient_date_of_birth?: string | null
           patient_driver_confirmed?: boolean
@@ -8040,6 +8069,7 @@ export type Database = {
           updated_at?: string
           vehicle_id?: string | null
           wait_minutes?: number | null
+          wheelchair_positions?: number | null
         }
         Relationships: [
           {
@@ -9307,6 +9337,16 @@ export type Database = {
       }
       approve_membership_transition: {
         Args: { _id: string }
+        Returns: undefined
+      }
+      assign_trip_resources: {
+        Args: {
+          _driver: string
+          _end?: string
+          _time: string
+          _trip: string
+          _vehicle: string
+        }
         Returns: undefined
       }
       audit_email_change_failure: {

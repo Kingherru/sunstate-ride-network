@@ -13,7 +13,7 @@ import type {TripInvoice} from './trip-invoice-rules';
 
 const LIST_COLS = "id, mfn_id, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, patient_first_name, patient_last_name, pickup_city, dropoff_city, pickup_date, pickup_time, selected_provider_mfn_id";
 const DETAIL_COLS =
-  "id, mfn_id, lifecycle_state, deactivated_at, pickup_zip, dropoff_zip, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, return_dropoff_time, return_pickup_building, return_pickup_suite, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, requester_phone, requester_email, requester_user_id, workspace_id, assigned_provider_id, last_updated_at, canceled_at, needs_wheelchair, needs_assistance_to_vehicle, service_level, delivery_item_type, delivery_signature_required, delivery_instructions, special_instructions, mobility_notes,selected_provider_workspace_id,selected_provider_mfn_id,provider_selection_status,requester_workspace_mfn_id";
+  "id, mfn_id, series_id, series_index, series_evidence, passenger_count, wheelchair_positions, saved_patient_id, payer_id, coordination_contact_id, patient_workspace_id, trip_billing_source, trip_billing_first_name, trip_billing_last_name, trip_billing_email, trip_billing_phone, lifecycle_state, deactivated_at, pickup_zip, dropoff_zip, intake_source, trip_kind, transport_type, trip_type, status, network_status, created_at, submitted_via, pickup_date, pickup_time, appointment_time, pickup_address, pickup_address_details, pickup_city, dropoff_address, dropoff_city, round_trip, return_date, return_pickup_time, return_dropoff_time, return_pickup_building, return_pickup_suite, additional_stops, recurrence_rule, recurrence_end_date, patient_first_name, patient_last_name, patient_phone, patient_email, requester_phone, requester_email, requester_user_id, workspace_id, assigned_provider_id, last_updated_at, canceled_at, needs_wheelchair, needs_assistance_to_vehicle, service_level, delivery_item_type, delivery_signature_required, delivery_instructions, special_instructions, mobility_notes,selected_provider_workspace_id,selected_provider_mfn_id,provider_selection_status,requester_workspace_mfn_id";
 
 export type RequestListRow = {
   id: string; mfn_id: string | null; intake_source: string | null; trip_kind: string | null; transport_type: string | null; trip_type: string | null;
@@ -47,7 +47,7 @@ export const getAuthorizedRequestDetail = createServerFn({ method: 'GET' })
       return {ok:true as const,request,account:null,assignment:p.providerName,history:[] as {action:string;at:string;actor:string|null}[],distributions:[] as {id:string;mfn_id:string;status:string;waves:{id:string;radius_miles:number;sent_at:string}[];offers:{id:string;mfn_id:string;status:string;amount_cents:number}[];negotiations:{id:string;side:string;action:string;amount_cents:number|null;created_at:string}[]}[],patient:p,invoices:p.invoice?[p.invoice]:[]};
     }
     if(patientOnly)return {ok:false as const};
-    const tripCols = 'id,display_id,ride_request_id,driver_id,trip_kind,transport_type,status,network_status,created_at,updated_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,return_dropoff_time,return_pickup_building,return_pickup_suite,additional_stops,recurrence_rule,recurrence_end_date,service_level,needs_wheelchair,needs_assistance_to_vehicle,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id,assigned_to';
+    const tripCols = 'id,display_id,ride_request_id,driver_id,vehicle_id,scheduled_start_time,trip_kind,transport_type,status,network_status,created_at,updated_at,pickup_date,pickup_time,appointment_time,pickup_address,pickup_address_details,pickup_city,dropoff_address,dropoff_city,round_trip,return_date,return_pickup_time,return_dropoff_time,return_pickup_building,return_pickup_suite,additional_stops,recurrence_rule,recurrence_end_date,service_level,needs_wheelchair,needs_assistance_to_vehicle,patient_first_name,patient_last_name,patient_phone,patient_email,network_provider_workspace_id,network_distribution_id,assigned_to';
     const { data: row, error } = data.kind === 'request'
       ? await context.supabase.from('ride_requests').select(DETAIL_COLS).eq('id', data.id).maybeSingle()
       : await context.supabase.from('trips').select(tripCols).eq('id', data.id).maybeSingle();
@@ -165,6 +165,7 @@ export const copyRequestToDraft = createServerFn({ method: "POST" })
           signatureRequired: r.delivery_signature_required === true,
         }
       : {
+          savedPatientId:r.saved_patient_id??null,payerId:r.payer_id??null,coordinationContactId:r.coordination_contact_id??null,selectedProviderWorkspaceId:r.selected_provider_workspace_id??null,patientWorkspaceId:r.patient_workspace_id??null,passengerCount:r.passenger_count??1,wheelchairPositions:r.wheelchair_positions??0,
           patientFirstName: r.patient_first_name ?? "", patientLastName: r.patient_last_name ?? "",
           patientPhone: r.patient_phone ?? "", patientEmail: r.patient_email ?? "",
           pickupAddress: r.pickup_address ?? "", pickupAddressDetails: r.pickup_address_details ?? "", pickupCity: r.pickup_city ?? "",
@@ -176,7 +177,7 @@ export const copyRequestToDraft = createServerFn({ method: "POST" })
           returnPickupBuilding: r.return_pickup_building ?? "", returnPickupSuite: r.return_pickup_suite ?? "",
           additionalStops: Array.isArray(r.additional_stops) ? r.additional_stops : [],
           mobilityNotes: r.mobility_notes ?? "", specialInstructions: r.special_instructions ?? "",
-          recurrence: "none", recurrenceEndDate: "", billingSource: "account",
+          recurrence: "none", recurrenceEndDate: "", billingSource: r.trip_billing_source??"account",billingContact:r.trip_billing_source!=="account"?{firstName:r.trip_billing_first_name,lastName:r.trip_billing_last_name,email:r.trip_billing_email,phone:r.trip_billing_phone}:undefined,
         };
     const name = [r.patient_first_name, r.patient_last_name].filter(Boolean).join(" ").trim();
     const summary = [delivery ? "Medical Delivery" : name || "Unnamed passenger", [r.pickup_city, r.dropoff_city].filter(Boolean).join(" → ")].filter(Boolean).join(" · ").slice(0, 240);

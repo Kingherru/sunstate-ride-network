@@ -15,6 +15,7 @@ export function PatientProviderPicker({ value, onChange }: { value: NetworkProvi
     <div className="flex flex-wrap gap-2">
       {usual.data?.workspace_id && <DsButton size="sm" type="button" variant="secondary" onClick={()=>{if(usual.data?.workspace_id)onChange(usual.data);setOpen(false);}}>Send to my usual provider</DsButton>}
       <DsButton size="sm" type="button" variant="ghost" onClick={() => { setSaved(false); setOpen(true); }}>Find another provider</DsButton>
+      <DsButton size="sm" type="button" variant="ghost" onClick={()=>{setSaved(true);setOpen(true);}}>Saved providers</DsButton>
       {value && <DsButton size="sm" type="button" variant="ghost" onClick={() => { onChange(null); setOpen(false); }}>Remove selection</DsButton>}
     </div>
     {open && <div className="space-y-3"><DsButton size="sm" type="button" variant="ghost" onClick={() => setOpen(false)}>Close provider list</DsButton><ProviderDirectory savedOnly={saved} onSelect={v => { onChange(v); setOpen(false); }} /></div>}

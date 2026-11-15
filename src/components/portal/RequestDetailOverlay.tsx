@@ -59,6 +59,7 @@ export function RequestDetailProvider({ children }: { children: React.ReactNode 
     {children}
     {target && <DetailOverlayFrame onClose={() => setTarget(null)} title={ok ? titleFor(target, delivery) : 'Information'} idLabel={ok ? ok.request.mfn_id || null : null}>
         {q.isPending ? <p role="status">Loading details…</p> : q.error || !ok ? <p role="alert">Details not available.</p> : <div className="space-y-6">
+          {typeof ok.request.series_id==='string'&&<DetailSection title="Recurring series"><p className="ds-support">Series {ok.request.series_id} · Occurrence {Number(ok.request.series_index??0)+1}. Each occurrence is independent; series-wide editing is unavailable.</p></DetailSection>}
           {ok.request.deactivated_at && <DetailSection tone="warning" title="Deactivated"><p>This request was deactivated on {fmtDateTime(String(ok.request.deactivated_at))}. All history is preserved.</p></DetailSection>}
           {ok.patient ? <DetailSection tone="trip" title="Trip details"><dl className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">{patientDetailFields(ok.request).map(field=><div key={field.label} className="min-w-0 py-3"><dt className="ds-support font-semibold">{field.label}</dt><dd className="ds-body mt-1 break-words">{field.value}</dd></div>)}</dl></DetailSection> : <RequestDetail r={ok.request} showSource />}
           {!ok.patient && target.kind==='trip' && typeof ok.request.driver_id==='string' && ok.invoices.some(i=>i.canManage) && <AssignedDriverContactConsent tripId={target.id} driverId={ok.request.driver_id}/>}

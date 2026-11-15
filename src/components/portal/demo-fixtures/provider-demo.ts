@@ -136,6 +136,7 @@ export const PROVIDER_DEMO_FIXTURES: Record<string, unknown> = PROVIDER_DEMO_ENA
 /** Keyed fixtures whose value depends on the second queryKey element. */
 export function providerDemoKeyed(queryKey: readonly unknown[]): unknown | undefined {
   if (!PROVIDER_DEMO_ENABLED) return undefined;
+  if (queryKey[0] === "day-reservations") return [{id:'preview-owned-trip',pickup_date:String(queryKey[1]),pickup_time:'14:00',scheduled_start_time:'14:00',assignment_end_time:'15:00',estimated_duration_seconds:3600,patient_first_name:'Pat',patient_last_name:'Patient (Demo)',pickup_address:'Demo pickup',pickup_city:'Orlando',dropoff_address:'Demo destination',dropoff_city:'Winter Park',transport_type:'ambulatory',trip_kind:'passenger',driver_id:null,assigned_driver_id:null,vehicle_id:null,status:'open',reservation_state:'unconfirmed'}];
   if (queryKey[0] === "offer-safe-detail") return demoOfferDetail(String(queryKey[1] ?? ""));
   if (queryKey[0] === "earnings-ledger") return demoLedger(queryKey[1] as never);
   return undefined;

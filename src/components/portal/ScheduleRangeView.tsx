@@ -19,7 +19,7 @@ function rangeFor(view: "week" | "month", anchor: string) {
   const s = shift(iso(first), -((first.getUTCDay() + 6) % 7));
   return { start: s, end: shift(iso(last), (7 - ((last.getUTCDay() + 6) % 7) - 1)), month: d.getUTCMonth() };
 }
-type Row = { id: string; pickup_date: string; pickup_time: string | null; patient_first_name: string | null; patient_last_name: string | null; pickup_city: string | null; dropoff_city: string | null; driver_id: string | null; vehicle_id: string | null; status: string | null; scheduled_start_time: string | null };
+type Row = { id: string; pickup_date: string; pickup_time: string | null; patient_first_name: string | null; patient_last_name: string | null; pickup_city: string | null; dropoff_city: string | null; driver_id: string | null; vehicle_id: string | null; status: string | null; scheduled_start_time: string | null; assignment_end_time?: string | null };
 export type Attention = "no_driver" | "no_vehicle" | "conflict" | "inactive";
 const ATTN: Record<Attention, string> = { no_driver: "Unassigned driver", no_vehicle: "Missing vehicle", conflict: "Schedule conflict", inactive: "Inactive resource" };
 

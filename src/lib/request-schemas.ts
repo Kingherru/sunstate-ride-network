@@ -74,6 +74,9 @@ export const rideRequestSchema = z.object({
   selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
   patientWorkspaceId: z.string().uuid().optional().nullable(),
   savedPatientId:z.string().uuid().optional().nullable(),
+  passengerCount:z.number().int().min(1).max(50).default(1),
+  wheelchairPositions:z.number().int().min(0).max(50).default(0),
+  confirmedDriverEndTime:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional().or(z.literal("")),
   confirmedProviderDriverId:z.string().uuid().optional().nullable(),
   payerId:z.string().uuid().optional().nullable(),
   coordinationContactId:z.string().uuid().optional().nullable(),
@@ -112,6 +115,7 @@ export const rideRequestSchema = z.object({
   // Black Tie was retired; accepted only as false for backwards compatibility.
   blackTie: z.literal(false).default(false),
 }).strict().superRefine((data, ctx) => {
+  if(data.wheelchairPositions>data.passengerCount)ctx.addIssue({code:z.ZodIssueCode.custom,path:["wheelchairPositions"],message:"Wheelchair positions cannot exceed passenger count."});
   if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

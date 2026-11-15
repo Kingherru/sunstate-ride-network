@@ -10,12 +10,12 @@ export function nextRadius(current: number | null): number | null {
 export function needsDistributionAttention(createdAt: string, selected: boolean, now = Date.now()) {
   return !selected && now - Date.parse(createdAt) >= ATTENTION_AFTER_HOURS * 60 * 60 * 1000;
 }
-export type ScheduleSlot = { id: string; pickup_date: string; pickup_time?: string | null; scheduled_start_time?: string | null; estimated_duration_seconds?: number | null; estimated_pickup_at?: string | null; estimated_dropoff_at?: string | null; driver_id?: string | null; assigned_driver_id?: string | null; vehicle_id?: string | null };
+export type ScheduleSlot = { id: string; pickup_date: string; pickup_time?: string | null; scheduled_start_time?: string | null; estimated_duration_seconds?: number | null; estimated_pickup_at?: string | null; estimated_dropoff_at?: string | null; driver_id?: string | null; assigned_driver_id?: string | null; vehicle_id?: string | null; assignment_end_time?: string | null };
 export function conflictingSlots(rows: ScheduleSlot[]): Set<string> {
   const conflicts = new Set<string>();
   const interval = (r: ScheduleSlot) => {
     const start = Date.parse(r.estimated_pickup_at || `${r.pickup_date}T${r.scheduled_start_time || r.pickup_time || '00:00:00'}`);
-    const end = r.estimated_dropoff_at ? Date.parse(r.estimated_dropoff_at) : r.estimated_duration_seconds ? start + r.estimated_duration_seconds * 1000 : start;
+    const end = r.assignment_end_time ? Date.parse(`${r.pickup_date}T${r.assignment_end_time}`) : r.estimated_dropoff_at ? Date.parse(r.estimated_dropoff_at) : r.estimated_duration_seconds ? start + r.estimated_duration_seconds * 1000 : start;
     return { start, end };
   };
   rows.forEach((a, i) => rows.slice(i + 1).forEach((b) => {

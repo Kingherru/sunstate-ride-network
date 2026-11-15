@@ -12,6 +12,7 @@ export function workspaceQuoteInput(form: RideRequestInput | DeliveryRequestInpu
     pickupTime: delivery ? form.requestedTime : form.pickupTime,
     roundTrip: !delivery && form.tripType === 'round_trip',
     additionalStops: delivery ? 0 : form.additionalStops.length,
+    additionalPassengers: delivery ? 0 : Math.max(0,form.passengerCount-1),
     signature: delivery && form.signatureRequired,
     outcome: 'normal',
   });

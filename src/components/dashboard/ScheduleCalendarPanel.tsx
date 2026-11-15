@@ -8,6 +8,8 @@ import { DriverDetailModal } from "./DriverDetailModal";
 import { listVehicles } from "@/lib/fleet.functions";
 import { conflictingSlots } from "@/lib/trip-network-rules";
 import { useRequestDetails } from '@/components/portal/request-detail-context';
+import { ScheduleAssignment, RESOURCE_MIME } from '@/components/portal/ScheduleAssignment';
+import { DsButton } from '@/components/ds/controls';
 import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
 
 export const RESV_DND_MIME = "application/x-reservation-id";
@@ -255,7 +257,8 @@ export function ScheduleCalendarPanel() {
       {(() => { const inactiveHeld = allReservations.filter((r: any) => (r.assigned_driver_id && allDrivers.find((d: any) => d.id === r.assigned_driver_id)?.status === "inactive") || (r.vehicle_id && (vehiclesQ.data ?? []).find((v: any) => v.id === r.vehicle_id)?.status === "inactive")); return inactiveHeld.length > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{inactiveHeld.length} trips are still assigned to an inactive driver or vehicle. The assignment is kept; reassign to an active resource when ready.</p></div>; })()}
       {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
       {/* Filters — one aligned row of equal-height shared toolbar controls */}
-      <ScheduleEmailPreview />
+      <ScheduleEmailPreview selectedDate={date}/>
+      <section className="space-y-3 border border-ds-border p-4"><h3 className="ds-label text-ds-primary">Trip assignments</h3><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div>{reservations.map(r=><div key={r.id} className="space-y-2"><p className="ds-support">{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status}))} vehicles={vehiclesQ.data??[]}/></div>)}</section>
       <div className="portal-toolbar">
         <select
           value={vehicleFilter}

@@ -672,7 +672,7 @@
 .ds-canvas-texture { background-image: var(--ds-canvas-dot-pattern); background-size: 8px 8px; background-repeat: repeat; }
 .portal-detail-frame.ds-canvas-texture > .portal-window-body { background-color: var(--ds-bg); background-image: var(--ds-canvas-dot-pattern); background-size: 8px 8px; }
 .trip-workspace :is(input:not([type="checkbox"]):not([type="radio"]), select) { min-height: 46px; }
-.trip-workspace button { white-space: nowrap; }
+.trip-workspace button { white-space: normal; overflow-wrap: anywhere; }
 .trip-workspace :is(label, legend) { line-height: 1.4; }
 .trip-workspace aside { border-radius: var(--ds-radius); }
 @media (min-width: 1024px) {

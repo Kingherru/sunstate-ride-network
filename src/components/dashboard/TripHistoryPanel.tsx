@@ -199,7 +199,6 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
         .or(
           `status.in.(${COMPLETED_STATUSES.join(",")}),reservation_state.in.(past,history),pickup_date.lt.${todayIso}`,
         )
-        .or(`created_by.eq.${userId},assigned_to.eq.${userId}`)
         .order("pickup_date", { ascending: false })
         .limit(1000);
       if (fromIso) query = query.gte("pickup_date", fromIso);

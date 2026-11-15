@@ -42,6 +42,7 @@ import {fillEmptyTripDefaults,approvedPatientDefaults} from '@/lib/trip-defaults
 import {PayerDialog} from '@/components/dashboard/PayersPanel';
 import {ContactDialog} from '@/components/dashboard/ContactsPanel';
 import {listContacts} from '@/lib/crm.functions';
+import {TripSeriesBuilder} from '@/components/portal/TripSeriesBuilder';
 import {PatientDriverSuggestion} from '@/components/portal/PatientDriverSuggestion';
 
 
@@ -77,7 +78,8 @@ const empty: RideRequestInput = {
   patientPhone: "",
   patientEmail: "",
   patientWorkspaceId: null,
-  payerId:null,savedPatientId:null,coordinationContactId:null,confirmedProviderDriverId:null,
+  passengerCount:1,wheelchairPositions:0,
+  payerId:null,savedPatientId:null,coordinationContactId:null,confirmedProviderDriverId:null,confirmedDriverEndTime:"",
   pickupAddress: "",
   pickupAddressDetails: "",
   pickupCity: "",
@@ -227,7 +229,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const [draftId, setDraftId] = useState(initialDraft?.id);
   const [selectedProvider, setSelectedProvider] = useState<NetworkProviderRow | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
-  const confirmDriver = useCallback((id:string|null)=>setForm(f=>f.confirmedProviderDriverId===id?f:{...f,confirmedProviderDriverId:id}),[]);
+  const confirmDriver = useCallback((id:string|null,end?:string)=>setForm(f=>f.confirmedProviderDriverId===id?f:{...f,confirmedProviderDriverId:id,confirmedDriverEndTime:end??""}),[]);
   const saveDraft = useServerFn(saveTripDraft);
   const removeDraft = useServerFn(deleteTripDraft);
   async function onSaveDraft() {
@@ -260,7 +262,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
-  useEffect(() => { if (kind === 'ride') commerce?.onChange(form); }, [form, kind, commerce?.onChange]);
+  useEffect(() => { if (kind === 'ride') commerce?.onChange({...form,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}); }, [form, customBilling, savedBilling, kind, commerce?.onChange]);
 
   useEffect(() => {
     if (preview.active) return;
@@ -339,10 +341,10 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     if (commerce?.submissionBlocked) { toast.error('Confirm the changed quote first, or finish the separate controlled Network preparation. Nothing was submitted.'); return; }
     setErrors({});
     const withBilling: RideRequestInput = {
-      ...form,
+      ...form,recurrence:"none",recurrenceEndDate:"",
       customerQuoteDraftId: commerce?.quote?.draftId ?? null,
       customerQuoteId: commerce?.quote?.id ?? null,
-      selectedProviderWorkspaceId: allowProviderSelection ? selectedProvider?.workspace_id ?? null : null,
+      selectedProviderWorkspaceId: allowProviderSelection ? selectedProvider?.workspace_id ?? form.selectedProviderWorkspaceId ?? null : null,
       billingContact:
         form.billingSource === "saved" ? savedBilling ?? undefined
         : form.billingSource === "custom" ? customBilling
@@ -536,7 +538,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         ) : (
         <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-4 sm:p-6 rounded-ds-sm">
 
-          {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={setSelectedProvider} />}
+          {allowProviderSelection && !selectedProvider && form.selectedProviderWorkspaceId && <p className="ds-caption">Provider selection retained from the draft; server authorization is rechecked on submission.</p>}
+          {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={p=>{setSelectedProvider(p);upd('selectedProviderWorkspaceId',p?.workspace_id??null);}} />}
           {commerce?.provider && form.savedPatientId && <PatientDriverSuggestion patientId={form.savedPatientId} service={form.transportType==='gurney'?'stretcher':form.transportType} date={form.pickupDate||undefined} onConfirm={confirmDriver}/>}
           {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => setForm(f=>({...f,patientWorkspaceId:id,savedPatientId:null}))} onDefaults={d=>setForm(f=>({...f,...d,savedPatientId:null}))} />}
           {facilityPatients.length>0 && <Field label="Facility-authorized linked patient"><select className={inputCls} value={form.savedPatientId??''} onChange={e=>{const p=facilityPatients.find(p=>p.savedPatientId===e.target.value);if(p && confirm('Attach this confirmed patient and fill only basic trip details?'))setForm(f=>({...f,patientFirstName:p.patientFirstName??'',patientLastName:p.patientLastName??'',patientPhone:p.patientPhone??'',patientEmail:p.patientEmail??'',transportType:p.transportType??'ambulatory',patientWorkspaceId:p.patientWorkspaceId,savedPatientId:p.savedPatientId}));}}><option value="">Choose authorized patient</option>{facilityPatients.map(p=><option key={p.savedPatientId} value={p.savedPatientId}>{p.patientFirstName} {p.patientLastName} · {p.facilityMfnId}</option>)}</select></Field>}
@@ -681,6 +684,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
               Transport details
             </legend>
             <div>
+              <div className="grid gap-3 sm:grid-cols-2 mb-4"><Field label="Passenger count"><input className={inputCls} type="number" min="1" max="50" value={form.passengerCount} onChange={e=>upd('passengerCount',Number(e.target.value))}/></Field>{form.transportType==='wheelchair'&&<Field label="Wheelchair positions"><input className={inputCls} type="number" min="1" max={form.passengerCount} value={form.wheelchairPositions||1} onChange={e=>upd('wheelchairPositions',Number(e.target.value))}/></Field>}</div>
               <span className="block text-xs font-bold uppercase tracking-widest text-ds-text-2 mb-2">
                 Trip type <span className="text-ds-accent-active">*</span>
               </span>
@@ -696,7 +700,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                         roundTrip: t === "round_trip",
                         // Default the return leg time to the pickup time when switching to round trip
                         returnPickupTime:
-                          t === "round_trip" && !f.returnPickupTime ? f.pickupTime : f.returnPickupTime,
+                          f.returnPickupTime,
                         // Default the return date to the pickup date when switching to round trip
                         returnDate:
                           t === "round_trip"
@@ -883,44 +887,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             </Field>
           </fieldset>
 
-          {/* Recurrence */}
-          <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
-              Recurring trip
-            </legend>
-            <p className="text-xs text-ds-text-2 -mt-2">
-              Schedule the same trip on a repeating basis (e.g. weekly dialysis). Leave as "One-time"
-              for a single ride.
-            </p>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Field label="Repeat">
-                <select
-                  className={inputCls}
-                  value={form.recurrence}
-                  onChange={(e) =>
-                    upd("recurrence", e.target.value as RideRequestInput["recurrence"])
-                  }
-                >
-                  <option value="none">One-time (no repeat)</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekdays">Weekdays (Mon–Fri)</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="biweekly">Every 2 weeks</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </Field>
-              {form.recurrence !== "none" && (
-                <Field label="Repeat until" error={errors.recurrenceEndDate}>
-                  <DatePickerField
-                    value={form.recurrenceEndDate ?? ""}
-                    onChange={(v) => upd("recurrenceEndDate", v)}
-                    min={form.pickupDate || new Date().toISOString().slice(0, 10)}
-                    booking
-                  />
-                </Field>
-              )}
-            </div>
-          </fieldset>
+          {portal && !onBehalf && <TripSeriesBuilder source={{...form,selectedProviderWorkspaceId:allowProviderSelection?selectedProvider?.workspace_id??form.selectedProviderWorkspaceId??null:null,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}} blocked={commerce?.submissionBlocked}/>}
 
           {/* Billing information */}
           <fieldset className="space-y-4">

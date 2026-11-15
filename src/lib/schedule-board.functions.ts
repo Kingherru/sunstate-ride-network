@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -78,9 +79,9 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
     const uid = context.userId;
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, status, reservation_state, assigned_to, created_by")
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state, assigned_to, created_by")
       .eq("pickup_date", data.date)
-      .in("reservation_state", ["booked", "unconfirmed"])
+      .not("status", "in", "(completed,canceled,cancelled,no_show)")
       .order("pickup_time");
     if (error) throw error;
     return (rows ?? []).map((r: any) => ({
@@ -102,8 +103,8 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
     const endIso = end.toISOString().slice(0, 10);
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, status, reservation_state, assigned_to, created_by")
-      .in("reservation_state", ["booked", "unconfirmed"])
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state, assigned_to, created_by")
+      .not("status", "in", "(completed,canceled,cancelled,no_show)")
       .gte("pickup_date", data.week_start)
       .lte("pickup_date", endIso)
       .order("pickup_date")
@@ -179,65 +180,7 @@ export const emailDriverWeeklySchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { driver_id: string }) => input)
   .handler(async ({ data, context }) => {
-    const { data: driver } = await context.supabase
-      .from("drivers")
-      .select("id, first_name, last_name, email, owner_id")
-      .eq("id", data.driver_id)
-      .maybeSingle();
-    if (!driver || driver.owner_id !== context.userId) throw new Error("Driver not on your fleet");
-    if (!driver.email) throw new Error("Driver has no email on file. Add one in the Fleet panel.");
-
-    const today = new Date().toISOString().slice(0, 10);
-    const end = new Date(); end.setDate(end.getDate() + 7);
-    const endIso = end.toISOString().slice(0, 10);
-    const { data: rows, error } = await context.supabase
-      .from("ride_requests")
-      .select("pickup_date, pickup_time, scheduled_start_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, status")
-      .eq("assigned_provider_id", context.userId)
-      .eq("assigned_driver_id", data.driver_id)
-      .gte("pickup_date", today)
-      .lte("pickup_date", endIso)
-      .order("pickup_date", { ascending: true })
-      .order("pickup_time", { ascending: true });
-    if (error) throw error;
-
-    const trips = rows ?? [];
-    const driverName = `${driver.first_name ?? ""} ${driver.last_name ?? ""}`.trim() || "Driver";
-    const subject = `Your weekly schedule — ${trips.length} trip${trips.length === 1 ? "" : "s"}`;
-    const lines: string[] = [
-      `Hi ${driverName},`,
-      "",
-      `Here is your assigned schedule for the next 7 days (${today} → ${endIso}):`,
-      "",
-    ];
-    if (trips.length === 0) {
-      lines.push("You have no trips assigned in this window.");
-    } else {
-      let currentDate = "";
-      for (const t of trips) {
-        if (t.pickup_date !== currentDate) {
-          currentDate = t.pickup_date;
-          lines.push("");
-          lines.push(`— ${currentDate} —`);
-        }
-        const time = ((t.scheduled_start_time ?? t.pickup_time) ?? "").toString().slice(0, 5);
-        lines.push(
-          `  • ${time}  ${t.patient_first_name ?? ""} ${t.patient_last_name ?? ""}`.trimEnd(),
-        );
-        lines.push(`      ${t.pickup_address ?? ""}, ${t.pickup_city ?? ""} → ${t.dropoff_address ?? ""}, ${t.dropoff_city ?? ""}`);
-        if (t.status) lines.push(`      Status: ${t.status}`);
-      }
-    }
-    lines.push("");
-    lines.push("— My Florida NEMT");
-
-    const body = lines.join("\n");
-    const { error: qErr } = await (context.supabase as any)
-      .from("notification_email_queue")
-      .insert({ recipient_email: driver.email, subject, body });
-    if (qErr) throw new Error(qErr.message);
-
-    return { ok: true, trip_count: trips.length, recipient: driver.email };
+    throw new Error("Driver email delivery is off. Use Schedule → Prepare driver trip logs.");
   });
 
 
@@ -253,10 +196,14 @@ export const listReservationsForRange = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_city, dropoff_city, needs_wheelchair, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, status, reservation_state")
-      .in("reservation_state", ["booked", "unconfirmed"])
+      .select("id, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_city, dropoff_city, needs_wheelchair, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state")
+      .not("status", "in", "(completed,canceled,cancelled,no_show)")
       .gte("pickup_date", data.start).lte("pickup_date", data.end)
       .order("pickup_date").order("pickup_time");
     if (error) throw error;
     return (rows ?? []).map((r: any) => ({ ...r, assigned_driver_id: r.driver_id, scheduled_start_time: r.scheduled_start_time ?? r.pickup_time }));
   });
+
+export const assignTripResources = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
+ .inputValidator((v:unknown)=>z.object({tripId:z.string().uuid(),driverId:z.string().uuid().nullable(),vehicleId:z.string().uuid().nullable(),start:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),end:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable()}).strict().parse(v))
+ .handler(async({data,context})=>{const {error}=await context.supabase.rpc('assign_trip_resources',{_trip:data.tripId,_driver:data.driverId as never,_vehicle:data.vehicleId as never,_time:data.start,_end:data.end as never});if(error)throw new Error(error.message);return {ok:true};});

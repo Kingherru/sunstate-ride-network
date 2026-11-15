@@ -715,6 +715,34 @@
       "when": 1794698397925,
       "tag": "0101_contractor_relationship_idempotent_reacceptance",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1794701446751,
+      "tag": "0102_trip_series_and_atomic_schedule_assignment",
+      "breakpoints": true
+    },
+    {
+      "idx": 103,
+      "version": "7",
+      "when": 1794701652866,
+      "tag": "0103_authorized_resource_assignment_boundary",
+      "breakpoints": true
+    },
+    {
+      "idx": 104,
+      "version": "7",
+      "when": 1794702115471,
+      "tag": "0104_explicit_driver_time_and_invoice_review_binding",
+      "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "7",
+      "when": 1794702255744,
+      "tag": "0105_assignment_contact_reset_compatibility",
+      "breakpoints": true
     }
   ]
 }

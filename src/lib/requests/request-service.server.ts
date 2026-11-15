@@ -119,6 +119,7 @@ export type InsertOwnership = {
   importJobId?: string | null;
   /** CSV imports never email; test rows never email (decided by DB flag). */
   skipNotify?: boolean;
+  series?: { id: string; index: number; evidence: Record<string, unknown>; fingerprint: string };
 };
 type InsertResult = { ok: true; id: string; mfnId: string | null; isTest: boolean; ownedOperation: boolean } | { ok: false; code: string };
 
@@ -129,7 +130,7 @@ async function finish(row: any, error: any, category: RequestCategory, email: st
   }
   // Targeted intake is visible only in the chosen provider's Network inbox.
   // Do not fan out staff or provider emails from this path.
-  if (!row.is_test && !own.skipNotify && !row.selected_provider_workspace_id && !row.provider_owned_operation) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
+  if (!row.is_test && !own.skipNotify && own.submittedVia === "public_form" && !row.selected_provider_workspace_id && !row.provider_owned_operation) await notifyNewRequest({ id: row.id, category, requesterEmail: email, embedProviderId });
   return { ok: true, id: row.id, mfnId: row.mfn_id ?? null, isTest: !!row.is_test, ownedOperation:row.provider_owned_operation===true };
 }
 
@@ -143,10 +144,14 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
   const isRound = data.tripType === "round_trip" || data.roundTrip;
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
     trip_kind: "passenger",
+    copy_fingerprint:own.series?.fingerprint??null,
+    series_id:own.series?.id??null,series_index:own.series?.index??null,series_evidence:own.series?.evidence??null,
+    passenger_count:data.passengerCount,wheelchair_positions:data.wheelchairPositions,
     selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
     patient_workspace_id: data.patientWorkspaceId ?? null,
     saved_patient_id:data.savedPatientId??null,
     confirmed_provider_driver_id:data.confirmedProviderDriverId??null,
+    confirmed_driver_end_time:data.confirmedProviderDriverId?data.confirmedDriverEndTime||null:null,
     payer_id:data.payerId??null,
     coordination_contact_id:data.coordinationContactId??null,
     customer_quote_draft_id: data.customerQuoteDraftId ?? null,
