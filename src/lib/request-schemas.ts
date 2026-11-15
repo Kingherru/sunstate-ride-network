@@ -1,6 +1,7 @@
 /** Client-safe request validation shared by the public form and server functions. */
 import { z } from "zod";
 import {tripGeographyFields, stateCodeSchema, timezoneSchema} from './us-geography';
+import {tripTimeEvidence} from './regional-trip-times';
 
 export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
 export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
@@ -42,6 +43,7 @@ export const BLACK_TIE_QUOTE_STATUSES = [
 export type BlackTieQuoteStatus = (typeof BLACK_TIE_QUOTE_STATUSES)[number];
 
 export const additionalStopSchema = z.object({
+  date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal('')),
   state: stateCodeSchema.optional(), zip: tripGeographyFields.pickupZip, county: z.string().max(120).optional(), timezone: timezoneSchema,
   address: z.string().trim().min(3).max(300),
   city: z.string().trim().min(1).max(100),
@@ -72,6 +74,8 @@ export const dateString = z
 export const REQUEST_CATEGORIES = ["passenger_transport", "medical_delivery"] as const;
 
 export const rideRequestSchema = z.object({
+  dropoffDate:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal('')),
+  dropoffTime:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional().or(z.literal('')),
   ...tripGeographyFields,
   requestCategory: z.literal("passenger_transport").optional(),
   selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
@@ -118,6 +122,7 @@ export const rideRequestSchema = z.object({
   // Black Tie was retired; accepted only as false for backwards compatibility.
   blackTie: z.literal(false).default(false),
 }).strict().superRefine((data, ctx) => {
+  if(tripTimeEvidence(data).some(e=>e.status==='impossible_order'))ctx.addIssue({code:'custom',path:['pickupTime'],message:'Requested times are out of order in their selected timezones.'});
   if(data.wheelchairPositions>data.passengerCount)ctx.addIssue({code:z.ZodIssueCode.custom,path:["wheelchairPositions"],message:"Wheelchair positions cannot exceed passenger count."});
   if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
     ctx.addIssue({

@@ -9,6 +9,7 @@
  * will reuse it as portals are built.
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {tripTimeEvidence} from "@/lib/regional-trip-times";
 
 export type RequestCategory = "passenger_transport" | "medical_delivery";
 
@@ -135,6 +136,7 @@ async function finish(row: any, error: any, category: RequestCategory, email: st
 }
 
 export async function insertPassengerRequest(data: RideRequestInput, own: InsertOwnership): Promise<InsertResult> {
+  if(!data.pickupState||!data.dropoffState)return {ok:false,code:'regional_state_required'};
   let embedProviderId: string | null = null;
   let embedTokenStored: string | null = null;
   if (data.embedToken) {
@@ -183,6 +185,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
 }
 
 export async function insertDeliveryRequest(data: DeliveryRequestInput, own: InsertOwnership): Promise<InsertResult> {
+  if(!data.pickupState||!data.dropoffState)return {ok:false,code:'regional_state_required'};
   const { error, data: row } = await supabaseAdmin.from("ride_requests").insert({
     ...regionalRequestFields(data, own.submittedVia),
     trip_kind: "medical_delivery", transport_type: "delivery", trip_type: "one_way", round_trip: false,
@@ -204,5 +207,5 @@ export async function insertDeliveryRequest(data: DeliveryRequestInput, own: Ins
 }
 
 function regionalRequestFields(data: RideRequestInput | DeliveryRequestInput, via: InsertOwnership['submittedVia']) {
-  return {pickup_state:data.pickupState || (via==='public_form'?'FL':null),dropoff_state:data.dropoffState || (via==='public_form'?'FL':null),pickup_zip:data.pickupZip||null,dropoff_zip:data.dropoffZip||null,pickup_county:data.pickupCounty||null,dropoff_county:data.dropoffCounty||null,pickup_timezone:data.pickupTimezone||null,dropoff_timezone:data.dropoffTimezone||null,regional_evidence:{state:'user_selected',county:'user_selected',timezone:'user_selected',review_required:true}};
+  return {regional_time_events:tripTimeEvidence(data),pickup_state:data.pickupState || (via==='public_form'?'FL':null),dropoff_state:data.dropoffState || (via==='public_form'?'FL':null),pickup_zip:data.pickupZip||null,dropoff_zip:data.dropoffZip||null,pickup_county:data.pickupCounty||null,dropoff_county:data.dropoffCounty||null,pickup_timezone:data.pickupTimezone||null,dropoff_timezone:data.dropoffTimezone||null,regional_evidence:{state:'user_selected',county:'user_selected',timezone:'user_selected',review_required:true}};
 }

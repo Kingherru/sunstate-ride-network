@@ -10,7 +10,7 @@ export const PASSENGER_COLUMNS = [
   "patient_first_name", "patient_last_name", "patient_phone", "patient_email",
   "pickup_address", "pickup_city", "pickup_date", "pickup_time", "appointment_time",
   "dropoff_address", "dropoff_city", "service", "mobility_notes", "special_instructions",
-  "trip_type","return_date","return_pickup_time","return_dropoff_time","passenger_count","wheelchair_positions",
+  "dropoff_date","dropoff_time","trip_type","return_date","return_pickup_time","return_dropoff_time","passenger_count","wheelchair_positions",
   "pickup_state","dropoff_state","pickup_zip","dropoff_zip","pickup_county","dropoff_county","pickup_timezone","dropoff_timezone",
 ] as const;
 export const DELIVERY_COLUMNS = [
@@ -81,7 +81,7 @@ export function mapRow(kind: ImportKind, r: Record<string, string>) {
       dropoffAddress: g("dropoff_address"), dropoffCity: g("dropoff_city"),
       transportType: SERVICE[g("service").toLowerCase()] ?? (g("service") as any),
       mobilityNotes: g("mobility_notes"), specialInstructions: g("special_instructions"),
-      tripType:g('trip_type')||'one_way',roundTrip:g('trip_type')==='round_trip',returnDate:g('return_date'),returnPickupTime:g('return_pickup_time'),returnDropoffTime:g('return_dropoff_time'),passengerCount:g('passenger_count')?Number(g('passenger_count')):1,wheelchairPositions:g('wheelchair_positions')?Number(g('wheelchair_positions')):0,
+      dropoffDate:g('dropoff_date'),dropoffTime:g('dropoff_time'),tripType:g('trip_type')||'one_way',roundTrip:g('trip_type')==='round_trip',returnDate:g('return_date'),returnPickupTime:g('return_pickup_time'),returnDropoffTime:g('return_dropoff_time'),passengerCount:g('passenger_count')?Number(g('passenger_count')):1,wheelchairPositions:g('wheelchair_positions')?Number(g('wheelchair_positions')):0,
     };
   }
   return {

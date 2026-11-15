@@ -818,6 +818,10 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 )}
                 {form.additionalStops.map((stop, i) => (
                   <div key={i} className="grid md:grid-cols-[1fr_160px_140px_auto] gap-3 items-start">
+                    <div className="md:col-span-4 space-y-3">
+                      <RegionalAddressFields value={{pickupState:stop.state,pickupZip:stop.zip,pickupCounty:stop.county,pickupTimezone:stop.timezone}} side="pickup" onChange={fields=>{const next=[...form.additionalStops];next[i]={...stop,...(fields.pickupState!==undefined?{state:fields.pickupState}:{}),...(fields.pickupZip!==undefined?{zip:fields.pickupZip}:{}),...(fields.pickupCounty!==undefined?{county:fields.pickupCounty}:{}),...(fields.pickupTimezone!==undefined?{timezone:fields.pickupTimezone as RideRequestInput['pickupTimezone']}: {})};upd('additionalStops',next);}}/>
+                      <Field label={`Stop ${i+1} local date`}><input type="date" className={inputCls} value={stop.date||form.pickupDate} onChange={e=>{const next=[...form.additionalStops];next[i]={...stop,date:e.target.value};upd('additionalStops',next);}}/></Field>
+                    </div>
                     <input
                       className={inputCls}
                       placeholder={`Stop ${i + 1} address`}
@@ -874,6 +878,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 ))}
               </div>
             )}
+            <div className="grid gap-4 sm:grid-cols-2"><Field label="Destination local date"><input type="date" className={inputCls} value={form.dropoffDate||form.pickupDate} onChange={e=>upd("dropoffDate",e.target.value)}/></Field><Field label="Expected destination local time"><input type="time" className={inputCls} value={form.dropoffTime||""} onChange={e=>upd("dropoffTime",e.target.value)}/></Field></div>
             <TripLegsPreview className="mt-2" legs={buildLegs(form)} />
             <Field label="Mobility notes" error={errors.mobilityNotes}>
               <textarea

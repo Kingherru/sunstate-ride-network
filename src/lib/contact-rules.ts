@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import {stateCodeSchema,timezoneSchema} from './us-geography';
 export const CONTACT_TYPES = ['personal','patient','caregiver','facility','business','payer','broker','organization'] as const;
 export const contactInput = z.object({
+  address:z.string().max(300).optional(),city:z.string().max(120).optional(),state:stateCodeSchema.optional().or(z.literal('')),zip:z.string().regex(/^\d{5}(-\d{4})?$/).optional().or(z.literal('')),county_equivalent:z.string().max(120).optional(),timezone:timezoneSchema,
   id:z.string().uuid().optional(), contact_type:z.enum(CONTACT_TYPES),
   contact_roles:z.array(z.enum(['family','facility','business','payer','emergency','other'])).max(6).default([]),
   first_name:z.string().trim().max(80).default(''),last_name:z.string().trim().max(80).default(''),

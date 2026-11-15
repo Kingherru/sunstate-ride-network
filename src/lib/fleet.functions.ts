@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {serviceAreaSchema} from './us-geography';
 import {maskVin} from './pass4r-rules';
 
 /* ---- Drivers ---- */
@@ -16,6 +17,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
     id?: string;
+    regional_service_areas?:import("zod").infer<typeof serviceAreaSchema>;
     first_name: string;
     last_name: string;
     phone?: string;
@@ -54,6 +56,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    if(data.regional_service_areas)serviceAreaSchema.parse(data.regional_service_areas);
     const row: any = { ...data, owner_id: userId, status: data.status ?? "active" };
     if (data.employment_type === undefined) delete row.employment_type;
     if (data.pay_type === undefined) delete row.pay_type;

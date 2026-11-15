@@ -288,6 +288,8 @@ const DEFS: Def[] = [
   { code: "DOCOUNTY", label: "Destination county-equivalent", op: {kind:"field",field:"dropoffCounty"}, value:true },
   { code: "PUTZ", label: "Pickup timezone", op: {kind:"field",field:"pickupTimezone"}, value:true },
   { code: "DOTZ", label: "Destination timezone", op: {kind:"field",field:"dropoffTimezone"}, value:true },
+  { code: "DODATE", label: "Destination local date", op: {kind:"date",field:"dropoffDate"}, value:true },
+  { code: "DOTIME", label: "Destination local time", op: {kind:"time",field:"dropoffTime"}, value:true },
   { code: "FAC", label: "Facility name", op: { kind: "note" }, value: true },
   { code: "UNIT", label: "Unit or department", op: { kind: "note" }, value: true },
   { code: "ROOM", label: "Room number", op: { kind: "note" }, value: true },

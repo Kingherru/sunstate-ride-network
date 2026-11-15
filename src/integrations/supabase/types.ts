@@ -1429,6 +1429,7 @@ export type Database = {
           pay_type: string | null
           phone: string | null
           primary_vehicle_id: string | null
+          regional_service_areas: Json | null
           service_capabilities: string[]
           status: string
           updated_at: string
@@ -1455,6 +1456,7 @@ export type Database = {
           pay_type?: string | null
           phone?: string | null
           primary_vehicle_id?: string | null
+          regional_service_areas?: Json | null
           service_capabilities?: string[]
           status?: string
           updated_at?: string
@@ -1481,6 +1483,7 @@ export type Database = {
           pay_type?: string | null
           phone?: string | null
           primary_vehicle_id?: string | null
+          regional_service_areas?: Json | null
           service_capabilities?: string[]
           status?: string
           updated_at?: string
@@ -3317,6 +3320,10 @@ export type Database = {
         Row: {
           active: boolean
           billing_address: string | null
+          billing_county: string | null
+          billing_state: string | null
+          billing_timezone: string | null
+          billing_zip: string | null
           created_at: string
           created_by: string | null
           creator_mfn_id: string | null
@@ -3342,6 +3349,10 @@ export type Database = {
         Insert: {
           active?: boolean
           billing_address?: string | null
+          billing_county?: string | null
+          billing_state?: string | null
+          billing_timezone?: string | null
+          billing_zip?: string | null
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -3367,6 +3378,10 @@ export type Database = {
         Update: {
           active?: boolean
           billing_address?: string | null
+          billing_county?: string | null
+          billing_state?: string | null
+          billing_timezone?: string | null
+          billing_zip?: string | null
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -4080,6 +4095,7 @@ export type Database = {
           contact_roles: string[]
           contact_type: string
           coordination_allowed: boolean
+          county_equivalent: string | null
           created_at: string
           created_by: string | null
           creator_mfn_id: string | null
@@ -4097,6 +4113,7 @@ export type Database = {
           phone: string | null
           relationship: string | null
           state: string
+          timezone: string | null
           updated_at: string
           workspace_id: string | null
           workspace_mfn_id: string | null
@@ -4111,6 +4128,7 @@ export type Database = {
           contact_roles?: string[]
           contact_type: string
           coordination_allowed?: boolean
+          county_equivalent?: string | null
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -4128,6 +4146,7 @@ export type Database = {
           phone?: string | null
           relationship?: string | null
           state?: string
+          timezone?: string | null
           updated_at?: string
           workspace_id?: string | null
           workspace_mfn_id?: string | null
@@ -4142,6 +4161,7 @@ export type Database = {
           contact_roles?: string[]
           contact_type?: string
           coordination_allowed?: boolean
+          county_equivalent?: string | null
           created_at?: string
           created_by?: string | null
           creator_mfn_id?: string | null
@@ -4159,6 +4179,7 @@ export type Database = {
           phone?: string | null
           relationship?: string | null
           state?: string
+          timezone?: string | null
           updated_at?: string
           workspace_id?: string | null
           workspace_mfn_id?: string | null
@@ -5587,6 +5608,7 @@ export type Database = {
           recurrence_exceptions: string[]
           recurrence_rule: string | null
           regional_evidence: Json | null
+          regional_time_events: Json | null
           requester_email: string | null
           requester_phone: string | null
           requester_user_id: string | null
@@ -5730,6 +5752,7 @@ export type Database = {
           recurrence_exceptions?: string[]
           recurrence_rule?: string | null
           regional_evidence?: Json | null
+          regional_time_events?: Json | null
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
@@ -5873,6 +5896,7 @@ export type Database = {
           recurrence_exceptions?: string[]
           recurrence_rule?: string | null
           regional_evidence?: Json | null
+          regional_time_events?: Json | null
           requester_email?: string | null
           requester_phone?: string | null
           requester_user_id?: string | null
@@ -6149,6 +6173,7 @@ export type Database = {
           authorization_number: string | null
           city: string | null
           communication_needs: string | null
+          county_equivalent: string | null
           created_at: string
           deactivated_at: string | null
           deactivation_reason: string | null
@@ -6181,6 +6206,7 @@ export type Database = {
           relationship_links: Json
           service_requirements: string | null
           state: string | null
+          timezone: string | null
           updated_at: string
           weight_lbs: number | null
           wheelchair_type: string | null
@@ -6195,6 +6221,7 @@ export type Database = {
           authorization_number?: string | null
           city?: string | null
           communication_needs?: string | null
+          county_equivalent?: string | null
           created_at?: string
           deactivated_at?: string | null
           deactivation_reason?: string | null
@@ -6227,6 +6254,7 @@ export type Database = {
           relationship_links?: Json
           service_requirements?: string | null
           state?: string | null
+          timezone?: string | null
           updated_at?: string
           weight_lbs?: number | null
           wheelchair_type?: string | null
@@ -6241,6 +6269,7 @@ export type Database = {
           authorization_number?: string | null
           city?: string | null
           communication_needs?: string | null
+          county_equivalent?: string | null
           created_at?: string
           deactivated_at?: string | null
           deactivation_reason?: string | null
@@ -6273,6 +6302,7 @@ export type Database = {
           relationship_links?: Json
           service_requirements?: string | null
           state?: string | null
+          timezone?: string | null
           updated_at?: string
           weight_lbs?: number | null
           wheelchair_type?: string | null
@@ -7843,6 +7873,7 @@ export type Database = {
           referral_target_id: string | null
           region: string | null
           regional_evidence: Json | null
+          regional_time_events: Json | null
           reservation_state: string | null
           return_date: string | null
           return_dropoff_at: string | null
@@ -8033,6 +8064,7 @@ export type Database = {
           referral_target_id?: string | null
           region?: string | null
           regional_evidence?: Json | null
+          regional_time_events?: Json | null
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_at?: string | null
@@ -8223,6 +8255,7 @@ export type Database = {
           referral_target_id?: string | null
           region?: string | null
           regional_evidence?: Json | null
+          regional_time_events?: Json | null
           reservation_state?: string | null
           return_date?: string | null
           return_dropoff_at?: string | null
@@ -10395,6 +10428,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      network_regional_service_areas: { Args: never; Returns: Json }
       network_reservation_state: {
         Args: { _state: string; _trip: string }
         Returns: string
@@ -10709,6 +10743,7 @@ export type Database = {
         Args: { _trip_id: string }
         Returns: string
       }
+      regional_configuration_history: { Args: never; Returns: Json }
       regional_geography_rank: {
         Args: {
           _areas: Json

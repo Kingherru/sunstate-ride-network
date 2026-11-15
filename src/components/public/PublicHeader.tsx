@@ -5,6 +5,7 @@ import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL, PUBLIC_PHONE_VALID } from "@/lib/site-config";
 import {PublicRegionSelect} from './PublicRegionSelect';
+import {DsButton} from '@/components/ds/controls';
 
 const NAV = [
   { label: "Services", to: "/services" },
@@ -19,25 +20,27 @@ const NAV = [
 const focus = "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-on-primary focus-visible:ring-offset-2 focus-visible:ring-offset-ds-primary";
 
 /** Uppercase nav links: no background blocks, no underline, subtle hover. */
-const navLink = cn("ds-button-text ds-transition inline-flex items-center whitespace-nowrap rounded-ds-sm px-2 py-2.5 text-[0.8125rem] uppercase tracking-[0.07em] hover:text-ds-accent data-[status=active]:text-ds-accent", focus);
+const navLink = cn("ds-button-text ds-transition inline-flex min-h-11 items-center whitespace-nowrap rounded-ds-sm px-1 py-2.5 text-xs uppercase 2xl:px-2 2xl:text-[0.8125rem] hover:text-ds-accent focus-visible:text-ds-accent data-[status=active]:text-ds-accent", focus);
 
 /** Header actions: icon + text only on the blue header. No background, no border, no underline. */
-function ActionBlocks({ className, full }: { className?: string; full?: boolean }) {
+function ActionBlocks({ className, full, onNavigate }: { className?: string; full?: boolean; onNavigate?:()=>void }) {
   const item = cn(
-    "ds-button-text ds-transition inline-flex min-h-12 items-center gap-2 whitespace-nowrap px-1.5 text-[0.9375rem] uppercase tracking-[0.04em] [&_svg]:size-[1.125rem] [&_svg]:shrink-0",
+    "ds-button-text ds-transition inline-flex min-h-12 shrink-0 items-center gap-2 whitespace-nowrap px-1 text-xs uppercase 2xl:text-[0.9375rem] [&_svg]:hidden 2xl:[&_svg]:inline [&_svg]:size-[1.125rem] [&_svg]:shrink-0",
     full && "w-full",
   );
   return (
-    <div className={cn("public-header-actions items-center gap-3", full ? "flex flex-col items-start" : "flex", className)}>
-      <Link to="/login" className={cn(item, "text-ds-on-primary hover:text-ds-accent", focus)}><LogIn aria-hidden />Sign In</Link>
+    <div className={cn("public-header-actions items-center gap-1 2xl:gap-3", full ? "flex flex-col items-start" : "flex", className)}>
+      <Link to="/login" onClick={onNavigate} className={cn(item, "text-ds-on-primary hover:text-ds-accent focus-visible:text-ds-accent", focus)}><LogIn aria-hidden />Sign In</Link>
+      {!full&&<span aria-hidden className="text-ds-accent 2xl:hidden">–</span>}
       {PUBLIC_PHONE_VALID ? (
-        <a href={PUBLIC_PHONE_TEL} className={cn(item, "text-ds-on-primary hover:text-ds-accent", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
+        <a href={PUBLIC_PHONE_TEL} onClick={onNavigate} className={cn(item, "text-ds-on-primary hover:text-ds-accent focus-visible:text-ds-accent", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
           <Phone aria-hidden />Call Us
         </a>
       ) : (
         <span className={cn(item, "text-ds-on-primary")}><Phone aria-hidden />Call Us</span>
       )}
-      <a href={BOOKING_ROUTE} className={cn(item, "text-ds-accent hover:text-ds-on-primary", focus)}>
+      {!full&&<span aria-hidden className="text-ds-accent 2xl:hidden">–</span>}
+      <a href={BOOKING_ROUTE} onClick={onNavigate} className={cn(item, "text-ds-accent hover:text-ds-on-primary focus-visible:text-ds-on-primary", focus)}>
         <CalendarPlus aria-hidden />Book a Trip
       </a>
     </div>
@@ -48,39 +51,35 @@ export function PublicHeader() {
   const [open, setOpen] = useState(false);
   return (
     <header className="public-header sticky top-0 z-50 bg-ds-primary ds-glass-blue border-b border-ds-primary-hover text-ds-on-primary" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}>
-      <div className="public-header-inner mfn-container flex min-h-[76px] items-center justify-between gap-4 py-3">
-        <Link to="/" className={cn("rounded-ds-sm", focus)} aria-label="MY FLORIDA NEMT home">
-          <BrandName on="blue" className="public-brand text-xl sm:text-2xl" />
+      <div className="public-header-inner mx-auto grid min-h-[76px] max-w-[1600px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 min-[1200px]:flex min-[1200px]:justify-between 2xl:px-6">
+        <Link to="/" onClick={()=>setOpen(false)} className={cn("min-w-0 shrink-0 rounded-ds-sm", focus)} aria-label="MY FLORIDA NEMT home">
+          <BrandName on="blue" className="public-brand text-lg sm:text-xl 2xl:text-2xl" />
         </Link>
-        <nav aria-label="Main" className="hidden items-center xl:flex">
+        <nav aria-label="Main" className="hidden min-w-0 items-center min-[1200px]:flex">
           <PublicRegionSelect/>
           {NAV.map((n) => <Link key={n.to} to={n.to} className={navLink}>{n.label}</Link>)}
         </nav>
-        <div className="public-mobile-actions flex items-center gap-3">
-          <ActionBlocks className="hidden xl:flex" />
-          <a href={BOOKING_ROUTE} aria-label="Book a Trip" className={cn("ds-transition inline-flex min-h-11 items-center gap-2 rounded-ds-sm px-2 text-ds-accent hover:text-ds-on-primary xl:hidden", focus)}><CalendarPlus className="size-5 shrink-0" aria-hidden /><span className="ds-button-text hidden whitespace-nowrap text-sm uppercase sm:inline">Book a Trip</span></a>
-          <button
+        <div className="public-mobile-actions flex shrink-0 items-center gap-3">
+          <ActionBlocks className="hidden min-[1200px]:flex" />
+          <DsButton
+            variant="ghost"
             type="button"
-            className={cn("public-menu-control inline-flex size-11 items-center justify-center rounded-ds-sm hover:opacity-80 xl:hidden", focus)}
+            className={cn("public-menu-control size-11 shrink-0 p-0 text-ds-on-primary hover:translate-y-0 hover:bg-transparent hover:text-ds-accent focus-visible:text-ds-accent min-[1200px]:hidden", focus)}
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((o) => !o)}
           >
             {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
-          </button>
+          </DsButton>
         </div>
       </div>
-      <div className="mfn-container flex items-center justify-center gap-8 pb-2 xl:hidden" aria-label="Quick actions">
-        <Link to="/login" className={cn("ds-button-text inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-ds-sm text-sm uppercase", focus)}><LogIn className="size-4" aria-hidden />SIGN IN</Link>
-        {PUBLIC_PHONE_VALID ? <a href={PUBLIC_PHONE_TEL} className={cn("ds-button-text inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-ds-sm text-sm uppercase", focus)}><Phone className="size-4" aria-hidden />CALL US</a> : <span title="Business phone number not yet provided" className="ds-button-text inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-sm uppercase"><Phone className="size-4" aria-hidden />CALL US</span>}
-      </div>
       {open && (
-        <nav id="mobile-menu" aria-label="Mobile" className="ds-fade-in ds-glass-blue border-t border-ds-primary-hover px-4 pb-5 xl:hidden">
+        <nav id="mobile-menu" aria-label="Mobile" className="absolute inset-x-0 top-full max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-ds-primary-hover bg-ds-primary px-4 pb-5 min-[1200px]:hidden">
           <ul className="mfn-container flex flex-col gap-1 pt-2">
             {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
-          <ActionBlocks full className="mfn-container mt-4" />
+          <ActionBlocks full onNavigate={()=>setOpen(false)} className="mfn-container mt-4" />
         </nav>
       )}
     </header>

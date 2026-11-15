@@ -6,5 +6,5 @@ export const FLORIDA_SITE={state:'FL',stateName:'Florida',displayName:'MY FLORID
 export const NATIONAL_SITE_RESERVATION={domain:'mynnemt.com',displayName:null,status:'inactive' as const};
 export const publicRegions=()=>REGIONAL_FOUNDATIONS.filter(r=>r.status==='publicly_active');
 export function publicRegionContext(state:string){return state==='FL'?{available:true,site:FLORIDA_SITE,index:true}:{available:false,site:null,index:false};}
-export const REGIONAL_READINESS_KEYS=['branding','geography','timezone','provider_eligibility','credentials','matching','coverage','seo','policy','payments_tax'] as const;
+export const REGIONAL_READINESS_KEYS=['branding','geography','timezone','provider_eligibility','credentials','cross_state','directory','matching','coverage','seo','policy','payments_tax'] as const;
 export function regionalConfigurationAllowed(master:boolean,status:string){return master&&['inactive','foundation_only'].includes(status);}

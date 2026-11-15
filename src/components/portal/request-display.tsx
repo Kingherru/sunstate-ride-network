@@ -106,12 +106,12 @@ export function RequestTable({ rows, detailBase, showSource = false }: { rows: R
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return <div className="min-w-0 py-3"><dt className="ds-support font-semibold uppercase">{label}</dt><dd className="ds-body mt-1 break-words">{value ?? NOT_AVAILABLE}</dd></div>;
+  return <div className="min-w-0 py-3"><dt className="ds-support font-bold text-ds-primary uppercase">{label}</dt><dd className="ds-body mt-1 break-words">{value ?? NOT_AVAILABLE}</dd></div>;
 }
 
 export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; showSource?: boolean }) {
   const delivery = isDelivery(r);
-  const value = (key: string, applicable = true) => detailValue(r, key, applicable);
+  const value = (key: string, applicable = true) => /^(pickup|dropoff)_(state|timezone|county|zip)$/.test(key)&&!r[key]?NOT_AVAILABLE:detailValue(r, key, applicable);
   const readable = (key: string) => {
     const raw = value(key);
     if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.includes('T') ? fmtDateTime(raw) : new Date(`${raw.slice(0, 10)}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -121,7 +121,7 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
   const round = !delivery && (r.trip_type === 'round_trip' || r.round_trip === true);
   const multi = !delivery && (r.trip_type === 'multi_trip' || r.trip_type === 'multi_stop');
   const repeating = !delivery && !!r.recurrence_rule && r.recurrence_rule !== 'none';
-  const stops = Array.isArray(r.additional_stops) ? r.additional_stops as { address?: string; city?: string; pickupTime?: string }[] : [];
+  const stops = Array.isArray(r.additional_stops) ? r.additional_stops as { address?: string; city?: string; pickupTime?: string;state?:string;zip?:string;county?:string;timezone?:string;date?:string }[] : [];
   const name = [r.patient_first_name, r.patient_last_name].filter(Boolean).join(' ');
   const fields = 'mt-2 grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3';
   return <div className="space-y-6">
@@ -144,12 +144,13 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
       <Row label="Pickup state" value={value('pickup_state')}/><Row label="Pickup county-equivalent" value={value('pickup_county')}/><Row label="Pickup timezone" value={value('pickup_timezone')}/><Row label="Destination state" value={value('dropoff_state')}/><Row label="Destination county-equivalent" value={value('dropoff_county')}/><Row label="Destination timezone" value={value('dropoff_timezone')}/>
       <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup ZIP" value={value('pickup_zip')} /><Row label="Pickup location details" value={value('pickup_address_details')} />
       <Row label="Pickup date" value={readable('pickup_date')} /><Row label="Requested pickup time" value={readable('pickup_time')} />
+      <Row label="Scheduling evidence" value={Array.isArray((r as unknown as {regional_time_events?:unknown[]}).regional_time_events)?'Local timezone evidence recorded — review applies where unresolved':'NEEDS REVIEW — legacy timezone evidence not recorded'}/>
       <Row label={delivery ? 'Delivery destination' : 'Drop-off location'} value={value('dropoff_address')} /><Row label="Destination area" value={value('dropoff_city')} /><Row label="Destination ZIP" value={value('dropoff_zip')} />
       {!delivery && <Row label="Requested drop-off / appointment time" value={readable('appointment_time')} />}
       {round && <><Row label="Return date" value={readable('return_date')} /><Row label="Return pickup time" value={readable('return_pickup_time')} /><Row label="Return drop-off time" value={readable('return_dropoff_time')} /></>}
       {round && <><Row label="Return pickup building" value={value('return_pickup_building')} /><Row label="Return pickup suite" value={value('return_pickup_suite')} /></>}
     </dl>
-    {multi && <div className="mt-4"><h3 className="ds-label uppercase">Additional stops</h3>{stops.length ? stops.map((stop, i) => <dl key={i} className={fields}><Row label={`Stop ${i + 1}`} value={stop.address || 'NOT PROVIDED'} /><Row label="City" value={stop.city || 'NOT PROVIDED'} /><Row label="Pickup time" value={stop.pickupTime || 'NOT PROVIDED'} /><Row label="Stop notes" value={NOT_AVAILABLE} /></dl>) : <p className="ds-body">NOT PROVIDED</p>}</div>}
+    {multi && <div className="mt-4"><h3 className="ds-label uppercase">Additional stops</h3>{stops.length ? stops.map((stop, i) => <dl key={i} className={fields}><Row label={`Stop ${i + 1}`} value={stop.address || 'NOT PROVIDED'} /><Row label="City" value={stop.city || 'NOT PROVIDED'} /><Row label="State" value={stop.state || NOT_AVAILABLE}/><Row label="ZIP" value={stop.zip || NOT_AVAILABLE}/><Row label="County-equivalent" value={stop.county || NOT_AVAILABLE}/><Row label="Timezone" value={stop.timezone || NOT_AVAILABLE}/><Row label="Local date" value={stop.date || NOT_AVAILABLE}/><Row label="Pickup time" value={stop.pickupTime || 'NOT PROVIDED'} /><Row label="Stop notes" value={NOT_AVAILABLE} /></dl>) : <p className="ds-body">NOT PROVIDED</p>}</div>}
     {repeating && <dl className={fields}><Row label="Recurrence" value={value('recurrence_rule')} /><Row label="Repeats until" value={readable('recurrence_end_date')} /></dl>}
     </DetailSection>
     <DetailSection tone="service" title={delivery ? 'Delivery handling' : 'Transportation requirements'}><dl className={fields}>

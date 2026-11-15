@@ -15,7 +15,7 @@
 .public-header a:focus-visible { color: var(--ds-accent); outline: 2px solid currentColor; outline-offset: 3px; box-shadow: none; }
 .public-header a.text-ds-accent:focus-visible { color: var(--ds-on-primary); }
 .public-header .public-menu-control:hover, .public-header .public-menu-control:focus-visible { background: var(--ds-primary-hover); color: var(--ds-accent); }
-.public-header #mobile-menu { padding-block: .75rem 1.5rem; border-top-color: var(--public-on-blue-edge); }
+.public-header #mobile-menu { padding-block: .75rem 1.5rem; border-top-color: var(--public-on-blue-edge); max-height: calc(100dvh - 76px); }
 .public-header #mobile-menu ul { gap: .25rem; }
 .public-header #mobile-menu ul a { min-height: 3rem; padding-inline: .75rem; }
 .public-header #mobile-menu .public-header-actions { border-top: 1px solid var(--public-on-blue-edge); padding-top: 1rem; gap: .5rem; }
@@ -111,8 +111,9 @@
 .public-footer a:hover, .public-footer a:focus-visible { color: var(--ds-accent); text-decoration: none; }
 @media (min-width: 1024px) { .public-footer .public-footer-columns { grid-template-columns: 1.15fr .9fr 1fr 1.15fr; gap: 3rem; } .public-page-hero h1 { font-size: 3rem; } }
 @media (max-width: 639px) {
-  .public-header .public-brand { font-size: 1rem; }
+  .public-header .public-brand { font-size: 1.125rem; }
   .public-header .public-header-inner { gap: .5rem; min-height: 68px; }
+  .public-header #mobile-menu { max-height: calc(100dvh - 68px); }
   .public-header .public-mobile-actions { gap: .25rem; }
   .public-path-card { padding: 1.5rem; }
   .public-path-card .ds-section-title { min-height: 0; }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const patientSchema = z.object({
+  county_equivalent:z.string().max(120).nullish(),timezone:z.string().max(100).nullish(),
   kind: z.enum(["patient", "contact"]).optional().default("patient"),
   first_name: z.string().trim().min(1).max(80),
   last_name: z.string().trim().min(1).max(80),

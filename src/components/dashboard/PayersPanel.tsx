@@ -5,6 +5,7 @@ import { usePortalMutation, usePortalQuery,usePortalPreview } from "@/components
 import { listMyPayers, createPayer, updatePayer, deletePayer } from "@/lib/payers.functions";
 import type { ContactOption } from "@/components/dashboard/ContactsPayersPanel";
 import {DsButton} from '@/components/ds/controls';
+import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {PayerAgreement} from '@/components/portal/PayerAgreement';
 
 type Payer = Awaited<ReturnType<typeof listMyPayers>>[number];
@@ -103,6 +104,7 @@ export function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Part
     name: payer.name ?? "",
     email: payer.email ?? "",
     phone: payer.phone ?? "",
+    billing_state:payer.billing_state??'',billing_zip:payer.billing_zip??'',billing_county:payer.billing_county??'',billing_timezone:payer.billing_timezone??'',
     billing_address: payer.billing_address ?? "",
     ein: payer.ein ?? "",
     payer_type: payer.payer_type ?? "",
@@ -162,6 +164,7 @@ export function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Part
           </select></label>
         <label className={`${lbl} sm:col-span-2`}><span className={cap}>Billing address</span>
           <input value={form.billing_address} onChange={(e) => set("billing_address", e.target.value)} className={inp} /></label>
+        <div className="sm:col-span-2"><RegionalAddressFields value={{pickupState:form.billing_state,pickupZip:form.billing_zip,pickupCounty:form.billing_county,pickupTimezone:form.billing_timezone}} side="pickup" onChange={v=>setForm({...form,billing_state:v.pickupState??form.billing_state,billing_zip:v.pickupZip??form.billing_zip,billing_county:v.pickupCounty??form.billing_county,billing_timezone:v.pickupTimezone??form.billing_timezone})}/></div>
         <label className={lbl}><span className={cap}>EIN (where applicable)</span>
           <input value={form.ein} onChange={(e) => set("ein", e.target.value)} className={inp} placeholder="Only last 4 digits are shown later" /></label>
         <label className={lbl}><span className={cap}>Linked contact</span>

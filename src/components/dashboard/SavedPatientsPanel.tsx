@@ -8,6 +8,7 @@ import {
   deleteSavedPatient,
 } from "@/lib/saved-patients.functions";
 
+import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 type Patient = Awaited<ReturnType<typeof listSavedPatients>>[number];
 type Kind = "patient" | "contact";
 
@@ -22,7 +23,7 @@ const EMPTY = {
   diagnosis_code: "", authorization_number: "",
   // Demographics
   gender: "", address_line1: "", address_line2: "",
-  city: "", state: "", zip: "",
+  city: "", state: "", zip: "",county_equivalent:"",timezone:"",
 };
 
 export function SavedPatientsPanel() {
@@ -73,6 +74,7 @@ export function SavedPatientsPanel() {
       address_line1: (p as any).address_line1 ?? "",
       address_line2: (p as any).address_line2 ?? "",
       city: (p as any).city ?? "",
+      county_equivalent:p.county_equivalent??"",timezone:p.timezone??"",
       state: (p as any).state ?? "",
       zip: (p as any).zip ?? "",
     });
@@ -165,8 +167,7 @@ export function SavedPatientsPanel() {
                   <Field label="Home address line 1"><input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} className={inputCls} /></Field>
                   <Field label="Address line 2"><input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} className={inputCls} /></Field>
                   <Field label="City"><input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputCls} /></Field>
-                  <Field label="State (2-letter)"><input maxLength={2} value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase() })} className={inputCls} /></Field>
-                  <Field label="ZIP"><input maxLength={10} value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} className={inputCls} /></Field>
+                  <div className="sm:col-span-2"><RegionalAddressFields value={{pickupState:form.state,pickupZip:form.zip,pickupCounty:form.county_equivalent,pickupTimezone:form.timezone}} side="pickup" onChange={v=>setForm({...form,state:v.pickupState??form.state,zip:v.pickupZip??form.zip,county_equivalent:v.pickupCounty??form.county_equivalent,timezone:v.pickupTimezone??form.timezone})}/></div>
                 </div>
               </div>
 

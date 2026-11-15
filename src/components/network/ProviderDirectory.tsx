@@ -17,6 +17,7 @@ import { DsButton,DsSelect,DsCheckbox } from '@/components/ds/controls';
 import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
 import {REGIONS} from '@/lib/coverage';
+import {US_STATES,stateRegions} from '@/lib/us-geography';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -126,8 +127,8 @@ export function ProviderDirectory({ savedOnly = false, onSelect, providerOperati
               className="w-full rounded-sm border border-border py-2 pr-3 text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <DsSelect aria-label="Provider state" value={state} onChange={e=>setState(e.target.value)}><option value="FL">Florida</option></DsSelect>
-            <DsSelect aria-label="Provider region" value={region} onChange={e=>setRegion(e.target.value)}><option value="">All Florida regions</option>{REGIONS.map(r=><option key={r.slug} value={r.slug}>{r.name}</option>)}</DsSelect>
+            <DsSelect aria-label="Provider state" value={state} onChange={e=>{setState(e.target.value);setRegion('');setCounty('');setCity('');setZip('');}}>{US_STATES.map(s=><option key={s.code} value={s.code}>{s.name}</option>)}</DsSelect>
+            <DsSelect aria-label="Provider region" value={region} onChange={e=>setRegion(e.target.value)}><option value="">All configured regions</option>{stateRegions(state).map(r=><option key={r.slug} value={r.slug}>{r.name}</option>)}</DsSelect>
             <DsSelect aria-label="Network provider subtype" value={providerType} onChange={e=>{const t=e.target.value;if(t===''||t==='nemt_business'||t==='independent_contractor')setProviderType(t);}}><option value="">All provider types</option><option value="nemt_business">NEMT Business</option><option value="independent_contractor">Independent Contractor</option></DsSelect>
             <input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Service type" aria-label="Service type" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
             <input value={county} onChange={(e) => setCounty(e.target.value)} placeholder="County" aria-label="County" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />

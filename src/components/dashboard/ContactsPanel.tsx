@@ -7,6 +7,7 @@ import { CONTACT_TYPES } from '@/lib/contact-rules';
 import {DsButton} from '@/components/ds/controls';
 import {Dialog,DialogContent,DialogTitle} from '@/components/ui/dialog';
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
+import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {ContactImportExport} from '@/components/portal/ContactImportExport';
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
@@ -116,6 +117,7 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
 
 export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: Partial<Contact>; payers: PayerOption[]; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState<any>({
+    address:contact.address??'',city:contact.city??'',state:contact.state??'',zip:contact.zip??'',county_equivalent:contact.county_equivalent??'',timezone:contact.timezone??'',
     contact_type: contact.contact_type ?? "personal",
     first_name: contact.first_name ?? "",
     last_name: contact.last_name ?? "",
@@ -164,6 +166,8 @@ export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: 
           </select>
           <span className="text-xs text-muted-foreground">A linked contact also appears on the Payers tab without duplicating the record.</span>
         </label>
+        <Inp l="Address" v={form.address} on={v=>setForm({...form,address:v})} cs={2}/><Inp l="City / locality" v={form.city} on={v=>setForm({...form,city:v})}/>
+        <div className="sm:col-span-2"><RegionalAddressFields value={{pickupState:form.state,pickupZip:form.zip,pickupCounty:form.county_equivalent,pickupTimezone:form.timezone}} side="pickup" onChange={v=>setForm({...form,state:v.pickupState??form.state,zip:v.pickupZip??form.zip,county_equivalent:v.pickupCounty??form.county_equivalent,timezone:v.pickupTimezone??form.timezone})}/></div>
         <Area l="Mobility notes" v={form.mobility_notes} on={(v) => setForm({ ...form, mobility_notes: v })} />
         <Area l="Notes" v={form.notes} on={(v) => setForm({ ...form, notes: v })} />
         <div className="flex justify-end gap-2 pt-2 sm:col-span-2">

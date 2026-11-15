@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { approximateMiles, serviceCompatibility } from './account-settings-rules';
 import {publicContractorFields} from './contractor-rules';
 import {REGIONS} from './coverage';
+import {publicServiceAreas,directoryStateMatch,type PublicArea} from './regional-directory-rules';
 
 export type NetworkProviderRow = {
   workspace_id: string;
@@ -26,6 +27,7 @@ export type NetworkProviderRow = {
   evidence_language?: string;
   state?:string;
   region?:string;
+  regional_areas?:PublicArea[];
 };
 
 const filtersSchema = z.object({
@@ -62,9 +64,10 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase.rpc("list_network_providers", {
       _search: data.search,
       _service_type: data.service_type,
-      _county: data.county,
-      _city: data.city,
-      _zip: data.zip,
+      // Regional filters apply after the existing visibility-authorized projection.
+      _county: undefined,
+      _city: undefined,
+      _zip: undefined,
       _medical_delivery: data.medical_delivery,
       _accepting: data.accepting,
       _saved_only: data.saved_only ?? false,
@@ -80,7 +83,10 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
     });
     let combined=[...(rows??[]).map(r=>({...r,provider_subtype:'nemt_business'})),...contractorRows.filter(r=>!data.saved_only)];
     if(data.nearby_opportunities){const {data:ids,error:operationalError}=await context.supabase.rpc('provider_opportunity_ids');if(operationalError)return {ok:false as const,error:'Opportunity availability is a provider-only filter.'};combined=combined.filter(r=>ids?.includes(r.workspace_id));}
-    const results = combined.filter(r=>(!data.state||data.state==='FL')&&(!data.region||r.counties.some(c=>REGIONS.find(region=>region.slug===data.region)?.counties.includes(c)))&&(!data.provider_subtype||r.provider_subtype===data.provider_subtype)&&(!data.search||r.business_name.toLowerCase().includes(data.search.toLowerCase()))&&(!data.service_type||r.service_types.includes(data.service_type))&&(!data.county||r.counties.includes(data.county))&&(!data.city||r.cities.includes(data.city))&&(!data.zip||r.zips.includes(data.zip))&&(!data.medical_delivery||r.medical_delivery)).map(row => {
+    const {data:areaRows,error:areaError}=await context.supabase.rpc('network_regional_service_areas');
+    if(areaError)return {ok:false as const,error:'Regional service areas unavailable.'};
+    const safeAreas=Array.isArray(areaRows)?areaRows as unknown as {workspace_id:string;areas:unknown}[]:[];
+    const results = combined.map(r=>({...r,regional_areas:publicServiceAreas(safeAreas.find(a=>a.workspace_id===r.workspace_id)?.areas)})).filter(r=>(!data.state||directoryStateMatch(data.state,r.regional_areas,r.counties.length>0||r.zips.length>0))&&(!data.region||r.regional_areas.some(a=>a.state===data.state&&a.region===data.region)||data.state==='FL'&&r.counties.some(c=>REGIONS.find(region=>region.slug===data.region)?.counties.includes(c)))&&(!data.provider_subtype||r.provider_subtype===data.provider_subtype)&&(!data.search||r.business_name.toLowerCase().includes(data.search.toLowerCase()))&&(!data.service_type||r.service_types.includes(data.service_type))&&(!data.county||r.counties.includes(data.county)||r.regional_areas.some(a=>a.countyEquivalent===data.county&&a.state===data.state))&&(!data.city||r.cities.includes(data.city)||r.regional_areas.some(a=>a.locality===data.city&&a.state===data.state))&&(!data.zip||r.zips.includes(data.zip)||r.regional_areas.some(a=>a.postalCode===data.zip&&a.state===data.state))&&(!data.medical_delivery||r.medical_delivery)).map(row => {
       const center = centers?.find(p => p.workspace_id === row.workspace_id);
       const distance = origin && center?.lat != null && center?.lng != null ? approximateMiles(origin, { lat: center.lat, lng: center.lng }) : null;
       return { ...row, distance_miles: distance == null ? null : Math.round(distance * 10) / 10, compatibility: serviceCompatibility(distance, center?.radius_miles ?? null, data.county, row.counties) };

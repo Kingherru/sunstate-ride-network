@@ -57,6 +57,7 @@ const PAYER_TYPES = ["broker", "private_patient", "insurance"] as const;
 const VEHICLE_PREFS = ["car", "suv", "van", "wheelchair_van", "stretcher_van", "provider_choice"] as const;
 
 const payerFields = {
+  billing_state:z.string().max(2).optional(),billing_zip:z.string().max(10).optional(),billing_county:z.string().max(120).optional(),billing_timezone:z.string().max(100).optional(),
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(200).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
@@ -77,6 +78,7 @@ const payerFields = {
 
 function payerRow(data: z.infer<z.ZodObject<typeof payerFields>>, ownerUserId: string) {
   const row = {
+    ...(data.billing_state!==undefined?{billing_state:data.billing_state}:{}),...(data.billing_zip!==undefined?{billing_zip:data.billing_zip}:{}),...(data.billing_county!==undefined?{billing_county:data.billing_county}:{}),...(data.billing_timezone!==undefined?{billing_timezone:data.billing_timezone}:{}),
     name: data.name,
     email: data.email || null,
     phone: data.phone || null,
@@ -102,7 +104,7 @@ export const listMyPayers = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("payers")
-      .select("id, workspace_id, name, email, phone, notes, billing_address, ein, payer_type, active, linked_contact_id, multi_load_ok, preferred_driver, vehicle_preference, pickup_signature_required, dropoff_signature_required, early_late_preference, early_late_minutes, created_at")
+      .select("id, workspace_id, name, email, phone, notes, billing_state,billing_zip,billing_county,billing_timezone,billing_address, ein, payer_type, active, linked_contact_id, multi_load_ok, preferred_driver, vehicle_preference, pickup_signature_required, dropoff_signature_required, early_late_preference, early_late_minutes, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];

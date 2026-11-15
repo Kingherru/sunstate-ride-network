@@ -1,0 +1,4 @@
+import {useQuery} from '@tanstack/react-query';
+import {useServerFn} from '@tanstack/react-start';
+import {readRegionalHistory} from '@/lib/regional.functions';
+export function RegionalHistory(){const read=useServerFn(readRegionalHistory);const q=useQuery({queryKey:['regional-configuration-history'],queryFn:()=>read()});return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Configuration history</h2><div className="portal-business-body"><p className="ds-support">{q.isPending?'Loading history…':q.error?'History unavailable.':q.data?.length?`${q.data.length} retained configuration changes`:'No regional configuration changes recorded.'}</p>{q.data?.map((r,i)=><pre key={i} className="ds-support whitespace-pre-wrap break-words border-b border-ds-border py-3">{JSON.stringify(r,null,2)}</pre>)}</div></section>;}

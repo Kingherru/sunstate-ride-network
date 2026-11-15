@@ -2,6 +2,7 @@ import { DetailOverlayFrame } from '@/components/portal/DetailOverlayFrame';
 import { useState } from "react";
 import { X } from 'lucide-react';
 import { DsButton,DsSelect,DsField } from '@/components/ds/controls';
+import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {US_TIMEZONES} from '@/lib/us-geography';
 import { useDetailWindow } from '@/components/portal/use-detail-window';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -191,6 +192,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
     : defaultAvailability();
   const initialPricing = d.contractor_pricing && typeof d.contractor_pricing === "object" ? d.contractor_pricing : {};
   const [f, set] = useState({
+    regional_state:d.regional_service_areas?.areas?.[0]?.state??'',regional_zip:d.regional_service_areas?.areas?.[0]?.postalCode??'',regional_county:d.regional_service_areas?.areas?.[0]?.countyEquivalent??'',regional_timezone:d.regional_service_areas?.areas?.[0]?.timezone??'',
     first_name: d.first_name ?? "", last_name: d.last_name ?? "",
     phone: d.phone ?? "", email: d.email ?? "",
     license_number: d.license_number ?? "", license_expiry: d.license_expiry ?? "",
@@ -224,6 +226,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   const isContractor = f.pay_type === "independent_contractor" || f.employment_type === "independent_contractor";
   const m = usePortalMutation({
     mutationFn: () => upsertDriver({ data: {
+      ...(f.regional_state?{regional_service_areas:{areas:[{country:"US",state:f.regional_state,postalCode:f.regional_zip,countyEquivalent:f.regional_county,countyType:"county",timezone:f.regional_timezone,locality:"",region:"",evidence:"provider_entered"}],crossState:false,radius:null}}:{}),
       id: d.id,
       first_name: f.first_name,
       last_name: f.last_name,
@@ -331,6 +334,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
           </p>
         </div>
 
+        <div className="sm:col-span-2"><RegionalAddressFields value={{pickupState:f.regional_state,pickupZip:f.regional_zip,pickupCounty:f.regional_county,pickupTimezone:f.regional_timezone}} side="pickup" onChange={v=>set({...f,regional_state:v.pickupState??f.regional_state,regional_zip:v.pickupZip??f.regional_zip,regional_county:v.pickupCounty??f.regional_county,regional_timezone:v.pickupTimezone??f.regional_timezone})}/></div>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Driver pay type</span>
           <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}

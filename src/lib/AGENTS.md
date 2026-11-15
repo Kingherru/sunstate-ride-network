@@ -33,3 +33,5 @@
 - Offer activity uses monotonic revisions with recipient watermarks in tab_view_marks; addressed conversations serialize existing workspace pair creation. Why: repeat clicks cannot duplicate threads or mark newer activity read.
 - Pilot activation requires independently verified safety evidence; reviewed Florida geography and Eastern/Central comparisons reject DST ambiguity. Why: code presence alone never certifies rollback or concurrency.
 - Customer selections re-read each request through patient or facility scope and emit safe columns with metadata audit. Why: browser selections never authorize reports.
+- Regional time events preserve entered local values and are independently normalized by database triggers; legacy events stay unknown. Why: DST ambiguity and browser UTC values must never silently schedule trips.
+- Directory regional projections reuse the existing verified visible-provider list and strip private geography. Why: regional filters must not widen discovery or expose service bases.

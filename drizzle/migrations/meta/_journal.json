@@ -988,6 +988,27 @@
       "when": 1794716447323,
       "tag": "0140_vehicle_regional_context",
       "breakpoints": true
+    },
+    {
+      "idx": 141,
+      "version": "7",
+      "when": 1794717527348,
+      "tag": "0141_regional_local_time_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 142,
+      "version": "7",
+      "when": 1794717585859,
+      "tag": "0142_safe_regional_directory_projection",
+      "breakpoints": true
+    },
+    {
+      "idx": 143,
+      "version": "7",
+      "when": 1794717668221,
+      "tag": "0143_private_account_regional_context",
+      "breakpoints": true
     }
   ]
 }

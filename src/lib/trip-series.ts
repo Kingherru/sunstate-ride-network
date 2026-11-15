@@ -27,7 +27,8 @@ export function generateOccurrences(input: SeriesRule, today: string): string[] 
   return dates.filter(d=>d>=rule.start&&d>=today&&d<=until.toISOString().slice(0,10)&&!rule.excluded.includes(d)).slice(0,rule.limit);
 }
 export function occurrenceRequest(source: RideRequestInput, row: Occurrence): RideRequestInput {
-  return rideRequestSchema.parse({...source,pickupDate:row.date,pickupTime:row.pickupTime,appointmentTime:row.appointmentTime,returnPickupTime:row.returnTime,returnDropoffTime:row.returnDropoffTime,returnDate:source.tripType==='round_trip'?row.returnDate||row.date:'',recurrence:'none',recurrenceEndDate:'',confirmedProviderDriverId:null,confirmedDriverEndTime:"",customerQuoteId:null,customerQuoteDraftId:null});
+  const shift=(date:string|undefined)=>{if(!date)return date;const offset=Date.parse(date+'T12:00:00Z')-Date.parse(source.pickupDate+'T12:00:00Z');return new Date(Date.parse(row.date+'T12:00:00Z')+offset).toISOString().slice(0,10);};
+  return rideRequestSchema.parse({...source,dropoffDate:shift(source.dropoffDate),additionalStops:source.additionalStops.map(stop=>({...stop,date:shift(stop.date)})),pickupDate:row.date,pickupTime:row.pickupTime,appointmentTime:row.appointmentTime,returnPickupTime:row.returnTime,returnDropoffTime:row.returnDropoffTime,returnDate:source.tripType==='round_trip'?row.returnDate||row.date:'',recurrence:'none',recurrenceEndDate:'',confirmedProviderDriverId:null,confirmedDriverEndTime:"",customerQuoteId:null,customerQuoteDraftId:null});
 }
 export function validateOccurrences(rows: Occurrence[], today: string): void {
   if(!rows.length||rows.length>100) throw new Error('Review between 1 and 100 trips.');

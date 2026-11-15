@@ -1,0 +1,3 @@
+export type PublicArea={state:string;countyEquivalent?:string;countyType?:string;locality?:string;postalCode?:string;region?:string;evidence?:string};
+export function publicServiceAreas(input:unknown):PublicArea[]{return Array.isArray(input)?input.filter(a=>a&&typeof a==='object'&&typeof a.state==='string').map(a=>({state:a.state,countyEquivalent:a.countyEquivalent,countyType:a.countyType,locality:a.locality,postalCode:a.postalCode,region:a.region,evidence:'generalized'})):[];}
+export function directoryStateMatch(state:string,areas:PublicArea[],hasRecordedFloridaCoverage:boolean){return areas.some(a=>a.state===state)||(state==='FL'&&areas.length===0&&hasRecordedFloridaCoverage);}
