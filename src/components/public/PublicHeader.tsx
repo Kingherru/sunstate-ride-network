@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { CalendarPlus, LogIn, Menu, Phone, X } from "lucide-react";
+import { CalendarPlus, LogIn, Menu, Phone, UserRound, X } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL, PUBLIC_PHONE_VALID } from "@/lib/site-config";
@@ -76,10 +76,14 @@ export function PublicHeader() {
       </div>
       {open && (
         <nav id="mobile-menu" aria-label="Mobile" className="absolute inset-x-0 top-full max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-ds-primary-hover bg-ds-primary px-4 pb-5 min-[1200px]:hidden">
+          <div aria-label="Primary actions" className="mfn-container grid min-w-0 grid-cols-2 gap-3 pb-3 pt-4">
+            <a href={BOOKING_ROUTE} onClick={()=>setOpen(false)} className={cn("ds-button-text col-span-2 flex min-h-14 items-center justify-center gap-3 whitespace-nowrap rounded-ds-sm bg-ds-accent px-4 py-3 uppercase text-ds-on-accent hover:bg-ds-accent-hover", focus)}><CalendarPlus className="size-5 shrink-0" aria-hidden />Book a Trip</a>
+            <a href={PUBLIC_PHONE_TEL} onClick={()=>setOpen(false)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`} className={cn("ds-button-text flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm bg-ds-surface px-3 py-3 uppercase text-ds-primary", focus)}><Phone className="size-5 shrink-0" aria-hidden />Call Us</a>
+            <Link to="/login" onClick={()=>setOpen(false)} className={cn("ds-button-text flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm border border-ds-on-primary px-3 py-3 uppercase text-ds-on-primary hover:text-ds-accent", focus)}><UserRound className="size-5 shrink-0" aria-hidden />Sign In</Link>
+          </div>
           <ul className="mfn-container flex flex-col gap-1 pt-2">
             {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
-          <ActionBlocks full onNavigate={()=>setOpen(false)} className="mfn-container mt-4" />
         </nav>
       )}
     </header>

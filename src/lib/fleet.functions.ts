@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {serviceAreaSchema} from './us-geography';
+import {serviceAreaSchema,stateCodeSchema,timezoneSchema} from './us-geography';
 import {maskVin} from './pass4r-rules';
 
 /* ---- Drivers ---- */
@@ -124,6 +124,7 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   .inputValidator((input: {
     id?: string;
     name: string;
+    regional_service_areas?:import('zod').infer<typeof serviceAreaSchema>;
     make?: string; model?: string; model_year?: number; vehicle_category?: string; accessibility_equipment?: string;
     plate?: string;
     vehicle_type?: "sedan" | "suv" | "van" | "wheelchair_van" | "stretcher_van" | "ambulance";
@@ -137,6 +138,9 @@ export const upsertVehicle = createServerFn({ method: "POST" })
   }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    if(data.regional_service_areas)serviceAreaSchema.parse(data.regional_service_areas);
+    data.service_states?.forEach(s=>stateCodeSchema.parse(s));
+    if(data.operating_timezone)timezoneSchema.parse(data.operating_timezone);
     const row: any = { ...data, owner_id: userId, vehicle_type: data.vehicle_type ?? "sedan", status: data.status ?? "active" };
     let workspaceId:string|null=null;
     if(data.id){const {data:existing}=await supabase.from('vehicles').select('workspace_id').eq('id',data.id).single();workspaceId=existing?.workspace_id??null;const {data:allowed}=await supabase.rpc('business_record_access',{_ws:workspaceId??'',_kind:'vehicles',_id:data.id,_level:'manage'});if(!workspaceId||!allowed)throw new Error('Authorized vehicle editing required');}

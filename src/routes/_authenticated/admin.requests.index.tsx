@@ -7,6 +7,7 @@ import { DsEmpty } from "@/components/ds/feedback";
 import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { OnBehalfRequest } from "@/components/admin/OnBehalfRequest";
 import { useAdminLevel } from "@/lib/use-admin-level";
+import {CustomerSelectedExport} from '@/components/portal/CustomerSelectedExport';
 
 type Tab = "all" | "new";
 export const Route = createFileRoute("/_authenticated/admin/requests/")({
@@ -30,6 +31,7 @@ function AdminRequests() {
       {tab === "new" && canCreate ? <OnBehalfRequest rows={candidates} /> : (
         <>
           <PageHead title="Requests">Select any request to open its details.</PageHead>
+          <CustomerSelectedExport admin records={rows.map(r=>({id:r.id,label:`${r.mfn_id??'Request'} · ${r.pickup_date??''} · ${r.pickup_city??''} → ${r.dropoff_city??''}`}))}/>
           <section className={panelCls}>
             {rows.length === 0 ? <DsEmpty title="No requests yet" /> : <RequestTable rows={rows} detailBase="/admin/requests" showSource />}
           </section>

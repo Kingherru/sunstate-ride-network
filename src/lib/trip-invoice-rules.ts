@@ -11,7 +11,7 @@ export const prepareTripQuoteInput = z.object({
   terms: z.string().trim().max(3000).default(''),
 }).strict();
 export type InvoiceLine = { label: string; cents: number; quantity?: number; rateCents?: number; kind?: string; reason?: string };
-export type RegionalInvoiceContext={pickupState:string|null;destinationState:string|null;pickupTimezone:string|null;destinationTimezone:string|null};
+export type RegionalInvoiceContext={pickupState:string|null;destinationState:string|null;pickupTimezone:string|null;destinationTimezone:string|null;pickupZip?:string|null;destinationZip?:string|null;pickupCounty?:string|null;destinationCounty?:string|null;events?:{kind:string;date:string;time:string;timezone:string|null;verified?:boolean;utc?:string|null;status?:string}[]};
 export type TripInvoice = { regionalContext?:RegionalInvoiceContext; id: string; mfnId: string; requestId: string; requestNumber: string; providerName: string; billTo: string; providerPhone: string | null; lines: InvoiceLine[]; totalCents: number; paidCents: number; balanceCents: number; status: string; quoteVersion: number; terms: string; dueAt: string | null; createdAt: string; canManage: boolean; canPay: boolean; paymentConfigured: boolean; events?: {action:string;created_at:string}[]; history: { reference: string; status: string; amountCents: number; refundedCents: number; createdAt: string }[] };
 
 export function appendInvoiceAdjustments(calculated: InvoiceLine[], adjustments: z.infer<typeof invoiceAdjustment>[]) {

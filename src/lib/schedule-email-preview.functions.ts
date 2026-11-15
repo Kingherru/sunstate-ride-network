@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {scheduleTimeLabel} from "./regional-projections";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const input = z.object({ driverIds: z.array(z.string().uuid()).max(200), allDrivers: z.boolean(), start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).refine((v) => v.end >= v.start && (Date.parse(v.end)-Date.parse(v.start))/86400000<=42, "End date must follow start date");
@@ -22,13 +23,13 @@ export const previewScheduleEmails = createServerFn({ method: "POST" })
     if (!data.allDrivers && data.driverIds.some((id) => !drivers?.some((d) => d.id === id))) throw new Error("Driver access denied.");
     const ids = (drivers ?? []).map((d) => d.id);
     const { data: trips, error: tripError } = ids.length ? await db.from("trips")
-      .select("id, driver_id, pickup_date, pickup_time, pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, pickup_address, pickup_city, dropoff_address, dropoff_city, network_provider_workspace_id, assigned_to, scheduled_start_time")
+      .select("id, driver_id, pickup_date, pickup_time, pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_zip, dropoff_zip, pickup_address, pickup_city, dropoff_address, dropoff_city, network_provider_workspace_id, assigned_to, scheduled_start_time")
       .in("driver_id", ids).gte("pickup_date", data.start).lte("pickup_date", data.end)
       .order("pickup_date").order("pickup_time") : { data: [], error: null };
     if (tripError) throw new Error("Could not load authorized schedules.");
     return { safeMode: true as const, start: data.start, end: data.end, recipients: (drivers ?? []).map((d) => ({
       id: d.id, name: `${d.first_name} ${d.last_name}`.trim(), email: d.email,
-      trips: (trips ?? []).filter((t) => t.driver_id === d.id).map((t) => ({ reference: t.id.slice(0, 8).toUpperCase(), date: t.pickup_date, time: `${t.scheduled_start_time??t.pickup_time??''} · ${t.pickup_timezone??'Timezone not verified'}`, pickup: [t.pickup_address, t.pickup_city,t.pickup_state].filter(Boolean).join(", "), destination: [t.dropoff_address, t.dropoff_city,t.dropoff_state,t.dropoff_timezone].filter(Boolean).join(", ") })),
+      trips: (trips ?? []).filter((t) => t.driver_id === d.id).map((t) => ({ reference: t.id.slice(0, 8).toUpperCase(), date: t.pickup_date, time: scheduleTimeLabel(t), pickup: [t.pickup_address, t.pickup_city,t.pickup_state].filter(Boolean).join(", "), destination: [t.dropoff_address, t.dropoff_city,t.dropoff_state,t.dropoff_timezone].filter(Boolean).join(", ") })),
     })) };
   });
 

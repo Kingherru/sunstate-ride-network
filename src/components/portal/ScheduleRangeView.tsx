@@ -7,6 +7,7 @@ import { conflictingSlots } from "@/lib/trip-network-rules";
 import { useRequestDetails } from "./request-detail-context";
 import { usePortalQuery } from "./preview-data";
 import { cn } from "@/lib/utils";
+import {scheduleTimeLabel,scheduleInterval,type RegionalRecord} from "@/lib/regional-projections";
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const parse = (s: string) => new Date(s + "T00:00:00Z");
@@ -19,9 +20,9 @@ function rangeFor(view: "week" | "month", anchor: string) {
   const s = shift(iso(first), -((first.getUTCDay() + 6) % 7));
   return { start: s, end: shift(iso(last), (7 - ((last.getUTCDay() + 6) % 7) - 1)), month: d.getUTCMonth() };
 }
-type Row = { id: string; pickup_date: string; pickup_time: string | null; patient_first_name: string | null; patient_last_name: string | null; pickup_city: string | null; dropoff_city: string | null; driver_id: string | null; vehicle_id: string | null; status: string | null; scheduled_start_time: string | null; assignment_end_time?: string | null };
-export type Attention = "no_driver" | "no_vehicle" | "conflict" | "inactive";
-const ATTN: Record<Attention, string> = { no_driver: "Unassigned driver", no_vehicle: "Missing vehicle", conflict: "Schedule conflict", inactive: "Inactive resource" };
+type Row = RegionalRecord & { id: string; pickup_date: string; pickup_time: string | null; patient_first_name: string | null; patient_last_name: string | null; pickup_city: string | null; dropoff_city: string | null; driver_id: string | null; vehicle_id: string | null; status: string | null; scheduled_start_time: string | null; assignment_end_time?: string | null };
+export type Attention = "no_driver" | "no_vehicle" | "conflict" | "inactive" | "timezone";
+const ATTN: Record<Attention, string> = { no_driver: "Unassigned driver", no_vehicle: "Missing vehicle", conflict: "Schedule conflict", inactive: "Inactive resource", timezone:"Timezone review required" };
 
 /** Week and month views over the same authorized trip data as the day board. Read-only; assignment stays on the day board. */
 export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
@@ -39,6 +40,7 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
   const vehicleMap = new Map(((vehicles.data ?? []) as { id: string; name: string; status?: string | null }[]).map((v) => [v.id, v]));
   const issues = (t: Row): Attention[] => {
     const out: Attention[] = [];
+    if(!scheduleInterval(t))out.push("timezone");
     if (!t.driver_id) out.push("no_driver");
     if (!t.vehicle_id) out.push("no_vehicle");
     if (conflicts.has(t.id)) out.push("conflict");
@@ -89,7 +91,7 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
             return <li key={t.id}><button type="button" onClick={() => open({ kind: "trip", id: t.id })}
               className={cn("w-full rounded-ds-sm border bg-ds-surface px-2 py-1 text-left text-xs", iss.length ? "border-ds-error/60" : "border-ds-border")}
               title={iss.map((i) => ATTN[i]).join(", ") || undefined}>
-              <span className="font-semibold">{(t.scheduled_start_time ?? t.pickup_time ?? "").slice(0, 5) || "Time not provided"}</span>{" "}
+              <span className="font-semibold">{scheduleTimeLabel(t)}</span>{" "}
               <span className="break-words">{t.pickup_city ?? "Not provided"} → {t.dropoff_city ?? "Not provided"}</span>
               {iss.length > 0 && <StatusPill className="mt-1 whitespace-normal" tone="red" status={iss.map((i) => ATTN[i]).join(" · ")} />}
             </button></li>;

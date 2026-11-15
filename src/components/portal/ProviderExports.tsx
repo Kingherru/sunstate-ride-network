@@ -7,6 +7,7 @@ import { listProviderExportRows } from '@/lib/provider-exports.functions';
 import { EXPORT_FIELDS } from '@/lib/provider-export-rules';
 import { exportTable, readableDate, type ExportFormat } from '@/lib/table-export';
 import { usePortalPreview, previewBlocked } from './preview-data';
+import {SelectedTripExport} from './SelectedTripExport';
 
 export function ProviderExports() {
   const preview = usePortalPreview(); const read = useServerFn(listProviderExportRows);
@@ -23,12 +24,12 @@ export function ProviderExports() {
       await exportTable(rows as any[], cols, kind, format as ExportFormat, filename);
     } catch { toast.error('Could not export authorized trips.'); } finally { setBusy(false); }
   }
-  return <section className="space-y-4 border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">Trip & schedule exports</h2>
+  return <><SelectedTripExport/><section className="space-y-4 border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">Trip & schedule exports</h2>
     <div className="grid gap-3 sm:grid-cols-2">
       <DsField label="Export">{p => <DsSelect {...p} value={kind} onChange={e => setKind(e.target.value)}><option>Trips</option><option>Schedule</option></DsSelect>}</DsField>
       <DsField label="Format">{p => <DsSelect {...p} value={format} onChange={e => setFormat(e.target.value)}><option value="csv">CSV</option><option value="xlsx">Excel (.xlsx)</option><option value="pdf">PDF</option></DsSelect>}</DsField>
       <DsField label="From">{p => <DsInput {...p} type="date" value={start} onChange={e => setStart(e.target.value)} />}</DsField>
       <DsField label="Through">{p => <DsInput {...p} type="date" value={end} onChange={e => setEnd(e.target.value)} />}</DsField>
     </div><DsButton size="sm" disabled={busy || end < start} onClick={download}><Download className="size-4" aria-hidden />{busy ? 'Preparing…' : 'Download'}</DsButton>
-  </section>;
+  </section></>;
 }

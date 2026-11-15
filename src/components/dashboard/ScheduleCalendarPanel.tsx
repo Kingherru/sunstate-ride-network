@@ -10,6 +10,7 @@ import { conflictingSlots } from "@/lib/trip-network-rules";
 import { useRequestDetails } from '@/components/portal/request-detail-context';
 import { ScheduleAssignment, RESOURCE_MIME } from '@/components/portal/ScheduleAssignment';
 import { DsButton } from '@/components/ds/controls';
+import {scheduleTimeLabel,weeklyLocalAvailability} from "@/lib/regional-projections";
 import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
 
 export const RESV_DND_MIME = "application/x-reservation-id";
@@ -200,7 +201,7 @@ export function ScheduleCalendarPanel() {
     const h = Number(hhmm.slice(0, 2));
     const sh = Number((cfg.day.start ?? "09:00").slice(0, 2));
     const eh = Number((cfg.day.end ?? "17:00").slice(0, 2));
-    return h < sh || h >= eh;
+    return !weeklyLocalAvailability(d.availability?.days??{},Number(dow),hhmm);
   }
 
   function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
@@ -258,7 +259,7 @@ export function ScheduleCalendarPanel() {
       {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
       {/* Filters — one aligned row of equal-height shared toolbar controls */}
       <ScheduleEmailPreview selectedDate={date}/>
-      <section className="space-y-3 border border-ds-border p-4"><h3 className="ds-label text-ds-primary">Trip assignments</h3><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div>{reservations.map(r=><div key={r.id} className="space-y-2"><p className="ds-support">{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status}))} vehicles={vehiclesQ.data??[]}/></div>)}</section>
+      <section className="space-y-3 border border-ds-border p-4"><h3 className="ds-label text-ds-primary">Trip assignments</h3><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div>{reservations.map(r=><div key={r.id} className="space-y-2"><p className="ds-support break-words">{scheduleTimeLabel(r)} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status,regional_service_areas:d.regional_service_areas}))} vehicles={vehiclesQ.data??[]}/></div>)}</section>
       <div className="portal-toolbar">
         <select
           value={vehicleFilter}
@@ -502,7 +503,7 @@ function ReservationChip({
       title={`${r.patient_first_name} ${r.patient_last_name}\n${r.pickup_address} → ${r.dropoff_address}`}
     >
       <div className="font-bold">
-        {fmtTime12(t)} · {r.patient_first_name} {r.patient_last_name}
+        {scheduleTimeLabel(r)} · {r.patient_first_name} {r.patient_last_name}
       </div>
       {!small && (
         <div className="text-[10px] text-muted-foreground">

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { PROVIDER_DEMO_FIXTURES, providerDemoKeyed } from "./demo-fixtures/provider-demo";
 import {contractorFixtures,CONTRACTOR_DEMO_ENABLED} from './demo-fixtures/contractor-demo';
 import {PILOT_CHECKS} from '@/lib/pilot-completion-rules';
+import {REGIONAL_DEMO_INVOICE} from './demo-fixtures/regional-invoice';
 import { useMutation, useQuery, type UseMutationOptions, type UseMutationResult, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query";
 
 /** Shared state for Master-Admin portal previews: which kind of portal is
@@ -30,6 +31,7 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'private-regional-profile':{areas:[{country:'US',state:'FL',countyEquivalent:'Orange',countyType:'county',locality:'Orlando',postalCode:'32801',timezone:'America/New_York',region:'central',evidence:'provider_entered'}],crossState:false,radius:null},
   'regional-home':{state:'FL'},
   'regional-service-areas':{regional_service_areas:{areas:[{country:'US',state:'FL',countyEquivalent:'Orange',countyType:'county',locality:'Orlando',postalCode:'32801',timezone:'America/New_York',region:'central',evidence:'provider_entered'}],crossState:false,radius:50},counties:['Orange (synthetic)'],cities:['Orlando (synthetic)'],zips:['32801']},
   'pilot-checklist':PILOT_CHECKS.map((label,i)=>({label,ready:![0,1,4,6,7,8,12,13].includes(i)})),
@@ -53,7 +55,7 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   'business-visibility': {workspace:{display_name:'Demo transportation business',account_type:'provider'},profile:null,consent:null},
   'business-search': [{workspace_id:'demo-business',business_name:'Demo Florida Facility',mfn_id:'MFN-A-DEMO',business_type:'facility',location:'Orlando',description:'Synthetic facility example.',facility_category:'Clinic',service_types:[],counties:[],cities:['Orlando'],medical_delivery:false,accepting_connections:true,business_contact_email:null,business_contact_phone:null,verification_level:null}],
   'patient-link-context': {workspaceId:'demo-source',patients:[{workspace_id:'demo-patient',display_name:'Demo Patient',mfn_id:'MFN-A-DEMO-PATIENT'}]},
-  'patient-trips': [{request:{id:'demo-patient-request',mfn_id:'MFN-R-DEMO',trip_kind:'passenger',transport_type:'wheelchair',trip_type:'one_way',created_at:'2026-11-07T12:00:00Z',pickup_date:'2026-11-10',pickup_time:'09:00',pickup_city:'Orlando',dropoff_city:'Winter Park'},tripId:null,tripNumber:null,providerName:'Demo independent provider',source:'Created by facility',events:[],payments:[],scheduledAt:null,driverAssigned:false,invoice:null,stage:'Approved',group:'upcoming',timeline:[{label:'Pending',at:'2026-11-07T12:00:00Z'},{label:'Approved',at:'2026-11-07T13:00:00Z'}]}],
+  'patient-trips': [{request:{id:'demo-patient-request',mfn_id:'MFN-R-DEMO',trip_kind:'passenger',transport_type:'wheelchair',trip_type:'one_way',created_at:'2026-11-07T12:00:00Z',pickup_date:'2026-11-10',pickup_time:'09:00',pickup_city:'Orlando',dropoff_city:'Winter Park'},tripId:null,tripNumber:null,providerName:'Demo independent provider',source:'Created by facility',events:[],payments:[],scheduledAt:null,driverAssigned:false,invoice:REGIONAL_DEMO_INVOICE,stage:'Approved',group:'upcoming',timeline:[{label:'Pending',at:'2026-11-07T12:00:00Z'},{label:'Approved',at:'2026-11-07T13:00:00Z'}]}],
   'personal-settings': { first_name: 'Demo', last_name: 'Account', display_name: 'Demo Account', phone: '', mfn_id: 'MFN-P-DEMO', notification_preferences: { in_app: true, email: false }, status: 'active' },
   'personal-security-audit': [],
   'targeted-patient-requests': [],

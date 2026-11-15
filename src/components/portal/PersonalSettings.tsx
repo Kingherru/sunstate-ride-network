@@ -9,6 +9,7 @@ import { StatusPill } from '@/components/ds/status';
 import { useRouteContext } from '@tanstack/react-router';
 import {getAccountProfileVerification} from '@/lib/account-profile-verification.functions';
 import {RegionalPreference} from './RegionalPreference';
+import {PrivateRegionalProfile} from './PrivateRegionalProfile';
 
 export function PersonalSettings({ section = 'all', requiredInApp = false }: { section?: 'all' | 'profile' | 'notifications' | 'status'; requiredInApp?: boolean }) {
   const preview = usePortalPreview();
@@ -77,5 +78,5 @@ export function PersonalSettings({ section = 'all', requiredInApp = false }: { s
       </fieldset>
     </section>}
     {section !== 'status' && <div className="portal-business-actions"><DsButton disabled={preview.active || busy || !q.data} type="submit">{busy ? 'Saving…' : 'Save settings'}</DsButton></div>}
-  </form>{(section==='profile'||section==='all')&&<RegionalPreference/>}</>;
+  </form>{(section==='profile'||section==='all')&&<><PrivateRegionalProfile/><RegionalPreference/></>}</>;
 }

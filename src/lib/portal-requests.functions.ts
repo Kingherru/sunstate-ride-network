@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {presentPatientTrip,type PatientSnapshot} from './patient-trips.functions';
 import type {TripInvoice} from './trip-invoice-rules';
+import {regionalInvoiceProjection,regionalInvoiceLines} from './regional-projections';
 
 /**
  * Portal + admin request reads. Every read runs as the signed-in user, so the
@@ -182,7 +183,7 @@ export const copyRequestToDraft = createServerFn({ method: "POST" })
           recurrence: "none", recurrenceEndDate: "", billingSource: r.trip_billing_source??"account",billingContact:r.trip_billing_source!=="account"?{firstName:r.trip_billing_first_name,lastName:r.trip_billing_last_name,email:r.trip_billing_email,phone:r.trip_billing_phone}:undefined,
         };
     const name = [r.patient_first_name, r.patient_last_name].filter(Boolean).join(" ").trim();
-    const summary = [delivery ? "Medical Delivery" : name || "Unnamed passenger", [r.pickup_city, r.dropoff_city].filter(Boolean).join(" → ")].filter(Boolean).join(" · ").slice(0, 240);
+    const summary = [delivery ? "Medical Delivery" : name || "Unnamed passenger", [r.pickup_city, r.dropoff_city].filter(Boolean).join(" → "),...regionalInvoiceLines(regionalInvoiceProjection(r)).slice(0,2)].filter(Boolean).join(" · ").slice(0, 240);
     const { data: created, error } = await context.supabase
       .from("trip_drafts")
       .insert({ user_id: context.userId, payload: payload as never, summary, autosaved: false })

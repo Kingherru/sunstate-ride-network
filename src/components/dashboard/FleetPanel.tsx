@@ -3,7 +3,8 @@ import { useState } from "react";
 import { X } from 'lucide-react';
 import { DsButton,DsSelect,DsField } from '@/components/ds/controls';
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
-import {US_TIMEZONES} from '@/lib/us-geography';
+import {US_TIMEZONES,serviceAreaSchema} from '@/lib/us-geography';
+import {RegionalAreaEditor,emptyAreaSettings,type AreaSettings} from '@/components/forms/RegionalAreaEditor';
 import { useDetailWindow } from '@/components/portal/use-detail-window';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -77,7 +78,7 @@ function DriversCard() {
                   </div>
                 )}
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Vehicle: {veh ? `${veh.name}${veh.plate ? ` (${veh.plate})` : ""}` : "unassigned"}
+                  Boundary: {d.regional_service_areas?.areas?.map((a:any)=>[a.state,a.countyEquivalent,a.locality,a.postalCode,a.region].filter(Boolean).join(' / ')).join('; ')||'No optional boundary'}<br/>Vehicle: {veh ? `${veh.name}${veh.plate ? ` (${veh.plate})` : ""}` : "unassigned"}
                 </div>
                 {d.employment_type === "independent_contractor" && pricingSummary(d.contractor_pricing) && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -187,6 +188,7 @@ function defaultAvailability() {
 
 function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any[]; onClose: () => void; onSaved: () => void }) {
   const detailWindow = useDetailWindow();
+  const [boundaries,setBoundaries]=useState<AreaSettings>(()=>{const p=serviceAreaSchema.safeParse(d.regional_service_areas);return p.success?p.data:emptyAreaSettings();});
   const initialAvail = d.availability && typeof d.availability === "object"
     ? { mode: (d.availability.mode ?? "weekly") as "weekly" | "flexible", days: d.availability.days ?? {} }
     : defaultAvailability();
@@ -226,7 +228,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   const isContractor = f.pay_type === "independent_contractor" || f.employment_type === "independent_contractor";
   const m = usePortalMutation({
     mutationFn: () => upsertDriver({ data: {
-      ...(f.regional_state?{regional_service_areas:{areas:[{country:"US",state:f.regional_state,postalCode:f.regional_zip,countyEquivalent:f.regional_county,countyType:"county",timezone:f.regional_timezone,locality:"",region:"",evidence:"provider_entered"}],crossState:false,radius:null}}:{}),
+      regional_service_areas:boundaries,
       id: d.id,
       first_name: f.first_name,
       last_name: f.last_name,
@@ -334,7 +336,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
           </p>
         </div>
 
-        <div className="sm:col-span-2"><RegionalAddressFields value={{pickupState:f.regional_state,pickupZip:f.regional_zip,pickupCounty:f.regional_county,pickupTimezone:f.regional_timezone}} side="pickup" onChange={v=>set({...f,regional_state:v.pickupState??f.regional_state,regional_zip:v.pickupZip??f.regional_zip,regional_county:v.pickupCounty??f.regional_county,regional_timezone:v.pickupTimezone??f.regional_timezone})}/></div>
+        <div className="sm:col-span-2"><RegionalAreaEditor value={boundaries} onChange={setBoundaries}/></div>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Driver pay type</span>
           <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}
@@ -553,6 +555,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
 }
 
 function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[]; onClose: () => void; onSaved: () => void }) {
+  const [boundaries,setBoundaries]=useState<AreaSettings>(()=>{const p=serviceAreaSchema.safeParse(v.regional_service_areas);return p.success?p.data:emptyAreaSettings();});
   const docs=usePortalQuery({queryKey:['my-credentials'],queryFn:()=>listMyCredentials()});
   const [f, set] = useState({
     name: v.name ?? "", plate: v.plate ?? "", make:v.make ?? "",model:v.model ?? "",model_year:v.model_year ?? "",vehicle_category:v.vehicle_category ?? "",accessibility_equipment:v.accessibility_equipment ?? "",
@@ -567,7 +570,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
       ? f.service_capabilities.filter(x => x !== val)
       : [...f.service_capabilities, val] });
   const m = usePortalMutation({
-    mutationFn: () => upsertVehicle({ data: { ...f,service_states:f.service_states.split(',').map((s:string)=>s.trim().toUpperCase()).filter(Boolean), id: v.id, model_year:Number(f.model_year), capacity: Number(f.capacity), insurance_expiry:f.insurance_expiry||null,travel_radius_miles:f.travel_radius_miles===''?null:Number(f.travel_radius_miles),service_regions:f.service_regions.split(',').map((s:string)=>s.trim()).filter(Boolean),service_counties:f.service_counties.split(',').map((s:string)=>s.trim()).filter(Boolean),service_cities:f.service_cities.split(',').map((s:string)=>s.trim()).filter(Boolean),service_zips:f.service_zips.split(',').map((s:string)=>s.trim()).filter(Boolean),assigned_driver_id: f.assigned_driver_id || null } as any }),
+    mutationFn: () => upsertVehicle({ data: { ...f,regional_service_areas:boundaries,service_states:f.service_states.split(',').map((s:string)=>s.trim().toUpperCase()).filter(Boolean), id: v.id, model_year:Number(f.model_year), capacity: Number(f.capacity), insurance_expiry:f.insurance_expiry||null,travel_radius_miles:f.travel_radius_miles===''?null:Number(f.travel_radius_miles),service_regions:f.service_regions.split(',').map((s:string)=>s.trim()).filter(Boolean),service_counties:f.service_counties.split(',').map((s:string)=>s.trim()).filter(Boolean),service_cities:f.service_cities.split(',').map((s:string)=>s.trim()).filter(Boolean),service_zips:f.service_zips.split(',').map((s:string)=>s.trim()).filter(Boolean),assigned_driver_id: f.assigned_driver_id || null } as any }),
     onSuccess: () => { toast.success("Saved"); onSaved(); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
@@ -578,6 +581,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
         <I l="Full VIN — authorized editing only" v={f.vin} on={x=>set({...f,vin:x.toUpperCase()})}/><I l="Vehicle insurance expiration" type="date" v={f.insurance_expiry} on={x=>set({...f,insurance_expiry:x})}/>
         <label className="flex flex-col gap-1 ds-body sm:col-span-2"><span className="ds-label">Private vehicle insurance record</span><select value={f.insurance_credential_id??''} onChange={e=>{const doc=docs.data?.find(d=>d.id===e.target.value);set({...f,insurance_credential_id:e.target.value||null,insurance_expiry:doc?.expires_at??f.insurance_expiry});}}><option value="">No insurance evidence linked</option>{(docs.data??[]).filter(d=>d.workspace_id===v.workspace_id&&d.kind==='auto_insurance').map(d=><option key={d.id} value={d.id}>{d.label} · {d.expires_at??'Expiry not recorded'}</option>)}</select><span className="ds-caption">Add private insurance evidence in Settings → Credentials & Documents, then link it here. Upload presence does not establish legal sufficiency.</span></label>
         <I l="States served (two-letter codes, comma separated)" v={f.service_states} on={x=>set({...f,service_states:x})}/><DsField label="Vehicle operating timezone">{p=><DsSelect {...p} value={f.operating_timezone} onChange={e=>set({...f,operating_timezone:e.target.value})}><option value="">Unknown — review required</option>{US_TIMEZONES.map(z=><option key={z} value={z}>{z}</option>)}</DsSelect>}</DsField><I l="Service regions (comma separated)" v={f.service_regions} on={x=>set({...f,service_regions:x})}/><I l="Counties (comma separated)" v={f.service_counties} on={x=>set({...f,service_counties:x})}/><I l="Cities (comma separated)" v={f.service_cities} on={x=>set({...f,service_cities:x})}/><I l="ZIP codes (comma separated)" v={f.service_zips} on={x=>set({...f,service_zips:x})}/><I l="Travel radius (miles)" type="number" v={String(f.travel_radius_miles)} on={x=>set({...f,travel_radius_miles:x})}/>
+        <div className="sm:col-span-2"><RegionalAreaEditor value={boundaries} onChange={setBoundaries}/></div>
         <I l="Make" v={f.make} on={x=>set({...f,make:x})} req/><I l="Model" v={f.model} on={x=>set({...f,model:x})} req/><I l="Year" v={String(f.model_year)} on={x=>set({...f,model_year:x})} type="number" req/><I l="License plate" v={f.plate} on={(x) => set({ ...f, plate: x })} req />
         <label className="flex flex-col gap-1 ds-body"><span className="ds-label">Vehicle category</span><select required value={f.vehicle_category} onChange={e=>set({...f,vehicle_category:e.target.value})}><option value="">Choose category</option>{vehicleCategories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></label><I l="Accessibility equipment" v={f.accessibility_equipment} on={x=>set({...f,accessibility_equipment:x})}/><p className="ds-support sm:col-span-2">Evidence: {v.evidence_status==='satisfied'?'Requirement Satisfied':v.evidence_status==='expired'?'Expired':'Under Review / Unable to Validate'}. Vehicle details do not verify documents.</p>
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />

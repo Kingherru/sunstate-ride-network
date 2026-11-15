@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { assertCheckoutConsent } from './payment-policy';
 import { prepareTripQuoteInput, appendInvoiceAdjustments, type TripInvoice } from './trip-invoice-rules';
+import {regionalInvoiceProjection,regionalInvoiceLines} from './regional-projections';
+import {tripTimeEvidence} from './regional-trip-times';
 const idInput = z.object({ invoiceId: z.string().uuid() }).strict();
 
 export const confirmTripCustomerQuote = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
@@ -22,7 +24,7 @@ export const confirmTripCustomerQuote = createServerFn({ method: 'POST' }).middl
     const { data: person } = await context.supabase.from('user_profiles').select('mfn_id').eq('user_id', context.userId).maybeSingle();
     const bill=form.billingContact as {firstName?:string;lastName?:string;email?:string;phone?:string}|undefined;
     const requestBinding={savedPatientId:typeof form.savedPatientId==='string'?form.savedPatientId:null,payerId:typeof form.payerId==='string'?form.payerId:null,coordinationContactId:typeof form.coordinationContactId==='string'?form.coordinationContactId:null,passengerCount:Number(form.passengerCount??1),wheelchairPositions:Number(form.wheelchairPositions??0),patientFirstName:String(form.patientFirstName??''),patientLastName:String(form.patientLastName??''),patientPhone:String(form.patientPhone??''),appointmentTime:String(form.appointmentTime??''),returnDropoffTime:String(form.returnDropoffTime??''),billingSource:String(form.billingSource??'account'),billingFirstName:bill?.firstName??null,billingLastName:bill?.lastName??null,billingEmail:bill?.email??null,billingPhone:bill?.phone??null};
-    const snapshot = { ...adjusted, regionalContext:{pickupState:typeof form.pickupState==='string'?form.pickupState:null,destinationState:typeof form.dropoffState==='string'?form.dropoffState:null,pickupTimezone:typeof form.pickupTimezone==='string'?form.pickupTimezone:null,destinationTimezone:typeof form.dropoffTimezone==='string'?form.dropoffTimezone:null}, requestBinding, id: crypto.randomUUID(), version: 1, rateVersionId: calculated.pricingSnapshot.rateVersionId, rateVersion: calculated.pricingSnapshot.version, trip, formFingerprint: fingerprint, mileageSource: 'manual_confirmed', quotedAt: calculated.quotedAt, personMfnId: person?.mfn_id ?? null, workspaceId: data.workspaceId, terms: data.terms };
+    const snapshot = { ...adjusted, regionalContext:regionalInvoiceProjection({...form,events:tripTimeEvidence(form)}), requestBinding, id: crypto.randomUUID(), version: 1, rateVersionId: calculated.pricingSnapshot.rateVersionId, rateVersion: calculated.pricingSnapshot.version, trip, formFingerprint: fingerprint, mileageSource: 'manual_confirmed', quotedAt: calculated.quotedAt, personMfnId: person?.mfn_id ?? null, workspaceId: data.workspaceId, terms: data.terms };
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: history } = await context.supabase.from('trip_drafts').select('customer_quote_history').eq('id', data.draftId).eq('user_id', context.userId).maybeSingle();
     snapshot.version = Array.isArray(history?.customer_quote_history) ? history.customer_quote_history.length + 1 : 1;
@@ -56,7 +58,9 @@ export const prepareInvoiceSend = createServerFn({ method: 'POST' }).middleware(
     const { data: row } = await context.supabase.from('trip_invoice_documents').select('mfn_id,total_cents,bill_to_snapshot,status').eq('id', data.invoiceId).maybeSingle();
     if (!row) throw new Error('Invoice unavailable.');
     const bill = row.bill_to_snapshot as { email?: string; userId?: string };
-    return { recipient: bill.email ?? null, invoiceNumber: row.mfn_id, totalCents: row.total_cents, available: !!bill.userId && !!bill.email && ['ready', 'sent', 'failed'].includes(row.status), blocker: bill.userId ? null : 'Secure non-account invoice links require configuration; no email will be sent.' };
+    const {data:snapshot}=await context.supabase.rpc('get_trip_invoice_snapshot',{_invoice:data.invoiceId});
+    const safe=snapshot as unknown as TripInvoice|null;
+    return { recipient: bill.email ?? null, invoiceNumber: row.mfn_id, totalCents: row.total_cents, regionalLines:safe?.regionalContext?regionalInvoiceLines(regionalInvoiceProjection(safe.regionalContext)):[], available: !!bill.userId && !!bill.email && ['ready', 'sent', 'failed'].includes(row.status), blocker: bill.userId ? null : 'Secure non-account invoice links require configuration; no email will be sent.' };
   });
 export const sendCustomerInvoice = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => idInput.extend({ confirmed: z.literal(true) }).parse(v)).handler(async ({ data, context }) => {
@@ -88,18 +92,20 @@ export const prepareSecureInvoicePayment = createServerFn({ method: 'POST' }).mi
     return { purpose:'provider_customer_invoice' as const,environment:'sandbox' as const,invoiceId:data.invoiceId,amountCents:Number.isSafeInteger(snapshot.totalCents)?snapshot.totalCents:null,currency:snapshot.currency??'usd',creationAllowed:false as const,policyAcceptanceRecorded:false as const,idempotencyRequired:true as const,chargeModel:null,feeTreatment:null,taxTreatment:null,error: 'Secure invoice collection is not enabled. Connect readiness, exact immutable invoice/account/acceptance binding, charge model, fee/tax configuration and Pass 4L approval are required. No payment was created.' };
   });
 export const getReferralFundingPreparation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => z.object({ workspaceId: z.string().uuid(), receiverCents: z.number().int().positive().max(2147483647), environment: z.enum(['sandbox', 'live']) }).strict().parse(v))
+  .inputValidator((v: unknown) => z.object({ workspaceId: z.string().uuid(), receiverCents: z.number().int().positive().max(2147483647), environment: z.enum(['sandbox', 'live']), tripId:z.string().uuid().optional() }).strict().parse(v))
   .handler(async ({ data, context }) => {
     const { data: allowed } = await context.supabase.rpc('can_manage_provider_customer_pricing', { _workspace: data.workspaceId });
     if (!allowed) throw new Error('Funding preparation unavailable.');
+    let regionalLines:string[]=[];
+    if(data.tripId){const {data:trip}=await context.supabase.from('trips').select('pickup_state,dropoff_state,pickup_zip,dropoff_zip,pickup_timezone,dropoff_timezone,regional_time_events').eq('id',data.tripId).maybeSingle();if(!trip)throw new Error('Funding trip unavailable.');regionalLines=regionalInvoiceLines(regionalInvoiceProjection(trip));}
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: policies } = await supabaseAdmin.from('network_fee_policies').select('version,percent_bps,fixed_cents,cap_cents,sandbox_estimate').eq('environment', data.environment).eq('method_category', 'card').eq('active', true).order('version', { ascending: false }).limit(1);
     const policy = policies?.[0]; const networkFeeCents = Math.round(data.receiverCents * 200 / 10000);
-    if (!policy || policy.percent_bps >= 10000) return { receiverCents: data.receiverCents, networkFeeCents, processingCents: null, totalCents: null, policyVersion: null, blocker: 'Configured processing recovery unavailable. Funding is not prepared.' };
+    if (!policy || policy.percent_bps >= 10000) return { regionalLines, receiverCents: data.receiverCents, networkFeeCents, processingCents: null, totalCents: null, policyVersion: null, blocker: 'Configured processing recovery unavailable. Funding is not prepared.' };
     const subtotal = data.receiverCents + networkFeeCents;
     let processingCents = Math.ceil((subtotal + policy.fixed_cents) / (1 - policy.percent_bps / 10000)) - subtotal;
     if (policy.cap_cents != null) processingCents = Math.min(processingCents, policy.cap_cents);
-    return { receiverCents: data.receiverCents, networkFeeCents, processingCents, totalCents: subtotal + processingCents, policyVersion: policy.version, sandboxEstimate: policy.sandbox_estimate, blocker: 'Preparation only. Existing completion/payment eligibility and controlled Network confirmations remain required.' };
+    return { regionalLines, receiverCents: data.receiverCents, networkFeeCents, processingCents, totalCents: subtotal + processingCents, policyVersion: policy.version, sandboxEstimate: policy.sandbox_estimate, blocker: 'Preparation only. Existing completion/payment eligibility and controlled Network confirmations remain required.' };
   });
 export const setTripDispatchContact = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((v: unknown) => z.object({ workspaceId: z.string().uuid(), phone: z.string().trim().max(32).nullable(), confirmed: z.literal(true) }).strict().parse(v)).handler(async ({ data, context }) => { const { error } = await context.supabase.rpc('set_trip_dispatch_contact', { _workspace: data.workspaceId, _phone: data.phone ?? '', _confirmed: true }); if (error) throw new Error('Contact unavailable.'); return { ok: true }; });
 export const setPatientDriverContact = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((v: unknown) => z.object({ tripId: z.string().uuid(), driverId: z.string().uuid(), phone: z.string().trim().max(32).nullable(), providerConfirmed: z.literal(true), driverConfirmed: z.literal(true) }).strict().parse(v)).handler(async ({ data, context }) => { const { error } = await context.supabase.rpc('set_patient_trip_contact', { _trip: data.tripId, _driver: data.driverId, _phone: data.phone ?? '', _provider_confirmed: true, _driver_confirmed: true }); if (error) throw new Error('Contact unavailable.'); return { ok: true }; });

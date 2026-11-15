@@ -8503,6 +8503,7 @@ export type Database = {
           onboarding_policy_version: string | null
           onboarding_step: number | null
           phone: string | null
+          regional_profile: Json | null
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
           user_id: string
@@ -8522,6 +8523,7 @@ export type Database = {
           onboarding_policy_version?: string | null
           onboarding_step?: number | null
           phone?: string | null
+          regional_profile?: Json | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
           user_id: string
@@ -8541,6 +8543,7 @@ export type Database = {
           onboarding_policy_version?: string | null
           onboarding_step?: number | null
           phone?: string | null
+          regional_profile?: Json | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
           user_id?: string
@@ -8616,6 +8619,7 @@ export type Database = {
           operation_type: string
           owner_id: string
           plate: string | null
+          regional_service_areas: Json | null
           registration_doc_path: string | null
           registration_expiry: string | null
           service_capabilities: string[]
@@ -8654,6 +8658,7 @@ export type Database = {
           operation_type?: string
           owner_id: string
           plate?: string | null
+          regional_service_areas?: Json | null
           registration_doc_path?: string | null
           registration_expiry?: string | null
           service_capabilities?: string[]
@@ -8692,6 +8697,7 @@ export type Database = {
           operation_type?: string
           owner_id?: string
           plate?: string | null
+          regional_service_areas?: Json | null
           registration_doc_path?: string | null
           registration_expiry?: string | null
           service_capabilities?: string[]
@@ -9108,6 +9114,7 @@ export type Database = {
           provider_subtype: string
           provider_subtype_selected_at: string | null
           provider_verified: boolean
+          regional_profile: Json | null
           status: Database["public"]["Enums"]["workspace_status"]
           updated_at: string
           verification_paused_reason: string | null
@@ -9137,6 +9144,7 @@ export type Database = {
           provider_subtype?: string
           provider_subtype_selected_at?: string | null
           provider_verified?: boolean
+          regional_profile?: Json | null
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
           verification_paused_reason?: string | null
@@ -9166,6 +9174,7 @@ export type Database = {
           provider_subtype?: string
           provider_subtype_selected_at?: string | null
           provider_verified?: boolean
+          regional_profile?: Json | null
           status?: Database["public"]["Enums"]["workspace_status"]
           updated_at?: string
           verification_paused_reason?: string | null
@@ -10633,6 +10642,10 @@ export type Database = {
         Returns: Json
       }
       preview_patient_communication_context: { Args: never; Returns: Json[] }
+      private_regional_profile: {
+        Args: { _id: string; _kind: string; _value?: Json }
+        Returns: Json
+      }
       promote_past_ride_requests_to_history: { Args: never; Returns: undefined }
       promote_past_trips_to_history: { Args: never; Returns: undefined }
       promote_ride_request_to_trip: {
@@ -10743,6 +10756,16 @@ export type Database = {
         Args: { _trip_id: string }
         Returns: string
       }
+      regional_boundary_contains: {
+        Args: {
+          _areas: Json
+          _city: string
+          _county: string
+          _state: string
+          _zip: string
+        }
+        Returns: boolean
+      }
       regional_configuration_history: { Args: never; Returns: Json }
       regional_geography_rank: {
         Args: {
@@ -10757,9 +10780,32 @@ export type Database = {
         }
         Returns: Json
       }
+      regional_manual_assignment_check: {
+        Args: {
+          _driver: string
+          _end: string
+          _start: string
+          _t: Database["public"]["Tables"]["trips"]["Row"]
+          _vehicle: string
+          _ws: string
+        }
+        Returns: undefined
+      }
       regional_state_eligibility: {
         Args: { _service: string; _state: string }
         Returns: Json
+      }
+      regional_trip_interval: {
+        Args: {
+          _end?: string
+          _start?: string
+          _t: Database["public"]["Tables"]["trips"]["Row"]
+        }
+        Returns: unknown
+      }
+      regional_weekly_contains: {
+        Args: { _days: Json; _instant: string; _zone: string }
+        Returns: boolean
       }
       request_existing_account_connection: {
         Args: { _confirmed: boolean; _target: string; _ws: string }
@@ -11052,6 +11098,10 @@ export type Database = {
       }
       us_regional_readiness: { Args: never; Returns: Json }
       us_state_catalog: { Args: never; Returns: Json }
+      validate_regional_profile_value: {
+        Args: { _value: Json }
+        Returns: boolean
+      }
       vehicle_masked_vin: { Args: { _vehicle: string }; Returns: string }
       verification_normalize_name: { Args: { _name: string }; Returns: string }
       verify_course_certificate: {

@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {stateCodeSchema,timezoneSchema} from './us-geography';
 
 const patientSchema = z.object({
-  county_equivalent:z.string().max(120).nullish(),timezone:z.string().max(100).nullish(),
+  county_equivalent:z.string().max(120).nullish(),timezone:timezoneSchema.nullish(),
   kind: z.enum(["patient", "contact"]).optional().default("patient"),
   first_name: z.string().trim().min(1).max(80),
   last_name: z.string().trim().min(1).max(80),
@@ -28,8 +29,8 @@ const patientSchema = z.object({
   address_line1: z.string().trim().max(255).optional().nullable().or(z.literal("")),
   address_line2: z.string().trim().max(255).optional().nullable().or(z.literal("")),
   city: z.string().trim().max(120).optional().nullable().or(z.literal("")),
-  state: z.string().trim().max(2).optional().nullable().or(z.literal("")),
-  zip: z.string().trim().max(10).optional().nullable().or(z.literal("")),
+  state: stateCodeSchema.optional().nullable().or(z.literal("")),
+  zip: z.string().regex(/^\d{5}(-\d{4})?$/).optional().nullable().or(z.literal("")),
   // Protected accessibility/operational profile fields (never logged or put in URLs).
   weight_lbs: z.number().int().min(1).max(1500).optional().nullable(),
   mobility_device: z.string().trim().max(80).optional().nullable().or(z.literal("")),

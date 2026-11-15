@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {stateCodeSchema,timezoneSchema} from './us-geography';
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
@@ -57,7 +58,7 @@ const PAYER_TYPES = ["broker", "private_patient", "insurance"] as const;
 const VEHICLE_PREFS = ["car", "suv", "van", "wheelchair_van", "stretcher_van", "provider_choice"] as const;
 
 const payerFields = {
-  billing_state:z.string().max(2).optional(),billing_zip:z.string().max(10).optional(),billing_county:z.string().max(120).optional(),billing_timezone:z.string().max(100).optional(),
+  billing_state:stateCodeSchema.optional().or(z.literal('')),billing_zip:z.string().regex(/^\d{5}(-\d{4})?$/).optional().or(z.literal('')),billing_county:z.string().max(120).optional(),billing_timezone:timezoneSchema,
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(200).optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),

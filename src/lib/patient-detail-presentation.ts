@@ -1,4 +1,5 @@
 /** Defense-in-depth display allowlist; caller must still obtain an authorized snapshot. */
+import {verifiedEvents} from './regional-projections';
 export function patientDetailFields(row: Record<string, unknown>) {
   const text = (key: string) => typeof row[key] === 'string' && row[key].trim() ? row[key] as string : 'Not Provided';
   const services: Record<string, string> = { ambulatory: 'Ambulatory', wheelchair: 'Wheelchair', gurney: 'Gurney / Stretcher', delivery: 'Medical Delivery' };
@@ -26,5 +27,7 @@ export function patientDetailFields(row: Record<string, unknown>) {
     { label: 'Return drop-off time', value: text('return_dropoff_time') },
   );
   else fields.push({ label: 'Return information', value: 'Not Required' });
+  fields.push({label:'Pickup ZIP',value:text('pickup_zip')},{label:'Destination ZIP',value:text('dropoff_zip')});
+  for(const e of verifiedEvents(row.regional_time_events))fields.push({label:e.kind.replaceAll('_',' '),value:`${e.date} ${e.time.slice(0,5)} · ${e.verified?e.timezone:'Timezone review required'}`});
   return fields;
 }

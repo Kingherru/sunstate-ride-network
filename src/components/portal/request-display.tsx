@@ -7,6 +7,7 @@ import { DsButton } from '@/components/ds/controls';
 import { detailValue, selectedService, selectedTripType, NOT_AVAILABLE } from '@/lib/request-detail-fields';
 import { displayPhone } from '@/lib/portal-read-rules';
 import { DetailSection } from './DetailSection';
+import {verifiedEvents} from '@/lib/regional-projections';
 
 export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
   private_pay: "Private Pay", facility: "Facility", hospital: "Hospital", provider: "Provider",
@@ -144,7 +145,8 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
       <Row label="Pickup state" value={value('pickup_state')}/><Row label="Pickup county-equivalent" value={value('pickup_county')}/><Row label="Pickup timezone" value={value('pickup_timezone')}/><Row label="Destination state" value={value('dropoff_state')}/><Row label="Destination county-equivalent" value={value('dropoff_county')}/><Row label="Destination timezone" value={value('dropoff_timezone')}/>
       <Row label="Pickup location" value={value('pickup_address')} /><Row label="Pickup area" value={value('pickup_city')} /><Row label="Pickup ZIP" value={value('pickup_zip')} /><Row label="Pickup location details" value={value('pickup_address_details')} />
       <Row label="Pickup date" value={readable('pickup_date')} /><Row label="Requested pickup time" value={readable('pickup_time')} />
-      <Row label="Scheduling evidence" value={Array.isArray((r as unknown as {regional_time_events?:unknown[]}).regional_time_events)?'Local timezone evidence recorded — review applies where unresolved':'NEEDS REVIEW — legacy timezone evidence not recorded'}/>
+      <Row label="Scheduling evidence" value={verifiedEvents(r.regional_time_events).length>0&&verifiedEvents(r.regional_time_events).every(e=>e.verified)?'Local times verified':'Timezone review required'}/>
+      {verifiedEvents(r.regional_time_events).map((e,i)=><Row key={i} label={e.kind.replaceAll('_',' ')} value={`${e.date} ${e.time.slice(0,5)} · ${e.verified?e.timezone:'Timezone review required'}`}/>)}
       <Row label={delivery ? 'Delivery destination' : 'Drop-off location'} value={value('dropoff_address')} /><Row label="Destination area" value={value('dropoff_city')} /><Row label="Destination ZIP" value={value('dropoff_zip')} />
       {!delivery && <Row label="Requested drop-off / appointment time" value={readable('appointment_time')} />}
       {round && <><Row label="Return date" value={readable('return_date')} /><Row label="Return pickup time" value={readable('return_pickup_time')} /><Row label="Return drop-off time" value={readable('return_dropoff_time')} /></>}

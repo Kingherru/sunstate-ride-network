@@ -10,6 +10,7 @@
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {tripTimeEvidence} from "@/lib/regional-trip-times";
+import {regionalReadbackMatches} from '@/lib/regional-projections';
 
 export type RequestCategory = "passenger_transport" | "medical_delivery";
 
@@ -180,7 +181,8 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     trip_billing_source: data.billingSource,
     trip_billing_first_name: data.billingContact?.firstName ?? null, trip_billing_last_name: data.billingContact?.lastName ?? null,
     trip_billing_email: data.billingContact?.email ?? null, trip_billing_phone: data.billingContact?.phone ?? null,
-  } as any).select("id, mfn_id, is_test, selected_provider_workspace_id, provider_owned_operation").single();
+  } as any).select("id, mfn_id, is_test, selected_provider_workspace_id, provider_owned_operation,pickup_state,dropoff_state,pickup_zip,dropoff_zip,pickup_county,dropoff_county,pickup_timezone,dropoff_timezone,regional_time_events").single();
+  if(!error&&row&&!regionalReadbackMatches(regionalRequestFields(data,own.submittedVia),row))return {ok:false,code:'regional_readback_review_required'};
   return finish(row, error, "passenger_transport", data.patientEmail || null, own, embedProviderId);
 }
 
@@ -202,7 +204,8 @@ export async function insertDeliveryRequest(data: DeliveryRequestInput, own: Ins
     delivery_signature_required: data.signatureRequired,
     requester_user_id: own.requesterUserId, actor_user_id: own.actorUserId, workspace_id: own.workspaceId,
     submitted_via: own.submittedVia, on_behalf_of_user_id: own.onBehalfOfUserId ?? null, import_job_id: own.importJobId ?? null,
-  } as any).select("id, mfn_id, is_test, provider_owned_operation").single();
+  } as any).select("id, mfn_id, is_test, provider_owned_operation,pickup_state,dropoff_state,pickup_zip,dropoff_zip,pickup_county,dropoff_county,pickup_timezone,dropoff_timezone,regional_time_events").single();
+  if(!error&&row&&!regionalReadbackMatches(regionalRequestFields(data,own.submittedVia),row))return {ok:false,code:'regional_readback_review_required'};
   return finish(row, error, "medical_delivery", data.contactEmail || null, own);
 }
 

@@ -1009,6 +1009,41 @@
       "when": 1794717668221,
       "tag": "0143_private_account_regional_context",
       "breakpoints": true
+    },
+    {
+      "idx": 144,
+      "version": "7",
+      "when": 1794718852077,
+      "tag": "0144_private_regional_profiles_and_resource_boundaries",
+      "breakpoints": true
+    },
+    {
+      "idx": 145,
+      "version": "7",
+      "when": 1794718921542,
+      "tag": "0145_authoritative_manual_schedule_and_safe_invoice_projection",
+      "breakpoints": true
+    },
+    {
+      "idx": 146,
+      "version": "7",
+      "when": 1794719118355,
+      "tag": "0146_regional_selected_reports_and_people_validation",
+      "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1794719243444,
+      "tag": "0147_regional_assignment_provider_hours_and_legacy_boundary_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 148,
+      "version": "7",
+      "when": 1794719384874,
+      "tag": "0148_regional_boundary_unknown_evidence_hardening",
+      "breakpoints": true
     }
   ]
 }

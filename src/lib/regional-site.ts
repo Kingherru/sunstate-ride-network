@@ -8,3 +8,16 @@ export const publicRegions=()=>REGIONAL_FOUNDATIONS.filter(r=>r.status==='public
 export function publicRegionContext(state:string){return state==='FL'?{available:true,site:FLORIDA_SITE,index:true}:{available:false,site:null,index:false};}
 export const REGIONAL_READINESS_KEYS=['branding','geography','timezone','provider_eligibility','credentials','cross_state','directory','matching','coverage','seo','policy','payments_tax'] as const;
 export function regionalConfigurationAllowed(master:boolean,status:string){return master&&['inactive','foundation_only'].includes(status);}
+export const REGIONAL_WORKFLOW_EVIDENCE=[
+ {key:'Booking forms',status:'Connected; new-record readback verification pending'},
+ {key:'Multi-stop trips',status:'Explicit local events connected; legacy times unchanged'},
+ {key:'Invoice views',status:'Safe shared state, ZIP and local-event projections connected'},
+ {key:'Schedule views',status:'Verified event comparisons; legacy conflicts require timezone review'},
+ {key:'Directory',status:'Generalized approved service areas only'},
+ {key:'People / profile editors',status:'Private profiles and existing People controls connected'},
+ {key:'Vehicle / driver boundaries',status:'Optional multi-area boundaries; radius requires verified distance'},
+ {key:'Exports',status:'Selected audited reads; real generation not exercised'},
+ {key:'Manual cross-state assignment',status:'Atomic evidence gates connected; non-Florida eligibility not configured'},
+ {key:'Automatic matching',status:'Intentionally OFF'},
+ {key:'Public state activation',status:'Intentionally OFF outside Florida'},
+] as const;
