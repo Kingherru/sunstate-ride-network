@@ -7,6 +7,7 @@ import { CONTACT_TYPES } from '@/lib/contact-rules';
 import {DsButton} from '@/components/ds/controls';
 import {Dialog,DialogContent,DialogTitle} from '@/components/ui/dialog';
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
+import {ContactImportExport} from '@/components/portal/ContactImportExport';
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
 export type PayerOption = { id: string; name: string };
@@ -43,6 +44,7 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
 
   return (
     <div className="space-y-4">
+      <ContactImportExport contacts={q.data??[]}/>
       <div className="flex flex-wrap items-center gap-3">
         <div className="portal-search min-w-0 flex-1">
           <Search className="size-4" aria-hidden />

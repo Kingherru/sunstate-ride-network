@@ -22,8 +22,8 @@ export const saveCustomerPricing = createServerFn({ method: 'POST' }).middleware
   });
 /** Future New Trip funding must call this server-authoritative calculation, then persist its returned snapshot. Never use it to replace an existing invoice. */
 export const calculateProviderCustomerQuote = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ workspaceId: z.string().uuid(), trip: customerQuoteInput }).strict().parse(input))
+  .inputValidator((input: unknown) => z.object({ workspaceId: z.string().uuid(), trip: customerQuoteInput,payerId:z.string().uuid().nullable().optional() }).strict().parse(input))
   .handler(async ({ data, context }) => {
     const { quoteNewProviderCustomerTrip } = await import('./provider-customer-pricing.server');
-    return quoteNewProviderCustomerTrip(context.supabase, data.workspaceId, data.trip);
+    return quoteNewProviderCustomerTrip(context.supabase, data.workspaceId, data.trip,data.payerId);
   });

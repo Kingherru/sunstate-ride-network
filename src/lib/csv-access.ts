@@ -6,6 +6,6 @@ export function canUploadCsvRequests(workspaces: readonly {
   is_contractor?: boolean;
   can_create_requests?: boolean;
 }[]): boolean {
-  return workspaces.filter((w) => w.status === 'active' && w.type !== 'provider' &&
+  return workspaces.filter((w) => w.status === 'active' &&
     !w.is_contractor && (w.role === 'owner' || w.role === 'admin' || w.can_create_requests === true)).length === 1;
 }

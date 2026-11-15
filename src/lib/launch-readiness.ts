@@ -10,6 +10,10 @@ export const LAUNCH_FLAG_KEYS = [
   { key: "membership_renewal_transition", label: "Membership renewal transition" },
   { key: "driver_schedule_email", label: "Driver schedule emails" },
   { key: "auto_distribution", label: "Automatic trip distribution" },
+  { key: "digital_guide_delivery", label: "Legacy digital-guide delivery" },
+  { key: "communication_email_delivery", label: "External communication delivery" },
+  { key: "patient_reminder_delivery", label: "Patient reminder delivery" },
+  { key: "family_notification_delivery", label: "Family notification delivery" },
 ] as const;
 
 export const MAIN_WEBHOOK_EVENTS = [
@@ -37,7 +41,7 @@ export type ReadinessInput = {
 
 const price = (cents: number | null, want: number, label: string): ReadinessItem =>
   cents === want ? { label, status: `Ready — $${(want / 100).toFixed(2)} (test)`, tone: "green" }
-    : cents == null ? { label, status: "Missing", tone: "red" }
+    : cents == null ? { label, status: "Needs Attention — mapping unverified", tone: "red", note:'Owner action: verify sandbox price mapping before separately approving payment activation. No processor call performed.' }
     : { label, status: `Wrong amount — $${(cents / 100).toFixed(2)}`, tone: "red" };
 
 const off = (label: string, on: boolean, note?: string): ReadinessItem =>
@@ -51,6 +55,8 @@ export function buildReadiness(i: ReadinessInput): ReadinessGroup[] {
       price(i.prices.nemt_network_addon_monthly, 1000, "Network add-on price (monthly)"),
       price(i.prices.course_nemt_v2, 5000, "Florida Basic NEMT Test course"),
       price(i.prices.course_hipaa_v2, 5000, "HIPAA Training for NEMT course"),
+      price(i.prices.contractor_monthly,2000,'Independent Contractor membership'),
+      price(i.prices.nemt_startup_guide_50,5000,'Provider-start guide'),
       { label: "Unified cart and checkout code", status: "Code ready", tone: "green" },
       { label: "Terms / checkout confirmation", status: "Code ready", tone: "green" },
       { label: "Live products and prices", status: i.liveTokenPresent ? "Live token present — not activated" : "Not activated (intentional)", tone: "yellow" },
@@ -58,7 +64,7 @@ export function buildReadiness(i: ReadinessInput): ReadinessGroup[] {
     { title: "Webhooks", items: [
       { label: "Main webhook route", status: "Code ready", tone: "green" },
       { label: "Main webhook signing secret", status: i.mainSecret ? "Configured" : "Missing", tone: i.mainSecret ? "green" : "red" },
-      { label: "Main webhook test events", status: "Configured in Stripe test mode", tone: "green", note: MAIN_WEBHOOK_EVENTS.join(", ") },
+      { label: "Main webhook test events", status: "Needs Attention — hosted mapping unverified", tone: "yellow", note: 'Owner action: verify required events. '+MAIN_WEBHOOK_EVENTS.join(", ") },
       { label: "Connected-account webhook route", status: "Code ready", tone: "green" },
       { label: "Connected-account signing secret", status: i.connectSecret ? "Configured" : "Owner action required", tone: i.connectSecret ? "green" : "yellow", note: i.connectSecret ? undefined : "Route answers 503 until the secret is saved." },
       { label: "Connected-account events", status: i.connectSecret ? "Confirm in Stripe Dashboard" : "Owner action required", tone: "yellow", note: CONNECT_WEBHOOK_EVENTS.join(", ") },
@@ -79,6 +85,7 @@ export function buildReadiness(i: ReadinessInput): ReadinessGroup[] {
     ] },
     { title: "Emails and notifications", items: [
       off("Driver schedule emails", f("driver_schedule_email")),
+      ...LAUNCH_FLAG_KEYS.filter(k=>['digital_guide_delivery','communication_email_delivery','patient_reminder_delivery','family_notification_delivery'].includes(k.key)).map(k=>off(k.label,f(k.key),'Owner action: review and approve separately. Missing flags fail closed.')),
       off("Request / payment notifications", false, "In-app only; no outside sends are wired."),
       { label: "Real send test", status: "Not completed", tone: "yellow" },
     ] },

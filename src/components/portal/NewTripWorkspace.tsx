@@ -47,14 +47,15 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
   const unchanged = !!currentReview && quoteForm === currentReview;
   const attachment = canAttachTripQuote({ currentKey: currentReview, confirmedKey: quoteForm, quoteId: confirmed?.id ?? null, draftId, referral: network }) && confirmed && draftId ? { id: confirmed.id, draftId } : null;
   const quoteInput = useMemo(() => workspaceQuoteInput(form, miles, wait), [form, miles, wait]);
-  const estimateKey = quoteInput ? JSON.stringify(quoteInput) : null;
+  const selectedPayer=form&&'payerId'in form?form.payerId??null:null;
+  const estimateKey = quoteInput ? JSON.stringify({...quoteInput,payerId:selectedPayer}) : null;
   useEffect(() => {
     if (!provider || network || preview.active || !estimateKey) { setCalculated(null); setEstimating(false); return; }
     let canceled = false;
     setCalculated(null); setEstimating(true); setEstimateMessage('');
     const timer = window.setTimeout(async () => {
       try {
-        const result = await calculate({ data: { workspaceId, trip: JSON.parse(estimateKey) } });
+        const {payerId,...trip}=JSON.parse(estimateKey);const result = await calculate({ data: { workspaceId, trip,payerId } });
         if (!canceled) { setCalculated(result); setEstimateMessage(''); }
       } catch (e) { if (!canceled) setEstimateMessage(e instanceof Error ? e.message : 'Not Configured — customer quote unavailable.'); }
       finally { if (!canceled) setEstimating(false); }
@@ -71,7 +72,7 @@ export function NewTripWorkspace({ workspaceId, provider, initialDraft }: { work
   }
   async function recalculate() {
     if (preview.active) return previewBlocked(); if (!provider) return;
-    setBusy(true); try { const quote = await calculate({ data: { workspaceId, trip: tripInput() } }); setCalculated(quote); } catch (e) { toast.error(e instanceof Error ? e.message : 'Quote unavailable.'); } finally { setBusy(false); }
+    setBusy(true); try { const quote = await calculate({ data: { workspaceId, trip: tripInput(),payerId:selectedPayer } }); setCalculated(quote); } catch (e) { toast.error(e instanceof Error ? e.message : 'Quote unavailable.'); } finally { setBusy(false); }
   }
   async function confirmQuote() {
     if (preview.active) return previewBlocked(); if (!form || !manualConfirmed || !provider) return;

@@ -10,6 +10,7 @@ export const PASSENGER_COLUMNS = [
   "patient_first_name", "patient_last_name", "patient_phone", "patient_email",
   "pickup_address", "pickup_city", "pickup_date", "pickup_time", "appointment_time",
   "dropoff_address", "dropoff_city", "service", "mobility_notes", "special_instructions",
+  "trip_type","return_date","return_pickup_time","return_dropoff_time","passenger_count","wheelchair_positions",
 ] as const;
 export const DELIVERY_COLUMNS = [
   "contact_first_name", "contact_last_name", "contact_phone", "contact_email",
@@ -76,6 +77,7 @@ export function mapRow(kind: ImportKind, r: Record<string, string>) {
       dropoffAddress: g("dropoff_address"), dropoffCity: g("dropoff_city"),
       transportType: SERVICE[g("service").toLowerCase()] ?? (g("service") as any),
       mobilityNotes: g("mobility_notes"), specialInstructions: g("special_instructions"),
+      tripType:g('trip_type')||'one_way',roundTrip:g('trip_type')==='round_trip',returnDate:g('return_date'),returnPickupTime:g('return_pickup_time'),returnDropoffTime:g('return_dropoff_time'),passengerCount:g('passenger_count')?Number(g('passenger_count')):1,wheelchairPositions:g('wheelchair_positions')?Number(g('wheelchair_positions')):0,
     };
   }
   return {
@@ -113,7 +115,7 @@ export function validateRows(kind: ImportKind, header: string[], body: string[][
     }
     const m: any = mapped;
     const date = kind === "passenger" ? m.pickupDate : m.requestedDate;
-    const key = [date, kind === "passenger" ? m.pickupTime : m.requestedTime, m.pickupAddress, m.patientLastName ?? m.contactLastName].join("|").toLowerCase();
+    const key = [kind,date, kind === "passenger" ? m.pickupTime : m.requestedTime, m.pickupAddress,m.dropoffAddress,m.patientFirstName??m.contactFirstName, m.patientLastName ?? m.contactLastName,m.transportType??m.deliveryCategory].join("|").toLowerCase();
     return { row: i + 2, ok: errors.length === 0, errors, data: p.success ? p.data : null, key, date, service: kind === "passenger" ? String(m.transportType) : String(m.deliveryCategory), dup: seen.has(key) ? seen.get(key) : (seen.set(key, i + 2), undefined) } as any;
   });
 }

@@ -195,7 +195,7 @@ export function ProductDemo({ motion = false }: { motion?: boolean } = {}) {
             <div className={cn("public-preview-frame overflow-hidden rounded-ds-lg bg-ds-primary p-2 sm:p-3", view === "mobile" && "mx-auto w-full max-w-[24rem] px-2 pb-5 pt-3")}>
               <div className="px-1 pb-2 sm:pb-3">
               <div className="flex justify-center">
-                <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-primary-hover p-1">
+                <div role="radiogroup" aria-label="Preview size" className="inline-flex rounded-ds-sm bg-ds-primary-hover p-1 border-0 shadow-none">
                   {([["desktop", Monitor, "Desktop view"], ["mobile", Smartphone, "Mobile view"]] as const).map(([v, Icon, l]) => (
                     <DsButton variant="ghost" key={v} role="radio" aria-checked={view === v} onClick={() => setView(v)}
                       className={cn("ds-button-text ds-transition inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-ds-sm px-2.5 sm:gap-2 sm:px-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",

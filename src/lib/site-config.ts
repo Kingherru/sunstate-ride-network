@@ -10,6 +10,7 @@ import founderImg from "@/assets/home/founder-provider.jpg";
 
 /** Real public phone number goes in CONTACT_INFO.phone. Empty = show "Call Us" with no link. */
 export const PUBLIC_PHONE = CONTACT_INFO.phone;
+export const PUBLIC_PHONE_VALID = /^\+?\d[\d\s().-]{8,}$/.test(PUBLIC_PHONE) && !/555/.test(PUBLIC_PHONE);
 export const PUBLIC_EMAIL = CONTACT_INFO.email;
 /** Temporary placeholder number; dial string set explicitly. */
 export const PUBLIC_PHONE_TEL = "tel:5555555555";

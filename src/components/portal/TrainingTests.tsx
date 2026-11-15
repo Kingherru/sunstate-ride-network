@@ -8,6 +8,7 @@ import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } f
 import { DsButton } from '@/components/ds/controls';
 import { useTrainingCart } from '@/components/training/TrainingCart';
 import { PortalTabbedLayout } from './PortalTabbedLayout';
+import {ResourceViewer} from '@/components/training/ResourceViewer';
 
 const price = (c: number) => `$${(c / 100).toFixed(0)}`;
 
@@ -16,6 +17,7 @@ export function TrainingTests() {
   const preview = usePortalPreview();
   const cart = useTrainingCart();
   const [tab, setTab] = useState('Available');
+  const [viewer,setViewer]=useState(false);
   const courses = usePortalQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
   const mine = usePortalQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
 
@@ -41,6 +43,8 @@ export function TrainingTests() {
 
   return (
     <div className="space-y-5">
+      {viewer&&<ResourceViewer preview={preview.active} onClose={()=>setViewer(false)}/>}
+      {preview.active&&<DsButton variant="secondary" onClick={()=>setViewer(true)}>Open synthetic resource sample</DsButton>}
       <PortalTabbedLayout label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} >
       {tab==='Purchase History'&&<ul className="divide-y divide-ds-border">{mine.data?.map(e=><li key={e.id} className="py-4"><p className="ds-label text-ds-primary">{e.courses.title}</p><p className="ds-support">{e.status} · {e.purchased_at?new Date(e.purchased_at).toLocaleDateString():'Purchase date not available'}</p></li>)}</ul>}
       {!rows.length && <DsEmpty title={tab === 'Completed Tests' ? 'No completed tests yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
@@ -68,7 +72,7 @@ export function TrainingTests() {
               </div>
             )}
             <div className="mt-auto flex flex-wrap gap-3 pt-5">
-              {e && c.product_kind==='digital_guide'?<><DsButton disabled>PDF access unavailable</DsButton><p className="ds-support">Private delivery and verified purchase revalidation remain inactive.</p></>: e ? (
+              {e && c.product_kind==='digital_guide'?<><DsButton onClick={()=>setViewer(true)}>Open purchased PDF</DsButton><p className="ds-support">Purchase evidence is checked on every open. Unverified or reversed purchases remain unavailable.</p></>: e ? (
                 <Link to="/learn/$slug" params={{ slug: c.slug }} onClick={event => { if (preview.active) { event.preventDefault(); previewBlocked(); } }} className={actionCls}>
                   {done ? <><Award className="mr-2 size-4" aria-hidden />View certificate</> : <><PlayCircle className="mr-2 size-4" aria-hidden />Continue course</>}
                 </Link>

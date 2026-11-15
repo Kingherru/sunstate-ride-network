@@ -35,13 +35,13 @@ test('customer members without request permission cannot see or open CSV', () =>
   expect(portalNavigation(access).some((n) => n.to === '/portal/upload-csv')).toBe(false);
 });
 
-test('CSV requires exactly one eligible active non-contractor customer account', () => {
+test('CSV requires exactly one eligible active non-contractor account', () => {
   expect(canUploadCsvRequests([])).toBe(false);
   expect(canUploadCsvRequests([workspace, workspace])).toBe(false);
   expect(canUploadCsvRequests([{ ...workspace, is_contractor: true }])).toBe(false);
   expect(canUploadCsvRequests([{ ...workspace, status: 'pending' }])).toBe(false);
   expect(canUploadCsvRequests([{ ...workspace, status: 'suspended' }])).toBe(false);
-  expect(canUploadCsvRequests([{ ...workspace, type: 'provider' }])).toBe(false);
+  expect(canUploadCsvRequests([{ ...workspace, type: 'provider' }])).toBe(true);
   expect(canUploadCsvRequests([{ ...workspace, role: 'owner', can_create_requests: false }])).toBe(true);
   expect(canUploadCsvRequests([{ ...workspace, role: 'admin', can_create_requests: false }])).toBe(true);
 });

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
+import { usePortalMutation, usePortalQuery,usePortalPreview } from "@/components/portal/preview-data";
 import { listMyPayers, createPayer, updatePayer, deletePayer } from "@/lib/payers.functions";
 import type { ContactOption } from "@/components/dashboard/ContactsPayersPanel";
 import {DsButton} from '@/components/ds/controls';
+import {PayerAgreement} from '@/components/portal/PayerAgreement';
 
 type Payer = Awaited<ReturnType<typeof listMyPayers>>[number];
 
@@ -17,9 +18,11 @@ const VEHICLE_LABELS: Record<string, string> = {
 const maskEin = (ein: string | null) => (ein ? `•••••${ein.replace(/\D/g, "").slice(-4) || ein.slice(-4)}` : null);
 
 export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
+  const preview=usePortalPreview();const [sample,setSample]=useState(false);
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers(),staleTime:0,gcTime:0 });
   const [editing, setEditing] = useState<Partial<Payer> | null>(null);
+  const [agreement,setAgreement]=useState<Payer|null>(null);
 
   const del = usePortalMutation({
     mutationFn: (id: string) => deletePayer({ data: { id } }),
@@ -29,6 +32,9 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
 
   return (
     <div className="space-y-4">
+      {preview.active&&<DsButton variant="secondary" onClick={()=>setSample(true)}>Preview synthetic payer agreement</DsButton>}
+      {sample&&<PayerAgreement workspaceId="00000000-0000-4000-8000-000000000001" payerId="00000000-0000-4000-8000-000000000002" onClose={()=>setSample(false)}/>}
+      {agreement?.workspace_id&&<PayerAgreement workspaceId={agreement.workspace_id} payerId={agreement.id} onClose={()=>setAgreement(null)}/>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="min-w-0 flex-1 text-xs text-muted-foreground">
           Payers are billing contacts, not account members. Payment-method collection is unavailable until secure tokenized setup is activated.
@@ -63,6 +69,7 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
                 )}
               </div>
               <div className="flex shrink-0 gap-3 text-sm font-bold">
+                {p.workspace_id&&<DsButton variant="ghost" size="sm" onClick={()=>setAgreement(p)}>Rate agreement</DsButton>}
                 <button onClick={() => setEditing(p)} className="text-primary hover:underline">Edit</button>
                 <button
                   onClick={() => { if (confirm(`Remove payer "${p.name}"?`)) del.mutate(p.id); }}

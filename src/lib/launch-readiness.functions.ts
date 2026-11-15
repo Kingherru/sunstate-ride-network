@@ -11,13 +11,9 @@ export const getLaunchReadiness = createServerFn({ method: "GET" })
     await requireMaster(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const keys = ["nemt_provider_base_monthly", "nemt_network_addon_monthly", "course_nemt_v2", "course_hipaa_v2"];
+    const keys = ["nemt_provider_base_monthly", "nemt_network_addon_monthly", "course_nemt_v2", "course_hipaa_v2", "contractor_monthly", "nemt_startup_guide_50"];
     const prices: Record<string, number | null> = Object.fromEntries(keys.map((k) => [k, null]));
-    try {
-      const { createStripeClient } = await import("@/lib/stripe.server");
-      const res = await createStripeClient("sandbox").prices.list({ lookup_keys: keys, active: true, limit: 10 });
-      for (const p of res.data) if (p.lookup_key && p.currency === "usd") prices[p.lookup_key] = p.unit_amount;
-    } catch { /* shown as Missing */ }
+    // Readiness never calls a processor; absent attested mapping is unknown, not ready.
 
     const [{ data: flagRows }, { data: tests }, { count: ledger, error: ledgerErr }, { count: accounts }] = await Promise.all([
       supabaseAdmin.from("platform_launch_flags").select("key, enabled"),
@@ -38,7 +34,7 @@ export const getLaunchReadiness = createServerFn({ method: "GET" })
     const connectSecret = !!process.env.STRIPE_CONNECT_SANDBOX_WEBHOOK_SECRET;
     const groups = buildReadiness({
       prices,
-      liveTokenPresent: false,
+      liveTokenPresent: !!process.env['PAYMENTS_LIVE_SECRET_KEY'],
       mainSecret: !!process.env.PAYMENTS_SANDBOX_WEBHOOK_SECRET,
       connectSecret,
       flags,
@@ -47,6 +43,20 @@ export const getLaunchReadiness = createServerFn({ method: "GET" })
       settlementLedger: !ledgerErr,
       connectedAccounts: accounts ?? 0,
     });
+    groups.push({title:'Public launch prerequisites',items:[
+      {label:'Domain and public URL',status:'Configured in site content — domain verification required',tone:'yellow',note:'Owner action: confirm myfloridanemt.com domain routing before launch.'},
+      {label:'Public email',status:CONTACT_INFO.email?'Address configured — delivery unverified':'Missing',tone:CONTACT_INFO.email?'yellow':'red',note:'Owner action: verify sender-domain configuration and approved public inbox.'},
+      {label:'Auth email confirmation / secure change',status:'Hosted settings not verified',tone:'yellow',note:'Owner action: confirm hosted email confirmation and secure email change settings; code alone does not prove configuration.'},
+      {label:'Managed email delivery',status:'Intentionally Off — no send test performed',tone:'yellow',note:'Owner action: separately approve delivery and sender verification.'},
+      {label:'Policy and terms links',status:'Ready — /policies and /policies#terms',tone:'green',note:'Retained consolidated policy text; purchase/refund approval remains a separate gate.'},
+      {label:'Public booking workflow',status:'Request-review path present — live submission untested',tone:'yellow',note:'Owner action: authorize a controlled end-to-end booking test before launch.'},
+      {label:'Portal route protection',status:'Authenticated layout and server checks present',tone:'green',note:'Permissions remain enforced by existing owner-scoped reads and writes.'},
+      {label:'Indexing and sitemap',status:'Crawlable sources present — hosted crawl unverified',tone:'yellow',note:'Owner action: confirm sitemap availability and search-engine indexing after approved publication.'},
+      {label:'Location child-page indexing',status:'Existing noindex rules retained',tone:'yellow',note:'No city-page indexing changes in this pass; review retained launch policy.'},
+      {label:'Purchased digital-resource entitlement',status:'Prepared — verified purchase evidence required',tone:'yellow',note:'Private 60-second access requires server-attested completed non-refunded purchase. Legacy enrollments never prove payment; owner must approve payment evidence reconciliation.'},
+      {label:'Family and reminder delivery',status:'Intentionally Off',tone:'yellow',note:'Consent and previews do not confirm recipient email. Owner action: approve verification and timezone-bound sending separately.'},
+      {label:'Refund / dispute execution',status:'Intentionally Off — policy approval required',tone:'yellow',note:'Owner action: approve refund responsibility, fee treatment and tested webhook mapping before money actions.'},
+    ]});
     void ledger;
     return { groups, connectSecret };
   });

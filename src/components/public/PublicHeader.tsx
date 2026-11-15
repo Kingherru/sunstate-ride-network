@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarPlus, LogIn, Menu, Phone, X } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
-import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL } from "@/lib/site-config";
+import { BOOKING_ROUTE, PUBLIC_PHONE, PUBLIC_PHONE_TEL, PUBLIC_PHONE_VALID } from "@/lib/site-config";
 
 const NAV = [
   { label: "Services", to: "/services" },
@@ -29,7 +29,7 @@ function ActionBlocks({ className, full }: { className?: string; full?: boolean 
   return (
     <div className={cn("public-header-actions items-center gap-3", full ? "flex flex-col items-start" : "flex", className)}>
       <Link to="/login" className={cn(item, "text-ds-on-primary hover:text-ds-accent", focus)}><LogIn aria-hidden />Sign In</Link>
-      {PUBLIC_PHONE ? (
+      {PUBLIC_PHONE_VALID ? (
         <a href={PUBLIC_PHONE_TEL} className={cn(item, "text-ds-on-primary hover:text-ds-accent", focus)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`}>
           <Phone aria-hidden />Call Us
         </a>
@@ -68,6 +68,10 @@ export function PublicHeader() {
             {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
           </button>
         </div>
+      </div>
+      <div className="mfn-container flex items-center justify-center gap-8 pb-2 xl:hidden" aria-label="Quick actions">
+        <Link to="/login" className={cn("ds-button-text inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-ds-sm text-sm uppercase", focus)}><LogIn className="size-4" aria-hidden />SIGN IN</Link>
+        {PUBLIC_PHONE_VALID ? <a href={PUBLIC_PHONE_TEL} className={cn("ds-button-text inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-ds-sm text-sm uppercase", focus)}><Phone className="size-4" aria-hidden />CALL US</a> : <span title="Business phone number not yet provided" className="ds-button-text inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-sm uppercase"><Phone className="size-4" aria-hidden />CALL US</span>}
       </div>
       {open && (
         <nav id="mobile-menu" aria-label="Mobile" className="ds-fade-in ds-glass-blue border-t border-ds-primary-hover px-4 pb-5 xl:hidden">

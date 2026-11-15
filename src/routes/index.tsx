@@ -46,6 +46,12 @@ function Home() {
       <FloridaMap motion />
       <Services />
       <ContractorSection />
+      <section className="mfn-section bg-ds-sky text-ds-primary" aria-labelledby="future-transport">
+        <div className="mfn-container mx-auto max-w-3xl text-center">
+          <h2 id="future-transport" className="ds-section-title uppercase">Preparing for future transportation</h2>
+          <p className="ds-body mt-4">MY FLORIDA NEMT is preparing its framework for future autonomous and self-driving NEMT transportation support. This is future development, not a service available today. When supported, it will use the same provider, vehicle, safety, scheduling and service-area framework. No regulatory approval, availability or launch date is promised.</p>
+        </div>
+      </section>
       <Membership />
     </PublicPage>
   );

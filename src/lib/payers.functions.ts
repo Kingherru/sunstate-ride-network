@@ -102,7 +102,7 @@ export const listMyPayers = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("payers")
-      .select("id, name, email, phone, notes, billing_address, ein, payer_type, active, linked_contact_id, multi_load_ok, preferred_driver, vehicle_preference, pickup_signature_required, dropoff_signature_required, early_late_preference, early_late_minutes, created_at")
+      .select("id, workspace_id, name, email, phone, notes, billing_address, ein, payer_type, active, linked_contact_id, multi_load_ok, preferred_driver, vehicle_preference, pickup_signature_required, dropoff_signature_required, early_late_preference, early_late_minutes, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];

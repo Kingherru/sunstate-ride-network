@@ -1,0 +1,4 @@
+export type ResourceEvidence = { state?:string; environment?:string; userId?:string; courseId?:string; sessionId?:string; verified?:boolean; reversed?:boolean; refunded?:boolean; disputed?:boolean; test?:boolean; catalogPriceCents?:number };
+export function resourceEntitled(e:ResourceEvidence|null,userId:string,courseId:string,sessionId:string,priceCents:number){
+ return !!e&&e.verified===true&&e.state==='completed_paid'&&e.environment==='live'&&e.userId===userId&&e.courseId===courseId&&e.sessionId===sessionId&&e.catalogPriceCents===priceCents&&e.reversed===false&&e.refunded===false&&e.disputed===false&&e.test===false;
+}

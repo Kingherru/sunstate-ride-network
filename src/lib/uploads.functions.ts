@@ -33,7 +33,7 @@ export const prepareUpload = createServerFn({ method: "POST" })
       workspace_id: ws.workspaceId, user_id: context.userId, storage_path: path, source_type: data.sourceType, source_hash: data.sourceHash, byte_size: data.byteSize,
     }).select("id").single();
     if (e2 || !row) throw new Error("Upload could not start. Please try again.");
-    return { uploadId: row.id as string, path, token: signed.token };
+    return { uploadId: row.id as string, path, token: signed.token, workspaceId:ws.workspaceId };
   });
 
 const rowsInput = z.object({
@@ -54,36 +54,19 @@ export const createImportDrafts = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { resolveUploadWorkspace } = await import("@/lib/uploads.server");
     const ws = await resolveUploadWorkspace(supabaseAdmin, context.userId);
-    const { data: existing } = await supabaseAdmin.from("csv_import_jobs").select("id, total_rows, draft_ids").eq("user_id", context.userId).eq("idempotency_key", data.idempotencyKey).maybeSingle();
-    if (existing) return { duplicateFile: true, created: 0, total: existing.total_rows, failed: 0 };
-    if (data.patientId) {
-      const { data: p } = await supabaseAdmin.from("saved_patients").select("id").eq("id", data.patientId).eq("owner_id", context.userId).maybeSingle();
-      if (!p) throw new Error("That patient profile isn't available.");
-    }
-    const { data: job, error } = await supabaseAdmin.from("csv_import_jobs").insert({
-      user_id: context.userId, workspace_id: ws.workspaceId, kind: data.kind, idempotency_key: data.idempotencyKey, total_rows: data.rows.length,
-      source_type: data.sourceType, actor_mfn_id: ws.actorMfnId, workspace_mfn_id: ws.workspaceMfnId,
-      error_summary: data.problems as never, status: "processing",
-    }).select("id").single();
-    if (error || !job) throw new Error("Drafts could not be created. Please try again.");
-    if (data.uploadId) await supabaseAdmin.from("upload_originals").update({ import_job_id: job.id }).eq("id", data.uploadId).eq("user_id", context.userId);
-
-    const schema = data.kind === "passenger" ? rideRequestSchema : deliveryRequestSchema;
-    const ids: string[] = [];
-    let failed = 0;
-    for (const r of data.rows) {
-      // PDF assistance drafts may be partial; CSV/Excel rows must pass the request rules.
-      const parsed = data.sourceType === "pdf" ? { success: true as const, data: r.data } : schema.safeParse(r.data);
-      if (!parsed.success || !parsed.data || typeof parsed.data !== "object") { failed++; continue; }
-      const payload = { ...(parsed.data as Record<string, unknown>), ...(data.kind === "delivery" ? { requestCategory: "medical_delivery" } : {}), ...(data.patientId ? { savedPatientId: data.patientId } : {}) };
-      const { data: d, error: de } = await supabaseAdmin.from("trip_drafts").insert({
-        user_id: context.userId, payload: payload as never, summary: summarize(payload), autosaved: false,
-        import_job_id: job.id, import_row: r.row, workspace_id: ws.workspaceId, source: data.sourceType,
-      }).select("id").single();
-      if (de || !d) failed++; else ids.push(d.id);
-    }
-    await supabaseAdmin.from("csv_import_jobs").update({ submitted_rows: ids.length, failed_rows: failed, draft_ids: ids, status: "completed" }).eq("id", job.id);
-    return { duplicateFile: false, created: ids.length, total: data.rows.length, failed };
+    if(data.patientId){const {data:p}=await context.supabase.from('saved_patients').select('id').eq('id',data.patientId).eq('workspace_id',ws.workspaceId).maybeSingle();if(!p)throw new Error('Patient profile unavailable.');}
+    const schema=data.kind==='passenger'?rideRequestSchema:deliveryRequestSchema;
+    const rows=data.rows.map(r=>{
+      const parsed=data.sourceType==='pdf'?schema.partial().safeParse(r.data):schema.safeParse(r.data);
+      if(!parsed.success)throw new Error(`Row ${r.row} needs correction; no drafts were created.`);
+      const payload={...parsed.data,...(data.kind==='delivery'?{requestCategory:'medical_delivery'}:{}),...(data.patientId?{savedPatientId:data.patientId}:{})};
+      // Imports never inherit provider/driver/quote/payment choices from file values.
+      for(const k of ['selectedProviderWorkspaceId','patientWorkspaceId','confirmedProviderDriverId','confirmedDriverEndTime','customerQuoteDraftId','customerQuoteId','payerId','coordinationContactId'])delete (payload as Record<string,unknown>)[k];
+      return {row:r.row,data:payload,summary:summarize(payload)};
+    });
+    const {data:result,error}=await context.supabase.rpc('persist_import_drafts',{_workspace:ws.workspaceId,_key:data.idempotencyKey,_kind:data.kind,_source:data.sourceType,_rows:rows,_problems:data.problems,...(data.uploadId?{_upload:data.uploadId}:{})});
+    if(error)throw new Error('Draft import unavailable. Recheck original, account and rows. No partial import was saved.');
+    return result as {duplicateFile:boolean;created:number;total:number;failed:number};
   });
 
 /** Safe history + opportunistic cleanup of this account's expired originals. */

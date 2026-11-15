@@ -15,7 +15,7 @@ export const confirmTripCustomerQuote = createServerFn({ method: 'POST' }).middl
     // Calculation parameters must agree with the saved form, not caller-supplied trip prices.
     const delivery = form.requestCategory === 'medical_delivery';
     const trip = { ...data.trip, additionalPassengers:delivery?0:Math.max(0,Number(form.passengerCount??1)-1), service: delivery ? 'medical_delivery' as const : form.transportType === 'gurney' ? 'stretcher' as const : form.transportType as 'ambulatory' | 'wheelchair', pickupDate: String(form.pickupDate ?? form.requestedDate ?? ''), pickupTime: String(form.pickupTime ?? form.requestedTime ?? ''), roundTrip: form.tripType === 'round_trip', additionalStops: Array.isArray(form.additionalStops) ? form.additionalStops.length : 0, signature: delivery && form.signatureRequired === true, outcome: 'normal' as const };
-    const calculated = await quoteNewProviderCustomerTrip(context.supabase, data.workspaceId, trip);
+    const calculated = await quoteNewProviderCustomerTrip(context.supabase, data.workspaceId, trip,typeof form.payerId==='string'?form.payerId:null);
     const adjusted = appendInvoiceAdjustments(calculated.lines, data.adjustments);
     const { data: fingerprint, error: fpError } = await context.supabase.rpc('customer_quote_fingerprint', { _form: form as never });
     if (fpError || !fingerprint) throw new Error('Trip snapshot unavailable.');

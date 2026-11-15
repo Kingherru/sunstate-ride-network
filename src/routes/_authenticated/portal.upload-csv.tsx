@@ -5,7 +5,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
-import { CSV_MAX_ROWS, errorReport, parseCsv, templateCsv, validateRows, type ImportKind, type ValidatedRow } from "@/lib/csv-import";
+import { CSV_MAX_ROWS, columnsFor,errorReport, parseCsv, templateCsv, validateRows, type ImportKind, type ValidatedRow } from "@/lib/csv-import";
+import {DsButton,DsSelect} from '@/components/ds/controls';
 import { createImportDrafts, getUploadOriginalUrl, listMyUploads, prepareUpload } from "@/lib/uploads.functions";
 import { parseNoteShortcodes } from "@/lib/note-shortcodes";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,13 +57,14 @@ function PortalUploads() {
   const [kind, setKind] = useState<ImportKind>("passenger");
   const [file, setFile] = useState<{ f: File; src: Src; key: string; buf: ArrayBuffer } | null>(null);
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [table,setTable]=useState<string[][]>([]),[mapping,setMapping]=useState<string[]>([]),[reviewConfirmed,setReviewConfirmed]=useState(false);
   const [chosen, setChosen] = useState<Set<number>>(new Set());
   const [pdf, setPdf] = useState<PdfReview | null>(null);
   const [fileError, setFileError] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ created: number; failed: number; duplicateFile: boolean } | null>(null);
 
-  function reset() { setFile(null); setRows(null); setPdf(null); setDone(null); setFileError(""); setChosen(new Set()); }
+  function reset() { setFile(null); setRows(null);setTable([]);setMapping([]);setReviewConfirmed(false); setPdf(null); setDone(null); setFileError(""); setChosen(new Set()); }
 
   async function onFile(f: File | undefined) {
     reset();
@@ -93,7 +95,8 @@ function PortalUploads() {
         }
         if (table.length < 2) return setFileError("The file has no data rows.");
         if (table.length - 1 > CSV_MAX_ROWS) return setFileError(`Up to ${CSV_MAX_ROWS} rows per upload.`);
-        const v = validateRows(kind, table[0], table.slice(1)) as Row[];
+        setTable(table);const maps=table[0].map(h=>{const n=h.toLowerCase().trim().replace(/[\s-]+/g,'_');const aliases:Record<string,string>={first_name:kind==='passenger'?'patient_first_name':'contact_first_name',last_name:kind==='passenger'?'patient_last_name':'contact_last_name',date:kind==='passenger'?'pickup_date':'requested_date',time:kind==='passenger'?'pickup_time':'requested_time',from:'pickup_address',to:'dropoff_address',transportation_service:'service'};return columnsFor(kind).includes(n)?n:aliases[n]??'';});setMapping(maps);
+        const indices=maps.map((m,i)=>m?i:-1).filter(i=>i>=0);const v = validateRows(kind, indices.map(i=>maps[i]), table.slice(1).map(r=>indices.map(i=>r[i]))) as Row[];
         setRows(v);
         setChosen(new Set(v.filter((r) => r.ok && r.dup === undefined).map((r) => r.row)));
       }
@@ -111,12 +114,12 @@ function PortalUploads() {
 
   async function onCreate() {
     if (preview.active) return previewBlocked();
-    if (!file) return;
+    if (!file||!reviewConfirmed) return;
     setBusy(true);
     try {
       const uploadId = await storeOriginal();
       const picked = file.src === "pdf"
-        ? [{ row: 1, data: { ...pdf!.payload, ...(kind === "delivery" ? { requestCategory: "medical_delivery" } : {}) } }]
+        ? pdf?[{ row: 1, data: { ...pdf.payload, ...(kind === "delivery" ? { requestCategory: "medical_delivery" } : {}) } }]:[]
         : (rows ?? []).filter((r) => chosen.has(r.row) && r.ok).map((r) => ({ row: r.row, data: r.data }));
       const problems = (rows ?? []).filter((r) => !r.ok || r.dup !== undefined).map((r) => ({ row: r.row, problems: r.ok ? [`Possible duplicate of row ${r.dup}`] : r.errors.slice(0, 20).map((e) => e.slice(0, 200)) }));
       const res = await create({ data: { kind, sourceType: file.src, idempotencyKey: file.key, uploadId, rows: picked, problems } });
@@ -161,6 +164,7 @@ function PortalUploads() {
 
       {rows && !done && (
         <section className="mt-6 rounded-ds border border-ds-sky-border bg-ds-sky p-4 sm:p-6" aria-labelledby="up-prev">
+          <div className="mb-4 grid gap-3 sm:grid-cols-2">{table[0]?.map((h,i)=><label key={i} className="ds-label">{h}<DsSelect aria-label={`Map trip ${h}`} value={mapping[i]} onChange={e=>{const m=mapping.map((v,j)=>i===j?e.target.value:v);setMapping(m);const ix=m.map((v,j)=>v?j:-1).filter(j=>j>=0);const v=validateRows(kind,ix.map(j=>m[j]),table.slice(1).map(r=>ix.map(j=>r[j]))) as Row[];setRows(v);setChosen(new Set(v.filter(r=>r.ok&&r.dup===undefined).map(r=>r.row)));setReviewConfirmed(false);}}><option value="">Skip column</option>{columnsFor(kind).map(k=><option key={k} value={k}>{k.replaceAll('_',' ')}</option>)}</DsSelect></label>)}</div>
           <h2 id="up-prev" className="ds-subheading uppercase text-ds-primary">3. Review rows</h2>
           <ul className="ds-body mt-2 grid gap-1 sm:grid-cols-2">
             <li>Total rows: <strong>{rows.length}</strong></li>
@@ -179,7 +183,8 @@ function PortalUploads() {
             </table>
           </div>
           {(invalid.length > 0 || dups.length > 0) && <button className="portal-btn-secondary mt-3 whitespace-nowrap" onClick={() => download("mfn-upload-errors.csv", errorReport([...invalid, ...dups.map((r) => ({ row: r.row, errors: [`Possible duplicate of row ${r.dup}`] }))]))}>Download error report</button>}
-          <button disabled={selectedCount === 0 || busy} onClick={onCreate} className="portal-btn-primary ml-0 mt-4 block whitespace-nowrap sm:inline-block">{busy ? "Creating drafts…" : `Create ${selectedCount} draft${selectedCount === 1 ? "" : "s"}`}</button>
+          <label className="ds-body mt-4 block"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> I reviewed the mapped rows and duplicates; create drafts only.</label>
+          <DsButton disabled={selectedCount === 0 || busy||!reviewConfirmed||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating drafts…" : `Create ${selectedCount} draft${selectedCount === 1 ? "" : "s"}`}</DsButton>{preview.active&&<p className="ds-support">Preview only — draft creation disabled.</p>}
         </section>
       )}
 
@@ -193,7 +198,7 @@ function PortalUploads() {
             <div className="rounded-ds-sm border border-ds-border bg-ds-peach p-3"><h3 className="ds-label text-ds-primary">Not placed — review manually</h3>
               {pdf.unresolved.length ? <ul className="ds-support mt-2 max-h-48 space-y-1 overflow-y-auto">{pdf.unresolved.map((t, i) => <li key={i} className="break-words">{t}</li>)}</ul> : <p className="ds-support mt-2">Nothing left over.</p>}</div>
           </div>
-          <button disabled={busy} onClick={onCreate} className="portal-btn-primary mt-4 whitespace-nowrap">{busy ? "Creating draft…" : "Create 1 draft for review"}</button>
+          <label className="ds-body mt-4 block"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> Uncertain extraction: I reviewed every found and unresolved field.</label><DsButton disabled={busy||!reviewConfirmed||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating draft…" : "Create 1 draft for review"}</DsButton>
         </section>
       )}
 

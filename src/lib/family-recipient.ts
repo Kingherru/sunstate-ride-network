@@ -1,0 +1,1 @@
+export function recipientCurrent(preparation:{recipientEmail?:string;emailConfirmed?:boolean}|null,email:string,active:boolean){return active&&!!email&&preparation?.emailConfirmed===true&&preparation.recipientEmail?.trim().toLowerCase()===email.trim().toLowerCase();}

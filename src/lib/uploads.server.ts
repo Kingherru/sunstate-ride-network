@@ -21,8 +21,9 @@ export async function resolveUploadWorkspace(admin: any, userId: string) {
   const { data } = await admin.from("workspace_members")
     .select("workspace_id, role, can_create_requests, is_contractor, workspaces!inner(status, account_type, mfn_id)")
     .eq("user_id", userId).is("removed_at", null).eq("workspaces.status", "active");
-  const ws = (data ?? []).filter((m: any) => m.workspaces.account_type !== "provider" && !m.is_contractor && (m.role === "owner" || m.role === "admin" || m.can_create_requests));
-  if (ws.length !== 1) throw new Error("Uploads need one active patient or facility account you can create requests for.");
-  const { data: prof } = await admin.from("user_profiles").select("mfn_id").eq("user_id", userId).maybeSingle();
+  const ws = (data ?? []).filter((m: any) => !m.is_contractor && (m.role === "owner" || m.role === "admin" || m.can_create_requests));
+  if (ws.length !== 1) throw new Error("Uploads need one active account you can create requests for.");
+  const { data: prof } = await admin.from("user_profiles").select("mfn_id,status,is_test_account,deleted_at").eq("user_id", userId).maybeSingle();
+  if(!prof||prof.status!=='active'||prof.is_test_account||prof.deleted_at)throw new Error('An active non-test account is required.');
   return { workspaceId: ws[0].workspace_id as string, workspaceMfnId: (ws[0].workspaces.mfn_id ?? null) as string | null, actorMfnId: (prof?.mfn_id ?? null) as string | null };
 }

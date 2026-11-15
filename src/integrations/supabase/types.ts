@@ -749,6 +749,7 @@ export type Database = {
           policy_acceptance_id: string | null
           progress: Json
           purchased_at: string
+          resource_payment_evidence: Json | null
           status: string
           stripe_session_id: string | null
           updated_at: string
@@ -762,6 +763,7 @@ export type Database = {
           policy_acceptance_id?: string | null
           progress?: Json
           purchased_at?: string
+          resource_payment_evidence?: Json | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -775,6 +777,7 @@ export type Database = {
           policy_acceptance_id?: string | null
           progress?: Json
           purchased_at?: string
+          resource_payment_evidence?: Json | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -891,6 +894,7 @@ export type Database = {
           price_id: string | null
           private_file_path: string | null
           product_kind: string
+          resource_download_allowed: boolean
           slug: string
           summary: string
           title: string
@@ -910,6 +914,7 @@ export type Database = {
           price_id?: string | null
           private_file_path?: string | null
           product_kind?: string
+          resource_download_allowed?: boolean
           slug: string
           summary?: string
           title: string
@@ -929,6 +934,7 @@ export type Database = {
           price_id?: string | null
           private_file_path?: string | null
           product_kind?: string
+          resource_download_allowed?: boolean
           slug?: string
           summary?: string
           title?: string
@@ -4233,10 +4239,15 @@ export type Database = {
       }
       provider_customer_pricing_versions: {
         Row: {
+          agreement_active: boolean
+          agreement_label: string | null
+          agreement_notes: string | null
           created_by: string
           effective_at: string
+          effective_end: string | null
           id: string
           legacy_snapshot: Json | null
+          payer_id: string | null
           person_mfn_id: string
           rates: Json
           version: number
@@ -4244,10 +4255,15 @@ export type Database = {
           workspace_mfn_id: string
         }
         Insert: {
+          agreement_active?: boolean
+          agreement_label?: string | null
+          agreement_notes?: string | null
           created_by: string
           effective_at?: string
+          effective_end?: string | null
           id?: string
           legacy_snapshot?: Json | null
+          payer_id?: string | null
           person_mfn_id: string
           rates: Json
           version: number
@@ -4255,10 +4271,15 @@ export type Database = {
           workspace_mfn_id: string
         }
         Update: {
+          agreement_active?: boolean
+          agreement_label?: string | null
+          agreement_notes?: string | null
           created_by?: string
           effective_at?: string
+          effective_end?: string | null
           id?: string
           legacy_snapshot?: Json | null
+          payer_id?: string | null
           person_mfn_id?: string
           rates?: Json
           version?: number
@@ -4266,6 +4287,13 @@ export type Database = {
           workspace_mfn_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "provider_customer_pricing_versions_payer_id_fkey"
+            columns: ["payer_id"]
+            isOneToOne: false
+            referencedRelation: "payers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "provider_customer_pricing_versions_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -8406,6 +8434,7 @@ export type Database = {
           model_year: number | null
           name: string
           notes: string | null
+          operation_type: string
           owner_id: string
           plate: string | null
           registration_doc_path: string | null
@@ -8441,6 +8470,7 @@ export type Database = {
           model_year?: number | null
           name: string
           notes?: string | null
+          operation_type?: string
           owner_id: string
           plate?: string | null
           registration_doc_path?: string | null
@@ -8476,6 +8506,7 @@ export type Database = {
           model_year?: number | null
           name?: string
           notes?: string | null
+          operation_type?: string
           owner_id?: string
           plate?: string | null
           registration_doc_path?: string | null
@@ -9755,6 +9786,16 @@ export type Database = {
         Returns: number
       }
       holds_admin_label: { Args: { _user_id: string }; Returns: boolean }
+      import_workspace_contacts: {
+        Args: {
+          _confirmed: boolean
+          _key: string
+          _rows: Json
+          _source: string
+          _workspace: string
+        }
+        Returns: Json
+      }
       invoice_safe_events: { Args: { _invoice: string }; Returns: Json }
       invoice_viewed: { Args: { _invoice: string }; Returns: undefined }
       is_active_workspace_member: {
@@ -10256,6 +10297,18 @@ export type Database = {
       patient_request_access: { Args: { _request: string }; Returns: boolean }
       patient_request_snapshot: { Args: { _request: string }; Returns: Json }
       patient_trip_contacts: { Args: { _request: string }; Returns: Json }
+      persist_import_drafts: {
+        Args: {
+          _key: string
+          _kind: string
+          _problems: Json
+          _rows: Json
+          _source: string
+          _upload?: string
+          _workspace: string
+        }
+        Returns: Json
+      }
       persist_provider_draft_quote: {
         Args: {
           _actor: string
@@ -10470,6 +10523,20 @@ export type Database = {
       save_patient_relationship_preparation: {
         Args: { _family?: Json; _links: Json; _patient: string }
         Returns: undefined
+      }
+      save_payer_rate_version: {
+        Args: {
+          _active: boolean
+          _end: string
+          _expected: number
+          _label: string
+          _notes: string
+          _payer: string
+          _rates: Json
+          _start: string
+          _workspace: string
+        }
+        Returns: string
       }
       save_personal_settings: {
         Args: {

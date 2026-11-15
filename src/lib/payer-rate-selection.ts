@@ -1,0 +1,3 @@
+export function applicableRate<T extends {payer_id:string|null;effective_at:string;effective_end?:string|null;agreement_active?:boolean;version:number}>(rows:T[],payerId:string|null,date:string){
+ const eligible=rows.filter(r=>r.payer_id===payerId&&r.effective_at.slice(0,10)<=date).sort((a,b)=>b.version-a.version);const newest=eligible[0];return newest&&newest.agreement_active!==false&&(!newest.effective_end||newest.effective_end>=date)?newest:null;
+}

@@ -38,8 +38,8 @@ function LaunchReadiness() {
       {s && (
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
           <div className="ds-glass rounded-ds-md p-4"><StatusPill status="Ready" tone="green" /><p className="ds-heading mt-2 text-ds-primary">{s.green}</p></div>
-          <div className="ds-glass rounded-ds-md p-4"><StatusPill status="Off or owner action" tone="yellow" /><p className="ds-heading mt-2 text-ds-primary">{s.yellow}</p></div>
-          <div className="ds-glass rounded-ds-md p-4"><StatusPill status="Missing or blocked" tone="red" /><p className="ds-heading mt-2 text-ds-primary">{s.red}</p></div>
+          <div className="ds-glass rounded-ds-md p-4"><StatusPill status="Intentionally Off / review" tone="yellow" /><p className="ds-heading mt-2 text-ds-primary">{s.yellow}</p></div>
+          <div className="ds-glass rounded-ds-md p-4"><StatusPill status="Needs Attention" tone="red" /><p className="ds-heading mt-2 text-ds-primary">{s.red}</p></div>
         </div>
       )}
       {q.data?.groups.map((g) => (
