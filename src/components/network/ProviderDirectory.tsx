@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { DsButton,DsSelect } from '@/components/ds/controls';
 import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
+import {REGIONS} from '@/lib/coverage';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -37,6 +38,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   const [serviceType, setServiceType] = useState("");
   const [providerType,setProviderType]=useState<''|'nemt_business'|'independent_contractor'>('');
   const [county, setCounty] = useState("");
+  const [state,setState]=useState('FL'),[region,setRegion]=useState('');
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
   const [medicalDelivery, setMedicalDelivery] = useState(false);
@@ -48,6 +50,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
   const [radius, setRadius] = useState(50);
 
   const filters = {
+    state,region:region||undefined,
     provider_subtype:providerType||undefined,
     search: search.trim() || undefined,
     service_type: serviceType.trim() || undefined,
@@ -121,6 +124,8 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               className="w-full rounded-sm border border-border py-2 pr-3 text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <DsSelect aria-label="Provider state" value={state} onChange={e=>setState(e.target.value)}><option value="FL">Florida</option></DsSelect>
+            <DsSelect aria-label="Provider region" value={region} onChange={e=>setRegion(e.target.value)}><option value="">All Florida regions</option>{REGIONS.map(r=><option key={r.slug} value={r.slug}>{r.name}</option>)}</DsSelect>
             <DsSelect aria-label="Network provider subtype" value={providerType} onChange={e=>{const t=e.target.value;if(t===''||t==='nemt_business'||t==='independent_contractor')setProviderType(t);}}><option value="">All provider types</option><option value="nemt_business">NEMT Business</option><option value="independent_contractor">Independent Contractor</option></DsSelect>
             <input value={serviceType} onChange={(e) => setServiceType(e.target.value)} placeholder="Service type" aria-label="Service type" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
             <input value={county} onChange={(e) => setCounty(e.target.value)} placeholder="County" aria-label="County" className="w-full rounded-sm border border-border px-3 py-2 text-sm" />
@@ -171,7 +176,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect }: { savedOnly?:
               {r.service_types.length > 0 && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">{capabilityLabels(r.service_types).slice(0, 3).join(", ")}{r.medical_delivery ? " · Medical delivery" : ""}</p>
               )}
-              {r.distance_miles != null && <p className="ds-caption mt-1">Approx. {r.distance_miles} mi · {r.compatibility}</p>}
+              <p className="ds-caption mt-1">{r.distance_miles != null ? `Approximately ${r.distance_miles} miles · ${r.compatibility}` : 'Service area match · Distance unavailable'}</p>
             </button>
           </li>
         ))}

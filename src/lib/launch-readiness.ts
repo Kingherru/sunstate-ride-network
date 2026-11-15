@@ -5,6 +5,8 @@ export type ReadinessGroup = { title: string; items: ReadinessItem[] };
 
 /** Every launch-controlled key the app reads. A missing row means OFF. */
 export const LAUNCH_FLAG_KEYS = [
+  { key: 'nearby_matching', label: 'Targeted nearby in-app offers' },
+  { key: 'nearby_auto_waves', label: 'Automatic nearby waves' },
   { key: "network_live_settlement_collection", label: "Live Network settlement collection" },
   { key: "network_automatic_hold_release", label: "Automatic transfer / settlement after hold" },
   { key: "membership_renewal_transition", label: "Membership renewal transition" },

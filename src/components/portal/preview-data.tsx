@@ -29,6 +29,8 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'nearby-settings':{nearby_opt_in:false,matching_settings:{state:'FL',region:'Central Florida',publicLabel:'Orlando area (Synthetic)',displayName:'Synthetic Transportation',radius:50,timezone:'America/New_York',days:[1,2,3,4,5],start:'08:00',end:'18:00',availability:'paused',acceptingTrips:false},matching_consent:{},visible:false},
+  'nearby-wave-review':{radius:20,eligible:2,excluded:{'Nearby consent off':3,'Eligible vehicle required':1},enabled:false,candidates:[{workspace:'synthetic-candidate',score:116,explanation:['Serves pickup city','Eligible vehicle and driver','Operating during requested time','Approximately 12 miles from pickup']}]},
   'network-access':{entitled:true,workspaceId:'preview-ws',contractor:false,canPurchase:true,baseActive:true},
   'network-view-counts':{offers:1,activity:1,payments:0,settlements:0,patients:0,providers:0,contractors:0},
   'provider-setup': {provider_subtype:'nemt_business',provider_service_roles:[],isOwner:true,provider_subtype_selected_at:null,pickup_delay_minutes:null,canSelect:false,vehicles:[]},

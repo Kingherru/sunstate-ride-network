@@ -24,7 +24,8 @@ export const listNetworkOffers = createServerFn({ method: 'GET' }).middleware([r
   const { data, error } = await context.supabase.rpc('network_list_offers');
   if (error) throw new Error('Could not load offers.');
   const e = await entitledWorkspaces(context.supabase, context.userId);
-  return ((data ?? []) as unknown as NetworkOffer[]).filter(o => e.admin || e.ids.has(o.provider_workspace_id));
+  const {data:explanations}=await context.supabase.from('provider_trip_offers').select('id,match_explanation');
+  return ((data ?? []) as unknown as NetworkOffer[]).filter(o => e.admin || e.ids.has(o.provider_workspace_id)).map(o=>({...o,match_explanation:explanations?.find(e=>e.id===o.id)?.match_explanation??[]}));
 });
 export const listNetworkActivity = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const { data, error } = await context.supabase.rpc('network_list_activity');
@@ -76,8 +77,9 @@ export const getNetworkSettings = createServerFn({ method: 'GET' }).middleware([
   return data;
 });
 export const saveNetworkSettings = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ wave_50_delay_minutes: z.number().int().positive().nullable(), wave_100_delay_minutes: z.number().int().positive().nullable(), wave_200_delay_minutes: z.number().int().positive().nullable() }).parse(i))
+  .inputValidator((i: unknown) => z.object({ wave_50_delay_minutes: z.number().int().positive().nullable(), wave_100_delay_minutes: z.number().int().positive().nullable(), wave_200_delay_minutes: z.number().int().positive().nullable(),max_candidates:z.number().int().min(1).max(25).default(5),response_minutes:z.number().int().min(5).max(1440).default(60),max_radius:z.union([z.literal(20),z.literal(50),z.literal(100),z.literal(200)]).default(200) }).parse(i))
   .handler(async ({ data, context }) => {
+    const {data:master}=await context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'});if(!master)throw new Error('Only the Master Admin may change distribution settings.');
     const { error } = await context.supabase.from('trip_network_settings').upsert({ id: true, ...data, automatic_expansion: false, updated_by: context.userId, updated_at: new Date().toISOString() });
     if (error) throw new Error('Only the Master Admin may change distribution settings.');
     return { ok: true };

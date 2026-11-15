@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { PageHead, panelCls } from "@/components/portal/PortalShell";
 import { CSV_MAX_ROWS, columnsFor,errorReport, parseCsv, templateCsv, validateRows, type ImportKind, type ValidatedRow } from "@/lib/csv-import";
 import {DsButton,DsSelect} from '@/components/ds/controls';
-import { createImportDrafts, getUploadOriginalUrl, listMyUploads, prepareUpload } from "@/lib/uploads.functions";
+import { createImportDrafts, getUploadOriginalUrl, listMyUploads, prepareUpload,reviewImportHistory } from "@/lib/uploads.functions";
 import { parseNoteShortcodes } from "@/lib/note-shortcodes";
 import { supabase } from "@/integrations/supabase/client";
 import { usePortalPreview, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
@@ -51,6 +51,7 @@ function PortalUploads() {
   const qc = useQueryClient();
   const prepare = useServerFn(prepareUpload);
   const create = useServerFn(createImportDrafts);
+  const checkHistory=useServerFn(reviewImportHistory);
   const listFn = useServerFn(listMyUploads);
   const originalUrl = useServerFn(getUploadOriginalUrl);
   const history = usePortalQuery({ queryKey: ["my-uploads"], queryFn: () => listFn() });
@@ -63,8 +64,10 @@ function PortalUploads() {
   const [fileError, setFileError] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ created: number; failed: number; duplicateFile: boolean } | null>(null);
+  const [priorDuplicates,setPriorDuplicates]=useState<number[]>([]),[historyChecked,setHistoryChecked]=useState(false),[checking,setChecking]=useState(false);
+  async function compareHistory(){if(preview.active){setPriorDuplicates([]);setHistoryChecked(true);return;}setChecking(true);try{const result=await checkHistory({data:{rows:(rows??[]).filter(r=>r.ok).map(r=>({row:r.row,data:r.data}))}});setPriorDuplicates(result.duplicates);setChosen(c=>new Set([...c].filter(n=>!result.duplicates.includes(n))));setHistoryChecked(true);setReviewConfirmed(false);}catch{setFileError('Prior authorized history could not be checked. Draft creation stays unavailable.');}finally{setChecking(false);}}
 
-  function reset() { setFile(null); setRows(null);setTable([]);setMapping([]);setReviewConfirmed(false); setPdf(null); setDone(null); setFileError(""); setChosen(new Set()); }
+  function reset() { setPriorDuplicates([]);setHistoryChecked(false);setFile(null); setRows(null);setTable([]);setMapping([]);setReviewConfirmed(false); setPdf(null); setDone(null); setFileError(""); setChosen(new Set()); }
 
   async function onFile(f: File | undefined) {
     reset();
@@ -164,8 +167,9 @@ function PortalUploads() {
 
       {rows && !done && (
         <section className="mt-6 rounded-ds border border-ds-sky-border bg-ds-sky p-4 sm:p-6" aria-labelledby="up-prev">
-          <div className="mb-4 grid gap-3 sm:grid-cols-2">{table[0]?.map((h,i)=><label key={i} className="ds-label">{h}<DsSelect aria-label={`Map trip ${h}`} value={mapping[i]} onChange={e=>{const m=mapping.map((v,j)=>i===j?e.target.value:v);setMapping(m);const ix=m.map((v,j)=>v?j:-1).filter(j=>j>=0);const v=validateRows(kind,ix.map(j=>m[j]),table.slice(1).map(r=>ix.map(j=>r[j]))) as Row[];setRows(v);setChosen(new Set(v.filter(r=>r.ok&&r.dup===undefined).map(r=>r.row)));setReviewConfirmed(false);}}><option value="">Skip column</option>{columnsFor(kind).map(k=><option key={k} value={k}>{k.replaceAll('_',' ')}</option>)}</DsSelect></label>)}</div>
+          <div className="mb-4 grid gap-3 sm:grid-cols-2">{table[0]?.map((h,i)=><label key={i} className="ds-label">{h}<DsSelect aria-label={`Map trip ${h}`} value={mapping[i]} onChange={e=>{const m=mapping.map((v,j)=>i===j?e.target.value:v);setMapping(m);setHistoryChecked(false);setPriorDuplicates([]);const ix=m.map((v,j)=>v?j:-1).filter(j=>j>=0);const v=validateRows(kind,ix.map(j=>m[j]),table.slice(1).map(r=>ix.map(j=>r[j]))) as Row[];setRows(v);setChosen(new Set(v.filter(r=>r.ok&&r.dup===undefined).map(r=>r.row)));setReviewConfirmed(false);}}><option value="">Skip column</option>{columnsFor(kind).map(k=><option key={k} value={k}>{k.replaceAll('_',' ')}</option>)}</DsSelect></label>)}</div>
           <h2 id="up-prev" className="ds-subheading uppercase text-ds-primary">3. Review rows</h2>
+          <DsButton variant="secondary" disabled={checking} onClick={compareHistory}>Compare authorized prior trips</DsButton><p className="ds-support">{historyChecked?`${priorDuplicates.length} possible prior duplicates excluded.`:'Prior history must be checked before draft creation.'}</p>
           <ul className="ds-body mt-2 grid gap-1 sm:grid-cols-2">
             <li>Total rows: <strong>{rows.length}</strong></li>
             <li>Ready: <strong>{valid.length}</strong></li>
@@ -176,7 +180,7 @@ function PortalUploads() {
             <table className="ds-support w-full text-left">
               <thead><tr className="border-b border-ds-border"><th className="p-2">Create</th><th className="p-2">Row</th><th className="p-2">Date</th><th className="p-2">Service</th><th className="p-2">Status</th></tr></thead>
               <tbody>{rows.map((r) => <tr key={r.row} className="border-b border-ds-border last:border-b-0">
-                <td className="p-2"><input type="checkbox" aria-label={`Create draft from row ${r.row}`} disabled={!r.ok || r.dup !== undefined} checked={chosen.has(r.row)} onChange={(e) => { const n = new Set(chosen); e.target.checked ? n.add(r.row) : n.delete(r.row); setChosen(n); }} /></td>
+                <td className="p-2"><input type="checkbox" aria-label={`Create draft from row ${r.row}`} disabled={!r.ok || r.dup !== undefined||priorDuplicates.includes(r.row)} checked={chosen.has(r.row)} onChange={(e) => { const n = new Set(chosen); e.target.checked ? n.add(r.row) : n.delete(r.row); setChosen(n); }} /></td>
                 <td className="p-2">{r.row}</td><td className="p-2">{r.date || "—"}</td><td className="p-2">{r.service || "—"}</td>
                 <td className="p-2">{!r.ok ? <StatusPill tone="red" className="whitespace-normal" status={r.errors.join("; ")} /> : r.dup !== undefined ? `Possible duplicate of row ${r.dup}` : "Ready"}</td>
               </tr>)}</tbody>
@@ -184,7 +188,7 @@ function PortalUploads() {
           </div>
           {(invalid.length > 0 || dups.length > 0) && <button className="portal-btn-secondary mt-3 whitespace-nowrap" onClick={() => download("mfn-upload-errors.csv", errorReport([...invalid, ...dups.map((r) => ({ row: r.row, errors: [`Possible duplicate of row ${r.dup}`] }))]))}>Download error report</button>}
           <label className="ds-body mt-4 block"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> I reviewed the mapped rows and duplicates; create drafts only.</label>
-          <DsButton disabled={selectedCount === 0 || busy||!reviewConfirmed||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating drafts…" : `Create ${selectedCount} draft${selectedCount === 1 ? "" : "s"}`}</DsButton>{preview.active&&<p className="ds-support">Preview only — draft creation disabled.</p>}
+          <DsButton disabled={selectedCount === 0 || busy||!reviewConfirmed||!historyChecked||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating drafts…" : `Create ${selectedCount} draft${selectedCount === 1 ? "" : "s"}`}</DsButton>{preview.active&&<p className="ds-support">Preview only — draft creation disabled.</p>}
         </section>
       )}
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { approximateMiles, serviceCompatibility } from './account-settings-rules';
 import {publicContractorFields} from './contractor-rules';
+import {REGIONS} from './coverage';
 
 export type NetworkProviderRow = {
   workspace_id: string;
@@ -23,9 +24,13 @@ export type NetworkProviderRow = {
   compatibility?: string;
   provider_subtype?: string;
   evidence_language?: string;
+  state?:string;
+  region?:string;
 };
 
 const filtersSchema = z.object({
+  state:z.string().length(2).optional(),
+  region:z.string().max(100).optional(),
   provider_subtype:z.enum(['nemt_business','independent_contractor']).optional(),
   search: z.string().max(200).optional(),
   service_type: z.string().max(100).optional(),
@@ -47,8 +52,7 @@ export type NetworkProviderFilters = z.infer<typeof filtersSchema>;
  * non-test, non-suspended provider workspaces are returned, with only the
  * business fields the provider approved for network discovery.
  *
- * No coordinates are stored or used here, so there is no mileage-radius
- * search — that is left for the future trip-distribution pass.
+ * Proximity uses only separately approved public service-area centers.
  */
 export const listNetworkProviders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -71,14 +75,14 @@ export const listNetworkProviders = createServerFn({ method: "POST" })
     const {data:contractors,error:contractorError}=await context.supabase.rpc('contractor_network_directory');
     if(contractorError)return {ok:false as const,error:'Contractor eligibility unavailable.'};
     const contractorRows=((contractors??[]) as unknown as Record<string,unknown>[]).filter(r=>r.provider_subtype==='independent_contractor').map(raw=>{
-      const r=publicContractorFields(raw);return {...r,description:null,business_contact_email:null,business_contact_phone:null,medical_delivery:false,accepting_connections:true,is_saved:false} as unknown as NetworkProviderRow;
+      const r=publicContractorFields(raw);return {workspace_id:r.workspace_id,business_name:r.business_name,mfn_id:r.mfn_id,provider_subtype:r.provider_subtype,counties:r.counties,cities:r.cities,zips:r.zips,hours:r.hours,service_types:r.service_types,evidence_language:r.evidence_language,description:null,business_contact_email:null,business_contact_phone:null,medical_delivery:false,accepting_connections:true,is_saved:false} as unknown as NetworkProviderRow;
     });
     const combined=[...(rows??[]).map(r=>({...r,provider_subtype:'nemt_business'})),...contractorRows.filter(r=>!data.saved_only)];
-    const results = combined.filter(r=>(!data.provider_subtype||r.provider_subtype===data.provider_subtype)&&(!data.search||r.business_name.toLowerCase().includes(data.search.toLowerCase()))&&(!data.service_type||r.service_types.includes(data.service_type))&&(!data.county||r.counties.includes(data.county))&&(!data.city||r.cities.includes(data.city))&&(!data.zip||r.zips.includes(data.zip))&&(!data.medical_delivery||r.medical_delivery)).map(row => {
+    const results = combined.filter(r=>(!data.state||data.state==='FL')&&(!data.region||r.counties.some(c=>REGIONS.find(region=>region.slug===data.region)?.counties.includes(c)))&&(!data.provider_subtype||r.provider_subtype===data.provider_subtype)&&(!data.search||r.business_name.toLowerCase().includes(data.search.toLowerCase()))&&(!data.service_type||r.service_types.includes(data.service_type))&&(!data.county||r.counties.includes(data.county))&&(!data.city||r.cities.includes(data.city))&&(!data.zip||r.zips.includes(data.zip))&&(!data.medical_delivery||r.medical_delivery)).map(row => {
       const center = centers?.find(p => p.workspace_id === row.workspace_id);
       const distance = origin && center?.lat != null && center?.lng != null ? approximateMiles(origin, { lat: center.lat, lng: center.lng }) : null;
       return { ...row, distance_miles: distance == null ? null : Math.round(distance * 10) / 10, compatibility: serviceCompatibility(distance, center?.radius_miles ?? null, data.county, row.counties) };
-    }).filter(r => !origin || !data.radius_miles || (r.distance_miles != null && r.distance_miles <= data.radius_miles));
+    }).filter(r => !origin || !data.radius_miles || r.distance_miles == null || r.distance_miles <= data.radius_miles);
     if (origin) results.sort((a, b) => (a.distance_miles ?? Infinity) - (b.distance_miles ?? Infinity));
     return { ok: true as const, results };
   });

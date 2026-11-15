@@ -1,0 +1,21 @@
+import {describe,it,expect} from 'vitest';
+import {candidateReasons,rankCandidates,scoreCandidate,tripDuplicateKey,waveAllowed,type MatchingCandidate,MATCHING_CONSENT_VERSION} from '../src/lib/nearby-matching-rules';
+import {reviewContact} from '../src/lib/contact-import';
+const base:MatchingCandidate={id:'a',optedIn:true,active:true,entitled:true,verified:true,subtype:'nemt_business',service:'ambulatory',vehicle:true,driver:true,area:true,hours:true,available:true,safetyClear:true,paymentClear:true,source:false,assigned:false,previousOffer:false,city:true,distance:12};
+describe('4X eligibility and privacy-safe deterministic matching',()=>{
+ it('records the consent version',()=>expect(MATCHING_CONSENT_VERSION).toBe('2026-11-15'));
+ for(const key of ['optedIn','active','entitled','verified','vehicle','driver','area','hours','available','safetyClear','paymentClear'] as const)it(`fails closed without ${key}`,()=>expect(scoreCandidate({...base,[key]:false}).eligible).toBe(false));
+ for(const key of ['source','assigned','previousOffer'] as const)it(`excludes ${key}`,()=>expect(scoreCandidate({...base,[key]:true}).eligible).toBe(false));
+ it('keeps contractors ambulatory only',()=>expect(candidateReasons({...base,subtype:'independent_contractor',service:'wheelchair'})).toContain('Contractor ambulatory only'));
+ it('produces deterministic score without sensitive attributes',()=>expect(scoreCandidate(base).score).toBe(119));
+ it('deduplicates and orders tied candidates by immutable identity',()=>expect(rankCandidates([{...base,id:'b'},base,base]).map(c=>c.id)).toEqual(['a','b']));
+ it('does not fabricate distance when geography is absent',()=>expect(scoreCandidate({...base,distance:null}).explanations.some(s=>s.includes('miles'))).toBe(false));
+ const ready={enabled:true,selected:false,closed:false,expired:false,priorPending:false};
+ it('requires explicit launch activation',()=>expect(waveAllowed({...ready,enabled:false})).toBe(false));
+ for(const key of ['selected','closed','expired','priorPending'] as const)it(`stops waves for ${key}`,()=>expect(waveAllowed({...ready,[key]:true})).toBe(false));
+ it('allows reviewed unassigned eligible wave',()=>expect(waveAllowed(ready)).toBe(true));
+ it('compares prior trip time and normalized route',()=>expect(tripDuplicateKey({pickupDate:'2026-12-01',pickupTime:'09:30:00',pickupAddress:'  Main  Street ',dropoffAddress:'Clinic'})).toBe(tripDuplicateKey({pickupDate:'2026-12-01',pickupTime:'09:30',pickupAddress:'main street',dropoffAddress:'clinic'})));
+ it('keeps delivery duplicates separate from passengers',()=>expect(tripDuplicateKey({requestCategory:'medical_delivery'})).not.toBe(tripDuplicateKey({})));
+ it('validates and retains mapped address',()=>expect(reviewContact({first_name:'Demo',last_name:'Sample',address:'Synthetic address',city:'Orlando',state:'fl',zip:'32801'}).data?.state).toBe('FL'));
+ it('rejects invalid mapped ZIP',()=>expect(reviewContact({first_name:'Demo',last_name:'Sample',zip:'wrong'}).errors).toContain('zip: enter a valid ZIP'));
+});

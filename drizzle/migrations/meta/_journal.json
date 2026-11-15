@@ -827,6 +827,27 @@
       "when": 1794709445837,
       "tag": "0117_contact_address_mapping",
       "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1794709745662,
+      "tag": "0118_matching_privacy_and_acceptance_preservation",
+      "breakpoints": true
+    },
+    {
+      "idx": 119,
+      "version": "7",
+      "when": 1794709861186,
+      "tag": "0119_matching_stop_and_scope_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 120,
+      "version": "7",
+      "when": 1794709953631,
+      "tag": "0120_nearby_consent_write_boundary",
+      "breakpoints": true
     }
   ]
 }

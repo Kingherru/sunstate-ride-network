@@ -57,6 +57,19 @@ export const getLaunchReadiness = createServerFn({ method: "GET" })
       {label:'Family and reminder delivery',status:'Intentionally Off',tone:'yellow',note:'Consent and previews do not confirm recipient email. Owner action: approve verification and timezone-bound sending separately.'},
       {label:'Refund / dispute execution',status:'Intentionally Off — policy approval required',tone:'yellow',note:'Owner action: approve refund responsibility, fee treatment and tested webhook mapping before money actions.'},
     ]});
+    const {data:matching,error:matchingError}=await supabaseAdmin.from('provider_network_profiles').select('nearby_opt_in,matching_consent,matching_settings,service_types,cities,zips,counties');
+    const consentCount=(matching??[]).filter(p=>p.nearby_opt_in).length;
+    const completeCount=(matching??[]).filter(p=>p.service_types.length>0&&(p.cities.length+p.zips.length+p.counties.length)>0&&p.matching_settings&&typeof p.matching_settings==='object'&&'days'in p.matching_settings).length;
+    groups.push({title:'Directory & nearby matching',items:[
+      {label:'Directory visibility',status:'Separate approved visibility projection retained',tone:'green',note:'Public geography never uses private verified bases.'},
+      {label:'Nearby consent',status:matchingError?'Counts unavailable':`${consentCount} opted in; ${completeCount} matching profiles with operating settings`,tone:matchingError?'red':'yellow',note:'Counts only; existing accounts default OFF. No identities or locations are shown.'},
+      {label:'Matching launch',status:flags.nearby_matching?'Enabled by owner':'Intentionally Off',tone:flags.nearby_matching?'yellow':'green',note:'Explicit bounded waves only; acceptance remains locked and manual.'},
+      {label:'Automatic waves',status:'Intentionally Off — no automatic runner',tone:'green',note:'Owner approval and complete service/timezone evidence required before future activation.'},
+      {label:'In-app offers',status:'Prepared behind missing-equals-OFF gate',tone:'yellow',note:'Current membership, service, fleet, verified geography, hours and safety/payment standing must pass.'},
+      {label:'Proximity search',status:'Approved public centers only — approximate',tone:'green',note:'Missing centers show service-area match; no exact addresses are disclosed.'},
+      {label:'Blocked services and geography',status:'Medical delivery matching unavailable; incomplete evidence excluded',tone:'yellow',note:'Contractors remain ambulatory only. No guessed coordinates or expanded service claims.'},
+      {label:'External opportunity email/SMS',status:'Intentionally Off',tone:'green',note:'No external delivery or fake send history.'},
+    ]});
     void ledger;
     return { groups, connectSecret };
   });
