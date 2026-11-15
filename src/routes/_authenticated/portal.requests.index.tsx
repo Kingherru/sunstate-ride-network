@@ -15,6 +15,7 @@ import { DsButton } from "@/components/ds/controls";
 import { exportTable, readableDate, type ExportFormat } from "@/lib/table-export";
 import { DsEmpty } from "@/components/ds/feedback";
 import {PatientTrips} from '@/components/portal/PatientTrips';
+import {CustomerSelectedExport} from '@/components/portal/CustomerSelectedExport';
 
 export const Route = createFileRoute("/_authenticated/portal/requests/")({
   head: () => ({ meta: [{ title: "Trip History — MY FLORIDA NEMT Portal" },{name:'description',content:'Authorized upcoming trips, patient timeline, history and existing payment records.'},{property:'og:title',content:'Trip History — MY FLORIDA NEMT Portal'},{property:'og:description',content:'Your authorized trip timeline and history.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}, { name: "robots", content: "noindex, nofollow" }] }),
@@ -103,6 +104,7 @@ function History({ rows }: { rows: RequestListRow[] }) {
 
   return (
     <section className={panelCls}>
+      <div className="px-4 sm:px-5"><CustomerSelectedExport records={filtered.map(r=>({id:r.id,label:`${r.mfn_id??'Request'} · ${r.pickup_date??''} · ${r.pickup_city??''} → ${r.dropoff_city??''}`}))}/></div>
       <div className="flex flex-wrap items-center gap-3 border-b border-ds-border px-4 py-3 sm:px-5">
         <div className="portal-search min-w-0 flex-1">
           <Search className="size-4" aria-hidden />

@@ -1,4 +1,13 @@
 # Florida MVP launch sequence
+## Pass 4Z — pilot communications and completion
+- [x] Explicit per-offer revision watermarks including expiry; successful authorized detail reads mark only loaded revisions. Addressed pending/counter conversations reuse serialized workspace pairs and retained history.
+- [x] Operations-permission/account-scoped admin pilot status and read-only candidate review; Master-only county evidence and scope, DST-safe Eastern/Central hours, server-enforced 19-item checklist. Missing atomic/concurrency evidence blocks activation.
+- [x] Patient/Facility selected CSV/XLSX/PDF controls re-read safe request projections and record metadata audit; 21 category template previews, communications sections, required-notice explanations and disabled external preference controls.
+- [x] 99 focused rules tests pass; harness compilation OK. Signed-in Master and write-free synthetic offer/message/pilot-read/preferences/category/reminder screens checked at 1280/390; no page errors or viewport overflow. Live checklist read only; no live mutation or report execution.
+- [ ] Blocker: full category recipient resolver/producer/audit integration is not complete for every category; template previews are not live preparation. Family confirmation and owner-approved reminder timing remain required.
+- [ ] Blocker: populated rollback/concurrency/idempotency verification and live unread/conversation/export save/readback remain unverified. No isolated mutation fixture used; real actions were prohibited. Regular-admin manage fixture and complete driver-log fields remain incomplete.
+- [ ] Blocker: existing cross-timezone active resource bookings require authoritative normalization; overnight hours remain unsupported. No existing trip time was changed.
+- Preservation: zero offers, zero nearby opt-ins, no enabled matching/delivery flags, zero active test profiles. Nothing published, enabled, offered, assigned, messaged, sent, charged, submitted or exported. Exact pass credits unavailable; latest billing-period aggregate 643, not pass usage.
 ## Pass 4Y — controlled matching pilot
 - [x] Master-only audited default-OFF pilot configuration with explicit sender/receiver/service/city/ZIP scope, bounded manual waves and emergency-stop pending-offer freeze. No configuration row or pilot workspace was selected during checks.
 - [x] Installed pilot/config/distribution/offer/source locks, current evidence/actor/funding rechecks, exact reviewed amount/version, safe rollback wrapper, existing atomic owned-trip reservation, competing-offer closure and deduped in-app events. Direct legacy acceptance execute revoked; no financial actions.

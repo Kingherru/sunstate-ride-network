@@ -911,6 +911,55 @@
       "when": 1794712676527,
       "tag": "0129_pilot_pending_freeze_and_insert_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 130,
+      "version": "7",
+      "when": 1794714867271,
+      "tag": "0130_offer_watermarks_and_addressed_conversations",
+      "breakpoints": true
+    },
+    {
+      "idx": 131,
+      "version": "7",
+      "when": 1794714934767,
+      "tag": "0131_pilot_checklist_scoped_views_and_customer_exports",
+      "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1794715049430,
+      "tag": "0132_conservative_pilot_time_and_geography_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
+      "when": 1794715093633,
+      "tag": "0133_reviewed_florida_county_region_scope",
+      "breakpoints": true
+    },
+    {
+      "idx": 134,
+      "version": "7",
+      "when": 1794715247790,
+      "tag": "0134_pilot_scoped_read_preview_and_evidence_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 135,
+      "version": "7",
+      "when": 1794715407197,
+      "tag": "0135_offer_expiry_watermark_and_checklist_lock",
+      "breakpoints": true
+    },
+    {
+      "idx": 136,
+      "version": "7",
+      "when": 1794715461191,
+      "tag": "0136_pilot_missing_geography_fail_closed",
+      "breakpoints": true
     }
   ]
 }

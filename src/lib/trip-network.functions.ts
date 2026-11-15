@@ -121,7 +121,7 @@ export const verifyNetworkBase = createServerFn({method:'POST'}).middleware([req
  .inputValidator((i:unknown)=>z.object({workspace_id:z.string().uuid(),address:z.string().trim().min(1).max(300),lat:z.number().min(-90).max(90),lng:z.number().min(-180).max(180),services:z.array(z.enum(['ambulatory','wheelchair','stretcher'])).min(1)}).parse(i))
  .handler(async({data,context})=>{const {error}=await context.supabase.rpc('network_set_service_base',{_workspace:data.workspace_id,_address:data.address,_lat:data.lat,_lng:data.lng,_services:data.services});if(error)throw new Error(error.message);return {ok:true};});
 export type OfferSafeDetail = {
-  offer_version?:string;pilot_reason?:string;match_explanation?:string[];sender_business?:string;
+  offer_version?:string;pilot_reason?:string;match_explanation?:string[];sender_business?:string;activity_revision?:number;can_message?:boolean;pickup_timezone?:string;
   offer_mfn_id: string; status: string; viewer: 'sender' | 'receiver'; distribution_stage_miles: number | null; distribution_status: string;
   stages: { radius_miles: number; sent_at: string }[]; versions: { side: string; action: string; amount_cents: number | null; created_at: string }[];
   events: { event_type: string; created_at: string }[]; latest_negotiation: { side: string; action: string; amount_cents: number | null; created_at: string } | null;
@@ -136,3 +136,6 @@ export const getOfferSafeDetail = createServerFn({ method: 'POST' }).middleware(
     if (error || !d) throw new Error('Offer details are not available.');
     return d as unknown as OfferSafeDetail;
   });
+export const readOfferWatermarks=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({ids:z.array(z.string().uuid()).max(500)}).strict().parse(i)).handler(async({data,context})=>{const {data:rows,error}=await context.supabase.rpc('offer_read_state',{_ids:data.ids});if(error)throw new Error('Offer read state unavailable.');return rows as unknown as {id:string;revision:number;unread:boolean}[];});
+export const markOffersRead=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({items:z.array(z.object({id:z.string().uuid(),revision:z.number().int().positive()})).max(500)}).strict().parse(i)).handler(async({data,context})=>{const {error}=await context.supabase.rpc('mark_offers_read',{_items:data.items});if(error)throw new Error('Offer read markers were not saved.');return {ok:true};});
+export const openOfferConversation=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({offerId:z.string().uuid()}).strict().parse(i)).handler(async({data,context})=>{const {data:r,error}=await context.supabase.rpc('open_addressed_offer_conversation',{_offer:data.offerId});if(error)throw new Error('Workspace messaging permission or retained conversation required.');return r as unknown as {conversationId:string;workspaceId:string};});

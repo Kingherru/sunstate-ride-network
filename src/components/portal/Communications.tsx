@@ -6,15 +6,19 @@ import { StatusPill } from '@/components/ds/status';
 import { listCommunicationHistory, previewMyTripCommunications } from '@/lib/communications.functions';
 import { usePortalPreview, usePortalQuery } from './preview-data';
 import { useRequestDetails } from './request-detail-context';
+import {CommunicationCategoryCenter} from './CommunicationCategoryCenter';
+import {PortalTabbedLayout} from './PortalTabbedLayout';
 
 export function Communications({ admin = false }: { admin?: boolean }) {
  const preview = usePortalPreview(), list = useServerFn(listCommunicationHistory), getPreview = useServerFn(previewMyTripCommunications), open = useRequestDetails();
  const [search, setSearch] = useState(''), [state, setState] = useState('all'), [selected, setSelected] = useState<string | null>(null);
- const history = usePortalQuery({ queryKey: ['communication-history', admin], queryFn: () => list({ data: { admin } }), enabled: !preview.active });
- const prepared = usePortalQuery({ queryKey: ['communication-previews'], queryFn: () => getPreview(), enabled: !admin && !preview.active });
- const rows = (history.data ?? []).filter(row => (state === 'all' || row.evidence.state === state) && [row.evidence.reference,row.evidence.tripId,row.evidence.invoiceId,row.evidence.workspaceId,row.evidence.category,row.createdAt].filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase()));
+ const [tab,setTab]=useState<'activity'|'email'|'suppressed'|'failed'|'templates'|'readiness'>('activity');
+ const history = usePortalQuery({ queryKey: ['communication-history', admin], queryFn: () => list({ data: { admin } }) });
+ const prepared = usePortalQuery({ queryKey: ['communication-previews'], queryFn: () => getPreview(), enabled: !admin });
+ const rows = (history.data ?? []).filter(row => (tab!=='suppressed'||row.evidence.state==='suppressed')&&(tab!=='failed'||row.evidence.state==='failed')&&(tab!=='email'||row.evidence.channel==='email')&&(state === 'all' || row.evidence.state === state) && [row.evidence.reference,row.evidence.tripId,row.evidence.invoiceId,row.evidence.workspaceId,row.evidence.category,row.createdAt].filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase()));
  const previews = prepared.data ?? [];
  return <div className="min-w-0 space-y-5">
+  {admin&&<PortalTabbedLayout label="Communications controls" value={tab} onChange={setTab} options={[{value:'activity',label:'In-app activity'},{value:'email',label:'Email preparation'},{value:'suppressed',label:'Suppressed'},{value:'failed',label:'Failed preparation'},{value:'templates',label:'Template previews'},{value:'readiness',label:'Category readiness'}]}>{(tab==='templates'||tab==='readiness')&&<CommunicationCategoryCenter/>}</PortalTabbedLayout>}
   <div className="ds-status-yellow flex items-start gap-3 rounded-ds-sm p-3"><Bell className="size-5 shrink-0"/><div><p className="ds-label">DELIVERY OFF · PREVIEW ONLY</p><p className="ds-caption">Email, reminders and scheduled delivery are not active. Payment and PDF delivery remain unavailable.</p></div></div>
   <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]"><DsField label="Search event, trip, invoice, account, category or date">{p=><DsInput {...p} value={search} onChange={e=>setSearch(e.target.value)}/>}</DsField><DsField label="Delivery state">{p=><DsSelect {...p} value={state} onChange={e=>setState(e.target.value)}><option value="all">All states</option>{['prepared','suppressed','failed','canceled','not_configured','sent','delivered'].map(s=><option key={s} value={s}>{s.replaceAll('_',' ')}</option>)}</DsSelect>}</DsField></div>
   {!!history.error && <p role="alert" className="ds-status-red rounded-ds-sm p-3">Communication history unavailable.</p>}

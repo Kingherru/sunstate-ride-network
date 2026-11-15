@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import { toast } from "sonner";
 import { PROVIDER_DEMO_FIXTURES, providerDemoKeyed } from "./demo-fixtures/provider-demo";
 import {contractorFixtures,CONTRACTOR_DEMO_ENABLED} from './demo-fixtures/contractor-demo';
+import {PILOT_CHECKS} from '@/lib/pilot-completion-rules';
 import { useMutation, useQuery, type UseMutationOptions, type UseMutationResult, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query";
 
 /** Shared state for Master-Admin portal previews: which kind of portal is
@@ -29,6 +30,11 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'pilot-checklist':PILOT_CHECKS.map((label,i)=>({label,ready:![0,1,4,6,7,8,12,13].includes(i)})),
+  'scoped-pilot':{enabled:false,emergencyStop:false,level:'read',workspaces:[{id:'synthetic-workspace',display_name:'Synthetic scoped provider',mfn_id:'MFN-A-DEMO'}],services:['ambulatory']},
+  'offer-watermarks':[{id:'00000000-0000-4000-8000-000000000021',revision:2,unread:true}],
+  'communication-history':[{id:'synthetic-notice',title:'Synthetic reminder suppressed',createdAt:'2026-11-15T04:00:00Z',evidence:{reference:'MFN-R-DEMO',workspaceId:'synthetic-workspace',recipientId:'synthetic-recipient',tripId:null,requestId:'synthetic-request',category:'day_before',templateVersion:'communications-2026-11-15',channel:'email',state:'suppressed',reason:'Approved reminder timing required',dedupeKey:'synthetic-reminder-1',version:'1',scheduledAt:null,timezone:'America/Chicago',policyBasis:'explicit linked patient',deliveryEnabled:false}}],
+  'communication-previews':[{requestId:'synthetic-request',reference:'MFN-R-DEMO',provider:'Synthetic Transportation',templateVersion:'communications-2026-11-15',status:'Approved',timezone:'America/Chicago',reminders:[{type:'day_before',state:'suppressed',reason:'reminder_timing_not_configured',scheduledAt:null,timezone:'America/Chicago'}],content:{pickupDate:'2026-11-20',pickupTime:'09:00',pickupAddress:'Synthetic pickup',dropoffAddress:'Synthetic destination',appointmentTime:'10:00',returnPickupTime:null,dispatchPhone:null,driverName:'Synthetic Driver',driverPhone:null,disclaimer:'Synthetic preview only — no reminder prepared or sent.'},deliveryEnabled:false}],
   'nearby-settings':{nearby_opt_in:false,matching_settings:{state:'FL',region:'Central Florida',publicLabel:'Orlando area (Synthetic)',displayName:'Synthetic Transportation',radius:50,timezone:'America/New_York',days:[1,2,3,4,5],start:'08:00',end:'18:00',availability:'paused',acceptingTrips:false},matching_consent:{},visible:false},
   'nearby-wave-review':{radius:20,eligible:2,excluded:{'Nearby consent off':3,'Eligible vehicle required':1},enabled:false,candidates:[{workspace:'synthetic-candidate',score:116,explanation:['Serves pickup city','Eligible vehicle and driver','Operating during requested time','Approximately 12 miles from pickup']}]},
   'network-access':{entitled:true,workspaceId:'preview-ws',contractor:false,canPurchase:true,baseActive:true},

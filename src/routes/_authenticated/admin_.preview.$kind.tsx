@@ -30,6 +30,9 @@ import { DsButton } from '@/components/ds/controls';
 import {PatientTrips} from '@/components/portal/PatientTrips';
 import {NewTripWorkspace} from '@/components/portal/NewTripWorkspace';
 import {ContactsPayersPanel} from '@/components/dashboard/ContactsPayersPanel';
+import {Communications} from '@/components/portal/Communications';
+import {PilotChecklist,ScopedPilot} from '@/components/network/PilotChecklist';
+import {PersonalSettings} from '@/components/portal/PersonalSettings';
 function PreviewPeople(){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'|'accepted'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab}/></Panel>;}
 
 type Kind = "provider" | "customer";
@@ -115,6 +118,10 @@ function Unavailable({ what }: { what: string }) {
 /** Real portal components, fed by preview fixtures (usePortalQuery) and with
  *  every write blocked (usePortalMutation). No real account is impersonated. */
 function realPage(kind: Kind, page: string, accountType: string): React.ReactNode {
+  if(page==='pilot-read'||page==='pilot-manage')return <Panel><ScopedPilot/><PilotChecklist/></Panel>;
+  if(page==='communications')return <Panel><Communications admin/></Panel>;
+  if(page==='reminders')return <Panel><Communications/></Panel>;
+  if(page==='notification-settings')return <Panel><PersonalSettings section="notifications"/></Panel>;
   if (kind === "provider") {
     switch (page) {
       case "trips": return <Panel><ProviderTrips userId={PREVIEW_USER} /></Panel>;

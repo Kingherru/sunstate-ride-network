@@ -5127,8 +5127,10 @@ export type Database = {
       provider_trip_offers: {
         Row: {
           accepted_by: string | null
+          activity_revision: number
           amount_cents: number
           approved_by: string | null
+          conversation_id: string | null
           created_at: string
           decline_reason: string | null
           distribution_id: string
@@ -5143,8 +5145,10 @@ export type Database = {
         }
         Insert: {
           accepted_by?: string | null
+          activity_revision?: number
           amount_cents: number
           approved_by?: string | null
+          conversation_id?: string | null
           created_at?: string
           decline_reason?: string | null
           distribution_id: string
@@ -5159,8 +5163,10 @@ export type Database = {
         }
         Update: {
           accepted_by?: string | null
+          activity_revision?: number
           amount_cents?: number
           approved_by?: string | null
+          conversation_id?: string | null
           created_at?: string
           decline_reason?: string | null
           distribution_id?: string
@@ -5174,6 +5180,13 @@ export type Database = {
           wave_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "provider_trip_offers_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "provider_trip_offers_distribution_id_fkey"
             columns: ["distribution_id"]
@@ -6545,16 +6558,19 @@ export type Database = {
       tab_view_marks: {
         Row: {
           last_viewed_at: string
+          offer_revision: number | null
           tab_key: string
           user_id: string
         }
         Insert: {
           last_viewed_at?: string
+          offer_revision?: number | null
           tab_key: string
           user_id: string
         }
         Update: {
           last_viewed_at?: string
+          offer_revision?: number | null
           tab_key?: string
           user_id?: string
         }
@@ -6723,6 +6739,7 @@ export type Database = {
           payment_responsibility_ack_by: string | null
           pickup_area: string
           pickup_date: string
+          pickup_geography_evidence: Json
           pickup_lat: number
           pickup_lng: number
           pickup_time: string
@@ -6778,6 +6795,7 @@ export type Database = {
           payment_responsibility_ack_by?: string | null
           pickup_area: string
           pickup_date: string
+          pickup_geography_evidence?: Json
           pickup_lat: number
           pickup_lng: number
           pickup_time: string
@@ -6833,6 +6851,7 @@ export type Database = {
           payment_responsibility_ack_by?: string | null
           pickup_area?: string
           pickup_date?: string
+          pickup_geography_evidence?: Json
           pickup_lat?: number
           pickup_lng?: number
           pickup_time?: string
@@ -7220,6 +7239,7 @@ export type Database = {
           max_candidates: number
           max_radius: number
           pilot_config: Json
+          pilot_safety_evidence: Json
           response_minutes: number
           updated_at: string
           updated_by: string | null
@@ -7233,6 +7253,7 @@ export type Database = {
           max_candidates?: number
           max_radius?: number
           pilot_config?: Json
+          pilot_safety_evidence?: Json
           response_minutes?: number
           updated_at?: string
           updated_by?: string | null
@@ -7246,6 +7267,7 @@ export type Database = {
           max_candidates?: number
           max_radius?: number
           pilot_config?: Json
+          pilot_safety_evidence?: Json
           response_minutes?: number
           updated_at?: string
           updated_by?: string | null
@@ -9520,6 +9542,10 @@ export type Database = {
         Args: { _confirmed: boolean; _version: string }
         Returns: undefined
       }
+      confirm_pilot_geography: {
+        Args: { _county: string; _distribution: string; _reason: string }
+        Returns: undefined
+      }
       confirm_schedule_email_preview: {
         Args: { _drivers: string[]; _end: string; _start: string }
         Returns: string
@@ -9577,7 +9603,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      current_offer_revision: {
+        Args: { _expires: string; _revision: number; _status: string }
+        Returns: number
+      }
       customer_quote_fingerprint: { Args: { _form: Json }; Returns: string }
+      customer_selected_request_export: {
+        Args: { _format: string; _ids: string[] }
+        Returns: Json
+      }
       deactivate_account_connection: {
         Args: { _confirmed: boolean; _id: string; _ws: string }
         Returns: undefined
@@ -9770,6 +9804,7 @@ export type Database = {
         Returns: string
       }
       fl_zip_zone_code: { Args: { _zip: string }; Returns: string }
+      florida_county_region: { Args: { _county: string }; Returns: string }
       gen_webhook_secret: { Args: never; Returns: string }
       get_provider_verification_details: {
         Args: { _workspace: string }
@@ -10066,6 +10101,7 @@ export type Database = {
         Args: { _ids?: string[] }
         Returns: number
       }
+      mark_offers_read: { Args: { _items: Json }; Returns: undefined }
       matching_pilot_config: { Args: never; Returns: Json }
       move_to_dlq: {
         Args: {
@@ -10315,9 +10351,14 @@ export type Database = {
         Returns: boolean
       }
       notify_expiring_unconfirmed_reservations: { Args: never; Returns: number }
+      offer_read_state: { Args: { _ids: string[] }; Returns: Json }
       offer_trip_priority: {
         Args: { _provider_user_id: string; _trip_id: string }
         Returns: undefined
+      }
+      open_addressed_offer_conversation: {
+        Args: { _offer: string }
+        Returns: Json
       }
       open_dispatch_thread: { Args: { _zone_id?: string }; Returns: string }
       open_zone_manager_thread: { Args: { _zone_id: string }; Returns: string }
@@ -10408,7 +10449,20 @@ export type Database = {
         }
         Returns: Json
       }
+      pilot_activation_checklist: { Args: { _config?: Json }; Returns: Json }
+      pilot_geography_match: {
+        Args: { _counties: string[]; _distribution: string; _region: string }
+        Returns: string
+      }
+      pilot_local_instant: {
+        Args: { _date: string; _time: string; _zone: string }
+        Returns: string
+      }
       pilot_preview_wave: { Args: { _distribution: string }; Returns: Json }
+      pilot_provider_hours: {
+        Args: { _distribution: string; _settings: Json }
+        Returns: boolean
+      }
       pilot_scope_reason: {
         Args: { _distribution: string; _receiver?: string }
         Returns: string
@@ -10687,6 +10741,7 @@ export type Database = {
         Args: { _details: Json; _ws: string }
         Returns: undefined
       }
+      scoped_matching_pilot: { Args: never; Returns: Json }
       search_business_identities: {
         Args: { _audience: string; _search?: string }
         Returns: {

@@ -109,7 +109,7 @@ export function demoOfferDetail(id: string): OfferSafeDetail {
   const o = [...DEMO_OFFERS, ...DEMO_ACTIVITY.flatMap((a) => a.offers)].find((x) => x.id === id) ?? OFFER_IN;
   const open = ["pending", "countered", "revised"].includes(o.status);
   return {
-    offer_version:iso(-H),sender_business:'Bayshore Mobility Co. (Demo)',match_explanation:['Service area match','Eligible vehicle and driver','Explicit operating time reviewed'],pilot_reason:id===uuid(27)?'Pilot emergency stop':id===uuid(25)?'Eligibility evidence unavailable':id===uuid(26)?'Another acceptance won — offer unavailable':undefined,
+    activity_revision:2,can_message:true,pickup_timezone:id===uuid(22)?'America/Chicago':'America/New_York',offer_version:iso(-H),sender_business:'Bayshore Mobility Co. (Demo)',match_explanation:[id===uuid(22)?'Region service-area match':'County service-area match','Eligible vehicle and driver','Explicit operating time reviewed'],pilot_reason:id===uuid(27)?'Pilot emergency stop':id===uuid(25)?'Eligibility evidence unavailable':id===uuid(26)?'Assignment rolled back — offer unavailable':undefined,
     offer_mfn_id: o.mfn_id, status: o.status, viewer: "receiver", distribution_stage_miles: 20, distribution_status: o.status === "accepted" ? "provider_selected" : "offers_sent",
     stages: [{ radius_miles: 20, sent_at: iso(-4 * H) }],
     versions: [{ side: "sender", action: "offered", amount_cents: o.amount_cents, created_at: iso(-4 * H) }, ...(o.status === "countered" ? [{ side: "receiver", action: "countered", amount_cents: o.amount_cents + 1300, created_at: iso(-2 * H) }] : [])],

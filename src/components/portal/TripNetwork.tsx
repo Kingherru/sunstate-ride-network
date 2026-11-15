@@ -2,7 +2,7 @@ import {CheckoutAcknowledgment} from '@/components/payments/CheckoutAcknowledgme
 import {currentCheckoutConsent} from '@/lib/payment-policy';
 import {getReferralFundingPreparation} from '@/lib/trip-invoices.functions';
 import { StatusPill } from "@/components/ds/status";
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -15,6 +15,10 @@ import { DetailOverlayFrame } from './DetailOverlayFrame';
 import { useRequestDetails } from './request-detail-context';
 import { DetailSection } from './DetailSection';
 import {WaveReview} from '@/components/network/WaveReview';
+import {readOfferWatermarks,markOffersRead,openOfferConversation} from '@/lib/trip-network.functions';
+import {usePortalPreview} from './preview-data';
+import {WorkspaceMessaging} from '@/components/messaging/WorkspaceMessaging';
+import {recoveryAction} from '@/lib/pilot-completion-rules';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
 const label = (s: string) => s.replaceAll('_', ' ');
@@ -40,6 +44,10 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
   const historyFn=useServerFn(getOfferHistory);
   const history=usePortalQuery({queryKey:['offer-history',offer.id],queryFn:()=>historyFn({data:{offer_id:offer.id}})});
   const safe = useOfferDetail(offer.id); const sd = safe.data as OfferSafeDetail | undefined;
+  const preview=usePortalPreview(),mark=useServerFn(markOffersRead),openConversation=useServerFn(openOfferConversation),qc=useQueryClient();
+  const readRevision=useRef<number|null>(null);
+  const [conversation,setConversation]=useState<{conversationId:string;workspaceId:string}|null>(null),[messageBusy,setMessageBusy]=useState(false);
+  useEffect(()=>{if(preview.active||!sd?.activity_revision||readRevision.current===sd.activity_revision)return;readRevision.current=sd.activity_revision;mark({data:{items:[{id:offer.id,revision:sd.activity_revision}]}}).then(()=>qc.invalidateQueries({queryKey:['offer-watermarks']})).catch(()=>{readRevision.current=null;toast.error('Offer loaded, but read marker was not saved.');});},[sd?.activity_revision,offer.id,preview.active,mark,qc]);
   const can = sd?.actions ?? { accept: false, counter: false, decline: false };
   const [mode, setMode] = useState<'review' | 'counter' | 'decline' | 'revise'>('review');
   const [amount, setAmount] = useState(String(offer.amount_cents / 100));
@@ -64,7 +72,7 @@ function OfferResponse({ offer, source = false, onClose }: { offer: NetworkOffer
           {sd.events.map(e => <p key={e.created_at + e.event_type} className="ds-support text-ds-muted">{label(e.event_type)} · {new Date(e.created_at).toLocaleString()}</p>)}</DetailSection>
       </div>}
       <p className="ds-body rounded-ds-sm ds-status-yellow px-3 py-2 font-semibold">{PAYMENT_RESPONSIBILITY_WARNING}</p>
-      {sd&&<DetailSection title="Matching & pilot"><p className="ds-body">{sd.sender_business??'Sender business unavailable'}</p><p className="ds-support">{sd.match_explanation?.join(' · ')||'Service area match'}</p>{sd.pilot_reason&&<p className="ds-status-yellow p-2">{sd.pilot_reason}</p>}<DsButton variant="secondary" disabled title="Pre-acceptance messaging authorization is not available. Use negotiation notes.">Message Sender — unavailable before acceptance</DsButton></DetailSection>}
+      {sd&&<DetailSection title="Matching & pilot"><p className="ds-body">{sd.sender_business??'Sender business unavailable'}</p><p className="ds-support">{sd.match_explanation?.join(' · ')||'Service area match'} · {sd.pickup_timezone??'Timezone review required'}</p>{sd.pilot_reason&&<p className="ds-status-yellow p-2">{sd.pilot_reason}</p>}<DsButton variant="secondary" disabled={!sd.can_message&&!preview.active||messageBusy} title={!sd.can_message?'Workspace messaging permission required':undefined} onClick={async()=>{if(preview.active){setConversation({conversationId:'demo-p1',workspaceId:'preview-ws'});return;}setMessageBusy(true);try{setConversation(await openConversation({data:{offerId:offer.id}}));}catch(e){toast.error(e instanceof Error?e.message:'Conversation unavailable.');}finally{setMessageBusy(false);}}}>Message {source?'Provider':'Sender'}</DsButton>{conversation&&<WorkspaceMessaging mode="portal" workspaceId={conversation.workspaceId} initialConversationId={conversation.conversationId}/>}<p className="ds-support mt-3">{recoveryAction(sd.events.at(-1)?.event_type??sd.status)}</p></DetailSection>}
       <p className="ds-support text-ds-muted">Passenger identity and exact trip details remain protected until assignment.</p>
       <DetailSection tone="notes" title="Negotiation history"><details className="ds-history"><summary className="ds-label cursor-pointer">View history</summary>{(history.data??[]).map(h=><p className="ds-support mt-2" key={h.id}>{h.side} · {label(h.action)}{h.amount_cents ? <> · <span className="portal-money">{money(h.amount_cents)}</span></> : ''} · {h.business_note||'—'} · {new Date(h.created_at).toLocaleString()}</p>)}</details></DetailSection>
       {mode === 'review' ? <div className="flex flex-wrap gap-2 border-t-2 border-ds-primary/20 pt-4">
@@ -84,12 +92,17 @@ export function ProviderNetworkOffers() {
   const list = useServerFn(listNetworkOffers);
   const q = usePortalQuery({ queryKey: ['network-offers'], queryFn: () => list() });
   const [review, setReview] = useState<NetworkOffer | null>(null);
+  const read=useServerFn(readOfferWatermarks),mark=useServerFn(markOffersRead),preview=usePortalPreview();
+  const ids=(q.data??[]).map(o=>o.id);
+  const watermarks=usePortalQuery({queryKey:['offer-watermarks',ids],queryFn:()=>read({data:{ids}}),enabled:ids.length>0});
+  const markAll=usePortalMutation({mutationFn:()=>mark({data:{items:(watermarks.data??[]).map(s=>({id:s.id,revision:s.revision}))}}),onSuccess:()=>watermarks.refetch(),onError:(e:Error)=>toast.error(e.message)});
   return <div className="space-y-4">
+    <DsButton variant="secondary" disabled={preview.active||!watermarks.data?.some(s=>s.unread)||markAll.isPending} onClick={()=>markAll.mutate()}>Mark visible offers as read</DsButton>
     {q.isLoading && <p className="ds-body">Loading offers…</p>}
     {!!q.error && <p role="alert" className="text-ds-error">Could not load offers.</p>}
     {!q.isLoading && !q.error && !q.data?.length && <p className="ds-body text-ds-muted py-6">No offers addressed to your business yet.</p>}
     <div className="grid gap-4 lg:grid-cols-2">{(q.data ?? []).map(o => <article key={o.id} role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }} className="cursor-pointer rounded-ds bg-ds-surface border border-ds-border p-5 space-y-3 focus-visible:outline-2 focus-visible:outline-ds-focus">
-      <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span><span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
+      <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span>{(preview.active||watermarks.data?.find(s=>s.id===o.id)?.unread)&&<StatusPill status="Unread / changed" tone="neutral"/>}<span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
       <h3 className="ds-subheading text-ds-primary">{o.pickup_area} → {o.destination_area}</h3>
       <p className="ds-support font-mono">{o.source_mfn_id}</p><p className="ds-body">{o.pickup_date} · {o.pickup_time.slice(0,5)} · {label(o.trip_type)}</p>
       <p className="ds-body">{label(o.service_type)} · {o.capability}{` · ${o.estimated_miles != null ? `Approximate route: ${o.estimated_miles} miles` : 'Service area match'}`}</p>

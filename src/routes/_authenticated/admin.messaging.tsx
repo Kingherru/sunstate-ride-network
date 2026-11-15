@@ -13,6 +13,7 @@ import { AdminDisputeQueue } from "@/components/admin/AdminDisputeQueue";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
 import { Communications } from '@/components/portal/Communications';
+import {ScopedPilot} from '@/components/network/PilotChecklist';
 
 type Tab = "messages" | "requests" | "business" | "contacts" | "communications";
 const TABS: Tab[] = ["messages", "requests", "business", "contacts", "communications"];
@@ -49,6 +50,7 @@ function AdminMessaging() {
           <>
             <WorkspaceMessaging mode="admin" readOnly={readOnly} />
             <div className="mt-8 border-t border-ds-border pt-6">
+              <ScopedPilot />
               <h2 className="ds-subheading mb-3 uppercase text-ds-primary">Network and referral activity</h2>
               <DistributionActivity admin />
               <h2 className="ds-subheading mt-8 mb-3 uppercase text-ds-primary">Settlements, holds and disputes (read-only)</h2>
