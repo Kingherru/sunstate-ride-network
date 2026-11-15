@@ -7,6 +7,7 @@ import { getMyNetworkProfile, saveNetworkProfile } from "@/lib/facility-provider
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { DsButton, DsField, DsInput } from '@/components/ds/controls';
 import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
+import {NearbySettings} from './NearbySettings';
 
 function ListEditor({ label, values, onChange, placeholder }: { label: string; values: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
   const [draft, setDraft] = useState("");
@@ -137,7 +138,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
   }
 
   return (
-    <form onSubmit={onSave} className="space-y-6 max-w-3xl">
+    <div className="space-y-5"><form onSubmit={onSave} className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="ds-subheading uppercase text-ds-primary">{section === 'contact' ? 'Contact information' : section === 'services' ? 'Services & operating hours' : section === 'areas' ? 'Service areas' : section === 'operations' ? 'Services, hours & areas' : 'Network profile'}</h2>
@@ -202,6 +203,6 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
       <DsButton type="submit" size="sm" disabled={busy || preview.active}>
         {busy ? "Saving…" : "Save network profile"}
       </DsButton>
-    </form>
+    </form>{onboarding&&<NearbySettings workspaceId={workspaceId} onboarding/>}</div>
   );
 }

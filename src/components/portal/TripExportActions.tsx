@@ -1,0 +1,7 @@
+import {useState} from 'react';
+import {toast} from 'sonner';
+import {DsButton} from '@/components/ds/controls';
+import {exportTable,type ExportFormat} from '@/lib/table-export';
+import {usePortalPreview} from './preview-data';
+export type SafeTripExport={reference:string;date:string;time:string;pickup:string;destination:string;service:string;status:string;provider?:string};
+export function TripExportActions({rows}:{rows:SafeTripExport[]}){const [busy,setBusy]=useState(false);const preview=usePortalPreview();async function download(format:ExportFormat){setBusy(true);try{await exportTable(rows,['reference','date','time','pickup','destination','service','status','provider'].map(k=>({label:k.replace(/^./,c=>c.toUpperCase()),value:(r:SafeTripExport)=>r[k as keyof SafeTripExport]??''})),preview.active?'Synthetic trip report':'Authorized trip report',format,preview.active?'synthetic-trip-report':'mfn-trip-report');}catch{toast.error('Report unavailable.');}finally{setBusy(false);}}return <div className="flex flex-wrap gap-2">{(['csv','xlsx','pdf'] as const).map(f=><DsButton key={f} variant="secondary" size="sm" disabled={!rows.length||busy} onClick={()=>download(f)}>Export {f.toUpperCase()}</DsButton>)}</div>;}

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { rideRequestSchema, deliveryRequestSchema } from "@/lib/request-schemas";
 import { CSV_MAX_ROWS } from "@/lib/csv-import";
+import {tripDuplicateKey} from './nearby-matching-rules';
 
 /**
  * Upload Center. Uploads only ever create editable trip drafts owned by the
@@ -64,10 +65,21 @@ export const createImportDrafts = createServerFn({ method: "POST" })
       for(const k of ['selectedProviderWorkspaceId','patientWorkspaceId','confirmedProviderDriverId','confirmedDriverEndTime','customerQuoteDraftId','customerQuoteId','payerId','coordinationContactId'])delete (payload as Record<string,unknown>)[k];
       return {row:r.row,data:payload,summary:summarize(payload)};
     });
+    const {data:prior,error:priorError}=await context.supabase.from('ride_requests').select('pickup_date,pickup_time,pickup_address,dropoff_address,patient_first_name,patient_last_name,transport_type,trip_kind,saved_patient_id').eq('workspace_id',ws.workspaceId).limit(5000);
+    if(priorError)throw new Error('Authorized duplicate history unavailable; no drafts created.');
+    const keys=new Set((prior??[]).map(p=>tripDuplicateKey({requestCategory:p.trip_kind==='medical_delivery'?'medical_delivery':'passenger',pickupDate:p.pickup_date,pickupTime:p.pickup_time,pickupAddress:p.pickup_address,dropoffAddress:p.dropoff_address,patientFirstName:p.patient_first_name,patientLastName:p.patient_last_name,transportType:p.transport_type,savedPatientId:p.saved_patient_id})));
+    for(const row of rows){const key=tripDuplicateKey(row.data);if(keys.has(key))throw new Error(`Row ${row.row} matches an authorized prior trip/request. Review and remove it; no drafts created.`);keys.add(key);}
     const {data:result,error}=await context.supabase.rpc('persist_import_drafts',{_workspace:ws.workspaceId,_key:data.idempotencyKey,_kind:data.kind,_source:data.sourceType,_rows:rows,_problems:data.problems,...(data.uploadId?{_upload:data.uploadId}:{})});
     if(error)throw new Error('Draft import unavailable. Recheck original, account and rows. No partial import was saved.');
     return result as {duplicateFile:boolean;created:number;total:number;failed:number};
   });
+
+export const reviewImportHistory=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({rows:z.array(z.object({row:z.number().int(),data:z.record(z.string(),z.unknown())})).max(CSV_MAX_ROWS)}).parse(i)).handler(async({data,context})=>{
+ const {supabaseAdmin}=await import('@/integrations/supabase/client.server');const {resolveUploadWorkspace}=await import('@/lib/uploads.server');const ws=await resolveUploadWorkspace(supabaseAdmin,context.userId);
+ const {data:prior,error}=await context.supabase.from('ride_requests').select('pickup_date,pickup_time,pickup_address,dropoff_address,patient_first_name,patient_last_name,transport_type,trip_kind,saved_patient_id').eq('workspace_id',ws.workspaceId).limit(5000);if(error)throw new Error('Duplicate history unavailable.');
+ const keys=new Set((prior??[]).map(p=>tripDuplicateKey({requestCategory:p.trip_kind==='medical_delivery'?'medical_delivery':'passenger',pickupDate:p.pickup_date,pickupTime:p.pickup_time,pickupAddress:p.pickup_address,dropoffAddress:p.dropoff_address,patientFirstName:p.patient_first_name,patientLastName:p.patient_last_name,transportType:p.transport_type,savedPatientId:p.saved_patient_id})));
+ return {duplicates:data.rows.filter(r=>keys.has(tripDuplicateKey(r.data))).map(r=>r.row)};
+});
 
 /** Safe history + opportunistic cleanup of this account's expired originals. */
 export const listMyUploads = createServerFn({ method: "GET" })

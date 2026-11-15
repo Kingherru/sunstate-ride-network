@@ -4070,7 +4070,9 @@ export type Database = {
       provider_contacts: {
         Row: {
           active: boolean
+          address: string
           billing_allowed: boolean
+          city: string
           company_name: string | null
           contact_roles: string[]
           contact_type: string
@@ -4091,13 +4093,17 @@ export type Database = {
           payer_id: string | null
           phone: string | null
           relationship: string | null
+          state: string
           updated_at: string
           workspace_id: string | null
           workspace_mfn_id: string | null
+          zip: string
         }
         Insert: {
           active?: boolean
+          address?: string
           billing_allowed?: boolean
+          city?: string
           company_name?: string | null
           contact_roles?: string[]
           contact_type: string
@@ -4118,13 +4124,17 @@ export type Database = {
           payer_id?: string | null
           phone?: string | null
           relationship?: string | null
+          state?: string
           updated_at?: string
           workspace_id?: string | null
           workspace_mfn_id?: string | null
+          zip?: string
         }
         Update: {
           active?: boolean
+          address?: string
           billing_allowed?: boolean
+          city?: string
           company_name?: string | null
           contact_roles?: string[]
           contact_type?: string
@@ -4145,9 +4155,11 @@ export type Database = {
           payer_id?: string | null
           phone?: string | null
           relationship?: string | null
+          state?: string
           updated_at?: string
           workspace_id?: string | null
           workspace_mfn_id?: string | null
+          zip?: string
         }
         Relationships: [
           {
@@ -4624,7 +4636,10 @@ export type Database = {
           location_county: string | null
           location_zip: string | null
           looking_for_work: boolean
+          matching_consent: Json
+          matching_settings: Json
           medical_delivery: boolean
+          nearby_opt_in: boolean
           public_center_lat: number | null
           public_center_lng: number | null
           seeking_contractors: boolean
@@ -4661,7 +4676,10 @@ export type Database = {
           location_county?: string | null
           location_zip?: string | null
           looking_for_work?: boolean
+          matching_consent?: Json
+          matching_settings?: Json
           medical_delivery?: boolean
+          nearby_opt_in?: boolean
           public_center_lat?: number | null
           public_center_lng?: number | null
           seeking_contractors?: boolean
@@ -4698,7 +4716,10 @@ export type Database = {
           location_county?: string | null
           location_zip?: string | null
           looking_for_work?: boolean
+          matching_consent?: Json
+          matching_settings?: Json
           medical_delivery?: boolean
+          nearby_opt_in?: boolean
           public_center_lat?: number | null
           public_center_lng?: number | null
           seeking_contractors?: boolean
@@ -5110,6 +5131,7 @@ export type Database = {
           distribution_id: string
           expires_at: string
           id: string
+          match_explanation: Json
           mfn_id: string
           provider_workspace_id: string
           status: string
@@ -5125,6 +5147,7 @@ export type Database = {
           distribution_id: string
           expires_at: string
           id?: string
+          match_explanation?: Json
           mfn_id?: string
           provider_workspace_id: string
           status?: string
@@ -5140,6 +5163,7 @@ export type Database = {
           distribution_id?: string
           expires_at?: string
           id?: string
+          match_explanation?: Json
           mfn_id?: string
           provider_workspace_id?: string
           status?: string
@@ -7184,6 +7208,9 @@ export type Database = {
         Row: {
           automatic_expansion: boolean
           id: boolean
+          max_candidates: number
+          max_radius: number
+          response_minutes: number
           updated_at: string
           updated_by: string | null
           wave_100_delay_minutes: number | null
@@ -7193,6 +7220,9 @@ export type Database = {
         Insert: {
           automatic_expansion?: boolean
           id?: boolean
+          max_candidates?: number
+          max_radius?: number
+          response_minutes?: number
           updated_at?: string
           updated_by?: string | null
           wave_100_delay_minutes?: number | null
@@ -7202,6 +7232,9 @@ export type Database = {
         Update: {
           automatic_expansion?: boolean
           id?: boolean
+          max_candidates?: number
+          max_radius?: number
+          response_minutes?: number
           updated_at?: string
           updated_by?: string | null
           wave_100_delay_minutes?: number | null
@@ -10111,6 +10144,15 @@ export type Database = {
       network_list_payments: { Args: never; Returns: Json }
       network_list_settlements: { Args: never; Returns: Json }
       network_mark_attention: { Args: never; Returns: number }
+      network_matching_candidates: {
+        Args: { _distribution: string; _radius: number }
+        Returns: {
+          excluded: string
+          explanation: Json
+          score: number
+          workspace: string
+        }[]
+      }
       network_notify: {
         Args: {
           _important?: boolean
@@ -10134,6 +10176,10 @@ export type Database = {
       }
       network_prepare_payment_attempt: {
         Args: { _env: string; _method: string; _settlement: string }
+        Returns: Json
+      }
+      network_preview_matching: {
+        Args: { _distribution: string }
         Returns: Json
       }
       network_public_service_centers: {
@@ -10512,6 +10558,15 @@ export type Database = {
         Args: { _settings: Json; _ws: string }
         Returns: undefined
       }
+      save_nearby_settings: {
+        Args: {
+          _enabled: boolean
+          _settings: Json
+          _source: string
+          _ws: string
+        }
+        Returns: undefined
+      }
       save_notification_settings: {
         Args: { _email: boolean; _in_app: boolean }
         Returns: undefined
@@ -10745,6 +10800,10 @@ export type Database = {
           issued_at: string
           valid: boolean
         }[]
+      }
+      withdraw_nearby_distribution: {
+        Args: { _distribution: string }
+        Returns: undefined
       }
       workspace_role_of: {
         Args: { _uid: string; _ws: string }

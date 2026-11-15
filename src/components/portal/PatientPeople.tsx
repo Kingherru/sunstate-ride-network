@@ -6,6 +6,7 @@ import {listContacts} from '@/lib/crm.functions';
 import {getAccountConnections} from '@/lib/account-connections.functions';
 import {savePatientPeople} from '@/lib/patient-people.functions';
 import {usePortalPreview,usePortalQuery,previewBlocked} from './preview-data';
+import {FamilySyntheticPreview} from './FamilySyntheticPreview';
 type Links={contactIds:string[];businessIds:string[]};
 export function PatientPeople({patientId,workspaceId,initialLinks,initialPreparation}:{patientId:string;workspaceId:string;initialLinks:Links;initialPreparation?:Record<string,unknown>|null}){
  const preview=usePortalPreview(),save=useServerFn(savePatientPeople),get=useServerFn(getAccountConnections);
@@ -16,7 +17,7 @@ export function PatientPeople({patientId,workspaceId,initialLinks,initialPrepara
  const change=(values:string[],id:string)=>values.includes(id)?values.filter(x=>x!==id):[...values,id];
  async function submit(revoke=false){if(preview.active)return previewBlocked();setBusy(true);try{await save({data:{patientId,links,family:revoke||!enabled?null:{enabled:true,contactId,consentBasis:basis,consentReference:reference,categories:categories as ('upcoming'|'history'|'day_before'|'day_of'|'schedule_change'|'completion')[],fields:fields as ('reference'|'status'|'pickup_date'|'pickup_time')[],recipientConfirmed:recipient,reviewConfirmed:review}}});toast.success(revoke?'Family update consent revoked.':'Relationships saved. Delivery remains off.');setReview(false);}catch(e){toast.error(e instanceof Error?e.message:'Unable to save.');}finally{setBusy(false);}}
  return <section className="portal-business-section"><h3 className="portal-business-heading ds-subheading">Relationships & family updates</h3><div className="portal-business-body space-y-4">
- {initialPreparation&&<p className="ds-support">Saved preparation: {String(initialPreparation.state??'Prepared')} · Consent reference: {String(initialPreparation.consentReference??'Not provided')} · Email confirmation required · Delivery off.</p>}
+ {preview.active&&<FamilySyntheticPreview/>}{initialPreparation&&<p className="ds-support">Saved preparation: {String(initialPreparation.state??'Prepared')} · Consent reference: {String(initialPreparation.consentReference??'Not provided')} · Email confirmation required · Delivery off.</p>}
  <fieldset className="space-y-2"><legend className="ds-label">Authorized contacts</legend>{contacts.data?.filter(c=>c.active&&c.workspace_id===workspaceId).map(c=><DsCheckbox key={c.id} label={c.company_name||`${c.first_name} ${c.last_name}`} checked={links.contactIds.includes(c.id)} onChange={()=>toggle('contactIds',c.id)}/>)}{!contacts.data?.length&&<p className="ds-support">Add a contact in People first.</p>}</fieldset>
  <fieldset className="space-y-2"><legend className="ds-label">Accepted provider / facility connections</legend>{businesses.data?.connections.filter(c=>c.active).map(c=>{const id=c.workspace_a===workspaceId?c.workspace_b:c.workspace_a;return <DsCheckbox key={c.id} label={businesses.data?.names.find(n=>n.id===id)?.display_name??'Connected account'} checked={links.businessIds.includes(id)} onChange={()=>toggle('businessIds',id)}/>;})}</fieldset>
  <DsCheckbox label="Prepare family trip updates" checked={enabled} onChange={e=>{setEnabled(e.target.checked);setReview(false);}}/>

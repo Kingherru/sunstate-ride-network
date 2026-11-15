@@ -1,4 +1,10 @@
 # Florida MVP launch sequence
+## Pass 4X — private matching and import completion
+- [ ] Separate audited directory/nearby choices and shared onboarding/settings matching geography, hours and availability.
+- [ ] Fail-closed deterministic matching preview, existing addressed-wave integration, dedupe and stop gates; automatic offers/waves remain OFF.
+- [ ] Generalized directory proximity filters, safe offer explanations and sender review.
+- [ ] Contact address mapping, visible scoped trip exports, prior-history duplicate checks and populated synthetic family previews.
+- [ ] Read-only matching readiness counts, focused tests and narrow desktop/phone checks; preserve all records and publish/send/payment prohibitions.
 ## Pass 4W — secure resources and restricted launch
 - [x] Secure guide opens/downloads now require exact server-attested live completed/non-refunded evidence on every request, private 60-second signing and minimal audit; in-portal viewer and unmistakable synthetic preview added. Final file/catalog untouched; legacy enrollments fail closed without payment verification.
 - [x] Contact CSV/XLSX/structured-PDF mapping, editable row preview, phone/email validation, file/workspace duplicate review, skip/retain-existing merge, confirmed locked import and CSV/XLSX export audit connected. Originals retain existing seven-day private retention.
