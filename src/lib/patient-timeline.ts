@@ -3,10 +3,10 @@ export type PatientStage = 'Pending' | 'Waiting on Payment' | 'Approved' | 'Adde
 export function patientStage(status: string | null | undefined, invoiceDue = false): PatientStage {
   const s = (status ?? '').toLowerCase();
   if (['canceled','cancelled'].includes(s)) return 'Canceled';
-  if (s === 'declined') return 'Declined';
+  if (['declined','denied','rejected'].includes(s)) return 'Declined';
   if (s === 'completed') return 'Completed';
   if (s === 'needs_attention') return 'Needs Attention';
-  if (invoiceDue) return 'Waiting on Payment';
+  if (invoiceDue || ['waiting_on_payment','payment_pending','awaiting_payment'].includes(s)) return 'Waiting on Payment';
   if (s === 'driver_assigned') return 'Driver Assigned';
   if (['scheduled','dispatched'].includes(s)) return 'Added to Dispatch Schedule';
   if (['approved','confirmed','accepted','reserved','assigned','in_progress'].includes(s)) return 'Approved';

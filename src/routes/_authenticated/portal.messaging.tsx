@@ -19,7 +19,7 @@ function PortalMessaging() {
   const navigate = Route.useNavigate();
   return (
     <>
-      <PageHead title={access.portalKind === 'provider' ? "Provider Network Messaging" : "Messaging"}>In-platform messages between businesses. No email or text messages are sent.</PageHead>
+      <PageHead title="Messaging" />
       <PortalTabbedLayout label="Messaging sections" value={search.tab === 'account' ? 'account' : 'business'} onChange={tab => navigate({ search: prev => ({ ...prev, tab }) })} options={[{ value: 'business', label: 'Business conversations' }, { value: 'account', label: 'Account conversations' }]} >
       <section hidden={search.tab === 'account'} className={`${panelCls} mb-8 p-4 sm:p-6`}>
         <WorkspaceMessaging

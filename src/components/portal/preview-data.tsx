@@ -29,6 +29,8 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'network-access':{entitled:true,workspaceId:'preview-ws',contractor:false,canPurchase:true,baseActive:true},
+  'network-view-counts':{offers:1,activity:1,payments:0,settlements:0,patients:0,providers:0,contractors:0},
   'provider-setup': {provider_subtype:'nemt_business',provider_service_roles:[],isOwner:true,provider_subtype_selected_at:null,pickup_delay_minutes:null,canSelect:false,vehicles:[]},
   'sign-in-preference': {value:null,options:[{to:'/portal',label:'Overview'},{to:'/portal/trips',label:'Trips'},{to:'/portal/fleet',label:'Fleet & Drivers'}]},
   'patient-driver-suggestion': {driverId:'preview-driver-2',preferredDriverId:'preview-driver-2',lastDriverId:'preview-driver-2',source:'preferred',warning:null,options:[{id:'preview-driver-2',name:'Sam Sample (Demo)'}]},

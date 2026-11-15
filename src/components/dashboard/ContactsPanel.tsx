@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { listContacts, upsertContact, deleteContact } from "@/lib/crm.functions";
 import { CONTACT_TYPES } from '@/lib/contact-rules';
 import {DsButton} from '@/components/ds/controls';
+import {Dialog,DialogContent,DialogTitle} from '@/components/ui/dialog';
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
@@ -124,6 +125,7 @@ export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: 
     mobility_notes: contact.mobility_notes ?? "",
     notes: contact.notes ?? "",
     relationship:contact.relationship??'',active:contact.active??true,billing_allowed:contact.billing_allowed??false,coordination_allowed:contact.coordination_allowed??false,
+    contact_roles:contact.contact_roles??[],
   });
   const m = usePortalMutation({
     mutationFn: () => upsertContact({ data: { ...form, payer_id: form.payer_id || null, id: contact.id } }),
@@ -132,11 +134,11 @@ export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: 
   });
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={contact.id?'Edit contact':'New contact'} className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/40 p-4" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()}
+    <Dialog open onOpenChange={open=>{if(!open&&!m.isPending)onClose();}}><DialogContent className="theme-portal max-h-[90dvh] overflow-y-auto !max-w-2xl"><DialogTitle>{contact.id?'Edit contact':'New contact'}</DialogTitle>
+      <form
             onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
             className="grid max-h-[90vh] w-full max-w-2xl gap-3 overflow-auto rounded-sm bg-card p-6 sm:grid-cols-2">
-        <h3 className="text-xl font-extrabold sm:col-span-2">{contact.id ? "Edit contact" : "New contact"}</h3>
+        <fieldset className="space-y-2 sm:col-span-2"><legend className="ds-label text-ds-primary">Roles</legend><div className="grid gap-2 sm:grid-cols-2">{(['family','facility','business','payer','emergency','other'] as const).map(role=><label key={role} className="ds-body flex gap-2"><input type="checkbox" checked={form.contact_roles.includes(role)} onChange={e=>setForm({...form,contact_roles:e.target.checked?[...form.contact_roles,role]:form.contact_roles.filter((r:string)=>r!==role)})}/>{({family:'Family',facility:'Facility Contact',business:'Business Contact',payer:'Payer',emergency:'Emergency Contact',other:'Other'})[role]}</label>)}</div></fieldset>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Type *</span>
           <select required value={form.contact_type} onChange={(e) => setForm({ ...form, contact_type: e.target.value })}
@@ -169,7 +171,7 @@ export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: 
           </DsButton>
         </div>
       </form>
-    </div>
+    </DialogContent></Dialog>
   );
 }
 

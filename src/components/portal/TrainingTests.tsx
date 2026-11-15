@@ -25,13 +25,15 @@ export function TrainingTests() {
   const byCourse = new Map((mine.data ?? []).map((e) => [e.course_id, e]));
   // Each view has one purpose: Available = not yet purchased; Tests to Take = purchased, not started;
   // In Progress = purchased with recorded progress; Completed Tests = certificate earned.
-  const tabs = ['Available', 'Tests to Take', 'In Progress', 'Completed Tests', 'Digital Guides'];
+  const tabs = ['Available Training', 'Tests to Take', 'In Progress', 'Completed Training and Tests', 'Purchased Resources', 'PDFs and Guides', 'Purchase History'];
   const started = (e: { progress?: unknown } | undefined) => typeof e?.progress === 'number' && e.progress > 0;
   const rows = (courses.data ?? []).filter(c => {
     const e = byCourse.get(c.id);
-    if(c.product_kind==='digital_guide')return tab==='Digital Guides';
-    if(tab==='Digital Guides')return false;
-    if (tab === 'Available') return !e;
+    if(tab==='Purchase History')return false;
+    if(tab==='Purchased Resources')return !!e&&c.product_kind==='digital_guide';
+    if(c.product_kind==='digital_guide')return tab==='PDFs and Guides';
+    if(tab==='PDFs and Guides')return false;
+    if (tab === 'Available Training' || tab === 'Available') return !e;
     if (tab === 'Tests to Take') return !!e && e.status !== 'completed' && !started(e);
     if (tab === 'In Progress') return !!e && e.status !== 'completed' && started(e);
     return e?.status === 'completed';
@@ -40,6 +42,7 @@ export function TrainingTests() {
   return (
     <div className="space-y-5">
       <PortalTabbedLayout label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} >
+      {tab==='Purchase History'&&<ul className="divide-y divide-ds-border">{mine.data?.map(e=><li key={e.id} className="py-4"><p className="ds-label text-ds-primary">{e.courses.title}</p><p className="ds-support">{e.status} · {e.purchased_at?new Date(e.purchased_at).toLocaleDateString():'Purchase date not available'}</p></li>)}</ul>}
       {!rows.length && <DsEmpty title={tab === 'Completed Tests' ? 'No completed tests yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
       <div className="grid gap-5 md:grid-cols-2">
       {rows.map((c) => {
@@ -65,7 +68,7 @@ export function TrainingTests() {
               </div>
             )}
             <div className="mt-auto flex flex-wrap gap-3 pt-5">
-              {e && c.product_kind==='digital_guide'?<Link to="/shop/$slug" params={{slug:c.slug}} className={actionCls}>View guide access</Link>: e ? (
+              {e && c.product_kind==='digital_guide'?<><DsButton disabled>PDF access unavailable</DsButton><p className="ds-support">Private delivery and verified purchase revalidation remain inactive.</p></>: e ? (
                 <Link to="/learn/$slug" params={{ slug: c.slug }} onClick={event => { if (preview.active) { event.preventDefault(); previewBlocked(); } }} className={actionCls}>
                   {done ? <><Award className="mr-2 size-4" aria-hidden />View certificate</> : <><PlayCircle className="mr-2 size-4" aria-hidden />Continue course</>}
                 </Link>
@@ -74,7 +77,7 @@ export function TrainingTests() {
                   <ShoppingBag className="mr-2 size-4" aria-hidden />Buy course
                 </DsButton>
               ) : (
-                c.price_id ? <DsButton className={actionCls} onClick={() => cart.add(c, (mine.data ?? []).map(e => e.course_id))} disabled={cart.items.some(i => i.id === c.id)}><ShoppingBag className="size-4" />{cart.items.some(i => i.id === c.id) ? 'In cart' : 'Add to cart'}</DsButton> : <p className="ds-support">Requires product setup</p>
+                <DsButton className={actionCls} onClick={() => cart.add(c, (mine.data ?? []).map(e => e.course_id))} disabled={cart.items.some(i => i.id === c.id)}><ShoppingBag className="size-4" />{cart.items.some(i => i.id === c.id) ? 'In cart' : 'Add to cart'}</DsButton>
               )}
               <Link to="/shop/$slug" params={{ slug: c.slug }} className="ds-label text-ds-link underline">{c.product_kind==='digital_guide'?'Guide details':'Course & test details'}</Link>
             </div>

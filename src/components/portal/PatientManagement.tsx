@@ -9,6 +9,7 @@ import { listSavedPaymentMethods, setPaymentMethodPatient } from '@/lib/saved-pa
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 import {LinkedPatientSelector} from './LinkedPatientSelector';
 import {PreferredDriver} from './PreferredDriver';
+import {PatientPeople} from './PatientPeople';
 
 type F = { key: string; label: string; type?: 'text' | 'date' | 'email' | 'tel' | 'number' | 'textarea'; max?: number };
 const GROUPS: { title: string; fields: F[] }[] = [
@@ -101,6 +102,7 @@ export function PatientManagement() {
   if (editing) return (
     <form onSubmit={submit} className="space-y-5" aria-label="Patient profile">
       <h2 className="ds-subheading uppercase text-ds-primary">{editing.id ? 'Edit patient' : 'Add patient'}</h2>
+      {!privateOnly&&editing.id&&editing.workspace_id&&<PatientPeople patientId={editing.id} workspaceId={editing.workspace_id} initialLinks={editing.relationship_links??{contactIds:[],businessIds:[]}} initialPreparation={editing.family_update_preparation}/>}
       {!privateOnly && <LinkedPatientSelector value={editing.patient_workspace_id} onChange={id=>setEditing({...editing,patient_workspace_id:id})}/>}
       {!privateOnly&&editing.workspace_id&&<PreferredDriver workspaceId={editing.workspace_id} patientId={editing.id} service={editing.mobility==='wheelchair'?'wheelchair':editing.mobility==='stretcher'||editing.mobility==='gurney'?'stretcher':'ambulatory'} value={editing.preferred_driver_id??null} onChange={id=>setEditing({...editing,preferred_driver_id:id})}/>}
       {GROUPS.map(g => <fieldset key={g.title} className="rounded-ds bg-ds-surface-muted p-4 sm:p-5"><legend className="ds-label text-ds-primary px-1">{g.title}</legend>

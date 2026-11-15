@@ -28,7 +28,8 @@ export const listMyNotifications = createServerFn({ method: "GET" })
       .from("notifications")
       .select("id, type, title, body, link, ride_request_id, read_at, created_at", { count: "exact" })
       .eq("user_id", userId)
-      .is('communication', null)
+      .or('communication.is.null,type.eq.accepted_connection')
+      .is('dismissed_at',null)
       .order("created_at", { ascending: false })
       .range(data.offset, data.offset + data.limit - 1);
     if (data.filter === "unread") q = q.is("read_at", null);
@@ -49,7 +50,7 @@ export const markNotificationsRead = createServerFn({ method: "POST" })
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("user_id", userId)
-      .is("communication", null)
+      .or('communication.is.null,type.eq.accepted_connection')
       .in("id", data.ids)
       .is("read_at", null);
     if (error) throw new Error(error.message);
@@ -64,7 +65,7 @@ export const markAllNotificationsRead = createServerFn({ method: "POST" })
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("user_id", userId)
-      .is("communication", null)
+      .or('communication.is.null,type.eq.accepted_connection')
       .is("read_at", null);
     if (error) throw new Error(error.message);
     return { ok: true as const };
@@ -77,7 +78,7 @@ export const deleteNotification = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { error } = await supabase
       .from("notifications")
-      .delete()
+      .update({dismissed_at:new Date().toISOString()})
       .eq("user_id", userId)
       .eq("id", data.id);
     if (error) throw new Error(error.message);

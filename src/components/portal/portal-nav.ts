@@ -10,14 +10,14 @@ export const PROVIDER_NAV: NavItem[] = [
   { to: "/portal/earnings", label: "Earnings & Payments" },
   { to: "/portal/network", label: "Network" },
   { to: '/portal/contacts', label: 'People' },
-  { to: "/portal/training", label: "Training & Tests" },
+  { to: "/portal/training", label: "Training & Resources" },
   { to: "/portal/messaging", label: "Messaging" },
 ];
 
 export const RESTRICTED_PROVIDER_NAV: NavItem[] = [
   { to: "/portal", label: "Overview", exact: true },
   { to: "/portal/trips", label: "My trips" },
-  { to: "/portal/training", label: "Training & Tests" },
+  { to: "/portal/training", label: "Training & Resources" },
 ];
 
 export const CUSTOMER_NAV: NavItem[] = [

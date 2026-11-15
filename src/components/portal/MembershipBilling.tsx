@@ -23,7 +23,7 @@ export function MembershipBilling({ workspaceId, role }: { workspaceId: string; 
   const get = useServerFn(getMembershipBilling);
   const addon = useServerFn(setNetworkAddon);
   const portal = useServerFn(createPortalSession);
-  const q = usePortalQuery({ queryKey: ['membership-billing', workspaceId], queryFn: () => { if(!env) throw new Error('Payments not configured'); return get({ data: { environment: env, workspaceId } }); }, enabled: !!env || preview.active });
+  const q = usePortalQuery({ queryKey: ['membership-billing', workspaceId], queryFn: () => get({ data: { environment: env??'live', workspaceId } }) });
   const [confirm, setConfirm] = useState<null | boolean>(null);
   const [busy, setBusy] = useState(false);
   const cart = useTrainingCart();

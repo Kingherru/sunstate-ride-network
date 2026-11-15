@@ -2,6 +2,7 @@ import { z } from 'zod';
 export const CONTACT_TYPES = ['personal','patient','caregiver','facility','business','payer','broker','organization'] as const;
 export const contactInput = z.object({
   id:z.string().uuid().optional(), contact_type:z.enum(CONTACT_TYPES),
+  contact_roles:z.array(z.enum(['family','facility','business','payer','emergency','other'])).max(6).default([]),
   first_name:z.string().trim().max(80).default(''),last_name:z.string().trim().max(80).default(''),
   company_name:z.string().trim().max(160).default(''),phone:z.string().trim().max(32).default(''),
   email:z.union([z.string().trim().email().max(255),z.literal('')]).default(''),

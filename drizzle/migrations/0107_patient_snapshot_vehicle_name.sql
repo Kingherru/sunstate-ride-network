@@ -1,0 +1,1 @@
+DO $$ DECLARE body text;BEGIN SELECT pg_get_functiondef(oid) INTO body FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname='patient_request_snapshot';body:=replace(body,'v.vehicle_name','v.name');EXECUTE body;END $$;

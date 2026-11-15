@@ -148,7 +148,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
               <div className="flex items-center justify-between gap-2">
                 <span className={`ds-body truncate ${c.unreadCount > 0 ? "font-bold text-ds-primary" : "font-semibold"}`}>{c.otherName}</span>
                 {c.lastMessageAt && <span className="ds-caption ml-auto shrink-0 text-ds-text-2">{new Date(c.lastMessageAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</span>}
-                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm bg-ds-primary px-2 py-0.5 text-ds-on-primary" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
+                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm ds-status-red px-2 py-0.5" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
               {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
@@ -166,9 +166,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-2 ds-glass rounded-b-none px-4 py-3">
               <div className="min-w-0">
-                <button onClick={() => setSelected(null)} className="ds-glass-btn mb-2 min-h-9 px-3 text-sm md:hidden">
+                <DsButton variant="ghost" onClick={() => setSelected(null)} className="mb-2 md:hidden">
                   ← Back to conversations
-                </button>
+                </DsButton>
                 <h3 className="ds-body truncate font-bold text-ds-primary">{thread.conversation.otherName}</h3>
                 {thread.conversation.otherMfnId && <p className="ds-support font-mono">{thread.conversation.otherMfnId}</p>}
               </div>
@@ -200,9 +200,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 <div className="flex items-end gap-2">
                   <textarea id="wm-reply" value={draft} onChange={(e) => { setDraft(e.target.value.slice(0, 2000)); setSendError(""); }} maxLength={2000} rows={2}
                     placeholder="Write a reply…" aria-describedby={sendError ? "wm-err" : undefined} className="portal-input min-h-[3rem] flex-1 resize-y" />
-                  <button onClick={onSend} disabled={!draft.trim() || sending} className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-ds-sm bg-ds-action px-4 font-semibold uppercase text-ds-on-action disabled:opacity-50">
+                  <DsButton onClick={onSend} disabled={!draft.trim() || sending} className="shrink-0">
                     <Send className="size-4" aria-hidden />{sending ? "Sending…" : "Send"}
-                  </button>
+                  </DsButton>
                 </div>
                 {sendError && <p id="wm-err" role="alert" className="ds-support mt-1 text-ds-error">{sendError}</p>}
                 <p className="ds-support mt-1 text-right text-ds-on-bg/50">{draft.length}/2000</p>
@@ -210,7 +210,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
             )}
             {mode === "admin" && !effectiveWorkspaceId && !readOnly && <p className="ds-support p-3">Reply unavailable — no authorized sender workspace selected.</p>}
             {readOnly && <p className="ds-support border-t border-ds-border bg-ds-surface-muted px-4 py-2 text-ds-text-2">Read-only access — replies are turned off for your role.</p>}
-            {demo && <p className="ds-support border-t border-ds-border bg-ds-peach px-4 py-2">Demo conversation — preview only. Nothing is saved or sent.</p>}
+            {demo && <p className="ds-support border-t border-ds-border bg-ds-surface-muted px-4 py-2">Demo conversation — preview only. Nothing is saved or sent.</p>}
             {thread.conversation.archived && mode === "portal" && !readOnly && (
               <p className="ds-support border-t border-ds-border px-4 py-2 text-ds-on-bg/60">This conversation is archived. Restore it to send a new message.</p>
             )}

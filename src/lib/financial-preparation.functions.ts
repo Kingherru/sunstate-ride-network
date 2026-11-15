@@ -39,9 +39,9 @@ export const reviewFinancialCart = createServerFn({method:'POST'}).middleware([r
     if(courseError||ownedError||(courses?.length??0)!==ids.length)throw new Error('Catalog unavailable');
     const line=(productId:string,kind:CatalogLine['kind'],title:string,priceKey:string,unitCents:number,recurrence:'month'|null):CatalogLine=>({productId,kind,title,priceKey,unitCents,recurrence,stripeProductId:null,stripePriceId:null,quantity:1,currency:'usd',catalogVersion:FINANCIAL_VERSION,environment:'sandbox',termsVersion:TERMS_VERSION,refundVersion:PAYMENT_POLICY_VERSION});
     const catalog:CatalogLine[]=[line('contractor_membership','contractor','Independent Contractor Membership','unmapped',2000,'month'),line('provider_base','base','Provider Base Membership',BASE_MEMBERSHIP_PRICE,2000,'month'),line('network_addon','network_addon','Referral Network add-on',NETWORK_ADDON_PRICE,1000,'month'),...(courses??[]).map(c=>{
-      if(!c.price_id||c.price_cents===null)throw new Error('Price configuration required');
+      if(c.price_cents===null)throw new Error('Price configuration required');
       const kind:CatalogLine['kind']=c.product_kind==='digital_guide'?'digital_guide':c.product_kind==='test'?'test':'course';
-      return line(c.id,kind,c.title,c.price_id,c.price_cents,null);
+      return line(c.id,kind,c.title,c.price_id??'unmapped',c.price_cents,null);
     })];
     const review=reconstructCart([...(data.contractor?['contractor_membership']:[]),...(data.base?['provider_base']:[]),...(data.network?['network_addon']:[]),...ids],catalog,'sandbox',{provider:!!workspaceId&&!isContractor,contractor:isContractor,baseReserved,addonReserved,owned:(owned??[]).map(o=>o.course_id),trialUsed});
     const binding={personId:context.userId,workspaceId,environment:'sandbox',review,termsVersion:TERMS_VERSION,refundVersion:PAYMENT_POLICY_VERSION,tax:'not_configured',processing:'not_configured'};

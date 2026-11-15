@@ -3175,6 +3175,7 @@ export type Database = {
           communication: Json | null
           created_at: string
           dismissed_at: string | null
+          event_key: string | null
           id: string
           link: string | null
           read_at: string | null
@@ -3188,6 +3189,7 @@ export type Database = {
           communication?: Json | null
           created_at?: string
           dismissed_at?: string | null
+          event_key?: string | null
           id?: string
           link?: string | null
           read_at?: string | null
@@ -3201,6 +3203,7 @@ export type Database = {
           communication?: Json | null
           created_at?: string
           dismissed_at?: string | null
+          event_key?: string | null
           id?: string
           link?: string | null
           read_at?: string | null
@@ -4063,6 +4066,7 @@ export type Database = {
           active: boolean
           billing_allowed: boolean
           company_name: string | null
+          contact_roles: string[]
           contact_type: string
           coordination_allowed: boolean
           created_at: string
@@ -4089,6 +4093,7 @@ export type Database = {
           active?: boolean
           billing_allowed?: boolean
           company_name?: string | null
+          contact_roles?: string[]
           contact_type: string
           coordination_allowed?: boolean
           created_at?: string
@@ -4115,6 +4120,7 @@ export type Database = {
           active?: boolean
           billing_allowed?: boolean
           company_name?: string | null
+          contact_roles?: string[]
           contact_type?: string
           coordination_allowed?: boolean
           created_at?: string
@@ -6041,6 +6047,7 @@ export type Database = {
           diagnosis_code: string | null
           dob: string | null
           email: string | null
+          family_update_preparation: Json | null
           first_name: string
           gender: string | null
           id: string
@@ -6058,6 +6065,7 @@ export type Database = {
           payer: string | null
           phone: string | null
           preferred_driver_id: string | null
+          relationship_links: Json
           service_requirements: string | null
           state: string | null
           updated_at: string
@@ -6085,6 +6093,7 @@ export type Database = {
           diagnosis_code?: string | null
           dob?: string | null
           email?: string | null
+          family_update_preparation?: Json | null
           first_name: string
           gender?: string | null
           id?: string
@@ -6102,6 +6111,7 @@ export type Database = {
           payer?: string | null
           phone?: string | null
           preferred_driver_id?: string | null
+          relationship_links?: Json
           service_requirements?: string | null
           state?: string | null
           updated_at?: string
@@ -6129,6 +6139,7 @@ export type Database = {
           diagnosis_code?: string | null
           dob?: string | null
           email?: string | null
+          family_update_preparation?: Json | null
           first_name?: string
           gender?: string | null
           id?: string
@@ -6146,6 +6157,7 @@ export type Database = {
           payer?: string | null
           phone?: string | null
           preferred_driver_id?: string | null
+          relationship_links?: Json
           service_requirements?: string | null
           state?: string | null
           updated_at?: string
@@ -9777,6 +9789,7 @@ export type Database = {
           communication: Json | null
           created_at: string
           dismissed_at: string | null
+          event_key: string | null
           id: string
           link: string | null
           read_at: string | null
@@ -10452,6 +10465,10 @@ export type Database = {
       }
       save_onboarding_progress: {
         Args: { _complete?: boolean; _step: number }
+        Returns: undefined
+      }
+      save_patient_relationship_preparation: {
+        Args: { _family?: Json; _links: Json; _patient: string }
         Returns: undefined
       }
       save_personal_settings: {

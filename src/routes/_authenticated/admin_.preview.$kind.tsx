@@ -30,7 +30,7 @@ import { DsButton } from '@/components/ds/controls';
 import {PatientTrips} from '@/components/portal/PatientTrips';
 import {NewTripWorkspace} from '@/components/portal/NewTripWorkspace';
 import {ContactsPayersPanel} from '@/components/dashboard/ContactsPayersPanel';
-function PreviewPeople(){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab}/></Panel>;}
+function PreviewPeople(){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'|'accepted'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab}/></Panel>;}
 
 type Kind = "provider" | "customer";
 
@@ -144,7 +144,7 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
     case "contacts": return <PreviewPeople/>;
     case "payers": return <Panel><PayersPanel /></Panel>;
     case "notifications": return <Panel><NotificationsPanel /></Panel>;
-    case "messaging": return <SampleConversations initiallyOpen />;
+    case "messaging": return <Panel><WorkspaceMessaging mode="portal" /></Panel>;
     default: return <Panel><PatientTrips overview/></Panel>;
   }
 }

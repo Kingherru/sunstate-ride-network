@@ -1,0 +1,12 @@
+import {describe,it,expect,vi} from 'vitest';
+vi.mock('@tanstack/react-start',()=>({createServerFn:()=>{const b:any={middleware:()=>b,inputValidator:()=>b,handler:(h:any)=>h};return b;}}));
+vi.mock('../src/integrations/supabase/auth-middleware',()=>({requireSupabaseAuth:{}}));
+import {savePatientPeople} from '../src/lib/patient-people.functions';
+import {markNetworkViewRead} from '../src/lib/network-access.functions';
+import {deleteNotification,markAllNotificationsRead} from '../src/lib/notifications.functions';
+describe('Pass4V authenticated action boundaries',()=>{
+ it('rejects foreign patient relationship saves',async()=>{const rpc=vi.fn(async()=>({error:{}}));await expect((savePatientPeople as any)({data:{patientId:'foreign',links:{contactIds:[],businessIds:[]},family:null},context:{supabase:{rpc}}})).rejects.toThrow('unavailable');expect(rpc).toHaveBeenCalledWith('save_patient_relationship_preparation',expect.objectContaining({_patient:'foreign'}));});
+ it('read marks belong to current user only',async()=>{const upsert=vi.fn(async()=>({error:null}));await (markNetworkViewRead as any)({data:{view:'offers'},context:{userId:'self',supabase:{from:()=>({upsert})}}});expect(upsert.mock.calls[0][0].user_id).toBe('self');expect(upsert.mock.calls[0][0].tab_key).toBe('network:offers');});
+ it('notification dismissal does not delete history or relationship',async()=>{const update=vi.fn(),eq=vi.fn();const q:any={update:(v:any)=>{update(v);return q;},eq:(...v:any[])=>{eq(...v);return q;},then:(r:any)=>r({error:null})};await (deleteNotification as any)({data:{id:'notice'},context:{userId:'self',supabase:{from:()=>q}}});expect(update.mock.calls[0][0].dismissed_at).toEqual(expect.any(String));expect(eq).toHaveBeenCalledWith('user_id','self');expect(eq).toHaveBeenCalledWith('id','notice');});
+ it('mark all includes accepted connections but excludes email preparations',async()=>{const or=vi.fn(),eq=vi.fn();const q:any={update:()=>q,eq:(...v:any[])=>{eq(...v);return q;},or:(v:string)=>{or(v);return q;},is:()=>q,then:(r:any)=>r({error:null})};await (markAllNotificationsRead as any)({context:{userId:'self',supabase:{from:()=>q}}});expect(or).toHaveBeenCalledWith('communication.is.null,type.eq.accepted_connection');expect(eq).toHaveBeenCalledWith('user_id','self');});
+});

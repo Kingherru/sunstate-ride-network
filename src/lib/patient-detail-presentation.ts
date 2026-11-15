@@ -4,6 +4,7 @@ export function patientDetailFields(row: Record<string, unknown>) {
   const services: Record<string, string> = { ambulatory: 'Ambulatory', wheelchair: 'Wheelchair', gurney: 'Gurney / Stretcher', delivery: 'Medical Delivery' };
   const trips: Record<string, string> = { one_way: 'One way', round_trip: 'Round trip', multi_trip: 'Multi-stop' };
   const fields = [
+    { label: 'Category', value: row.trip_kind==='medical_delivery'?'Medical Delivery':'Passenger' },
     { label: 'Trip type', value: trips[String(row.trip_type)] ?? 'Not Available' },
     { label: 'Service type', value: services[String(row.transport_type)] ?? 'Not Available' },
     { label: 'Pickup', value: text('pickup_address') },
@@ -17,6 +18,7 @@ export function patientDetailFields(row: Record<string, unknown>) {
   if (row.trip_type === 'round_trip' || row.round_trip === true) fields.push(
     { label: 'Return date', value: text('return_date') },
     { label: 'Return pickup time', value: text('return_pickup_time') },
+    { label: 'Return pickup address', value: text('dropoff_address') },
     { label: 'Return drop-off time', value: text('return_dropoff_time') },
   );
   else fields.push({ label: 'Return information', value: 'Not Required' });

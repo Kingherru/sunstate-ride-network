@@ -1,0 +1,1 @@
+DO $$ DECLARE body text;BEGIN SELECT pg_get_functiondef(oid) INTO body FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname='patient_request_snapshot';body:=replace(body,'greatest(r.updated_at,t.updated_at)','greatest(coalesce(r.last_updated_at,r.created_at),t.updated_at)');EXECUTE body;END $$;

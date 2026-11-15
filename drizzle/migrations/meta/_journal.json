@@ -743,6 +743,34 @@
       "when": 1794702255744,
       "tag": "0105_assignment_contact_reset_compatibility",
       "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1794705458743,
+      "tag": "0106_patient_people_preparation",
+      "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1794705549494,
+      "tag": "0107_patient_snapshot_vehicle_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "7",
+      "when": 1794705595272,
+      "tag": "0108_patient_in_app_event_deduplication",
+      "breakpoints": true
+    },
+    {
+      "idx": 109,
+      "version": "7",
+      "when": 1794705918236,
+      "tag": "0109_patient_latest_update_projection",
+      "breakpoints": true
     }
   ]
 }

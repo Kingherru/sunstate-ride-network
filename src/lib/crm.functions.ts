@@ -26,8 +26,8 @@ export const upsertContact = createServerFn({ method: "POST" })
     const {id,...values}=data;
     const row = { ...values, ...(id ? {} : {owner_id:userId}) };
     if (!id) {
-      const {data:existing}=await supabase.from('provider_contacts').select('id').eq('created_by',userId).eq('contact_type',data.contact_type).eq('first_name',data.first_name).eq('last_name',data.last_name).eq('company_name',data.company_name).eq('phone',data.phone).eq('email',data.email).eq('active',true).limit(1).maybeSingle();
-      if(existing)return existing;
+      const {data:existing}=await supabase.from('provider_contacts').select('id,contact_roles').eq('created_by',userId).eq('first_name',data.first_name).eq('last_name',data.last_name).eq('company_name',data.company_name).eq('phone',data.phone).eq('email',data.email).eq('active',true).limit(1).maybeSingle();
+      if(existing){const {data:merged,error}=await supabase.from('provider_contacts').update({contact_roles:[...new Set([...(existing.contact_roles??[]),...data.contact_roles])]}).eq('id',existing.id).select().single();if(error)throw new Error('Contact unavailable.');return merged;}
     }
     const q = data.id
       ? supabase.from("provider_contacts").update(row).eq("id", data.id).select().single()

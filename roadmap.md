@@ -1,4 +1,10 @@
 # Florida MVP launch sequence
+## Pass 4V — patient operations and shared resources
+- [ ] Verify and complete explicit linked-patient lifecycle/detail visibility without widening account access.
+- [ ] Complete shared People contacts/payers/patients and scoped relationship preparation.
+- [ ] Complete clickable notifications, connections and shared Messaging read/reply controls; external delivery OFF.
+- [ ] Complete readable Network membership gating/activity, shared cart and Training & Resources entitlements.
+- [ ] Focused synthetic authorization/dedupe/cart tests and desktop/phone checks; preserve real records, no publication or money actions.
 ## Pass 4U — trip operations
 - [x] Shared provider-owned/customer destinations reused; owned workspace Trips/Reservations/History/Scheduler readers connected; no automatic Network distribution and Medical Delivery remains request-only. Saved/usual provider chooser remains in-form; copied references retained and server-revalidated.
 - [x] Bounded individual-date/daily/weekday/weekly/biweekly/monthly generator, exclusions/removable occurrences, per-occurrence pickup/appointment/return times, duplicate preflight, immutable retry keys, series evidence and explicit per-row results. Quotes and assignments are cleared across copies.

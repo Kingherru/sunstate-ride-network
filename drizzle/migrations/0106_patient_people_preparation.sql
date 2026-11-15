@@ -1,0 +1,30 @@
+ALTER TABLE public.provider_contacts ADD COLUMN IF NOT EXISTS contact_roles text[] NOT NULL DEFAULT '{}';
+ALTER TABLE public.saved_patients ADD COLUMN IF NOT EXISTS relationship_links jsonb NOT NULL DEFAULT '{"contactIds":[],"businessIds":[]}';
+ALTER TABLE public.saved_patients ADD COLUMN IF NOT EXISTS family_update_preparation jsonb;
+CREATE OR REPLACE FUNCTION public.save_patient_relationship_preparation(_patient uuid,_links jsonb,_family jsonb DEFAULT NULL) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE p public.saved_patients; c public.provider_contacts; x text; BEGIN
+SELECT * INTO p FROM public.saved_patients WHERE id=_patient FOR UPDATE;
+IF p.id IS NULL OR p.workspace_id IS NULL OR NOT public.can_manage_account_connections(p.workspace_id) THEN RAISE EXCEPTION 'Patient relationship unavailable'; END IF;
+IF jsonb_typeof(_links->'contactIds') IS DISTINCT FROM 'array' OR jsonb_typeof(_links->'businessIds') IS DISTINCT FROM 'array' OR jsonb_array_length(_links->'contactIds')>30 OR jsonb_array_length(_links->'businessIds')>30 THEN RAISE EXCEPTION 'Invalid relationship selection'; END IF;
+FOR x IN SELECT jsonb_array_elements_text(_links->'contactIds') LOOP IF NOT EXISTS(SELECT 1 FROM public.provider_contacts WHERE id=x::uuid AND workspace_id=p.workspace_id AND active) THEN RAISE EXCEPTION 'Related record unavailable'; END IF; END LOOP;
+FOR x IN SELECT jsonb_array_elements_text(_links->'businessIds') LOOP IF NOT EXISTS(SELECT 1 FROM public.account_business_connections WHERE active AND ((workspace_a=p.workspace_id AND workspace_b=x::uuid) OR (workspace_b=p.workspace_id AND workspace_a=x::uuid))) THEN RAISE EXCEPTION 'Related record unavailable'; END IF; END LOOP;
+IF _family IS NOT NULL AND coalesce((_family->>'enabled')::boolean,false) THEN
+IF _family->>'consentBasis' NOT IN ('patient','authorized_representative') OR length(trim(coalesce(_family->>'consentReference','')))<3 OR _family->>'reviewConfirmed' IS DISTINCT FROM 'true' OR _family->>'recipientConfirmed' IS DISTINCT FROM 'true' OR jsonb_typeof(_family->'categories') IS DISTINCT FROM 'array' OR jsonb_array_length(_family->'categories')=0 OR jsonb_typeof(_family->'fields') IS DISTINCT FROM 'array' THEN RAISE EXCEPTION 'Explicit consent and review required'; END IF;
+SELECT * INTO c FROM public.provider_contacts WHERE id=(_family->>'contactId')::uuid AND workspace_id=p.workspace_id AND active AND id::text IN (SELECT jsonb_array_elements_text(_links->'contactIds'));
+IF c.id IS NULL OR coalesce(c.email,'')='' THEN RAISE EXCEPTION 'Recipient unavailable'; END IF;
+FOR x IN SELECT jsonb_array_elements_text(_family->'categories') LOOP IF x NOT IN ('upcoming','history') THEN RAISE EXCEPTION 'Invalid notification category'; END IF; END LOOP;
+FOR x IN SELECT jsonb_array_elements_text(_family->'fields') LOOP IF x NOT IN ('reference','status','pickup_date','pickup_time') THEN RAISE EXCEPTION 'Invalid information selection'; END IF; END LOOP;
+_family:=(_family-'emailConfirmed'-'deliveryEnabled'-'email')||jsonb_build_object('emailConfirmed',false,'deliveryEnabled',false,'recipientEmail',c.email,'recordedAt',now(),'recordedBy',auth.uid(),'state','prepared_email_confirmation_required');
+END IF;
+UPDATE public.saved_patients SET relationship_links=jsonb_build_object('contactIds',_links->'contactIds','businessIds',_links->'businessIds'),family_update_preparation=_family WHERE id=p.id;
+INSERT INTO public.account_relationship_events(workspace_id,record_id,action,actor_id,person_mfn_id,workspace_mfn_id,details) VALUES(p.workspace_id,p.id,CASE WHEN _family IS NULL OR _family->>'enabled'='false' THEN 'patient_relationships_saved_family_revoked' ELSE 'patient_family_updates_prepared' END,auth.uid(),(SELECT mfn_id FROM public.user_profiles WHERE user_id=auth.uid()),(SELECT mfn_id FROM public.workspaces WHERE id=p.workspace_id),jsonb_build_object('links',_links,'family',_family,'deliveryEnabled',false));
+END $$;
+REVOKE ALL ON FUNCTION public.save_patient_relationship_preparation(uuid,jsonb,jsonb) FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.save_patient_relationship_preparation(uuid,jsonb,jsonb) TO authenticated;
+CREATE OR REPLACE FUNCTION public.patient_relationship_preparation_guard() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF NEW.relationship_links IS DISTINCT FROM OLD.relationship_links OR NEW.family_update_preparation IS DISTINCT FROM OLD.family_update_preparation THEN
+IF current_user IN ('authenticated','anon') THEN RAISE EXCEPTION 'Use authorized relationship preparation'; END IF; END IF; RETURN NEW; END $$;
+CREATE TRIGGER patient_relationship_preparation_guard BEFORE UPDATE ON public.saved_patients FOR EACH ROW EXECUTE FUNCTION public.patient_relationship_preparation_guard();
+DO $$ DECLARE body text; BEGIN SELECT pg_get_functiondef(oid) INTO body FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname='patient_request_snapshot';
+body:=replace(body,'IF t.network_provider_workspace_id IS NOT NULL THEN','IF t.workspace_id IS NOT NULL AND EXISTS(SELECT 1 FROM public.workspaces WHERE id=t.workspace_id AND account_type=''provider'') THEN SELECT display_name INTO provider_name FROM public.workspaces WHERE id=t.workspace_id; ELSIF t.network_provider_workspace_id IS NOT NULL THEN');
+body:=replace(body,'''contacts'',public.patient_trip_contacts(r.id)', '''vehicleName'',(SELECT coalesce(nullif(v.vehicle_name,''''),nullif(v.vehicle_type,'''')) FROM public.vehicles v WHERE v.id=t.vehicle_id),''creatorName'',(SELECT display_name FROM public.workspaces WHERE id=r.workspace_id),''latestUpdate'',greatest(r.updated_at,t.updated_at),''contacts'',public.patient_trip_contacts(r.id)');
+EXECUTE body;END $$;
+COMMENT ON COLUMN public.saved_patients.family_update_preparation IS 'Private audited consent preparation only. Recipient email is unconfirmed; no delivery or account access is authorized.';
