@@ -220,47 +220,42 @@ export function ScheduleCalendarPanel() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-extrabold tracking-tight">Schedule board</h2>
-        <p className="text-sm text-muted-foreground">
-          Hourly time slots run down the left, on-duty drivers across the top. Assigned trips land in their driver's time slot automatically —
-          drag a trip between drivers or hours to reschedule it. Drivers who are off duty, inactive, or in vacation mode are hidden.
-        </p>
+        <h2 className="ds-subheading uppercase text-ds-primary">Day schedule</h2>
       </div>
 
       {/* Date navigator */}
-      <div className="flex items-center justify-center gap-4 bg-card border border-border rounded-2xl py-3 px-4">
-        <button
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 bg-ds-sky rounded-ds-sm py-3 px-4">
+        <DsButton variant="ghost"
           onClick={() => setDate(addDays(date, -1))}
-          className="rounded-sm border border-border px-3 py-2 hover:bg-muted"
+          className="shrink-0"
           aria-label="Previous day"
         >
           <ChevronLeft className="h-4 w-4" />
-        </button>
+        </DsButton>
         <div className="text-center">
           <div className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Viewing schedule for</div>
-          <div className="text-lg font-extrabold">{fmtDate(date)}</div>
-          <button
+          <div className="ds-subheading text-ds-primary">{fmtDate(date)}</div>
+          <DsButton variant="ghost" size="sm"
             onClick={() => setDate(todayISO())}
             className="text-xs font-bold text-primary hover:underline mt-1"
           >
             Jump to today
-          </button>
+          </DsButton>
         </div>
-        <button
+        <DsButton variant="ghost"
           onClick={() => setDate(addDays(date, 1))}
-          className="rounded-sm border border-border px-3 py-2 hover:bg-muted"
+          className="shrink-0"
           aria-label="Next day"
         >
           <ChevronRight className="h-4 w-4" />
-        </button>
+        </DsButton>
       </div>
 
       {(() => { const inactiveHeld = allReservations.filter((r: any) => (r.assigned_driver_id && allDrivers.find((d: any) => d.id === r.assigned_driver_id)?.status === "inactive") || (r.vehicle_id && (vehiclesQ.data ?? []).find((v: any) => v.id === r.vehicle_id)?.status === "inactive")); return inactiveHeld.length > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{inactiveHeld.length} trips are still assigned to an inactive driver or vehicle. The assignment is kept; reassign to an active resource when ready.</p></div>; })()}
       {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
       {/* Filters — one aligned row of equal-height shared toolbar controls */}
-      <ScheduleEmailPreview selectedDate={date}/>
-      <section className="space-y-3 border border-ds-border p-4"><h3 className="ds-label text-ds-primary">Trip assignments</h3><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div>{reservations.map(r=><div key={r.id} className="space-y-2"><p className="ds-support break-words">{scheduleTimeLabel(r)} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status,regional_service_areas:d.regional_service_areas}))} vehicles={vehiclesQ.data??[]}/></div>)}</section>
-      <div className="portal-toolbar">
+      <details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Assignments & route preparation</summary><div className="portal-business-body space-y-4"><ScheduleEmailPreview selectedDate={date}/><section className="space-y-3"><h3 className="ds-label text-ds-primary">Trip assignments</h3><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div>{reservations.map(r=><div key={r.id} className="space-y-2 border-t border-ds-border pt-3"><p className="ds-support break-words">{scheduleTimeLabel(r)} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status,regional_service_areas:d.regional_service_areas}))} vehicles={vehiclesQ.data??[]}/></div>)}</section></div></details>
+      <div className="grid min-w-0 gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <select
           value={vehicleFilter}
           onChange={(e) => setVehicleFilter(e.target.value)}
@@ -300,13 +295,13 @@ export function ScheduleCalendarPanel() {
             checked={hideEmptyDrivers}
             onChange={(e) => setHideEmptyDrivers(e.target.checked)}
           />
-          Hide drivers with no trips
+          Hide empty drivers
         </label>
         <select value={includeInactive ? "include" : "active"} onChange={(e) => setIncludeInactive(e.target.value === "include")} className="portal-control" aria-label="Active or inactive resources">
           <option value="active">Active only</option>
           <option value="include">Include inactive</option>
         </select>
-        <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground ml-auto">
+        <div className="ds-caption self-center sm:col-span-1 xl:col-span-3">
           {reservations.length} of {allReservations.length} trips · {drivers.length} of {allDrivers.length} drivers
         </div>
       </div>
@@ -396,7 +391,7 @@ export function ScheduleCalendarPanel() {
       </div>
 
       {/* Calendar grid — time on Y, drivers on X */}
-      <div className="bg-card border border-border rounded-2xl overflow-auto">
+      <div className="min-w-0 rounded-ds-sm border border-ds-border bg-ds-surface overflow-x-auto" role="region" aria-label="Day schedule board" tabIndex={0}>
         {driversQ.isLoading ? (
           <div className="p-8 text-center text-sm text-muted-foreground">Loading drivers…</div>
         ) : drivers.length === 0 ? (
@@ -408,7 +403,7 @@ export function ScheduleCalendarPanel() {
             No work hours configured for this day and no trips scheduled.
           </div>
         ) : (
-          <table className="w-full text-sm border-collapse min-w-[900px]">
+          <table className="w-full text-sm border-collapse">
             <thead className="bg-background/60">
               <tr>
                 <th className="sticky left-0 z-10 bg-background/80 border-r border-border text-left text-xs uppercase tracking-wider text-muted-foreground font-bold px-3 py-2 w-44">

@@ -271,14 +271,14 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         <I l="License #" v={f.license_number} on={(v) => set({ ...f, license_number: v })} />
         <I l="License expiry" v={f.license_expiry} on={(v) => set({ ...f, license_expiry: v })} type="date" />
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold">Status</span>
+          <span className="font-bold text-ds-primary">Status</span>
           <select value={f.status} onChange={(e) => set({ ...f, status: e.target.value as any })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="on_leave">On leave</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold">Employment type</span>
+          <span className="font-bold text-ds-primary">Employment type</span>
           <select value={f.employment_type} onChange={(e) => set({ ...f, employment_type: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -306,7 +306,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         </div>
 
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="font-bold">Primary vehicle</span>
+          <span className="font-bold text-ds-primary">Primary vehicle</span>
           <select value={f.primary_vehicle_id} onChange={(e) => set({ ...f, primary_vehicle_id: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="">— None —</option>
@@ -338,7 +338,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
 
         <div className="sm:col-span-2"><RegionalAreaEditor value={boundaries} onChange={setBoundaries}/></div>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="font-bold">Driver pay type</span>
+          <span className="font-bold text-ds-primary">Driver pay type</span>
           <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             {PAY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -386,7 +386,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
               <MoneyI l="Cancellation fee" v={f.pricing.cancellation_fee}
                       on={(v) => set({ ...f, pricing: { ...f.pricing, cancellation_fee: v } })} />
               <label className="flex flex-col gap-1 text-xs sm:col-span-2">
-                <span className="font-bold">Pricing notes</span>
+                <span className="font-bold text-ds-primary">Pricing notes</span>
                 <textarea rows={2} value={f.pricing.notes}
                           onChange={(e) => set({ ...f, pricing: { ...f.pricing, notes: e.target.value } })}
                           className="border border-border rounded-sm px-2 py-1 bg-background" />
@@ -398,10 +398,10 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
 
 
         <div className="portal-dialog-section sm:col-span-2 border border-border rounded-sm p-3">
-          <div className="flex items-center justify-between mb-2">
+          <div className="grid min-w-0 gap-2 mb-3 sm:grid-cols-[minmax(0,1fr)_auto]">
             <span className="font-bold text-sm">Weekly availability</span>
             <label className="flex items-center gap-2 text-xs">
-              <span className="font-bold">Mode</span>
+              <span className="font-bold text-ds-primary">Mode</span>
               <select value={f.availability.mode}
                       onChange={(e) => set({ ...f, availability: { ...f.availability, mode: e.target.value as any } })}
                       className="border border-border rounded-sm px-2 py-1 bg-background">
@@ -418,19 +418,19 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
                 const day = f.availability.days[k] ?? {};
                 const off = !!day.off;
                 return (
-                  <div key={k} className="flex items-center gap-2 text-xs">
-                    <span className="w-10 font-bold">{label}</span>
+                  <div key={k} className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-2 text-xs sm:grid-cols-[2.5rem_auto_minmax(0,1fr)_auto_minmax(0,1fr)]">
+                    <span className="w-10 font-bold text-ds-primary">{label}</span>
                     <label className="flex items-center gap-1">
                       <input type="checkbox" checked={off} onChange={(e) => setDay(k, { off: e.target.checked })} />
                       <span>Off</span>
                     </label>
                     <input type="time" step={300} disabled={off} value={day.start ?? "09:00"}
                            onChange={(e) => setDay(k, { start: e.target.value })}
-                           className="border border-border rounded-sm px-2 py-1 bg-background disabled:opacity-40" />
+                           className="portal-input min-w-0 w-full disabled:opacity-40" />
                     <span>–</span>
                     <input type="time" step={300} disabled={off} value={day.end ?? "17:00"}
                            onChange={(e) => setDay(k, { end: e.target.value })}
-                           className="border border-border rounded-sm px-2 py-1 bg-background disabled:opacity-40" />
+                           className="portal-input min-w-0 w-full disabled:opacity-40" />
                   </div>
                 );
               })}
@@ -481,7 +481,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
           Send {d.first_name} {d.last_name} a 7-day trip schedule starting on the date below.
         </p>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold">Week start</span>
+          <span className="font-bold text-ds-primary">Week start</span>
           <input type="date" value={weekStart} onChange={(e) => setWeekStart(e.target.value)} required
                  className="border border-border rounded-sm px-3 py-2 bg-background" />
         </label>
@@ -587,7 +587,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
         <I l="Capacity" v={String(f.capacity)} on={(x) => set({ ...f, capacity: Number(x) || 0 })} type="number" />
         <I l="Wheelchair positions" v={String(f.wheelchair_capacity)} on={(x) => set({ ...f, wheelchair_capacity: Math.max(0, Number(x) || 0) })} type="number" />
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold">Type</span>
+          <span className="font-bold text-ds-primary">Type</span>
           <select value={f.vehicle_type} onChange={(e) => set({ ...f, vehicle_type: e.target.value as any })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="sedan">Sedan</option><option value="suv">SUV</option>
@@ -596,14 +596,14 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold">Status</span>
+          <span className="font-bold text-ds-primary">Status</span>
           <select value={f.status} onChange={(e) => set({ ...f, status: e.target.value as any })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="font-bold">Primary driver</span>
+          <span className="font-bold text-ds-primary">Primary driver</span>
           <select value={f.assigned_driver_id} onChange={(e) => set({ ...f, assigned_driver_id: e.target.value })}
                   className="border border-border rounded-sm px-3 py-2 bg-background">
             <option value="">— None —</option>
@@ -645,7 +645,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
 function I({ l, v, on, type = "text", req, cs }: { l: string; v: string; on: (v: string) => void; type?: string; req?: boolean; cs?: number }) {
   return (
     <label className={`flex flex-col gap-1 text-sm ${cs === 2 ? "sm:col-span-2" : ""}`}>
-      <span className="font-bold">{l}{req && " *"}</span>
+      <span className="font-bold text-ds-primary">{l}{req && " *"}</span>
       <input required={req} type={type} value={v} onChange={(e) => on(e.target.value)}
              className="border border-border rounded-sm px-3 py-2 bg-background" />
     </label>
@@ -655,7 +655,7 @@ function I({ l, v, on, type = "text", req, cs }: { l: string; v: string; on: (v:
 function MoneyI({ l, v, on }: { l: string; v: string; on: (v: string) => void }) {
   return (
     <label className="flex flex-col gap-1 text-xs">
-      <span className="font-bold">{l}</span>
+      <span className="font-bold text-ds-primary">{l}</span>
       <div className="flex items-center gap-1">
         <span className="text-muted-foreground">$</span>
         <input type="number" min={0} step="0.01" value={v} onChange={(e) => on(e.target.value)}

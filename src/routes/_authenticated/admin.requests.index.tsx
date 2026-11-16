@@ -31,8 +31,8 @@ function AdminRequests() {
       {tab === "new" && canCreate ? <OnBehalfRequest rows={candidates} /> : (
         <>
           <PageHead title="Requests">Select any request to open its details.</PageHead>
-          <CustomerSelectedExport admin records={rows.map(r=>({id:r.id,label:`${r.mfn_id??'Request'} · ${r.pickup_date??''} · ${r.pickup_city??''} → ${r.dropoff_city??''}`}))}/>
-          <section className={panelCls}>
+          <details className="mb-4 border-b border-ds-border pb-3"><summary className="ds-label cursor-pointer text-ds-primary">Selected-request report preparation</summary><div className="pt-3"><CustomerSelectedExport admin records={rows.map(r=>({id:r.id,label:`${r.mfn_id??'Request'} · ${r.pickup_date??''} · ${r.pickup_city??''} → ${r.dropoff_city??''}`}))}/></div></details>
+          <section className="min-w-0">
             {rows.length === 0 ? <DsEmpty title="No requests yet" /> : <RequestTable rows={rows} detailBase="/admin/requests" showSource />}
           </section>
         </>

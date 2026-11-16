@@ -126,8 +126,8 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   return (
     <div className="space-y-3">
     {demo && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved or sent.</p>}
-    <div className="grid gap-4 md:grid-cols-[minmax(0,21rem)_minmax(0,1fr)]">
-      <div className={`min-w-0 space-y-2 md:ds-glass md:p-2 ${selected ? "hidden md:block" : ""}`}>
+    <div className="grid min-w-0 items-stretch gap-4 md:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+      <div className={`min-w-0 space-y-2 md:border-r md:border-ds-border md:pr-4 ${selected ? "hidden md:block" : ""}`}>
         <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary ds-glass-blue px-3 py-2">
           <h3 className="ds-label uppercase tracking-[0.06em] text-ds-on-primary">Conversations</h3>
           {mode === "portal" && (
@@ -138,7 +138,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         </div>
         <DsButton size="sm" variant="secondary" disabled={reading || !conversations.some(c=>c.unreadCount>0)} onClick={()=>onRead()}>Mark all as read</DsButton>
         <div className="portal-search"><Search className="size-4" aria-hidden /><input aria-label="Search workspace conversations" placeholder="Search accounts, senders, messages…" value={search} onChange={(e) => setSearch(e.target.value)} className="portal-input w-full" /></div>
-        <div className="max-h-[28rem] space-y-1 overflow-y-auto rounded-ds-sm border border-ds-border">
+        <div className="max-h-[36rem] divide-y divide-ds-border overflow-y-auto rounded-ds-sm border border-ds-border">
           {!demo && convosQuery.isLoading && <p className="ds-support p-3">Loading…</p>}
           {(wsQuery.isError || convosQuery.isError) && <p role="alert" className="ds-support p-3 text-ds-error">Conversations couldn't load. Please try again.</p>}
           {(demo || !convosQuery.isLoading) && conversations.length === 0 && <p className="ds-support p-3">{search ? "No conversations match your search." : "No conversations yet. Use Message provider in the Provider Network directory to start one."}</p>}
@@ -148,7 +148,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
               <div className="flex items-center justify-between gap-2">
                 <span className={`ds-body truncate ${c.unreadCount > 0 ? "font-bold text-ds-primary" : "font-semibold"}`}>{c.otherName}</span>
                 {c.lastMessageAt && <span className="ds-caption ml-auto shrink-0 text-ds-text-2">{new Date(c.lastMessageAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</span>}
-                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm ds-status-red px-2 py-0.5" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
+                {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm ds-status-blue px-2 py-0.5" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
               {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
@@ -164,7 +164,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (
           <div className="flex h-full flex-col">
-            <div className="flex flex-wrap items-center gap-2 ds-glass rounded-b-none px-4 py-3">
+            <div className="grid min-w-0 items-center gap-2 border-b border-ds-border bg-ds-sky px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
               <div className="min-w-0 basis-full md:flex-1 md:basis-auto">
                 <DsButton variant="ghost" onClick={() => setSelected(null)} className="mb-2 md:hidden">
                   ← Back to conversations
@@ -180,7 +180,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 </DsButton>
               )}
             </div>
-            <div className="max-h-[22rem] min-h-[10rem] flex-1 space-y-3 overflow-y-auto border-y border-ds-border px-4 py-3">
+            <div className="max-h-[32rem] min-h-[16rem] flex-1 space-y-3 overflow-y-auto border-y border-ds-border px-4 py-3">
               {thread.messages.length === 0 && <p className="ds-support">No messages yet.</p>}
               {thread.messages.map((m: MessageRow) => {
                 const mine = mode === "portal" && m.senderWorkspaceId === effectiveWorkspaceId;
@@ -197,9 +197,9 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
               <div className="border-t border-ds-border p-3">
                 <p className="ds-support mb-2 rounded-ds-sm ds-status-yellow px-2 py-1 font-semibold">{NOTICE}</p>
                 <label htmlFor="wm-reply" className="sr-only">Reply message</label>
-                <div className="flex items-end gap-2">
+                <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
                   <textarea id="wm-reply" value={draft} onChange={(e) => { setDraft(e.target.value.slice(0, 2000)); setSendError(""); }} maxLength={2000} rows={2}
-                    placeholder="Write a reply…" aria-describedby={sendError ? "wm-err" : undefined} className="portal-input min-h-[3rem] flex-1 resize-y" />
+                    placeholder="Write a reply…" aria-describedby={sendError ? "wm-err" : undefined} className="portal-input min-w-0 min-h-[3rem] resize-y" />
                   <DsButton onClick={onSend} disabled={!draft.trim() || sending} className="shrink-0">
                     <Send className="size-4" aria-hidden />{sending ? "Sending…" : "Send"}
                   </DsButton>

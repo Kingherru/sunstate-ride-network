@@ -46,15 +46,15 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
   return (
     <div className="space-y-4">
       <ContactImportExport contacts={q.data??[]}/>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="portal-search min-w-0 flex-1">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="portal-search min-w-0">
           <Search className="size-4" aria-hidden />
           <input
             placeholder="Search contacts…"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             aria-label="Search contacts"
-            className="w-full rounded-sm border border-border py-2 pr-3 text-sm"
+            className="portal-input w-full"
           />
         </div>
         <DsButton onClick={() => setEditing({ contact_type: "personal" })} className="shrink-0 whitespace-nowrap">
@@ -141,7 +141,7 @@ export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: 
     <Dialog open onOpenChange={open=>{if(!open&&!m.isPending)onClose();}}><DialogContent className="theme-portal max-h-[90dvh] overflow-y-auto !max-w-2xl"><DialogTitle>{contact.id?'Edit contact':'New contact'}</DialogTitle>
       <form
             onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
-            className="grid max-h-[90vh] w-full max-w-2xl gap-3 overflow-auto rounded-sm bg-card p-6 sm:grid-cols-2">
+            className="grid min-w-0 w-full gap-4 sm:grid-cols-2">
         <fieldset className="space-y-2 sm:col-span-2"><legend className="ds-label text-ds-primary">Roles</legend><div className="grid gap-2 sm:grid-cols-2">{(['family','facility','business','payer','emergency','other'] as const).map(role=><label key={role} className="ds-body flex gap-2"><input type="checkbox" checked={form.contact_roles.includes(role)} onChange={e=>setForm({...form,contact_roles:e.target.checked?[...form.contact_roles,role]:form.contact_roles.filter((r:string)=>r!==role)})}/>{({family:'Family',facility:'Facility Contact',business:'Business Contact',payer:'Payer',emergency:'Emergency Contact',other:'Other'})[role]}</label>)}</div></fieldset>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold">Type *</span>
@@ -184,16 +184,16 @@ export function ContactDialog({ contact, payers, onClose, onSaved }: { contact: 
 function Inp({ l, v, on, type = "text", cs, placeholder }: { l: string; v: string; on: (v: string) => void; type?: string; cs?: number; placeholder?: string }) {
   return (
     <label className={`flex flex-col gap-1 text-sm ${cs === 2 ? "sm:col-span-2" : ""}`}>
-      <span className="font-bold">{l}</span>
+      <span className="ds-label text-ds-primary">{l}</span>
       <input type={type} value={v} onChange={(e) => on(e.target.value)} placeholder={placeholder}
-             className="rounded-sm border border-border bg-background px-3 py-2" />
+             className="portal-input min-w-0" />
     </label>
   );
 }
 function Area({ l, v, on }: { l: string; v: string; on: (v: string) => void }) {
   return (
     <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-      <span className="font-bold">{l}</span>
+      <span className="ds-label text-ds-primary">{l}</span>
       <textarea value={v} onChange={(e) => on(e.target.value)} rows={2}
                 className="rounded-sm border border-border bg-background px-3 py-2" />
     </label>

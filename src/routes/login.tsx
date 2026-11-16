@@ -80,7 +80,7 @@ function Login() {
         </div>
       </aside>
       <main id="main" className="flex flex-col px-5 py-8 sm:px-10">
-        <div className="flex items-center justify-between">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <a href="/" aria-label="MY FLORIDA NEMT home" className="rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName className="text-xl" /></a>
           <a href="/" className="ds-support uppercase tracking-[0.06em] text-ds-link underline-offset-4 hover:underline">Back to website</a>
         </div>

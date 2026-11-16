@@ -46,7 +46,7 @@ export function TrainingTests() {
       {tab === 'Purchases & Resources' && <div className="portal-toolbar"><DsButton variant={resourceView === 'resources' ? 'secondary' : 'ghost'} onClick={() => setResourceView('resources')}>PDFs & Guides</DsButton><DsButton variant={resourceView === 'history' ? 'secondary' : 'ghost'} onClick={() => setResourceView('history')}>Purchase history</DsButton>{preview.active && <DsButton size="sm" variant="ghost" onClick={() => setViewer(true)}>Preview resource</DsButton>}</div>}
       {tab==='Purchases & Resources' && resourceView === 'history' &&<ul className="divide-y divide-ds-border">{mine.data?.map(e=><li key={e.id} className="py-4"><p className="ds-label text-ds-primary">{e.courses.title}</p><p className="ds-support">{e.status} · {e.purchased_at?new Date(e.purchased_at).toLocaleDateString():'Purchase date not available'}</p></li>)}</ul>}
       {tab === 'Purchases & Resources' && resourceView === 'history' ? !(mine.data ?? []).length && <DsEmpty title="No purchases yet" /> : !rows.length && <DsEmpty title={tab === 'Completed' ? 'No completed courses yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid min-w-0 gap-5 lg:grid-cols-2">
       {rows.map((c) => {
         const e = byCourse.get(c.id);
         const done = e?.status === "completed";
@@ -81,7 +81,7 @@ export function TrainingTests() {
               ) : (
                 <DsButton className={actionCls} onClick={() => cart.add(c, (mine.data ?? []).map(e => e.course_id))} disabled={cart.items.some(i => i.id === c.id)}><ShoppingBag className="size-4" />{cart.items.some(i => i.id === c.id) ? 'In cart' : 'Add to cart'}</DsButton>
               )}
-              <Link to="/shop/$slug" params={{ slug: c.slug }} className="ds-label text-ds-link underline">{c.product_kind==='digital_guide'?'Guide details':'Course & test details'}</Link>
+              <Link to="/shop/$slug" params={{ slug: c.slug }} onClick={event => { if (preview.active) { event.preventDefault(); previewBlocked(); } }} className="ds-label text-ds-link underline">{c.product_kind==='digital_guide'?'Guide details':'Course & test details'}</Link>
             </div>
           </article>
         );

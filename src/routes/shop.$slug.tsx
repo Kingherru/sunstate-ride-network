@@ -88,29 +88,29 @@ function CourseDetail() {
   return (
     <>
       <PaymentTestModeBanner />
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-10 w-full">
+      <main className="theme-public mfn-container min-w-0 py-10 w-full">
         <Link to="/shop" className="text-sm text-ds-text-2 hover:text-foreground flex items-center gap-1 mb-4"><ArrowLeft className="w-4 h-4" />Back to shop</Link>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">{course.title}</h1>
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+          <div className="min-w-0">
+            <h1 className="ds-page-title uppercase text-ds-primary mb-3">{course.title}</h1>
             <p className="text-lg text-ds-text-2 mb-6">{course.summary}</p>
             <div className="prose prose-sm max-w-none whitespace-pre-line mb-8">{course.description}</div>
 
-            <h2 className="text-xl font-bold mb-3">What you'll learn</h2>
+            <h2 className="ds-subheading uppercase text-ds-primary mb-3">What you'll learn</h2>
             <ul className="space-y-2 mb-8">
               {modules.map((m) => (
                 <li key={m.id} className="flex gap-2"><CheckCircle2 className="w-5 h-5 text-ds-primary shrink-0 mt-0.5" /><span>{m.title}</span></li>
               ))}
             </ul>
 
-            <h2 className="text-xl font-bold mb-3">Exam & Certificate</h2>
+            <h2 className="ds-subheading uppercase text-ds-primary mb-3">Exam & Certificate</h2>
             <p className="text-ds-text-2">
               {question_count}-question exam. Passing score {course.passing_score}%. Printable certificate valid for {course.cert_validity_months} months.
             </p>
           </div>
 
-          <aside className="md:col-span-1">
-            <div className="border border-ds-border rounded-ds p-6 bg-ds-surface sticky top-24">
+          <aside className="min-w-0">
+            <div className="rounded-ds bg-ds-sky p-6 lg:sticky lg:top-24">
               <div className="text-3xl font-extrabold mb-1">${(course.price_cents / 100).toFixed(2)}</div>
               <div className="text-sm text-ds-text-2 mb-4">One-time purchase</div>
               <div className="space-y-2 text-sm mb-5">
@@ -118,7 +118,7 @@ function CourseDetail() {
                 <div className="flex items-center gap-2"><Award className="w-4 h-4 text-ds-text-2" />{course.cert_validity_months}-month certificate</div>
               </div>
               {!checkout ? (
-                mine.data?.some(e => e.course_id === course.id) ? <Button asChild className="w-full"><Link to="/learn/$slug" params={{ slug: course.slug }}>Continue course</Link></Button> : course.price_id ? <Button className="w-full" disabled={!!userId && mine.isPending} onClick={() => { cart.add(course, (mine.data ?? []).map(e => e.course_id)); cart.open(); }}>Add to cart</Button> : <p>Requires product setup</p>
+                mine.data?.some(e => e.course_id === course.id) ? <Button asChild className="w-full"><Link to="/learn/$slug" params={{ slug: course.slug }}>Continue course</Link></Button> : course.price_id ? <Button className="w-full" disabled={!!userId && mine.isPending} onClick={() => { cart.add(course, (mine.data ?? []).map(e => e.course_id)); cart.open(); }}>Add to cart</Button> : <p role="status" className="ds-support">Purchase currently unavailable.</p>
               ) : null}
               {!userId && (
                 <p className="text-xs text-ds-text-2 mt-3">

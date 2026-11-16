@@ -7,6 +7,7 @@ import type { ContactOption } from "@/components/dashboard/ContactsPayersPanel";
 import {DsButton} from '@/components/ds/controls';
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {PayerAgreement} from '@/components/portal/PayerAgreement';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 type Payer = Awaited<ReturnType<typeof listMyPayers>>[number];
 
@@ -140,16 +141,15 @@ export function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Part
   });
 
   const set = (k: string, v: unknown) => setForm((f: any) => ({ ...f, [k]: v }));
-  const inp = "rounded-sm border border-border bg-background px-3 py-2";
-  const lbl = "flex flex-col gap-1 text-sm";
-  const cap = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+  const inp = "portal-input min-w-0 w-full";
+  const lbl = "flex min-w-0 flex-col gap-1 text-sm";
+  const cap = "ds-label text-ds-primary";
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Payer details" className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/40 p-4" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()}
+    <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent className="theme-portal !max-w-2xl"><DialogTitle className="uppercase text-ds-primary">{payer.id ? "Edit payer" : "New payer"}</DialogTitle>
+      <form
         onSubmit={(e) => { e.preventDefault(); save.mutate(); }}
-        className="grid max-h-[90vh] w-full max-w-2xl gap-3 overflow-auto rounded-sm bg-card p-6 sm:grid-cols-2">
-        <h3 className="text-xl font-extrabold sm:col-span-2">{payer.id ? "Edit payer" : "New payer"}</h3>
+        className="grid min-w-0 w-full gap-4 sm:grid-cols-2">
 
         <label className={lbl}><span className={cap}>Billing name *</span>
           <input required value={form.name} onChange={(e) => set("name", e.target.value)} className={inp} /></label>
@@ -183,7 +183,7 @@ export function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Part
           <span className="text-xs text-muted-foreground">Leave blank to leave driver choice up to the provider. A preference never assigns a driver.</span></label>
 
         <div className={lbl}><span className={cap}>Pickup timing preference</span>
-          <div className="flex items-center gap-2">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
             <select value={form.early_late_preference} onChange={(e) => set("early_late_preference", e.target.value)} className={inp}>
               <option value="">No preference</option>
               <option value="early">Early pickup</option>
@@ -212,6 +212,6 @@ export function PayerDialog({ payer, contacts, onClose, onSaved }: { payer: Part
           </DsButton>
         </div>
       </form>
-    </div>
+    </DialogContent></Dialog>
   );
 }

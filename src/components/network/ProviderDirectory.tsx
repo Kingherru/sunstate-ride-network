@@ -18,6 +18,7 @@ import { AddressAutocomplete } from '@/components/forms/AddressAutocomplete';
 import { ProviderVerificationBadge } from '@/components/portal/ProviderVerificationBadge';
 import {REGIONS} from '@/lib/coverage';
 import {US_STATES,stateRegions} from '@/lib/us-geography';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 /** Two-panel Provider Network directory: list on the left, selected provider
  *  profile on the right. On phones the list shows first and selecting a
@@ -235,13 +236,13 @@ function ProviderProfile({ row, canMessage, onMessage, onToggleSave, onBack, onS
   const services = capabilityLabels(row.service_types);
   if (row.medical_delivery && !services.some((s) => /delivery/i.test(s))) services.push("Medical Delivery");
   return (
-    <article className="rounded-sm border border-border bg-card p-5">
+    <article className="min-w-0 rounded-ds-sm bg-ds-surface p-4 sm:p-5">
       <button type="button" onClick={onBack} className="mb-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-primary hover:underline lg:hidden">
         <ArrowLeft className="size-4" /> Back to Providers
       </button>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="grid min-w-0 items-start gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
-          <h3 className="text-lg font-extrabold">{row.business_name}</h3>
+          <h3 className="ds-subheading break-words text-ds-primary">{row.business_name}</h3>
           {row.mfn_id && (
             <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-muted-foreground"><IdCard className="size-3.5" /> {row.mfn_id}</p>
           )}
@@ -306,23 +307,18 @@ function MessageConfirmDialog({ sender, target, onCancel, onConfirm }: {
   sender: MessagingWorkspace; target: NetworkProviderRow; onCancel: () => void; onConfirm: () => void;
 }) {
   return (
-    <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={onCancel} onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}>
-      <div role="alertdialog" aria-modal="true" aria-labelledby="message-provider-title" aria-describedby="message-provider-desc"
-        className="w-full max-w-md rounded-sm border border-border bg-card p-5" onClick={(e) => e.stopPropagation()}>
-        <h2 id="message-provider-title" className="text-base font-extrabold">Start a conversation?</h2>
-        <p id="message-provider-desc" className="mt-2 text-sm text-muted-foreground">
+    <Dialog open onOpenChange={open => { if (!open) onCancel(); }}><DialogContent className="theme-portal"><DialogTitle className="text-ds-primary">Start a conversation?</DialogTitle>
+        <DialogDescription className="mt-2 text-sm text-ds-text-2">
           You'll message as <span className="font-bold text-foreground">{sender.name}</span> to{" "}
           <span className="font-bold text-foreground">{target.business_name}</span>
           {target.mfn_id && <> (MFN ID: <span className="font-mono">{target.mfn_id}</span>)</>}.
           If a conversation between your accounts already exists, it opens instead of creating a duplicate.
-        </p>
+        </DialogDescription>
         <p className="mt-2 text-xs text-muted-foreground">Do not include patient or protected health information in network introduction messages.</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button autoFocus onClick={onCancel} className="rounded-sm border border-border px-3 py-2 text-xs font-bold hover:bg-muted">Cancel</button>
-          <button onClick={onConfirm} className="rounded-sm bg-accent px-3 py-2 text-xs font-bold text-accent-foreground hover:bg-accent/90">Start conversation</button>
+          <DsButton variant="ghost" autoFocus onClick={onCancel}>Cancel</DsButton>
+          <DsButton onClick={onConfirm}>Start conversation</DsButton>
         </div>
-      </div>
-    </div>
+    </DialogContent></Dialog>
   );
 }

@@ -26,11 +26,11 @@ export const Route = createFileRoute("/shop/")({
 function ShopIndex() {
   const { data: courses } = useSuspenseQuery(coursesQO);
   return (
-    <main className="flex-1">
-        <section className="bg-primary text-primary-foreground py-14">
+    <main className="theme-public min-w-0 flex-1">
+        <section className="bg-ds-primary text-ds-on-primary py-14">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center gap-3 mb-3"><ShoppingBag className="w-6 h-6" /><span className="uppercase tracking-wider text-sm">Training & Resources</span></div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">TRAINING & RESOURCES</h1>
+            <h1 className="ds-page-title uppercase mb-3">TRAINING & RESOURCES</h1>
             <p className="text-lg opacity-90 max-w-2xl">Online training for drivers, dispatchers, and NEMT staff. Purchase, complete the modules, pass the exam, and download your certificate. Sign in to purchase and retain your training or digital-resource access.</p>
           </div>
         </section>
@@ -39,15 +39,14 @@ function ShopIndex() {
           {courses.length === 0 ? (
             <p className="text-ds-text-2">No courses available right now — check back soon.</p>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid min-w-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((c) => (
-                <Link key={c.id} to="/shop/$slug" params={{ slug: c.slug }} className="group border border-ds-border rounded-ds overflow-hidden bg-ds-surface hover:border-primary transition flex flex-col">
-                  <div className="h-40 bg-primary" />
-                  <div className="p-5 flex-1 flex flex-col">
-                    <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition">{c.title}</h2>
+                <Link key={c.id} to="/shop/$slug" params={{ slug: c.slug }} className="group min-w-0 border-b border-ds-border bg-ds-surface transition flex flex-col focus-visible:outline-2 focus-visible:outline-ds-focus">
+                  <div className="p-5 min-w-0 flex-1 flex flex-col">
+                    <h2 className="ds-subheading uppercase text-ds-primary mb-2">{c.title}</h2>
                     <p className="text-sm text-ds-text-2 mb-4 flex-1">{c.summary}</p>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-3 text-ds-text-2">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-sm">
+                      <div className="min-w-0 flex flex-wrap items-center gap-3 text-ds-text-2">
                         <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{c.product_kind==='digital_guide'?'PDF guide':`${c.duration_min} min`}</span>
                         <span className="flex items-center gap-1"><Award className="w-4 h-4" />{c.product_kind==='digital_guide'?'Guide':'Cert'}</span>
                       </div>

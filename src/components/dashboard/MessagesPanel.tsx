@@ -322,8 +322,8 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
   }
 
   return (<>{active?.unread_count ? <DsButton size="sm" variant="secondary" disabled={readBusy} onClick={()=>mark(active.id)}>Mark as read</DsButton> : null}
-    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] gap-4 min-h-[560px]">
-      <aside className={`rounded-lg border border-border bg-card flex flex-col ${activeThread || composeOpen ? "hidden md:flex" : ""}`}>
+    <div className="grid min-w-0 grid-cols-1 md:grid-cols-[minmax(0,19rem)_minmax(0,1fr)] gap-4 min-h-[560px]">
+      <aside className={`min-w-0 rounded-ds-sm border border-ds-border bg-ds-surface flex flex-col ${activeThread || composeOpen ? "hidden md:flex" : ""}`}>
         <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-semibold text-sm">
             Conversations
@@ -429,7 +429,7 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
         </ul>
       </aside>
 
-      <section className={`rounded-lg border border-border bg-card flex flex-col ${activeThread || composeOpen ? "" : "hidden md:flex"}`}>
+      <section className={`min-w-0 rounded-ds-sm border border-ds-border bg-ds-surface flex flex-col ${activeThread || composeOpen ? "" : "hidden md:flex"}`}>
         {composeOpen ? (
           <div className="flex flex-col h-full">
             <div className="p-3 border-b border-border">
@@ -682,21 +682,21 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
             {!readOnly && (
               <form
                 onSubmit={(e) => { e.preventDefault(); if (draft.trim()) send.mutate(); }}
-                className="border-t border-border p-3 flex gap-2"
+                className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-2 border-t border-ds-border p-3"
               >
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Write a message…"
-                  className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
+                  aria-label="Reply message" className="portal-input min-w-0 w-full"
                 />
-                <button
+                <DsButton
                   type="submit"
                   disabled={send.isPending || !draft.trim()}
-                  className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                  className="shrink-0"
                 >
                   Send
-                </button>
+                </DsButton>
               </form>
             )}
           </div>

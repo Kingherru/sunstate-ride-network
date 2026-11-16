@@ -92,9 +92,9 @@ function RootComponent() {
         <Outlet />
       ) : (
         <div className="min-h-screen flex flex-col">
-          <header className="border-b px-6 py-4 flex items-center justify-between">
-            <Link to="/"><span className="theme-public"><BrandName /></span></Link>
-            <nav className="flex gap-4 text-sm">
+          <header className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b px-4 py-4 sm:px-6">
+            <Link to="/" className="min-w-0"><span className="theme-public"><BrandName className="text-sm sm:text-base" /></span></Link>
+            <nav className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm sm:gap-4">
               <span className="theme-portal"><TrainingCartIcon onBlue={false} /></span>
               <Link to="/shop">Training</Link>
               <Link to="/login">Sign in</Link>

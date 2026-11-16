@@ -97,9 +97,9 @@ export function SectionHead({ eyebrow, title, intro, id, onBlue, align = "center
 /** Icon + text list item used for checklists. */
 export function IconItem({ icon: Icon, children, tone = "bg-ds-sky" }: { icon: LucideIcon; children: React.ReactNode; tone?: string }) {
   return (
-    <li className="public-icon-item flex gap-4 rounded-ds bg-ds-surface p-5 shadow-ds">
+    <li className="public-icon-item grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-4 border-b border-ds-border py-5">
       <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-ds-sm text-ds-primary", tone)}><Icon className="size-6" aria-hidden /></span>
-      <span className="ds-body-lg self-center">{children}</span>
+      <span className="ds-body-lg min-w-0 self-center">{children}</span>
     </li>
   );
 }
@@ -112,7 +112,7 @@ export function Steps({ steps, tone = "bg-ds-primary text-ds-on-primary" }: { st
       {steps.map((s, i) => (
         <li key={s.t} className="relative flex gap-5">
           <span className={cn("ds-subheading flex size-12 shrink-0 items-center justify-center rounded-ds-sm", tone)}>{i + 1}</span>
-          <div className="pt-2.5">
+          <div className="min-w-0 pt-2.5">
             <h3 className="ds-subheading text-ds-primary">{s.t}</h3>
             {s.d && <p className="ds-body-lg mt-1 text-ds-text-2">{s.d}</p>}
           </div>

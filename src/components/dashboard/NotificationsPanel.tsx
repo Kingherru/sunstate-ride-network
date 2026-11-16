@@ -196,10 +196,10 @@ export function NotificationsPanel() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="ds-glass flex flex-wrap items-center gap-3 px-4 py-3">
-        <div className="flex items-center gap-2">
+      <div className="grid min-w-0 gap-3 border-b border-ds-border px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="flex min-w-0 items-center gap-2">
           <Bell className="h-5 w-5" />
-          <h2 className="text-xl font-bold tracking-tight">Notifications</h2>
+          <h2 className="ds-subheading text-ds-primary">Notifications</h2>
           {unreadCount > 0 && (
             <Badge className="ds-status-blue">{unreadCount} unread</Badge>
           )}
@@ -230,13 +230,13 @@ export function NotificationsPanel() {
 
       {/* Toolbar: search + filters */}
       <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
-        <div className="relative">
+        <div className="portal-search min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search notifications…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            aria-label="Search notifications" className="portal-input w-full"
           />
         </div>
         <Select value={category} onValueChange={setCategory}>
@@ -325,9 +325,6 @@ export function NotificationsPanel() {
                             <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
                               {categoryFor(n.type)}
                             </Badge>
-                            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                              {n.type}
-                            </span>
                             {isUnread && (
                               <span className="text-[10px] font-bold text-ds-primary uppercase tracking-wider">
                                 New

@@ -36,8 +36,8 @@ function ServiceDetail() {
       <PageHero title={s.h1} intro={<p>{s.intro}</p>} />
 
       <section className="mfn-section bg-ds-bg">
-        <div className="mfn-container grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
-          <article className="mfn-read space-y-10">
+        <div className="mfn-container grid min-w-0 gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
+          <article className="mfn-read min-w-0 space-y-10">
             {s.sections.map((sec, i) => (
               <Reveal key={sec.h} delay={i * 40}>
                 <h2 className="ds-section-title uppercase text-ds-primary">{sec.h}</h2>
@@ -46,14 +46,14 @@ function ServiceDetail() {
               </Reveal>
             ))}
           </article>
-          <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+          <aside className="min-w-0 space-y-6 lg:sticky lg:top-28 lg:self-start">
             <Reveal direction="right">
               <img src={img.src} width={img.w} height={img.h} alt={s.imageAlt} loading="lazy" className="w-full rounded-ds-lg object-cover" />
             </Reveal>
-            <div className="rounded-ds bg-ds-sky p-6">
+            <div className="border-t border-ds-border py-6">
               <h2 className="ds-subheading uppercase text-ds-primary">Related</h2>
               <ul className="mt-3 space-y-2">
-                {s.related.map((r) => <li key={r.href}><a href={r.href} className="ds-body-lg inline-flex items-center gap-2 text-ds-link hover:underline underline-offset-4">{r.label}<ArrowRight className="size-4" aria-hidden /></a></li>)}
+                {s.related.map((r) => <li key={r.href}><a href={r.href} className="ds-body-lg inline-flex min-w-0 items-center gap-2 text-ds-link hover:underline underline-offset-4">{r.label}<ArrowRight className="size-4" aria-hidden /></a></li>)}
               </ul>
             </div>
           </aside>

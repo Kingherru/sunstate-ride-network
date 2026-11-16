@@ -48,21 +48,22 @@ const GROUPS: Array<{ label: string; fields: Array<{ key: keyof MarketPricing; l
 ];
 
 function PricingColumn({
-  title, subtitle, values, onChange, onReset, readOnly,
+  title, subtitle, values, onChange, onReset, onSave, saving, readOnly,
 }: {
   title: string; subtitle: string; values: MarketPricing;
   onChange: (v: MarketPricing) => void; onReset: () => void; readOnly: boolean;
+  onSave: () => void; saving: boolean;
 }) {
   return (
     <section className="portal-business-section">
-      <div className="portal-business-heading flex flex-wrap items-center justify-between gap-3">
+      <div className="portal-business-heading grid min-w-0 gap-3 xl:min-h-40">
         <div className="min-w-0"><h3 className="ds-subheading flex items-center gap-2 uppercase"><DollarSign className="size-4 shrink-0" aria-hidden />{title}</h3><p className="ds-support mt-1">{subtitle}</p></div>
-        {!readOnly && <DsButton type="button" size="sm" variant="secondary" onClick={onReset}><RotateCcw className="size-4 shrink-0" aria-hidden />Reset to FL avg</DsButton>}
+        {!readOnly && <DsButton type="button" size="sm" variant="secondary" className="justify-self-end" onClick={onReset}><RotateCcw className="size-4 shrink-0" aria-hidden />Reset to FL avg</DsButton>}
       </div>
       <div className="portal-business-body space-y-4">
-      {GROUPS.map(g => <section key={g.label} className="portal-business-section">
-        <h4 className="portal-business-heading ds-label uppercase">{g.label}</h4>
-        <div className="portal-business-body grid gap-3 sm:grid-cols-2">
+      {GROUPS.map(g => <section key={g.label} className="min-w-0 border-b border-ds-border pb-4 last:border-b-0 last:pb-0">
+        <h4 className="ds-label mb-3 uppercase text-ds-primary">{g.label}</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
           {g.fields.map(f => <label key={String(f.key)} className="min-w-0 space-y-1">
             <span className="ds-label block">{f.label}</span>
             <span className="portal-pricing-input"><span aria-hidden>$</span><input aria-label={`${title}: ${f.label} in dollars`} type="number" min="0" step="0.01" disabled={readOnly} value={String(values[f.key] ?? 0)} onChange={e => onChange({ ...values, [f.key]: Number(e.target.value) || 0 })} className="portal-money-input" /></span>
@@ -70,6 +71,7 @@ function PricingColumn({
         </div>
       </section>)}
       </div>
+      {!readOnly && <div className="portal-business-actions justify-end"><DsButton type="button" disabled={saving} onClick={onSave}><Save className="size-4 shrink-0" aria-hidden />{saving ? "Saving…" : "Save reference rates"}</DsButton></div>}
     </section>
   );
 }
@@ -93,7 +95,7 @@ export function AdminPricingPanel() {
   }, [q.data]);
 
   const m = useMutation({
-    mutationFn: () => save({ data: { market, medicaid } }),
+    mutationFn: (section: 'market' | 'medicaid') => save({ data: { market: section === 'market' ? market : q.data?.market ?? FL_MARKET_DEFAULTS, medicaid: section === 'medicaid' ? medicaid : q.data?.medicaid ?? FL_MEDICAID_DEFAULTS } }),
     onSuccess: () => {
       toast.success("Pricing defaults saved");
       qc.invalidateQueries({ queryKey: ["admin-pricing-defaults"] });
@@ -113,24 +115,28 @@ export function AdminPricingPanel() {
 
       <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <PricingColumn
-          title="Florida market average"
+          title="Provider / market reference rates"
           subtitle="Typical private-pay retail rates across FL NEMT providers."
           values={market}
           onChange={setMarket}
           onReset={() => setMarket(FL_MARKET_DEFAULTS)}
           readOnly={readOnly}
+          onSave={() => m.mutate('market')}
+          saving={m.isPending || !q.data}
         />
         <PricingColumn
-          title="Florida Medicaid"
+          title="Medicaid reference information"
           subtitle="Managed transportation rates (Access2Care / MTM / ModivCare typical)."
           values={medicaid}
           onChange={setMedicaid}
           onReset={() => setMedicaid(FL_MEDICAID_DEFAULTS)}
           readOnly={readOnly}
+          onSave={() => m.mutate('medicaid')}
+          saving={m.isPending || !q.data}
         />
       </div>
 
-      {!readOnly && <div className="portal-business-actions justify-end"><DsButton type="button" disabled={m.isPending || q.isLoading} onClick={() => m.mutate()}><Save className="size-4" aria-hidden />{m.isPending ? "Saving…" : "Save pricing defaults"}</DsButton></div>}
+      {q.isError && <p role="alert" className="ds-support text-ds-error">Reference rates could not load. Saving is unavailable until the current values load.</p>}
     </div>
   );
 }

@@ -26,6 +26,8 @@ function AdminsPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const visibleAdmins = admins.filter(a => `${a.name} ${a.email} ${a.mfnId}`.toLowerCase().includes(search.toLowerCase()));
 
   async function onPromote(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +44,8 @@ function AdminsPage() {
         <aside className="min-w-0 space-y-5">
           <section aria-labelledby="current-admins" className="portal-business-section">
             <h2 id="current-admins" className={`${headCls} portal-business-heading flex items-center gap-2`}><Users className="size-4 shrink-0" aria-hidden />Administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
-            {admins.length === 0 ? <DsEmpty title="No regular administrators" /> : <ul className="divide-y divide-ds-border">{admins.map(a => <li key={a.userId}>
+            <div className="portal-business-body"><label htmlFor="admin-search" className="portal-label">Search administrators</label><input id="admin-search" className="portal-input" value={search} onChange={e => setSearch(e.target.value)} placeholder="Name, email or MFN ID" /></div>
+            {visibleAdmins.length === 0 ? <DsEmpty title={search ? 'No matching administrators' : 'No regular administrators'} /> : <ul className="divide-y divide-ds-border">{visibleAdmins.map(a => <li key={a.userId}>
               <DsButton variant="ghost" className="w-full justify-start rounded-none px-4 py-3 text-left" data-admin-selected={selectedId === a.userId} aria-pressed={selectedId === a.userId} onClick={() => setSelectedId(a.userId)}>
                 <span className="min-w-0 flex-1 space-y-1">
                   <span className="ds-body block break-words font-semibold">{a.name || a.email}</span>
@@ -54,8 +57,8 @@ function AdminsPage() {
               </DsButton>
             </li>)}</ul>}
           </section>
-          <section aria-labelledby="add-admin" className="portal-business-section">
-            <h2 id="add-admin" className={`${headCls} portal-business-heading flex items-center gap-2`}><UserPlus className="size-4 shrink-0" aria-hidden />Add administrator</h2>
+          <details className="portal-business-section">
+            <summary id="add-admin" className={`${headCls} portal-business-heading cursor-pointer`}><UserPlus className="mr-2 inline size-4" aria-hidden />Add administrator</summary>
             <div className="portal-business-body">
             <p className="ds-support mt-1">Promotes an existing account. New administrators start with No Access and no account scope.</p>
             <form onSubmit={onPromote} className="mt-4 space-y-3">
@@ -64,9 +67,9 @@ function AdminsPage() {
               <DsButton type="submit" disabled={busy} className="w-full">Add administrator</DsButton>
             </form>
             </div>
-          </section>
-          <section aria-labelledby="perm-history" className="portal-business-section">
-            <h2 id="perm-history" className={`${headCls} portal-business-heading flex items-center gap-2`}><History className="size-4 shrink-0" aria-hidden />Recent permission history</h2>
+          </details>
+          <details className="portal-business-section">
+            <summary id="perm-history" className={`${headCls} portal-business-heading cursor-pointer`}><History className="mr-2 inline size-4" aria-hidden />Recent permission history</summary>
             {audit.length === 0 ? <DsEmpty title="No changes yet" /> : (
               <ul className="max-h-[32rem] divide-y divide-ds-border overflow-y-auto">{audit.map((r: any) => (
                 <li key={r.id} className="ds-support min-w-0 px-4 py-3 sm:px-5"><span className="block font-semibold text-ds-on-surface">{humanStatus(r.action)}</span><span className="ds-caption">{new Date(r.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET</span>
@@ -74,7 +77,7 @@ function AdminsPage() {
               ))}</ul>
             )}
             <p className="ds-caption border-t border-ds-border px-4 py-2 sm:px-5">History is append-only and cannot be edited.</p>
-          </section>
+          </details>
         </aside>
         <div className="min-w-0">
           {!selectedId ? <section className="portal-business-section"><DsEmpty title="Select an administrator to review permissions" /></section> : admins.filter(a => a.userId === selectedId).map(a => <div key={a.userId}><DsButton variant="ghost" size="sm" onClick={() => setSelectedId(null)}>Close permissions</DsButton><AdminCard admin={a} workspaces={workspaces as any[]} /></div>)}
@@ -131,15 +134,13 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
         </div>
         <fieldset className="min-w-0">
           <legend className="portal-label">Sections {preset !== "custom" && "(switch to Custom to edit)"}</legend>
-          <table data-read-only={preset !== 'custom'} className="portal-permission-matrix hidden w-full border-collapse">
-            <thead><tr className="ds-label text-left text-ds-primary"><th scope="col" className="py-2 pr-3">Section</th>{(['none','read','manage'] as AccessLevel[]).map(l => <th key={l} scope="col" className="w-24 px-2 py-2 text-center">{l === 'none' ? 'No access' : l === 'read' ? 'Read-only' : 'Manage'}</th>)}</tr></thead>
-            <tbody className="divide-y divide-ds-border">{ADMIN_SECTIONS.map((s) => (
-              <tr key={s.key}><th scope="row" className="ds-support py-2 pr-3 text-left font-semibold text-ds-on-surface">{s.label}</th>
-                {(['none','read','manage'] as AccessLevel[]).map(l => <td key={l} className="px-2 py-2 text-center"><input type="radio" aria-label={`${s.label}: ${l}`} name={`${id}-${s.key}`} disabled={preset !== "custom"} checked={(eff[s.key] ?? 'none') === l} onChange={() => setSections((m) => ({ ...m, [s.key]: l }))} /></td>)}</tr>
-            ))}</tbody>
-          </table>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {ADMIN_SECTIONS.map((s) => (
+          <div className="space-y-4">
+            {[
+              { title: 'Support', keys: ['people', 'messaging', 'notifications'] },
+              { title: 'Operations', keys: ['requests', 'schedule', 'classify'] },
+              { title: 'Finance', keys: ['pricing', 'payouts', 'membership'] },
+              { title: 'Custom access', keys: ['integrations'] },
+            ].map(group => <section key={group.title} className="border-b border-ds-border pb-4 last:border-0"><h5 className="ds-label mb-2 text-ds-primary">{group.title}</h5><div className="grid gap-3 sm:grid-cols-2">{ADMIN_SECTIONS.filter(s => group.keys.includes(s.key)).map((s) => (
               <div key={s.key} className="grid gap-1 rounded-ds-sm bg-ds-surface px-3 py-2">
                 <label htmlFor={`${id}-${s.key}`} className="ds-support min-w-0 font-semibold text-ds-on-surface">{s.label}</label>
                 <select id={`${id}-${s.key}`} disabled={preset !== "custom"} className="portal-input" value={eff[s.key] ?? "none"}
@@ -147,7 +148,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
                   <option value="none">No access</option><option value="read">Read-only</option><option value="manage">Manage</option>
                 </select>
               </div>
-            ))}
+            ))}</div></section>)}
           </div>
           <p className="ds-caption mt-2">Security settings and administrator management always stay with the Master Admin.</p>
         </fieldset>
