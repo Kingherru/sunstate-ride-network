@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { AlertTriangle, CheckCircle2, Info, XCircle, Clock, Inbox, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OverflowText } from '@/components/portal/OverflowText';
 
 export type Status = "info" | "success" | "warning" | "error" | "pending" | "neutral";
 
@@ -20,7 +21,7 @@ export function DsBadge({ status = "neutral", children }: { status?: Status; chi
   const Icon = statusIcon[status];
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-ds-sm px-2 py-0.5 text-[0.8125rem] font-semibold", statusStyle[status])}>
-      <Icon className="size-3.5" aria-hidden /> {children}
+      <Icon className="size-3.5 shrink-0" aria-hidden /> <OverflowText>{children}</OverflowText>
     </span>
   );
 }

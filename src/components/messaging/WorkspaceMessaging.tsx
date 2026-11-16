@@ -151,7 +151,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 {c.unreadCount > 0 && <span className="ds-support font-bold shrink-0 rounded-ds-sm ds-status-blue px-2 py-0.5" aria-label={`${c.unreadCount} unread`}>{c.unreadCount}</span>}
               </div>
               {c.otherMfnId && <p className="ds-support font-mono">{c.otherMfnId}</p>}
-              {c.lastMessage && <p className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
+              {c.lastMessage && <p data-overflow-text className="ds-support mt-0.5 truncate text-ds-on-bg/70">{c.lastMessage}</p>}
               {c.archived && <p className="ds-support text-ds-on-bg/50">Archived</p>}
             </DsButton>
           ))}

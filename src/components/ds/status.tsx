@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OverflowText } from '@/components/portal/OverflowText';
 
 /** Universal portal status colors. Display-only: never changes underlying status values. */
 export type StatusTone = "red" | "green" | "yellow" | "neutral";
@@ -34,6 +35,6 @@ export function StatusPill({ status, tone, className }: { status: string; tone?:
   const t = tone ?? statusTone(status);
   const Icon = toneIcon[t];
   return <span className={cn("inline-flex items-center gap-1 rounded-ds-sm px-2 py-0.5 text-[0.8125rem] font-bold", toneClass[t], className)}>
-    <Icon className="size-3.5 shrink-0" aria-hidden />{humanStatus(status)}
+    <Icon className="size-3.5 shrink-0" aria-hidden /><OverflowText>{humanStatus(status)}</OverflowText>
   </span>;
 }

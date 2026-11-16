@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BrandName } from "@/components/brand/BrandName";
 import { usesOwnShell } from "@/components/public/PublicPage";
 import { TrainingCartProvider, TrainingCartIcon } from '@/components/training/TrainingCart';
+import { PortalOverflowTooltips } from '@/components/portal/OverflowText';
 
 function NotFoundComponent() {
   return (
@@ -104,6 +105,7 @@ function RootComponent() {
         </div>
       )}
       <Toaster position="top-center" />
+      <PortalOverflowTooltips />
       </TrainingCartProvider>
     </QueryClientProvider>
   );

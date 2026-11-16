@@ -42,4 +42,4 @@
 - New Trip estimate refresh is read-only through the existing server calculator; quote attachment compares the full trip and reviewed pricing inputs, and patient detail display uses a second safe allowlist. Why: stale prices cannot silently attach and worksheet presentation never exposes internal fields.
 - Large neutral canvases explicitly opt into one CSS texture token; children never inherit background images and accessibility/print modes suppress it. Why: shared intensity cannot texture controls, colored statuses or private Notes surfaces.
 
-- Master previews use removable in-memory fixtures, retain draft IDs, and disable writes. Why: never mutate live records.
+- Master previews retain draft IDs and use removable fixtures; writes disabled. Why: no live mutations.

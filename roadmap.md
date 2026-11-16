@@ -1,3 +1,8 @@
+# Compact portal text
+- [x] Shared clipped-text controller and explicit OverflowText, semantic compact targets, multiline exclusions, keyboard/hover disclosure.
+- [x] Ten navigation/overflow tests and 96 read-only Admin/Provider/Patient/Facility checks passed at 1280/768/390/320. Request overlays, fleet/offer details, schedule filters, earnings, People, Settings, messaging and notifications covered. Hover/focus exact text, viewport containment, Escape, no extra unclipped stops and multiline help verified. No page errors/overflow. Latest harness build OK.
+- [x] No database/schema/record changes, messages, submissions, financial actions or publication. Exact pass credits unavailable; 748 is billing-period usage.
+
 # Final targeted cleanup
 - [x] Master-only removable populated booking, invoice, passenger/delivery drafts, offer and fleet examples; real components reused and mutation paths blocked.
 - [x] Ten focused tests passed; 128 populated-path and public-instance checks passed at 1280/768/390/320 with zero page/console errors and zero page overflow. Passenger and delivery instructions retained on resume; customer type retained; inactive offer actions and example removal verified.

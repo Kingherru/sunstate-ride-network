@@ -781,3 +781,21 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .theme-portal .portal-history-table :where(th:last-child,td:last-child) { white-space: nowrap; }
 @media (min-width: 1024px) { .theme-portal .portal-history-table :where(th,td) { padding-inline: .75rem; } }
 @media (max-width: 639px) { .theme-portal .portal-main-module :where(.portal-business-body) { padding-inline: .75rem; } .theme-portal .portal-main-module :where(.portal-btn-primary,.portal-btn-secondary) { padding-inline: .75rem; } }
+
+/* Compact portal text only; body prose and public typography remain untouched. */
+.theme-portal .portal-overflow-text {
+  min-width: 0 !important; max-width: 100%; white-space: nowrap !important;
+  overflow: hidden !important; text-overflow: ellipsis; overflow-wrap: normal !important; word-break: normal !important;
+}
+.theme-portal span.portal-overflow-text { display: inline-block; vertical-align: bottom; }
+.theme-portal :is(button,a) > .portal-overflow-text { flex: 0 1 auto; }
+.theme-portal :is(button,[class*="ds-status-"],.portal-btn-primary,.portal-btn-secondary) { min-width: 0; max-width: 100%; }
+.theme-portal :is(button,a) > svg { flex-shrink: 0; }
+.theme-portal .portal-overflow-text:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 2px; }
+.theme-portal table { max-width: 100%; }
+.portal-overflow-tooltip {
+  position: fixed; z-index: 100; pointer-events: none; width: max-content;
+  max-width: min(360px, calc(100vw - 16px)); max-height: min(100px, calc(100dvh - 16px)); overflow-y: auto;
+  padding: .5rem .75rem; border-radius: 4px; background: var(--mfn-blue); color: var(--mfn-white);
+  font-size: .875rem; line-height: 1.4; white-space: normal; overflow-wrap: anywhere;
+}

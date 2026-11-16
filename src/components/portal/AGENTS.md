@@ -1,0 +1,1 @@
+- OverflowText and the single root-mounted PortalOverflowTooltips controller provide measured ellipsis and hover/focus disclosure for compact semantic targets; never select body prose or dedicated address/instruction values. Why: legacy and shared portal components need one presentation-only mechanism without replacing handlers or adding unclipped tab stops.

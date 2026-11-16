@@ -165,7 +165,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const indicator = useChangelogIndicator(changelogTo === "/admin/changelog", pathname === changelogTo);
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
-      {identity && <div className="px-3 pb-2">
+      {identity && <div className="portal-identity min-w-0 px-3 pb-2">
         {identity.name && <p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>}
         <p className="ds-support mt-1 uppercase text-ds-on-primary/85">{identity.label}</p>
         {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80">{identity.mfnId}</p>}

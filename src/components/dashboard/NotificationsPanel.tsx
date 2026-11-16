@@ -306,6 +306,7 @@ export function NotificationsPanel() {
                         >
                           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                             <p
+                              data-overflow-text
                               className={`text-sm break-words ${
                                 isUnread ? "font-bold text-foreground" : "font-normal text-foreground"
                               }`}

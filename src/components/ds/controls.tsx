@@ -1,4 +1,5 @@
-import { forwardRef, useId } from "react";
+import { Children, forwardRef, useId } from "react";
+import { OverflowText } from '@/components/portal/OverflowText';
 import { cn } from "@/lib/utils";
 
 const focus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-focus focus-visible:ring-offset-2";
@@ -15,7 +16,7 @@ const buttonVariants: Record<ButtonVariant, string> = {
 export const DsButton = forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: "md" | "sm" }
->(({ variant = "primary", size = "md", className, ...props }, ref) => (
+>(({ variant = "primary", size = "md", className, children, ...props }, ref) => (
   <button
     ref={ref}
     className={cn(
@@ -28,7 +29,7 @@ export const DsButton = forwardRef<
       className,
     )}
     {...props}
-  />
+  >{Children.map(children, child => typeof child === 'string' || typeof child === 'number' ? <OverflowText>{child}</OverflowText> : child)}</button>
 ));
 DsButton.displayName = "DsButton";
 
@@ -100,7 +101,7 @@ function ChoiceControl({ type, label, className, ...p }: React.InputHTMLAttribut
         className={cn("size-5 accent-[var(--ds-primary)] cursor-pointer disabled:cursor-not-allowed", focus)}
         {...p}
       />
-      {label}
+      <OverflowText>{label}</OverflowText>
     </label>
   );
 }
