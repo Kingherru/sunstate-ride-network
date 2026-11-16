@@ -26,7 +26,7 @@ export function FleetPanel({ only, primaryOnly=false }: { only?: "drivers" | "ve
   if (only === "drivers") return <DriversCard />;
   if (only === "vehicles") return <VehiclesCard primaryOnly={primaryOnly} />;
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
+    <div className="grid min-w-0 gap-5 lg:grid-cols-2">
       <DriversCard />
       <VehiclesCard />
     </div>
@@ -44,10 +44,10 @@ function DriversCard() {
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (d: any) => `${d.first_name} ${d.last_name} ${d.phone ?? ""} ${d.email ?? ""}`);
 
   return (
-    <section className="portal-business-section min-w-0 p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
+    <section className="portal-business-section min-w-0 py-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Drivers</h2>
-        <button onClick={() => setEditing({ status: "active" })} className="text-xs font-bold text-primary hover:underline">+ Add driver</button>
+        <DsButton variant="ghost" size="sm" onClick={() => setEditing({ status: "active" })}>+ Add driver</DsButton>
       </div>
       {q.isError ? <div role="alert" className="ds-support text-ds-error">Drivers couldn't load. <button onClick={() => q.refetch()} className="underline">Try again</button></div>
        : q.isLoading ? <p className="text-muted-foreground text-sm">Loading…</p>
@@ -510,8 +510,8 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
   const [filter, setFilter] = useFleetFilter();
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (v: any) => `${v.name} ${v.plate ?? ""} ${v.vehicle_type ?? ""}`);
   return (
-    <section className="portal-business-section min-w-0 p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
+    <section className="portal-business-section min-w-0 py-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">{primaryOnly?'Primary ambulatory vehicle':'Vehicles'}</h2>
         <DsButton variant="ghost" size="sm" onClick={() => setEditing({ vehicle_type: "sedan", status: "active",...(primaryOnly?{vehicle_category:'ambulatory',service_capabilities:['ambulatory']}:{} ) })}>+ Add vehicle</DsButton>
       </div>

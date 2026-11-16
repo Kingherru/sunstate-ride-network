@@ -127,7 +127,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   return (
     <div className="space-y-3">
     {demo && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved or sent.</p>}
-    <div className="grid min-w-0 items-stretch gap-4 md:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+    <div className="portal-message-layout grid min-w-0 items-stretch gap-4 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <div className={`min-w-0 space-y-2 md:border-r md:border-ds-border md:pr-4 ${selected ? "hidden md:block" : ""}`}>
         <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary ds-glass-blue px-3 py-2">
           <h3 className="ds-label uppercase tracking-[0.06em] text-ds-on-primary">Conversations</h3>
@@ -196,7 +196,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
             </div>
             {canCompose && (
               <div className="border-t border-ds-border p-3">
-                <p className="ds-support mb-2 rounded-ds-sm ds-status-yellow px-2 py-1 font-semibold">{NOTICE}</p>
+                <p className="ds-caption mb-2 border-l-2 border-ds-primary bg-ds-sky px-2 py-1 text-ds-primary">{NOTICE}</p>
                 <label htmlFor="wm-reply" className="sr-only">Reply message</label>
                 <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
                   <textarea id="wm-reply" value={draft} onChange={(e) => { setDraft(e.target.value.slice(0, 2000)); setSendError(""); }} maxLength={2000} rows={2}

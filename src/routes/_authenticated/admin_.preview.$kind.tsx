@@ -128,7 +128,7 @@ function PortalPreview() {
 const PREVIEW_USER = "00000000-0000-0000-0000-000000000000";
 
 function Panel({ children }: { children: React.ReactNode }) {
-  return <div className={`${panelCls} p-4 sm:p-6`}>{children}</div>;
+  return <div className="min-w-0">{children}</div>;
 }
 
 function Unavailable({ what }: { what: string }) {

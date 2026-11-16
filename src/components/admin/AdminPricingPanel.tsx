@@ -10,6 +10,8 @@ import { useAdminLevel } from "@/lib/use-admin-level";
 import { DsButton } from "@/components/ds/controls";
 import { DollarSign, RotateCcw, Save } from "lucide-react";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
+import { PortalTabbedLayout } from '@/components/portal/PortalTabbedLayout';
+import { ContractorConfiguration } from '@/components/admin/ContractorConfiguration';
 
 const GROUPS: Array<{ label: string; fields: Array<{ key: keyof MarketPricing; label: string }> }> = [
   {
@@ -56,20 +58,20 @@ function PricingColumn({
 }) {
   return (
     <section className="portal-business-section">
-      <div className="portal-business-heading grid min-w-0 gap-3 xl:min-h-40">
+      <div className="portal-business-heading grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0"><h3 className="ds-subheading flex items-center gap-2 uppercase"><DollarSign className="size-4 shrink-0" aria-hidden />{title}</h3><p className="ds-support mt-1">{subtitle}</p></div>
         {!readOnly && <DsButton type="button" size="sm" variant="secondary" className="justify-self-end" onClick={onReset}><RotateCcw className="size-4 shrink-0" aria-hidden />Reset to FL avg</DsButton>}
       </div>
       <div className="portal-business-body space-y-4">
-      {GROUPS.map(g => <section key={g.label} className="min-w-0 border-b border-ds-border pb-4 last:border-b-0 last:pb-0">
-        <h4 className="ds-label mb-3 uppercase text-ds-primary">{g.label}</h4>
+      {GROUPS.map(g => <details key={g.label} open={g.label !== 'Time & fees'} className="min-w-0 border-b border-ds-border pb-4 last:border-b-0 last:pb-0">
+        <summary className="ds-label mb-3 cursor-pointer uppercase text-ds-primary">{g.label}</summary>
         <div className="grid gap-3 sm:grid-cols-2">
           {g.fields.map(f => <label key={String(f.key)} className="min-w-0 space-y-1">
             <span className="ds-label block">{f.label}</span>
             <span className="portal-pricing-input"><span aria-hidden>$</span><input aria-label={`${title}: ${f.label} in dollars`} type="number" min="0" step="0.01" disabled={readOnly} value={String(values[f.key] ?? 0)} onChange={e => onChange({ ...values, [f.key]: Number(e.target.value) || 0 })} className="portal-money-input" /></span>
           </label>)}
         </div>
-      </section>)}
+      </details>)}
       </div>
       {!readOnly && <div className="portal-business-actions justify-end"><DsButton type="button" disabled={saving} onClick={onSave}><Save className="size-4 shrink-0" aria-hidden />{saving ? "Saving…" : "Save reference rates"}</DsButton></div>}
     </section>
@@ -77,6 +79,7 @@ function PricingColumn({
 }
 
 export function AdminPricingPanel() {
+  const [view, setView] = useState('market');
   const qc = useQueryClient();
   const level = useAdminLevel("pricing");
   const readOnly = level !== "manage";
@@ -104,7 +107,8 @@ export function AdminPricingPanel() {
   });
 
   return (
-    <div className="portal-business-form space-y-5">
+    <PortalTabbedLayout label="Pricing sections" queryKey="view" value={view} onChange={setView} options={[{value:'platform',label:'Membership & Network'},{value:'market',label:'Provider / Market Reference'},{value:'medicaid',label:'Medicaid Reference'}]}>
+    {view === 'platform' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Platform pricing & contractor requirements</h2><div className="portal-business-body"><ContractorConfiguration/></div></section> : <div className="portal-business-form space-y-5">
       <div className="space-y-2">
         <div className="flex items-center gap-2"><h2 className="ds-subheading uppercase text-ds-primary">Statewide pricing defaults</h2>{readOnly && <ReadOnlyBadge />}</div>
         <p className="ds-support text-ds-text-2">
@@ -113,7 +117,8 @@ export function AdminPricingPanel() {
         </p>
       </div>
 
-      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
+      <div className="min-w-0">
+        {view === 'market' &&
         <PricingColumn
           title="Provider / market reference rates"
           subtitle="Typical private-pay retail rates across FL NEMT providers."
@@ -123,7 +128,8 @@ export function AdminPricingPanel() {
           readOnly={readOnly}
           onSave={() => m.mutate('market')}
           saving={m.isPending || !q.data}
-        />
+        />}
+        {view === 'medicaid' &&
         <PricingColumn
           title="Medicaid reference information"
           subtitle="Managed transportation rates (Access2Care / MTM / ModivCare typical)."
@@ -133,10 +139,11 @@ export function AdminPricingPanel() {
           readOnly={readOnly}
           onSave={() => m.mutate('medicaid')}
           saving={m.isPending || !q.data}
-        />
+        />}
       </div>
 
       {q.isError && <p role="alert" className="ds-support text-ds-error">Reference rates could not load. Saving is unavailable until the current values load.</p>}
-    </div>
+    </div>}
+    </PortalTabbedLayout>
   );
 }

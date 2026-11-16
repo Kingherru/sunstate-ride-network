@@ -1,3 +1,12 @@
+# Pass 7 — shared portal structure cleanup
+- [x] Shared fluid width retained, redundant outer preview/People/Pricing surfaces removed; horizontal task tabs and shared form spacing preserved.
+- [x] Admin Pricing task tabs/group disclosures, list-first Administrators with focused permissions dialog, Settings Access/Security separated from Profile.
+- [x] Provider Settings setup action scoped to Profile, Trips toolbar, Fleet headers, Network offer-first layout, wider Messaging and compact safety notice, Training cards and Earnings toolbar.
+- [x] Patient/Facility People consolidated contact actions and payer rows; role-aware Settings and Facility staff task. Existing simple provider search, trip/invoice layout and authorization unchanged.
+- [x] Thirteen existing navigation/overflow/padding/draft tests passed; latest harness build OK. Ten representative pages at 1280/390px: 134 page/tab/keyboard/dialog observations, no layout overflow or failed tab selection; one sr-only H1 per page and existing content headings retained. No real writes or publication.
+- [ ] Zero-console verification incomplete: navigation produced aborted authenticated reads (Failed to fetch); final network-idle retry timed out on Admin Settings. Populated Accepted/Active preview status crash corrected and all tabs rendered in subsequent run. No server/auth changes to mask read failures.
+- [ ] Separate manual type/build commands not run because harness owns compilation. Exact pass credits unavailable: ledger only exposes recording-window/billing-period totals, not a finalized charge for this turn.
+
 # Form padding and notification indicators
 - [x] Added exactly 1px to authored portal field padding, including dialogs and previews; non-text controls excluded. Fixed important search-utility precedence and padding-transition drift.
 - [x] Shared static light-semantic circles replace compact messaging, Network, connection, change-log, notification and cart markers; exact accessible counts and full written statuses retained.

@@ -12,10 +12,7 @@ function AdminPricing() {
   return (
     <>
       <PageHead title="Pricing">Changes here affect future price estimates only. No money moves from this page.</PageHead>
-      <section className="portal-admin-module">
-        <AdminPricingPanel />
-        <section className="portal-business-section mt-6"><h2 className="portal-business-heading ds-subheading uppercase">Platform pricing & contractor requirements</h2><div className="portal-business-body"><ContractorConfiguration/></div></section>
-      </section>
+      <AdminPricingPanel />
     </>
   );
 }

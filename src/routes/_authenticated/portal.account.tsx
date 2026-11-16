@@ -58,7 +58,7 @@ function Account() {
   const [tab, setTab] = useState<Tab>(search.section === 'connections' ? 'connections' : 'profile');
   const setupLink = ws?.role === 'owner' && !ws.is_contractor ? <div className="mb-5 border-b border-ds-border pb-4"><Link to="/onboarding" className="ds-label text-ds-link underline">{access.onboardingPending ? 'Continue account setup' : 'Review account setup'}</Link><p className="ds-caption mt-1">Update missing information without changing your portal access.</p></div> : null;
   if (!provider) return <><PageHead title="Settings" /><CustomerSettings patient={ws?.type === 'private_pay'} workspaceId={ws?.id} canManage={!!ws && ['owner','admin'].includes(ws.role)} email={s.email} /></>;
-  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div>{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} initialSection={search.section} teamMessaging={<TeamMessaging workspaceId={ws.id} />} financialTools={ws.role === 'owner' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Payout preferences</h2><div className="portal-business-body space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></section> : null} /></div></>;
+  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} initialSection={search.section} setupAction={setupLink} teamMessaging={<TeamMessaging workspaceId={ws.id} />} financialTools={ws.role === 'owner' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Payout preferences</h2><div className="portal-business-body space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></section> : null} /></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" },
        { value: "integrations", label: "Integrations" },
@@ -181,7 +181,7 @@ function TeamMessaging({ workspaceId }: { workspaceId: string }) {
 
   const members = q.data ?? [];
   return (
-    <div className="mt-8 max-w-2xl space-y-3">
+    <div className="mt-5 min-w-0 space-y-3">
       <h2 className="ds-subheading uppercase text-ds-primary">Team messaging</h2>
       <p className="ds-support">Owners and workspace admins can always message other businesses. Let other team members send network messages for this workspace, too.</p>
       {q.isLoading && <p className="ds-support">Loading…</p>}

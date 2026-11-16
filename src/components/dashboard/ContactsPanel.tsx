@@ -45,7 +45,10 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
 
   return (
     <div className="space-y-4">
-      <ContactImportExport contacts={q.data??[]}/>
+      <div className="portal-toolbar border-b border-ds-border pb-3">
+        <ContactImportExport contacts={q.data??[]}/>
+        <DsButton onClick={() => setEditing({ contact_type: "personal" })}>+ New contact</DsButton>
+      </div>
       <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="portal-search min-w-0">
           <Search className="size-4" aria-hidden />
@@ -57,9 +60,6 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
             className="portal-input w-full"
           />
         </div>
-        <DsButton onClick={() => setEditing({ contact_type: "personal" })} className="shrink-0 whitespace-nowrap">
-          + New contact
-        </DsButton>
       </div>
 
       {q.isError ? <p role="alert" className="text-destructive">Contacts not available. Try again.</p> : q.isLoading ? (

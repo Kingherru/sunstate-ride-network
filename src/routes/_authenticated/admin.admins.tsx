@@ -9,6 +9,7 @@ import { PageHead } from "@/components/portal/PortalShell";
 import { DsEmpty } from "@/components/ds/feedback";
 import { DsButton } from '@/components/ds/controls';
 import { StatusPill, humanStatus } from '@/components/ds/status';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const groupCls = 'portal-business-section';
 const headCls = 'ds-subheading uppercase text-ds-primary';
@@ -40,7 +41,7 @@ function AdminsPage() {
     <>
       <PageHead title="Administrators">Only you, the Master Admin, can add, change or remove regular administrators. New administrators start with no sections and no accounts.</PageHead>
       <div className="mb-4 flex items-center gap-2 ds-support text-ds-primary"><ShieldCheck className="size-4 shrink-0" aria-hidden />Master Admin identity and full access remain protected.</div>
-      <div className="portal-admin-module portal-business-form grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
+      <div className="portal-admin-module portal-business-form min-w-0">
         <aside className="min-w-0 space-y-5">
           <section aria-labelledby="current-admins" className="portal-business-section">
             <h2 id="current-admins" className={`${headCls} portal-business-heading flex items-center gap-2`}><Users className="size-4 shrink-0" aria-hidden />Administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
@@ -57,7 +58,7 @@ function AdminsPage() {
               </DsButton>
             </li>)}</ul>}
           </section>
-          <details className="portal-business-section">
+          <details className="portal-business-section mt-5">
             <summary id="add-admin" className={`${headCls} portal-business-heading cursor-pointer`}><UserPlus className="mr-2 inline size-4" aria-hidden />Add administrator</summary>
             <div className="portal-business-body">
             <p className="ds-support mt-1">Promotes an existing account. New administrators start with No Access and no account scope.</p>
@@ -68,7 +69,7 @@ function AdminsPage() {
             </form>
             </div>
           </details>
-          <details className="portal-business-section">
+          <details className="portal-business-section mt-5">
             <summary id="perm-history" className={`${headCls} portal-business-heading cursor-pointer`}><History className="mr-2 inline size-4" aria-hidden />Recent permission history</summary>
             {audit.length === 0 ? <DsEmpty title="No changes yet" /> : (
               <ul className="max-h-[32rem] divide-y divide-ds-border overflow-y-auto">{audit.map((r: any) => (
@@ -79,9 +80,13 @@ function AdminsPage() {
             <p className="ds-caption border-t border-ds-border px-4 py-2 sm:px-5">History is append-only and cannot be edited.</p>
           </details>
         </aside>
-        <div className="min-w-0">
-          {!selectedId ? <section className="portal-business-section"><DsEmpty title="Select an administrator to review permissions" /></section> : admins.filter(a => a.userId === selectedId).map(a => <div key={a.userId}><DsButton variant="ghost" size="sm" onClick={() => setSelectedId(null)}>Close permissions</DsButton><AdminCard admin={a} workspaces={workspaces as any[]} /></div>)}
-        </div>
+        <Dialog open={selectedId !== null} onOpenChange={open => { if (!open) setSelectedId(null); }}>
+          <DialogContent className="theme-portal portal-business-form sm:max-w-3xl">
+            <DialogTitle className="text-ds-primary">Administrator permissions</DialogTitle>
+            <DialogDescription>Review the selected administrator’s access and assigned accounts.</DialogDescription>
+            {admins.filter(a => a.userId === selectedId).map(a => <AdminCard key={a.userId} admin={a} workspaces={workspaces as any[]} />)}
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
@@ -113,7 +118,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
 
   return (
     <section className="portal-admin-editor" aria-labelledby={`adm-${id}`}>
-      <div className="portal-admin-editor-header flex flex-wrap items-start justify-between gap-3">
+      <div className="portal-admin-editor-header grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
           <h3 id={`adm-${id}`} className="ds-subheading break-words text-ds-primary">{admin.name || admin.email}</h3>
           <p className="ds-support break-all">{admin.email} · <span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
@@ -140,7 +145,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
               { title: 'Operations', keys: ['requests', 'schedule', 'classify'] },
               { title: 'Finance', keys: ['pricing', 'payouts', 'membership'] },
               { title: 'Custom access', keys: ['integrations'] },
-            ].map(group => <section key={group.title} className="border-b border-ds-border pb-4 last:border-0"><h5 className="ds-label mb-2 text-ds-primary">{group.title}</h5><div className="grid gap-3 sm:grid-cols-2">{ADMIN_SECTIONS.filter(s => group.keys.includes(s.key)).map((s) => (
+            ].map(group => <details key={group.title} open={group.title === 'Support'} className="border-b border-ds-border pb-4 last:border-0"><summary className="ds-label mb-2 cursor-pointer text-ds-primary">{group.title}</summary><div className="grid gap-3 sm:grid-cols-2">{ADMIN_SECTIONS.filter(s => group.keys.includes(s.key)).map((s) => (
               <div key={s.key} className="grid gap-1 rounded-ds-sm bg-ds-surface px-3 py-2">
                 <label htmlFor={`${id}-${s.key}`} className="ds-support min-w-0 font-semibold text-ds-on-surface">{s.label}</label>
                 <select id={`${id}-${s.key}`} disabled={preset !== "custom"} className="portal-input" value={eff[s.key] ?? "none"}
@@ -148,7 +153,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
                   <option value="none">No access</option><option value="read">Read-only</option><option value="manage">Manage</option>
                 </select>
               </div>
-            ))}</div></section>)}
+            ))}</div></details>)}
           </div>
           <p className="ds-caption mt-2">Security settings and administrator management always stay with the Master Admin.</p>
         </fieldset>

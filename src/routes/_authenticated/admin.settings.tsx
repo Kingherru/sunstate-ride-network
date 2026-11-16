@@ -38,15 +38,16 @@ function AdminSettings() {
         Your own profile, password and admin preview tools. Nothing here changes data unless you submit a form.
       </PageHead>
 
-      <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'},...(access.isMasterAdmin?[{value:'regions',label:'Regional Readiness'},{value:'training',label:'Training administration'}]:[])]}>
+      <SettingsShell value={tab} onChange={setTab} aliases={{security:'access',administration:'tools'}} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'access',label:'Access & Security'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'},...(access.isMasterAdmin?[{value:'regions',label:'Regional Readiness'},{value:'training',label:'Training administration'}]:[])]}>
       {tab==='training'&&access.isMasterAdmin&&<TrainingAdministration/>}
       {tab==='regions'&&access.isMasterAdmin&&<RegionalReadiness/>}
-      {tab==='profile'&&<div className="space-y-5"><PersonalSettings section="profile"/><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Email & confirmation</h2><div className="portal-business-body"><SecureEmailChange/></div></section><div className="space-y-5" aria-labelledby="admin-account-access"><h2 id="admin-account-access" className="ds-subheading uppercase text-ds-primary">Account & Access</h2><PersonalSecurity email={user.email} securityOnly inline/>{access.isMasterAdmin&&<section className="portal-business-section"><h3 className="portal-business-heading ds-subheading uppercase">Protected administration</h3><div className="portal-business-body space-y-5"><p className="ds-support">Master Admin access is protected; personal profile fields never change permissions.</p><Link to="/admin/admins" className="ds-label text-ds-link underline">Manage administrators</Link><details><summary className="ds-label cursor-pointer">Security audit history</summary><div className="pt-4"><AuditLogPanel/></div></details><details><summary className="ds-label cursor-pointer">Expiring credentials</summary><div className="pt-4"><ExpiringCredentialsPanel/></div></details></div></section>}</div></div>}
+      {tab==='profile'&&<PersonalSettings section="profile"/>}
+      {tab==='access'&&<div className="space-y-5"><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Email & confirmation</h2><div className="portal-business-body"><SecureEmailChange/></div></section><PersonalSecurity email={user.email} securityOnly inline/>{access.isMasterAdmin&&<section className="portal-business-section"><h3 className="portal-business-heading ds-subheading uppercase">Protected administration</h3><div className="portal-business-body space-y-5"><p className="ds-support">Master Admin access is protected; personal profile fields never change permissions.</p><Link to="/admin/admins" className="ds-label text-ds-link underline">Manage administrators</Link><details><summary className="ds-label cursor-pointer">Security audit history</summary><div className="pt-4"><AuditLogPanel/></div></details><details><summary className="ds-label cursor-pointer">Expiring credentials</summary><div className="pt-4"><ExpiringCredentialsPanel/></div></details></div></section>}</div>}
       {tab==='notifications'&&<PersonalSettings section="notifications" requiredInApp/>}
       {tab==='interface'&&<SignInPreference/>}{tab==='accessibility'&&<InterfaceSize/>}
       {tab==='tools'&&<>
       {access.isMasterAdmin && (
-        <section className={`${panelCls} mb-6`} aria-labelledby="portal-previews-h">
+        <section className="portal-business-section mb-5" aria-labelledby="portal-previews-h">
           <h2 id="portal-previews-h" className="ds-subheading flex items-center gap-2 border-b border-ds-border px-4 py-3 uppercase text-ds-primary sm:px-5">
             <Monitor className="size-4" aria-hidden />Portal previews
           </h2>
@@ -66,7 +67,7 @@ function AdminSettings() {
         </section>
       )}
       {access.isMasterAdmin && (
-        <section className={`${panelCls} mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5`}>
+        <section className="portal-business-section mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4">
           <div className="min-w-0 max-w-2xl">
             <h2 className="ds-subheading uppercase text-ds-primary">Launch readiness</h2>
             <p className="ds-support mt-1 text-ds-text-2">Read-only checklist of what is ready, off, or waiting on owner action.</p>
@@ -74,9 +75,9 @@ function AdminSettings() {
           <Link to="/admin/launch" className={actionCls}>Open</Link>
         </section>
       )}
-      {access.isMasterAdmin && <section className={`${panelCls} mb-6 p-5`}><NetworkTimingSettings /></section>}
+      {access.isMasterAdmin && <section className="portal-business-section mb-5 py-4"><NetworkTimingSettings /></section>}
 
-      <section className={`${panelCls} mb-6`} aria-labelledby="preview-h">
+      <section className="portal-business-section mb-5" aria-labelledby="preview-h">
         <h2 id="preview-h" className="ds-subheading border-b border-ds-border px-4 py-3 uppercase text-ds-primary sm:px-5">Other page previews</h2>
         <ul className="divide-y divide-ds-border">
           {PREVIEWS.map((p) => (

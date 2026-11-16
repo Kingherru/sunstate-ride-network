@@ -53,7 +53,7 @@ export function TrainingTests() {
         const progress = e?.progress;
         const pct = typeof progress === 'number' ? Math.max(0, Math.min(100, Math.round(progress))) : null;
         return (
-          <article key={c.id} className={`${panelCls} flex flex-col p-5 sm:p-6`}>
+          <article key={c.id} className="flex min-w-0 flex-col rounded-ds border border-ds-border p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <BookOpen className="mt-1 size-5 shrink-0 text-ds-primary" aria-hidden />
               <div className="min-w-0">

@@ -37,22 +37,21 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
       {preview.active&&<DsButton size="sm" variant="ghost" onClick={()=>setSample(true)}>Preview payer agreement</DsButton>}
       {sample&&<PayerAgreement workspaceId="00000000-0000-4000-8000-000000000001" payerId="00000000-0000-4000-8000-000000000002" onClose={()=>setSample(false)}/>}
       {agreement?.workspace_id&&<PayerAgreement workspaceId={agreement.workspace_id} payerId={agreement.id} onClose={()=>setAgreement(null)}/>}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] border-b border-ds-border pb-3">
         <p className="min-w-0 flex-1 text-xs text-muted-foreground">
           Payers are billing contacts, not account members. Payment-method collection is unavailable until secure tokenized setup is activated.
         </p>
-        <button onClick={() => setEditing({ active: true, multi_load_ok: false })}
-          className="shrink-0 whitespace-nowrap rounded-sm bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+        <DsButton onClick={() => setEditing({ active: true, multi_load_ok: false })}>
           Add payer
-        </button>
+        </DsButton>
       </div>
 
       {q.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
-      <ul className="space-y-2">
+      <ul className="divide-y divide-ds-border">
         {(q.data ?? []).map((p) => (
-          <li key={p.id} className="rounded-sm border border-border bg-card p-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <li key={p.id} className="min-w-0 py-4">
+            <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
               <div className="min-w-0 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-bold">{p.name}</span>
@@ -70,15 +69,15 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
                   </div>
                 )}
               </div>
-              <div className="flex shrink-0 gap-3 text-sm font-bold">
+              <div className="portal-toolbar text-sm font-bold">
                 {p.workspace_id&&<DsButton variant="ghost" size="sm" onClick={()=>setAgreement(p)}>Rate agreement</DsButton>}
-                <button onClick={() => setEditing(p)} className="text-primary hover:underline">Edit</button>
-                <button
+                <DsButton variant="ghost" size="sm" onClick={() => setEditing(p)}>Edit</DsButton>
+                <DsButton variant="ghost" size="sm"
                   onClick={() => { if (confirm(`Remove payer "${p.name}"?`)) del.mutate(p.id); }}
-                  className="text-destructive hover:underline"
+                  className="text-ds-error"
                 >
                   Remove
-                </button>
+                </DsButton>
               </div>
             </div>
           </li>

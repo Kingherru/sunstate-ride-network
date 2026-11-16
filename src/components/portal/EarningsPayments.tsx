@@ -17,7 +17,7 @@ export function EarningsPayments({ userId }: { userId: string }) {
     { value: "drivers", label: "Driver & contractor earnings" }, { value: "network", label: "Network settlements" },
     { value: "provider", label: "Provider balance" }, { value: "payouts", label: "Payment & payout history" },
   ]} >
-    <p className="ds-support bg-ds-sky p-3">Financial execution OFF · These records do not represent a bank balance. <Link to="/portal/account" search={{section:'membership'}} className="font-semibold text-ds-primary underline">Membership & billing settings</Link></p>
+    <div className="portal-toolbar border-b border-ds-border pb-3"><p className="ds-support">Financial execution OFF · These records do not represent a bank balance.</p><Link to="/portal/account" search={{section:'membership'}} className="ds-label font-semibold text-ds-primary underline">Membership & billing settings</Link></div>
     {preview.active ? <PreviewFinancialExamples section={tab}/>
       : tab === "drivers" ? <div className="space-y-5"><EarningsLedger /><DriverEarningsPanel /></div> : tab === "network" ? <NetworkSettlements /> : tab === "provider" ? <ProviderBalancePanel /> : <PayoutsPanel userId={userId} />}</PortalTabbedLayout></div>;
 }

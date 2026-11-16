@@ -19,7 +19,7 @@ function PortalContacts() {
   return (
     <>
       <PageHead title="People" />
-      <section className={`${panelCls} p-4 sm:p-6`}>
+      <section className="min-w-0">
         <ContactsPayersPanel
           tab={tab ?? "contacts"}
           patient={access.primary?.type==='private_pay'} workspaceId={access.primary?.id}
