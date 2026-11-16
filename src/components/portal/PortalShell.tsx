@@ -115,7 +115,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 
   const search = useRouterState({ select: (s) => s.location.search as Record<string, unknown> });
   const isActive = (i: NavItem) => i.search
-    ? pathname === i.to && Object.entries(i.search).every(([k, v]) => String((search as Record<string, unknown>)?.[k] ?? "") === v)
+    ? pathname === i.to && Object.entries(i.search).every(([k, v]) => String(search[k] ?? (k === "page" ? "overview" : k === "accountType" ? "general_facility" : "")) === v)
     : (i.exact ? pathname === i.to || pathname === i.to + "/" : pathname === i.to || pathname.startsWith(i.to + "/"));
 
   const msgUnread = usePortalQuery({
@@ -142,9 +142,9 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
         const Icon = iconFor(i.iconFor ?? i.to);
         const showMsgDot = (["/portal/messaging", "/admin/messaging"].includes(i.iconFor ?? i.to) && combinedUnread > 0) || (i.to === "/portal/network" && networkUnread > 0);
         return (
-          <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} aria-current={isActive(i) ? "page" : undefined}
+          <Link key={i.to + JSON.stringify(i.search ?? {})} to={i.to as "/portal"} search={i.search as any} activeOptions={{ exact: i.exact, includeSearch: !!i.search }} activeProps={{ 'aria-current': isActive(i) ? 'page' : undefined }} aria-current={isActive(i) ? "page" : undefined}
             className={cn("ds-button-text flex items-center gap-2.5 rounded-ds-sm px-3 py-2.5 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus",
-              isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
+              isActive(i) ? "bg-ds-action text-ds-on-action" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
             <Icon className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{i.label}</span>
             {showMsgDot && <Dot kind="update" className="ml-auto" />}
@@ -252,10 +252,12 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
 }
 
 export function PageHead({ title, action, children }: { title: string; action?: React.ReactNode; children?: React.ReactNode }) {
+  const heading = <h1 className="sr-only">{title}</h1>;
+  if (!action && !children) return heading;
   return (
     <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="ds-section-title uppercase text-ds-primary">{title}</h1>
+      <div className={children ? "min-w-0" : "sr-only"}>
+        {heading}
         {children && <div className="ds-body mt-1 text-ds-text-2">{children}</div>}
       </div>
       {action}
