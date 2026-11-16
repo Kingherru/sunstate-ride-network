@@ -23,12 +23,12 @@ const fee = (c: number) => Math.round(c * 0.02);
 
 /* ---------- Fleet ---------- */
 export const DEMO_DRIVERS = [
-  { id: "preview-driver-1", first_name: "Dana", last_name: "Driverly (Demo)", phone: "(555) 010-0001", email: "dana.demo@example.com", status: "active", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "weekly", days: {} }, service_capabilities: ["wheelchair"], primary_vehicle_id: "preview-vehicle-1", contractor_pricing: {} },
+  { id: "preview-driver-1", workspace_id: "preview-ws", mfn_id: "MFN-P-DEMO-DRIVER", credential_status: "Preview evidence — not verified", first_name: "Dana", last_name: "Driverly (Demo)", phone: "(555) 010-0001", email: "dana.demo@example.com", status: "active", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "weekly", days: {} }, service_capabilities: ["wheelchair"], primary_vehicle_id: "preview-vehicle-1", contractor_pricing: {} },
   { id: "preview-driver-2", workspace_id:'preview-ws', first_name: "Sam", last_name: "Sample (Demo)", phone: "(555) 010-0002", email: "", status: "active", employment_type: "independent_contractor", pay_type: "independent_contractor", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
   { id: "preview-driver-3", first_name: "Rae", last_name: "Retired (Demo)", phone: "(555) 010-0003", email: "", status: "inactive", employment_type: "employee_w2", pay_type: "hourly", availability: { mode: "flexible" }, service_capabilities: ["ambulatory"], primary_vehicle_id: null, contractor_pricing: {} },
 ];
 export const DEMO_VEHICLES = [
-  { id: "preview-vehicle-1", workspace_id:'preview-ws', name: "Van 02 (Demo)", make:'Demo',model:'Accessible Van',model_year:2024,vehicle_category:'wheelchair',vehicle_type:'wheelchair_van',service_capabilities:['wheelchair'],accessibility_equipment:'Demo ramp', plate: "DEMO01", type: "wheelchair", capacity: 4, wheelchair_capacity:2, wheelchair_positions: 2, status: "active", assigned_driver_id: "preview-driver-1" },
+  { id: "preview-vehicle-1", workspace_id:'preview-ws', name: "Van 02 (Demo)", make:'Demo',model:'Accessible Van',model_year:2024,vehicle_category:'wheelchair',vehicle_type:'wheelchair_van',service_capabilities:['wheelchair'],accessibility_equipment:'Demo ramp',masked_vin:'•••••••••••••1234',insurance_expiry:'2027-05-01',evidence_status:'under_review',regional_service_areas:{areas:[{country:'US',state:'FL',countyEquivalent:'Orange',locality:'Orlando',postalCode:'32801',timezone:'America/New_York',region:'central',evidence:'provider_entered'}],crossState:false,radius:null},notes:'Synthetic vehicle history — no real assignments.', plate: "DEMO01", type: "wheelchair", capacity: 4, wheelchair_capacity:2, wheelchair_positions: 2, status: "active", assigned_driver_id: "preview-driver-1" },
   { id: "preview-vehicle-2", name: "Van 05 (Demo)", plate: "DEMO02", type: "ambulatory", capacity: 4, wheelchair_positions: 0, status: "active", assigned_driver_id: null },
 ];
 
@@ -88,7 +88,8 @@ export const DEMO_OFFERS: NetworkOffer[] = [OFFER_IN, OFFER_COUNTER,
  {...OFFER_IN,id:uuid(23),mfn_id:'MFN-O-DEMO23',expires_at:iso(5*60000)},
  {...OFFER_IN,id:uuid(24),mfn_id:'MFN-O-DEMO24',status:'accepted'},
  {...OFFER_IN,id:uuid(25),mfn_id:'MFN-O-DEMO25',status:'unavailable'},
- {...OFFER_IN,id:uuid(26),mfn_id:'MFN-O-DEMO26',status:'closed'},
+ {...OFFER_IN,id:uuid(26),mfn_id:'MFN-O-DEMO26',status:'expired',expires_at:iso(-H)},
+ {...OFFER_IN,id:uuid(28),mfn_id:'MFN-O-DEMO28',status:'declined',expires_at:iso(-H)},
  {...OFFER_IN,id:uuid(27),mfn_id:'MFN-O-DEMO27',status:'pending'},
 ];
 
@@ -109,7 +110,7 @@ export function demoOfferDetail(id: string): OfferSafeDetail {
   const o = [...DEMO_OFFERS, ...DEMO_ACTIVITY.flatMap((a) => a.offers)].find((x) => x.id === id) ?? OFFER_IN;
   const open = ["pending", "countered", "revised"].includes(o.status);
   return {
-    activity_revision:2,can_message:true,pickup_timezone:id===uuid(22)?'America/Chicago':'America/New_York',offer_version:iso(-H),sender_business:'Bayshore Mobility Co. (Demo)',match_explanation:[id===uuid(22)?'Region service-area match':'County service-area match','Eligible vehicle and driver','Explicit operating time reviewed'],pilot_reason:id===uuid(27)?'Pilot emergency stop':id===uuid(25)?'Eligibility evidence unavailable':id===uuid(26)?'Assignment rolled back — offer unavailable':undefined,
+    activity_revision:2,can_message:open||o.status==='accepted',pickup_timezone:id===uuid(22)?'America/Chicago':'America/New_York',offer_version:iso(-H),sender_business:'Bayshore Mobility Co. (Demo)',match_explanation:[id===uuid(22)?'Region service-area match':'County service-area match','Eligible vehicle and driver','Explicit operating time reviewed'],pilot_reason:id===uuid(27)?'Pilot emergency stop':id===uuid(25)?'Eligibility evidence unavailable':id===uuid(26)?'Assignment rolled back — offer unavailable':undefined,
     offer_mfn_id: o.mfn_id, status: o.status, viewer: "receiver", distribution_stage_miles: 20, distribution_status: o.status === "accepted" ? "provider_selected" : "offers_sent",
     stages: [{ radius_miles: 20, sent_at: iso(-4 * H) }],
     versions: [{ side: "sender", action: "offered", amount_cents: o.amount_cents, created_at: iso(-4 * H) }, ...(o.status === "countered" ? [{ side: "receiver", action: "countered", amount_cents: o.amount_cents + 1300, created_at: iso(-2 * H) }] : [])],
@@ -144,6 +145,7 @@ export const PROVIDER_DEMO_FIXTURES: Record<string, unknown> = PROVIDER_DEMO_ENA
 export function providerDemoKeyed(queryKey: readonly unknown[]): unknown | undefined {
   if (!PROVIDER_DEMO_ENABLED) return undefined;
   if (queryKey[0] === "day-reservations") return [{id:'preview-owned-trip',pickup_date:String(queryKey[1]),pickup_time:'14:00',scheduled_start_time:'14:00',assignment_end_time:'15:00',estimated_duration_seconds:3600,patient_first_name:'Pat',patient_last_name:'Patient (Demo)',pickup_address:'Demo pickup',pickup_city:'Orlando',dropoff_address:'Demo destination',dropoff_city:'Winter Park',transport_type:'ambulatory',trip_kind:'passenger',driver_id:null,assigned_driver_id:null,vehicle_id:null,status:'open',reservation_state:'unconfirmed'}];
+  if (queryKey[0] === 'offer-history') return demoOfferDetail(String(queryKey[1])).versions.map((v,i)=>({...v,id:`demo-history-${i}`,business_note:'Synthetic negotiation history'}));
   if (queryKey[0] === "offer-safe-detail") return demoOfferDetail(String(queryKey[1] ?? ""));
   if (queryKey[0] === "earnings-ledger") return demoLedger(queryKey[1] as never);
   return undefined;

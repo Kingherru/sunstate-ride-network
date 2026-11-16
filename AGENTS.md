@@ -41,3 +41,5 @@
 - New Trip uses basic allowlisted authorized defaults and immutable patient/contact/payer references with database guards; inline CRM forms reuse the existing models and payment-method mutations stay disabled. Why: no PII browser persistence, cross-workspace billing or automatic Network sharing.
 - New Trip estimate refresh is read-only through the existing server calculator; quote attachment compares the full trip and reviewed pricing inputs, and patient detail display uses a second safe allowlist. Why: stale prices cannot silently attach and worksheet presentation never exposes internal fields.
 - Large neutral canvases explicitly opt into one CSS texture token; children never inherit background images and accessibility/print modes suppress it. Why: shared intensity cannot texture controls, colored statuses or private Notes surfaces.
+
+- Master previews use removable in-memory fixtures, retain draft IDs, and disable writes. Why: never mutate live records.

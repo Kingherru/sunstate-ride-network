@@ -36,7 +36,7 @@ export function ProviderNetworkPage() {
     {preview.active&&view==='contractors'&&<section className="space-y-3"><h2 className="ds-subheading text-ds-primary">Synthetic eligible ambulatory trip assignment</h2><ContractorAssignment tripId="00000000-0000-4000-8000-000000000048" service="ambulatory"/></section>}
     <PortalTabbedLayout label="Network views" queryKey="view" value={view} onChange={setView} options={[{ value: 'offers', label: 'Received offers',badge:badge('offers') }, { value: 'activity', label: 'Sent & negotiations',badge:badge('activity') }, { value: 'payments', label: 'Accepted / active',badge:badge('payments') }, { value: 'settlements', label: 'Settlements',badge:badge('settlements') }, { value: 'patients', label: 'Patient requests',badge:badge('patients') }, { value: 'providers', label: 'Provider directory',badge:badge('providers') },{value:'contractors',label:'Contractor connections',badge:badge('contractors')}]} >
     <section className="min-w-0 py-2">
-      {view === 'offers' ? <ProviderNetworkOffers /> : view === 'contractors'?<ContractorNetwork/>: view === 'patients' ? <TargetedPatientRequests /> : view === 'activity' ? <DistributionActivity /> : view === 'payments' ? <NetworkPayments /> : view === 'settlements' ? <NetworkSettlements /> : <ProviderDirectory providerOperations />}
+      {view === 'offers' ? <ProviderNetworkOffers actionsDisabled={inactive || demoInactive}/> : view === 'contractors'?<ContractorNetwork/>: view === 'patients' ? <TargetedPatientRequests /> : view === 'activity' ? <DistributionActivity /> : view === 'payments' ? <NetworkPayments /> : view === 'settlements' ? <NetworkSettlements /> : <ProviderDirectory providerOperations />}
     </section>
     </PortalTabbedLayout>
   </div>;

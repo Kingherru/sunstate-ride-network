@@ -7,6 +7,7 @@ import { actionCls } from "@/components/portal/PortalShell";
 import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import {ProviderExports} from './ProviderExports';
 import {SelectedTripExport} from './SelectedTripExport';
+import { usePortalPreview } from './preview-data';
 
 export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 
@@ -18,6 +19,7 @@ export type ProviderTripView = "new" | "reservations" | "drafts" | "history";
 export function ProviderTrips({ userId, initial = "new" }: { userId: string; initial?: ProviderTripView }) {
   const [view, setView] = useState<ProviderTripView>(initial);
   const navigate = useNavigate();
+  const preview = usePortalPreview();
   return (
     <div className="space-y-5">
       <PortalTabbedLayout label="Trip views" queryKey="view" value={view} onChange={setView}
@@ -39,7 +41,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
       )}
       {view === "reservations" && <ReservationsPanel userId={userId} scope="provider" hideReferrals />}
       {view === "drafts" && (
-        <SavedTripsPanel variant="drafts" onResume={(draft) => navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
+        <SavedTripsPanel variant="drafts" onResume={(draft) => preview.active ? navigate({ to: '/admin/preview/$kind', params: {kind: preview.kind}, search: {page: 'requests/new', accountType: preview.accountType, draft: draft.id} }) : navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
       )}
       {view === "history" && <><TripHistoryPanel userId={userId} /><details className="mt-5"><summary className="ds-label cursor-pointer">Selected-trip reports</summary><div className="pt-4"><SelectedTripExport /></div></details><details className="mt-5"><summary className="ds-label cursor-pointer">Additional trip exports</summary><div className="pt-4"><ProviderExports /></div></details></>}
     </PortalTabbedLayout>

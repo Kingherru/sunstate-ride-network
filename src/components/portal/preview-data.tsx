@@ -4,6 +4,7 @@ import { PROVIDER_DEMO_FIXTURES, providerDemoKeyed } from "./demo-fixtures/provi
 import {contractorFixtures,CONTRACTOR_DEMO_ENABLED} from './demo-fixtures/contractor-demo';
 import {PILOT_CHECKS} from '@/lib/pilot-completion-rules';
 import {REGIONAL_DEMO_INVOICE} from './demo-fixtures/regional-invoice';
+import { DEMO_TRIP_DRAFTS } from './demo-fixtures/trip-drafts';
 import { useMutation, useQuery, type UseMutationOptions, type UseMutationResult, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query";
 
 /** Shared state for Master-Admin portal previews: which kind of portal is
@@ -13,6 +14,7 @@ export type PortalPreviewState = {
   active: boolean;
   kind: "provider" | "customer";
   accountType: string;
+  examples?: boolean;
 };
 
 export const PortalPreviewContext = createContext<PortalPreviewState>({ active: false, kind: "customer", accountType: "general_facility" });
@@ -31,6 +33,7 @@ export function previewBlocked() {
  *  Unknown keys fall back to an empty array so panels show their real empty
  *  states instead of crashing. */
 const PREVIEW_FIXTURES: Record<string, unknown> = {
+  'trip-drafts': DEMO_TRIP_DRAFTS,
   'private-regional-profile':{areas:[{country:'US',state:'FL',countyEquivalent:'Orange',countyType:'county',locality:'Orlando',postalCode:'32801',timezone:'America/New_York',region:'central',evidence:'provider_entered'}],crossState:false,radius:null},
   'regional-home':{state:'FL'},
   'regional-service-areas':{regional_service_areas:{areas:[{country:'US',state:'FL',countyEquivalent:'Orange',countyType:'county',locality:'Orlando',postalCode:'32801',timezone:'America/New_York',region:'central',evidence:'provider_entered'}],crossState:false,radius:50},counties:['Orange (synthetic)'],cities:['Orlando (synthetic)'],zips:['32801']},
@@ -112,8 +115,8 @@ export function usePortalQuery<TData = unknown, TError = unknown>(
   const effective = preview.active
     ? {
         ...options,
-        queryKey: ['portal-preview', ...options.queryKey],
-        queryFn: async () => previewFixtureFor(options.queryKey) as TData,
+        queryKey: ['portal-preview', preview.examples !== false, ...options.queryKey],
+        queryFn: async () => (preview.examples === false && ['trip-drafts','patient-trips','vehicles','drivers','network-offers','network-activity','network-settlements','network-payments'].includes(String(options.queryKey[0])) ? [] : previewFixtureFor(options.queryKey)) as TData,
         refetchInterval: false as const,
         refetchOnWindowFocus: false,
         refetchOnMount: false,

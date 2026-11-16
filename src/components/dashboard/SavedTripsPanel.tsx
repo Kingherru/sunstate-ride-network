@@ -34,6 +34,7 @@ export function SavedTripsPanel({
 }) {
   const qc = useQueryClient();
   const [detail, setDetail] = useState<TripDraft | null>(null);
+  const [examples, setExamples] = useState(true);
   const preview = usePortalPreview();
   const list = useServerFn(listTripDrafts);
   const del = useServerFn(deleteTripDraft);
@@ -43,7 +44,7 @@ export function SavedTripsPanel({
     queryFn: () => list(),
   });
 
-  const rows = (q.data ?? []) as TripDraft[];
+  const rows = (preview.active && !examples ? [] : q.data ?? []) as TripDraft[];
 
   async function remove(id: string) {
     if (preview.active) { previewBlocked(); return; }
@@ -59,6 +60,7 @@ export function SavedTripsPanel({
 
   return (
     <div className="space-y-4">
+      {preview.active && <DsButton variant="ghost" onClick={() => setExamples(!examples)}>{examples ? 'Remove draft examples' : 'Show draft examples'}</DsButton>}
       <div>
         <h3 className="text-lg font-extrabold tracking-tight">
           {variant === "drafts" ? "Drafts (not submitted)" : "Saved Trips"}
@@ -85,11 +87,11 @@ export function SavedTripsPanel({
           return (
             <div
               key={d.id}
-              className="bg-card border border-border border-l-4 border-l-amber-400 rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap"
+              className="min-w-0 border-b border-ds-border py-4 flex items-start justify-between gap-3 flex-wrap"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm">
+                  <span className="ds-status-yellow ds-caption px-2 py-1 rounded-ds-sm">
                     Not submitted
                   </span>
                   {d.autosaved && (
@@ -98,7 +100,8 @@ export function SavedTripsPanel({
                     </span>
                   )}
                 </div>
-                <div className="font-extrabold">{name || "Untitled trip draft"}</div>
+                <div className="ds-label text-ds-primary">{p.requestCategory === 'medical_delivery' ? 'Medical Delivery' : name || 'Untitled trip draft'}</div>
+                <p className="ds-support">{d.summary} · {String(p.transportType || p.deliveryCategory || 'Service not selected').replaceAll('_', ' ')} · {String(p.tripType || 'one_way').replaceAll('_', ' ')}</p>
                 <div className="text-sm text-muted-foreground mt-1">
                   {p.pickupAddress || p.pickup_address || "No pickup yet"}
                   {p.pickupCity || p.pickup_city ? `, ${p.pickupCity || p.pickup_city}` : ""} → {p.dropoffAddress || p.dropoff_address || "No drop-off yet"}
@@ -119,12 +122,13 @@ export function SavedTripsPanel({
                 <DsButton variant="ghost" onClick={() => setDetail(d)}>View draft</DsButton>
                 <DsButton
                   type="button"
-                  onClick={() => { if (preview.active) { previewBlocked(); return; } onResume(d); }}
+                  onClick={() => onResume(d)}
                 >
                   Resume draft
                 </DsButton>
                 <DsButton variant="secondary"
                   type="button"
+                  disabled={preview.active}
                   onClick={() => remove(d.id)}
                 >
                   Delete
@@ -134,7 +138,7 @@ export function SavedTripsPanel({
           );
         })}
       </div>
-      {detail && <DetailOverlayFrame title="Draft — not submitted" onClose={() => setDetail(null)}><div className="space-y-5"><DetailSection title="Draft identity and status"><p>Not submitted · Last saved {new Date(detail.updated_at).toLocaleString()}</p></DetailSection><DetailSection tone="trip" title="Draft trip or delivery details"><dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(detail.payload).filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value)).map(([key, value]) => <div key={key} className="min-w-0"><dt className="ds-label uppercase">{key.replace(/([A-Z])/g, ' $1').replaceAll('_', ' ')}</dt><dd className="ds-body break-words">{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : /^\d{4}-\d{2}-\d{2}/.test(String(value)) ? new Date(`${String(value).slice(0, 10)}T12:00:00`).toLocaleDateString() : String(value) || 'NOT PROVIDED'}</dd></div>)}</dl></DetailSection><DsButton onClick={() => { if (preview.active) { previewBlocked(); return; } onResume(detail); }}>Edit draft</DsButton></div></DetailOverlayFrame>}
+      {detail && <DetailOverlayFrame title="Draft — not submitted" onClose={() => setDetail(null)}><div className="space-y-5"><DetailSection title="Draft identity and status"><p>Not submitted · Last saved {new Date(detail.updated_at).toLocaleString()}</p></DetailSection><DetailSection tone="trip" title="Draft trip or delivery details"><dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(detail.payload).filter(([key, value]) => !/Id$|token|quote|rate|margin/i.test(key) && ['string', 'number', 'boolean'].includes(typeof value)).map(([key, value]) => <div key={key} className="min-w-0 rounded-ds-sm bg-ds-bg p-3"><dt className="ds-label font-bold text-ds-primary">{key.replace(/([A-Z])/g, ' $1').replaceAll('_', ' ')}</dt><dd className="ds-body break-words">{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value) || 'Not Provided'}</dd></div>)}</dl></DetailSection><DsButton onClick={() => onResume(detail)}>Resume draft</DsButton></div></DetailOverlayFrame>}
     </div>
   );
 }

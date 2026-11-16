@@ -94,7 +94,7 @@ function CourseDetail() {
           <div className="min-w-0">
             <h1 className="ds-page-title uppercase text-ds-primary mb-3">{course.title}</h1>
             <p className="text-lg text-ds-text-2 mb-6">{course.summary}</p>
-            <div className="prose prose-sm max-w-none whitespace-pre-line mb-8">{course.description}</div>
+            <div className="ds-body-lg max-w-none whitespace-pre-line break-words mb-8">{course.description}</div>
 
             <h2 className="ds-subheading uppercase text-ds-primary mb-3">What you'll learn</h2>
             <ul className="space-y-2 mb-8">
@@ -122,7 +122,7 @@ function CourseDetail() {
               ) : null}
               {!userId && (
                 <p className="text-xs text-ds-text-2 mt-3">
-                  Recommended: <Link to="/login" className="underline">create a free account</Link> so your purchase, progress, and certificate are saved to your profile.
+                  Recommended: <Link to="/create-account" className="underline">create a free account</Link> so your purchase, progress, and certificate are saved to your profile.
                 </p>
               )}
               <p className="text-[11px] text-ds-text-2 mt-3 italic">Pricing subject to change at any time.</p>

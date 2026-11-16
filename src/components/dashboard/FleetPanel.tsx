@@ -1,3 +1,4 @@
+import { DetailSection } from '@/components/portal/DetailSection';
 import { DetailOverlayFrame } from '@/components/portal/DetailOverlayFrame';
 import { useState } from "react";
 import { X } from 'lucide-react';
@@ -33,6 +34,7 @@ export function FleetPanel({ only, primaryOnly=false }: { only?: "drivers" | "ve
 }
 
 function DriversCard() {
+  const preview = usePortalPreview();
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
   const vq = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
@@ -87,7 +89,7 @@ function DriversCard() {
                 )}
               </div>
               <div className="text-xs flex items-center gap-3">
-                <button onClick={() => setEditing(d)} className="portal-secondary-control font-bold text-primary hover:underline">Edit</button>
+                <DsButton variant="ghost" size="sm" onClick={() => setEditing(d)}>{preview.active ? 'View driver' : 'Edit'}</DsButton>
                 <FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />
               </div>
             </li>
@@ -187,6 +189,7 @@ function defaultAvailability() {
 }
 
 function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any[]; onClose: () => void; onSaved: () => void }) {
+  const preview = usePortalPreview();
   const detailWindow = useDetailWindow();
   const [boundaries,setBoundaries]=useState<AreaSettings>(()=>{const p=serviceAreaSchema.safeParse(d.regional_service_areas);return p.success?p.data:emptyAreaSettings();});
   const initialAvail = d.availability && typeof d.availability === "object"
@@ -261,8 +264,11 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   });
 
   return (
-    <DetailOverlayFrame title={d.id ? 'Edit driver' : 'New driver'} onClose={onClose}>
-      <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+    <DetailOverlayFrame title={d.id ? preview.active ? 'Driver details — preview only' : 'Edit driver' : 'New driver'} idLabel={d.mfn_id} onClose={onClose}>
+      {d.id && <DetailSection title="Driver summary"><dl className="grid gap-3 sm:grid-cols-2">{[
+        ['Name / MFN ID', `${d.first_name} ${d.last_name} · ${d.mfn_id ?? 'Not Available'}`], ['Classification', employmentLabel(d.employment_type)], ['Contact', [d.phone,d.email].filter(Boolean).join(' · ') || 'Not Provided'], ['Availability', availabilitySummary(d.availability)], ['Assigned vehicle', vehicles.find(v=>v.id===d.primary_vehicle_id)?.name ?? 'Not assigned'], ['Supported services', (d.service_capabilities??[]).map(capLabel).join(', ') || 'Not Provided'], ['Credentials', d.credential_status ?? 'Not Available — review required'], ['Status', d.status ?? 'Not Provided'], ['Earnings', 'Available in authorized Earnings & Payments only'],
+      ].map(([label,value])=><div key={label} className="min-w-0 rounded-ds-sm bg-ds-bg p-3"><dt className="ds-label font-bold text-ds-primary">{label}</dt><dd className="ds-body break-words">{value}</dd></div>)}</dl></DetailSection>}
+      <form onSubmit={(e) => { e.preventDefault(); if (!preview.active) m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <section className="portal-dialog-section sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <I l="First name" v={f.first_name} on={(v) => set({ ...f, first_name: v })} req />
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
@@ -273,14 +279,14 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-ds-primary">Status</span>
           <select value={f.status} onChange={(e) => set({ ...f, status: e.target.value as any })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="on_leave">On leave</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-ds-primary">Employment type</span>
           <select value={f.employment_type} onChange={(e) => set({ ...f, employment_type: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             {EMPLOYMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </label>
@@ -308,7 +314,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold text-ds-primary">Primary vehicle</span>
           <select value={f.primary_vehicle_id} onChange={(e) => set({ ...f, primary_vehicle_id: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             <option value="">— None —</option>
             {vehicles.filter((v: any) => v.status === "active" || v.id === f.primary_vehicle_id).map((v: any) => (
               <option key={v.id} value={v.id}>{v.name}{v.plate ? ` (${v.plate})` : ""}</option>
@@ -340,7 +346,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold text-ds-primary">Driver pay type</span>
           <select value={f.pay_type} onChange={(e) => set({ ...f, pay_type: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             {PAY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <span className="text-[11px] text-muted-foreground">
@@ -454,9 +460,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
 
         <div className="portal-dialog-actions sm:col-span-2 flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
-          <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
-            {m.isPending ? "Saving…" : "Save"}
-          </button>
+          <DsButton disabled={preview.active || m.isPending} type="submit">{preview.active ? "Save unavailable in preview" : m.isPending ? "Saving…" : "Save"}</DsButton>
         </div>
       </form>
     </DetailOverlayFrame>
@@ -483,7 +487,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-ds-primary">Week start</span>
           <input type="date" value={weekStart} onChange={(e) => setWeekStart(e.target.value)} required
-                 className="border border-border rounded-sm px-3 py-2 bg-background" />
+                 className="portal-input min-w-0" />
         </label>
         <div className="text-xs text-muted-foreground">To: {d.email}</div>
         <div className="portal-dialog-actions flex justify-end gap-2 pt-2">
@@ -540,7 +544,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                 </div>
               </div>
               <div className="text-xs">
-                <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;if(preview.active){setEditing({...v,vin:''});return;}try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>Edit</DsButton>
+                <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;if(preview.active){setEditing({...v,vin:''});return;}try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>{preview.active ? 'View vehicle' : 'Edit'}</DsButton>
                 <FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />
               </div>
             </li>
@@ -555,6 +559,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
 }
 
 function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[]; onClose: () => void; onSaved: () => void }) {
+  const preview = usePortalPreview();
   const [boundaries,setBoundaries]=useState<AreaSettings>(()=>{const p=serviceAreaSchema.safeParse(v.regional_service_areas);return p.success?p.data:emptyAreaSettings();});
   const docs=usePortalQuery({queryKey:['my-credentials'],queryFn:()=>listMyCredentials()});
   const [f, set] = useState({
@@ -575,8 +580,11 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
   return (
-    <DetailOverlayFrame title={v.id ? 'Edit vehicle' : 'New vehicle'} onClose={onClose}>
-      <form onSubmit={(e) => { e.preventDefault(); m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+    <DetailOverlayFrame title={v.id ? preview.active ? 'Vehicle details — preview only' : 'Edit vehicle' : 'New vehicle'} onClose={onClose}>
+      {v.id && <DetailSection title="Vehicle summary"><dl className="grid gap-3 sm:grid-cols-2">{[
+        ['Custom name', v.name], ['Make / model / year', [v.make,v.model,v.model_year].filter(Boolean).join(' ')], ['VIN', v.masked_vin ?? 'Not Provided'], ['License plate', v.plate], ['Category', v.vehicle_category], ['Capacity', `${v.capacity ?? 'Not Provided'} passengers · ${v.wheelchair_capacity ?? 'Not Provided'} wheelchair positions`], ['Accessibility equipment', v.accessibility_equipment ?? 'Not Provided'], ['Services', (v.service_capabilities??[]).map(capLabel).join(', ')], ['Insurance / documents', `${v.evidence_status ?? 'Review required'} · expiry ${v.insurance_expiry ?? 'Not Provided'}`], ['Assigned driver', drivers.find(d=>d.id===v.assigned_driver_id)?.first_name ?? 'Not assigned'], ['Service boundary', v.regional_service_areas?.areas?.map((a:any)=>[a.state,a.countyEquivalent,a.locality,a.postalCode,a.region].filter(Boolean).join(' / ')).join('; ') || 'No optional boundary'], ['Status', v.status], ['History', v.notes || 'No history supplied'],
+      ].map(([label,value])=><div key={label} className="min-w-0 rounded-ds-sm bg-ds-bg p-3"><dt className="ds-label font-bold text-ds-primary">{label}</dt><dd className="ds-body break-words">{value || 'Not Provided'}</dd></div>)}</dl></DetailSection>}
+      <form onSubmit={(e) => { e.preventDefault(); if (!preview.active) m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <I l="Custom vehicle name" v={f.name} on={(x) => set({ ...f, name: x })} req cs={2} />
         <I l="Full VIN — authorized editing only" v={f.vin} on={x=>set({...f,vin:x.toUpperCase()})}/><I l="Vehicle insurance expiration" type="date" v={f.insurance_expiry} on={x=>set({...f,insurance_expiry:x})}/>
         <label className="flex flex-col gap-1 ds-body sm:col-span-2"><span className="ds-label">Private vehicle insurance record</span><select value={f.insurance_credential_id??''} onChange={e=>{const doc=docs.data?.find(d=>d.id===e.target.value);set({...f,insurance_credential_id:e.target.value||null,insurance_expiry:doc?.expires_at??f.insurance_expiry});}}><option value="">No insurance evidence linked</option>{(docs.data??[]).filter(d=>d.workspace_id===v.workspace_id&&d.kind==='auto_insurance').map(d=><option key={d.id} value={d.id}>{d.label} · {d.expires_at??'Expiry not recorded'}</option>)}</select><span className="ds-caption">Add private insurance evidence in Settings → Credentials & Documents, then link it here. Upload presence does not establish legal sufficiency.</span></label>
@@ -589,7 +597,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-ds-primary">Type</span>
           <select value={f.vehicle_type} onChange={(e) => set({ ...f, vehicle_type: e.target.value as any })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             <option value="sedan">Sedan</option><option value="suv">SUV</option>
             <option value="van">Van</option><option value="wheelchair_van">Wheelchair van</option>
             <option value="stretcher_van">Stretcher van</option><option value="ambulance">Ambulance</option>
@@ -598,14 +606,14 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-ds-primary">Status</span>
           <select value={f.status} onChange={(e) => set({ ...f, status: e.target.value as any })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             <option value="active">Active</option><option value="inactive">Inactive</option><option value="maintenance">Maintenance</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="font-bold text-ds-primary">Primary driver</span>
           <select value={f.assigned_driver_id} onChange={(e) => set({ ...f, assigned_driver_id: e.target.value })}
-                  className="border border-border rounded-sm px-3 py-2 bg-background">
+                  className="portal-input min-w-0">
             <option value="">— None —</option>
             {drivers.filter((d: any) => (!v.workspace_id||d.workspace_id===v.workspace_id)&&(d.status === "active" || d.id === f.assigned_driver_id)).map((d: any) => (
               <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
@@ -633,9 +641,7 @@ function VehicleDialog({ v, drivers, onClose, onSaved }: { v: any; drivers: any[
         <div className="portal-dialog-actions sm:col-span-2 flex justify-end gap-2 pt-2">
 
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-muted-foreground">Cancel</button>
-          <button disabled={m.isPending} className="bg-primary text-primary-foreground font-bold px-5 py-2 rounded-sm disabled:opacity-50">
-            {m.isPending ? "Saving…" : "Save"}
-          </button>
+          <DsButton disabled={preview.active || m.isPending} type="submit">{preview.active ? "Save unavailable in preview" : m.isPending ? "Saving…" : "Save"}</DsButton>
         </div>
       </form>
     </DetailOverlayFrame>
@@ -647,7 +653,7 @@ function I({ l, v, on, type = "text", req, cs }: { l: string; v: string; on: (v:
     <label className={`flex flex-col gap-1 text-sm ${cs === 2 ? "sm:col-span-2" : ""}`}>
       <span className="font-bold text-ds-primary">{l}{req && " *"}</span>
       <input required={req} type={type} value={v} onChange={(e) => on(e.target.value)}
-             className="border border-border rounded-sm px-3 py-2 bg-background" />
+             className="portal-input min-w-0" />
     </label>
   );
 }

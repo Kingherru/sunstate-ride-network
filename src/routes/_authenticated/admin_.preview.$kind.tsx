@@ -35,6 +35,7 @@ import {PilotChecklist,ScopedPilot} from '@/components/network/PilotChecklist';
 import {PersonalSettings} from '@/components/portal/PersonalSettings';
 import { PortalUploads } from './portal.upload-csv';
 import { CustomerSettings } from '@/components/portal/CustomerSettings';
+import { DEMO_TRIP_DRAFTS } from '@/components/portal/demo-fixtures/trip-drafts';
 function PreviewPeople({patient=false}:{patient?:boolean}){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'|'accepted'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab} patient={patient} workspaceId="preview-ws"/></Panel>;}
 
 type Kind = "provider" | "customer";
@@ -46,7 +47,9 @@ export const Route = createFileRoute("/_authenticated/admin_/preview/$kind")({
     const access = await getAccessState();
     if (!access.isMasterAdmin) throw redirect({ to: "/admin/settings" });
   },
-  validateSearch: (s: Record<string, unknown>): { page?: string; accountType?: string; view?: string; section?: string; training?: string; securityView?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { page?: string; accountType?: string; view?: string; section?: string; training?: string; securityView?: string; draft?: string; patientView?: string } => ({
+    patientView: typeof s.patientView === 'string' ? s.patientView : undefined,
+    draft: typeof s.draft === 'string' ? s.draft : undefined,
     page: typeof s.page === "string" ? s.page : undefined,
     accountType: typeof s.accountType === "string" ? s.accountType : undefined,
     view: typeof s.view === "string" ? s.view : undefined,
@@ -70,6 +73,7 @@ function PortalPreview() {
   const previewTo = `/admin/preview/${kind}`;
   const accountType = search.accountType ?? "general_facility";
   const activePage = search.page ?? "overview";
+  const [examples, setExamples] = useState(true);
 
   const nav: NavItem[] = useMemo(
     () => baseNav.map((n) => ({ to: previewTo, label: n.label, iconFor: n.to, search: { page: pageKeyOf(n.to), accountType } })),
@@ -87,18 +91,19 @@ function PortalPreview() {
   const pageTitle = activePage === 'account' ? 'Settings' : activePage === "requests/new" ? "New trip" : baseNav.find((n) => pageKeyOf(n.to) === activePage)?.label ?? "Overview";
 
   return (
-    <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
+    <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType, examples }}>
     <div onClickCapture={event => {
       const target = event.target instanceof Element ? event.target.closest('a') : null;
       if (!target) return;
       const url = new URL(target.href, window.location.origin);
       if (url.origin !== window.location.origin || !/^\/portal(?:\/|$)/.test(url.pathname)) return;
       event.preventDefault(); event.stopPropagation();
-      void navigate({ search: prev => ({ ...prev, page: pageKeyOf(url.pathname), accountType, section: url.searchParams.get('section') ?? undefined, view: url.searchParams.get('view') ?? undefined }) });
+      void navigate({ search: prev => ({ ...prev, page: pageKeyOf(url.pathname), accountType, draft: url.searchParams.get('draft') ?? undefined, section: url.searchParams.get('section') ?? undefined, view: url.searchParams.get('view') ?? undefined }) });
     }}>
     <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle} settingsTo="/portal/account" notificationsTo="/portal/notifications">
       <div className="portal-preview-toolbar mb-5 flex flex-wrap items-center gap-2 border-b border-ds-border pb-3">
         <p className="ds-caption font-semibold text-ds-primary">Preview only — nothing is saved</p>
+        <DsButton variant="ghost" onClick={() => setExamples(!examples)}>{examples ? 'Remove populated examples' : 'Show populated examples'}</DsButton>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
         <DsButton variant="ghost" onClick={() => navigate({ search: prev => ({ ...prev, page: 'onboarding' }) })}>Preview account setup</DsButton>
         {isProvider&&<DsButton variant="ghost" onClick={()=>navigate({search:prev=>({...prev,page:'contractor-intake'})})}>Preview contractor intake</DsButton>}
@@ -113,7 +118,7 @@ function PortalPreview() {
         </div>
       )}
 
-      <DemoBody kind={kind as Kind} page={activePage} accountType={accountType} />
+      <DemoBody key={`${kind}-${accountType}-${activePage}-${search.draft}-${examples}`} kind={kind as Kind} page={activePage} accountType={accountType} draftId={search.draft} examples={examples}/>
     </PortalShell>
     </div>
     </PortalPreviewContext.Provider>
@@ -132,7 +137,8 @@ function Unavailable({ what }: { what: string }) {
 
 /** Real portal components, fed by preview fixtures (usePortalQuery) and with
  *  every write blocked (usePortalMutation). No real account is impersonated. */
-function realPage(kind: Kind, page: string, accountType: string): React.ReactNode {
+function realPage(kind: Kind, page: string, accountType: string, draftId?: string, examples = true): React.ReactNode {
+  const draft = examples ? DEMO_TRIP_DRAFTS.find(d => d.id === draftId) ?? DEMO_TRIP_DRAFTS[0] : undefined;
   if(page==='pilot-read'||page==='pilot-manage')return <Panel><ScopedPilot/><PilotChecklist/></Panel>;
   if(page==='communications')return <Panel><Communications admin/></Panel>;
   if(page==='reminders')return <Panel><Communications/></Panel>;
@@ -144,7 +150,7 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
       case "schedule": return <Panel><ScheduleCalendarPanel /></Panel>;
       case "fleet": return <FleetDrivers />;
       case "earnings": return <EarningsPayments userId={PREVIEW_USER} />;
-      case "requests/new": return <NewTripWorkspace workspaceId="preview-ws" provider/>;
+      case "requests/new": return <NewTripWorkspace workspaceId="preview-ws" provider initialDraft={draft}/>;
       case "notifications": return <Panel><NotificationsPanel /></Panel>;
       case "account": return <Panel><ProviderSettings workspaceId="preview-ws" role="owner" email="demo@example.com" /></Panel>;
       case "vehicles": return <Panel><FleetPanel only="vehicles" /></Panel>;
@@ -159,7 +165,7 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
     }
   }
   switch (page) {
-    case "requests/new": return accountType === 'private_pay_patient' ? <RequestForm context="portal" allowProviderSelection /> : <NewTripWorkspace workspaceId="preview-ws" provider={false}/>;
+    case "requests/new": return <NewTripWorkspace workspaceId="preview-ws" provider={false} patient={accountType === 'private_pay_patient'} initialDraft={draft}/>;
     case "account": return <CustomerSettings patient={accountType === 'private_pay_patient'} workspaceId="preview-ws" canManage email="demo@example.com" />;
     case "requests": return <Panel><PatientTrips/></Panel>;
     case "upload-csv": return <PortalUploads />;
@@ -174,12 +180,12 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
   }
 }
 
-function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accountType: string }) {
+function DemoBody({ kind, page, accountType, draftId, examples }: { kind: Kind; page: string; accountType: string; draftId?: string; examples: boolean }) {
   const label = page === 'account' ? 'Settings' : page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
   return (
-    <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
+    <PortalPreviewContext.Provider value={{ active: true, kind, accountType, examples }}>
       {!['requests/new','upload-csv'].includes(page) && !(kind === 'provider' && page === 'network') && <PageHead title={label === 'Overview' && page === 'notifications' ? 'Notifications' : label} />}
-      {page === 'onboarding' ? <OnboardingDemo provider={kind === 'provider'} personal={accountType === 'private_pay_patient'} /> : realPage(kind, page, accountType)}
+      {page === 'onboarding' ? <OnboardingDemo provider={kind === 'provider'} personal={accountType === 'private_pay_patient'} /> : realPage(kind, page, accountType, draftId, examples)}
     </PortalPreviewContext.Provider>
   );
 }

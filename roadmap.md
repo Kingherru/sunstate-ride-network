@@ -1,3 +1,10 @@
+# Final targeted cleanup
+- [x] Master-only removable populated booking, invoice, passenger/delivery drafts, offer and fleet examples; real components reused and mutation paths blocked.
+- [x] Ten focused tests passed; 128 populated-path and public-instance checks passed at 1280/768/390/320 with zero page/console errors and zero page overflow. Passenger and delivery instructions retained on resume; customer type retained; inactive offer actions and example removal verified.
+- [ ] Separate manual type-check and production-build commands were not run: workspace instructions prohibit them. Latest harness compilation reports build OK; separate command results cannot be claimed.
+- [x] Targeted changes committed; no real records changed, no publication, communications, PDF generation or financial execution. Exact pass credits unavailable; 742 is billing-period usage, not pass usage.
+- [ ] Facility changing-price calculation cannot be demonstrated from approved customer rate evidence in preview; shows a removable fixed synthetic invoice whose route/time projection follows form changes. Patient live portal booking remains the established form; populated checks used Master preview only.
+
 # Florida MVP launch sequence
 ## Heavy cleanup — current build
 - [x] Continuation 3: component-level Admin Overview/Requests/Pricing/Administrators/Payouts/Integrations/Change Log, Provider Schedule/Fleet/Network/Earnings/Settings/Training, shared messaging/notifications/contact/payer/detail dialogs, service/article/coverage links/shop/auth/legal templates refined. Section-specific rate saves preserve the other loaded reference book; saves fail closed when loading fails. No database/schema changes.
