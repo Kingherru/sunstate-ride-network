@@ -6,6 +6,7 @@ import { ACCOUNT_TYPE_LABEL, RequestTable, fmtDateTime } from "@/components/port
 import { ProviderOverview } from "@/components/portal/ProviderOverview";
 import { DsEmpty } from "@/components/ds/feedback";
 import {PatientTrips} from '@/components/portal/PatientTrips';
+import { NotificationIndicator } from '@/components/portal/NotificationIndicator';
 
 export const Route = createFileRoute("/_authenticated/portal/")({
   head: () => ({ meta: [{ title: "Portal Overview — MY FLORIDA NEMT" },{name:'description',content:'Your account overview and authorized upcoming trips.'},{property:'og:title',content:'Portal Overview — MY FLORIDA NEMT'},{property:'og:description',content:'Account overview and authorized trip activity.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}, { name: "robots", content: "noindex, nofollow" }] }),
@@ -86,7 +87,7 @@ function CustomerOverview() {
           <ul className="divide-y divide-ds-border">
             {notifications.map((n) => (
               <li key={n.id} className="flex items-start gap-3 px-4 py-3 sm:px-5">
-                {!n.read_at && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-ds-error" aria-label="Unread" />}
+                {!n.read_at && <NotificationIndicator className="mt-1.5" label="Unread notification" />}
                 <div className="min-w-0">
                   <p className="ds-body font-semibold">{n.title}</p>
                   {n.body && <p className="ds-support mt-0.5">{n.body}</p>}

@@ -1,3 +1,4 @@
+import { NotificationIndicator } from '@/components/portal/NotificationIndicator';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
@@ -24,7 +25,7 @@ export function FrontendContacts({ canManage }: { canManage: boolean }) {
           <button className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left hover:bg-ds-hover" aria-expanded={open === c.id}
             onClick={async () => { setOpen(open === c.id ? null : c.id); if (!c.read_at && canManage) { await mark({ data: { id: c.id } }); qc.invalidateQueries({ queryKey: ['frontend-contacts'] }); qc.invalidateQueries({ queryKey: ['frontend-contacts-unread'] }); } }}>
             <span className="min-w-0">
-              <span className="flex items-center gap-2 font-semibold">{!c.read_at && <span aria-label="Unread" className="inline-block h-2 w-2 rounded-full bg-ds-error" />}{c.subject || 'No subject'}</span>
+              <span className="flex items-center gap-2 font-semibold">{!c.read_at && <NotificationIndicator label="Unread inquiry" />}{c.subject || 'No subject'}</span>
               <span className="ds-support block">{c.name}{c.business_name ? ` · ${c.business_name}` : ''} · {CAT[c.category ?? ''] ?? 'Not Provided'}</span>
             </span>
             <span className="ds-caption whitespace-nowrap">{fmt(c.created_at)}</span>

@@ -23,16 +23,14 @@ import { getActivityIndicators, ACTIVITY_KEYS } from '@/lib/indicators.functions
 import { markTabViewed } from '@/lib/unread.functions';
 import {getAccountProfileVerification} from '@/lib/account-profile-verification.functions';
 
+import { NotificationIndicator, notificationIndicatorTone } from './NotificationIndicator';
+
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
 /** Static dot: green = ordinary unread update, red = important. Never pulses. */
 function Dot({ kind, className }: { kind: Indicator; className?: string }) {
   if (kind === "none") return null;
-  return (
-    <span className={cn("size-2.5 rounded-full", kind === "important" ? "bg-ds-error" : "bg-ds-success", className)}>
-      <span className="sr-only">{kind === "important" ? "Important update" : "New update"}</span>
-    </span>
-  );
+  return <NotificationIndicator tone={notificationIndicatorTone(kind)} label={kind === 'important' ? 'Important update' : 'New update'} className={className} />;
 }
 
 export type NavItem = { to: string; label: string; exact?: boolean; search?: Record<string, string>; iconFor?: string };
@@ -149,7 +147,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
               isActive(i) ? "bg-ds-primary-hover text-ds-on-primary" : "text-ds-on-primary/85 hover:bg-ds-primary-hover hover:text-ds-on-primary")}>
             <Icon className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{i.label}</span>
-            {showMsgDot && <Dot kind="important" className="ml-auto" />}
+            {showMsgDot && <Dot kind="update" className="ml-auto" />}
           </Link>
         );
       })}

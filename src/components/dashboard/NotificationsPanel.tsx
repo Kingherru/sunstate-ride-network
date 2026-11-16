@@ -1,3 +1,4 @@
+import { NotificationIndicator, notificationIndicatorTone } from '@/components/portal/NotificationIndicator';
 import { notificationTone } from '@/lib/portal-read-rules';
 import { SegTabs } from '@/components/portal/SegTabs';
 import { useEffect, useMemo, useState } from "react";
@@ -32,9 +33,6 @@ import {
 type Filter = "all" | "unread" | "read";
 
 const severityFor = notificationTone;
-function dotColor(sev: ReturnType<typeof severityFor>) {
-  return { green: 'bg-ds-success', yellow: 'bg-ds-warning', red: 'bg-ds-error', blue: 'bg-ds-primary' }[sev];
-}
 
 function categoryFor(type: string): string {
   const t = (type ?? "").toLowerCase();
@@ -295,10 +293,7 @@ export function NotificationsPanel() {
                           checked={isSelected}
                           onChange={() => toggleSelect(n.id)}
                         />
-                        <span
-                          className={`mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full ${dotColor(sev)}`}
-                          aria-hidden
-                        />
+                        <NotificationIndicator tone={notificationIndicatorTone(sev)} label={`${isUnread ? 'Unread: ' : ''}${n.title}`} className="mt-2" />
                         <button
                           type="button"
                           onClick={() => onOpen(n)}

@@ -1,3 +1,4 @@
+import { NotificationIndicator } from './NotificationIndicator';
 import {CheckoutAcknowledgment} from '@/components/payments/CheckoutAcknowledgment';
 import {currentCheckoutConsent} from '@/lib/payment-policy';
 import {getReferralFundingPreparation} from '@/lib/trip-invoices.functions';
@@ -102,7 +103,7 @@ export function ProviderNetworkOffers({actionsDisabled = false}: {actionsDisable
     {!!q.error && <p role="alert" className="text-ds-error">Could not load offers.</p>}
     {!q.isLoading && !q.error && !q.data?.length && <p className="ds-body text-ds-muted py-6">No offers addressed to your business yet.</p>}
     <div className="divide-y divide-ds-border">{(q.data ?? []).map(o => <article key={o.id} role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }} className="cursor-pointer min-w-0 bg-ds-surface py-5 space-y-3 focus-visible:outline-2 focus-visible:outline-ds-focus">
-      <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span>{(preview.active||watermarks.data?.find(s=>s.id===o.id)?.unread)&&<StatusPill status="Unread / changed" tone="neutral"/>}<span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
+      <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span>{(preview.active||watermarks.data?.find(s=>s.id===o.id)?.unread)&&<span className="inline-flex items-center gap-1.5"><NotificationIndicator label="Unread or changed offer" /><span data-overflow-text className="ds-support">Unread / changed</span></span>}<span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
       <h3 className="ds-subheading text-ds-primary">{o.pickup_area} → {o.destination_area}</h3>
       <p className="ds-support font-mono">{o.source_mfn_id}</p><p className="ds-body">{o.pickup_date} · {o.pickup_time.slice(0,5)} · {label(o.trip_type)}</p>
       <p className="ds-body">{label(o.service_type)} · {o.capability}{` · ${o.estimated_miles != null ? `Approximate route: ${o.estimated_miles} miles` : 'Service area match'}`}</p>

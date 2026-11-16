@@ -18,6 +18,7 @@ import { BrandName } from "@/components/brand/BrandName";
 import { usesOwnShell } from "@/components/public/PublicPage";
 import { TrainingCartProvider, TrainingCartIcon } from '@/components/training/TrainingCart';
 import { PortalOverflowTooltips } from '@/components/portal/OverflowText';
+import { PortalFormSpacing } from '@/components/portal/PortalFormSpacing';
 
 function NotFoundComponent() {
   return (
@@ -106,6 +107,7 @@ function RootComponent() {
       )}
       <Toaster position="top-center" />
       <PortalOverflowTooltips />
+      <PortalFormSpacing />
       </TrainingCartProvider>
     </QueryClientProvider>
   );

@@ -799,3 +799,30 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
   padding: .5rem .75rem; border-radius: 4px; background: var(--mfn-blue); color: var(--mfn-white);
   font-size: .875rem; line-height: 1.4; white-space: normal; overflow-wrap: anywhere;
 }
+
+/* Measured authored padding + exactly one CSS pixel, including portalled fields. */
+@layer base {
+  .theme-portal [data-portal-form-spacing="true"] {
+    padding: var(--portal-field-padding-0) var(--portal-field-padding-1) var(--portal-field-padding-2) var(--portal-field-padding-3) !important;
+    min-width: 0; max-width: 100%; box-sizing: border-box;
+  }
+}
+.theme-portal :is(input,select,textarea,button[role="combobox"]) {
+  transition-property: color, background-color, border-color, box-shadow, opacity !important;
+}
+.theme-portal {
+  --portal-indicator-attention-bg: #FBE1E3; --portal-indicator-attention-fg: #922D38;
+  --portal-indicator-positive-bg: #DCF0DE; --portal-indicator-positive-fg: #28663A;
+  --portal-indicator-warning-bg: #FFF0BC; --portal-indicator-warning-fg: #755600;
+  --portal-indicator-dot-size: .625rem; --portal-indicator-count-size: 1.5rem;
+}
+.portal-notification-indicator {
+  display: inline-flex !important; align-items: center; justify-content: center; flex: none !important;
+  border-radius: 50% !important; border: 1px solid currentColor;
+  background: var(--portal-indicator-positive-bg); color: var(--portal-indicator-positive-fg);
+  overflow: visible !important; white-space: nowrap; vertical-align: middle; line-height: 1;
+}
+.portal-notification-indicator[data-notification-indicator="attention"] { background: var(--portal-indicator-attention-bg); color: var(--portal-indicator-attention-fg); }
+.portal-notification-indicator[data-notification-indicator="warning"] { background: var(--portal-indicator-warning-bg); color: var(--portal-indicator-warning-fg); }
+.portal-notification-dot { width: var(--portal-indicator-dot-size); height: var(--portal-indicator-dot-size); }
+.portal-notification-count { width: var(--portal-indicator-count-size); height: var(--portal-indicator-count-size); font-size: .6875rem !important; font-weight: 700; }

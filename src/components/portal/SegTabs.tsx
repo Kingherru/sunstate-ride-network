@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
 import { DsButton } from '@/components/ds/controls';
+import { NotificationIndicator } from './NotificationIndicator';
 import { tabIcon } from './tab-icons';
 
 /** One controlled navigation surface; URL state is UI-only, never record data. */
@@ -58,7 +59,7 @@ export function SegTabs<T extends string>({ label, value, onChange, options, var
           else return;
           e.preventDefault(); const item = options[target]; if (!item) return;
           choose(item.value); refs.current.get(item.value)?.focus(); refs.current.get(item.value)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-        }}><Icon className="size-4 shrink-0" aria-hidden /><span className="portal-tab-label">{o.label}</span>{o.badge != null && <span className="portal-tab-badge">{o.badge}</span>}</DsButton>;
+        }}><Icon className="size-4 shrink-0" aria-hidden /><span className="portal-tab-label">{o.label}</span>{o.badge != null && (typeof o.badge === 'number' ? <NotificationIndicator count={o.badge} label={`${o.label} updates`} /> : <span className="portal-tab-badge">{o.badge}</span>)}</DsButton>;
     })}
   </div>;
 }

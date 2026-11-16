@@ -26,7 +26,7 @@ export function ProviderNetworkPage() {
   const getCounts=useServerFn(getNetworkActivityCounts),markRead=useServerFn(markNetworkViewRead);
   const counts=usePortalQuery({queryKey:['network-view-counts'],queryFn:()=>getCounts()});
   const [demoInactive,setDemoInactive]=useState(false),[readError,setReadError]=useState('');
-  const badge=(key:string)=>counts.data?.[key]?<span className="ds-status-red rounded-ds-sm px-2">{counts.data[key]}</span>:undefined;
+  const badge=(key:string)=>counts.data?.[key] || undefined;
   return <div className="min-w-0 space-y-5">
     <PageHead title="Provider network" />
     {preview.active&&<div className="portal-toolbar"><DsButton size="sm" variant="ghost" onClick={()=>setDemoInactive(!demoInactive)}>{demoInactive?'Preview active membership':'Preview inactive membership'}</DsButton></div>}

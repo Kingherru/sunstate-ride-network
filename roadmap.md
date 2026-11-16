@@ -1,3 +1,9 @@
+# Form padding and notification indicators
+- [x] Added exactly 1px to authored portal field padding, including dialogs and previews; non-text controls excluded. Fixed important search-utility precedence and padding-transition drift.
+- [x] Shared static light-semantic circles replace compact messaging, Network, connection, change-log, notification and cart markers; exact accessible counts and full written statuses retained.
+- [x] Eleven focused tests and 100 read-only page/dialog checks at 1280/768/390/320 passed, including 944 field measurements: exact 1px on every side, circular accessible rendered markers, compact nowrap, no page overflow or console/page errors. Harness build OK. No real writes or publication.
+- [ ] Exact pass credits unavailable: ledger project snapshots increased 3.780140422 credits during work, but exclude final unrecorded costs; red/yellow variants defined but absent from loaded real/synthetic notification data, so populated rendering not separately verified.
+
 # Compact portal text
 - [x] Shared clipped-text controller and explicit OverflowText, semantic compact targets, multiline exclusions, keyboard/hover disclosure.
 - [x] Ten navigation/overflow tests and 96 read-only Admin/Provider/Patient/Facility checks passed at 1280/768/390/320. Request overlays, fleet/offer details, schedule filters, earnings, People, Settings, messaging and notifications covered. Hover/focus exact text, viewport containment, Escape, no extra unclipped stops and multiline help verified. No page errors/overflow. Latest harness build OK.

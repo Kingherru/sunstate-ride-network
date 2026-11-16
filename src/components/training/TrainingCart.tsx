@@ -1,3 +1,4 @@
+import { NotificationIndicator } from '@/components/portal/NotificationIndicator';
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
@@ -116,5 +117,5 @@ export function TrainingCartIcon({ onBlue = true }: { onBlue?: boolean }) {
   const cart = useTrainingCart();
   const preview = usePortalPreview();
   const count=cart.items.length+Number(cart.membership.base)+Number(cart.membership.network)+Number(cart.membership.contractor);
-  return <DsButton variant="ghost" size="sm" aria-label="Training cart" title="Cart" onClick={preview.active ? previewBlocked : cart.open} className={`portal-header-cart relative !size-10 !min-h-10 !p-0 ${onBlue ? '!text-ds-on-primary hover:!bg-ds-primary-hover' : ''}`}><ShoppingCart className="size-5" />{count>0&&<span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-ds-sm bg-ds-action text-xs font-bold text-ds-on-action">{count}</span>}</DsButton>;
+  return <DsButton variant="ghost" size="sm" aria-label="Training cart" title="Cart" onClick={preview.active ? previewBlocked : cart.open} className={`portal-header-cart relative !size-10 !min-h-10 !p-0 ${onBlue ? '!text-ds-on-primary hover:!bg-ds-primary-hover' : ''}`}><ShoppingCart className="size-5" />{count>0&&<NotificationIndicator count={count} label="cart items" className="absolute right-0 top-0" />}</DsButton>;
 }

@@ -1,3 +1,4 @@
+import { NotificationIndicator } from '@/components/portal/NotificationIndicator';
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -328,9 +329,7 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
           <h3 className="font-semibold text-sm">
             Conversations
             {(threadsQ.data?.total_unread ?? 0) > 0 && (
-              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-primary px-1.5 text-[10px] font-bold text-ds-on-primary align-middle">
-                {threadsQ.data?.total_unread}
-              </span>
+              <NotificationIndicator className="ml-2" count={threadsQ.data?.total_unread} label="unread messages" />
             )}
           </h3>
           {!readOnly && (
@@ -405,9 +404,7 @@ export function MessagesPanel({ userId, portal, readOnly = false, focusUserId, e
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium">{threadTitle(t)}</span>
                     {t.unread_count > 0 && (
-                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-primary px-1.5 text-[10px] font-bold text-ds-on-primary">
-                        {t.unread_count}
-                      </span>
+                      <NotificationIndicator count={t.unread_count} label="unread messages" />
                     )}
                   </div>
                   <div className="mt-1 flex items-center gap-1.5 flex-wrap">
