@@ -101,7 +101,7 @@ export function PersonalSecurity({ email, securityOnly = false, inline = false }
           <SecureEmailChange />
         </section>
       </div>}
-      {(inline || tab === 'password') && <div className="space-y-5">
+      {(inline || tab === 'password') && <details open={!inline} className="space-y-5"><summary className="ds-label cursor-pointer py-3">Password & sign-in</summary><div className="space-y-5">
         <form onSubmit={submit} className={`${card} space-y-4`} noValidate>
           <H icon={KeyRound}>Change password</H>
           <div><label htmlFor="ps-current" className="portal-label">Current password</label><input id="ps-current" type={pwType} autoComplete="current-password" className="portal-input" value={currentPw} onChange={e => setCurrentPw(e.target.value)} /></div>
@@ -120,16 +120,16 @@ export function PersonalSecurity({ email, securityOnly = false, inline = false }
           <p className="ds-support text-ds-text-2">Send a password reset link to your own email instead of typing a new password here.</p>
           <DsButton type="button" size="sm" variant="secondary" onClick={sendResetLink} disabled={resetBusy || !currentEmail}>{resetBusy ? "Sending…" : "Send password reset link"}</DsButton>
         </section>
-      </div>}
-      {(inline || tab === 'sessions') && <section className={`${card} space-y-4`}>
+      </div></details>}
+      {(inline || tab === 'sessions') && <details open={!inline}><summary className="ds-label cursor-pointer py-3">Sessions & devices</summary><section className={`${card} space-y-4`}>
         <H icon={MonitorSmartphone}>Sessions &amp; devices</H>
         <p className="ds-support">You are signed in on this device. Signing out of other devices ends every other session and keeps this one active. Session identifiers are never shown.</p>
         <div className="portal-business-actions">
           <DsButton type="button" size="sm" variant="ghost" className="portal-danger-control" onClick={signOut} disabled={signOutBusy}><LogOut className="size-4" aria-hidden />Sign out</DsButton>
           <DsButton type="button" size="sm" variant="secondary" onClick={signOutEverywhere} disabled={signOutBusy}>Sign out of other devices</DsButton>
         </div>
-      </section>}
-      {(inline || tab === 'security') && <section className={`${card} space-y-4`}>
+      </section></details>}
+      {(inline || tab === 'security') && <details open={!inline}><summary className="ds-label cursor-pointer py-3">Security activity</summary><section className={`${card} space-y-4`}>
         <H icon={ShieldCheck}>Security activity</H>
         <p className="ds-support">Recent account security events. Passwords, tokens and secrets are never stored or shown.</p>
         {audit.isLoading && <p role="status" className="ds-support">Loading…</p>}
@@ -140,7 +140,7 @@ export function PersonalSecurity({ email, securityOnly = false, inline = false }
           {a.result ? <StatusPill status={a.result} /> : <span />}
           <span className="ds-caption">{new Date(a.created_at).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET</span>
         </li>)}</ul>
-      </section>}
+      </section></details>}
     </Layout>
     </div>
   );

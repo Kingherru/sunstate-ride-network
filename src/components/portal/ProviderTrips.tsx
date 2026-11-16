@@ -29,7 +29,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
         ]} >
       {view === "new" && (
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3 border border-ds-sky-border bg-ds-sky p-4 rounded-ds">
+          <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-3 bg-ds-sky p-4 sm:flex sm:flex-wrap sm:justify-between">
             <h3 className="ds-subheading text-ds-primary">Provider-created requests</h3>
             <div className="flex flex-wrap gap-2"><Link to="/portal/requests/new" className={actionCls}>New trip</Link><Link to="/portal/requests" className="ds-button-text inline-flex items-center px-3 text-ds-primary">View created requests</Link><Link to="/portal/upload-csv" className="portal-btn-secondary">Import trips</Link></div>
           </div>
@@ -41,7 +41,7 @@ export function ProviderTrips({ userId, initial = "new" }: { userId: string; ini
       {view === "drafts" && (
         <SavedTripsPanel variant="drafts" onResume={(draft) => navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
       )}
-      {view === "history" && <><TripHistoryPanel userId={userId} /><SelectedTripExport /><ProviderExports /></>}
+      {view === "history" && <><TripHistoryPanel userId={userId} /><details className="mt-5"><summary className="ds-label cursor-pointer">Selected-trip reports</summary><div className="pt-4"><SelectedTripExport /></div></details><details className="mt-5"><summary className="ds-label cursor-pointer">Additional trip exports</summary><div className="pt-4"><ProviderExports /></div></details></>}
     </PortalTabbedLayout>
     </div>
   );

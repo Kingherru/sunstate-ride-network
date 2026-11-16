@@ -45,7 +45,7 @@ export function TrainingTests() {
       <PortalTabbedLayout label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} >
       {tab === 'Purchases & Resources' && <div className="portal-toolbar"><DsButton variant={resourceView === 'resources' ? 'secondary' : 'ghost'} onClick={() => setResourceView('resources')}>PDFs & Guides</DsButton><DsButton variant={resourceView === 'history' ? 'secondary' : 'ghost'} onClick={() => setResourceView('history')}>Purchase history</DsButton>{preview.active && <DsButton size="sm" variant="ghost" onClick={() => setViewer(true)}>Preview resource</DsButton>}</div>}
       {tab==='Purchases & Resources' && resourceView === 'history' &&<ul className="divide-y divide-ds-border">{mine.data?.map(e=><li key={e.id} className="py-4"><p className="ds-label text-ds-primary">{e.courses.title}</p><p className="ds-support">{e.status} · {e.purchased_at?new Date(e.purchased_at).toLocaleDateString():'Purchase date not available'}</p></li>)}</ul>}
-      {!rows.length && <DsEmpty title={tab === 'Completed Tests' ? 'No completed tests yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
+      {tab === 'Purchases & Resources' && resourceView === 'history' ? !(mine.data ?? []).length && <DsEmpty title="No purchases yet" /> : !rows.length && <DsEmpty title={tab === 'Completed' ? 'No completed courses yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
       <div className="grid gap-5 md:grid-cols-2">
       {rows.map((c) => {
         const e = byCourse.get(c.id);

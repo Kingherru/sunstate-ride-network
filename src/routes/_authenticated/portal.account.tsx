@@ -36,6 +36,7 @@ import { Link } from '@tanstack/react-router';
 import { DsButton } from '@/components/ds/controls';
 import { BusinessContactSettings } from '@/components/onboarding/BusinessContactSettings';
 import { AccountConnections } from '@/components/portal/AccountConnections';
+import { CustomerSettings } from '@/components/portal/CustomerSettings';
 
 const ROLE: Record<string, string> = { owner: "Owner", admin: "Workspace admin", member: "Member" };
 type Tab = "accessibility" | "profile" | "business" | "pricing" | "integrations" | "payouts" | "network" | "membership" | "requests" | "security" | "patients" | "billing" | "notifications" | "connections";
@@ -56,7 +57,8 @@ function Account() {
   const canEditNetwork = provider && !!ws && (ws.role === "owner" || ws.role === "admin");
   const [tab, setTab] = useState<Tab>(search.section === 'connections' ? 'connections' : 'profile');
   const setupLink = ws?.role === 'owner' && !ws.is_contractor ? <div className="mb-5 border-b border-ds-border pb-4"><Link to="/onboarding" className="ds-label text-ds-link underline">{access.onboardingPending ? 'Continue account setup' : 'Review account setup'}</Link><p className="ds-caption mt-1">Update missing information without changing your portal access.</p></div> : null;
-  if (provider && !access.restricted && canEditNetwork && ws && !ws.is_contractor) return <><PageHead title="Settings" /><div className="p-5 sm:p-6">{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} initialSection={search.section} accountDetails={<Profile email={s.email} />} teamMessaging={<TeamMessaging workspaceId={ws.id} />} financialTools={ws.role === 'owner' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Earnings & payouts</h2><div className="portal-business-body space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></section> : null} /></div></>;
+  if (!provider) return <><PageHead title="Settings" /><CustomerSettings patient={ws?.type === 'private_pay'} workspaceId={ws?.id} canManage={!!ws && ['owner','admin'].includes(ws.role)} email={s.email} /></>;
+  if (provider && !access.restricted && canEditNetwork && ws) return <><PageHead title="Settings" /><div>{setupLink}<ProviderSettings workspaceId={ws.id} role={ws.role} email={s.email} initialSection={search.section} teamMessaging={<TeamMessaging workspaceId={ws.id} />} financialTools={ws.role === 'owner' ? <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Payout preferences</h2><div className="portal-business-body space-y-8"><ProviderBalancePanel /><PayoutsPanel userId={user.id} /></div></section> : null} /></div></>;
   const tabs: { value: Tab; label: string }[] = provider && !access.restricted
     ? [{ value: "profile", label: "Profile" }, { value: "business", label: "Business information" },
        { value: "integrations", label: "Integrations" },

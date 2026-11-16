@@ -21,11 +21,11 @@ test("providers can reach the shared request form and created request history", 
 const customerMember = { portalKind: 'customer' as const, restricted: true, canMessageForWorkspace: false, canUploadCsvRequests: false };
 const workspace = { type: 'facility', status: 'active', role: 'member', is_contractor: false, can_create_requests: true };
 
-test('a customer member allowed to create requests can open CSV from the menu', () => {
+test('authorized trip import remains accessible after removing its redundant sidebar entry', () => {
   const access = { ...customerMember, canUploadCsvRequests: canUploadCsvRequests([workspace]) };
   expect(access.canUploadCsvRequests).toBe(true);
   expect(isPortalPathBlocked('/portal/upload-csv', access)).toBe(false);
-  expect(portalNavigation(access).some((n) => n.to === '/portal/upload-csv')).toBe(true);
+  expect(portalNavigation(access).some((n) => n.to === '/portal/upload-csv')).toBe(false);
 });
 
 test('customer members without request permission cannot see or open CSV', () => {

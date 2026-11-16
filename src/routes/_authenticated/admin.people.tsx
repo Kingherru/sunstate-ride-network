@@ -134,6 +134,7 @@ function People() {
         {value:'connections',label:'New Connections'},
       ]}>
       {view==='connections'&&<NewConnections/>}
+      {view !== 'connections' && <>
       {reviewCounts.data && (
         <p className="ds-support mb-4 text-ds-text-2">
           <span className="font-semibold">People needing review:</span> {reviewCounts.data.peopleNeedingReview}
@@ -141,8 +142,7 @@ function People() {
           <span className="font-semibold">Accounts needing classification:</span> {reviewCounts.data.accountsNeedingClassification}
         </p>
       )}
-      <div className="mb-5 grid gap-4 md:grid-cols-[2fr_1fr_1fr]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField></div>
-      <div className="mb-5 grid gap-4 md:grid-cols-3">
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(14rem,2fr)_repeat(5,minmax(0,1fr))]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField>
         <DsField label="Account type">{p => <DsSelect {...p} value={accountType} onChange={e => setAccountType(e.target.value)}><option value="all">All account types</option>{Object.entries(ACCOUNT_TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DsSelect>}</DsField>
         <DsField label="Account status">{p => <DsSelect {...p} value={accountStatus} onChange={e => setAccountStatus(e.target.value)}><option value="all">All account statuses</option><option value="active">Active</option><option value="pending">Pending</option><option value="suspended">Suspended</option></DsSelect>}</DsField>
         <DsField label="Email verification">{p => <DsSelect {...p} value={verification} onChange={e => setVerification(e.target.value)}><option value="all">All verification statuses</option><option value="verified">Verified</option><option value="unverified">Not verified</option></DsSelect>}</DsField>
@@ -183,8 +183,8 @@ function People() {
           </ul>
         )}
       </section>
-      <div className="mt-6"><MembershipTransitionsList /></div>
-      <div className="mt-6"><GrandfatheringList /></div>
+      <details className="mt-6"><summary className="ds-label cursor-pointer">Membership transitions</summary><div className="pt-4"><MembershipTransitionsList /></div></details>
+      <details className="mt-6"><summary className="ds-label cursor-pointer">Existing membership terms</summary><div className="pt-4"><GrandfatheringList /></div></details></>}
       </PortalTabbedLayout>
       {selected && <PersonDetails person={selected} canManage={canManagePeople} onClose={() => setSelected(null)} />}
     </>

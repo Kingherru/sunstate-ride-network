@@ -315,7 +315,7 @@ function MessageConfirmDialog({ sender, target, onCancel, onConfirm }: {
           You'll message as <span className="font-bold text-foreground">{sender.name}</span> to{" "}
           <span className="font-bold text-foreground">{target.business_name}</span>
           {target.mfn_id && <> (MFN ID: <span className="font-mono">{target.mfn_id}</span>)</>}.
-          If a conversation between your businesses already exists, it opens instead of creating a duplicate.
+          If a conversation between your accounts already exists, it opens instead of creating a duplicate.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">Do not include patient or protected health information in network introduction messages.</p>
         <div className="mt-5 flex justify-end gap-2">

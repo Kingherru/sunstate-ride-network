@@ -1,4 +1,4 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouter, useRouteContext } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { adminSubmitRideRequest, adminSubmitDeliveryRequest } from "@/lib/admin-on-behalf.functions";
@@ -220,6 +220,10 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
+  const { access } = useRouteContext({ strict: false });
+  const patientAccount = portal && (preview.active ? preview.accountType === 'private_pay_patient' : access?.primary?.type === 'private_pay');
+  const [bookingFor, setBookingFor] = useState<'self' | 'other'>(initialDraft?.payload.patientWorkspaceId || initialDraft?.payload.savedPatientId ? 'other' : 'self');
+  const [selfDefaults, setSelfDefaults] = useState<Parameters<typeof fillEmptyTripDefaults>[1] | null>(null);
   const [kind, setKind] = useState<"ride" | "delivery">(initialDraft?.payload.requestCategory === "medical_delivery" || service === "medical-delivery" ? "delivery" : "ride");
   const submitSelf = useServerFn(submitRideRequest);
   const submitAdmin = useServerFn(adminSubmitRideRequest);
@@ -322,6 +326,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         if(!initialDraft && defaults.billing)setSavedBilling(current=>current??defaults.billing);
         if(defaults.workspaceId && defaults.accountType==='provider'){const linked=await loadFacilityPatients({data:{sourceId:defaults.workspaceId}});if(!cancelled)setFacilityPatients(linked);}
         const basicDefaults=defaults.defaults;
+        if (defaults.accountType === 'private_pay' && basicDefaults) setSelfDefaults(basicDefaults);
         if(!initialDraft && basicDefaults)setForm(f=>({...fillEmptyTripDefaults(f,basicDefaults),...(f.patientFirstName||f.patientLastName?{}:{transportType:basicDefaults.transportType??f.transportType})}));
         if (!initialDraft && prefs.default_payer_id) applyPayer(prefs.default_payer_id, pys as any[]);
       } catch { /* optional helpers only */ }
@@ -508,7 +513,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 
   return (
     <section className={portal ? "" : "bg-ds-bg px-5 py-16 sm:px-6 lg:py-20"}>
-      <div className={commerce ? 'min-w-0' : 'mx-auto max-w-3xl'}>
+      <div className={portal ? 'min-w-0 w-full' : 'mx-auto max-w-3xl'}>
         {!commerce && (portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>)}
         <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
           {commerce ? allowProviderSelection ? 'Prepare a request for your selected provider. Your facility’s billing responsibility and approved agreement are reviewed separately. Acceptance is not guaranteed.' : 'Prepare your own workspace trip. Saving or submitting does not share it to the Referral Network, send an invoice or collect payment.' : 'Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.'}
@@ -538,12 +543,16 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         {kind === "delivery" ? (
           <DeliveryRequestForm portal={portal} initialDraft={initialDraft?.payload.requestCategory === "medical_delivery" ? initialDraft : undefined} />
         ) : (
-        <form noValidate onSubmit={onSubmit} className="space-y-10 bg-ds-surface border border-ds-border p-4 sm:p-6 rounded-ds-sm">
+        <form noValidate onSubmit={onSubmit} className={`space-y-8 bg-ds-surface rounded-ds-sm ${portal ? '' : 'border border-ds-border p-4 sm:p-6'}`}>
 
           {allowProviderSelection && !selectedProvider && form.selectedProviderWorkspaceId && <p className="ds-caption">Provider selection retained from the draft; server authorization is rechecked on submission.</p>}
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={p=>{setSelectedProvider(p);upd('selectedProviderWorkspaceId',p?.workspace_id??null);}} />}
           {commerce?.provider && form.savedPatientId && <PatientDriverSuggestion patientId={form.savedPatientId} service={form.transportType==='gurney'?'stretcher':form.transportType} date={form.pickupDate||undefined} onConfirm={confirmDriver}/>}
-          {portal && !onBehalf && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => setForm(f=>({...f,patientWorkspaceId:id,savedPatientId:null}))} onDefaults={d=>setForm(f=>({...f,...d,savedPatientId:null}))} />}
+          {patientAccount && <Field label="Who is this trip for?"><select className={inputCls} value={bookingFor} onChange={e => {
+            const next = e.target.value === 'other' ? 'other' : 'self'; setBookingFor(next); setPatientChoice('');
+            setForm(f => ({...f, patientWorkspaceId:null, savedPatientId:null, patientFirstName:next === 'self' ? selfDefaults?.patientFirstName ?? '' : '', patientLastName:next === 'self' ? selfDefaults?.patientLastName ?? '' : '', patientPhone:next === 'self' ? selfDefaults?.patientPhone ?? '' : '', patientEmail:next === 'self' ? selfDefaults?.patientEmail ?? '' : ''}));
+          }}><option value="self">Booking for myself</option><option value="other">Booking for another patient</option></select></Field>}
+          {portal && !onBehalf && (!patientAccount || bookingFor === 'other') && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => setForm(f=>({...f,patientWorkspaceId:id,savedPatientId:null}))} onDefaults={d=>setForm(f=>({...f,...d,savedPatientId:null}))} />}
           {facilityPatients.length>0 && <Field label="Facility-authorized linked patient"><select className={inputCls} value={form.savedPatientId??''} onChange={e=>{const p=facilityPatients.find(p=>p.savedPatientId===e.target.value);if(p && confirm('Attach this confirmed patient and fill only basic trip details?'))setForm(f=>({...f,patientFirstName:p.patientFirstName??'',patientLastName:p.patientLastName??'',patientPhone:p.patientPhone??'',patientEmail:p.patientEmail??'',transportType:p.transportType??'ambulatory',patientWorkspaceId:p.patientWorkspaceId,savedPatientId:p.savedPatientId}));}}><option value="">Choose authorized patient</option>{facilityPatients.map(p=><option key={p.savedPatientId} value={p.savedPatientId}>{p.patientFirstName} {p.patientLastName} · {p.facilityMfnId}</option>)}</select></Field>}
 
           {/* Patient */}
@@ -551,7 +560,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Patient
             </legend>
-            {portal && patients.length > 0 && (
+            {portal && patients.length > 0 && (!patientAccount || bookingFor === 'other') && (
               <Field label="Saved patient">
                 <select className={inputCls} value={patientChoice} onChange={(e) => choosePatient(e.target.value)}>
                   <option value="">Choose a saved patient (optional)…</option>
@@ -622,7 +631,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                   required
                 />
               </Field>
-              <Field label={`Pickup time${form.pickupTimezone?' · '+form.pickupTimezone:''}`} required error={errors.pickupTime}>
+              <Field label="Pickup time" required error={errors.pickupTime}>
                 <TimePickerField
                   value={form.pickupTime}
                   pickupDate={form.pickupDate}
@@ -639,7 +648,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
               </Field>
             </div>
             <RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
-            <Field label={`Appointment time (drop-off arrival)${form.dropoffTimezone?' · '+form.dropoffTimezone:''}`} error={errors.appointmentTime}>
+            <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
               <TimeSelect
                 value={form.appointmentTime ?? ""}
                 onChange={(v) => upd("appointmentTime", v)}

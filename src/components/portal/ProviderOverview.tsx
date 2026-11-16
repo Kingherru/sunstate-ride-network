@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { CalendarDays, Truck, Users, GraduationCap, Network, MessageSquare } from "lucide-react";
 import { SmartNotes } from "@/components/portal/SmartNotes";
 import { ReferralReservationsSection } from "@/components/dashboard/RequestsPanel";
-import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import { panelCls } from "@/components/portal/PortalShell";
 
 const TOOLS = [
@@ -39,7 +38,6 @@ export function ProviderOverview({ workspaceId, userId }: { workspaceId: string 
           </Link>
         ))}
       </nav>
-      <section className={`${panelCls} bg-ds-subtle p-4 sm:p-5`} aria-label="Notifications"><NotificationsPanel /></section>
     </div>
   );
 }

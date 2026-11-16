@@ -32,7 +32,7 @@ function Requests() {
   const [tab, setTab] = useState<"history" | "drafts">("history");
   return (
     <>
-      <PageHead title="Trip history" action={<Link to="/portal/requests/new" className={actionCls}>New trip</Link>}>
+      <PageHead title="Trip history" action={<div className="flex flex-wrap gap-2">{access.canUploadCsvRequests && <Link to="/portal/upload-csv" className="portal-btn-secondary">Import trips</Link>}<Link to="/portal/requests/new" className={actionCls}>New trip</Link></div>}>
         Only requests you're authorized to view are shown.
       </PageHead>
       <PortalTabbedLayout label="Trip history sections" queryKey="view" value={tab} onChange={setTab} options={[{ value: "history", label: "History" }, { value: "drafts", label: "Drafts" }]} >

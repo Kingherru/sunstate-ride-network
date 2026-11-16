@@ -77,5 +77,5 @@ export function PersonalSettings({ section = 'all', requiredInApp = false }: { s
       </fieldset>
     </section>}
     {section !== 'status' && <div className="portal-business-actions"><DsButton disabled={preview.active || busy || !q.data} type="submit">{busy ? 'Saving…' : 'Save settings'}</DsButton></div>}
-  </form>{(section==='profile'||section==='all')&&<><PrivateRegionalProfile/><RegionalPreference/></>}</>;
+  </form>{(section==='profile'||section==='all')&&<details className="mt-6"><summary className="ds-label cursor-pointer text-ds-primary">Advanced location preferences</summary><div className="space-y-5 pt-4"><PrivateRegionalProfile/><RegionalPreference/></div></details>}</>;
 }

@@ -20,9 +20,7 @@ function PortalHome() {
   const provider = access.portalKind === "provider";
   return (
     <>
-      <PageHead title={ws?.name || "Your account"} action={!provider && <Link to="/portal/requests/new" className={actionCls}>New trip</Link>}>
-        {ws ? <>{ACCOUNT_TYPE_LABEL[ws.type] ?? ws.type} account{ws.status === "pending" ? " · Pending review" : ""}</> : "MY FLORIDA NEMT account"}
-      </PageHead>
+      <PageHead title="Overview" action={!provider && <Link to="/portal/requests/new" className={actionCls}>New trip</Link>} />
       {provider && ws?.status === "pending" && (
         <p role="status" className="ds-body mb-5 rounded-ds bg-ds-warning-soft px-4 py-3">Your provider account is pending verification. Trips can be offered to you once verification is complete.</p>
       )}

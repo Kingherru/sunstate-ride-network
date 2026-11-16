@@ -4,8 +4,10 @@
 - [x] Uploads/Notifications preview mapping, anchor navigation containment/account type, duplicate New Trip heading and detail percentage labels.
 - [x] Four training groups, single contractor checkbox, simpler directory filters, focused admin permissions and no live admin demo fallback.
 - [x] Loaded admin/provider/customer preview smoke, 1200/390/320 shell overflow checks: no page errors or document overflow; harness compilation OK. No live writes/publication.
-- [ ] Remaining: complete route-by-route visual/heading confirmation, patient/facility-specific Settings and booking refinements, removable preview financial examples and complete upload relocation. No claim that the entire requested cleanup is complete.
-- [ ] Verification limitation: public drawer interaction was intermittently hydration-sensitive; public dimensions passed, full drawer interaction remains unconfirmed. Exact pass credits unavailable (709 billing-period credits, not pass usage).
+- [x] Role-appropriate shared customer Settings; self/another-patient booking; balanced Facility invoice layout; advanced location disclosures; compact security sections, People filters and Network controls; duplicate Overview notifications removed.
+- [x] Removable Provider financial examples restricted to Master preview; trip imports reachable from Trips, contact imports from People, credentials from Settings; retained upload routes and owner financial controls.
+- [x] Drawer open/Escape/focus/navigation and body-unlock verified at 390/320; 33 public static routes checked desktop/390, 12 Provider preview destinations and selected Patient/Facility Settings/booking/People checked desktop/390/320, 11 real Master Admin pages read-only checked. No page errors or document overflow. Eight navigation tests pass; latest harness compilation OK.
+- [ ] Not fully verified: every dynamic coverage/article/product route and every secondary tab/dialog in live customer/provider accounts. No broad role matrix or real mutations run, as requested; no application-wide completion claim. Exact pass credits unavailable (718 billing-period credits, not pass usage).
 ## Pass 5C — workflow completion
 - [x] Mobile menu primary actions first; desktop/tablet unchanged.
 - [x] Shared safe invoice/PDF-preparation/email-preview/funding/detail/copy projections; schedules and selected Provider/Patient/Facility/Admin export preparation connected. No live report/download checks.

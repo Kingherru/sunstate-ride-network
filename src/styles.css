@@ -772,3 +772,12 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .theme-portal .portal-business-form fieldset { border: 0; padding: 0; }
 .portal-preview-toolbar .ds-button-text { min-height: 2.5rem; font-size: .8125rem; padding: .5rem .75rem; }
 @media (max-width: 639px) { .portal-preview-toolbar > p { flex-basis: 100%; } .theme-portal main .portal-history-table td { padding-inline: .5rem; } }
+
+/* Page-level cleanup: keep inner groups quiet without changing overlays or status colors. */
+.theme-portal .portal-main-module :where(.portal-tabbed-content, .portal-admin-module) > :where(section,div).border { border: 0; box-shadow: none; }
+.theme-portal .portal-main-module :where(form,fieldset) { min-width: 0; }
+.theme-portal .portal-main-module :where(.portal-business-body) { padding-inline: 1rem; }
+.theme-portal .portal-history-table :where(th,td) { overflow-wrap: normal; }
+.theme-portal .portal-history-table :where(th:last-child,td:last-child) { white-space: nowrap; }
+@media (min-width: 1024px) { .theme-portal .portal-history-table :where(th,td) { padding-inline: .75rem; } }
+@media (max-width: 639px) { .theme-portal .portal-main-module :where(.portal-business-body) { padding-inline: .75rem; } .theme-portal .portal-main-module :where(.portal-btn-primary,.portal-btn-secondary) { padding-inline: .75rem; } }

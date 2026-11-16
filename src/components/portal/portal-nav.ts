@@ -25,7 +25,6 @@ export const CUSTOMER_NAV: NavItem[] = [
   { to: "/portal", label: "Overview", exact: true },
   { to: "/portal/requests/new", label: "New trip" },
   { to: "/portal/requests", label: "Trip history", exact: true },
-  { to: "/portal/upload-csv", label: "Uploads" },
   { to: "/portal/find-providers", label: "Providers" },
   { to: "/portal/contacts", label: "People" },
   { to: "/portal/notifications", label: "Notifications" },

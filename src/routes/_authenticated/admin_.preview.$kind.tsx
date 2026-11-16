@@ -34,7 +34,8 @@ import {Communications} from '@/components/portal/Communications';
 import {PilotChecklist,ScopedPilot} from '@/components/network/PilotChecklist';
 import {PersonalSettings} from '@/components/portal/PersonalSettings';
 import { PortalUploads } from './portal.upload-csv';
-function PreviewPeople(){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'|'accepted'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab}/></Panel>;}
+import { CustomerSettings } from '@/components/portal/CustomerSettings';
+function PreviewPeople({patient=false}:{patient?:boolean}){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'|'accepted'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab} patient={patient} workspaceId="preview-ws"/></Panel>;}
 
 type Kind = "provider" | "customer";
 
@@ -93,7 +94,7 @@ function PortalPreview() {
       const url = new URL(target.href, window.location.origin);
       if (url.origin !== window.location.origin || !/^\/portal(?:\/|$)/.test(url.pathname)) return;
       event.preventDefault(); event.stopPropagation();
-      void navigate({ search: prev => ({ ...prev, page: pageKeyOf(url.pathname), accountType }) });
+      void navigate({ search: prev => ({ ...prev, page: pageKeyOf(url.pathname), accountType, section: url.searchParams.get('section') ?? undefined, view: url.searchParams.get('view') ?? undefined }) });
     }}>
     <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle} settingsTo="/portal/account" notificationsTo="/portal/notifications">
       <div className="portal-preview-toolbar mb-5 flex flex-wrap items-center gap-2 border-b border-ds-border pb-3">
@@ -159,13 +160,13 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
   }
   switch (page) {
     case "requests/new": return accountType === 'private_pay_patient' ? <RequestForm context="portal" allowProviderSelection /> : <NewTripWorkspace workspaceId="preview-ws" provider={false}/>;
-    case "account": return <Panel><div className="space-y-5"><PersonalSecurity email="demo@example.com" /><AccountConnections workspaceId="preview-ws" /></div></Panel>;
+    case "account": return <CustomerSettings patient={accountType === 'private_pay_patient'} workspaceId="preview-ws" canManage email="demo@example.com" />;
     case "requests": return <Panel><PatientTrips/></Panel>;
     case "upload-csv": return <PortalUploads />;
     case "changelog": return <Unavailable what="Change Log" />;
     case "find-providers": return <Panel><ProviderDirectory /></Panel>;
     case "saved-providers": return <Panel><ProviderDirectory savedOnly /></Panel>;
-    case "contacts": return <PreviewPeople/>;
+    case "contacts": return <PreviewPeople patient={accountType === 'private_pay_patient'}/>;
     case "payers": return <Panel><PayersPanel /></Panel>;
     case "notifications": return <Panel><NotificationsPanel /></Panel>;
     case "messaging": return <Panel><WorkspaceMessaging mode="portal" /></Panel>;

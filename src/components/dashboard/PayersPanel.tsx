@@ -33,7 +33,7 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
 
   return (
     <div className="space-y-4">
-      {preview.active&&<DsButton variant="secondary" onClick={()=>setSample(true)}>Preview synthetic payer agreement</DsButton>}
+      {preview.active&&<DsButton size="sm" variant="ghost" onClick={()=>setSample(true)}>Preview payer agreement</DsButton>}
       {sample&&<PayerAgreement workspaceId="00000000-0000-4000-8000-000000000001" payerId="00000000-0000-4000-8000-000000000002" onClose={()=>setSample(false)}/>}
       {agreement?.workspace_id&&<PayerAgreement workspaceId={agreement.workspace_id} payerId={agreement.id} onClose={()=>setAgreement(null)}/>}
       <div className="flex flex-wrap items-center justify-between gap-3">

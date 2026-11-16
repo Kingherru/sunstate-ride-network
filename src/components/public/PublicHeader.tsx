@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CalendarPlus, LogIn, Menu, Phone, UserRound, X } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
@@ -49,8 +49,26 @@ function ActionBlocks({ className, full, onNavigate }: { className?: string; ful
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
+  const header = useRef<HTMLElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    header.current?.querySelector<HTMLElement>('#mobile-menu a')?.focus();
+    const closeOnResize = () => { if (window.innerWidth >= 1200) setOpen(false); };
+    window.addEventListener('resize', closeOnResize);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('resize', closeOnResize); trigger.current?.focus(); };
+  }, [open]);
   return (
-    <header className="public-header sticky top-0 z-50 bg-ds-primary ds-glass-blue border-b border-ds-primary-hover text-ds-on-primary" onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}>
+    <header ref={header} className="public-header sticky top-0 z-50 bg-ds-primary ds-glass-blue border-b border-ds-primary-hover text-ds-on-primary" onKeyDown={(e) => {
+      if (e.key === 'Escape') setOpen(false);
+      if (!open || e.key !== 'Tab') return;
+      const items = Array.from(header.current?.querySelectorAll<HTMLElement>('a,button,select') ?? []).filter(el => el.getClientRects().length && !el.hasAttribute('disabled'));
+      const first = items[0], last = items.at(-1);
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+    }}>
       <div className="public-header-inner mx-auto grid min-h-[76px] max-w-[1600px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 min-[1200px]:flex min-[1200px]:justify-between 2xl:px-6">
         <Link to="/" onClick={()=>setOpen(false)} className={cn("min-w-0 shrink-0 rounded-ds-sm", focus)} aria-label="MY FLORIDA NEMT home">
           <BrandName on="blue" className="public-brand text-lg sm:text-xl 2xl:text-2xl" />
@@ -62,6 +80,7 @@ export function PublicHeader() {
         <div className="public-mobile-actions flex shrink-0 items-center gap-3">
           <ActionBlocks className="hidden min-[1200px]:flex" />
           <DsButton
+            ref={trigger}
             variant="ghost"
             type="button"
             className={cn("public-menu-control size-11 shrink-0 p-0 text-ds-on-primary hover:translate-y-0 hover:bg-transparent hover:text-ds-accent focus-visible:text-ds-accent min-[1200px]:hidden", focus)}
@@ -75,6 +94,8 @@ export function PublicHeader() {
         </div>
       </div>
       {open && (
+        <>
+        <div className="public-menu-backdrop fixed inset-0 top-[76px] -z-10" onClick={() => setOpen(false)} aria-hidden />
         <nav id="mobile-menu" aria-label="Mobile" className="absolute inset-x-0 top-full max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-ds-primary-hover bg-ds-primary px-4 pb-5 min-[1200px]:hidden">
           <div aria-label="Primary actions" className="mfn-container grid min-w-0 grid-cols-2 gap-3 pb-3 pt-4">
             <a href={BOOKING_ROUTE} onClick={()=>setOpen(false)} className={cn("ds-button-text col-span-2 flex min-h-14 items-center justify-center gap-3 whitespace-nowrap rounded-ds-sm bg-ds-accent px-4 py-3 uppercase text-ds-on-accent hover:bg-ds-accent-hover", focus)}><CalendarPlus className="size-5 shrink-0" aria-hidden />Book a Trip</a>
@@ -85,6 +106,7 @@ export function PublicHeader() {
             {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
           </ul>
         </nav>
+        </>
       )}
     </header>
   );
