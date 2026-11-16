@@ -41,7 +41,7 @@ function AdminSettings() {
       <SettingsShell value={tab} onChange={setTab} sections={[{value:'profile',label:'Profile'},{value:'notifications',label:'Notifications'},{value:'interface',label:'Sign-in preferences'},{value:'accessibility',label:'Accessibility'},{value:'tools',label:'Administration'},...(access.isMasterAdmin?[{value:'regions',label:'Regional Readiness'},{value:'training',label:'Training administration'}]:[])]}>
       {tab==='training'&&access.isMasterAdmin&&<TrainingAdministration/>}
       {tab==='regions'&&access.isMasterAdmin&&<RegionalReadiness/>}
-      {tab==='profile'&&<div className="space-y-5"><PersonalSettings section="profile"/><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Email & confirmation</h2><div className="portal-business-body"><SecureEmailChange/></div></section><div className="space-y-5" aria-labelledby="admin-account-access"><h2 id="admin-account-access" className="ds-subheading uppercase text-ds-primary">Account & Access</h2><PersonalSecurity email={user.email} securityOnly inline/>{access.isMasterAdmin&&<section className="portal-business-section"><h3 className="portal-business-heading ds-subheading uppercase">Protected administration</h3><div className="portal-business-body space-y-5"><p className="ds-support">Master Admin access is protected; personal profile fields never change permissions.</p><AdminRolesPanel/><AuditLogPanel/><ExpiringCredentialsPanel/></div></section>}</div></div>}
+      {tab==='profile'&&<div className="space-y-5"><PersonalSettings section="profile"/><section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Email & confirmation</h2><div className="portal-business-body"><SecureEmailChange/></div></section><div className="space-y-5" aria-labelledby="admin-account-access"><h2 id="admin-account-access" className="ds-subheading uppercase text-ds-primary">Account & Access</h2><PersonalSecurity email={user.email} securityOnly/>{access.isMasterAdmin&&<section className="portal-business-section"><h3 className="portal-business-heading ds-subheading uppercase">Protected administration</h3><div className="portal-business-body space-y-5"><p className="ds-support">Master Admin access is protected; personal profile fields never change permissions.</p><AdminRolesPanel/><AuditLogPanel/><ExpiringCredentialsPanel/></div></section>}</div></div>}
       {tab==='notifications'&&<PersonalSettings section="notifications" requiredInApp/>}
       {tab==='interface'&&<SignInPreference/>}{tab==='accessibility'&&<InterfaceSize/>}
       {tab==='tools'&&<>
@@ -52,7 +52,7 @@ function AdminSettings() {
           </h2>
           <div className="space-y-4 px-4 py-4 sm:px-5">
             <p className="ds-support text-ds-text-2">
-              View how the Provider and Patient & Facility portals look using real components and synthetic demo data. Nothing here submits a real form, sends a notification or changes your admin session.
+              View how the Provider and Patient & Facility portals look using sample information. Nothing here submits a real form, sends a notification or changes your admin session.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/admin/preview/$kind" params={{ kind: "provider" }} className={actionCls}>

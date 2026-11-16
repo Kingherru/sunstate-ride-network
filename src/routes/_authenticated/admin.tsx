@@ -31,7 +31,7 @@ function AdminLayout() {
   return (
     <PortalShell nav={nav} area="MFN Admin" changelogTo="/admin/changelog" settingsTo="/admin/settings"
       notificationsTo={canOpen("/admin/notifications", perms) ? "/admin/notifications" : undefined}
-      identity={{ name: access.displayName || "Administrator", mfnId: access.mfnId, label }}>
+      identity={{ name: access.isMasterAdmin ? "MY FLORIDA NEMT" : access.displayName || "Administrator", mfnId: access.mfnId, label }}>
       <Outlet />
     </PortalShell>
   );

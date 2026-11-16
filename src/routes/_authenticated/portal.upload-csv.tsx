@@ -46,7 +46,7 @@ async function pdfText(buf: ArrayBuffer) {
   return lines.join("\n");
 }
 
-function PortalUploads() {
+export function PortalUploads() {
   const preview = usePortalPreview();
   const qc = useQueryClient();
   const prepare = useServerFn(prepareUpload);

@@ -17,6 +17,7 @@ export function TrainingTests() {
   const preview = usePortalPreview();
   const cart = useTrainingCart();
   const [tab, setTab] = useState('Available');
+  const [resourceView, setResourceView] = useState('resources');
   const [viewer,setViewer]=useState(false);
   const courses = usePortalQuery({ queryKey: ["public-courses"], queryFn: () => listPublicCourses() });
   const mine = usePortalQuery({ queryKey: ["my-enrollments"], queryFn: () => listMyEnrollments() });
@@ -27,26 +28,23 @@ export function TrainingTests() {
   const byCourse = new Map((mine.data ?? []).map((e) => [e.course_id, e]));
   // Each view has one purpose: Available = not yet purchased; Tests to Take = purchased, not started;
   // In Progress = purchased with recorded progress; Completed Tests = certificate earned.
-  const tabs = ['Available Training', 'Tests to Take', 'In Progress', 'Completed Training and Tests', 'Purchased Resources', 'PDFs and Guides', 'Purchase History'];
-  const started = (e: { progress?: unknown } | undefined) => typeof e?.progress === 'number' && e.progress > 0;
+  const tabs = ['Available', 'In Progress', 'Completed', 'Purchases & Resources'];
   const rows = (courses.data ?? []).filter(c => {
     const e = byCourse.get(c.id);
-    if(tab==='Purchase History')return false;
-    if(tab==='Purchased Resources')return !!e&&c.product_kind==='digital_guide';
-    if(c.product_kind==='digital_guide')return tab==='PDFs and Guides';
-    if(tab==='PDFs and Guides')return false;
-    if (tab === 'Available Training' || tab === 'Available') return !e;
-    if (tab === 'Tests to Take') return !!e && e.status !== 'completed' && !started(e);
-    if (tab === 'In Progress') return !!e && e.status !== 'completed' && started(e);
+    if (tab === 'Available') return !e;
+    if (tab === 'Purchases & Resources') return resourceView === 'resources' && !!e && c.product_kind === 'digital_guide';
+    if (c.product_kind === 'digital_guide') return false;
+    if (tab === 'In Progress') return !!e && e.status !== 'completed';
     return e?.status === 'completed';
   });
 
   return (
     <div className="space-y-5">
       {viewer&&<ResourceViewer preview={preview.active} onClose={()=>setViewer(false)}/>}
-      {preview.active&&<DsButton variant="secondary" onClick={()=>setViewer(true)}>Open synthetic resource sample</DsButton>}
+
       <PortalTabbedLayout label="Training views" queryKey="training" value={tab} onChange={setTab} options={tabs.map(value => ({ value, label: value }))} >
-      {tab==='Purchase History'&&<ul className="divide-y divide-ds-border">{mine.data?.map(e=><li key={e.id} className="py-4"><p className="ds-label text-ds-primary">{e.courses.title}</p><p className="ds-support">{e.status} · {e.purchased_at?new Date(e.purchased_at).toLocaleDateString():'Purchase date not available'}</p></li>)}</ul>}
+      {tab === 'Purchases & Resources' && <div className="portal-toolbar"><DsButton variant={resourceView === 'resources' ? 'secondary' : 'ghost'} onClick={() => setResourceView('resources')}>PDFs & Guides</DsButton><DsButton variant={resourceView === 'history' ? 'secondary' : 'ghost'} onClick={() => setResourceView('history')}>Purchase history</DsButton>{preview.active && <DsButton size="sm" variant="ghost" onClick={() => setViewer(true)}>Preview resource</DsButton>}</div>}
+      {tab==='Purchases & Resources' && resourceView === 'history' &&<ul className="divide-y divide-ds-border">{mine.data?.map(e=><li key={e.id} className="py-4"><p className="ds-label text-ds-primary">{e.courses.title}</p><p className="ds-support">{e.status} · {e.purchased_at?new Date(e.purchased_at).toLocaleDateString():'Purchase date not available'}</p></li>)}</ul>}
       {!rows.length && <DsEmpty title={tab === 'Completed Tests' ? 'No completed tests yet' : tab === 'Available' ? 'You own every available course' : 'No courses in this view'} />}
       <div className="grid gap-5 md:grid-cols-2">
       {rows.map((c) => {

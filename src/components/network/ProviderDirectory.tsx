@@ -50,6 +50,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect, providerOperati
   const [originText, setOriginText] = useState('');
   const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(50);
+  const [advanced, setAdvanced] = useState(providerOperations);
 
   const filters = {
     nearby_opportunities:providerOperations&&opportunities||undefined,
@@ -126,7 +127,8 @@ export function ProviderDirectory({ savedOnly = false, onSelect, providerOperati
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by company name" aria-label="Search by company name"
               className="w-full rounded-sm border border-border py-2 pr-3 text-sm" />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <DsButton variant="ghost" size="sm" aria-expanded={advanced} onClick={() => setAdvanced(!advanced)}>Advanced filters</DsButton>
+          <div hidden={!advanced} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <DsSelect aria-label="Provider state" value={state} onChange={e=>{setState(e.target.value);setRegion('');setCounty('');setCity('');setZip('');}}>{US_STATES.map(s=><option key={s.code} value={s.code}>{s.name}</option>)}</DsSelect>
             <DsSelect aria-label="Provider region" value={region} onChange={e=>setRegion(e.target.value)}><option value="">All configured regions</option>{stateRegions(state).map(r=><option key={r.slug} value={r.slug}>{r.name}</option>)}</DsSelect>
             <DsSelect aria-label="Network provider subtype" value={providerType} onChange={e=>{const t=e.target.value;if(t===''||t==='nemt_business'||t==='independent_contractor')setProviderType(t);}}><option value="">All provider types</option><option value="nemt_business">NEMT Business</option><option value="independent_contractor">Independent Contractor</option></DsSelect>
@@ -144,7 +146,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect, providerOperati
               <input type="checkbox" checked={accepting} onChange={(e) => setAccepting(e.target.checked)} /> Accepting connections
             </label>
           </div>
-          <div className="space-y-2"><label className="ds-label" htmlFor="provider-distance-origin">Search near city, ZIP or public business location</label>
+          <div hidden={!advanced} className="space-y-2"><label className="ds-label" htmlFor="provider-distance-origin">Search near city, ZIP or public business location</label>
             <AddressAutocomplete inputId="provider-distance-origin" value={originText} onChange={v => { setOriginText(v); setOrigin(null); }} onSelect={v => { setOriginText(v.fullAddress); if (v.lat != null && v.lng != null) setOrigin({ lat: v.lat, lng: v.lng }); }} />
             <label className="ds-caption block">Within <select aria-label="Provider search radius" className="portal-input" value={radius} onChange={e => setRadius(Number(e.target.value))}>{[20, 50, 100, 200].map(n => <option key={n} value={n}>{n} miles</option>)}</select></label>
             <p className="ds-caption">Approximate straight-line distance from a public service-area center; not driving mileage. Select a suggested location to apply distance.</p>
@@ -205,7 +207,7 @@ export function ProviderDirectory({ savedOnly = false, onSelect, providerOperati
 
   return (
     <div className="space-y-4">
-      {!onSelect && <aside className="rounded-ds border border-ds-peach-border bg-ds-peach p-4 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network Communication & Payment Reminder</h3><p className="ds-body">Communicate professionally and accept only trips you intend to complete. Accepted trips are final and should not be returned. Mark completed trips promptly and complete all required payments. Following these rules helps providers earn Super Verification and avoid account suspension or removal.</p></aside>}
+      {!onSelect && providerOperations && <aside className="rounded-ds bg-ds-sky p-3 text-ds-primary"><h3 className="ds-label uppercase mb-2">Network reminder</h3><p className="ds-support">Accept only trips you can complete. Keep trip status and payment responsibilities current.</p></aside>}
       {/* Desktop: list left, profile right. Mobile: list first, profile replaces it. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <div className={cn(selected && "hidden lg:block")}>{listPanel}</div>

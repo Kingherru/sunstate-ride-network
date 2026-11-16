@@ -33,6 +33,7 @@ import {ContactsPayersPanel} from '@/components/dashboard/ContactsPayersPanel';
 import {Communications} from '@/components/portal/Communications';
 import {PilotChecklist,ScopedPilot} from '@/components/network/PilotChecklist';
 import {PersonalSettings} from '@/components/portal/PersonalSettings';
+import { PortalUploads } from './portal.upload-csv';
 function PreviewPeople(){const [tab,setTab]=useState<'patients'|'contacts'|'payers'|'connections'|'accepted'>('contacts');return <Panel><ContactsPayersPanel tab={tab} onTab={setTab}/></Panel>;}
 
 type Kind = "provider" | "customer";
@@ -44,9 +45,13 @@ export const Route = createFileRoute("/_authenticated/admin_/preview/$kind")({
     const access = await getAccessState();
     if (!access.isMasterAdmin) throw redirect({ to: "/admin/settings" });
   },
-  validateSearch: (s: Record<string, unknown>): { page?: string; accountType?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { page?: string; accountType?: string; view?: string; section?: string; training?: string; securityView?: string } => ({
     page: typeof s.page === "string" ? s.page : undefined,
     accountType: typeof s.accountType === "string" ? s.accountType : undefined,
+    view: typeof s.view === "string" ? s.view : undefined,
+    section: typeof s.section === "string" ? s.section : undefined,
+    training: typeof s.training === "string" ? s.training : undefined,
+    securityView: typeof s.securityView === "string" ? s.securityView : undefined,
   }),
   component: PortalPreview,
 });
@@ -66,8 +71,8 @@ function PortalPreview() {
   const activePage = search.page ?? "overview";
 
   const nav: NavItem[] = useMemo(
-    () => baseNav.map((n) => ({ to: previewTo, label: n.label, iconFor: n.to, search: { page: pageKeyOf(n.to) } })),
-    [baseNav, previewTo],
+    () => baseNav.map((n) => ({ to: previewTo, label: n.label, iconFor: n.to, search: { page: pageKeyOf(n.to), accountType } })),
+    [baseNav, previewTo, accountType],
   );
 
   const identity = isProvider
@@ -82,9 +87,17 @@ function PortalPreview() {
 
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind: kind as Kind, accountType }}>
-    <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle} settingsTo={`${previewTo}?page=account`} notificationsTo={`${previewTo}?page=notifications`}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 ds-glass px-4 py-3">
-        <p className="ds-body font-semibold uppercase tracking-[0.04em] text-ds-accent">Preview mode — demo information only, nothing is saved</p>
+    <div onClickCapture={event => {
+      const target = event.target instanceof Element ? event.target.closest('a') : null;
+      if (!target) return;
+      const url = new URL(target.href, window.location.origin);
+      if (url.origin !== window.location.origin || !/^\/portal(?:\/|$)/.test(url.pathname)) return;
+      event.preventDefault(); event.stopPropagation();
+      void navigate({ search: prev => ({ ...prev, page: pageKeyOf(url.pathname), accountType }) });
+    }}>
+    <PortalShell nav={nav} area={isProvider ? "Provider portal" : "Patient portal"} identity={identity} changelogTo="/portal/changelog" title={pageTitle} settingsTo="/portal/account" notificationsTo="/portal/notifications">
+      <div className="portal-preview-toolbar mb-5 flex flex-wrap items-center gap-2 border-b border-ds-border pb-3">
+        <p className="ds-caption font-semibold text-ds-primary">Preview only — nothing is saved</p>
         <Link to="/admin/settings" className={actionCls}>Exit preview</Link>
         <DsButton variant="ghost" onClick={() => navigate({ search: prev => ({ ...prev, page: 'onboarding' }) })}>Preview account setup</DsButton>
         {isProvider&&<DsButton variant="ghost" onClick={()=>navigate({search:prev=>({...prev,page:'contractor-intake'})})}>Preview contractor intake</DsButton>}
@@ -101,6 +114,7 @@ function PortalPreview() {
 
       <DemoBody kind={kind as Kind} page={activePage} accountType={accountType} />
     </PortalShell>
+    </div>
     </PortalPreviewContext.Provider>
   );
 }
@@ -137,6 +151,8 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
       case "network": return <ProviderNetworkPage />;
       case 'contacts':return <PreviewPeople/>;
       case "training": return <TrainingTests />;
+      case "upload-csv": return <PortalUploads />;
+      case "changelog": return <Unavailable what="Change Log" />;
       case "messaging": return <Panel><WorkspaceMessaging mode="portal" /></Panel>;
       default: return <ProviderOverview workspaceId="preview-ws" userId={PREVIEW_USER} />;
     }
@@ -145,7 +161,8 @@ function realPage(kind: Kind, page: string, accountType: string): React.ReactNod
     case "requests/new": return accountType === 'private_pay_patient' ? <RequestForm context="portal" allowProviderSelection /> : <NewTripWorkspace workspaceId="preview-ws" provider={false}/>;
     case "account": return <Panel><div className="space-y-5"><PersonalSecurity email="demo@example.com" /><AccountConnections workspaceId="preview-ws" /></div></Panel>;
     case "requests": return <Panel><PatientTrips/></Panel>;
-    case "upload-csv": return <Unavailable what="CSV upload" />;
+    case "upload-csv": return <PortalUploads />;
+    case "changelog": return <Unavailable what="Change Log" />;
     case "find-providers": return <Panel><ProviderDirectory /></Panel>;
     case "saved-providers": return <Panel><ProviderDirectory savedOnly /></Panel>;
     case "contacts": return <PreviewPeople/>;
@@ -160,7 +177,7 @@ function DemoBody({ kind, page, accountType }: { kind: Kind; page: string; accou
   const label = page === 'account' ? 'Settings' : page === "requests/new" ? "New trip" : (kind === "provider" ? PROVIDER_NAV : CUSTOMER_NAV).find((n) => pageKeyOf(n.to) === page)?.label ?? "Overview";
   return (
     <PortalPreviewContext.Provider value={{ active: true, kind, accountType }}>
-      {!(kind === 'provider' && page === 'network') && <PageHead title={label} />}
+      {!['requests/new','upload-csv'].includes(page) && !(kind === 'provider' && page === 'network') && <PageHead title={label === 'Overview' && page === 'notifications' ? 'Notifications' : label} />}
       {page === 'onboarding' ? <OnboardingDemo provider={kind === 'provider'} personal={accountType === 'private_pay_patient'} /> : realPage(kind, page, accountType)}
     </PortalPreviewContext.Provider>
   );

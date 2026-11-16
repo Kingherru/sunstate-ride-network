@@ -25,7 +25,7 @@ function AdminsPage() {
   const promote = useServerFn(promoteRegularAdmin);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(admins[0]?.userId ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   async function onPromote(e: React.FormEvent) {
     e.preventDefault();
@@ -77,7 +77,7 @@ function AdminsPage() {
           </section>
         </aside>
         <div className="min-w-0">
-          {admins.length === 0 ? <section className="portal-business-section"><DsEmpty title="No administrator selected" /></section> : admins.map(a => <div key={a.userId} hidden={a.userId !== (admins.some(v => v.userId === selectedId) ? selectedId : admins[0]?.userId)}><AdminCard admin={a} workspaces={workspaces as any[]} /></div>)}
+          {!selectedId ? <section className="portal-business-section"><DsEmpty title="Select an administrator to review permissions" /></section> : admins.filter(a => a.userId === selectedId).map(a => <div key={a.userId}><DsButton variant="ghost" size="sm" onClick={() => setSelectedId(null)}>Close permissions</DsButton><AdminCard admin={a} workspaces={workspaces as any[]} /></div>)}
         </div>
       </div>
     </>
@@ -131,14 +131,14 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
         </div>
         <fieldset className="min-w-0">
           <legend className="portal-label">Sections {preset !== "custom" && "(switch to Custom to edit)"}</legend>
-          <table data-read-only={preset !== 'custom'} className="portal-permission-matrix hidden w-full border-collapse lg:table">
+          <table data-read-only={preset !== 'custom'} className="portal-permission-matrix hidden w-full border-collapse">
             <thead><tr className="ds-label text-left text-ds-primary"><th scope="col" className="py-2 pr-3">Section</th>{(['none','read','manage'] as AccessLevel[]).map(l => <th key={l} scope="col" className="w-24 px-2 py-2 text-center">{l === 'none' ? 'No access' : l === 'read' ? 'Read-only' : 'Manage'}</th>)}</tr></thead>
             <tbody className="divide-y divide-ds-border">{ADMIN_SECTIONS.map((s) => (
               <tr key={s.key}><th scope="row" className="ds-support py-2 pr-3 text-left font-semibold text-ds-on-surface">{s.label}</th>
                 {(['none','read','manage'] as AccessLevel[]).map(l => <td key={l} className="px-2 py-2 text-center"><input type="radio" aria-label={`${s.label}: ${l}`} name={`${id}-${s.key}`} disabled={preset !== "custom"} checked={(eff[s.key] ?? 'none') === l} onChange={() => setSections((m) => ({ ...m, [s.key]: l }))} /></td>)}</tr>
             ))}</tbody>
           </table>
-          <div className="grid gap-2 lg:hidden">
+          <div className="grid gap-3 sm:grid-cols-2">
             {ADMIN_SECTIONS.map((s) => (
               <div key={s.key} className="grid gap-1 rounded-ds-sm bg-ds-surface px-3 py-2">
                 <label htmlFor={`${id}-${s.key}`} className="ds-support min-w-0 font-semibold text-ds-on-surface">{s.label}</label>

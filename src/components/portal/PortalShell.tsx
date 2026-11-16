@@ -119,7 +119,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const isActive = (i: NavItem) => i.search
     ? pathname === i.to && Object.entries(i.search).every(([k, v]) => String((search as Record<string, unknown>)?.[k] ?? "") === v)
     : (i.exact ? pathname === i.to || pathname === i.to + "/" : pathname === i.to || pathname.startsWith(i.to + "/"));
-  const pageTitle = title ?? nav.find(isActive)?.label ?? area;
+
   const msgUnread = usePortalQuery({
     queryKey: ["messaging-unread"], staleTime: 60_000,
     queryFn: () => getMessagingUnreadCount(),
@@ -166,7 +166,8 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
       {identity && <div className="px-3 pb-2">
-        {identity.name && identity.name !== "MY FLORIDA NEMT" && <p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>}
+        {identity.name && <p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>}
+        <p className="ds-support mt-1 uppercase text-ds-on-primary/85">{identity.label}</p>
         {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80">{identity.mfnId}</p>}
         {accountEvidence.data?.some(e=>e.status==='verified') && <p className="ds-support mt-2 flex items-center gap-1.5 text-ds-on-primary"><ShieldCheck className="size-4 text-ds-success" aria-hidden />Verified account profile</p>}
       </div>}
@@ -180,10 +181,9 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </button>
     </div>
   );
-  const classification = identity?.label ? <p className="ds-support mx-6 mb-3 flex items-center gap-1.5 text-ds-on-primary/85"><IdCard className="size-3.5 shrink-0" aria-hidden />{identity.label}</p> : null;
+
   const topHeader = (
     <header className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-3 bg-ds-primary ds-glass-blue px-4 sm:px-6 lg:flex lg:px-10">
-      <h1 className="sr-only">{pageTitle}</h1>
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         <TrainingCartIcon />
         {notificationsTo && (
@@ -209,7 +209,6 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       {/* Desktop sidebar */}
       <aside className="portal-sidebar fixed inset-y-0 left-0 hidden w-64 flex-col bg-ds-primary py-6 lg:flex">
         <Link to="/" className="mx-6 mb-3 rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName on="blue" className="text-lg" /></Link>
-        {classification}
         <div className="min-h-0 flex-1 overflow-y-auto">{links}</div>
         <div className="mt-3">{footer}</div>
       </aside>
@@ -240,7 +239,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       </header>
       {open && (
         <div id="portal-drawer" className="portal-drawer fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-ds-primary ds-glass-blue pb-6 pt-2 lg:hidden">
-            <div className="pt-2">{classification}</div><div className="flex-1">{links}</div>
+            <div className="flex-1">{links}</div>
           <div className="mt-6">{footer}</div>
         </div>
       )}
@@ -258,7 +257,7 @@ export function PageHead({ title, action, children }: { title: string; action?: 
   return (
     <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
       <div className="min-w-0">
-        <h2 className="ds-section-title uppercase text-ds-primary">{title}</h2>
+        <h1 className="ds-section-title uppercase text-ds-primary">{title}</h1>
         {children && <div className="ds-body mt-1 text-ds-text-2">{children}</div>}
       </div>
       {action}
@@ -266,5 +265,5 @@ export function PageHead({ title, action, children }: { title: string; action?: 
   );
 }
 
-export const actionCls = "ds-button-text inline-flex min-h-12 items-center gap-2 rounded-ds-sm bg-ds-action px-6 uppercase text-ds-on-action ds-transition hover:bg-ds-action-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
+export const actionCls = "ds-button-text inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm bg-ds-action px-4 uppercase text-ds-on-action ds-transition hover:bg-ds-action-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus";
 export const panelCls = "rounded-ds bg-ds-surface shadow-[var(--ds-shadow)]";

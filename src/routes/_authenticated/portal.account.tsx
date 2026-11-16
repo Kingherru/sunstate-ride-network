@@ -143,7 +143,7 @@ function Profile({ email }: { email: string | null }) {
                   <DsButton onClick={onSave} disabled={busy || org === "needs_review" || org === ws.organization_type}>Save type</DsButton>
                 </div>
               ) : organizationLabel(ws.organization_type)}
-              <p className="ds-support mt-2">This describes your business. It doesn't change what you can access.</p>
+              <p className="ds-support mt-2">This describes your account, not your access permissions.</p>
             </dd>
           </div>
         )}

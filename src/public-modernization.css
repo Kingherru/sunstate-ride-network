@@ -130,3 +130,11 @@
 .theme-public :is(.public-connect, .public-product-showcase, .public-coverage, .public-services, .public-membership, .public-page-hero) :is(.grid, .flex) > * { min-width: 0; }
 @media (prefers-reduced-motion: reduce) { .theme-public .public-link-card:hover { transform: none; } }
 @media print { .theme-public .public-header, .theme-public .public-footer, .legal-document nav, .theme-public a[href="#main"] { display: none !important; } .theme-public .public-page-hero { background: var(--ds-surface); color: var(--ds-primary); border: 0; } .theme-public .public-page-hero * { animation: none !important; opacity: 1 !important; transform: none !important; } .theme-public .public-page-hero .mfn-container { padding-block: 1rem; } .legal-document { padding-block: 1rem; } .legal-document > .grid { display: block; } .legal-document section { break-inside: avoid; } }
+
+/* Shared public template cleanup; content and location browsing stay unchanged. */
+.theme-public :where(.grid,.flex) > * { min-width: 0; }
+.theme-public :where(button,.ds-button-text,.portal-btn-primary,.portal-btn-secondary) { white-space: nowrap; overflow-wrap: normal; }
+.theme-public :where(ul.list-disc,ol.list-decimal) { padding-inline-start: 1.5rem; }
+.theme-public :where(ul.list-disc,ol.list-decimal) > li + li { margin-top: .5rem; }
+.theme-public :where(input,select,textarea) { max-width: 100%; min-width: 0; }
+@media (max-width: 639px) { .theme-public .public-page-hero h1 { font-size: 1.75rem; overflow-wrap: break-word; } .public-header #mobile-menu .mfn-container { padding-inline: 0; } }

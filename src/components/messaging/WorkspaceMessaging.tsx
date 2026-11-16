@@ -126,7 +126,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   return (
     <div className="space-y-3">
     {demo && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved or sent.</p>}
-    <div className="grid gap-4 md:grid-cols-[18rem_minmax(0,1fr)]">
+    <div className="grid gap-4 md:grid-cols-[minmax(0,21rem)_minmax(0,1fr)]">
       <div className={`min-w-0 space-y-2 md:ds-glass md:p-2 ${selected ? "hidden md:block" : ""}`}>
         <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary ds-glass-blue px-3 py-2">
           <h3 className="ds-label uppercase tracking-[0.06em] text-ds-on-primary">Conversations</h3>
@@ -159,7 +159,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
       </div>
 
       <div className={`min-w-0 rounded-ds-sm border border-ds-sky-border bg-ds-surface ${selected ? "" : "hidden md:block"}`}>
-        {!selected && <div className="p-6 text-center"><p className="ds-subheading text-ds-primary">Select a conversation</p><p className="ds-support mt-1">Messages between your business and other Network providers appear here.</p></div>}
+        {!selected && <div className="p-6 text-center"><p className="ds-subheading text-ds-primary">Select a conversation</p><p className="ds-support mt-1">Messages with your connected accounts appear here.</p></div>}
         {selected && !demo && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
         {selected && thread && (

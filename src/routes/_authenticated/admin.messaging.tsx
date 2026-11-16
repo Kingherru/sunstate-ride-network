@@ -37,19 +37,19 @@ function AdminMessaging() {
     <>
       <PageHead title="Messaging">{level === "read" && <ReadOnlyBadge />}</PageHead>
       <PortalTabbedLayout label="Messaging sections" value={tab} onChange={(t) => navigate({ search: prev => ({ ...prev, tab: t === "messages" ? undefined : t }) })} options={[
-          { value: "messages", label: "Messages" }, { value: "requests", label: "Requests" },
+          { value: "messages", label: "Messages" }, { value: "requests", label: "Platform Requests" },
           { value: "business", label: "Business Conversations" }, { value: "contacts", label: "Frontend Contacts" },
           { value: 'communications', label: 'Communications' },
         ]}>
       <section className={`${panelCls} p-4 sm:p-6`}>
         {tab === 'communications' && <Communications admin />}
         {tab === "requests" && <AdminPlatformRequests canManage={!readOnly} />}
-        {tab === "messages" && <>{to && <p className="ds-support mb-3 border-b border-ds-border pb-3">Opened from People &amp; Accounts — the conversation with this person is selected when one exists. Start one from their account details if none appears.</p>}<MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} focusUserId={to} emptyFallback={<DemoConversations kind="messages" />} /></>}
+        {tab === "messages" && <>{to && <p className="ds-support mb-3 border-b border-ds-border pb-3">Opened from People &amp; Accounts — the conversation with this person is selected when one exists. Start one from their account details if none appears.</p>}<MessagesPanel userId={user.id} portal="facility" readOnly={readOnly} focusUserId={to} /></>}
         {tab === "contacts" && <FrontendContacts canManage={!readOnly} />}
         {tab === "business" && (
           <>
             <WorkspaceMessaging mode="admin" readOnly={readOnly} />
-            <div className="mt-8 border-t border-ds-border pt-6">
+            <details className="mt-5 border-t border-ds-border pt-4"><summary className="ds-label cursor-pointer text-ds-primary">Related Network review tools</summary><div className="mt-4 space-y-5">
               <ScopedPilot />
               <h2 className="ds-subheading mb-3 uppercase text-ds-primary">Network and referral activity</h2>
               <DistributionActivity admin />
@@ -57,7 +57,7 @@ function AdminMessaging() {
               <NetworkSettlements admin />
               <AdminDisputeQueue />
               {access?.isMasterAdmin && <NetworkEligibility />}
-            </div>
+            </div></details>
           </>
         )}
       </section>

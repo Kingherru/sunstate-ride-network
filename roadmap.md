@@ -1,4 +1,11 @@
 # Florida MVP launch sequence
+## Heavy cleanup — current build
+- [x] Shared fluid shell/horizontal tabs, bottom identity, equal controls and public template styling.
+- [x] Uploads/Notifications preview mapping, anchor navigation containment/account type, duplicate New Trip heading and detail percentage labels.
+- [x] Four training groups, single contractor checkbox, simpler directory filters, focused admin permissions and no live admin demo fallback.
+- [x] Loaded admin/provider/customer preview smoke, 1200/390/320 shell overflow checks: no page errors or document overflow; harness compilation OK. No live writes/publication.
+- [ ] Remaining: complete route-by-route visual/heading confirmation, patient/facility-specific Settings and booking refinements, removable preview financial examples and complete upload relocation. No claim that the entire requested cleanup is complete.
+- [ ] Verification limitation: public drawer interaction was intermittently hydration-sensitive; public dimensions passed, full drawer interaction remains unconfirmed. Exact pass credits unavailable (709 billing-period credits, not pass usage).
 ## Pass 5C — workflow completion
 - [x] Mobile menu primary actions first; desktop/tablet unchanged.
 - [x] Shared safe invoice/PDF-preparation/email-preview/funding/detail/copy projections; schedules and selected Provider/Patient/Facility/Admin export preparation connected. No live report/download checks.

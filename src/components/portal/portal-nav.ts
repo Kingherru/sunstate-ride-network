@@ -11,7 +11,7 @@ export const PROVIDER_NAV: NavItem[] = [
   { to: "/portal/network", label: "Network" },
   { to: '/portal/contacts', label: 'People' },
   { to: "/portal/training", label: "Training & Resources" },
-  { to: "/portal/upload-csv", label: "Uploads" },
+  { to: "/portal/notifications", label: "Notifications" },
   { to: "/portal/messaging", label: "Messaging" },
 ];
 
