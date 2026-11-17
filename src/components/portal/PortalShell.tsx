@@ -24,6 +24,7 @@ import { markTabViewed } from '@/lib/unread.functions';
 import {getAccountProfileVerification} from '@/lib/account-profile-verification.functions';
 
 import { NotificationIndicator, notificationIndicatorTone } from './NotificationIndicator';
+import { OverflowText } from './OverflowText';
 
 type Indicator = "none" | "update" | "important";
 const URGENT_TYPES = /cancel|urgent|alert|fail|declin|suspend|important|needs attention/i;
@@ -164,9 +165,9 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
   const footer = (
     <div className="mx-3 flex flex-col gap-1 border-t border-ds-on-primary/15 pt-3">
       {identity && <div className="portal-identity min-w-0 px-3 pb-2">
-        {identity.name && <p className="ds-body break-words font-semibold text-ds-on-primary">{identity.name}</p>}
-        <p className="ds-support mt-1 uppercase text-ds-on-primary/85">{identity.label}</p>
-        {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80">{identity.mfnId}</p>}
+        {identity.name && <p className="ds-body font-semibold text-ds-on-primary"><OverflowText>{identity.name}</OverflowText></p>}
+        <p className="ds-support mt-1 uppercase text-ds-on-primary/85"><OverflowText>{identity.label}</OverflowText></p>
+        {identity.mfnId && <p className="ds-support mt-1 font-mono text-ds-on-primary/80"><OverflowText>{identity.mfnId}</OverflowText></p>}
         {accountEvidence.data?.some(e=>e.status==='verified') && <p className="ds-support mt-2 flex items-center gap-1.5 text-ds-on-primary"><ShieldCheck className="size-4 text-ds-success" aria-hidden />Verified account profile</p>}
       </div>}
       <Link to={changelogTo} aria-current={pathname === changelogTo ? "page" : undefined}

@@ -62,7 +62,7 @@ export function DsSkeleton({ className }: { className?: string }) {
 
 export function DsEmpty({ title, children, action }: { title: string; children?: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center text-center gap-2 py-10 px-6">
+    <div className="portal-empty-state flex min-w-0 flex-col items-center text-center gap-2 py-10 px-6" data-text-wrap>
       <Inbox className="size-8 text-ds-text-2" aria-hidden />
       <p className="ds-subheading">{title}</p>
       {children && <p className="ds-support max-w-sm">{children}</p>}

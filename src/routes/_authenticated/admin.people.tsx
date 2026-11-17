@@ -153,7 +153,7 @@ function People() {
           <RecordTable<PersonRow> tableId="admin-people-accounts" rows={list} rowKey={p=>p.userId} columns={[
             {id:'person',label:'Person & email',width:300,minWidth:240,wrap:true,render:p=>(
                 <div className="min-w-0">
-                  <DsButton variant="ghost" className="!px-0 text-left" onClick={() => setSelected(p)}>{p.name || p.email || 'Account details'}</DsButton>
+                  <DsButton variant="ghost" className="!px-0 text-left" onClick={() => setSelected(p)}>{p.name && p.name !== p.email ? p.name : 'Account details'}</DsButton>
                   <p className="ds-body break-all font-semibold">{p.email ?? "No email"}</p>
                   {p.isMasterAdmin && <p className="ds-support font-semibold uppercase tracking-[0.08em] text-ds-action">Master Admin</p>}
                   <p className="ds-support font-mono">{p.mfnId}</p>

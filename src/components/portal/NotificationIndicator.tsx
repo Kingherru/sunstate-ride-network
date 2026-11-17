@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils';
 
-export type NotificationTone = 'attention' | 'positive' | 'warning';
+export type NotificationTone = 'attention' | 'positive' | 'warning' | 'neutral';
 export function notificationIndicatorTone(tone: string): NotificationTone {
-  return tone === 'red' || tone === 'important' ? 'attention' : tone === 'yellow' ? 'warning' : 'positive';
+  return tone === 'red' || tone === 'important' ? 'attention' : tone === 'yellow' ? 'warning' : tone === 'blue' || tone === 'neutral' ? 'neutral' : 'positive';
 }
 /** Counts remain exact in the accessible name; large visual counts keep a stable circle. */
 export function NotificationIndicator({ tone = 'positive', count, label, className }: {
