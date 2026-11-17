@@ -1,8 +1,9 @@
 # Platform legibility and data tables
-- [ ] Narrow shared truncation to compact controls/IDs/tabs and table values; restore natural content wrapping.
-- [ ] Shared icon reservations, responsive filters, shortcut-card title/description spacing and separate service settings modules.
-- [ ] Reusable resizable record tables: Requests, People & Accounts, trip history and earnings history; retain actions, records and safe previews.
-- [ ] Focused tests and desktop/390px read-only checks; harness compilation only. Scheduler, Messaging layout, duplicate removal and financial consolidation excluded.
+- [x] Narrow shared truncation to compact controls/IDs/tabs and table values; restore natural content wrapping, including checkbox descriptions and profile details.
+- [x] Shared icon reservations, responsive Reservations/People filters, reusable shortcut-card title/description spacing and stacked service coverage/operations/pricing Settings modules.
+- [x] RecordTable reused by Admin/customer Requests, Admin People & Accounts, registered accounts, Admin trips/reservations, Provider trip history, earnings ledger, driver payment/report history and trip releases. Existing row actions, fields, calculations and history preferences retained; new table widths store only user/table-scoped numbers locally. Previews do not persist.
+- [x] Eight focused tests passed; harness build OK. Read-only 1280/390px Requests/People/Messaging search/Provider Reservations plus Settings/Overview checks: no page overflow; final checks no console/page errors. Request keyboard/pointer resize and reload persistence, all ten Status cells fully contained, request overlay, 17px search-icon clearance and temporary preview-only populated table visibility/resizing/mobile stacking verified.
+- [ ] Separate manual type/production-build commands prohibited by workspace harness rules. Populated live financial histories were not exercised; those table callers were migrated and compiled, not claimed visually verified. Remaining legacy tables outside the listed callers were not migrated. Scheduler, Messaging layout, duplicate removal, financial consolidation, public pages, real records and publication unchanged.
 
 # Pass 7 — shared portal structure cleanup
 - [x] Shared fluid width retained, redundant outer preview/People/Pricing surfaces removed; horizontal task tabs and shared form spacing preserved.

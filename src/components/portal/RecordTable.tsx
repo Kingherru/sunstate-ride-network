@@ -34,7 +34,7 @@ export function RecordTable<T>({ tableId, rows, columns, rowKey, onRowClick, row
       try { setWidths(key ? readTableWidths(localStorage.getItem(key), columnRef.current) : {}); }
       catch { setWidths({}); }
     };
-    void supabase.auth.getSession().then(({ data }) => apply(data.session?.user.id));
+    void supabase.auth.getSession().then(({ data }) => apply(data.session?.user.id)).catch(() => apply());
     const { data } = supabase.auth.onAuthStateChange((_event, session) => apply(session?.user.id));
     return () => { disposed = true; data.subscription.unsubscribe(); };
   }, [tableId, preview.active, onPreferencesChange]);
@@ -48,7 +48,7 @@ export function RecordTable<T>({ tableId, rows, columns, rowKey, onRowClick, row
   const sizes = visible.map(c => columnWidth(c, widths[c.id]));
   const content = (column: RecordColumn<T>, row: T) => {
     const value = column.render(row);
-    return typeof value === 'string' || typeof value === 'number' ? column.wrap ? <span data-text-wrap>{value}</span> : <OverflowText>{value}</OverflowText> : value;
+    return column.wrap ? value : <OverflowText>{value}</OverflowText>;
   };
   function resize(column: RecordColumn<T>, value: number, save: boolean) {
     const next = { ...current.current, [column.id]: columnWidth(column, value) };
@@ -75,7 +75,7 @@ export function RecordTable<T>({ tableId, rows, columns, rowKey, onRowClick, row
             target.addEventListener('pointermove', move); target.addEventListener('pointerup', end); target.addEventListener('pointercancel', end);
           }} />
         </th>)}</tr></thead>
-        <tbody>{rows.map(row => <tr key={rowKey(row)} tabIndex={onRowClick ? 0 : undefined} role={onRowClick ? 'button' : undefined} aria-label={rowLabel?.(row)} onClick={onRowClick ? () => onRowClick(row) : undefined} onKeyDown={onRowClick ? event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onRowClick(row); } } : undefined} className={onRowClick ? 'cursor-pointer hover:bg-ds-hover' : ''}>
+        <tbody>{rows.map(row => <tr key={rowKey(row)} tabIndex={onRowClick ? 0 : undefined} role={onRowClick ? 'button' : undefined} aria-label={rowLabel?.(row)} onClick={onRowClick ? event => { if (event.target instanceof Element && event.target.closest('button,a,input,select')) return; onRowClick(row); } : undefined} onKeyDown={onRowClick ? event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onRowClick(row); } } : undefined} className={onRowClick ? 'cursor-pointer hover:bg-ds-hover' : ''}>
           {visible.map(c => <td key={c.id} className="ds-body" data-cell-wrap={c.wrap ? 'true' : undefined}>{content(c, row)}</td>)}
         </tr>)}{rows.length === 0 && <tr><td colSpan={visible.length} data-text-wrap>{empty}</td></tr>}</tbody>
       </table>
