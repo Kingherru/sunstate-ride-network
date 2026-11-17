@@ -902,6 +902,8 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .theme-portal .portal-settings-modules .portal-tabbed-content { background: transparent; border: 0; padding: 0; }
 .theme-portal .portal-business-section .portal-business-section { background: transparent; border: 0; box-shadow: none; }
 .theme-portal .portal-business-body { padding: var(--portal-main-padding); }
+.theme-portal .portal-settings-modules form.portal-business-form { display: grid; grid-template-columns: minmax(0,1fr); gap: 1.25rem; }
+.theme-portal .portal-settings-modules form.portal-business-form > * { margin-block: 0; }
 .theme-portal .portal-main-module > .portal-tabbed-layout > .portal-tabbed-content > .portal-filter-grid,
 .theme-portal .portal-main-module > .space-y-5 > .portal-filter-grid {
   padding: var(--portal-main-padding); background: var(--ds-surface); border: 1px solid var(--section-edge); border-radius: var(--ds-radius);
