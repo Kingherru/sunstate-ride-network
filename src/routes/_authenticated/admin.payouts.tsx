@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHead, panelCls } from "@/components/portal/PortalShell";
+import { PageHead } from "@/components/portal/PortalShell";
 import { PayoutsReview } from "@/components/admin/PayoutsReview";
 
 
@@ -13,7 +13,7 @@ function AdminPayouts() {
   return (
     <>
       <PageHead title="Payouts">Review only during this phase. Payout releases stay off until final payment movement is approved.</PageHead>
-      <section className={`${panelCls} p-4 sm:p-6`}>
+      <section className="min-w-0">
         <PayoutsReview />
       </section>
     </>
