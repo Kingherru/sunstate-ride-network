@@ -206,4 +206,4 @@ export const listReservationsForRange = createServerFn({ method: "GET" })
 
 export const assignTripResources = createServerFn({method:'POST'}).middleware([requireSupabaseAuth])
  .inputValidator((v:unknown)=>z.object({tripId:z.string().uuid(),driverId:z.string().uuid().nullable(),vehicleId:z.string().uuid().nullable(),start:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),end:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable()}).strict().parse(v))
- .handler(async({data,context})=>{const {error}=await context.supabase.rpc('assign_trip_resources',{_trip:data.tripId,_driver:data.driverId as never,_vehicle:data.vehicleId as never,_time:data.start,_end:data.end as never});if(error)throw new Error(error.message);return {ok:true};});
+ .handler(async({data,context})=>{const {error}=await context.supabase.rpc('assign_trip_resources',{_trip:data.tripId,_driver:data.driverId as never,_vehicle:data.vehicleId as never,_time:data.start,_end:data.end as never});if(error)throw new Error(error.message);const {notifyDriverAssignment}=await import('./driver-assignment-notify.server');await notifyDriverAssignment(data.tripId);return {ok:true};});

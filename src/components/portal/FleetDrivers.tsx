@@ -1,5 +1,7 @@
 import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
+import { ScheduleEmailPreview } from "@/components/portal/ScheduleEmailPreview";
+import { DsField, DsInput } from "@/components/ds/controls";
 import { FleetPanel } from "@/components/dashboard/FleetPanel";
 import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import { usePortalQuery } from "@/components/portal/preview-data";
@@ -10,7 +12,7 @@ export function FleetDrivers({ initial = "vehicles" }: { initial?: "vehicles" | 
   const [section, setSection] = useState<Section>(initial);
   return <div className="min-w-0 max-w-full space-y-5"><PortalTabbedLayout label="Fleet sections" queryKey="view" value={section} onChange={setSection} options={[
     { value: "vehicles", label: "Vehicles" }, { value: "drivers", label: "Drivers & Contractors" }, { value: "availability", label: "Assignments & Availability" },
-  ]} >{section === "availability" ? <Availability /> : <FleetPanel key={section} only={section} />}</PortalTabbedLayout></div>;
+  ]} >{section === "availability" ? <div className="space-y-5"><Availability /><RoutePreparation /></div> : <FleetPanel key={section} only={section} />}</PortalTabbedLayout></div>;
 }
 
 /** Read-only availability summary over the same authorized driver records; assignment happens on the Schedule day board. */
@@ -30,4 +32,10 @@ function Availability() {
       {away && d.vacation_end && <StatusPill tone="yellow" status={`On leave through ${d.vacation_end.slice(0, 10)}`} />}
     </article>;
   })}</div>;
+}
+
+/** Route preparation moved from Scheduler; reuses the existing preview-only schedule email preparation. Assignment itself stays on the Scheduler board. */
+function RoutePreparation() {
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  return <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Route preparation</h2><div className="portal-business-body space-y-4"><div className="max-w-xs"><DsField label="Schedule date">{p => <DsInput {...p} type="date" value={date} onChange={e => setDate(e.target.value)} />}</DsField></div><ScheduleEmailPreview selectedDate={date} /></div></section>;
 }

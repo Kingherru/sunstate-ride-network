@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ScheduleEmailPreview } from "@/components/portal/ScheduleEmailPreview";
+import { assignTripResources } from "@/lib/schedule-board.functions";
 import { DriverDetailModal } from "./DriverDetailModal";
 import { listVehicles } from "@/lib/fleet.functions";
 import { conflictingSlots } from "@/lib/trip-network-rules";
@@ -63,6 +63,7 @@ function fmtTime12(t: string | null | undefined) {
 }
 
 const UNASSIGNED = "__unassigned__";
+const resourceDropRef: { current: (r: any, raw: string) => void } = { current: () => {} };
 
 export function ScheduleCalendarPanel() {
   const qc = useQueryClient();
@@ -204,8 +205,17 @@ export function ScheduleCalendarPanel() {
     return !weeklyLocalAvailability(d.availability?.days??{},Number(dow),hhmm);
   }
 
+  const resFn = useServerFn(assignTripResources);
+  const mResource = usePortalMutation({
+    mutationFn: (v: { r: any; kind: 'driver' | 'vehicle'; id: string }) => resFn({ data: { tripId: v.r.id, driverId: v.kind === 'driver' ? v.id : (v.r.assigned_driver_id ?? null), vehicleId: v.kind === 'vehicle' ? v.id : (v.r.vehicle_id ?? null), start: String(v.r.scheduled_start_time ?? v.r.pickup_time ?? '09:00').slice(0, 5), end: v.r.assignment_end_time ? String(v.r.assignment_end_time).slice(0, 5) : null } }),
+    onSuccess: () => { toast.success("Assignment saved"); ['day-reservations','range-reservations','my-reservations','provider-trips'].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onError: (e: any) => toast.error(e?.message ?? "Assignment unavailable. Previous assignment unchanged."),
+  });
+  resourceDropRef.current = (r: any, raw: string) => { try { const x = JSON.parse(raw); if ((x.kind === 'driver' || x.kind === 'vehicle') && typeof x.id === 'string') mResource.mutate({ r, kind: x.kind, id: x.id }); } catch { /* not a resource */ } };
+
   function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
     e.preventDefault();
+    if (e.dataTransfer.types.includes(RESOURCE_MIME)) return;
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
     if (!id) return;
     if (driverId && allDrivers.find((d: any) => d.id === driverId)?.status !== "active") { toast.error("This driver is inactive and cannot receive new assignments."); setDraggingId(null); return; }
@@ -254,7 +264,7 @@ export function ScheduleCalendarPanel() {
       {(() => { const inactiveHeld = allReservations.filter((r: any) => (r.assigned_driver_id && allDrivers.find((d: any) => d.id === r.assigned_driver_id)?.status === "inactive") || (r.vehicle_id && (vehiclesQ.data ?? []).find((v: any) => v.id === r.vehicle_id)?.status === "inactive")); return inactiveHeld.length > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{inactiveHeld.length} trips are still assigned to an inactive driver or vehicle. The assignment is kept; reassign to an active resource when ready.</p></div>; })()}
       {conflicts.size > 0 && <div role="alert" className="rounded-ds bg-ds-surface p-4 text-ds-error"><strong>NEEDS ATTENTION</strong><p className="ds-body">{conflicts.size} trips have overlapping driver, vehicle or trip times.</p><ul className="ds-support">{allReservations.filter(r => conflicts.has(r.id)).map(r => <li key={r.id}>{r.pickup_time} · {r.pickup_city} → {r.dropoff_city}</li>)}</ul></div>}
       {/* Filters — one aligned row of equal-height shared toolbar controls */}
-      <details className="portal-business-section"><summary className="portal-business-heading ds-label cursor-pointer">Assignments & route preparation</summary><div className="portal-business-body space-y-4"><ScheduleEmailPreview selectedDate={date}/><section className="space-y-3"><h3 className="ds-label text-ds-primary">Trip assignments</h3><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div>{reservations.map(r=><div key={r.id} className="space-y-2 border-t border-ds-border pt-3"><p className="ds-support break-words">{scheduleTimeLabel(r)} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status,regional_service_areas:d.regional_service_areas}))} vehicles={vehiclesQ.data??[]}/></div>)}</section></div></details>
+      <section className="portal-business-section" aria-label="Drag drivers and vehicles"><h3 className="portal-business-heading ds-label">Drag a driver or vehicle onto a trip</h3><div className="portal-business-body space-y-4"><div className="flex flex-wrap gap-2">{allDrivers.filter(d=>d.status==='active').map(d=><DsButton key={d.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'driver',id:d.id}))}>{d.first_name} {d.last_name}</DsButton>)}{(vehiclesQ.data??[]).filter(v=>v.status==='active').map(v=><DsButton key={v.id} type="button" variant="ghost" draggable onDragStart={e=>e.dataTransfer.setData(RESOURCE_MIME,JSON.stringify({kind:'vehicle',id:v.id}))}>{v.name}</DsButton>)}</div><details><summary className="ds-label cursor-pointer text-ds-link">Assign with forms ({reservations.length})</summary><div className="mt-3 space-y-3">{reservations.map(r=><div key={r.id} className="space-y-2 border-t border-ds-border pt-3"><p className="ds-support break-words">{scheduleTimeLabel(r)} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status,regional_service_areas:d.regional_service_areas}))} vehicles={vehiclesQ.data??[]}/></div>)}</div></details><p className="ds-caption">Route preparation and driver readiness are on Fleet &amp; Drivers → Assignments &amp; Availability.</p></div></section>
       <div className="portal-filter-grid">
         <select
           value={vehicleFilter}
@@ -318,9 +328,7 @@ export function ScheduleCalendarPanel() {
       {drivers.length > 0 && (
         <div className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
-              Dispatch summary · Live
-            </div>
+            <span aria-hidden="true" />
             <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
               {reservations.filter((r: any) => r.assigned_driver_id).length} assigned · {unassigned.length} unassigned
             </div>
@@ -494,6 +502,8 @@ function ReservationChip({
       onClick={() => openDetails({ kind: 'trip', id: r.id })}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}
       onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; onDragStart(r.id); }}
+      onDragOver={(e) => { if (e.dataTransfer.types.includes(RESOURCE_MIME)) e.preventDefault(); }}
+      onDrop={(e) => { const raw = e.dataTransfer.getData(RESOURCE_MIME); if (!raw) return; e.preventDefault(); e.stopPropagation(); resourceDropRef.current(r, raw); }}
       className={`cursor-grab active:cursor-grabbing rounded-sm border border-primary/30 bg-primary/10 px-2 py-1 text-xs ${dragging ? "opacity-50" : ""}`}
       title={`${r.patient_first_name} ${r.patient_last_name}\n${r.pickup_address} → ${r.dropoff_address}`}
     >

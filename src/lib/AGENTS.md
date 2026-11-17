@@ -35,3 +35,4 @@
 - Customer selections re-read each request through patient or facility scope and emit safe columns with metadata audit. Why: browser selections never authorize reports.
 - Regional time events preserve entered local values and are independently normalized by database triggers; legacy events stay unknown. Why: DST ambiguity and browser UTC values must never silently schedule trips.
 - Directory regional projections reuse the existing verified visible-provider list and strip private geography. Why: regional filters must not widen discovery or expose service bases.
+- Driver assignment notices run server-side only after assign_trip_resources succeeds, keyed per assignment event+driver in trip_dispatch_events, gated by launch flag driver_assignment_notifications (missing=off); SMS reports provider-not-configured. Why: notices never block or duplicate assignments.
