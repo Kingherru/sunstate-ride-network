@@ -127,13 +127,13 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
   return (
     <div className="space-y-3">
     {demo && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved or sent.</p>}
-    <div className="portal-message-layout grid min-w-0 items-stretch gap-4 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-      <div className={`min-w-0 space-y-2 md:border-r md:border-ds-border md:pr-4 ${selected ? "hidden md:block" : ""}`}>
-        <div className="flex items-center justify-between gap-2 rounded-ds-sm bg-ds-primary ds-glass-blue px-3 py-2">
-          <h3 className="ds-label uppercase tracking-[0.06em] text-ds-on-primary">Conversations</h3>
+    <div className="portal-message-layout grid min-w-0 items-stretch gap-4">
+      <div className={`portal-message-sidebar min-w-0 space-y-2 ${selected ? "hidden md:block" : ""}`}>
+        <div className="portal-message-sidebar-head">
+          <h3 className="ds-label uppercase tracking-[0.06em] text-ds-primary">Conversations</h3>
           {mode === "portal" && (
             <label className="ds-support flex items-center gap-1.5">
-              <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> <span className="text-ds-on-primary">Archived</span>
+              <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> <span>Archived</span>
             </label>
           )}
         </div>
@@ -159,7 +159,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
         </div>
       </div>
 
-      <div className={`min-w-0 rounded-ds-sm border border-ds-sky-border bg-ds-surface ${selected ? "" : "hidden md:block"}`}>
+      <div className={`portal-message-thread min-w-0 ${selected ? "" : "hidden md:block"}`}>
         {!selected && <div className="p-6 text-center"><p className="ds-subheading text-ds-primary">Select a conversation</p><p className="ds-support mt-1">Messages with your connected accounts appear here.</p></div>}
         {selected && !demo && threadQuery.isLoading && <p className="ds-support p-4">Loading…</p>}
         {selected && threadQuery.isError && <p role="alert" className="ds-support p-4 text-ds-error">This conversation couldn't load. Please try again.</p>}
@@ -181,7 +181,7 @@ export function WorkspaceMessaging({ mode, workspaceId, readOnly, initialConvers
                 </DsButton>
               )}
             </div>
-            <div className="max-h-[32rem] min-h-[16rem] flex-1 space-y-3 overflow-y-auto border-y border-ds-border px-4 py-3">
+            <div className="max-h-[32rem] min-h-[16rem] flex-1 space-y-3 overflow-y-auto px-4 py-3">
               {thread.messages.length === 0 && <p className="ds-support">No messages yet.</p>}
               {thread.messages.map((m: MessageRow) => {
                 const mine = mode === "portal" && m.senderWorkspaceId === effectiveWorkspaceId;

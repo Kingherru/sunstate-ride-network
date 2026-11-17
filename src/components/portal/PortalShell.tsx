@@ -244,7 +244,7 @@ export function PortalShell({ nav, area, identity, changelogTo, settingsTo, noti
       )}
 
       <div className="lg:ml-64">{topHeader}</div>
-      <main id="main" className="ds-canvas-texture min-h-[calc(100dvh-3.5rem)] min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-10 lg:py-10">
+      <main id="main" className="portal-main-canvas ds-canvas-texture min-h-[calc(100dvh-3.5rem)] min-w-0 py-6 sm:py-8 lg:ml-64 lg:py-8">
         {/* Contacts pages get a modestly wider shared white panel; columns stay balanced. */}
         <div className="portal-content portal-main-module portal-enter mx-auto w-full"><RequestDetailProvider>{children}</RequestDetailProvider></div>
       </main>

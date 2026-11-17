@@ -147,7 +147,7 @@ export function PortalUploads() {
   return (
     <>
       <PageHead title="Uploads">Turn a CSV, Excel or PDF file into editable trip drafts. Nothing is submitted, sent to a provider or charged — you review each draft first.</PageHead>
-      <section className={`${panelCls} p-4 sm:p-6`}>
+      <section className={`${panelCls} portal-module-card`}>
         <fieldset>
           <legend className="portal-label">1. Request type</legend>
           <div className="flex flex-wrap gap-4">
@@ -166,10 +166,10 @@ export function PortalUploads() {
       </section>
 
       {rows && !done && (
-        <section className="mt-6 rounded-ds border border-ds-sky-border bg-ds-sky p-4 sm:p-6" aria-labelledby="up-prev">
-          <div className="mb-4 grid gap-3 sm:grid-cols-2">{table[0]?.map((h,i)=><label key={i} className="ds-label">{h}<DsSelect aria-label={`Map trip ${h}`} value={mapping[i]} onChange={e=>{const m=mapping.map((v,j)=>i===j?e.target.value:v);setMapping(m);setHistoryChecked(false);setPriorDuplicates([]);const ix=m.map((v,j)=>v?j:-1).filter(j=>j>=0);const v=validateRows(kind,ix.map(j=>m[j]),table.slice(1).map(r=>ix.map(j=>r[j]))) as Row[];setRows(v);setChosen(new Set(v.filter(r=>r.ok&&r.dup===undefined).map(r=>r.row)));setReviewConfirmed(false);}}><option value="">Skip column</option>{columnsFor(kind).map(k=><option key={k} value={k}>{k.replaceAll('_',' ')}</option>)}</DsSelect></label>)}</div>
+        <section className={`${panelCls} portal-module-card portal-upload-review mt-5`} aria-labelledby="up-prev">
+          <div className="portal-upload-mapping">{table[0]?.map((h,i)=><label key={i} className="ds-field ds-label"><span className="portal-overflow-text" data-overflow-text>{h}</span><DsSelect aria-label={`Map trip ${h}`} value={mapping[i]} onChange={e=>{const m=mapping.map((v,j)=>i===j?e.target.value:v);setMapping(m);setHistoryChecked(false);setPriorDuplicates([]);const ix=m.map((v,j)=>v?j:-1).filter(j=>j>=0);const v=validateRows(kind,ix.map(j=>m[j]),table.slice(1).map(r=>ix.map(j=>r[j]))) as Row[];setRows(v);setChosen(new Set(v.filter(r=>r.ok&&r.dup===undefined).map(r=>r.row)));setReviewConfirmed(false);}}><option value="">Skip column</option>{columnsFor(kind).map(k=><option key={k} value={k}>{k.replaceAll('_',' ')}</option>)}</DsSelect></label>)}</div>
           <h2 id="up-prev" className="ds-subheading uppercase text-ds-primary">3. Review rows</h2>
-          <DsButton variant="secondary" disabled={checking} onClick={compareHistory}>Compare authorized prior trips</DsButton><p className="ds-support">{historyChecked?`${priorDuplicates.length} possible prior duplicates excluded.`:'Prior history must be checked before draft creation.'}</p>
+          <div className="portal-upload-actions"><DsButton variant="secondary" disabled={checking} onClick={compareHistory}>Compare authorized prior trips</DsButton><p className="ds-support">{historyChecked?`${priorDuplicates.length} possible prior duplicates excluded.`:'Prior history must be checked before draft creation.'}</p></div>
           <ul className="ds-body mt-2 grid gap-1 sm:grid-cols-2">
             <li>Total rows: <strong>{rows.length}</strong></li>
             <li>Ready: <strong>{valid.length}</strong></li>
@@ -178,36 +178,36 @@ export function PortalUploads() {
           </ul>
           <div className="mt-4 max-h-80 overflow-auto rounded-ds-sm border border-ds-border bg-ds-surface">
             <table className="ds-support w-full text-left">
-              <thead><tr className="border-b border-ds-border"><th className="p-2">Create</th><th className="p-2">Row</th><th className="p-2">Date</th><th className="p-2">Service</th><th className="p-2">Status</th></tr></thead>
+              <thead><tr className="border-b border-ds-border"><th className="whitespace-nowrap p-2.5">Create</th><th className="whitespace-nowrap p-2.5">Row</th><th className="whitespace-nowrap p-2.5">Date</th><th className="whitespace-nowrap p-2.5">Service</th><th className="whitespace-nowrap p-2.5">Status</th></tr></thead>
               <tbody>{rows.map((r) => <tr key={r.row} className="border-b border-ds-border last:border-b-0">
-                <td className="p-2"><input type="checkbox" aria-label={`Create draft from row ${r.row}`} disabled={!r.ok || r.dup !== undefined||priorDuplicates.includes(r.row)} checked={chosen.has(r.row)} onChange={(e) => { const n = new Set(chosen); e.target.checked ? n.add(r.row) : n.delete(r.row); setChosen(n); }} /></td>
-                <td className="p-2">{r.row}</td><td className="p-2">{r.date || "—"}</td><td className="p-2">{r.service || "—"}</td>
-                <td className="p-2">{!r.ok ? <StatusPill tone="red" className="whitespace-normal" status={r.errors.join("; ")} /> : r.dup !== undefined ? `Possible duplicate of row ${r.dup}` : "Ready"}</td>
+                <td className="p-2.5"><input type="checkbox" aria-label={`Create draft from row ${r.row}`} disabled={!r.ok || r.dup !== undefined||priorDuplicates.includes(r.row)} checked={chosen.has(r.row)} onChange={(e) => { const n = new Set(chosen); e.target.checked ? n.add(r.row) : n.delete(r.row); setChosen(n); }} /></td>
+                <td className="p-2.5">{r.row}</td><td className="p-2.5">{r.date || "—"}</td><td className="p-2.5">{r.service || "—"}</td>
+                <td className="p-2.5">{!r.ok ? <StatusPill tone="red" className="whitespace-normal" status={r.errors.join("; ")} /> : r.dup !== undefined ? `Possible duplicate of row ${r.dup}` : "Ready"}</td>
               </tr>)}</tbody>
             </table>
           </div>
           {(invalid.length > 0 || dups.length > 0) && <button className="portal-btn-secondary mt-3 whitespace-nowrap" onClick={() => download("mfn-upload-errors.csv", errorReport([...invalid, ...dups.map((r) => ({ row: r.row, errors: [`Possible duplicate of row ${r.dup}`] }))]))}>Download error report</button>}
-          <label className="ds-body mt-4 block"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> I reviewed the mapped rows and duplicates; create drafts only.</label>
+          <label className="portal-upload-confirm ds-body"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> I reviewed the mapped rows and duplicates; create drafts only.</label>
           <DsButton disabled={selectedCount === 0 || busy||!reviewConfirmed||!historyChecked||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating drafts…" : `Create ${selectedCount} draft${selectedCount === 1 ? "" : "s"}`}</DsButton>{preview.active&&<p className="ds-support">Preview only — draft creation disabled.</p>}
         </section>
       )}
 
       {pdf && !done && (
-        <section className="mt-6 rounded-ds border border-ds-sky-border bg-ds-sky p-4 sm:p-6" aria-labelledby="pdf-prev">
+        <section className={`${panelCls} portal-module-card portal-upload-review mt-5`} aria-labelledby="pdf-prev">
           <h2 id="pdf-prev" className="ds-subheading uppercase text-ds-primary">3. Review what we found</h2>
           <p className="ds-support mt-1 text-ds-text-2">Only clearly labeled details are filled in. Anything missing stays blank for you to complete in the draft.</p>
           <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <div className="rounded-ds-sm border border-ds-border bg-ds-surface p-3"><h3 className="ds-label text-ds-primary">Found fields</h3>
+            <div className="portal-upload-subcard"><h3 className="ds-label text-ds-primary">Found fields</h3>
               {pdf.fields.length ? <dl className="ds-support mt-2 space-y-1">{pdf.fields.map((f) => <div key={f.label} className="flex gap-2"><dt className="font-semibold capitalize">{f.label}:</dt><dd className="break-words">{f.value}</dd></div>)}</dl> : <p className="ds-support mt-2">No labeled trip details were found.</p>}</div>
-            <div className="rounded-ds-sm border border-ds-border bg-ds-peach p-3"><h3 className="ds-label text-ds-primary">Not placed — review manually</h3>
+            <div className="portal-upload-subcard"><h3 className="ds-label text-ds-primary">Not placed — review manually</h3>
               {pdf.unresolved.length ? <ul className="ds-support mt-2 max-h-48 space-y-1 overflow-y-auto">{pdf.unresolved.map((t, i) => <li key={i} className="break-words">{t}</li>)}</ul> : <p className="ds-support mt-2">Nothing left over.</p>}</div>
           </div>
-          <label className="ds-body mt-4 block"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> Uncertain extraction: I reviewed every found and unresolved field.</label><DsButton disabled={busy||!reviewConfirmed||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating draft…" : "Create 1 draft for review"}</DsButton>
+          <label className="portal-upload-confirm ds-body"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/> Uncertain extraction: I reviewed every found and unresolved field.</label><DsButton disabled={busy||!reviewConfirmed||preview.active} onClick={onCreate} className="mt-4">{busy ? "Creating draft…" : "Create 1 draft for review"}</DsButton>
         </section>
       )}
 
       {done && (
-        <section className={`${panelCls} mt-6 p-4 sm:p-6`} aria-live="polite">
+        <section className={`${panelCls} portal-module-card mt-5`} aria-live="polite">
           <h2 className="ds-subheading uppercase text-ds-primary">Drafts ready</h2>
           <p className="ds-body mt-2">{done.duplicateFile ? "This exact file was already uploaded — no new drafts were created." : `${done.created} draft${done.created === 1 ? "" : "s"} created${done.failed ? `, ${done.failed} could not be saved` : ""}. Nothing was submitted.`}</p>
           <div className="mt-3 flex flex-wrap gap-3"><Link to="/portal/requests" className="portal-btn-primary whitespace-nowrap">Review drafts</Link><button className="portal-btn-secondary whitespace-nowrap" onClick={reset}>Upload another file</button></div>

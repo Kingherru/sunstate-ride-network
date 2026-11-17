@@ -928,3 +928,38 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .theme-portal .portal-empty-state { padding: 1.5rem 1rem; min-height: 0; border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); }
 .theme-portal .portal-business-section .portal-empty-state { border: 0; }
 .portal-notification-indicator[data-notification-indicator='neutral'] { background: var(--ds-info-soft); color: var(--ds-info); }
+
+/* Shared padding rhythm: one set of variables for outer, card, header, field, cell and dialog spacing. */
+.theme-portal {
+  --portal-outer-pad: .875rem; --portal-card-pad: 1rem; --portal-head-pad-y: .75rem;
+  --portal-cell-pad-y: .75rem; --portal-cell-pad-x: .75rem; --portal-dialog-pad: 1rem; --portal-stack-gap: 1rem;
+}
+@media (min-width: 640px) { .theme-portal { --portal-outer-pad: 1.25rem; --portal-card-pad: 1.25rem; --portal-dialog-pad: 1.25rem; } }
+@media (min-width: 1024px) { .theme-portal { --portal-outer-pad: 1.75rem; --portal-card-pad: 1.5rem; --portal-cell-pad-x: 1rem; --portal-dialog-pad: 1.5rem; --portal-stack-gap: 1.25rem; } }
+.theme-portal { --portal-main-padding: var(--portal-card-pad); }
+.theme-portal .portal-main-canvas, .theme-portal.portal-main-canvas, .portal-main-canvas { padding-inline: var(--portal-outer-pad) !important; }
+.theme-portal .portal-record-table :is(th,td) { padding: var(--portal-cell-pad-y) var(--portal-cell-pad-x); }
+.theme-portal .portal-record-table th { padding-inline-end: calc(var(--portal-cell-pad-x) + .5rem); }
+.theme-portal :where(.portal-record-table, .portal-history-table) td { font-variant-numeric: tabular-nums; }
+.theme-portal :where(.portal-record-table, .portal-history-table) :where(td,th) :where([class*="ds-status-"]) { white-space: nowrap; max-width: 100%; }
+.theme-portal .ds-field { display: grid; gap: .375rem; min-width: 0; }
+.theme-portal [role="dialog"] { --portal-main-padding: var(--portal-dialog-pad); }
+.theme-portal [role="dialog"] :where(h2):first-of-type { margin-bottom: .5rem; }
+.theme-portal :where(.portal-search) { position: relative; display: block; }
+.theme-portal .portal-search > svg { position: absolute; inset-inline-start: .875rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ds-text-2); }
+
+/* Shared Messaging standard (Admin layout applied to every portal). */
+.theme-portal .portal-message-sidebar { display: grid; align-content: start; gap: .625rem; padding: var(--portal-card-pad); border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); }
+.theme-portal .portal-message-sidebar > * { margin: 0 !important; }
+.theme-portal .portal-message-sidebar-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin: calc(-1 * var(--portal-card-pad)) calc(-1 * var(--portal-card-pad)) 0 !important; padding: var(--portal-head-pad-y) var(--portal-card-pad); background: var(--ds-sky); border-bottom: 1px solid var(--section-edge); border-radius: var(--ds-radius) var(--ds-radius) 0 0; }
+.theme-portal .portal-message-sidebar-head label { display: inline-flex; align-items: center; gap: .375rem; }
+.theme-portal .portal-message-thread { border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); overflow: hidden; }
+
+/* Upload worksheets: one white card per step, whole-control wrapping. */
+.theme-portal .portal-upload-review { display: grid; gap: var(--portal-stack-gap); }
+.theme-portal .portal-upload-review > * { margin-block: 0 !important; }
+.theme-portal .portal-upload-mapping { display: grid; gap: .75rem 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); padding: var(--portal-card-pad); background: var(--ds-bg); border-radius: var(--ds-radius); }
+.theme-portal .portal-upload-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+.theme-portal .portal-upload-confirm { display: flex; align-items: flex-start; gap: .625rem; }
+.theme-portal .portal-upload-confirm > input { margin-top: .3rem; flex: none; }
+.theme-portal .portal-upload-subcard { padding: var(--portal-card-pad); border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-bg); min-width: 0; }
