@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatUsd } from "@/lib/payouts";
 
+import {RecordTable} from '@/components/portal/RecordTable';
+
 type Row = {
   id: string;
   trip_id: string | null;
@@ -230,39 +232,16 @@ export function MonthlyPayoutReport({
             <Stat label="Net payouts" value={formatUsd(totals.net)} hint={`${totals.paid} paid · ${totals.pending} pending · ${totals.failed} failed`} />
           </div>
           <div className="mt-4 max-h-72 overflow-auto border border-border rounded-sm">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">
-                <tr>
-                  <th className="text-left px-3 py-2">Date</th>
-                  {scope === "admin" && <th className="text-left">Provider</th>}
-                  <th className="text-left">Trip</th>
-                  <th className="text-right">Gross</th>
-                  <th className="text-right">Fee</th>
-                  <th className="text-right">Net</th>
-                  <th className="text-left pl-3">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {preview.map((r) => (
-                  <tr key={r.id}>
-                    <td className="px-3 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleDateString()}</td>
-                    {scope === "admin" && <td className="font-mono text-xs">{r.provider_user_id.slice(0, 8)}</td>}
-                    <td className="font-mono text-xs">{r.trip_id ? r.trip_id.slice(0, 8) : "—"}</td>
-                    <td className="text-right tabular-nums">{formatUsd(r.gross_cents)}</td>
-                    <td className="text-right tabular-nums text-muted-foreground">−{formatUsd(r.fee_cents)}</td>
-                    <td className="text-right tabular-nums font-bold">{formatUsd(r.net_cents)}</td>
-                    <td className="pl-3">
-                      <span className={
-                        "inline-block px-2 py-0.5 rounded text-xs font-bold " +
-                        (r.status === "paid" ? "bg-emerald-100 text-emerald-700"
-                          : r.status === "failed" ? "bg-red-100 text-red-700"
-                          : "bg-muted text-muted-foreground")
-                      }>{r.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <RecordTable<Row> tableId={`monthly-${scope}-payout-report`} rows={preview} rowKey={r=>r.id} columns={[
+              {id:'date',label:'Date',render:r=>new Date(r.created_at).toLocaleDateString()},
+              ...(scope==='admin'?[{id:'provider',label:'Provider',render:(r:Row)=>r.provider_user_id.slice(0,8)}]:[]),
+              {id:'trip',label:'Trip',render:r=>r.trip_id?r.trip_id.slice(0,8):'—'},
+              {id:'gross',label:'Gross',render:r=>formatUsd(r.gross_cents)},
+              {id:'fee',label:'Fee',render:r=>`−${formatUsd(r.fee_cents)}`},
+              {id:'net',label:'Net',render:r=>formatUsd(r.net_cents)},
+              {id:'status',label:'Status',wrap:true,render:r=><span className={"inline-block px-2 py-0.5 rounded text-xs font-bold " +(r.status==='paid'?'bg-ds-success-soft text-ds-success':r.status==='failed'?'bg-ds-error-soft text-ds-error':'bg-ds-surface-muted text-ds-text-2')}>{r.status}</span>},
+            ]}/>
+
           </div>
         </>
       )}

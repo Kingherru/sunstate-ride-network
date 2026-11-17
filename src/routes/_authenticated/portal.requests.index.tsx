@@ -15,6 +15,7 @@ import { DsButton } from "@/components/ds/controls";
 import { exportTable, readableDate, type ExportFormat } from "@/lib/table-export";
 import { DsEmpty } from "@/components/ds/feedback";
 import {PatientTrips} from '@/components/portal/PatientTrips';
+import {RecordTable} from '@/components/portal/RecordTable';
 import {CustomerSelectedExport} from '@/components/portal/CustomerSelectedExport';
 
 export const Route = createFileRoute("/_authenticated/portal/requests/")({
@@ -137,61 +138,18 @@ function History({ rows }: { rows: RequestListRow[] }) {
         </DsEmpty>
       ) : (
         <>
-          {/* Phone: stacked cards */}
-          <ul className="divide-y divide-ds-border md:hidden">
-            {visible.map((r) => (
-              <li key={r.id} className="px-4 py-4">
-                <button type="button" onClick={() => open({ kind: "request", id: r.id })} className="block w-full text-left">
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="ds-label text-ds-primary">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
-                    <StatusBadge status={r.network_status || r.status} />
-                  </div>
-                  <p className="ds-body mt-1">{[r.patient_first_name, r.patient_last_name].filter(Boolean).join(" ") || categoryLabel(r)}</p>
-                  <p className="ds-support mt-0.5">{[r.pickup_city, r.dropoff_city].filter(Boolean).join(" → ") || "Route not provided"}</p>
-                  <p className="ds-support mt-0.5">{fmtDateTime(r.created_at)} · {sourceLabel(r.submitted_via)}</p>
-                </button>
-                <div className="mt-2 flex justify-end">
-                  <CopyButton busy={copying === r.id} onClick={() => copyToNewTrip(r)} />
-                </div>
-              </li>
-            ))}
-          </ul>
-          {/* Desktop: table */}
-          <div className="portal-history-scroll hidden md:block"><table className="portal-history-table w-full text-left">
-            <thead className="ds-support uppercase tracking-[0.06em]">
-              <tr className="border-b border-ds-border">
-                <th scope="col" className="px-4 py-3 font-semibold">Request</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Rider</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Route</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Requested</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Service</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Provider</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Source</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Status</th>
-                <th scope="col" className="px-4 py-3 font-semibold"><span className="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody className="ds-body">
-              {visible.map((r) => (
-                <tr key={r.id} tabIndex={0} role="button" aria-label={`Open request ${r.mfn_id || shortId(r.id)}`}
-                  onClick={() => open({ kind: "request", id: r.id })}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open({ kind: "request", id: r.id }); } }}
-                  className="cursor-pointer border-b border-ds-border last:border-0 hover:bg-ds-surface-muted focus-visible:outline-2 focus-visible:outline-ds-focus">
-                  <td className="px-4 py-3"><span className="font-semibold text-ds-link">{r.mfn_id ?? `#${shortId(r.id)}`}</span></td>
-                  <td className="px-4 py-3">{[r.patient_first_name, r.patient_last_name].filter(Boolean).join(" ") || "Not provided"}</td>
-                  <td className="px-4 py-3">{[r.pickup_city, r.dropoff_city].filter(Boolean).join(" → ") || "Not provided"}</td>
-                  <td className="px-4 py-3">{r.pickup_date ? `${fmtDate(r.pickup_date)}${r.pickup_time ? ` · ${fmtTime(r.pickup_time)}` : ""}` : fmtDateTime(r.created_at)}</td>
-                  <td className="px-4 py-3">{categoryLabel(r)}{!isDelivery(r) && ` · ${serviceLabel(r)}`}</td>
-                  <td className="px-4 py-3">{r.selected_provider_mfn_id ?? "Not assigned"}</td>
-                  <td className="px-4 py-3">{sourceLabel(r.submitted_via)}</td>
-                  <td className="px-4 py-3"><StatusBadge status={r.network_status || r.status} /></td>
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <CopyButton busy={copying === r.id} onClick={() => copyToNewTrip(r)} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table></div>
+          <RecordTable<RequestListRow> tableId="portal-request-history" rows={visible} rowKey={r=>r.id}
+            onRowClick={r=>open({kind:'request',id:r.id})} rowLabel={r=>`Open request ${r.mfn_id || shortId(r.id)}`} columns={[
+              {id:'request',label:'Request',width:210,minWidth:180,render:r=>r.mfn_id ?? `#${shortId(r.id)}`},
+              {id:'rider',label:'Rider',width:240,render:r=>[r.patient_first_name,r.patient_last_name].filter(Boolean).join(' ') || 'Not provided'},
+              {id:'route',label:'Route',width:250,render:r=>[r.pickup_city,r.dropoff_city].filter(Boolean).join(' → ') || 'Not provided'},
+              {id:'requested',label:'Requested',width:250,render:r=>r.pickup_date?`${fmtDate(r.pickup_date)}${r.pickup_time?` · ${fmtTime(r.pickup_time)}`:''}`:fmtDateTime(r.created_at)},
+              {id:'service',label:'Service',width:290,render:r=>`${categoryLabel(r)}${!isDelivery(r)?` · ${serviceLabel(r)}`:''}`},
+              {id:'provider',label:'Provider',width:220,hideable:true,render:r=>r.selected_provider_mfn_id ?? 'Not assigned'},
+              {id:'source',label:'Source',hideable:true,render:r=>sourceLabel(r.submitted_via)},
+              {id:'status',label:'Status',width:290,minWidth:280,wrap:true,render:r=><StatusBadge status={r.network_status || r.status}/>},
+              {id:'actions',label:'Actions',width:240,minWidth:230,wrap:true,render:r=><CopyButton busy={copying===r.id} onClick={()=>copyToNewTrip(r)}/>},
+            ]}/>
           {filtered.length > shown && (
             <div className="border-t border-ds-border px-4 py-3 text-center sm:px-5">
               <DsButton variant="secondary" onClick={() => setShown((n) => n + PAGE)}>
