@@ -20,6 +20,7 @@ import { MembershipTransitionsList, GrandfatheringList } from '@/components/admi
 import { DsButton, DsField, DsInput, DsSelect } from '@/components/ds/controls';
 import { matchesPeopleFilters } from '@/lib/people-filters';
 import { ProviderBadgeControl } from '@/components/admin/ProviderBadgeControl';
+import {RecordTable} from '@/components/portal/RecordTable';
 import {NewConnections} from '@/components/portal/NewConnections';
 
 type View = "all" | "providers" | "private_pay" | "organizations" | "learners" | "review" | "connections";
@@ -63,7 +64,7 @@ function ResetControl({ p }: { p: PersonRow }) {
       </div>
     </div>
   );
-  return <button onClick={() => setConfirming(true)} className="portal-btn-secondary mt-2">Send password reset link</button>;
+  return <DsButton variant="secondary" size="sm" onClick={() => setConfirming(true)}>Send password reset link</DsButton>;
 }
 
 function ClassifyControl({ p }: { p: PersonRow }) {
@@ -142,22 +143,23 @@ function People() {
           <span className="font-semibold">Accounts needing classification:</span> {reviewCounts.data.accountsNeedingClassification}
         </p>
       )}
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(14rem,2fr)_repeat(5,minmax(0,1fr))]"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField>
+      <div className="mb-5 portal-filter-grid"><DsField label="Search people and accounts">{p => <DsInput {...p} type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Name, email, MFN ID, company or type" />}</DsField><DsField label="Status">{p => <DsSelect {...p} value={status} onChange={e => setStatus(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Disabled</option><option value="review">Needs Review</option></DsSelect>}</DsField><DsField label="Account activity">{p => <DsSelect {...p} value={activity} onChange={e => setActivity(e.target.value)}><option value="all">All activity</option><option value="recent">Signed in within 30 days</option><option value="inactive">No sign-in within 30 days</option><option value="never">Never signed in</option></DsSelect>}</DsField>
         <DsField label="Account type">{p => <DsSelect {...p} value={accountType} onChange={e => setAccountType(e.target.value)}><option value="all">All account types</option>{Object.entries(ACCOUNT_TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</DsSelect>}</DsField>
         <DsField label="Account status">{p => <DsSelect {...p} value={accountStatus} onChange={e => setAccountStatus(e.target.value)}><option value="all">All account statuses</option><option value="active">Active</option><option value="pending">Pending</option><option value="suspended">Suspended</option></DsSelect>}</DsField>
         <DsField label="Email verification">{p => <DsSelect {...p} value={verification} onChange={e => setVerification(e.target.value)}><option value="all">All verification statuses</option><option value="verified">Verified</option><option value="unverified">Not verified</option></DsSelect>}</DsField>
       </div>
       <section className={panelCls}>
         {list.length === 0 ? <DsEmpty title="No one here">Nobody matches this view.</DsEmpty> : (
-          <ul className="divide-y divide-ds-border">
-            {list.map((p) => (
-              <li key={p.userId} className="grid min-w-0 gap-2 px-4 py-4 even:bg-ds-sky/30 sm:px-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.3fr)] md:gap-6">
+          <RecordTable<PersonRow> tableId="admin-people-accounts" rows={list} rowKey={p=>p.userId} columns={[
+            {id:'person',label:'Person & email',width:300,minWidth:240,wrap:true,render:p=>(
                 <div className="min-w-0">
                   <DsButton variant="ghost" className="!px-0 text-left" onClick={() => setSelected(p)}>{p.name || p.email || 'Account details'}</DsButton>
                   <p className="ds-body break-all font-semibold">{p.email ?? "No email"}</p>
                   {p.isMasterAdmin && <p className="ds-support font-semibold uppercase tracking-[0.08em] text-ds-action">Master Admin</p>}
                   <p className="ds-support font-mono">{p.mfnId}</p>
                 </div>
+)},
+            {id:'roles',label:'Roles & status',width:260,minWidth:230,wrap:true,render:p=>(
                 <div className="ds-support min-w-0">
                   <p>{p.roles.length ? p.roles.map((r) => r.replace("_", " ")).join(", ") : "No staff role"}</p>
                   <div className="mt-1 flex flex-wrap gap-1.5">
@@ -166,9 +168,9 @@ function People() {
                     {p.needsReview && <StatusPill status="Needs review" tone="red" />}
                     {p.isTest && <StatusPill status="Test account" tone="neutral" />}
                   </div>
-                  {p.needsReview && canClassify && view === "review" && <ClassifyControl p={p} />}
-                  {canManagePeople && <ResetControl p={p} />}
                 </div>
+)},
+            {id:'accounts',label:'Accounts',width:340,minWidth:260,wrap:true,render:p=>(
                 <div className="ds-support min-w-0">
                   {p.accounts.length === 0 ? <p>No business account</p> : p.accounts.map((a) => (
                     <div key={a.id} className="break-words">
@@ -177,10 +179,10 @@ function People() {
                       {a.type === 'provider' && <ProviderBadgeControl workspaceId={a.id} protectedAccount={p.isMasterAdmin} />}
                     </div>
                   ))}
-                </div>
-              </li>
-            ))}
-          </ul>
+                </div>)},
+            {id:'actions',label:'Actions',width:310,minWidth:290,wrap:true,render:p=><div className="portal-record-actions">{p.needsReview && canClassify && view === 'review' && <ClassifyControl p={p}/>} {canManagePeople && <ResetControl p={p}/>}</div>},
+          ]}/>
+
         )}
       </section>
       <details className="mt-6"><summary className="ds-label cursor-pointer">Membership transitions</summary><div className="pt-4"><MembershipTransitionsList /></div></details>

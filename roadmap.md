@@ -1,3 +1,9 @@
+# Platform legibility and data tables
+- [ ] Narrow shared truncation to compact controls/IDs/tabs and table values; restore natural content wrapping.
+- [ ] Shared icon reservations, responsive filters, shortcut-card title/description spacing and separate service settings modules.
+- [ ] Reusable resizable record tables: Requests, People & Accounts, trip history and earnings history; retain actions, records and safe previews.
+- [ ] Focused tests and desktop/390px read-only checks; harness compilation only. Scheduler, Messaging layout, duplicate removal and financial consolidation excluded.
+
 # Pass 7 — shared portal structure cleanup
 - [x] Shared fluid width retained, redundant outer preview/People/Pricing surfaces removed; horizontal task tabs and shared form spacing preserved.
 - [x] Admin Pricing task tabs/group disclosures, list-first Administrators with focused permissions dialog, Settings Access/Security separated from Profile.

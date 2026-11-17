@@ -13,6 +13,19 @@ export function PortalFormSpacing() {
         field.removeAttribute('data-portal-form-spacing');
         const css = getComputedStyle(field);
         const padding = [css.paddingTop, css.paddingRight, css.paddingBottom, css.paddingLeft];
+        // Reserve authored overlay icons/buttons before adding the existing +1px delta.
+        const parent = field.parentElement;
+        if (parent && field.matches('input')) {
+          const rect = field.getBoundingClientRect();
+          for (const sibling of Array.from(parent.children)) {
+            if (!(sibling instanceof HTMLElement || sibling instanceof SVGElement) || sibling === field || !sibling.matches('svg,button,span')) continue;
+            if (getComputedStyle(sibling).position !== 'absolute') continue;
+            const icon = sibling.getBoundingClientRect();
+            if (!icon.width || icon.bottom <= rect.top || icon.top >= rect.bottom) continue;
+            if (icon.left >= rect.left && icon.right <= rect.left + rect.width / 2) padding[3] = `${Math.max(parseFloat(padding[3]), icon.right - rect.left + 12)}px`;
+            else if (icon.right <= rect.right && icon.left >= rect.left + rect.width / 2) padding[1] = `${Math.max(parseFloat(padding[1]), rect.right - icon.left + 12)}px`;
+          }
+        }
         padding.forEach((value, index) => {
           const property = `--portal-field-padding-${index}`;
           const next = `${increasedPadding(value)}px`;

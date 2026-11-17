@@ -64,7 +64,7 @@ export function DsField({
   const id = useId();
   const descId = hint || error ? `${id}-desc` : undefined;
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="ds-field flex min-w-0 flex-col gap-1.5">
       <label htmlFor={id} className="ds-label text-ds-on-surface">{label}</label>
       {children({ id, "aria-describedby": descId, "aria-invalid": error ? true : undefined })}
       {error ? (
@@ -101,7 +101,7 @@ function ChoiceControl({ type, label, className, ...p }: React.InputHTMLAttribut
         className={cn("size-5 accent-[var(--ds-primary)] cursor-pointer disabled:cursor-not-allowed", focus)}
         {...p}
       />
-      <OverflowText>{label}</OverflowText>
+      <span data-text-wrap className="min-w-0">{label}</span>
     </label>
   );
 }

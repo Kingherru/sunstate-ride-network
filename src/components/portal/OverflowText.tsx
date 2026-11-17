@@ -39,9 +39,18 @@ export function PortalOverflowTooltips() {
     const resize = new ResizeObserver(() => schedule());
     const scan = () => {
       frame = 0;
+      document.querySelectorAll<HTMLElement>('.theme-portal .portal-overflow-text').forEach(node => {
+        if (!node.matches(COMPACT_TEXT_SELECTOR) || node.closest('[data-text-wrap]')) {
+          node.classList.remove('portal-overflow-text'); delete node.dataset.overflowClipped;
+          const state = tracked.get(node);
+          if (state?.addedTab) { if (state.tab === null) node.removeAttribute('tabindex'); else node.setAttribute('tabindex', state.tab); }
+          resize.unobserve(node); tracked.delete(node);
+          if (active === node) close();
+        }
+      });
       for (const [node, state] of tracked) if (!node.isConnected) { resize.unobserve(node); tracked.delete(node); if (active === node) close(); }
       document.querySelectorAll<HTMLElement>('.theme-portal').forEach(root => root.querySelectorAll<HTMLElement>(COMPACT_TEXT_SELECTOR).forEach(node => {
-        if (node.closest('[data-overflow-tooltip], [data-text-wrap], textarea, [role="alert"], .sr-only') || node.matches('input,textarea') || !text(node)) return;
+        if (node.closest('[data-overflow-tooltip], [data-text-wrap], textarea, [role="alert"], .sr-only') || node.matches('input,textarea,button.h-auto') || !text(node)) return;
         // Preserve dedicated address/instructions cells and prose-styled labels.
         const fieldLabel = node.tagName === 'DD' ? node.previousElementSibling?.textContent ?? node.parentElement?.querySelector('dt')?.textContent ?? '' : '';
         if (isMultilineText(fieldLabel) || node.matches('p.ds-label') && (isMultilineText(text(node)) || node.hasAttribute('role'))) return;

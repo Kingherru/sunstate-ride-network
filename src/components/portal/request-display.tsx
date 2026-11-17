@@ -7,6 +7,7 @@ import { DsButton } from '@/components/ds/controls';
 import { detailValue, selectedService, selectedTripType, NOT_AVAILABLE } from '@/lib/request-detail-fields';
 import { displayPhone } from '@/lib/portal-read-rules';
 import { DetailSection } from './DetailSection';
+import {RecordTable} from './RecordTable';
 import {verifiedEvents} from '@/lib/regional-projections';
 
 export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
@@ -59,51 +60,16 @@ export const fmtDateTime = (iso: string) =>
 
 export function RequestTable({ rows, detailBase, showSource = false }: { rows: RequestListRow[]; detailBase: "/portal/requests" | "/admin/requests"; showSource?: boolean }) {
   const open = useRequestDetails();
-  return (
-    <>
-      {/* Phone: stacked list, no horizontal scrolling */}
-      <ul className="divide-y divide-ds-border md:hidden">
-        {rows.map((r) => (
-          <li key={r.id}>
-            <DsButton variant="ghost" onClick={() => open({ kind: 'request', id: r.id })} className="!block w-full !px-4 !py-4 text-left !normal-case">
-              <div className="flex items-start justify-between gap-3">
-                <span className="ds-label text-ds-primary">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
-                <StatusBadge status={r.network_status || r.status} />
-              </div>
-              <p className="ds-body mt-1">{categoryLabel(r)}{!isDelivery(r) && ` · ${serviceLabel(r)}`}</p>
-              <p className="ds-support mt-0.5">{fmtDateTime(r.created_at)}{showSource && ` · ${sourceLabel(r.submitted_via)}`}</p>
-            </DsButton>
-          </li>
-        ))}
-      </ul>
-      <div className="portal-history-scroll hidden md:block"><table className="portal-history-table w-full text-left">
-        <thead className="ds-support uppercase tracking-[0.06em]">
-          <tr className="border-b border-ds-border">
-            <th scope="col" className="px-4 py-3 font-semibold">Request</th>
-            <th scope="col" className="px-4 py-3 font-semibold">Category</th>
-            {!showSource && <th scope="col" className="px-4 py-3 font-semibold">Service</th>}
-            <th scope="col" className="px-4 py-3 font-semibold">Submitted</th>
-            {showSource && <th scope="col" className="px-4 py-3 font-semibold">Source</th>}
-            <th scope="col" className="px-4 py-3 font-semibold">Status</th>
-          </tr>
-        </thead>
-        <tbody className="ds-body">
-          {rows.map((r) => (
-            <tr key={r.id} tabIndex={0} role="button" aria-label={`Open request ${r.mfn_id || shortId(r.id)}`} onClick={() => open({ kind: 'request', id: r.id })} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open({ kind: 'request', id: r.id }); } }} className="cursor-pointer border-b border-ds-border hover:bg-ds-surface-muted focus-visible:outline-2 focus-visible:outline-ds-focus last:border-0">
-              <td className="px-4 py-3">
-                <span className="font-semibold text-ds-link">{r.mfn_id ?? `#${shortId(r.id)}`}</span>
-              </td>
-              <td className="px-4 py-3">{categoryLabel(r)}</td>
-              {!showSource && <td className="px-4 py-3">{serviceLabel(r)}</td>}
-              <td className="px-4 py-3">{fmtDateTime(r.created_at)}</td>
-              {showSource && <td className="px-4 py-3">{sourceLabel(r.submitted_via)}</td>}
-              <td className="px-4 py-3"><StatusBadge status={r.network_status || r.status} /></td>
-            </tr>
-          ))}
-        </tbody>
-      </table></div>
-    </>
-  );
+  return <RecordTable tableId={showSource ? 'admin-requests' : 'customer-requests'} rows={rows} rowKey={r => r.id}
+    onRowClick={r => open({kind:'request',id:r.id})} rowLabel={r => `Open request ${r.mfn_id || shortId(r.id)}`}
+    columns={[
+      {id:'request',label:'Request',width:210,minWidth:180,render:r=>r.mfn_id ?? `#${shortId(r.id)}`},
+      {id:'category',label:'Category',width:250,minWidth:180,render:categoryLabel},
+      ...(!showSource ? [{id:'service',label:'Service',width:230,minWidth:160,render:serviceLabel}] : []),
+      {id:'submitted',label:'Submitted',width:250,minWidth:190,render:r=>fmtDateTime(r.created_at)},
+      ...(showSource ? [{id:'source',label:'Source',width:180,minWidth:150,render:(r:RequestListRow)=>sourceLabel(r.submitted_via)}] : []),
+      {id:'status',label:'Status',width:290,minWidth:280,wrap:true,render:r=><StatusBadge status={r.network_status || r.status}/>},
+    ]}/>;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {

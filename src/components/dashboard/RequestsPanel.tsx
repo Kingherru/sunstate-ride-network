@@ -197,7 +197,7 @@ export function ReferralReservationsSection({ userId }: { userId: string }) {
         </div>
       )}
       {!q.isLoading && !q.isError && rows.length === 0 && (
-        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
+        <div className="bg-card border border-border rounded-sm p-5 text-sm text-muted-foreground">
           No approved referrals waiting on confirmation. Approve a referral in the Referrals tab and it will appear here.
         </div>
       )}
@@ -431,7 +431,7 @@ export function ReservationsPanel({
 
       <p className="text-xs text-muted-foreground">{meta.blurb}</p>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="portal-filter-grid">
         <select
           value={assignFilter}
           onChange={(e) => setAssignFilter(e.target.value as AssignFilter)}
@@ -458,17 +458,17 @@ export function ReservationsPanel({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search patient or city…"
-          className="text-xs bg-card border border-border rounded-sm px-3 py-2 min-w-[220px] flex-1"
+          className="text-xs bg-card border border-border rounded-sm px-3 py-2 min-w-0 w-full"
         />
 
-        <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground ml-auto">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground self-center">
           {rows.length} of {allRows.length}
         </div>
       </div>
 
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
       {!q.isLoading && rows.length === 0 && (
-        <div className="bg-card border border-border rounded-sm p-8 text-sm text-muted-foreground">
+        <div className="bg-card border border-border rounded-sm p-5 text-sm text-muted-foreground">
           {state === "unconfirmed"
             ? "No unconfirmed reservations. New trips will show up here first."
             : state === "booked"

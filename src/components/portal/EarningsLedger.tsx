@@ -6,6 +6,8 @@ import { listEarningsLedger, type LedgerRow } from "@/lib/provider-ops.functions
 import { exportTable, readableDate, type ExportFormat } from "@/lib/table-export";
 import { usePortalQuery, usePortalPreview } from "./preview-data";
 
+import {RecordTable} from './RecordTable';
+
 const usd = (c: number) => (c / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
 const today = () => new Date().toISOString().slice(0, 10);
 const monthStart = () => today().slice(0, 8) + "01";
@@ -50,8 +52,14 @@ export function EarningsLedger() {
         <p className="rounded-ds border border-ds-sky-border bg-ds-surface p-3"><span className="ds-caption block">Adjustments</span><strong><span className="portal-money">{usd(d.totals.adjustmentsCents)}</span></strong></p>
         <p className="rounded-ds border border-ds-sky-border bg-ds-surface p-3"><span className="ds-caption block">Payments recorded</span><strong><span className="portal-money">{usd(d.totals.paymentsCents)}</span></strong></p>
       </div>
-      <div className="overflow-x-auto rounded-ds border border-ds-sky-border bg-ds-surface"><table className="w-full text-sm"><thead><tr className="text-left ds-caption uppercase"><th className="p-2">Date</th><th className="p-2">Driver</th><th className="p-2">Category</th><th className="p-2">Status</th><th className="p-2 text-right">Amount</th></tr></thead>
-        <tbody>{d.rows.length === 0 ? <tr><td colSpan={5} className="p-3 ds-support">No records match these filters.</td></tr> : d.rows.map((r) => <tr key={r.id} className="border-t border-ds-border"><td className="p-2 whitespace-nowrap">{readableDate(r.date)}</td><td className="p-2">{r.driver} <span className="ds-caption">· {r.employment}</span></td><td className="p-2 capitalize">{r.category}</td><td className="p-2">{r.status}</td><td className="p-2 text-right"><span className="portal-money">{usd(r.amountCents)}</span></td></tr>)}</tbody></table></div>
+      <RecordTable tableId="driver-earnings-history" rows={d.rows} rowKey={r=>r.id} columns={[
+        {id:'date',label:'Date',width:180,render:r=>readableDate(r.date)},
+        {id:'driver',label:'Driver',width:280,hideable:true,render:r=>`${r.driver} · ${r.employment}`},
+        {id:'category',label:'Category',hideable:true,render:r=>r.category},
+        {id:'status',label:'Status',render:r=>r.status},
+        {id:'amount',label:'Amount',minWidth:150,render:r=>usd(r.amountCents)},
+      ]}/>
+
       <div className="flex flex-wrap items-end gap-2"><label className="ds-label">Format<select value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)} className="portal-input mt-1"><option value="csv">CSV</option><option value="xlsx">Excel</option><option value="pdf">PDF</option></select></label>
         <DsButton variant="secondary" disabled={busy || d.rows.length === 0} onClick={doExport} className="whitespace-nowrap"><Download className="size-4" aria-hidden />{busy ? "Exporting…" : "Export results"}</DsButton></div>
     </>}

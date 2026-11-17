@@ -8,6 +8,8 @@ import { createConnectOnboardingLink, refreshPayoutAccount } from "@/lib/payouts
 import { MonthlyPayoutReport } from "@/components/MonthlyPayoutReport";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 
+import {RecordTable} from '@/components/portal/RecordTable';
+
 type Trip = {
   id: string;
   status: string;
@@ -84,30 +86,15 @@ export function PayoutsPanel({ userId }: { userId: string }) {
         ) : trips.length === 0 ? (
           <p className="text-sm text-muted-foreground">No assigned trips yet.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-              <tr>
-                <th className="text-left py-2">Trip</th>
-                <th className="text-left">Date</th>
-                <th className="text-right">Gross</th>
-                <th className="text-right">Fee</th>
-                <th className="text-right">Your payout</th>
-                <th className="text-left pl-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {trips.map((t) => (
-                <tr key={t.id}>
-                  <td className="py-2 font-mono text-xs">{t.id.slice(0, 8)}</td>
-                  <td>{t.pickup_date}</td>
-                  <td className="text-right"><span className="portal-money">{formatUsd((t.cost_total ?? 0) * 100)}</span></td>
-                  <td className="text-right text-muted-foreground">−<span className="portal-money">{formatUsd(t.platform_fee_cents ?? Math.round((t.cost_total ?? 0) * 100 * feePct))}</span></td>
-                  <td className="text-right font-bold"><span className="portal-money">{formatUsd(computePayout(t))}</span></td>
-                  <td className="pl-3"><PayoutBadge status={t.payout_status} releasedAt={t.payout_released_at} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <RecordTable tableId="provider-trip-releases" rows={trips} rowKey={t=>t.id} columns={[
+            {id:'trip',label:'Trip',render:t=>t.id.slice(0,8)},
+            {id:'date',label:'Date',render:t=>t.pickup_date},
+            {id:'gross',label:'Gross',render:t=>formatUsd((t.cost_total ?? 0)*100)},
+            {id:'fee',label:'Fee',render:t=>`−${formatUsd(t.platform_fee_cents ?? Math.round((t.cost_total ?? 0)*100*feePct))}`},
+            {id:'payout',label:'Your payout',render:t=>formatUsd(computePayout(t))},
+            {id:'status',label:'Status',width:280,minWidth:250,wrap:true,render:t=><PayoutBadge status={t.payout_status} releasedAt={t.payout_released_at}/>},
+          ]}/>
+
         )}
       </section>
     </div>

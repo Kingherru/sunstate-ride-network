@@ -20,6 +20,9 @@ import {
   type DriverEarningsPdfInput,
 } from "@/lib/driver-earnings-pdf";
 
+import {RecordTable} from '@/components/portal/RecordTable';
+import {DsButton} from '@/components/ds/controls';
+
 type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "pay_period" | "custom";
 
 function isoDay(d: Date): string { return d.toISOString().slice(0, 10); }
@@ -412,28 +415,15 @@ function PaymentHistoryCard({ payments, loading, onChanged }:
       {loading ? <p className="text-sm text-muted-foreground">Loading…</p>
         : payments.length === 0 ? <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
         : (
-          <table className="w-full text-sm">
-            <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              <tr><th className="text-left py-1">Period</th><th className="text-left">Status</th>
-                <th className="text-right">Gross</th><th className="text-right">Paid</th>
-                <th className="text-left pl-3">Method</th><th></th></tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {payments.map((p) => (
-                <tr key={p.id}>
-                  <td className="py-1.5">{p.period_start && p.period_end ? `${p.period_start} → ${p.period_end}` : "—"}</td>
-                  <td className="uppercase text-xs">{p.status}</td>
-                  <td className="text-right"><span className="portal-money">{usd(p.gross_cents)}</span></td>
-                  <td className="text-right font-bold"><span className="portal-money">{usd(p.amount_paid_cents)}</span></td>
-                  <td className="pl-3">{p.method ?? "—"}</td>
-                  <td className="text-right">
-                    <button onClick={() => confirm("Delete payment?") && del.mutate(p.id)}
-                            className="text-xs font-bold text-red-600 hover:underline">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <RecordTable<any> tableId="driver-payment-history" rows={payments} rowKey={p=>p.id} columns={[
+            {id:'period',label:'Period',width:280,render:p=>p.period_start&&p.period_end?`${p.period_start} → ${p.period_end}`:'—'},
+            {id:'status',label:'Status',render:p=>p.status},
+            {id:'gross',label:'Gross',render:p=>usd(p.gross_cents)},
+            {id:'paid',label:'Paid',render:p=>usd(p.amount_paid_cents)},
+            {id:'method',label:'Method',hideable:true,render:p=>p.method ?? '—'},
+            {id:'actions',label:'Actions',wrap:true,render:p=><DsButton variant="ghost" size="sm" onClick={()=>confirm('Delete payment?') && del.mutate(p.id)}>Delete</DsButton>},
+          ]}/>
+
         )}
     </section>
   );
@@ -644,35 +634,15 @@ function EmailedReportsHistoryCard({ driverId }: { driverId: string }) {
           No earnings reports have been emailed to this driver yet.
         </p>
       ) : (
-        <table className="w-full text-sm">
-          <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="text-left py-1">Sent</th>
-              <th className="text-left">Period</th>
-              <th className="text-left">Recipient</th>
-              <th className="text-right">Gross</th>
-              <th className="text-right">Balance</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {reports.map((r) => (
-              <tr key={r.id}>
-                <td className="py-1.5">{new Date(r.sent_at).toLocaleString()}</td>
-                <td>{r.period_start} → {r.period_end}</td>
-                <td>{r.recipient_email}</td>
-                <td className="text-right"><span className="portal-money">{usd(r.snapshot?.gross_cents ?? 0)}</span></td>
-                <td className="text-right font-bold"><span className="portal-money">{usd(r.snapshot?.outstanding_cents ?? 0)}</span></td>
-                <td className="text-right">
-                  <button onClick={() => openSnapshot(r)}
-                          className="text-xs font-bold text-primary hover:underline">
-                    Re-download PDF
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <RecordTable<any> tableId="driver-earnings-reports" rows={reports} rowKey={r=>r.id} columns={[
+          {id:'sent',label:'Sent',width:250,render:r=>new Date(r.sent_at).toLocaleString()},
+          {id:'period',label:'Period',width:280,render:r=>`${r.period_start} → ${r.period_end}`},
+          {id:'recipient',label:'Recipient',width:280,render:r=>r.recipient_email},
+          {id:'gross',label:'Gross',render:r=>usd(r.snapshot?.gross_cents ?? 0)},
+          {id:'balance',label:'Balance',render:r=>usd(r.snapshot?.outstanding_cents ?? 0)},
+          {id:'actions',label:'Actions',minWidth:230,wrap:true,render:r=><DsButton variant="ghost" size="sm" onClick={()=>openSnapshot(r)}>Re-download PDF</DsButton>},
+        ]}/>
+
       )}
     </section>
   );

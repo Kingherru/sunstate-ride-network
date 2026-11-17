@@ -4,6 +4,8 @@ import { SmartNotes } from "@/components/portal/SmartNotes";
 import { ReferralReservationsSection } from "@/components/dashboard/RequestsPanel";
 import { panelCls } from "@/components/portal/PortalShell";
 
+import { ShortcutCardContent } from './ShortcutCard';
+
 const TOOLS = [
   { to: "/portal/schedule", label: "Today's schedule", text: "Drivers and trips by hour.", icon: CalendarDays },
   { to: "/portal/vehicles", label: "Vehicles", text: "Your fleet, types and capacity.", icon: Truck },
@@ -29,12 +31,8 @@ export function ProviderOverview({ workspaceId, userId }: { workspaceId: string 
       </div>
       <nav aria-label="Provider tools" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {TOOLS.map(({ to, label, text, icon: Icon }) => (
-          <Link key={to} to={to} className="ds-glass flex items-start gap-3 p-4 hover:border-ds-accent">
-            <Icon className="mt-0.5 h-5 w-5 shrink-0 text-ds-accent" aria-hidden />
-            <span>
-              <span className="block ds-subheading uppercase text-ds-primary">{label}</span>
-              <span className="ds-support text-ds-muted">{text}</span>
-            </span>
+          <Link key={to} to={to} className="portal-shortcut-card hover:border-ds-accent">
+            <ShortcutCardContent icon={Icon} title={label} description={text}/>
           </Link>
         ))}
       </nav>

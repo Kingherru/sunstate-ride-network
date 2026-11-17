@@ -6,6 +6,8 @@ import { listAllTripsAdmin, listAllReservationsAdmin } from "@/lib/admin-trips.f
 import { AdminReservationDetailModal } from "./AdminReservationDetailModal";
 
 
+import {RecordTable} from '@/components/portal/RecordTable';
+
 const STATUS_OPTIONS = ["all", "pending", "assigned", "in_progress", "completed", "canceled", "no_show"];
 
 function StatusBadge({ status }: { status: string | null | undefined }) {
@@ -32,52 +34,22 @@ export function AdminTripsPanel() {
       </div>
 
       <div className="bg-card border border-border rounded-sm overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-secondary/40 text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="text-left p-3">Trip ID</th>
-              <th className="text-left p-3">Date / Time</th>
-              <th className="text-left p-3">Patient</th>
-              <th className="text-left p-3">Route</th>
-              <th className="text-left p-3">Original provider</th>
-              <th className="text-left p-3">Assigned provider</th>
-              <th className="text-left p-3">Source</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Payment</th>
-              <th className="text-right p-3">Charge</th>
-              <th className="text-right p-3">Referral fee</th>
-              <th className="text-right p-3">Platform fee</th>
-              <th className="text-right p-3">Provider net</th>
-            </tr>
-          </thead>
-          <tbody>
-            {q.isLoading && <tr><td colSpan={13} className="p-6 text-center text-muted-foreground">Loading trips…</td></tr>}
-            {q.error && <tr><td colSpan={13} className="p-6 text-center text-destructive">{(q.error as Error).message}</td></tr>}
-            {!q.isLoading && (q.data?.length ?? 0) === 0 && (
-              <tr><td colSpan={13} className="p-8 text-center text-muted-foreground">No trips found.</td></tr>
-            )}
-            {q.data?.map((t: any) => (
-              <tr key={t.id} className="border-t border-border">
-                <td className="p-3 font-mono text-xs">{t.display_id ?? t.id.slice(0, 8)}</td>
-                <td className="p-3 whitespace-nowrap">{t.pickup_date} {t.pickup_time?.slice(0,5)}</td>
-                <td className="p-3">{t.patient_first_name} {t.patient_last_name}</td>
-                <td className="p-3 text-xs">
-                  <div>{t.pickup_city} {t.pickup_zip ?? ""}</div>
-                  <div className="text-muted-foreground">↓ {t.dropoff_city} {t.dropoff_zip ?? ""}</div>
-                </td>
-                <td className="p-3 text-xs">{t.original_provider_name ?? "—"}</td>
-                <td className="p-3 text-xs">{t.assigned_provider_name ?? <span className="text-muted-foreground">Unassigned</span>}</td>
-                <td className="p-3 text-xs capitalize">{t.source ?? "—"}</td>
-                <td className="p-3"><StatusBadge status={t.status} /></td>
-                <td className="p-3"><StatusBadge status={t.payment_status} /></td>
-                <td className="p-3 text-right font-mono">{fmtUsd(t.cost_total, false)}</td>
-                <td className="p-3 text-right font-mono">{fmtUsd(t.referral_fee_cents, true)}</td>
-                <td className="p-3 text-right font-mono">{fmtUsd(t.platform_fee_cents, true)}</td>
-                <td className="p-3 text-right font-mono font-bold">{fmtUsd(t.provider_payout_cents, true)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <RecordTable<any> tableId="admin-trips" rows={q.data ?? []} rowKey={t=>t.id} empty={q.isLoading?'Loading trips…':q.error?(q.error as Error).message:'No trips found.'} columns={[
+          {id:'id',label:'Trip ID',render:t=>t.display_id ?? t.id.slice(0,8)},
+          {id:'date',label:'Date / Time',width:230,render:t=>`${t.pickup_date} ${t.pickup_time?.slice(0,5) ?? ''}`},
+          {id:'patient',label:'Patient',width:240,render:t=>`${t.patient_first_name} ${t.patient_last_name}`},
+          {id:'route',label:'Route',width:250,render:t=>`${t.pickup_city} ${t.pickup_zip ?? ''} ↓ ${t.dropoff_city} ${t.dropoff_zip ?? ''}`},
+          {id:'original',label:'Original provider',width:250,hideable:true,render:t=>t.original_provider_name ?? '—'},
+          {id:'assigned',label:'Assigned provider',width:250,render:t=>t.assigned_provider_name ?? 'Unassigned'},
+          {id:'source',label:'Source',hideable:true,render:t=>t.source ?? '—'},
+          {id:'status',label:'Status',width:230,minWidth:210,wrap:true,render:t=><StatusBadge status={t.status}/>},
+          {id:'payment',label:'Payment',width:230,minWidth:210,wrap:true,render:t=><StatusBadge status={t.payment_status}/>},
+          {id:'charge',label:'Charge',render:t=>fmtUsd(t.cost_total,false)},
+          {id:'referral',label:'Referral fee',hideable:true,render:t=>fmtUsd(t.referral_fee_cents,true)},
+          {id:'fee',label:'Platform fee',hideable:true,render:t=>fmtUsd(t.platform_fee_cents,true)},
+          {id:'net',label:'Provider net',render:t=>fmtUsd(t.provider_payout_cents,true)},
+        ]}/>
+
       </div>
     </div>
   );
@@ -122,7 +94,7 @@ export function AdminReservationsPanel() {
     },
   });
 
-  const meta = RESV_TABS.find((t) => t.id === state)!;
+  const meta = RESV_TABS.find((t) => t.id === state) ?? RESV_TABS[0];
 
   return (
     <div className="space-y-4">
@@ -156,7 +128,7 @@ export function AdminReservationsPanel() {
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground">{meta.blurb}</p>
+      <p className="text-xs text-muted-foreground">{meta?.blurb}</p>
 
       <div className="bg-card border border-border rounded-sm p-4 flex flex-wrap gap-3 items-center">
         <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</label>
@@ -168,43 +140,17 @@ export function AdminReservationsPanel() {
       </div>
 
       <div className="bg-card border border-border rounded-sm overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-secondary/40 text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="text-left p-3">Date / Time</th>
-              <th className="text-left p-3">Patient</th>
-              <th className="text-left p-3">Pickup</th>
-              <th className="text-left p-3">Dropoff</th>
-              <th className="text-left p-3">Type</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Assigned</th>
-              <th className="text-left p-3">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {q.isLoading && <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Loading reservations…</td></tr>}
-            {q.error && <tr><td colSpan={8} className="p-6 text-center text-destructive">{(q.error as Error).message}</td></tr>}
-            {!q.isLoading && (q.data?.length ?? 0) === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No reservations in this bucket.</td></tr>
-            )}
-            {q.data?.map((r: any) => (
-              <tr
-                key={r.id}
-                onClick={() => setOpenId(r.id)}
-                className="border-t border-border cursor-pointer hover:bg-secondary/30"
-              >
-                <td className="p-3 whitespace-nowrap">{r.pickup_date} {r.pickup_time?.slice(0,5)}</td>
-                <td className="p-3">{r.patient_first_name} {r.patient_last_name}</td>
-                <td className="p-3">{r.pickup_city} {r.pickup_zip}</td>
-                <td className="p-3">{r.dropoff_city} {r.dropoff_zip ?? ""}</td>
-                <td className="p-3 capitalize">{r.transport_type ?? "—"}</td>
-                <td className="p-3"><StatusBadge status={r.status} /></td>
-                <td className="p-3 text-xs">{r.assigned_provider_id ? "Yes" : <span className="text-muted-foreground">—</span>}</td>
-                <td className="p-3 text-xs text-muted-foreground">{r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <RecordTable<any> tableId="admin-reservations" rows={q.data ?? []} rowKey={r=>r.id} onRowClick={r=>setOpenId(r.id)} rowLabel={r=>`Open reservation ${r.id.slice(0,8)}`} empty={q.isLoading?'Loading reservations…':q.error?(q.error as Error).message:'No reservations in this bucket.'} columns={[
+          {id:'date',label:'Date / Time',width:230,render:r=>`${r.pickup_date} ${r.pickup_time?.slice(0,5) ?? ''}`},
+          {id:'patient',label:'Patient',width:240,render:r=>`${r.patient_first_name} ${r.patient_last_name}`},
+          {id:'pickup',label:'Pickup',width:240,render:r=>`${r.pickup_city} ${r.pickup_zip}`},
+          {id:'dropoff',label:'Dropoff',width:240,render:r=>`${r.dropoff_city} ${r.dropoff_zip ?? ''}`},
+          {id:'type',label:'Type',render:r=>r.transport_type ?? '—'},
+          {id:'status',label:'Status',minWidth:210,width:230,wrap:true,render:r=><StatusBadge status={r.status}/>},
+          {id:'assigned',label:'Assigned',render:r=>r.assigned_provider_id?'Yes':'—'},
+          {id:'created',label:'Created',hideable:true,render:r=>r.created_at?new Date(r.created_at).toLocaleDateString():'—'},
+        ]}/>
+
       </div>
 
       {openId && (

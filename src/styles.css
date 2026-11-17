@@ -832,3 +832,55 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .portal-notification-indicator[data-notification-indicator="warning"] { background: var(--portal-indicator-warning-bg); color: var(--portal-indicator-warning-fg); }
 .portal-notification-dot { width: var(--portal-indicator-dot-size); height: var(--portal-indicator-dot-size); }
 .portal-notification-count { width: var(--portal-indicator-count-size); height: var(--portal-indicator-count-size); font-size: .6875rem !important; font-weight: 700; }
+
+/* Legibility: opt-in compact values, normal document flow everywhere else. */
+.theme-portal [data-text-wrap], .theme-portal [data-text-wrap] .portal-overflow-text {
+  white-space: normal !important; overflow: visible !important; text-overflow: clip;
+  overflow-wrap: anywhere !important; word-break: normal !important;
+}
+.theme-portal :where(.ds-field,.portal-filter-grid) { min-width: 0; }
+.theme-portal .ds-field > label { line-height: 1.4; }
+.theme-portal .portal-filter-grid {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,14rem),1fr));
+  align-items: end; gap: .75rem;
+}
+.theme-portal .portal-filter-grid > :where(input,select) { width: 100%; line-height: 1.4; }
+.theme-portal .portal-search { min-width: 0; }
+.theme-portal .portal-search > svg { width: 1rem; height: 1rem; }
+.theme-portal .portal-shortcut-card {
+  display: block; min-width: 0; padding: 1rem; border: 1px solid var(--section-edge);
+  border-radius: var(--ds-radius); background: var(--ds-surface);
+}
+.portal-shortcut-content { display: grid; align-content: start; gap: .625rem; min-height: 5rem; min-width: 0; }
+.portal-shortcut-content p { margin: 0; }
+/* Only the Settings canvas opts out of the shell's white surface. */
+.theme-portal .portal-main-module:has(.portal-settings-modules) { background: transparent; border: 0; padding: 0; }
+.theme-portal .portal-settings-modules .portal-business-section {
+  border: 1px solid var(--section-edge); background: var(--ds-surface); margin-bottom: 1.25rem;
+}
+.theme-portal .portal-settings-modules .portal-business-body { padding: var(--portal-main-padding); }
+.theme-portal .portal-settings-modules .portal-business-section .portal-business-section { border: 0; margin-bottom: 0; }
+
+/* Actual record tables only; no scheduler board or conversation-list resizing. */
+.portal-record-system { max-width: 100%; }
+.portal-record-desktop { display: none; }
+.portal-record-mobile { display: block; }
+.portal-record-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
+.theme-portal .portal-record-table { table-layout: fixed; max-width: none; border-collapse: collapse; }
+.theme-portal .portal-record-table :is(th,td) {
+  position: relative; vertical-align: top; padding: .875rem 1rem;
+  border-bottom: 1px solid var(--ds-border); min-width: 0;
+}
+.theme-portal .portal-record-table th { padding-inline-end: 1.5rem; white-space: nowrap; }
+.theme-portal .portal-record-table td > .portal-overflow-text { display: block; }
+.theme-portal .portal-record-table td[data-cell-wrap="true"] { white-space: normal; overflow-wrap: anywhere; }
+.theme-portal .portal-record-table td[data-cell-wrap="true"] .portal-overflow-text:not([data-overflow-text]):not([class*="font-mono"]) { white-space: normal !important; overflow: visible !important; }
+.theme-portal .portal-record-table :is(tr,.portal-column-resizer,.portal-record-scroll):focus-visible { outline: 2px solid var(--ds-focus); outline-offset: -2px; }
+.portal-column-resizer {
+  position: absolute; inset-block: 0; right: 0; width: 12px; cursor: col-resize; touch-action: none;
+}
+.portal-column-resizer::after { content: ''; position: absolute; inset-block: .75rem; left: 5px; width: 2px; background: var(--ds-border); }
+.portal-column-resizer:is(:hover,:focus-visible)::after { background: var(--ds-action); }
+.portal-record-actions { display: grid; justify-items: start; gap: .5rem; }
+.theme-portal .portal-record-mobile :where(p,dd) { overflow-wrap: anywhere; }
+@media (min-width: 1024px) { .portal-record-desktop { display: block; } .portal-record-mobile { display: none; } }

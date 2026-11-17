@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 
 
+import {RecordTable} from '@/components/portal/RecordTable';
+
 /**
  * Shows every registered account for a portal (provider or facility) sourced
  * directly from auth.users + member_profiles. This is the single source of
@@ -74,7 +76,7 @@ export function RegisteredMembersList({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search email, company, city…"
-          className="min-w-[260px] px-3 py-2 border border-border text-sm bg-background"
+          className="min-w-0 w-full sm:w-64 px-3 py-2 border border-border text-sm bg-background"
         />
       </div>
 
@@ -83,68 +85,21 @@ export function RegisteredMembersList({
       ) : usersQ.error ? (
         <p className="text-sm text-red-600">Could not load: {(usersQ.error as any).message}</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
-              <tr>
-                <th className="py-2 pr-3">Email</th>
-                <th className="py-2 pr-3">Company / Facility</th>
-                <th className="py-2 pr-3">City</th>
-                <th className="py-2 pr-3">State</th>
-                <th className="py-2 pr-3">ZIP</th>
-                <th className="py-2 pr-3">Dispatch Zone</th>
-                <th className="py-2 pr-3">Phone</th>
-                <th className="py-2 pr-3">Vehicles</th>
-                <th className="py-2 pr-3">Drivers</th>
-                <th className="py-2 pr-3">Status</th>
-                <th className="py-2 pr-3">Membership</th>
-                <th className="py-2 pr-3">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((u: any) => (
-                <tr key={u.id} className="border-b border-border/60">
-                  <td className="py-2 pr-3 font-mono text-xs">{u.email ?? "—"}</td>
-                  <td className="py-2 pr-3">{u.company_name ?? "—"}</td>
-                  <td className="py-2 pr-3">{u.city ?? "—"}</td>
-                  <td className="py-2 pr-3">{u.state ?? "—"}</td>
-                  <td className="py-2 pr-3 font-mono text-xs">{u.postal_code ?? "—"}</td>
-                  <td className="py-2 pr-3">
-                    {u.dispatch_zone_name
-                      ? `${u.dispatch_zone_name}${u.dispatch_zone_code ? ` (${u.dispatch_zone_code})` : ""}`
-                      : u.region ?? "—"}
-                  </td>
-                  <td className="py-2 pr-3 font-mono text-xs">{u.phone ?? "—"}</td>
-                  <td className="py-2 pr-3 text-center">{u.vehicles_count ?? 0}</td>
-                  <td className="py-2 pr-3 text-center">{u.drivers_count ?? 0}</td>
-                  <td className="py-2 pr-3 text-xs">
-                    {u.application_status === "approved" ? (
-                      <StatusPill status="Approved" />
-                    ) : u.application_status ? (
-                      <span className="inline-block px-2 py-0.5 bg-muted text-muted-foreground">{u.application_status}</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="py-2 pr-3">
-                    <MembershipControl user={u} />
-                  </td>
+        <RecordTable<any> tableId={`registered-${portal}-accounts`} rows={rows} rowKey={u=>u.id} empty={`No ${portal} accounts yet.`} columns={[
+          {id:'email',label:'Email',width:280,render:u=>u.email ?? '—'},
+          {id:'company',label:'Company / Facility',width:280,render:u=>u.company_name ?? '—'},
+          {id:'city',label:'City',render:u=>u.city ?? '—'},
+          {id:'state',label:'State',hideable:true,render:u=>u.state ?? '—'},
+          {id:'zip',label:'ZIP',hideable:true,render:u=>u.postal_code ?? '—'},
+          {id:'zone',label:'Dispatch Zone',width:240,hideable:true,render:u=>u.dispatch_zone_name?`${u.dispatch_zone_name}${u.dispatch_zone_code?` (${u.dispatch_zone_code})`:''}`:u.region ?? '—'},
+          {id:'phone',label:'Phone',width:220,hideable:true,render:u=>u.phone ?? '—'},
+          {id:'vehicles',label:'Vehicles',hideable:true,render:u=>u.vehicles_count ?? 0},
+          {id:'drivers',label:'Drivers',hideable:true,render:u=>u.drivers_count ?? 0},
+          {id:'status',label:'Status',minWidth:230,wrap:true,render:u=>u.application_status==='approved'?<StatusPill status="Approved"/>:u.application_status ?? '—'},
+          {id:'membership',label:'Membership',width:300,minWidth:270,wrap:true,render:u=><MembershipControl user={u}/>},
+          {id:'created',label:'Created',hideable:true,render:u=>u.created_at?new Date(u.created_at).toLocaleDateString():'—'},
+        ]}/>
 
-                  <td className="py-2 pr-3 text-xs text-muted-foreground">
-                    {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={12} className="py-6 text-center text-sm text-muted-foreground">
-                    No {portal} accounts yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
       )}
     </div>
   );
