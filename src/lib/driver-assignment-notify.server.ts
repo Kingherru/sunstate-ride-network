@@ -14,12 +14,13 @@ export async function notifyDriverAssignment(tripId: string) {
     const { data: prior } = await supabaseAdmin.from('trip_dispatch_events').select('id').eq('trip_id', tripId).eq('event_type', 'driver_assignment_notice').contains('payload', { key }).limit(1);
     if (prior?.length) return;
     const [{ data: driver }, { data: trip }, { data: flag }] = await Promise.all([
-      supabaseAdmin.from('drivers').select('first_name,email,phone').eq('id', event.driver_id!).maybeSingle(),
+      supabaseAdmin.from('drivers').select('first_name,email,phone,assignment_email_enabled,workspace_id').eq('id', event.driver_id!).maybeSingle(),
       supabaseAdmin.from('trips').select('id,pickup_date,scheduled_start_time,pickup_time,pickup_address,dropoff_address').eq('id', tripId).maybeSingle(),
       supabaseAdmin.from('platform_launch_flags').select('enabled').eq('key', 'driver_assignment_notifications').maybeSingle(),
     ]);
     if (!driver || !trip) return;
-    const plan = planChannels({ flagOn: Boolean(flag?.enabled), preview: false, email: driver.email, phone: driver.phone, smsConfigured: false });
+    const { data: ws } = await supabaseAdmin.from('workspaces').select('driver_assignment_email_enabled').eq('id', driver.workspace_id as string).maybeSingle();
+    const plan = planChannels({ flagOn: Boolean(flag?.enabled), preview: false, providerOn: Boolean(ws?.driver_assignment_email_enabled), driverOn: Boolean(driver.assignment_email_enabled), email: driver.email, phone: driver.phone, smsConfigured: false });
     let emailResult: string = plan.email;
     if (plan.email === 'queued') {
       const { sendTemplateEmail } = await import('@/lib/email-templates/send-email');

@@ -1412,6 +1412,7 @@ export type Database = {
       }
       drivers: {
         Row: {
+          assignment_email_enabled: boolean
           availability: Json
           contractor_pricing: Json
           created_at: string
@@ -1439,6 +1440,7 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          assignment_email_enabled?: boolean
           availability?: Json
           contractor_pricing?: Json
           created_at?: string
@@ -1466,6 +1468,7 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          assignment_email_enabled?: boolean
           availability?: Json
           contractor_pricing?: Json
           created_at?: string
@@ -9101,6 +9104,7 @@ export type Database = {
           created_by: string
           dispatch_phone: string | null
           display_name: string
+          driver_assignment_email_enabled: boolean
           id: string
           is_test_account: boolean
           legacy_backfilled: boolean
@@ -9131,6 +9135,7 @@ export type Database = {
           created_by: string
           dispatch_phone?: string | null
           display_name: string
+          driver_assignment_email_enabled?: boolean
           id?: string
           is_test_account?: boolean
           legacy_backfilled?: boolean
@@ -9161,6 +9166,7 @@ export type Database = {
           created_by?: string
           dispatch_phone?: string | null
           display_name?: string
+          driver_assignment_email_enabled?: boolean
           id?: string
           is_test_account?: boolean
           legacy_backfilled?: boolean
@@ -11018,6 +11024,10 @@ export type Database = {
           _ws: string
         }
         Returns: undefined
+      }
+      set_driver_assignment_email: {
+        Args: { _enabled: boolean; _workspace: string }
+        Returns: boolean
       }
       set_fleet_resource_status: {
         Args: { _id: string; _kind: string; _reason: string; _status: string }

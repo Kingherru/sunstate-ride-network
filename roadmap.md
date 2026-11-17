@@ -499,3 +499,7 @@ Historical evidence and blockers remain below; unfinished shared commerce is ret
 - [x] Messaging sidebar red dot includes unread website contacts; removable in-memory DEMO samples when lists are empty
 - [ ] Owner decision: Resend needs a chosen request-notification email (none exists to resend)
 - [ ] Owner decision: approve the provider-offer distribution build before Forward/Redistribute is enabled
+
+# Editable settings / email preferences continuation (from 25660e61)
+- [x] Driver assignment email: business switch (default off, owner/admin RPC, Save/Cancel, preview blocked) + per-driver opt-in (default off); both required plus valid email and server launch flag (still off). 13 notice tests pass.
+- [ ] Not started this pass: remaining editable Settings tabs, shared Edit actions, draft restore verification, Fleet/Administrators padding, financial/Dispatch/Medicaid cleanup, duplicate/wording sweep, Scheduler drop tests, responsive checks.
