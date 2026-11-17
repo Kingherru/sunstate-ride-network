@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DsButton, DsCheckbox } from '@/components/ds/controls';
+import {RecordTable} from '@/components/portal/RecordTable';
 import {
   listMyCredentials, saveCredential, deleteCredential, myCredentialStatus,
 } from "@/lib/medicaid.functions";
@@ -183,43 +184,13 @@ export function ProviderCredentialsPanel() {
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="text-left border-b border-border">
-            <tr className="text-xs uppercase text-muted-foreground">
-              <th className="py-2">Credential</th>
-              <th>Expires</th>
-              <th>Status</th>
-              <th>Document</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 && (
-              <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">No credentials on file.</td></tr>
-            )}
-            {items.map((c: any) => {
-              const days = daysUntil(c.expires_at);
-              const b = badgeFor(days);
-              return (
-                <tr key={c.id} className="border-b border-border/50">
-                  <td className="py-2">
-                    <div className="font-bold">{c.label}</div>
-                    <div className="text-xs text-muted-foreground">{c.required ? "Required" : "Informational"}</div>
-                  </td>
-                  <td>{c.expires_at ?? "—"}</td>
-                  <td><span className={`text-xs font-bold uppercase px-2 py-1 rounded-sm ${b.cls}`}>{b.label}</span></td>
-                  <td>{c.doc_path ? <span className="text-xs">📎 attached</span> : <span className="text-xs text-muted-foreground">—</span>}</td>
-                  <td className="text-right whitespace-nowrap">
-                    <button className="text-xs font-bold text-accent hover:underline mr-3" onClick={() => setEditing(c)}>Edit</button>
-                    <button className="text-xs font-bold text-red-600 hover:underline" onClick={() => confirm("Delete?") && delMut.mutate(c.id)}>Delete</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <RecordTable<any> tableId="provider-credentials" rows={items} rowKey={c=>c.id} empty="No credentials on file." columns={[
+        {id:'credential',label:'Credential',width:260,wrap:true,render:c=><><div className="font-bold">{c.label}</div><div className="text-xs text-ds-text-2">{c.required?'Required':'Informational'}</div></>},
+        {id:'expires',label:'Expires',width:170,render:c=>c.expires_at??'—'},
+        {id:'status',label:'Status',minWidth:180,width:190,wrap:true,render:c=>{const b=badgeFor(daysUntil(c.expires_at));return <span className={`inline-flex text-xs font-bold uppercase px-2 py-1 rounded-sm ${b.cls}`}>{b.label}</span>;}},
+        {id:'document',label:'Document',width:150,render:c=>c.doc_path?'📎 attached':'—'},
+        {id:'actions',label:'Actions',minWidth:150,width:170,wrap:true,render:c=><div className="portal-record-actions"><DsButton variant="ghost" size="sm" onClick={()=>setEditing(c)}>Edit</DsButton><DsButton variant="ghost" size="sm" onClick={()=>confirm('Delete?')&&delMut.mutate(c.id)}>Delete</DsButton></div>},
+      ]}/>
     </div>
   );
 }

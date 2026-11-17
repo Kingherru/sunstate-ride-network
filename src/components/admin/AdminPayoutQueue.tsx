@@ -7,6 +7,8 @@ import { adminReleaseTripPayout, listAdminPayoutQueue } from "@/lib/payouts.func
 import { formatUsd } from "@/lib/payouts";
 import { useAdminLevel } from "@/lib/use-admin-level";
 import { ReadOnlyBadge } from "@/components/ds/ReadOnlyBadge";
+import {RecordTable} from "@/components/portal/RecordTable";
+import {DsButton} from "@/components/ds/controls";
 
 type Row = {
   id: string; display_id: string | null; pickup_date: string | null;
@@ -99,32 +101,16 @@ export function AdminPayoutQueue() {
       ) : rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">No trips are awaiting payout release right now.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-              <tr>
-                <th className="text-left py-2">Trip</th>
-                <th className="text-left">Payer</th>
-                <th className="text-left">Payment</th>
-                <th className="text-right">Net payout</th>
-                <th className="text-left pl-3">Eligible</th>
-                <th className="text-left">Status / hold</th>
-                <th className="text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {rows.map((r) => {
-                const eligibleMs = r.payout_eligible_at ? Date.parse(r.payout_eligible_at) : null;
-                const eligible = !eligibleMs || eligibleMs <= Date.now();
-                const isHeld = r.payout_status === "held";
-                const net = r.provider_payout_cents ?? 0;
-                return (
-                  <tr key={r.id}>
-                    <td className="py-2 font-mono text-xs">
+        <RecordTable<Row> tableId="admin-payout-release-queue" rows={rows} rowKey={r=>r.id} columns={[
+{id:'trip',label:'Trip',width:180,minWidth:160,wrap:true,render:r=>{
+
+return <>
                       <div>{r.display_id ?? r.id.slice(0, 8)}</div>
                       <div className="text-[10px] text-muted-foreground">{r.pickup_date ?? ""}</div>
-                    </td>
-                    <td>
+                    </>;}},
+{id:'payer',label:'Payer',width:210,minWidth:190,wrap:true,render:r=>{
+
+return <>
                       {r.payout_is_medicaid ? (
                         <span className="inline-block px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase bg-primary/10 text-primary">
                           Medicaid · Net-15
@@ -132,13 +118,23 @@ export function AdminPayoutQueue() {
                       ) : (
                         <span className="text-xs text-muted-foreground">{r.payer ?? "Standard"}</span>
                       )}
-                    </td>
-                    <td>
+                    </>;}},
+{id:'payment',label:'Payment',width:190,minWidth:170,wrap:true,render:r=>{
+
+return <>
                       <StatusPill status={r.payment_status ?? "unknown"} tone={r.payment_status === "paid" ? "green" : "yellow"} />
-                    </td>
-                    <td className="text-right font-bold tabular-nums"><span className="portal-money">{formatUsd(net)}</span></td>
-                    <td className="pl-3 text-xs">{fmtWhen(r.payout_eligible_at)}</td>
-                    <td className="text-xs">
+                    </>;}},
+{id:'net',label:'Net payout',width:170,minWidth:150,wrap:true,render:r=>{
+                const net = r.provider_payout_cents ?? 0;
+return <><span className="portal-money">{formatUsd(net)}</span></>;}},
+{id:'eligible',label:'Eligible',width:170,minWidth:150,wrap:true,render:r=>{
+
+return <>{fmtWhen(r.payout_eligible_at)}</>;}},
+{id:'status',label:'Status / hold',width:260,minWidth:240,wrap:true,render:r=>{
+                const eligibleMs = r.payout_eligible_at ? Date.parse(r.payout_eligible_at) : null;
+                const eligible = !eligibleMs || eligibleMs <= Date.now();
+                const isHeld = r.payout_status === "held";
+return <>
                       {isHeld ? (
                         <div>
                           <StatusPill status="Held" tone="red" />
@@ -151,38 +147,33 @@ export function AdminPayoutQueue() {
                       ) : (
                         <span className="font-bold uppercase text-[10px] text-muted-foreground">In hold window</span>
                       )}
-                    </td>
-                    <td className="text-right">
+                    </>;}},
+{id:'actions',label:'Action',width:220,minWidth:200,wrap:true,render:r=>{
+                const eligibleMs = r.payout_eligible_at ? Date.parse(r.payout_eligible_at) : null;
+                const eligible = !eligibleMs || eligibleMs <= Date.now();
+                const isHeld = r.payout_status === "held";
+return <>
                       {readOnly ? (
                         <span className="text-[10px] font-bold uppercase text-muted-foreground">View only</span>
                       ) : (
-                        <div className="flex justify-end gap-2">
+                        <div className="portal-record-actions">
                           {eligible && !isHeld && (
-                            <button
-                              disabled={busyId === r.id}
+                            <DsButton size="sm" variant="secondary" disabled={busyId === r.id}
                               onClick={() => onRelease(r, false)}
-                              className="bg-primary text-primary-foreground font-bold text-xs uppercase px-3 py-1.5 rounded-sm hover:bg-primary/90 disabled:opacity-50"
                             >
                               Release
-                            </button>
+                            </DsButton>
                           )}
-                          <button
-                            disabled={busyId === r.id}
+                          <DsButton size="sm" variant="secondary" disabled={busyId === r.id}
                             onClick={() => onRelease(r, true)}
-                            className="bg-card border border-border font-bold text-xs uppercase px-3 py-1.5 rounded-sm hover:bg-muted/40 disabled:opacity-50"
                             title="Bypass the hold window and attempt release now"
                           >
                             Override
-                          </button>
+                          </DsButton>
                         </div>
                       )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </>;}}
+        ]}/>
       )}
     </section>
   );

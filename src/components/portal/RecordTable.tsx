@@ -3,7 +3,7 @@ import { DsCheckbox, DsButton } from '@/components/ds/controls';
 import { supabase } from '@/integrations/supabase/client';
 import { OverflowText } from './OverflowText';
 import { usePortalPreview } from './preview-data';
-import { columnWidth, readTableWidths, type TableColumnSizing } from './table-width-rules';
+import { columnWidth, fillTableWidths, readTableWidths, type TableColumnSizing } from './table-width-rules';
 
 export type RecordColumn<T> = TableColumnSizing & {
   label: string; render: (row: T) => ReactNode; hideable?: boolean; wrap?: boolean;
@@ -20,6 +20,15 @@ export function RecordTable<T>({ tableId, rows, columns, rowKey, onRowClick, row
   const [localWidths, setWidths] = useState<Record<string, number>>({});
   const [localHidden, setHidden] = useState<string[]>([]);
   const [storageKey, setStorageKey] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState(0);
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => setAvailableWidth(element.clientWidth));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const widths = externalWidths ?? localWidths;
   const hidden = externalHidden ?? localHidden;
   const current = useRef(widths); current.current = widths;
@@ -45,7 +54,9 @@ export function RecordTable<T>({ tableId, rows, columns, rowKey, onRowClick, row
     }
   }
   const visible = columns.filter(c => !c.hideable || !hidden.includes(c.id));
-  const sizes = visible.map(c => columnWidth(c, widths[c.id]));
+  const sizes = fillTableWidths(visible, widths, availableWidth);
+  const renderedSizes = useRef<Record<string, number>>({});
+  renderedSizes.current = Object.fromEntries(visible.map((c, index) => [c.id, sizes[index]]));
   const content = (column: RecordColumn<T>, row: T) => {
     const value = column.render(row);
     return column.wrap ? value : <OverflowText>{value}</OverflowText>;
@@ -60,16 +71,16 @@ export function RecordTable<T>({ tableId, rows, columns, rowKey, onRowClick, row
       const next = event.target.checked ? hidden.filter(id => id !== c.id) : [...hidden, c.id];
       setHidden(next); persist(next, widths);
     }} />)}</div></details>}
-    <div className="portal-record-desktop portal-record-scroll" tabIndex={0} role="region" aria-label={`${tableId.replaceAll('-', ' ')} records`}>
-      <table className="portal-record-table text-left" style={{ width: sizes.reduce((sum, size) => sum + size, 0) }}>
+    <div ref={scrollRef} className="portal-record-desktop portal-record-scroll" tabIndex={0} role="region" aria-label={`${tableId.replaceAll('-', ' ')} records`}>
+      <table className="portal-record-table text-left" style={{ minWidth: sizes.reduce((sum, size) => sum + size, 0) }}>
         <colgroup>{visible.map((c, index) => <col key={c.id} style={{ width: sizes[index] }} />)}</colgroup>
         <thead><tr>{visible.map(c => <th key={c.id} scope="col" className="ds-label text-ds-primary bg-ds-sky"><OverflowText>{c.label}</OverflowText>
-          <span role="separator" tabIndex={0} aria-label={`Resize ${c.label} column`} aria-orientation="vertical" aria-valuemin={c.minWidth ?? 120} aria-valuemax={Math.max(c.minWidth ?? 120, c.maxWidth ?? 520)} aria-valuenow={columnWidth(c, widths[c.id])} className="portal-column-resizer" onClick={event => event.stopPropagation()} onKeyDown={event => {
+          <span role="separator" tabIndex={0} aria-label={`Resize ${c.label} column`} aria-orientation="vertical" aria-valuemin={c.minWidth ?? 120} aria-valuemax={Math.max(c.minWidth ?? 120, c.maxWidth ?? 520)} aria-valuenow={renderedSizes.current[c.id]} className="portal-column-resizer" onClick={event => event.stopPropagation()} onKeyDown={event => {
             if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-            event.preventDefault(); resize(c, columnWidth(c, current.current[c.id]) + (event.key === 'ArrowRight' ? 10 : -10), true);
+            event.preventDefault(); resize(c, (renderedSizes.current[c.id] ?? columnWidth(c)) + (event.key === 'ArrowRight' ? 10 : -10), true);
           }} onPointerDown={event => {
             event.preventDefault(); const target = event.currentTarget; target.setPointerCapture(event.pointerId);
-            const start = event.clientX; const initial = columnWidth(c, current.current[c.id]);
+            const start = event.clientX; const initial = renderedSizes.current[c.id] ?? columnWidth(c);
             const move = (e: PointerEvent) => resize(c, initial + e.clientX - start, false);
             const end = () => { target.removeEventListener('pointermove', move); target.removeEventListener('pointerup', end); target.removeEventListener('pointercancel', end); persist(hidden, current.current); };
             target.addEventListener('pointermove', move); target.addEventListener('pointerup', end); target.addEventListener('pointercancel', end);

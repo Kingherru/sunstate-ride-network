@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listExpiringCredentials } from "@/lib/medicaid.functions";
+import {RecordTable} from '@/components/portal/RecordTable';
 
 export function ExpiringCredentialsPanel() {
   const fn = useServerFn(listExpiringCredentials);
@@ -40,26 +41,11 @@ function Section({ title, rows, tone }: { title: string; rows: any[]; tone: "red
   return (
     <div className={`border rounded-sm ${bg} p-3 space-y-2`}>
       <div className="text-xs font-bold uppercase tracking-wide">{title}</div>
-      <table className="w-full text-sm">
-        <thead className="text-xs uppercase text-muted-foreground">
-          <tr className="text-left"><th className="py-1">Provider</th><th>Credential</th><th>Expires</th></tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} className="border-t border-white/40">
-              <td className="py-1 font-bold text-foreground">
-                {r.company_name ?? "—"} <span className="font-mono text-xs text-muted-foreground">{r.provider_display_id ?? ""}</span>
-              </td>
-              <td className="text-foreground">{r.label}</td>
-              <td className="whitespace-nowrap">
-                {r.expires_at ?? "—"} {r.days_until_expiry !== null && (
-                  <span className="text-xs">({r.days_until_expiry < 0 ? `${Math.abs(r.days_until_expiry)}d overdue` : `in ${r.days_until_expiry}d`})</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <RecordTable tableId={`credential-alerts-${tone}`} rows={rows} rowKey={r=>String(r.id??`${r.provider_display_id}-${r.label}-${r.expires_at}`)} columns={[
+        {id:'provider',label:'Provider',width:260,wrap:true,render:r=><>{r.company_name??'—'} <span className="font-mono text-xs text-ds-text-2">{r.provider_display_id??''}</span></>},
+        {id:'credential',label:'Credential',width:240,render:r=>r.label},
+        {id:'expires',label:'Expires',width:230,wrap:true,render:r=><>{r.expires_at??'—'} {r.days_until_expiry!==null&&<span className="text-xs">({r.days_until_expiry<0?`${Math.abs(r.days_until_expiry)}d overdue`:`in ${r.days_until_expiry}d`})</span>}</>},
+      ]}/>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import {RecordTable} from "@/components/portal/RecordTable";
+import {DsButton} from "@/components/ds/controls";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -140,46 +142,23 @@ export function AdminReservationDetailModal({
                 Nearby active providers based on pickup ZIP {r.pickup_zip} / city {r.pickup_city}.
               </p>
 
-              <div className="border border-border rounded-sm overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-secondary/40 text-xs uppercase tracking-wide text-muted-foreground">
-                    <tr>
-                      <th className="text-left p-3">Provider</th>
-                      <th className="text-left p-3">City</th>
-                      <th className="text-left p-3">Phone</th>
-                      <th className="text-left p-3">Match</th>
-                      <th className="text-right p-3">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pq.isLoading && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Finding providers…</td></tr>}
-                    {pq.error && <tr><td colSpan={5} className="p-6 text-center text-destructive">{(pq.error as Error).message}</td></tr>}
-                    {!pq.isLoading && (pq.data?.length ?? 0) === 0 && (
-                      <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No active providers found.</td></tr>
-                    )}
-                    {pq.data?.map((p: any) => (
-                      <tr key={p.user_id} className="border-t border-border">
-                        <td className="p-3">
+              <RecordTable<any> tableId="admin-reservation-provider-matches" rows={pq.data??[]} rowKey={p=>p.user_id} empty={pq.isLoading?"Finding providers…":pq.error?(pq.error as Error).message:"No active providers found."} columns={[
+{id:'provider',label:'Provider',width:240,wrap:true,render:p=><>
                           <div className="font-medium">{p.company_name ?? "—"}</div>
                           <div className="text-xs text-muted-foreground font-mono">{p.display_id ?? p.user_id.slice(0, 8)}</div>
-                        </td>
-                        <td className="p-3">{p.city ?? "—"} {p.state ?? ""}</td>
-                        <td className="p-3">{p.phone ?? "—"}</td>
-                        <td className="p-3 text-xs">{p.reason}</td>
-                        <td className="p-3 text-right">
-                          <button
+                        </>},
+{id:'city',label:'City',width:180,wrap:false,render:p=><>{p.city ?? "—"} {p.state ?? ""}</>},
+{id:'phone',label:'Phone',width:180,wrap:false,render:p=><>{p.phone ?? "—"}</>},
+{id:'match',label:'Match',width:240,wrap:false,render:p=><>{p.reason}</>},
+{id:'actions',label:'Action',width:180,wrap:true,render:p=><>
+                          <DsButton size="sm"
                             onClick={() => pushMut.mutate(p.user_id)}
                             disabled={pushingTo === p.user_id || pushMut.isPending}
-                            className="bg-primary text-primary-foreground px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wide hover:opacity-90 disabled:opacity-50"
                           >
                             {pushingTo === p.user_id ? "Pushing…" : "Push Trip"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          </DsButton>
+                        </>}
+              ]}/>
             </div>
           </div>
         )}

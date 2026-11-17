@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getMyProviderBalanceDetailed, requestCashout, getFinSettings } from "@/lib/finance/finance.functions";
 import { formatCents } from "@/lib/finance/constants";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
+import {RecordTable} from '@/components/portal/RecordTable';
 
 /**
  * Provider Balance panel — the single money surface for providers.
@@ -100,36 +101,13 @@ export function ProviderBalancePanel() {
           <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">
             Pending line items — {pending.length}
           </div>
-          <table className="w-full text-sm">
-            <thead className="text-[10px] uppercase text-muted-foreground bg-muted/30">
-              <tr>
-                <th className="text-left px-3 py-1">Trip</th>
-                <th className="text-left px-3 py-1">Type</th>
-                <th className="text-right px-3 py-1">Amount</th>
-                <th className="text-left px-3 py-1">Available on</th>
-                <th className="text-left px-3 py-1">Hold reason</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {pending.map((p) => (
-                <tr key={p.id}>
-                  <td className="px-3 py-1 font-mono text-[11px]">{p.trip_id?.slice(0, 8) ?? "—"}</td>
-                  <td className="px-3 py-1 text-xs">
-                    {p.trip_is_medicaid
-                      ? <span className="text-amber-700 font-bold">Medicaid</span>
-                      : <span>Standard</span>}
-                  </td>
-                  <td className="px-3 py-1 text-right tabular-nums"><span className="portal-money">{formatCents(p.amount_cents)}</span></td>
-                  <td className="px-3 py-1 text-xs">
-                    {p.available_at
-                      ? new Date(p.available_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-                      : "Pending Medicaid receipt"}
-                  </td>
-                  <td className="px-3 py-1 text-[11px] text-muted-foreground">{p.release_reason ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <RecordTable tableId="provider-pending-balance" rows={pending} rowKey={p=>p.id} columns={[
+            {id:'trip',label:'Trip',width:170,render:p=>p.trip_id?.slice(0,8)??'—'},
+            {id:'type',label:'Type',width:170,render:p=>p.trip_is_medicaid?'Medicaid':'Standard'},
+            {id:'amount',label:'Amount',width:160,render:p=><span className="portal-money">{formatCents(p.amount_cents)}</span>},
+            {id:'available',label:'Available on',width:230,render:p=>p.available_at?new Date(p.available_at).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'Pending Medicaid receipt'},
+            {id:'reason',label:'Hold reason',width:250,render:p=>p.release_reason??'—'},
+          ]}/>
         </div>
       )}
 
@@ -138,26 +116,12 @@ export function ProviderBalancePanel() {
           <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">
             Available line items — {available.length}
           </div>
-          <table className="w-full text-sm">
-            <thead className="text-[10px] uppercase text-muted-foreground bg-muted/30">
-              <tr>
-                <th className="text-left px-3 py-1">Trip</th>
-                <th className="text-left px-3 py-1">Released</th>
-                <th className="text-right px-3 py-1">Amount</th>
-                <th className="text-left px-3 py-1">Note</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {available.slice(0, 25).map((a) => (
-                <tr key={a.id}>
-                  <td className="px-3 py-1 font-mono text-[11px]">{a.trip_id?.slice(0, 8) ?? "—"}</td>
-                  <td className="px-3 py-1 text-xs">{new Date(a.created_at).toLocaleDateString()}</td>
-                  <td className="px-3 py-1 text-right tabular-nums"><span className="portal-money">{formatCents(a.amount_cents)}</span></td>
-                  <td className="px-3 py-1 text-[11px] text-muted-foreground">{a.release_reason ?? a.note ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <RecordTable tableId="provider-available-balance" rows={available.slice(0,25)} rowKey={a=>a.id} columns={[
+            {id:'trip',label:'Trip',width:170,render:a=>a.trip_id?.slice(0,8)??'—'},
+            {id:'released',label:'Released',width:200,render:a=>new Date(a.created_at).toLocaleDateString()},
+            {id:'amount',label:'Amount',width:170,render:a=><span className="portal-money">{formatCents(a.amount_cents)}</span>},
+            {id:'note',label:'Note',width:280,render:a=>a.release_reason??a.note??'—'},
+          ]}/>
         </div>
       )}
 
@@ -166,29 +130,12 @@ export function ProviderBalancePanel() {
         {cashouts.length === 0 ? (
           <div className="px-4 py-6 text-sm text-muted-foreground">No cash-outs yet.</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-[10px] uppercase text-muted-foreground">
-              <tr>
-                <th className="text-left px-3 py-1">Requested</th>
-                <th className="text-right px-3 py-1">Amount</th>
-                <th className="text-left px-3 py-1">Status</th>
-                <th className="text-left px-3 py-1">Completed</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {cashouts.map((c) => (
-                <tr key={c.id}>
-                  <td className="px-3 py-1 text-xs">{new Date(c.requested_at).toLocaleString()}</td>
-                  <td className="px-3 py-1 text-right tabular-nums"><span className="portal-money">{formatCents(c.amount_cents)}</span></td>
-                  <td className="px-3 py-1 text-xs capitalize">
-                    {c.status}
-                    {c.failure_reason && <span className="ml-1 text-destructive">— {c.failure_reason}</span>}
-                  </td>
-                  <td className="px-3 py-1 text-xs">{c.completed_at ? new Date(c.completed_at).toLocaleString() : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <RecordTable tableId="provider-cashout-history" rows={cashouts} rowKey={c=>c.id} columns={[
+            {id:'requested',label:'Requested',width:230,render:c=>new Date(c.requested_at).toLocaleString()},
+            {id:'amount',label:'Amount',width:170,render:c=><span className="portal-money">{formatCents(c.amount_cents)}</span>},
+            {id:'status',label:'Status',minWidth:200,width:250,wrap:true,render:c=><>{c.status}{c.failure_reason&&<span className="ml-1 text-ds-error">— {c.failure_reason}</span>}</>},
+            {id:'completed',label:'Completed',width:230,render:c=>c.completed_at?new Date(c.completed_at).toLocaleString():'—'},
+          ]}/>
         )}
       </div>
     </section>

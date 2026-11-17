@@ -706,7 +706,7 @@
 .portal-tab[aria-selected="false"] { color: var(--ds-text-2); background: transparent; }
 .portal-tab[aria-selected="false"]:hover { color: var(--ds-primary); background: var(--ds-hover); }
 .portal-tab-badge { flex-shrink: 0; margin-inline-start: auto; font-size: .75rem; padding-inline: .375rem; background: var(--ds-sky); color: var(--ds-primary); border-radius: var(--ds-radius); }
-.portal-tabbed-layout { container-type: inline-size; display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; max-width: 100%; border: 0; border-radius: var(--ds-radius); background: var(--ds-surface); }
+.portal-tabbed-layout { container-type: inline-size; display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; max-width: 100%; border: 0; border-radius: var(--ds-radius); background: transparent; }
 .portal-tabbed-layout > .portal-tabs { padding: .75rem; border-bottom: 1px solid var(--ds-sky-border); margin: 0; align-items: stretch; }
 .portal-tabbed-content { min-width: 0; max-width: 100%; padding: 1rem; }
 .portal-tabbed-content > * + * { margin-top: 1.25rem; }
@@ -856,17 +856,21 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 /* Only the Settings canvas opts out of the shell's white surface. */
 .theme-portal .portal-main-module:has(.portal-settings-modules) { background: transparent; border: 0; padding: 0; }
 .theme-portal .portal-settings-modules .portal-business-section {
-  border: 1px solid var(--section-edge); background: var(--ds-surface); margin-bottom: 1.25rem;
+  border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-surface); margin: 0;
 }
+.portal-settings-modules .portal-tabbed-content { background: transparent; }
+.portal-settings-modules .portal-business-form > .space-y-5 { display: grid; gap: 1.25rem; }
+.portal-settings-modules .portal-business-form > .space-y-5 > * { margin-block: 0; }
+.theme-portal .portal-settings-modules .portal-business-section .portal-business-section { background: transparent; }
 .theme-portal .portal-settings-modules .portal-business-body { padding: var(--portal-main-padding); }
 .theme-portal .portal-settings-modules .portal-business-section .portal-business-section { border: 0; margin-bottom: 0; }
 
 /* Actual record tables only; no scheduler board or conversation-list resizing. */
-.portal-record-system { max-width: 100%; }
+.portal-record-system { width: 100%; min-width: 0; max-width: 100%; margin-inline: 0; }
 .portal-record-desktop { display: none; }
 .portal-record-mobile { display: block; }
 .portal-record-scroll { width: 100%; max-width: 100%; overflow-x: auto; }
-.theme-portal .portal-record-table { table-layout: fixed; max-width: none; border-collapse: collapse; }
+.theme-portal .portal-record-table { width: 100%; table-layout: fixed; max-width: none; margin-inline: 0; border-collapse: collapse; background: var(--ds-surface); }
 .theme-portal .portal-record-table :is(th,td) {
   position: relative; vertical-align: top; padding: .875rem 1rem;
   border-bottom: 1px solid var(--ds-border); min-width: 0;

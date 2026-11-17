@@ -1,3 +1,4 @@
+import {RecordTable} from "@/components/portal/RecordTable";
 import { StatusPill } from "@/components/ds/status";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -157,36 +158,17 @@ export function AdminFinanceMonitoring() {
 
       <div className="border border-border rounded-sm bg-card">
         <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">Recent runs</div>
-        <table className="w-full text-sm">
-          <thead className="text-[10px] uppercase text-muted-foreground">
-            <tr>
-              <th className="text-left px-3 py-1">Job</th>
-              <th className="text-left px-3 py-1">Started</th>
-              <th className="text-left px-3 py-1">Result</th>
-              <th className="text-right px-3 py-1">Processed</th>
-              <th className="text-right px-3 py-1">Failed</th>
-              <th className="text-left px-3 py-1">Trigger</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {(cronQ.data?.recent ?? []).map((r) => (
-              <tr key={r.id}>
-                <td className="px-3 py-1 text-xs">{JOB_LABEL[r.job_name] ?? r.job_name}</td>
-                <td className="px-3 py-1 text-xs">{fmtTs(r.started_at)}</td>
-                <td className="px-3 py-1 text-xs">
+        <RecordTable tableId="admin-finance-recent-runs" rows={cronQ.data?.recent ?? []} rowKey={r=>r.id} empty="No cron runs yet." columns={[
+{id:'job',label:'Job',width:190,wrap:false,render:r=><>{JOB_LABEL[r.job_name] ?? r.job_name}</>},
+{id:'started',label:'Started',width:190,wrap:false,render:r=><>{fmtTs(r.started_at)}</>},
+{id:'result',label:'Result',width:300,wrap:true,render:r=><>
                   <StatusPill status={r.ok ? "OK" : "Failed"} tone={r.ok ? "green" : "red"} />
                   {r.error_text && <span className="ml-2 text-[10px] text-muted-foreground">{r.error_text}</span>}
-                </td>
-                <td className="px-3 py-1 text-right tabular-nums">{r.processed}</td>
-                <td className="px-3 py-1 text-right tabular-nums">{r.failed}</td>
-                <td className="px-3 py-1 text-xs">{r.triggered_by}</td>
-              </tr>
-            ))}
-            {(cronQ.data?.recent ?? []).length === 0 && (
-              <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground text-sm">No cron runs yet.</td></tr>
-            )}
-          </tbody>
-        </table>
+                </>},
+{id:'processed',label:'Processed',width:190,wrap:false,render:r=><>{r.processed}</>},
+{id:'failed',label:'Failed',width:190,wrap:false,render:r=><>{r.failed}</>},
+{id:'trigger',label:'Trigger',width:190,wrap:false,render:r=><>{r.triggered_by}</>}
+        ]}/>
       </div>
 
       <div className="border border-border rounded-sm bg-card p-4">
@@ -228,36 +210,18 @@ export function AdminFinanceMonitoring() {
 
       <div className="border border-border rounded-sm bg-card">
         <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">Admin audit trail</div>
-        <table className="w-full text-sm">
-          <thead className="text-[10px] uppercase text-muted-foreground">
-            <tr>
-              <th className="text-left px-3 py-1">When</th>
-              <th className="text-left px-3 py-1">Action</th>
-              <th className="text-left px-3 py-1">Trip</th>
-              <th className="text-right px-3 py-1">Amount</th>
-              <th className="text-left px-3 py-1">Reason / Metadata</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {(auditQ.data ?? []).map((a) => (
-              <tr key={a.id}>
-                <td className="px-3 py-1 text-xs">{fmtTs(a.created_at)}</td>
-                <td className="px-3 py-1 text-xs font-bold">{a.action}</td>
-                <td className="px-3 py-1 font-mono text-[11px]">{a.trip_id ? a.trip_id.slice(0, 8) : "—"}</td>
-                <td className="px-3 py-1 text-right tabular-nums">{a.amount_cents != null ? formatCents(a.amount_cents) : "—"}</td>
-                <td className="px-3 py-1 text-xs text-muted-foreground max-w-md truncate">
+        <RecordTable tableId="admin-finance-audit" rows={auditQ.data ?? []} rowKey={a=>a.id} empty="No admin actions recorded yet." columns={[
+{id:'when',label:'When',width:190,wrap:false,render:a=><>{fmtTs(a.created_at)}</>},
+{id:'action',label:'Action',width:190,wrap:false,render:a=><>{a.action}</>},
+{id:'trip',label:'Trip',width:190,wrap:false,render:a=><>{a.trip_id ? a.trip_id.slice(0, 8) : "—"}</>},
+{id:'amount',label:'Amount',width:190,wrap:false,render:a=><>{a.amount_cents != null ? formatCents(a.amount_cents) : "—"}</>},
+{id:'reason',label:'Reason / Metadata',width:300,wrap:true,render:a=><>
                   {a.reason}
                   {a.metadata && Object.keys(a.metadata).length > 0 && (
                     <span className="ml-2 text-[10px]">{JSON.stringify(a.metadata)}</span>
                   )}
-                </td>
-              </tr>
-            ))}
-            {(auditQ.data ?? []).length === 0 && (
-              <tr><td colSpan={5} className="px-3 py-6 text-center text-muted-foreground text-sm">No admin actions recorded yet.</td></tr>
-            )}
-          </tbody>
-        </table>
+                </>}
+        ]}/>
       </div>
     </section>
   );

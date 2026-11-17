@@ -9,6 +9,7 @@ import {Dialog,DialogContent,DialogTitle} from '@/components/ui/dialog';
 import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-data";
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {ContactImportExport} from '@/components/portal/ContactImportExport';
+import {RecordTable} from '@/components/portal/RecordTable';
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
 export type PayerOption = { id: string; name: string };
@@ -69,42 +70,14 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
           No contacts yet. Add personal, facility, business, or payer contacts to speed up future bookings.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-sm border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-muted text-xs uppercase tracking-wide">
-              <tr>
-                <th className="px-3 py-2 text-left">Type</th>
-                <th className="px-3 py-2 text-left">Name</th>
-                <th className="px-3 py-2 text-left">Contact</th>
-                <th className="px-3 py-2 text-left">Payer</th>
-                <th className="px-3 py-2 text-left">Relationship / use</th>
-                <th className="px-3 py-2 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contacts.map((c: Contact) => (
-                <tr key={c.id} className="border-t border-border">
-                  <td className="px-3 py-2">{contactTypeLabel(c.contact_type)}</td>
-                  <td className="px-3 py-2 font-bold">
-                    {c.company_name || `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {c.email && <div>{c.email}</div>}
-                    {c.phone && <div className="text-muted-foreground">{c.phone}</div>}
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {(c as any).payer_id ? payers.find((p) => p.id === (c as any).payer_id)?.name ?? "Linked payer" : c.payer ?? "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs"><div>{c.relationship||'Not provided'}</div><div className={c.active?'text-ds-success':'text-ds-error'}>{c.active?'Active':'Disabled'}</div><div>{c.billing_allowed?'Billing coordination':'No billing authorization'} · {c.coordination_allowed?'Trip coordination':'No trip coordination'}</div></td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right">
-                    <DsButton variant="ghost" size="sm" onClick={() => setEditing(c)}>Edit</DsButton>
-                    <DsButton variant="ghost" size="sm" disabled={!c.active} onClick={() => { if (confirm("Disable this contact? Historical references remain.")) del.mutate(c.id); }}>Disable</DsButton>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <RecordTable<Contact> tableId="people-contacts" rows={contacts} rowKey={c=>c.id} columns={[
+          {id:'type',label:'Type',width:190,render:c=>contactTypeLabel(c.contact_type)},
+          {id:'name',label:'Name',width:220,render:c=>c.company_name || `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || '—'},
+          {id:'contact',label:'Contact',width:230,wrap:true,render:c=><>{c.email&&<div>{c.email}</div>}{c.phone&&<div className="text-ds-text-2">{c.phone}</div>}</>},
+          {id:'payer',label:'Payer',width:190,render:c=>(c as any).payer_id ? payers.find(p=>p.id===(c as any).payer_id)?.name ?? 'Linked payer' : c.payer ?? '—'},
+          {id:'relationship',label:'Relationship / use',width:250,wrap:true,render:c=><><div>{c.relationship||'Not provided'}</div><div className={c.active?'text-ds-success':'text-ds-error'}>{c.active?'Active':'Disabled'}</div><div>{c.billing_allowed?'Billing coordination':'No billing authorization'} · {c.coordination_allowed?'Trip coordination':'No trip coordination'}</div></>},
+          {id:'actions',label:'Actions',minWidth:170,width:190,wrap:true,render:c=><div className="portal-record-actions"><DsButton variant="ghost" size="sm" onClick={()=>setEditing(c)}>Edit</DsButton><DsButton variant="ghost" size="sm" disabled={!c.active} onClick={()=>{if(confirm('Disable this contact? Historical references remain.'))del.mutate(c.id);}}>Disable</DsButton></div>},
+        ]}/>
       )}
 
       {editing && (
