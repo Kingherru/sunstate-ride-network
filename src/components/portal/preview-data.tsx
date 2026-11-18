@@ -50,6 +50,7 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   'sign-in-preference': {value:null,options:[{to:'/portal',label:'Overview'},{to:'/portal/trips',label:'Trips'},{to:'/portal/fleet',label:'Fleet & Drivers'}]},
   'patient-driver-suggestion': {driverId:'preview-driver-2',preferredDriverId:'preview-driver-2',lastDriverId:'preview-driver-2',source:'preferred',warning:null,options:[{id:'preview-driver-2',name:'Sam Sample (Demo)'}]},
   'patient-scope': {ids:['preview-ws'],privateOnly:false},
+  'patient-owner-profile': {person:{first_name:'Demo',last_name:'Account'},workspace:{id:'preview-ws',account_type:'private_pay'},legacy:{patient_type:'another',patient_relationship:'Parent'},patient:{id:'preview-patient',first_name:'Pat',last_name:'Patient',mobility:'ambulatory'}},
   'saved-patients': [{id:'preview-patient',workspace_id:'preview-ws',first_name:'Pat',last_name:'Patient (Demo)',active:true,kind:'patient',mobility:'ambulatory',preferred_driver_id:'preview-driver-2'}],
   'portal-preferences': {interface_density:'standard',high_contrast:false,detail_columns:null},
   'connect-preparation': {state:'Not started',customerReady:false,networkReady:false,signingConfigured:false,activation:false,environment:'sandbox'},
