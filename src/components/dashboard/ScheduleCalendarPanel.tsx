@@ -8,7 +8,8 @@ import { DriverDetailModal } from "./DriverDetailModal";
 import { listVehicles } from "@/lib/fleet.functions";
 import { conflictingSlots } from "@/lib/trip-network-rules";
 import { useRequestDetails } from '@/components/portal/request-detail-context';
-import { ScheduleAssignment, RESOURCE_MIME } from '@/components/portal/ScheduleAssignment';
+import { ScheduleAssignment } from '@/components/portal/ScheduleAssignment';
+import { handleResourceDrop, RESOURCE_MIME, type AssignmentInput } from '@/lib/scheduler-drop';
 import { DsButton } from '@/components/ds/controls';
 import {scheduleTimeLabel,weeklyLocalAvailability} from "@/lib/regional-projections";
 import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
@@ -63,10 +64,12 @@ function fmtTime12(t: string | null | undefined) {
 }
 
 const UNASSIGNED = "__unassigned__";
-const resourceDropRef: { current: (r: any, raw: string) => void } = { current: () => {} };
+
 
 export function ScheduleCalendarPanel() {
   const qc = useQueryClient();
+  const preview = usePortalPreview();
+  const [demoAssignments, setDemoAssignments] = useState<Record<string, AssignmentInput>>({});
   const [date, setDate] = useState<string>(todayISO());
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [driverFilter, setDriverFilter] = useState<string>("all");
@@ -108,7 +111,10 @@ export function ScheduleCalendarPanel() {
   const workStartH = Number(workStart.slice(0, 2));
   const workEndH = Number(workEnd.slice(0, 2));
   const allDrivers = driversQ.data ?? [];
-  const allReservations = resvQ.data ?? [];
+  const allReservations = useMemo(() => (resvQ.data ?? []).map(r => {
+    const simulated = preview.active ? demoAssignments[r.id] : undefined;
+    return simulated ? { ...r, driver_id: simulated.driverId, assigned_driver_id: simulated.driverId, vehicle_id: simulated.vehicleId, scheduled_start_time: simulated.start, assignment_end_time: simulated.end } : r;
+  }), [resvQ.data, preview.active, demoAssignments]);
   const conflicts = useMemo(() => conflictingSlots(allReservations as any), [allReservations]);
 
   const statusOptions = useMemo(
@@ -207,11 +213,19 @@ export function ScheduleCalendarPanel() {
 
   const resFn = useServerFn(assignTripResources);
   const mResource = usePortalMutation({
-    mutationFn: (v: { r: any; kind: 'driver' | 'vehicle'; id: string }) => resFn({ data: { tripId: v.r.id, driverId: v.kind === 'driver' ? v.id : (v.r.assigned_driver_id ?? null), vehicleId: v.kind === 'vehicle' ? v.id : (v.r.vehicle_id ?? null), start: String(v.r.scheduled_start_time ?? v.r.pickup_time ?? '09:00').slice(0, 5), end: v.r.assignment_end_time ? String(v.r.assignment_end_time).slice(0, 5) : null } }),
+    mutationFn: (input: AssignmentInput) => resFn({ data: input }),
     onSuccess: () => { toast.success("Assignment saved"); ['day-reservations','range-reservations','my-reservations','provider-trips'].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
-    onError: (e: any) => toast.error(e?.message ?? "Assignment unavailable. Previous assignment unchanged."),
+
   });
-  resourceDropRef.current = (r: any, raw: string) => { try { const x = JSON.parse(raw); if ((x.kind === 'driver' || x.kind === 'vehicle') && typeof x.id === 'string') mResource.mutate({ r, kind: x.kind, id: x.id }); } catch { /* not a resource */ } };
+  async function resourceDrop(r: any, raw: string) {
+    if (mResource.isPending) return;
+    try {
+      await handleResourceDrop({ raw, trip: r, drivers: allDrivers, vehicles: vehiclesQ.data ?? [], preview: preview.active,
+        assign: input => mResource.mutateAsync(input),
+        simulate: input => { setDemoAssignments(previous => ({ ...previous, [input.tripId]: input })); toast.info('Preview assignment updated — nothing saved or sent.'); },
+      });
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Assignment unavailable. Previous assignment unchanged.'); }
+  }
 
   function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
     e.preventDefault();
@@ -219,6 +233,11 @@ export function ScheduleCalendarPanel() {
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
     if (!id) return;
     if (driverId && allDrivers.find((d: any) => d.id === driverId)?.status !== "active") { toast.error("This driver is inactive and cannot receive new assignments."); setDraggingId(null); return; }
+    if (preview.active) {
+      const trip = allReservations.find(r => r.id === id);
+      if (trip) { setDemoAssignments(previous => ({ ...previous, [id]: { tripId: id, driverId, vehicleId: trip.vehicle_id ?? null, start: hour, end: trip.assignment_end_time?.slice(0, 5) ?? null } })); toast.info('Preview schedule updated — nothing saved or sent.'); }
+      setDraggingId(null); return;
+    }
     mAssign.mutate({
       reservation_id: id,
       driver_id: driverId,
@@ -392,7 +411,7 @@ export function ScheduleCalendarPanel() {
         ) : (
           <div className="flex flex-wrap gap-2">
             {unassigned.map((r: any) => (
-              <ReservationChip key={r.id} r={r} onDragStart={setDraggingId} dragging={draggingId === r.id} />
+              <ReservationChip key={r.id} r={r} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId === r.id} />
             ))}
           </div>
         )}
@@ -464,7 +483,7 @@ export function ScheduleCalendarPanel() {
                         >
                           <div className="space-y-1 min-h-[54px]">
                             {cell.map((r: any) => (
-                              <ReservationChip key={r.id} r={r} onDragStart={setDraggingId} dragging={draggingId === r.id} small />
+                              <ReservationChip key={r.id} r={r} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId === r.id} small />
                             ))}
                           </div>
                         </td>
@@ -486,10 +505,11 @@ export function ScheduleCalendarPanel() {
 }
 
 function ReservationChip({
-  r, onDragStart, dragging, small = false,
+  r, onDragStart, onResourceDrop, dragging, small = false,
 }: {
   r: any;
   onDragStart: (id: string) => void;
+  onResourceDrop: (r: any, raw: string) => void;
   dragging: boolean;
   small?: boolean;
 }) {
@@ -503,7 +523,7 @@ function ReservationChip({
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}
       onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; onDragStart(r.id); }}
       onDragOver={(e) => { if (e.dataTransfer.types.includes(RESOURCE_MIME)) e.preventDefault(); }}
-      onDrop={(e) => { const raw = e.dataTransfer.getData(RESOURCE_MIME); if (!raw) return; e.preventDefault(); e.stopPropagation(); resourceDropRef.current(r, raw); }}
+      onDrop={(e) => { const raw = e.dataTransfer.getData(RESOURCE_MIME); if (!raw) return; e.preventDefault(); e.stopPropagation(); onResourceDrop(r, raw); }}
       className={`cursor-grab active:cursor-grabbing rounded-sm border border-primary/30 bg-primary/10 px-2 py-1 text-xs ${dragging ? "opacity-50" : ""}`}
       title={`${r.patient_first_name} ${r.patient_last_name}\n${r.pickup_address} → ${r.dropoff_address}`}
     >

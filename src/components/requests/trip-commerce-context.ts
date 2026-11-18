@@ -7,4 +7,6 @@ export const TripCommerceContext = createContext<{
   business: boolean;
   provider?: boolean;
   submissionBlocked: boolean;
+  draftId?: string | null;
+  onDraftSaved?: (id: string) => void;
 } | null>(null);

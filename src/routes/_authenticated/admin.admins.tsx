@@ -41,7 +41,7 @@ function AdminsPage() {
     <>
       <PageHead title="Administrators">Only you, the Master Admin, can add, change or remove regular administrators. New administrators start with no sections and no accounts.</PageHead>
       <div className="mb-4 flex items-center gap-2 ds-support text-ds-primary"><ShieldCheck className="size-4 shrink-0" aria-hidden />Master Admin identity and full access remain protected.</div>
-      <div className="portal-admin-module portal-business-form min-w-0">
+      <div className="portal-admin-list portal-business-form min-w-0">
         <aside className="min-w-0 space-y-5">
           <section aria-labelledby="current-admins" className="portal-business-section">
             <h2 id="current-admins" className={`${headCls} portal-business-heading flex items-center gap-2`}><Users className="size-4 shrink-0" aria-hidden />Administrators <span className="ds-support font-normal normal-case">({admins.length})</span></h2>
@@ -50,7 +50,7 @@ function AdminsPage() {
               <DsButton variant="ghost" className="w-full justify-start rounded-none px-4 py-3 text-left" data-admin-selected={selectedId === a.userId} aria-pressed={selectedId === a.userId} onClick={() => setSelectedId(a.userId)}>
                 <span className="min-w-0 flex-1 space-y-1">
                   <span className="ds-body block break-words font-semibold">{a.name || a.email}</span>
-                  <span className="ds-caption block break-all">{a.email}</span>
+                  {a.name && a.name !== a.email && <span className="ds-caption block break-all">{a.email}</span>}
                   <span className="ds-caption block font-mono">{a.mfnId}</span>
                   <span className="ds-caption block">{PRESET_LABELS[a.preset as AdminPreset]} · {a.scope === 'all' ? 'All eligible accounts' : a.scope === 'selected' ? `${a.workspaceIds.length} selected accounts` : 'No account access'}</span>
                   <StatusPill status={a.active ? 'Active' : 'Suspended'} tone={a.active ? 'green' : 'red'} />
@@ -121,7 +121,7 @@ function AdminCard({ admin, workspaces }: { admin: RegularAdmin; workspaces: { i
       <div className="portal-admin-editor-header grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
           <h3 id={`adm-${id}`} className="ds-subheading break-words text-ds-primary">{admin.name || admin.email}</h3>
-          <p className="ds-support break-all">{admin.email} · <span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
+          <p className="ds-support break-all">{admin.name && admin.name !== admin.email && <>{admin.email} · </>}<span className="font-mono">{admin.mfnId}</span>{admin.isTest && " · Test account"}</p>
         </div>
         <StatusPill status={active ? 'Active' : 'Suspended'} tone={active ? 'green' : 'red'} />
       </div>

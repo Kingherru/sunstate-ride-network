@@ -3,6 +3,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { DsButton, DsField, DsInput, DsCheckbox } from '@/components/ds/controls';
+import { personalSettingsInput } from '@/lib/account-settings-rules';
 import { getPersonalSettings, savePersonalSettings, saveNotificationSettings } from '@/lib/account-settings.functions';
 import { usePortalPreview, usePortalQuery, previewBlocked } from './preview-data';
 import { StatusPill } from '@/components/ds/status';
@@ -27,6 +28,12 @@ export function PersonalSettings({ section = 'all', requiredInApp = false }: { s
   const [inApp, setInApp] = useState(true);
   const [email, setEmail] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const preferences = q.data?.notification_preferences as { in_app?: boolean; email?: boolean } | null;
+  const dirty = section === 'notifications' ? inApp !== (preferences?.in_app ?? true) || email !== (preferences?.email ?? false) : firstName !== (q.data?.first_name ?? '') || lastName !== (q.data?.last_name ?? '') || phone !== (q.data?.phone ?? '');
+  const valid = section === 'notifications' || personalSettingsInput.safeParse({firstName,lastName,phone,preferences:{in_app:inApp,email}}).success;
+  function reset() { setFirst(q.data?.first_name ?? ''); setLast(q.data?.last_name ?? ''); setPhone(q.data?.phone ?? ''); setInApp(preferences?.in_app ?? true); setEmail(preferences?.email ?? false); setMessage(''); }
+
   useEffect(() => {
     if (!q.data) return;
     setFirst(q.data.first_name ?? ''); setLast(q.data.last_name ?? ''); setPhone(q.data.phone ?? '');
@@ -36,9 +43,10 @@ export function PersonalSettings({ section = 'all', requiredInApp = false }: { s
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (preview.active) { previewBlocked(); return; }
-    setBusy(true);
-    try { if(section==='notifications')await saveNotifications({data:{inApp,email}});else await save({ data: { firstName, lastName, phone, preferences: { in_app: inApp, email } } }); await qc.invalidateQueries({ queryKey: ['personal-settings'] });await qc.invalidateQueries({queryKey:['account-profile-verification']}); toast.success('Personal settings saved.'); }
-    catch { toast.error('Could not save personal settings.'); } finally { setBusy(false); }
+    if (!dirty || !valid || busy || !q.data) return;
+    setBusy(true); setMessage('');
+    try { if(section==='notifications')await saveNotifications({data:{inApp,email}});else await save({ data: { firstName, lastName, phone, preferences: { in_app: inApp, email } } }); await qc.invalidateQueries({ queryKey: ['personal-settings'] });await qc.invalidateQueries({queryKey:['account-profile-verification']}); setMessage('Changes saved.'); toast.success('Personal settings saved.'); }
+    catch { setMessage('Could not save changes. Your previous settings are unchanged.'); toast.error('Could not save personal settings.'); } finally { setBusy(false); }
   }
   return <><form onSubmit={submit} className="portal-business-form min-w-0 space-y-4">
     {q.isLoading && <p role="status" className="ds-support">Loading…</p>}
@@ -76,6 +84,6 @@ export function PersonalSettings({ section = 'all', requiredInApp = false }: { s
       <div className="border-t border-ds-border pt-3"><p className="ds-label">Required notices — always enabled</p><p className="ds-caption mt-1">Security, account access, billing and payments, disputes, deadlines, and active-trip operations cannot be disabled.</p></div>
       </fieldset>
     </section>}
-    {section !== 'status' && <div className="portal-business-actions"><DsButton disabled={preview.active || busy || !q.data} type="submit">{busy ? 'Saving…' : 'Save settings'}</DsButton></div>}
+    {section !== 'status' && <><div className="portal-business-actions"><DsButton disabled={preview.active || busy || !q.data || !dirty || !valid} type="submit">{busy ? 'Saving…' : 'Save Changes'}</DsButton><DsButton type="button" variant="ghost" disabled={busy || !dirty} onClick={reset}>Cancel</DsButton></div><p role="status" className="ds-caption">{preview.active ? 'Preview mode — nothing is saved.' : message || (dirty ? valid ? 'Unsaved changes.' : 'Enter first and last name before saving.' : '')}</p></>}
   </form>{(section==='profile'||section==='all')&&<details className="mt-6"><summary className="ds-label cursor-pointer text-ds-primary">Advanced location preferences</summary><div className="space-y-5 pt-4"><PrivateRegionalProfile/><RegionalPreference/></div></details>}</>;
 }

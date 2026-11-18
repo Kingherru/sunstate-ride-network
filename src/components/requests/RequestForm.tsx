@@ -231,7 +231,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const submit = (a: { data: RideRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const enrich = useServerFn(enrichRideRequest);
-  const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, pickupState:undefined,dropoffState:undefined, ...restoreDraftFields(initialDraft.payload, Object.keys(empty)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
+  const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, pickupState:undefined,dropoffState:undefined, ...restoreDraftFields(initialDraft.payload, Object.keys(rideRequestSchema.shape)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
   const [draftId, setDraftId] = useState(initialDraft?.id);
   const [selectedProvider, setSelectedProvider] = useState<NetworkProviderRow | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -241,11 +241,11 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   async function onSaveDraft() {
     if (preview.active) { previewBlocked(); return; }
     setSavingDraft(true);
-    try { const saved = await saveDraft({ data: { draft_id: draftId, payload: { ...form, billingContact: form.billingSource === 'custom' ? customBilling : undefined }, autosaved: false } }); setDraftId(saved.id); toast.success('Draft saved securely.'); }
+    try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, billingContact: form.billingSource === 'custom' ? customBilling : form.billingSource === 'saved' ? savedBilling ?? form.billingContact : undefined }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success('Draft saved securely.'); }
     catch { toast.error('Could not save draft.'); }
     finally { setSavingDraft(false); }
   }
-  const [returnDateManual, setReturnDateManual] = useState(false);
+  const [returnDateManual, setReturnDateManual] = useState(Boolean(initialDraft?.payload.returnDate ?? initialDraft?.payload.return_date));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{
@@ -294,7 +294,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
   const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; mobility?:string|null; patient_workspace_id?:string|null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
   const [payers, setPayers] = useState<{ id: string; name: string; email: string | null; phone: string | null; active: boolean | null }[]>([]);
-  const [patientChoice, setPatientChoice] = useState("");
+  const [patientChoice, setPatientChoice] = useState(String(initialDraft?.payload.savedPatientId ?? initialDraft?.payload.saved_patient_id ?? ''));
   const [payerNote, setPayerNote] = useState<string | null>(null);
   const [addingPayer,setAddingPayer]=useState(false);
   const [addingContact,setAddingContact]=useState(false);
@@ -544,6 +544,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
           <DeliveryRequestForm portal={portal} initialDraft={initialDraft?.payload.requestCategory === "medical_delivery" ? initialDraft : undefined} />
         ) : (
         <form noValidate onSubmit={onSubmit} className={`space-y-8 bg-ds-surface rounded-ds-sm ${portal ? '' : 'border border-ds-border p-4 sm:p-6'}`}>
+          {initialDraft && <div className="flex flex-wrap items-center justify-between gap-3"><p className="ds-caption break-all">Draft ID: {commerce?.draftId ?? draftId}</p><DsButton type="button" variant="ghost" onClick={()=>window.history.back()}>Cancel</DsButton></div>}
 
           {allowProviderSelection && !selectedProvider && form.selectedProviderWorkspaceId && <p className="ds-caption">Provider selection retained from the draft; server authorization is rechecked on submission.</p>}
           {allowProviderSelection && !onBehalf && <PatientProviderPicker value={selectedProvider} onChange={p=>{setSelectedProvider(p);upd('selectedProviderWorkspaceId',p?.workspace_id??null);}} />}
@@ -1047,7 +1048,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   const onBehalf = useContext(OnBehalfContext);
   const submit = (a: { data: DeliveryRequestInput }) =>
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
-  const [form, setForm] = useState<DeliveryRequestInput>(() => initialDraft ? { ...emptyDelivery,pickupState:undefined,dropoffState:undefined, deliveryCategory: "" as DeliveryRequestInput["deliveryCategory"], ...restoreDraftFields(initialDraft.payload, Object.keys(emptyDelivery)) } as DeliveryRequestInput : emptyDelivery);
+  const [form, setForm] = useState<DeliveryRequestInput>(() => initialDraft ? { ...emptyDelivery,pickupState:undefined,dropoffState:undefined, deliveryCategory: "" as DeliveryRequestInput["deliveryCategory"], ...restoreDraftFields(initialDraft.payload, Object.keys(deliveryRequestSchema.shape)) } as DeliveryRequestInput : emptyDelivery);
   useEffect(() => { commerce?.onChange(form); }, [form, commerce?.onChange]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -1107,12 +1108,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   return (
     <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-sm border border-ds-border bg-ds-surface p-4 sm:p-6">
       {portal && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId', id)}/>}
-      {portal && !onBehalf && <div className="flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={async () => {
-        if (preview.active) { previewBlocked(); return; }
-        setSavingDraft(true);
-        try { const saved = await saveDraft({ data: { draft_id: draftId, payload: { ...form, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); toast.success("Draft saved securely."); }
-        catch { toast.error("Could not save draft."); } finally { setSavingDraft(false); }
-      }}>{savingDraft ? "Saving…" : "Save draft"}</DsButton></div>}
+      {initialDraft && <div className="flex flex-wrap items-center justify-between gap-3"><p className="ds-caption break-all">Draft ID: {commerce?.draftId ?? draftId}</p><DsButton type="button" variant="ghost" onClick={()=>window.history.back()}>Cancel</DsButton></div>}
       <div className="rounded-ds-sm bg-ds-membership p-4 text-ds-primary">
         <p className="ds-body"><strong>Medical Delivery</strong> moves items, not passengers. Please don't include diagnoses, medication names or patient medical details.</p>
       </div>
@@ -1172,7 +1168,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
           <DsButton type="button" variant="secondary" disabled={savingDraft || submitting} className="whitespace-nowrap" onClick={async () => {
             if (preview.active) { previewBlocked(); return; }
             setSavingDraft(true);
-            try { const saved = await saveDraft({ data: { draft_id: draftId, payload: { ...form, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); toast.success("Draft saved securely."); }
+            try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success("Draft saved securely."); }
             catch { toast.error("Could not save draft."); } finally { setSavingDraft(false); }
           }}>{savingDraft ? "Saving…" : "Save draft"}</DsButton>
         )}

@@ -123,9 +123,9 @@ export function AdminDispatchPanel() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="portal-legacy-layout">
       {/* Global ID lookup */}
-      <section className="bg-card border border-border rounded-2xl p-5">
+      <section className="portal-legacy-card">
         <h2 className="text-lg font-extrabold tracking-tight mb-3">Find by System ID</h2>
         <p className="text-xs text-muted-foreground mb-3">
           Search any record: <span className="font-mono">TRP-</span> (trip),{" "}
@@ -134,7 +134,7 @@ export function AdminDispatchPanel() {
           <span className="font-mono">FAC-</span> (facility),{" "}
           <span className="font-mono">STF-</span> (staff).
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input
             placeholder="TRP-000123"
             value={tripQuery}
@@ -182,14 +182,14 @@ export function AdminDispatchPanel() {
       )}
 
       {caps.canManageZones && (
-        <section className="bg-card border border-border rounded-2xl p-5">
+        <section className="portal-legacy-card">
           <h2 className="text-lg font-extrabold tracking-tight mb-3">Bulk ZIP Import</h2>
           <BulkZipImporter zones={zones} onDone={() => qc.invalidateQueries()} />
         </section>
       )}
 
       {activeZoneId && (
-        <section className="bg-card border border-border rounded-2xl p-5">
+        <section className="portal-legacy-card">
           <h2 className="text-lg font-extrabold tracking-tight mb-3">
             Dispatcher — trips in {zones.find((z: any) => z.id === activeZoneId)?.name}
           </h2>
@@ -209,7 +209,7 @@ export function AdminDispatchPanel() {
       <ZipFallbackSection zones={zones} onAssigned={() => qc.invalidateQueries({ queryKey: ["disp"] })} canEdit={caps.canManageZones} />
 
       {/* Provider weekly schedules */}
-      <section className="bg-card border border-border rounded-2xl p-5">
+      <section className="portal-legacy-card">
 
         <h2 className="text-lg font-extrabold tracking-tight mb-3">Provider Weekly Schedules</h2>
         {schedQ.isLoading ? (
@@ -551,7 +551,7 @@ function BulkZipImporter({ zones, onDone }: { zones: any[]; onDone: () => void }
         onChange={(e) => { setRaw(e.target.value); setPreview(null); }}
         className="w-full bg-background border border-border rounded-sm px-2 py-2 text-sm font-mono"
       />
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button onClick={() => previewMut.mutate()} disabled={!raw.trim() || previewMut.isPending} className="text-sm border border-border rounded-sm px-3 py-2">
           {previewMut.isPending ? "Parsing…" : "Preview"}
         </button>
@@ -635,7 +635,7 @@ function ZipFallbackSection({
   const rows = unQ.data ?? [];
 
   return (
-    <section className="bg-card border border-border rounded-2xl p-5 space-y-5">
+    <section className="portal-legacy-card space-y-5">
       <div>
         <h2 className="text-lg font-extrabold tracking-tight mb-1">Unmapped ZIP Fallback</h2>
         <p className="text-xs text-muted-foreground">
@@ -708,7 +708,7 @@ function ZipFallbackSection({
                     <td className="py-2 pr-3 text-right">{r.facility_count}</td>
                     <td className="py-2 pr-3 text-right">{r.patient_count}</td>
                     <td className="py-2 pr-3">
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <select
                           value={selected[r.zip] ?? ""}
                           onChange={(e) => setSelected((s) => ({ ...s, [r.zip]: e.target.value }))}

@@ -1,3 +1,4 @@
+import { RecordTable } from './RecordTable';
 import { StatusPill } from '@/components/ds/status';
 import { useDetailWindow } from './use-detail-window';
 import { useMemo, useState } from 'react';
@@ -62,24 +63,20 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
 
     <div className="portal-finance-summary grid gap-3 grid-cols-2 lg:grid-cols-3">
       {GROUPS.map(g => { const items = withState.filter(x => g.states.includes(x.s)); const sum = items.reduce((a, x) => a + x.r.receiver_payout_cents, 0);
-        return <div key={g.label} className="rounded-ds border border-ds-border bg-ds-surface p-3"><p className="ds-caption uppercase text-ds-on-subtle whitespace-nowrap">{g.label}</p><p className="ds-h4 tabular-nums"><span className="portal-money">{money(sum)}</span></p><p className="ds-caption">{items.length} settlement{items.length === 1 ? '' : 's'}</p></div>; })}
+        return <div key={g.label} className="rounded-ds border border-ds-border bg-ds-surface p-3"><p className="ds-caption uppercase text-ds-on-subtle">{g.label}</p><p className="ds-h4 tabular-nums"><span className="portal-money">{money(sum)}</span></p><p className="ds-caption">{items.length} settlement{items.length === 1 ? '' : 's'}</p></div>; })}
     </div>
 
     {q.isLoading && !preview.active ? <p className="ds-body">Loading settlements…</p> : q.isError && !preview.active ? <p className="ds-body">Settlements are unavailable right now.</p> : withState.length === 0 ? <p className="ds-body">No Network settlements yet. A settlement appears when a referral is accepted.</p> :
-      <ul className="space-y-2">{withState.map(({ r, s }) => <li key={r.id}>
-        <button type="button" onClick={() => setOpen(r)} className="w-full text-left rounded-ds border border-ds-border bg-ds-surface p-3 hover:bg-ds-sky">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="ds-label">{r.mfn_id} <span className="ds-caption text-ds-on-subtle">· {r.side === 'receiver' ? `from ${r.sender_workspace_mfn_id}` : `to ${r.receiver_workspace_mfn_id}`}</span></span>
-            <StatusPill status={SETTLEMENT_LABELS[s]} tone={ALERT_STATES.includes(s) || s === 'under_review' ? 'red' : ['paid_out', 'transferred'].includes(s) ? 'green' : s === 'payment_due' ? 'yellow' : 'neutral'} />
-            {r.payout_status === 'failed' && <StatusPill status="Payout failed — needs attention" tone="red" />}
-          </div>
-          <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 ds-caption tabular-nums">
-            <span>Payout <strong><span className="portal-money">{money(r.receiver_payout_cents)}</span></strong></span>
-            <span>Pay by <strong>{when(r.payment_deadline_at)}</strong></span>
-            <span>Release {when(r.release_eligible_at)}</span>
-            <span>Hold {r.hold_days ? `${r.hold_days} days` : '—'}</span>
-          </div>
-        </button></li>)}</ul>}
+      <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Network settlement history</h2><RecordTable tableId="network-settlement-history" rows={withState} rowKey={x=>x.r.id} columns={[
+        {id:'reference',label:'Settlement',render:x=><DsButton variant="ghost" size="sm" onClick={()=>setOpen(x.r)}>{x.r.mfn_id}</DsButton>},
+        {id:'party',label:'Business',render:x=>x.r.side==='receiver'?`From ${x.r.sender_workspace_mfn_id}`:`To ${x.r.receiver_workspace_mfn_id}`},
+        {id:'status',label:'Status',render:x=><div className="space-y-1"><StatusPill status={SETTLEMENT_LABELS[x.s]} tone={ALERT_STATES.includes(x.s)||x.s==='under_review'?'red':['paid_out','transferred'].includes(x.s)?'green':x.s==='payment_due'?'yellow':'neutral'}/>{x.r.payout_status==='failed'&&<StatusPill status="Payout failed — needs attention" tone="red"/>}</div>},
+        {id:'payout',label:'Receiver payout',render:x=><span className="portal-money">{money(x.r.receiver_payout_cents)}</span>},
+        {id:'deadline',label:'Pay by',render:x=>when(x.r.payment_deadline_at)},
+        {id:'release',label:'Release eligible',render:x=>when(x.r.release_eligible_at)},
+        {id:'hold',label:'Hold',render:x=>x.r.hold_days?`${x.r.hold_days} days`:'—'},
+      ]}/></section>}
+
 
     {open && <div role="dialog" aria-modal="true" aria-label={`Settlement ${open.mfn_id}`} className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ds-on-bg/40 p-4">
       <div {...detailWindow.windowProps} className="portal-custom-dialog w-full max-w-4xl rounded-ds border border-ds-border bg-ds-surface p-5 space-y-4">

@@ -963,3 +963,25 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .theme-portal .portal-upload-confirm { display: flex; align-items: flex-start; gap: .625rem; }
 .theme-portal .portal-upload-confirm > input { margin-top: .3rem; flex: none; }
 .theme-portal .portal-upload-subcard { padding: var(--portal-card-pad); border: 1px solid var(--section-edge); border-radius: var(--ds-radius); background: var(--ds-bg); min-width: 0; }
+
+/* Independent Fleet modules and Administrator editors share the portal rhythm. */
+.theme-portal .portal-fleet-card { padding: var(--portal-card-pad); }
+.theme-portal .portal-fleet-card > div:first-child { margin: calc(-1 * var(--portal-card-pad)) calc(-1 * var(--portal-card-pad)) var(--portal-card-pad); padding: var(--portal-head-pad-y) var(--portal-card-pad); background: var(--ds-sky); border-bottom: 1px solid var(--section-edge); }
+.theme-portal .portal-fleet-card li { padding-block: var(--portal-cell-pad-y); align-items: flex-start; }
+.theme-portal .portal-admin-list { background: transparent; border: 0; padding: 0; }
+.theme-portal .portal-admin-editor { display: grid; gap: var(--portal-stack-gap); min-width: 0; }
+.theme-portal .portal-admin-editor > * { margin-block: 0; }
+.theme-portal .portal-admin-editor-header { padding: var(--portal-head-pad-y) 0; }
+.theme-portal .portal-custom-dialog { padding: var(--portal-dialog-pad); max-width: calc(100vw - 2rem); }
+.theme-portal .portal-legacy-layout { display: grid; gap: var(--portal-stack-gap); min-width: 0; }
+.theme-portal .portal-legacy-layout > * { margin-block: 0; min-width: 0; }
+.theme-portal .portal-legacy-card { background: var(--ds-surface); border: 1px solid var(--section-edge); border-radius: var(--ds-radius); padding: var(--portal-card-pad); min-width: 0; }
+.theme-portal .portal-legacy-card > :is(h2,h3):first-child { background: var(--ds-sky); margin: calc(-1 * var(--portal-card-pad)) calc(-1 * var(--portal-card-pad)) var(--portal-card-pad); padding: var(--portal-head-pad-y) var(--portal-card-pad); border-bottom: 1px solid var(--section-edge); }
+.theme-portal .portal-legacy-layout table { width: 100%; }
+.theme-portal .portal-legacy-layout :is(th,td) { padding: var(--portal-cell-pad-y) var(--portal-cell-pad-x); vertical-align: top; }
+@media (max-width: 639px) {
+  .theme-portal .portal-legacy-layout .grid-cols-2 { grid-template-columns: minmax(0,1fr); }
+  .theme-portal .portal-legacy-layout .col-span-2 { grid-column: auto; }
+  .theme-portal .portal-legacy-layout :is(.flex.items-end,.flex.items-start,.flex.items-center) { flex-wrap: wrap; }
+}
+.theme-portal .portal-admin-editor-header { padding-inline: var(--portal-card-pad); }

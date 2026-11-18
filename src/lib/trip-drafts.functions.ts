@@ -74,11 +74,12 @@ export const saveTripDraft = createServerFn({ method: "POST" })
         .update({ payload: data.payload as never, summary, autosaved: data.autosaved ?? true })
         .eq("id", data.draft_id)
         .eq("user_id", userId)
+        .is("submitted_trip_id", null)
         .select("id")
         .maybeSingle();
       if (error) throw error;
       if (row) return { id: row.id as string };
-      // Draft was deleted elsewhere — fall through and create a fresh one.
+      throw new Error('Draft not available for editing. Nothing was saved.');
     }
 
     const { data: created, error: insErr } = await supabase

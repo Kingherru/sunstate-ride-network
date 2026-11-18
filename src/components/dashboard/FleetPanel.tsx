@@ -45,7 +45,7 @@ function DriversCard() {
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (d: any) => `${d.first_name} ${d.last_name} ${d.phone ?? ""} ${d.email ?? ""}`);
 
   return (
-    <section className="portal-business-section min-w-0 py-4">
+    <section className="portal-business-section portal-fleet-card min-w-0">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">Drivers</h2>
         <DsButton variant="ghost" size="sm" onClick={() => setEditing({ status: "active" })}>+ Add driver</DsButton>
@@ -68,7 +68,7 @@ function DriversCard() {
                 </div>
                 <div className="text-xs text-muted-foreground">{d.phone}{d.license_expiry ? ` · lic exp ${d.license_expiry}` : ""}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {employmentLabel(d.employment_type)} · {availabilitySummary(d.availability)}
+                  {availabilitySummary(d.availability)}
                 </div>
                 {(d.service_capabilities?.length ?? 0) > 0 && (
                   <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -89,7 +89,7 @@ function DriversCard() {
                   </div>
                 )}
               </div>
-              <div className="text-xs flex items-center gap-3">
+              <div className="text-xs flex flex-wrap items-center gap-3">
                 <DsButton variant="ghost" size="sm" onClick={() => setEditing(d)}>{preview.active ? 'View driver' : 'Edit'}</DsButton>
                 <FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />
               </div>
@@ -513,7 +513,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
   const [filter, setFilter] = useFleetFilter();
   const rows = applyFleetFilter((q.data ?? []) as any[], filter, (v: any) => `${v.name} ${v.plate ?? ""} ${v.vehicle_type ?? ""}`);
   return (
-    <section className="portal-business-section min-w-0 py-4">
+    <section className="portal-business-section portal-fleet-card min-w-0">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 mb-3">
         <h2 className="text-lg font-extrabold tracking-tight">{primaryOnly?'Primary ambulatory vehicle':'Vehicles'}</h2>
         <DsButton variant="ghost" size="sm" onClick={() => setEditing({ vehicle_type: "sedan", status: "active",...(primaryOnly?{vehicle_category:'ambulatory',service_capabilities:['ambulatory']}:{} ) })}>+ Add vehicle</DsButton>
@@ -546,7 +546,7 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                   Driver: {drv ? `${drv.first_name} ${drv.last_name}` : "unassigned"}
                 </div>
               </div>
-              <div className="text-xs">
+              <div className="text-xs flex flex-wrap items-center gap-3">
                 <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;if(preview.active){setEditing({...v,vin:''});return;}try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>{preview.active ? 'View vehicle' : 'Edit'}</DsButton>
                 <FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />
               </div>

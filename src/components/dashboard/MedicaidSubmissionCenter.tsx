@@ -46,7 +46,7 @@ export function MedicaidSubmissionCenter({ userId: _userId }: { userId: string }
   const profile: any = profileQ.data;
 
   return (
-    <div className="space-y-6">
+    <div className="portal-legacy-layout">
       <header>
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent font-bold">Provider Portal</p>
         <h1 className="text-3xl font-extrabold tracking-tight">Medicaid Submission Center</h1>
@@ -134,7 +134,7 @@ function ContactsTab({ scope }: { scope: "mine" | "directory" }) {
   });
 
   return (
-    <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+    <div className="portal-legacy-card space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-extrabold tracking-tight">
@@ -153,7 +153,7 @@ function ContactsTab({ scope }: { scope: "mine" | "directory" }) {
       </div>
 
       {editing && canEdit && (
-        <div className="border border-border rounded-sm p-4 grid grid-cols-2 gap-3 bg-background">
+        <div className="border border-border rounded-sm p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-background">
           <Field label="Contact name *" v={editing.contact_name} on={(v) => setEditing({ ...editing, contact_name: v })} />
           <Field label="Organization" v={editing.organization ?? ""} on={(v) => setEditing({ ...editing, organization: v })} />
           <Field label="Email" v={editing.email ?? ""} on={(v) => setEditing({ ...editing, email: v })} type="email" />
@@ -234,7 +234,7 @@ function PacketsTab({ filter }: { filter: Status[] | null }) {
       </div>
 
       {creating && !filter && (
-        <div className="bg-card border border-border rounded-sm p-4 flex gap-3 items-end">
+        <div className="portal-legacy-card flex gap-3 items-end">
           <label className="flex-1 block">
             <span className="portal-label">Packet title</span>
             <input className="portal-input" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="e.g. Sunshine Health — Week of Nov 3" />
@@ -247,7 +247,7 @@ function PacketsTab({ filter }: { filter: Status[] | null }) {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left border-b border-border text-xs uppercase text-muted-foreground">
             <tr><th className="py-2 px-4">Title</th><th>Status</th><th>Reference #</th><th>Updated</th><th></th></tr>
@@ -381,7 +381,7 @@ function PacketDetail({ id, onBack }: { id: string; onBack: () => void }) {
     <div className="space-y-4">
       <button onClick={onBack} className="text-sm font-bold text-accent hover:underline">← Back to packets</button>
 
-      <div className="bg-card border border-border rounded-sm p-6 space-y-4">
+      <div className="portal-legacy-card space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Title" v={pkt.title} on={(v) => patch({ title: v })} />
           <label className="block">
@@ -410,7 +410,7 @@ function PacketDetail({ id, onBack }: { id: string; onBack: () => void }) {
         </label>
       </div>
 
-      <div className="bg-card border border-border rounded-sm p-6 space-y-3">
+      <div className="portal-legacy-card space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-extrabold tracking-tight">Packet contents</h3>
           <div className="flex gap-2">
@@ -492,7 +492,7 @@ function PacketDetail({ id, onBack }: { id: string; onBack: () => void }) {
       </div>
 
       {/* Audit history */}
-      <div className="bg-card border border-border rounded-sm p-6">
+      <div className="portal-legacy-card">
         <h3 className="text-lg font-extrabold tracking-tight mb-2">Submission history</h3>
         <p className="text-xs text-muted-foreground mb-3">
           Full audit trail of every change, upload, and status transition for this packet.
@@ -619,7 +619,7 @@ function EligibilityTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-sm p-6 space-y-3">
+      <div className="portal-legacy-card space-y-3">
         <h3 className="text-lg font-extrabold tracking-tight">Medicaid eligibility lookup</h3>
         <p className="text-sm text-muted-foreground">
           Enter a member's Medicaid number to check current eligibility before assembling a packet. Enable
@@ -636,7 +636,7 @@ function EligibilityTab() {
         </form>
       </div>
 
-      <div className="bg-card border border-border rounded-sm p-6">
+      <div className="portal-legacy-card">
         <h4 className="text-sm font-extrabold uppercase tracking-wide mb-2">Recent lookups</h4>
         <ul className="divide-y divide-border">
           {(historyQ.data ?? []).length === 0 && <li className="py-4 text-sm text-muted-foreground">No lookups yet.</li>}
