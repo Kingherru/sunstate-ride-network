@@ -26,16 +26,16 @@ function ListEditor({ label, values, onChange, placeholder }: { label: string; v
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
           placeholder={placeholder}
-          className="flex-1 border border-border rounded-sm px-3 py-2 text-sm"
+          className="min-w-0 flex-1 border border-border rounded-sm px-3 py-2 text-sm"
         />
-        <button type="button" onClick={add} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted">Add</button>
+        <DsButton type="button" size="sm" variant="secondary" onClick={add}>Add</DsButton>
       </div>
       {values.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {values.map((v) => (
             <span key={v} className="inline-flex items-center gap-1 text-xs font-bold bg-muted px-2 py-1 rounded-sm">
               {v}
-              <button type="button" onClick={() => onChange(values.filter((x) => x !== v))}><X className="size-3" /></button>
+              <DsButton type="button" size="sm" variant="ghost" aria-label={`Remove ${v}`} onClick={() => onChange(values.filter((x) => x !== v))}><X className="size-3" /></DsButton>
             </span>
           ))}
         </div>
@@ -44,7 +44,7 @@ function ListEditor({ label, values, onChange, placeholder }: { label: string; v
   );
 }
 
-export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = false }: { workspaceId: string; section?: 'all' | 'contact' | 'services' | 'areas' | 'operations'; onboarding?: boolean }) {
+export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = false, canEdit = true }: { canEdit?: boolean; workspaceId: string; section?: 'all' | 'contact' | 'services' | 'areas' | 'operations'; onboarding?: boolean }) {
   const preview = usePortalPreview();
   const qc = useQueryClient();
   const getFn = useServerFn(getMyNetworkProfile);
@@ -75,10 +75,18 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
   const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
+  const [message, setMessage] = useState('');
+  const [saved, setSaved] = useState('');
+  const current = JSON.stringify({description,serviceBase,locationCity,locationCounty,locationZip,radius,center,email,phone,serviceTypes,counties,cities,zips,hours,medicalDelivery,accepting,visible});
+  const dirty = saved !== '' && current !== saved;
+  const valid = (!locationZip || /^\d{5}$/.test(locationZip)) && (!radius || (Number.isInteger(Number(radius)) && Number(radius) >= 0)) && (!email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) && serviceTypes.length <= 30 && counties.length <= 70 && cities.length <= 100 && zips.length <= 200;
+  function reset() {
     if (!q.data?.ok) return;
     const p = q.data.profile;
-    if (!p) return;
+    if (!p) {
+      setDescription('');setServiceBase('');setLocationCity('');setLocationCounty('');setLocationZip('');setRadius('');setCenter(null);setCenterText('');setEmail('');setPhone('');setServiceTypes([]);setCounties([]);setCities([]);setZips([]);setHours('');setMedicalDelivery(false);setAccepting(true);setVisible(false);setMessage('');
+      setSaved(JSON.stringify({description:'',serviceBase:'',locationCity:'',locationCounty:'',locationZip:'',radius:'',center:null,email:'',phone:'',serviceTypes:[],counties:[],cities:[],zips:[],hours:'',medicalDelivery:false,accepting:true,visible:false}));return;
+    }
     setDescription(p.description ?? "");
     setServiceBase(p.service_base_address ?? '');
     setLocationCity(p.location_city ?? ''); setLocationCounty(p.location_county ?? ''); setLocationZip(p.location_zip ?? ''); setRadius(p.service_radius_miles == null ? '' : String(p.service_radius_miles));
@@ -94,7 +102,10 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
     setMedicalDelivery(!!p.medical_delivery);
     setAccepting(p.accepting_connections ?? true);
     setVisible(!!p.visible);
-  }, [q.data]);
+    setSaved(JSON.stringify({description:p.description??'',serviceBase:p.service_base_address??'',locationCity:p.location_city??'',locationCounty:p.location_county??'',locationZip:p.location_zip??'',radius:p.service_radius_miles==null?'':String(p.service_radius_miles),center:p.public_center_lat!=null&&p.public_center_lng!=null?{lat:p.public_center_lat,lng:p.public_center_lng}:null,email:p.business_contact_email??'',phone:p.business_contact_phone??'',serviceTypes:p.service_types??[],counties:p.counties??[],cities:p.cities??[],zips:p.zips??[],hours:p.hours??'',medicalDelivery:!!p.medical_delivery,accepting:p.accepting_connections??true,visible:!!p.visible}));
+    setMessage('');
+  }
+  useEffect(reset, [q.data]);
 
   if (q.isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (q.data && !q.data.ok) return <div className="text-sm text-destructive">{q.data.error}</div>;
@@ -105,7 +116,8 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
     if (preview.active) { previewBlocked(); return; }
-    setBusy(true);
+    if (!canEdit || !q.data?.ok || !dirty || !valid || busy) return;
+    setBusy(true); setMessage('');
     try {
       const r = await saveFn({
         data: {
@@ -126,22 +138,22 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
           visible,
         },
       });
-      if (!r.ok) { toast.error(r.error); return; }
-      toast.success("Network profile saved");
+      if (!r.ok) { setMessage(r.error); toast.error(r.error); return; }
+      setSaved(current); setMessage('Changes saved.'); toast.success("Network profile saved");
       qc.invalidateQueries({ queryKey: ["my-network-profile", workspaceId] });
       qc.invalidateQueries({ queryKey: ["network-providers"] });
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to save");
+      setMessage('Could not save. Previously saved settings are unchanged.'); toast.error(e.message ?? "Failed to save");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="space-y-5"><form onSubmit={onSave} className="space-y-6 max-w-3xl">
+    <div className="space-y-5"><fieldset disabled={!canEdit || busy} className="min-w-0"><form onSubmit={onSave} className="portal-business-form min-w-0 space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="ds-subheading uppercase text-ds-primary">{section === 'contact' ? 'Contact information' : section === 'services' ? 'Services & operating hours' : section === 'areas' ? 'Service areas' : section === 'operations' ? 'Services, hours & areas' : 'Network profile'}</h2>
+          <h2 className="ds-subheading uppercase text-ds-primary">{section === 'contact' ? 'Contact information' : section === 'services' ? 'Services & operating hours' : section === 'areas' ? 'Service areas' : section === 'operations' ? 'Operating details' : 'Network profile'}</h2>
           <p className="text-sm text-muted-foreground">Controls what other accounts see about you in the Provider Network directory.</p>
         </div>
         <span className={`ds-caption px-2 py-1 rounded-ds-sm border inline-flex items-center gap-1 ${verified ? 'border-ds-sky-border bg-ds-sky text-ds-primary' : 'border-ds-border text-ds-text-2'}`}>
@@ -169,7 +181,7 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
       </div>}
 
       {(section === 'all' || section === 'services' || section === 'operations') && <fieldset><legend className="ds-label mb-3">Services offered — Required for verification</legend><div className="flex flex-wrap gap-4">{[['ambulatory', 'Ambulatory'], ['wheelchair', 'Wheelchair'], ['stretcher', 'Gurney / Stretcher']].map(([value, label]) => <label key={value} className="ds-body flex items-center gap-2"><input type="checkbox" disabled={!!contractor && value!=='ambulatory'} checked={serviceTypes.includes(value)} onChange={e => setServiceTypes(prev => e.target.checked ? [...prev, value] : prev.filter(v => v !== value))} />{label}</label>)}</div>{serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).length > 0 && <p className="ds-caption mt-2">Other existing services: {serviceTypes.filter(value => !['ambulatory','wheelchair','stretcher'].includes(value)).join(', ')}</p>}</fieldset>}
-      {(section === 'all' || section === 'areas' || section === 'operations') && <>
+      {(section === 'all' || section === 'areas') && <>
       <DsField label="Private service-base location" hint="Not shown in the directory; controlled distance offers retain verified-base requirements.">{p=><DsInput {...p} maxLength={300} value={serviceBase} onChange={e=>setServiceBase(e.target.value)} />}</DsField>
       <div className="grid gap-4 sm:grid-cols-2">
         <DsField label="City">{p => <DsInput {...p} value={locationCity} maxLength={100} onChange={e => setLocationCity(e.target.value)} />}</DsField>
@@ -200,9 +212,8 @@ export function NetworkProfileForm({ workspaceId, section = 'all', onboarding = 
         <p className="ds-caption">Search visibility is managed separately in Settings → Services, Areas & Pricing → Business identity & search visibility.</p>
       </div>}
 
-      <DsButton type="submit" size="sm" disabled={busy || preview.active}>
-        {busy ? "Saving…" : "Save network profile"}
-      </DsButton>
-    </form>{onboarding&&<NearbySettings workspaceId={workspaceId} onboarding/>}</div>
+      {canEdit && <div className="portal-business-actions"><DsButton type="submit" size="sm" disabled={busy || preview.active || !q.data?.ok || !dirty || !valid}>{busy ? 'Saving…' : 'Save Changes'}</DsButton><DsButton type="button" variant="ghost" disabled={busy || !dirty} onClick={reset}>Cancel</DsButton></div>}
+      <p role="status" className="ds-caption">{!canEdit ? 'Read-only service information.' : preview.active ? 'Preview mode — nothing is saved.' : message || (dirty ? valid ? 'Unsaved changes.' : 'Review ZIP, email, radius and service fields.' : '')}</p>
+    </form></fieldset>{onboarding&&<NearbySettings workspaceId={workspaceId} onboarding/>}</div>
   );
 }

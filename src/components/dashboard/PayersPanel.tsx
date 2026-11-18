@@ -8,6 +8,7 @@ import {DsButton} from '@/components/ds/controls';
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {PayerAgreement} from '@/components/portal/PayerAgreement';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {useRecordEditAccess} from '@/components/portal/use-record-edit-access';
 
 type Payer = Awaited<ReturnType<typeof listMyPayers>>[number];
 
@@ -20,6 +21,7 @@ const VEHICLE_LABELS: Record<string, string> = {
 const maskEin = (ein: string | null) => (ein ? `•••••${ein.replace(/\D/g, "").slice(-4) || ein.slice(-4)}` : null);
 
 export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
+  const canEdit = useRecordEditAccess('payers');
   const preview=usePortalPreview();const [sample,setSample]=useState(false);
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["my-payers"], queryFn: () => listMyPayers(),staleTime:0,gcTime:0 });
@@ -70,14 +72,14 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
                 )}
               </div>
               <div className="portal-toolbar text-sm font-bold">
-                {p.workspace_id&&<DsButton variant="ghost" size="sm" onClick={()=>setAgreement(p)}>Rate agreement</DsButton>}
-                <DsButton variant="ghost" size="sm" onClick={() => setEditing(p)}>Edit</DsButton>
-                <DsButton variant="ghost" size="sm"
+                {p.workspace_id&&canEdit(p.id)&&p.active&&<DsButton variant="ghost" size="sm" onClick={()=>setAgreement(p)}>Rate agreement</DsButton>}
+                {canEdit(p.id)&&p.active&&<DsButton variant="ghost" size="sm" onClick={() => setEditing(p)}>Edit</DsButton>}
+                {canEdit(p.id)&&<DsButton variant="ghost" size="sm"
                   onClick={() => { if (confirm(`Remove payer "${p.name}"?`)) del.mutate(p.id); }}
                   className="text-ds-error"
                 >
                   Remove
-                </DsButton>
+                </DsButton>}
               </div>
             </div>
           </li>
@@ -87,7 +89,7 @@ export function PayersPanel({ contacts = [] }: { contacts?: ContactOption[] }) {
         )}
       </ul>
 
-      {editing && (
+      {editing && (!editing.id || canEdit(editing.id)) && (
         <PayerDialog
           payer={editing}
           contacts={contacts}

@@ -62,6 +62,7 @@ export function PatientManagement() {
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [editing, setEditing] = useState<Record<string, any> | null>(null);
+  const [savedForm, setSavedForm] = useState('');
   const [busy, setBusy] = useState(false);
   const [statusFor, setStatusFor] = useState<{ id: string; active: boolean } | null>(null);
   const [reason, setReason] = useState('');
@@ -78,7 +79,7 @@ export function PatientManagement() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (preview.active) return previewBlocked();
-    if (!editing) return;
+    if (!editing || busy || (editing.id && !all.some(row => row.id === editing.id && row.active !== false))) return;
     setBusy(true);
     try {
       const payload = toPayload(editing) as any;
@@ -112,7 +113,7 @@ export function PatientManagement() {
           {g.title.startsWith('Accessibility') && <DsCheckbox label="Oxygen required" checked={!!editing.oxygen_required} onChange={e => setEditing({ ...editing, oxygen_required: e.target.checked })} />}
           {g.title.startsWith('Coverage') && <DsField label="Default payer">{p => <DsSelect {...p} value={editing.default_payer_id ?? ''} onChange={e => setEditing({ ...editing, default_payer_id: e.target.value })}><option value="">No default payer</option>{payerRows.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</DsSelect>}</DsField>}
         </div></fieldset>)}
-      <div className="flex gap-2"><DsButton type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save patient'}</DsButton><DsButton type="button" variant="ghost" onClick={() => setEditing(null)}>Cancel</DsButton></div>
+      <div className="portal-business-actions"><DsButton type="submit" disabled={preview.active || busy || !editing.first_name?.trim() || !editing.last_name?.trim() || (editing.id && JSON.stringify(toPayload(editing)) === savedForm)}>{busy ? 'Saving…' : 'Save Changes'}</DsButton><DsButton type="button" variant="ghost" disabled={busy} onClick={() => setEditing(null)}>Cancel</DsButton></div>
     </form>
   );
 
@@ -128,7 +129,7 @@ export function PatientManagement() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div><p className="ds-body font-semibold">{p.first_name} {p.last_name}{p.active === false && <span className="ds-support"> · Deactivated</span>}</p><p className="ds-caption font-mono">{p.mfn_id ?? ''}</p></div>
             <div className="flex flex-wrap gap-2">
-              {p.active !== false && <DsButton size="sm" variant="secondary" onClick={() => setEditing({ ...p })}>Open / edit</DsButton>}
+              {p.active !== false && <DsButton size="sm" variant="ghost" onClick={() => {setSavedForm(JSON.stringify(toPayload(p)));setEditing({ ...p });}}>Edit</DsButton>}
               {!privateOnly && <DsButton size="sm" variant="ghost" onClick={() => { setStatusFor({ id: p.id, active: p.active === false }); setReason(''); }}>{p.active === false ? 'Restore' : 'Deactivate'}</DsButton>}
               <DsButton size="sm" variant="ghost" onClick={() => openHistory(p.id)}>History</DsButton>
             </div>

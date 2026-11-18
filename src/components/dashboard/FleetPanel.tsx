@@ -1,3 +1,4 @@
+import {useRecordEditAccess} from '@/components/portal/use-record-edit-access';
 import { validEmail } from '@/lib/driver-assignment-notice';
 import { DetailSection } from '@/components/portal/DetailSection';
 import { DetailOverlayFrame } from '@/components/portal/DetailOverlayFrame';
@@ -35,6 +36,7 @@ export function FleetPanel({ only, primaryOnly=false }: { only?: "drivers" | "ve
 }
 
 function DriversCard() {
+  const canEdit=useRecordEditAccess('drivers');
   const preview = usePortalPreview();
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["drivers"], queryFn: () => listDrivers() });
@@ -90,8 +92,8 @@ function DriversCard() {
                 )}
               </div>
               <div className="text-xs flex flex-wrap items-center gap-3">
-                <DsButton variant="ghost" size="sm" onClick={() => setEditing(d)}>{preview.active ? 'View driver' : 'Edit'}</DsButton>
-                <FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />
+                {canEdit(d.id)&&<DsButton variant="ghost" size="sm" onClick={() => setEditing(d)}>Edit</DsButton>}
+                {canEdit(d.id)&&<FleetStatusControl kind="driver" id={d.id} status={d.status} name={`${d.first_name} ${d.last_name}`} />}
               </div>
             </li>
             );
@@ -505,6 +507,7 @@ function WeekScheduleDialog({ d, onClose }: { d: any; onClose: () => void }) {
 }
 
 function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
+  const canEdit=useRecordEditAccess('vehicles');
   const preview=usePortalPreview();
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
@@ -547,8 +550,8 @@ function VehiclesCard({primaryOnly=false}:{primaryOnly?:boolean}) {
                 </div>
               </div>
               <div className="text-xs flex flex-wrap items-center gap-3">
-                <DsButton variant="ghost" size="sm" onClick={async()=>{if(!v.id)return;if(preview.active){setEditing({...v,vin:''});return;}try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>{preview.active ? 'View vehicle' : 'Edit'}</DsButton>
-                <FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />
+                <DsButton variant="ghost" size="sm" disabled={!canEdit(v.id)} onClick={async()=>{if(!v.id||!canEdit(v.id))return;if(preview.active){setEditing({...v,vin:''});return;}try{setEditing(await getVehicleForEditing({data:{id:v.id}}));}catch{toast.error('Authorized vehicle editing required.');}}}>{canEdit(v.id)?'Edit':'Read only'}</DsButton>
+                {canEdit(v.id)&&<FleetStatusControl kind="vehicle" id={v.id} status={v.status} name={v.name} />}
               </div>
             </li>
             );

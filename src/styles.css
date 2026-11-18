@@ -985,3 +985,18 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
   .theme-portal .portal-legacy-layout :is(.flex.items-end,.flex.items-start,.flex.items-center) { flex-wrap: wrap; }
 }
 .theme-portal .portal-admin-editor-header { padding-inline: var(--portal-card-pad); }
+
+/* Existing subject editors: clear canvas gaps, shared action padding, no white parent sheets. */
+.theme-portal .portal-business-section > .portal-business-actions { padding: var(--portal-card-pad); }
+.theme-portal .portal-business-section > fieldset.portal-business-body { border: 0; border-radius: 0; }
+.theme-portal .portal-settings-modules form.portal-business-section { gap: 0; }
+.theme-portal .portal-settings-modules form.portal-business-section > .portal-business-body { padding: var(--portal-card-pad); }
+.theme-portal .portal-settings-modules fieldset:has(> form.portal-business-form) { border: 0; background: transparent; padding: 0; }
+.theme-portal .portal-settings-modules .portal-business-form > fieldset.space-y-5 { border: 0; background: transparent; padding: 0; }
+.theme-portal .portal-business-heading > h2 { min-width: 0; }
+.theme-portal .portal-business-heading > button { flex-shrink: 0; }
+
+.theme-portal form.portal-business-form > .portal-business-actions + p[role="status"] { min-height: 1.5rem; margin: 0; padding-block: .5rem; position: static; }
+.theme-portal form.portal-business-form > .portal-business-actions { position: relative; z-index: 1; }
+.theme-portal .portal-legacy-card:has(> button) { grid-template-columns: minmax(0,1fr); }
+.theme-portal .portal-business-body > button + button { margin-inline-start: .75rem; }

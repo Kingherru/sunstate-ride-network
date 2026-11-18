@@ -47,16 +47,16 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
   });
   const cs = connectState(preview.active ? null : (cq.data as never) ?? null);
 
-  return <div className="space-y-5">
+  return <div className="portal-legacy-layout">
     {preview.active && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Preview only — no information was saved, sent or charged.</p>}
-    <p className="ds-body rounded-ds border border-ds-border bg-ds-sky p-3 text-ds-primary">This is a settlement ledger, not a bank or escrow account. Funds stay in the platform settlement flow until the hold ends; held settlements cannot be withdrawn or accelerated. Hold: Super Verified {HOLD_DAYS.super} days, all others {HOLD_DAYS.standard} days, starting after sender payment succeeds with no open dispute. {preview.active && <strong> Preview only — demo settlements.</strong>}</p>
+    <section className="portal-legacy-card"><h2 className="ds-subheading uppercase">Settlement holds & release evidence</h2><p className="ds-support">This is a settlement ledger, not a bank or escrow account. Held settlements cannot be withdrawn or accelerated. Hold: Super Verified {HOLD_DAYS.super} days, all others {HOLD_DAYS.standard} days, starting after sender payment succeeds with no open dispute. Financial execution remains off. {preview.active && <strong> Preview only — demo settlements.</strong>}</p></section>
 
-    {!admin && <div className="flex flex-wrap items-center justify-between gap-3 rounded-ds border border-ds-border bg-ds-surface p-4">
+    {!admin && <div className="portal-legacy-card grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
       <div><p className="ds-label uppercase">Stripe Connect payouts (test mode)</p><p className="ds-body">Status: <strong>{CONNECT_LABELS[cs]}</strong>. Bank and identity details are entered only on Stripe’s secure pages. Standard bank payout is the default.</p><p className="ds-caption text-ds-on-subtle">Instant Payout — coming later; its fee would be paid by the receiving provider.</p></div>
       <DsButton disabled={preview.active || cs === 'enabled'} onClick={async () => { const r = await onboard(); if (r.ok) window.location.href = r.url; else toast.error(r.error); }}>{cs === 'not_started' ? 'Start onboarding' : 'Manage on Stripe'}</DsButton>
     </div>}
 
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="portal-legacy-card grid gap-3 sm:grid-cols-2">
       <DsField label="From">{(fp) => <DsInput {...fp} type="date" value={from} onChange={e => setFrom(e.target.value)} />}</DsField>
       <DsField label="To">{(fp) => <DsInput {...fp} type="date" value={to} onChange={e => setTo(e.target.value)} />}</DsField>
     </div>
@@ -67,7 +67,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
     </div>
 
     {q.isLoading && !preview.active ? <p className="ds-body">Loading settlements…</p> : q.isError && !preview.active ? <p className="ds-body">Settlements are unavailable right now.</p> : withState.length === 0 ? <p className="ds-body">No Network settlements yet. A settlement appears when a referral is accepted.</p> :
-      <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Network settlement history</h2><RecordTable tableId="network-settlement-history" rows={withState} rowKey={x=>x.r.id} columns={[
+      <section className="portal-business-section"><h2 className="portal-business-heading ds-subheading uppercase">Network settlement history</h2><div className="portal-business-body"><RecordTable tableId="network-settlement-history" rows={withState} rowKey={x=>x.r.id} columns={[
         {id:'reference',label:'Settlement',render:x=><DsButton variant="ghost" size="sm" onClick={()=>setOpen(x.r)}>{x.r.mfn_id}</DsButton>},
         {id:'party',label:'Business',render:x=>x.r.side==='receiver'?`From ${x.r.sender_workspace_mfn_id}`:`To ${x.r.receiver_workspace_mfn_id}`},
         {id:'status',label:'Status',render:x=><div className="space-y-1"><StatusPill status={SETTLEMENT_LABELS[x.s]} tone={ALERT_STATES.includes(x.s)||x.s==='under_review'?'red':['paid_out','transferred'].includes(x.s)?'green':x.s==='payment_due'?'yellow':'neutral'}/>{x.r.payout_status==='failed'&&<StatusPill status="Payout failed — needs attention" tone="red"/>}</div>},
@@ -75,7 +75,7 @@ export function NetworkSettlements({ admin = false }: { admin?: boolean }) {
         {id:'deadline',label:'Pay by',render:x=>when(x.r.payment_deadline_at)},
         {id:'release',label:'Release eligible',render:x=>when(x.r.release_eligible_at)},
         {id:'hold',label:'Hold',render:x=>x.r.hold_days?`${x.r.hold_days} days`:'—'},
-      ]}/></section>}
+      ]}/></div></section>}
 
 
     {open && <div role="dialog" aria-modal="true" aria-label={`Settlement ${open.mfn_id}`} className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ds-on-bg/40 p-4">

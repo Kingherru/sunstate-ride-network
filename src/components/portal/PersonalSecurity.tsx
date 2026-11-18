@@ -113,7 +113,7 @@ export function PersonalSecurity({ email, securityOnly = false, inline = false }
           {err && <p role="alert"><StatusPill status={err} tone="red" className="whitespace-normal" /></p>}
           {ok && <p role="status"><StatusPill status={ok} tone="green" /></p>}
           <p className="ds-caption">At least 8 characters. Your current password is verified before any change.</p>
-          <div className="portal-business-actions"><DsButton type="submit" disabled={busy}>{busy ? "Updating…" : "Update password"}</DsButton></div>
+          <div className="portal-business-actions"><DsButton type="submit" disabled={preview.active || busy || !currentPw || pw.length < 8 || pw !== pw2}>{busy ? "Saving…" : "Save Changes"}</DsButton><DsButton type="button" variant="ghost" disabled={busy || (!currentPw && !pw && !pw2)} onClick={() => {setCurrentPw('');setPw('');setPw2('');setErr(null);setOk(null);}}>Cancel</DsButton></div>
         </form>
         <section className={`${card} space-y-3`}>
           <H icon={SendHorizonal}>Password reset link</H>

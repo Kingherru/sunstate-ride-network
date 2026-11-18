@@ -51,7 +51,7 @@ export function ProviderBalancePanel() {
         <p className="text-sm text-muted-foreground">
           Earnings are held for {settingsQ.data?.standard_hold_days ?? 3} days after trip validation
           (Net {settingsQ.data?.medicaid_net_business_days ?? 15} business days for Medicaid), then moved
-          to your available balance. Cash out anytime.
+          to the recorded available balance. Release and cash-out execution remain off.
         </p>
       </header>
 
@@ -59,12 +59,12 @@ export function ProviderBalancePanel() {
         <div className="border border-border rounded-sm p-4 bg-card">
           <div className="text-xs font-bold uppercase text-muted-foreground">Available</div>
           <div className="text-3xl font-black tabular-nums text-emerald-700"><span className="portal-money">{formatCents(balance.available_cents)}</span></div>
-          <div className="text-[11px] text-muted-foreground mt-1">Ready to cash out</div>
+          <div className="text-[11px] text-muted-foreground mt-1">Recorded available amount</div>
         </div>
         <div className="border border-border rounded-sm p-4 bg-card">
           <div className="text-xs font-bold uppercase text-muted-foreground">Pending (holding)</div>
           <div className="text-3xl font-black tabular-nums text-amber-700"><span className="portal-money">{formatCents(balance.pending_cents)}</span></div>
-          <div className="text-[11px] text-muted-foreground mt-1">Waiting for hold window to end</div>
+          <div className="text-[11px] text-muted-foreground mt-1">Hold and receipt evidence required</div>
         </div>
         <div className="border border-border rounded-sm p-4 bg-card">
           <div className="text-xs font-bold uppercase text-muted-foreground">Lifetime paid out</div>
@@ -73,37 +73,16 @@ export function ProviderBalancePanel() {
         </div>
       </div>
 
-      <div className="border border-border rounded-sm p-4 bg-card">
-        <h3 className="font-bold mb-2">Cash out</h3>
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="text-sm">
-            <span className="block text-xs font-bold uppercase text-muted-foreground mb-1">Amount (USD)</span>
-            <input type="number" min="1" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00" className="w-40 border border-input bg-background rounded-sm px-3 py-1.5" />
-          </label>
-          <button type="button"
-            onClick={() => setAmount(((balance.available_cents ?? 0) / 100).toFixed(2))}
-            className="portal-secondary-control text-xs font-bold uppercase px-2 py-1 rounded-sm border border-border">Max</button>
-          <button type="button" disabled={busy || (balance.available_cents ?? 0) < 100}
-            onClick={submitCashout}
-            className="text-xs font-bold uppercase px-4 py-2 rounded-sm bg-primary text-primary-foreground disabled:opacity-50">
-            {busy ? "Requesting…" : "Cash out"}
-          </button>
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Minimum $1.00. Transfers go to your connected bank via Stripe within 1–2 business days.
-          You'll receive an email confirmation when your cash-out completes.
-        </p>
-      </div>
+      <section className="portal-business-section"><h3 className="portal-business-heading ds-label">Transfers & releases</h3><div className="portal-business-body"><p className="ds-support">Financial execution is off. Recorded availability does not authorize a transfer or release.</p></div></section>
 
       {pending.length > 0 && (
-        <div className="border border-border rounded-sm bg-card">
-          <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">
+        <div className="portal-business-section">
+          <div className="portal-business-heading ds-label">
             Pending line items — {pending.length}
           </div>
           <RecordTable tableId="provider-pending-balance" rows={pending} rowKey={p=>p.id} columns={[
             {id:'trip',label:'Trip',width:170,render:p=>p.trip_id?.slice(0,8)??'—'},
-            {id:'type',label:'Type',width:170,render:p=>p.trip_is_medicaid?'Medicaid':'Standard'},
+            {id:'type',label:'Type',width:170,render:p=>p.trip_is_medicaid?'Medicaid':'Transportation — payer not identified'},
             {id:'amount',label:'Amount',width:160,render:p=><span className="portal-money">{formatCents(p.amount_cents)}</span>},
             {id:'available',label:'Available on',width:230,render:p=>p.available_at?new Date(p.available_at).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'Pending Medicaid receipt'},
             {id:'reason',label:'Hold reason',width:250,render:p=>p.release_reason??'—'},
@@ -112,8 +91,8 @@ export function ProviderBalancePanel() {
       )}
 
       {available.length > 0 && (
-        <div className="border border-border rounded-sm bg-card">
-          <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">
+        <div className="portal-business-section">
+          <div className="portal-business-heading ds-label">
             Available line items — {available.length}
           </div>
           <RecordTable tableId="provider-available-balance" rows={available.slice(0,25)} rowKey={a=>a.id} columns={[
@@ -125,8 +104,8 @@ export function ProviderBalancePanel() {
         </div>
       )}
 
-      <div className="border border-border rounded-sm bg-card">
-        <div className="px-4 py-2 text-xs font-bold uppercase border-b border-border">Cash-out history</div>
+      <div className="portal-business-section">
+        <div className="portal-business-heading ds-label">Cash-out history</div>
         {cashouts.length === 0 ? (
           <div className="px-4 py-6 text-sm text-muted-foreground">No cash-outs yet.</div>
         ) : (

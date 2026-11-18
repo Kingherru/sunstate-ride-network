@@ -10,6 +10,7 @@ import { usePortalMutation, usePortalQuery } from "@/components/portal/preview-d
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 import {ContactImportExport} from '@/components/portal/ContactImportExport';
 import {RecordTable} from '@/components/portal/RecordTable';
+import {useRecordEditAccess} from '@/components/portal/use-record-edit-access';
 
 type Contact = Awaited<ReturnType<typeof listContacts>>[number];
 export type PayerOption = { id: string; name: string };
@@ -28,6 +29,7 @@ const contactTypeLabel = (t: string | null) =>
   CONTACT_TYPE_LABELS[t ?? ""] ?? (t ? t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "—");
 
 export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
+  const canEdit = useRecordEditAccess('contacts');
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ["contacts"], queryFn: () => listContacts(),staleTime:0,gcTime:0 });
   const [editing, setEditing] = useState<Partial<Contact> | null>(null);
@@ -76,11 +78,11 @@ export function ContactsPanel({ payers = [] }: { payers?: PayerOption[] }) {
           {id:'contact',label:'Contact',width:230,wrap:true,render:c=><>{c.email&&<div>{c.email}</div>}{c.phone&&<div className="text-ds-text-2">{c.phone}</div>}</>},
           {id:'payer',label:'Payer',width:190,render:c=>(c as any).payer_id ? payers.find(p=>p.id===(c as any).payer_id)?.name ?? 'Linked payer' : c.payer ?? '—'},
           {id:'relationship',label:'Relationship / use',width:250,wrap:true,render:c=><><div>{c.relationship||'Not provided'}</div><div className={c.active?'text-ds-success':'text-ds-error'}>{c.active?'Active':'Disabled'}</div><div>{c.billing_allowed?'Billing coordination':'No billing authorization'} · {c.coordination_allowed?'Trip coordination':'No trip coordination'}</div></>},
-          {id:'actions',label:'Actions',minWidth:170,width:190,wrap:true,render:c=><div className="portal-record-actions"><DsButton variant="ghost" size="sm" onClick={()=>setEditing(c)}>Edit</DsButton><DsButton variant="ghost" size="sm" disabled={!c.active} onClick={()=>{if(confirm('Disable this contact? Historical references remain.'))del.mutate(c.id);}}>Disable</DsButton></div>},
+          {id:'actions',label:'Actions',minWidth:170,width:190,wrap:true,render:c=>canEdit(c.id)?<div className="portal-record-actions">{c.active&&<DsButton variant="ghost" size="sm" onClick={()=>setEditing(c)}>Edit</DsButton>}<DsButton variant="ghost" size="sm" disabled={!c.active} onClick={()=>{if(confirm('Disable this contact? Historical references remain.'))del.mutate(c.id);}}>Disable</DsButton></div>:<span className="ds-caption">Read only</span>},
         ]}/>
       )}
 
-      {editing && (
+      {editing && (!editing.id || canEdit(editing.id)) && (
         <ContactDialog contact={editing} payers={payers} onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["contacts"] }); }} />
       )}

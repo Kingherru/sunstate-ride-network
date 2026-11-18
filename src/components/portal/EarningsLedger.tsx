@@ -34,7 +34,7 @@ export function EarningsLedger() {
       ], title, format, `earnings-${f.start}-${f.end}`);
     } catch { toast.error("Could not export authorized earnings."); } finally { setBusy(false); }
   }
-  return <section className="space-y-4 rounded-ds border border-ds-sky-border bg-ds-sky p-4 sm:p-5">
+  return <section className="portal-business-section portal-business-body space-y-4">
     <h2 className="ds-subheading uppercase text-ds-primary">Earnings records & exports</h2>
     {preview.active && <p role="status" className="ds-label rounded-ds-sm ds-status-blue px-3 py-2 uppercase">Preview mode — demo data. Operational driver earnings only; Network settlements and Membership & Billing are separate.</p>}
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">

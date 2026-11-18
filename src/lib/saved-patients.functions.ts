@@ -120,6 +120,7 @@ export const updateSavedPatient = createServerFn({ method: "POST" })
       .from("saved_patients")
       .update(clean(rest as any) as any)
       .eq("id", id)
+      .eq('active', true)
       .select().single();
     if (error) throw new Error("Could not update the patient profile.");
     return out;

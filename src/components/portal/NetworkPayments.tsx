@@ -12,7 +12,7 @@ import { StatusPill } from '@/components/ds/status';
 import { listReferralMessageEligibility, openReferralConversation } from '@/lib/workspace-messages.functions';
 
 const date = (s: string | null) => s ? new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(s)) + ' ET' : '—';
-export function NetworkPayments() {
+export function NetworkPayments({operationalOnly=false}:{operationalOnly?:boolean}) {
   const list = useServerFn(listNetworkPayments), complete = useServerFn(recordNetworkCompletion), dispute = useServerFn(openNetworkPaymentDispute), resolve = useServerFn(resolveNetworkPaymentDispute);
   const qc = useQueryClient();
   const q = usePortalQuery({ queryKey: ['network-payments'], queryFn: () => list() });
@@ -39,19 +39,19 @@ export function NetworkPayments() {
     else await resolve({ data: { distributionId, reason: resolution, confirmed: true } });
   }, onSuccess: async () => { setSelected(null); setResolution(''); toast.success('Network status recorded.'); await qc.invalidateQueries({ queryKey: ['network-payments'] }); await qc.invalidateQueries({ queryKey: ['network-activity'] }); }, onError: (e: Error) => toast.error(e.message) });
   return <div className="space-y-4">
-    <h2 className="ds-subheading text-ds-primary uppercase">Network payments</h2>
-    <p className="ds-support">Payment is due within three business days after completed service and required completion information are recorded. Times use New York time; Stripe processing is separate.</p>
+    <h2 className="ds-subheading text-ds-primary uppercase">{operationalOnly?'Accepted referral operations':'Network referral payments & disputes'}</h2>
+    {!operationalOnly&&<p className="ds-support">Payment is due within three business days after completed service and required completion information are recorded. Times use New York time; Stripe processing is separate.</p>}
     {q.isLoading && <p className="ds-body">Loading payments…</p>}
     {!!q.error && <p role="alert" className="ds-body text-ds-error">Could not load Network payments.</p>}
     {!q.isLoading && !q.error && !q.data?.length && <p className="ds-body text-ds-muted">No accepted provider-to-provider Network trips.</p>}
     {(q.data ?? []).map(row => <article key={row.id} className="space-y-3 border-b border-ds-border py-4">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"><h3 className="ds-label font-mono">{row.mfn_id}</h3><StatusPill status={NETWORK_PAYMENT_LABELS[row.state] ?? 'Status review required'} tone={row.state === 'overdue' || row.state === 'disputed' || row.state === 'failed' ? 'red' : row.state === 'paid' ? 'green' : undefined} /></div>
-      <dl className="grid gap-3 sm:grid-cols-3 ds-support"><div><dt>Completion recorded</dt><dd>{date(row.completed_at)}</dd></div><div><dt>Payment due</dt><dd>{date(row.due_at)}</dd></div><div><dt>Payment initiated</dt><dd>{date(row.initiated_at)}</dd></div><div><dt>Paid</dt><dd>{date(row.paid_at)}</dd></div><div><dt>Dispute opened</dt><dd>{date(row.dispute_opened_at)}</dd></div><div><dt>Dispute resolved</dt><dd>{date(row.dispute_resolved_at)}</dd></div></dl>
+      {!operationalOnly&&<dl className="grid gap-3 sm:grid-cols-3 ds-support"><div><dt>Completion recorded</dt><dd>{date(row.completed_at)}</dd></div><div><dt>Payment due</dt><dd>{date(row.due_at)}</dd></div><div><dt>Payment initiated</dt><dd>{date(row.initiated_at)}</dd></div><div><dt>Paid</dt><dd>{date(row.paid_at)}</dd></div><div><dt>Dispute opened</dt><dd>{date(row.dispute_opened_at)}</dd></div><div><dt>Dispute resolved</dt><dd>{date(row.dispute_resolved_at)}</dd></div></dl>}
       <div className="flex flex-wrap gap-2">
         {canMessage(row.id) && row.state !== 'refunded' && <DsButton size="sm" variant="secondary" onClick={() => setMessageRow(row)}><MessageSquare className="size-4" aria-hidden />Message provider</DsButton>}
         {row.can_complete && !row.completed_at && <DsButton size="sm" variant="secondary" onClick={() => setSelected({ row, action: 'complete' })}>Confirm completion information</DsButton>}
-        {row.can_dispute && row.completed_at && !row.dispute_opened_at && Date.now() <= Date.parse(row.completed_at) + 86400000 && !['paid','refunded'].includes(row.state) && <DsButton size="sm" variant="secondary" onClick={() => setSelected({ row, action: 'dispute' })}>Open payment dispute</DsButton>}
-        {row.can_resolve && row.dispute_opened_at && !row.dispute_resolved_at && <DsButton size="sm" variant="secondary" onClick={() => setSelected({ row, action: 'resolve' })}>Resolve dispute</DsButton>}
+        {!operationalOnly && row.can_dispute && row.completed_at && !row.dispute_opened_at && Date.now() <= Date.parse(row.completed_at) + 86400000 && !['paid','refunded'].includes(row.state) && <DsButton size="sm" variant="secondary" onClick={() => setSelected({ row, action: 'dispute' })}>Open payment dispute</DsButton>}
+        {!operationalOnly && row.can_resolve && row.dispute_opened_at && !row.dispute_resolved_at && <DsButton size="sm" variant="secondary" onClick={() => setSelected({ row, action: 'resolve' })}>Resolve dispute</DsButton>}
       </div>
     </article>)}
     {messageRow && <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-ds-primary/50 p-4" onClick={() => setMessageRow(null)}><div role="alertdialog" aria-modal="true" aria-labelledby="ref-msg-title" className="max-h-[90vh] w-full max-w-md space-y-3 overflow-y-auto rounded-ds bg-ds-surface p-6" onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === 'Escape') setMessageRow(null); }}>

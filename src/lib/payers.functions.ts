@@ -150,7 +150,7 @@ export const updatePayer = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("payers")
       .update(payerRow(data, context.userId))
-      .eq("id", data.id).select('id').single();
+      .eq("id", data.id).eq('active', true).select('id').single();
     if (error) return { error: error.message };
     return { ok: true };
   });
