@@ -11108,6 +11108,10 @@ export type Database = {
       }
       us_regional_readiness: { Args: never; Returns: Json }
       us_state_catalog: { Args: never; Returns: Json }
+      user_removal_dependency_count: {
+        Args: { _user: string }
+        Returns: number
+      }
       validate_regional_profile_value: {
         Args: { _value: Json }
         Returns: boolean

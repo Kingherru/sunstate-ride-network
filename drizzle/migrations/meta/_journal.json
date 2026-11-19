@@ -1051,6 +1051,13 @@
       "when": 1794957472819,
       "tag": "0149_driver_assignment_email_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 150,
+      "version": "7",
+      "when": 1795047270761,
+      "tag": "0150_secure_user_removal_dependency_scan",
+      "breakpoints": true
     }
   ]
 }
