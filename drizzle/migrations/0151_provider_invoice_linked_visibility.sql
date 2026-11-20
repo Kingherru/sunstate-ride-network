@@ -1,0 +1,14 @@
+ALTER TABLE public.trip_invoice_documents ADD COLUMN show_to_linked_accounts boolean NOT NULL DEFAULT true;
+COMMENT ON COLUMN public.trip_invoice_documents.show_to_linked_accounts IS 'Invoice-only visibility; existing trip authorization and immutable financial snapshots are unchanged.';
+CREATE FUNCTION public.bind_provider_invoice_visibility() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$ DECLARE choice jsonb; BEGIN
+ IF TG_OP='INSERT' AND NEW.facility_agreement_id IS NULL THEN
+ SELECT d.payload->'showInvoiceToLinkedAccount' INTO choice FROM public.trip_drafts d WHERE d.workspace_id=NEW.provider_workspace_id AND d.user_id=NEW.created_by AND d.customer_quote_history->-1->>'id'=NEW.quote_id::text;
+ NEW.show_to_linked_accounts:=CASE WHEN choice='false'::jsonb THEN false ELSE true END;
+ ELSIF TG_OP='UPDATE' AND NEW.show_to_linked_accounts IS DISTINCT FROM OLD.show_to_linked_accounts THEN
+ IF NOT public.can_manage_provider_customer_pricing(OLD.provider_workspace_id) THEN RAISE EXCEPTION 'Invoice visibility management unavailable'; END IF;
+ END IF; RETURN NEW; END $$;
+REVOKE ALL ON FUNCTION public.bind_provider_invoice_visibility() FROM PUBLIC,anon,authenticated,service_role;
+CREATE TRIGGER bind_provider_invoice_visibility BEFORE INSERT OR UPDATE OF show_to_linked_accounts ON public.trip_invoice_documents FOR EACH ROW EXECUTE FUNCTION public.bind_provider_invoice_visibility();
+CREATE OR REPLACE FUNCTION public.trip_invoice_access(_invoice uuid,_manage boolean DEFAULT false) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public AS $$ SELECT EXISTS(SELECT 1 FROM public.trip_invoice_documents i JOIN public.workspaces w ON w.id=i.provider_workspace_id WHERE i.id=_invoice AND (public.has_role(auth.uid(),'admin') OR public.can_manage_provider_customer_pricing(w.id) OR (NOT _manage AND i.show_to_linked_accounts AND ((i.patient_workspace_id IS NOT NULL AND public.patient_request_access(i.request_id)) OR EXISTS(SELECT 1 FROM public.workspace_members m JOIN public.workspaces b ON b.id=m.workspace_id JOIN public.user_profiles p ON p.user_id=m.user_id WHERE m.workspace_id=i.billed_workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin') AND NOT m.is_contractor AND m.removed_at IS NULL AND b.status='active' AND NOT b.is_test_account AND p.status='active' AND NOT p.is_test_account AND p.deleted_at IS NULL))))) $$;
+REVOKE ALL ON FUNCTION public.trip_invoice_access(uuid,boolean) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.trip_invoice_access(uuid,boolean) TO authenticated,service_role;

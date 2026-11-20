@@ -1,3 +1,12 @@
+# Provider Overview and inline New Trip — current pass
+- [x] Align desktop Overview columns; six soft action treatments retain counts and destinations. Exact desktop height alignment verified; tablet/phone natural stacking.
+- [x] Inline authorized New Trip; ordered reservation tabs, Booked default, draft resume and reports retained. Synthetic resumed passenger reads back Pat at all three widths.
+- [x] Unified provider document with compact expandable invoice after passenger/billing, existing calculation/PDF, inactive card readiness. All invoice buttons explicitly non-submit; retained quote history shown.
+- [x] Owner draft visibility carries to provider-issued invoices via additive 0151; legacy default true, manager access unchanged, customer RLS/snapshot/PDF and bearer-link reads enforce visibility. No trip access changes.
+- [x] 16 scoped Vitest tests, 13 invoice/draft Bun tests and 12 retained operation tests pass; automatic type/build OK. Signed-in synthetic preview at 1280/768/390: no page errors or document overflow, payment dialog, disclosure, tab order/default, History and draft Resume verified. High-contrast screenshots reviewed.
+- [ ] Populated live recalculation, hosted visibility/save-readback and permission execution are not exercised because real-record writes are forbidden. SQL gates inspected; denied readers, unchanged manager projection, secure-link denial and PDF paths tested with synthetic/mocked evidence. Exact turn credits unavailable (874 is billing-period usage, not pass usage). Separate manual type/build commands prohibited; harness compilation checked.
+- [x] No publication, real records, accounts, messages, email/SMS, notifications, offers, charges or refunds changed/sent/created. Root architecture note skipped: protected file has no remaining rule budget.
+
 # Provider Overview only
 - [x] Notes left and New Trips/actions right; compact unchanged destinations, Schedule renamed, no descriptions, Overview-only red/white count circles.
 - [x] Existing messaging/activity keys and paginated recipient unread notifications reused; no render-time acknowledgment or mutations.

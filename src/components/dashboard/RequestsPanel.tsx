@@ -270,16 +270,20 @@ export function ReservationsPanel({
   scope = "provider",
   onResumeDraft,
   hideReferrals = false,
+  selectedState,
+  hideLifecycleTabs = false,
 }: {
   userId: string;
   scope?: Scope;
   onResumeDraft?: (draft: TripDraft) => void;
   hideReferrals?: boolean;
+  selectedState?: ResvState;
+  hideLifecycleTabs?: boolean;
 }) {
   const preview = usePortalPreview();
   const openDetails = useRequestDetails();
   const [section, setSection] = useState<ResvSection>("unconfirmed");
-  const state: ResvState = section === "drafts" ? "unconfirmed" : section;
+  const state: ResvState = selectedState ?? (section === "drafts" ? "unconfirmed" : section);
   const qc = useQueryClient();
   const cancelTripFn = useServerFn(updateTripStatus);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
@@ -384,15 +388,15 @@ export function ReservationsPanel({
 
   return (
     <div className="space-y-4">
-      <div>
+      {!hideLifecycleTabs && <div>
         <h2 className="text-xl font-extrabold tracking-tight">Reservations</h2>
         <p className="text-sm text-muted-foreground">
           Create Trip → Unconfirmed → Booked → Past (time elapsed) → Completed (Trip History).
         </p>
-      </div>
+      </div>}
 
       {/* Three lifecycle sections */}
-      <div className="inline-flex bg-card border border-border rounded-sm p-1 flex-wrap">
+      {!hideLifecycleTabs && <div className="inline-flex bg-card border border-border rounded-sm p-1 flex-wrap">
         {(["unconfirmed", "booked", "past", "canceled"] as ResvState[]).map((s) => {
           const c = (counts.data as any)?.[s];
           const active = section === s;
@@ -423,7 +427,7 @@ export function ReservationsPanel({
             Drafts
           </button>
         )}
-      </div>
+      </div>}
 
       {section === "drafts" && onResumeDraft ? (
         <SavedTripsPanel variant="drafts" onResume={onResumeDraft} />

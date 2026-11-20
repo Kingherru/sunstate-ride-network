@@ -47,7 +47,7 @@ export function ProviderOverview({ workspaceId, userId }: { workspaceId: string 
     '/portal/network': overviewMessageCount(activity.data?.network, 0),
   };
   return (
-    <div className="provider-overview grid items-start gap-5 lg:grid-cols-2">
+    <div className="provider-overview grid items-start gap-5 lg:grid-cols-2 lg:items-stretch">
         <SmartNotes workspaceId={workspaceId} />
         <div className="min-w-0 space-y-4">
         <section className={`${panelCls} min-w-0`} aria-labelledby="new-trips-h">
@@ -62,7 +62,7 @@ export function ProviderOverview({ workspaceId, userId }: { workspaceId: string 
         </section>
       <nav aria-label="Provider tools" className="grid gap-2 min-[460px]:grid-cols-2">
         {TOOLS.map(({ to, label, icon: Icon }) => (
-          <Link key={to} to={to} className="ds-support flex min-h-12 min-w-0 items-center gap-2.5 rounded-ds border border-ds-border bg-ds-surface px-3 py-2.5 font-semibold text-ds-primary ds-transition hover:border-ds-accent hover:bg-ds-info-soft focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
+          <Link key={to} to={to} className="provider-overview-action ds-support flex min-h-12 min-w-0 items-center gap-2.5 rounded-ds border border-ds-border px-3 py-2.5 font-semibold text-ds-primary ds-transition hover:border-ds-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus">
             <Icon className="size-4 shrink-0 text-ds-accent" aria-hidden />
             <span className="min-w-0 flex-1">{label}</span>
             <NotificationIndicator tone="attention" count={badgeCounts[to] ?? 0} label={`unread ${label.toLowerCase()} updates`} />

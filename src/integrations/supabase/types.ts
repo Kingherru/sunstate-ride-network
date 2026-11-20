@@ -7140,6 +7140,7 @@ export type Database = {
           request_id: string
           responsible_payer_workspace_id: string | null
           sent_at: string | null
+          show_to_linked_accounts: boolean
           status: string
           total_cents: number
           workspace_mfn_id: string | null
@@ -7162,6 +7163,7 @@ export type Database = {
           request_id: string
           responsible_payer_workspace_id?: string | null
           sent_at?: string | null
+          show_to_linked_accounts?: boolean
           status?: string
           total_cents: number
           workspace_mfn_id?: string | null
@@ -7184,6 +7186,7 @@ export type Database = {
           request_id?: string
           responsible_payer_workspace_id?: string | null
           sent_at?: string | null
+          show_to_linked_accounts?: boolean
           status?: string
           total_cents?: number
           workspace_mfn_id?: string | null

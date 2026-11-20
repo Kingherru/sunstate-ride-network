@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, type ReactNode } from 'react';
 import type { RideRequestInput, DeliveryRequestInput } from '@/lib/request-schemas';
 export type CommerceFormData = RideRequestInput | DeliveryRequestInput;
 export const TripCommerceContext = createContext<{
@@ -9,4 +9,6 @@ export const TripCommerceContext = createContext<{
   submissionBlocked: boolean;
   draftId?: string | null;
   onDraftSaved?: (id: string) => void;
+  invoiceSlot?: ReactNode;
+  draftExtras?: { showInvoiceToLinkedAccount: boolean };
 } | null>(null);

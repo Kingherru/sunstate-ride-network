@@ -839,6 +839,31 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
   background: var(--ds-status-red); color: var(--ds-status-red-text); border-color: transparent;
 }
 
+/* Navigation palettes are not operational statuses; these remain Overview-only. */
+.provider-overview-action:nth-child(1) { background: var(--mfn-sky); border-color: var(--ds-sky-border); }
+.provider-overview-action:nth-child(2) { background: var(--portal-indicator-positive-bg); border-color: var(--ds-green-border); }
+.provider-overview-action:nth-child(3) { background: var(--portal-indicator-warning-bg); border-color: var(--ds-border-strong); }
+.provider-overview-action:nth-child(4) { background: var(--mfn-peach); border-color: var(--ds-peach-border); }
+.provider-overview-action:nth-child(5) { background: var(--portal-indicator-attention-bg); border-color: var(--ds-border-strong); }
+.provider-overview-action:nth-child(6) { background: var(--ds-subtle); border-color: var(--ds-border-strong); }
+.theme-portal .provider-overview-action:hover { background: var(--ds-hover); }
+body[data-portal-contrast="true"] .theme-portal .provider-overview-action { border-color: var(--ds-border); border-width: 2px; }
+@media (min-width: 1024px) { .provider-overview > .ds-notepad { height: 100%; } }
+.provider-trip-document { border: 1px solid var(--ds-border); border-radius: var(--ds-radius); }
+.provider-trip-document .provider-live-invoice { position: static; max-height: none; overflow: visible; }
+.provider-live-invoice .invoice-summary { min-height: 136px; padding-block: .75rem; }
+.provider-trip-document form > fieldset { border: 0; padding: 0; min-width: 0; }
+.provider-trip-document > div > section > div > :is(p,[role="note"]) { max-width: none; margin-block: .75rem; padding: .75rem; text-align: left; font-size: 1rem; line-height: 1.4; }
+.provider-trip-document > div > section > div > .non-emergency-notice { margin-bottom: 1rem; }
+@media (min-width: 1024px) {
+  .provider-trip-document form > fieldset { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.25rem; }
+  .provider-trip-document form > fieldset > :is(legend,div,fieldset,p) { grid-column: 1 / -1; }
+  .provider-trip-document form > fieldset > div.grid { grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); }
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .provider-overview-action { border-color: var(--ds-primary); border-width: 2px; }
+}
+
 /* Legibility: opt-in compact values, normal document flow everywhere else. */
 .theme-portal [data-text-wrap], .theme-portal [data-text-wrap] .portal-overflow-text {
   white-space: normal !important; overflow: visible !important; text-overflow: clip;

@@ -1058,6 +1058,13 @@
       "when": 1795047270761,
       "tag": "0150_secure_user_removal_dependency_scan",
       "breakpoints": true
+    },
+    {
+      "idx": 151,
+      "version": "7",
+      "when": 1795140944618,
+      "tag": "0151_provider_invoice_linked_visibility",
+      "breakpoints": true
     }
   ]
 }

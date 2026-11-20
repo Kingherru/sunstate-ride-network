@@ -241,7 +241,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   async function onSaveDraft() {
     if (preview.active) { previewBlocked(); return; }
     setSavingDraft(true);
-    try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, billingContact: form.billingSource === 'custom' ? customBilling : form.billingSource === 'saved' ? savedBilling ?? form.billingContact : undefined }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success('Draft saved securely.'); }
+    try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, ...commerce?.draftExtras, billingContact: form.billingSource === 'custom' ? customBilling : form.billingSource === 'saved' ? savedBilling ?? form.billingContact : undefined }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success('Draft saved securely.'); }
     catch { toast.error('Could not save draft.'); }
     finally { setSavingDraft(false); }
   }
@@ -586,6 +586,76 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             </div>
           </fieldset>
 
+          {commerce?.provider && (<fieldset className="space-y-4">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
+              Billing information
+            </legend>
+            {portal && <div className="space-y-3"><Field label="Authorized payer"><select className={inputCls} value={form.payerId??''} onChange={e=>{if(e.target.value)applyPayer(e.target.value);else upd('payerId',null);}}><option value="">No saved payer selected</option>{payers.filter(p=>p.active!==false).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="Trip coordination contact"><select className={inputCls} value={form.coordinationContactId??''} onChange={e=>upd('coordinationContactId',e.target.value||null)}><option value="">No contact selected</option>{contacts.filter(c=>c.active && c.coordination_allowed).map(c=><option key={c.id} value={c.id}>{c.company_name||`${c.first_name??''} ${c.last_name??''}`}</option>)}</select></Field><div className="flex flex-wrap gap-2"><DsButton type="button" variant="ghost" onClick={()=>setAddingPayer(true)}>Add payer</DsButton><DsButton type="button" variant="ghost" onClick={()=>setAddingContact(true)}>Add contact</DsButton></div><p className="ds-support">Billing and trip coordination only. Secure payment-method collection is not activated.</p></div>}
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.billingSource === "account"}
+                onChange={(e) =>
+                  setForm(f=>({...f,billingSource:e.target.checked?'account':savedBilling?'saved':'custom',payerId:null}))
+                }
+              />
+              <span>Use same information as account holder</span>
+            </label>
+
+            {form.billingSource !== "account" && (
+              <div className="space-y-4 pl-6 border-l-2 border-ds-border">
+                {savedBilling && (
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="billingSource"
+                        checked={form.billingSource === "saved"}
+                        onChange={() => upd("billingSource", "saved")}
+                      />
+                      <span>
+                        Use saved billing contact ({savedBilling.firstName} {savedBilling.lastName})
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="billingSource"
+                        checked={form.billingSource === "custom"}
+                        onChange={() => upd("billingSource", "custom")}
+                      />
+                      <span>Enter different billing contact for this trip</span>
+                    </label>
+                  </div>
+                )}
+
+                {form.billingSource === "custom" && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Field label="First name" required error={errors["billingContact.firstName"]}>
+                      <input className={inputCls} value={customBilling.firstName}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, firstName: e.target.value }))} />
+                    </Field>
+                    <Field label="Last name" required error={errors["billingContact.lastName"]}>
+                      <input className={inputCls} value={customBilling.lastName}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, lastName: e.target.value }))} />
+                    </Field>
+                    <Field label="Email" required error={errors["billingContact.email"]}>
+                      <input type="email" className={inputCls} value={customBilling.email}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, email: e.target.value }))} />
+                    </Field>
+                    <Field label="Phone" required error={errors["billingContact.phone"]}>
+                      <input type="tel" className={inputCls} value={customBilling.phone}
+                        onChange={(e) => setCustomBilling((b) => ({ ...b, phone: e.target.value }))} />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            )}
+          </fieldset>)}
+
+          {commerce?.invoiceSlot}
+
           {/* Pickup */}
           <fieldset className="space-y-6">
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
@@ -910,8 +980,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 
           {portal && !onBehalf && <TripSeriesBuilder source={{...form,selectedProviderWorkspaceId:allowProviderSelection?selectedProvider?.workspace_id??form.selectedProviderWorkspaceId??null:null,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}} blocked={commerce?.submissionBlocked}/>}
 
-          {/* Billing information */}
-          <fieldset className="space-y-4">
+          {!commerce?.provider && (<fieldset className="space-y-4">
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Billing information
             </legend>
@@ -977,7 +1046,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 )}
               </div>
             )}
-          </fieldset>
+          </fieldset>)}
 
           <datalist id="fl-cities">
 
@@ -1108,6 +1177,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   return (
     <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-sm border border-ds-border bg-ds-surface p-4 sm:p-6">
       {portal && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId', id)}/>}
+      {commerce?.invoiceSlot}
       {initialDraft && <div className="flex flex-wrap items-center justify-between gap-3"><p className="ds-caption break-all">Draft ID: {commerce?.draftId ?? draftId}</p><DsButton type="button" variant="ghost" onClick={()=>window.history.back()}>Cancel</DsButton></div>}
       <div className="rounded-ds-sm bg-ds-membership p-4 text-ds-primary">
         <p className="ds-body"><strong>Medical Delivery</strong> moves items, not passengers. Please don't include diagnoses, medication names or patient medical details.</p>
@@ -1168,7 +1238,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
           <DsButton type="button" variant="secondary" disabled={savingDraft || submitting} className="whitespace-nowrap" onClick={async () => {
             if (preview.active) { previewBlocked(); return; }
             setSavingDraft(true);
-            try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success("Draft saved securely."); }
+            try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, ...commerce?.draftExtras, requestCategory: "medical_delivery" }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success("Draft saved securely."); }
             catch { toast.error("Could not save draft."); } finally { setSavingDraft(false); }
           }}>{savingDraft ? "Saving…" : "Save draft"}</DsButton>
         )}
