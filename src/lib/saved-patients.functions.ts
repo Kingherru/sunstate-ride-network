@@ -79,10 +79,11 @@ export const listSavedPatients = createServerFn({ method: "GET" })
   });
 
 /** New Trip exposes only permitted identity/contact defaults, never clinical notes or credentials. */
-export const listTripPatients=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+export const listTripPatients=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({workspaceId:z.string().uuid().optional()}).parse(i??{})).handler(async({context,data:input})=>{
  const ws=await managedWorkspaces(context.supabase,context.userId);
- let q=context.supabase.from('saved_patients').select('id,first_name,last_name,phone,email,mobility,default_payer_id,patient_workspace_id,active,kind').eq('active',true).eq('kind','patient');
- q=ws.ids.length?q.or(`owner_id.eq.${context.userId},workspace_id.in.(${ws.ids.join(',')})`):q.eq('owner_id',context.userId);
+ if(input.workspaceId && !ws.ids.includes(input.workspaceId))throw new Error('Patient not available');
+ let q=context.supabase.from('saved_patients').select('id,first_name,last_name,phone,email,mobility,oxygen_required,assistance_needs,default_pickup_address,default_pickup_city,default_dropoff_address,default_dropoff_city,state,zip,county_equivalent,timezone,default_payer_id,patient_workspace_id,active,kind').eq('active',true).eq('kind','patient');
+ q=input.workspaceId?q.eq('workspace_id',input.workspaceId):ws.ids.length?q.or(`owner_id.eq.${context.userId},workspace_id.in.(${ws.ids.join(',')})`):q.eq('owner_id',context.userId);
  const {data,error}=await q.order('last_name');if(error)throw new Error('Patient not available');return data??[];
 });
 

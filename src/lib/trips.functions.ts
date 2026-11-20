@@ -782,6 +782,8 @@ export const listReservationsByState = createServerFn({ method: "GET" })
       scope: "requester" | "provider" | "ops";
       zone_id?: string | null;
       limit?: number;
+      organized?:boolean;
+      canceled?:boolean;
     }) => input,
   )
   .handler(async ({ data, context }) => {
@@ -789,16 +791,18 @@ export const listReservationsByState = createServerFn({ method: "GET" })
     // Read directly from `trips` — the single source of truth for created trips.
     // Column aliases bridge to the ride_requests-shaped fields the UI expects.
     const cols =
-      "id, vehicle_id, driver_id, scheduled_start_time, network_provider_workspace_id, network_distribution_id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, return_pickup_building, return_pickup_doctor, return_pickup_suite, is_medicaid_patient, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, referral_status, referral_target_id, referral_sent_at, referral_decided_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
+      "id, ride_request_id, vehicle_id, driver_id, scheduled_start_time, network_provider_workspace_id, network_distribution_id, display_id, status, reservation_state, unconfirmed_expires_at, pickup_address, pickup_address_details, pickup_city, pickup_zip, dropoff_address, dropoff_city, dropoff_zip, pickup_date, pickup_time, appointment_time, return_pickup_time, return_dropoff_time, return_date, return_pickup_building, return_pickup_doctor, return_pickup_suite, is_medicaid_patient, round_trip, transport_type, patient_first_name, patient_last_name, patient_phone, patient_email, patient_date_of_birth, service_level, needs_wheelchair, estimated_cost_cents, estimated_duration_seconds, estimated_duration_traffic_seconds, payer, medicaid_number, medicaid_plan, authorization_number, diagnosis_code, special_instructions, mobility_notes, emergency_contact_name, emergency_contact_phone, cancel_reason, payment_status, created_at, priority_offer_accepted_at, referral_status, referral_target_id, referral_sent_at, referral_decided_at, requester_user_id:created_by, assigned_provider_id:assigned_to, assigned_driver_id:driver_id";
 
     let q = supabase
       .from("trips")
       .select(cols)
-      .eq("reservation_state", data.state)
       .order("pickup_date", { ascending: data.state === "past" || data.state === "history" ? false : true })
       .order("pickup_time", { ascending: true })
       .limit(Math.min(data.limit ?? 300, 1000));
 
+    if(data.organized && data.canceled)q=q.in('status',['canceled','cancelled','declined','expired']);
+    else if(data.organized && data.state==='booked')q=q.or('reservation_state.eq.booked,and(reservation_state.eq.unconfirmed,network_distribution_id.not.is.null,network_provider_workspace_id.not.is.null)');
+    else q=q.eq('reservation_state',data.state);
     if (data.scope === "requester") q = q.eq("created_by", userId);
     else if (data.scope === "provider") {
       // Provider sees trips they created, are assigned to, OR have a pending referral for.
@@ -817,6 +821,8 @@ export const listReservationsByState = createServerFn({ method: "GET" })
     const {data: sources} = ownedIds.length ? await supabase.from('workspace_members').select('user_id,workspace_id').in('user_id',ownedIds) : {data:[]};
     const permissionEntries=await Promise.all((memberships??[]).map(async m=>{const {data:can}=await supabase.rpc('network_workspace_access',{_ws:m.workspace_id,_manage:true});return [m.workspace_id,can===true] as const;}));
     const allowed=new Map(permissionEntries);
-    return (rows??[]).map(r=>{ const origin=(sources??[]).filter(m=>m.user_id===r.requester_user_id);return {...r,can_share_network:!r.network_distribution_id&&!r.network_provider_workspace_id&&origin.length===1&&allowed.get(origin[0].workspace_id)===true}; });
+    const requestIds=(rows??[]).map(r=>r.ride_request_id).filter((id):id is string=>!!id);
+    const {data:requestSources}=requestIds.length?await supabase.from('ride_requests').select('id,workspace_id').in('id',requestIds):{data:[]};
+    return (rows??[]).map(r=>{ const origin=(sources??[]).filter(m=>m.user_id===r.requester_user_id);return {...r,source_workspace_id:requestSources?.find(s=>s.id===r.ride_request_id)?.workspace_id??null,can_share_network:!r.network_distribution_id&&!r.network_provider_workspace_id&&origin.length===1&&allowed.get(origin[0].workspace_id)===true}; });
   });
 

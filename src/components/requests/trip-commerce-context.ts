@@ -10,5 +10,7 @@ export const TripCommerceContext = createContext<{
   draftId?: string | null;
   onDraftSaved?: (id: string) => void;
   invoiceSlot?: ReactNode;
+  invoiceBottomSlot?: ReactNode;
+  workspaceId?: string;
   draftExtras?: { showInvoiceToLinkedAccount: boolean };
 } | null>(null);

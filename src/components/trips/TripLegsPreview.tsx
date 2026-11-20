@@ -32,9 +32,11 @@ function fmtTime(t: string) {
 export function TripLegsPreview({
   legs,
   className,
+  title = "Trip legs preview",
 }: {
   legs: LegInput[];
   className?: string;
+  title?: string;
 }) {
   if (!legs.length) return null;
   const anyInherited = legs.some((l) => l.inheritedDate || l.inheritedTime);
@@ -42,12 +44,12 @@ export function TripLegsPreview({
   return (
     <section
       className={`border border-ds-border rounded-ds-sm bg-ds-surface ${className ?? ""}`}
-      aria-label="Trip legs preview"
+      aria-label={title}
     >
       <header className="flex items-center justify-between px-4 py-3 border-b border-ds-border">
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wider">
-            Trip legs preview
+            {title}
           </h3>
           <p className="text-xs text-ds-text-2 mt-0.5">
             Live summary — {legs.length} leg{legs.length === 1 ? "" : "s"} total

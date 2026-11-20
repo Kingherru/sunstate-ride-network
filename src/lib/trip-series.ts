@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { rideRequestSchema, type RideRequestInput } from './request-schemas';
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s => { const d = new Date(s+'T00:00:00Z'); return !isNaN(+d) && d.toISOString().slice(0,10)===s; }, 'Invalid calendar date');
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
-export const occurrenceSchema = z.object({ date: day, pickupTime: time, appointmentTime: time.or(z.literal('')), returnTime: time.or(z.literal('')), returnDropoffTime: time.or(z.literal('')).default(''), returnDate: day.or(z.literal('')) }).strict();
+export const occurrenceSchema = z.object({ date: day, pickupTime: time, appointmentTime: time.or(z.literal('')), dropoffDate:day.or(z.literal('')).optional(), dropoffTime:time.or(z.literal('')).optional(), tripType:z.enum(['one_way','round_trip']).optional(), returnTime: time.or(z.literal('')), returnDropoffTime: time.or(z.literal('')).default(''), returnDate: day.or(z.literal('')) }).strict();
 export type Occurrence = z.infer<typeof occurrenceSchema>;
 export const seriesRuleSchema = z.object({ mode: z.enum(['dates','daily','weekdays','weekly','biweekly','monthly']), start: day, end: day.or(z.literal('')), limit: z.number().int().min(1).max(100), weekdays: z.array(z.number().int().min(0).max(6)).max(7), dates: z.array(day).max(100), excluded: z.array(day).max(100) }).strict();
 export type SeriesRule = z.infer<typeof seriesRuleSchema>;
@@ -28,7 +28,8 @@ export function generateOccurrences(input: SeriesRule, today: string): string[] 
 }
 export function occurrenceRequest(source: RideRequestInput, row: Occurrence): RideRequestInput {
   const shift=(date:string|undefined)=>{if(!date)return date;const offset=Date.parse(date+'T12:00:00Z')-Date.parse(source.pickupDate+'T12:00:00Z');return new Date(Date.parse(row.date+'T12:00:00Z')+offset).toISOString().slice(0,10);};
-  return rideRequestSchema.parse({...source,dropoffDate:shift(source.dropoffDate),additionalStops:source.additionalStops.map(stop=>({...stop,date:shift(stop.date)})),pickupDate:row.date,pickupTime:row.pickupTime,appointmentTime:row.appointmentTime,returnPickupTime:row.returnTime,returnDropoffTime:row.returnDropoffTime,returnDate:source.tripType==='round_trip'?row.returnDate||row.date:'',recurrence:'none',recurrenceEndDate:'',confirmedProviderDriverId:null,confirmedDriverEndTime:"",customerQuoteId:null,customerQuoteDraftId:null});
+  const tripType=row.tripType??source.tripType;
+  return rideRequestSchema.parse({...source,tripType,roundTrip:tripType==='round_trip',dropoffDate:row.dropoffDate??shift(source.dropoffDate),dropoffTime:row.dropoffTime??source.dropoffTime,additionalStops:source.additionalStops.map(stop=>({...stop,date:shift(stop.date)})),pickupDate:row.date,pickupTime:row.pickupTime,appointmentTime:row.appointmentTime,returnPickupTime:tripType==='round_trip'?row.returnTime:'',returnDropoffTime:tripType==='round_trip'?row.returnDropoffTime:'',returnDate:tripType==='round_trip'?row.returnDate||row.date:'',recurrence:'none',recurrenceEndDate:'',confirmedProviderDriverId:null,confirmedDriverEndTime:"",customerQuoteId:null,customerQuoteDraftId:null});
 }
 export function validateOccurrences(rows: Occurrence[], today: string): void {
   if(!rows.length||rows.length>100) throw new Error('Review between 1 and 100 trips.');

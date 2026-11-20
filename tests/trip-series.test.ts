@@ -1,9 +1,11 @@
-import {describe,it,expect} from 'vitest';
+import {describe,it,expect,vi,beforeEach,afterEach} from 'vitest';
 import {generateOccurrences,validateOccurrences,occurrenceRequest,type SeriesRule} from '../src/lib/trip-series';
 import {tripReviewKey,canAttachTripQuote} from '../src/lib/trip-workspace-review';
 import {rideRequestSchema} from '../src/lib/request-schemas';
 const rule:SeriesRule={mode:'weekly',start:'2026-11-16',end:'2026-12-01',limit:100,weekdays:[1,3],dates:[],excluded:[]};
 describe('bounded trip occurrences',()=>{
+ beforeEach(()=>{vi.useFakeTimers();vi.setSystemTime(new Date('2026-11-15T12:00:00Z'));});
+ afterEach(()=>vi.useRealTimers());
  it('generates selected weekdays exactly',()=>expect(generateOccurrences(rule,'2026-11-15')).toEqual(['2026-11-16','2026-11-18','2026-11-23','2026-11-25','2026-11-30']));
  it('respects an occurrence maximum without an end',()=>expect(generateOccurrences({...rule,end:'',limit:3},'2026-11-15')).toEqual(['2026-11-16','2026-11-18','2026-11-23']));
  it('excludes explicit exceptions',()=>expect(generateOccurrences({...rule,excluded:['2026-11-18']},'2026-11-15')).not.toContain('2026-11-18'));

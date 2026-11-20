@@ -851,6 +851,13 @@ body[data-portal-contrast="true"] .theme-portal .provider-overview-action { bord
 @media (min-width: 1024px) { .provider-overview > .ds-notepad { height: 100%; } }
 .provider-trip-document { border: 1px solid var(--ds-border); border-radius: var(--ds-radius); }
 .provider-trip-document .provider-live-invoice { position: static; max-height: none; overflow: visible; }
+.provider-trip-dialog[role="dialog"] { background: var(--ds-surface); backdrop-filter: none; opacity: 1; }
+.provider-trip-document .provider-trip-actions > button { min-height: 44px; padding: .65rem 1rem; align-self: stretch; }
+.provider-trip-document .provider-trip-actions { align-items: stretch; }
+@media (min-width: 768px) and (min-height: 700px) {
+  .provider-trip-document .provider-live-invoice { position: sticky; top: 1rem; z-index: 10; max-height: 42dvh; overflow-y: auto; }
+}
+.provider-trip-document :is(input,textarea,select,button) { scroll-margin-top: 45dvh; }
 .provider-live-invoice .invoice-summary { min-height: 136px; padding-block: .75rem; }
 .provider-trip-document form > fieldset { border: 0; padding: 0; min-width: 0; }
 .provider-trip-document > div > section > div > :is(p,[role="note"]) { max-width: none; margin-block: .75rem; padding: .75rem; text-align: left; font-size: 1rem; line-height: 1.4; }

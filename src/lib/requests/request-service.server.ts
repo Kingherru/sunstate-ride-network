@@ -11,6 +11,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {tripTimeEvidence} from "@/lib/regional-trip-times";
 import {regionalReadbackMatches} from '@/lib/regional-projections';
+import {mobilityOperationalFields} from '@/lib/trip-mobility';
 
 export type RequestCategory = "passenger_transport" | "medical_delivery";
 
@@ -173,6 +174,7 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     return_date: isRound ? (data.returnDate || data.pickupDate) : null,
     additional_stops: data.additionalStops ?? [],
     mobility_notes: data.mobilityNotes || null, special_instructions: data.specialInstructions || null,
+    ...mobilityOperationalFields(data.mobilityNotes,data.transportType),
     requester_user_id: own.requesterUserId, actor_user_id: own.actorUserId, workspace_id: own.workspaceId,
     submitted_via: own.submittedVia, on_behalf_of_user_id: own.onBehalfOfUserId ?? null, import_job_id: own.importJobId ?? null,
     recurrence_rule: data.recurrence && data.recurrence !== "none" ? data.recurrence : null,

@@ -1,0 +1,14 @@
+import {describe,it,expect,vi} from 'vitest';
+vi.mock('@tanstack/react-start',()=>({createServerFn:()=>{const b:any={middleware:()=>b,inputValidator:()=>b,handler:(h:any)=>h};return b;}}));
+vi.mock('../src/integrations/supabase/auth-middleware',()=>({requireSupabaseAuth:{}}));
+vi.mock('../src/lib/email-templates/send-email',()=>({sendTemplateEmail:vi.fn(async()=>({sent:true}))}));
+import {manageConnectionInvitation} from '../src/lib/account-connections.functions';
+import {listTripPatients} from '../src/lib/saved-patients.functions';
+import {sendTemplateEmail} from '../src/lib/email-templates/send-email';
+function builder(result:unknown){const q:any={};for(const method of ['select','eq','is','order','or','update','single','maybeSingle'])q[method]=vi.fn(()=>q);q.then=(resolve:any)=>Promise.resolve(result).then(resolve);return q;}
+describe('connected invitation and patient handler boundaries',()=>{
+ it('denies unauthorized invitation before reading recipient or sending',async()=>{const from=vi.fn();await expect((manageConnectionInvitation as any)({data:{action:'send',workspaceId:'ws',email:'synthetic@example.test',intendedType:'patient'},context:{supabase:{rpc:async()=>({data:false}),from:()=>builder({data:null})}}})).rejects.toThrow('provider');expect(sendTemplateEmail).not.toHaveBeenCalled();});
+ it('missing delivery flag never claims invitation or sends mail',async()=>{const rpc=vi.fn(async()=>({data:true}));const result=await (manageConnectionInvitation as any)({data:{action:'send',workspaceId:'ws',email:'synthetic@example.test',intendedType:'facility'},context:{supabase:{rpc,from:(table:string)=>builder({data:table==='workspaces'?{account_type:'provider',status:'active'}:null})}}});expect(result.ok).toBe(false);expect(rpc).toHaveBeenCalledTimes(1);expect(sendTemplateEmail).not.toHaveBeenCalled();});
+ it('workspace patient lookup excludes owner-wide and other-workspace filters',async()=>{const patients=builder({data:[{id:'owned-patient'}],error:null});const members=builder({data:[{workspace_id:'own',role:'owner',is_contractor:false,workspaces:{account_type:'provider',status:'active'}}]});const result=await (listTripPatients as any)({data:{workspaceId:'own'},context:{userId:'actor',supabase:{from:(t:string)=>t==='workspace_members'?members:patients}}});expect(result).toEqual([{id:'owned-patient'}]);expect(patients.eq).toHaveBeenCalledWith('workspace_id','own');expect(patients.or).not.toHaveBeenCalled();});
+ it('foreign workspace denies patient lookup before any patient projection',async()=>{const patients=vi.fn();await expect((listTripPatients as any)({data:{workspaceId:'foreign'},context:{userId:'actor',supabase:{from:(t:string)=>{if(t==='saved_patients')patients();return builder({data:[{workspace_id:'own',role:'owner',is_contractor:false,workspaces:{account_type:'provider',status:'active'}}]});}}}})).rejects.toThrow('not available');expect(patients).not.toHaveBeenCalled();});
+});

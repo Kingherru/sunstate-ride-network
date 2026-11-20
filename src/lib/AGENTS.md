@@ -36,3 +36,5 @@
 - Regional time events preserve entered local values and are independently normalized by database triggers; legacy events stay unknown. Why: DST ambiguity and browser UTC values must never silently schedule trips.
 - Directory regional projections reuse the existing verified visible-provider list and strip private geography. Why: regional filters must not widen discovery or expose service bases.
 - Driver assignment notices run server-side only after assign_trip_resources succeeds, keyed per assignment event+driver in trip_dispatch_events, gated by launch flag driver_assignment_notifications (missing=off); SMS reports provider-not-configured. Why: notices never block or duplicate assignments.
+- Provider retries reuse immutable occurrence keys; copy drafts clear dates/quotes and preserve source evidence; mobility uses canonical versioned notes. Why: no duplicate store or source overwrite.
+- Provider invitations lock workspace/recipient audit limits, rotate hashes on resend and require the delivery flag. Why: opt-in never creates identities or proves acceptance.

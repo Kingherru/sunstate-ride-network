@@ -9658,6 +9658,17 @@ export type Database = {
         Args: { _confirmed: boolean; _subtype: string; _ws: string }
         Returns: undefined
       }
+      claim_provider_invitation: {
+        Args: {
+          _action: string
+          _email: string
+          _hash: string
+          _id: string
+          _type: string
+          _ws: string
+        }
+        Returns: Json
+      }
       complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {

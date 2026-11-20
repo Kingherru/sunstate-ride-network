@@ -32,7 +32,19 @@ import { TripLegsPreview, type LegInput } from "@/components/trips/TripLegsPrevi
 import { usePortalPreview, previewBlocked, previewFixtureFor } from "@/components/portal/preview-data";
 import { saveTripDraft, deleteTripDraft } from '@/lib/trip-drafts.functions';
 import { restoreDraftFields } from '@/lib/draft-fields';
-import { DsButton } from '@/components/ds/controls';
+import { recordOwnedReferralFailure } from '@/lib/provider-referral-audit.functions';
+import {coordinateTimezone} from '@/lib/trip-location-timezone';
+import { ProviderInvitation } from '@/components/portal/ProviderInvitation';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { CheckoutAcknowledgment } from '@/components/payments/CheckoutAcknowledgment';
+import { currentCheckoutConsent } from '@/lib/payment-policy';
+import { PAYMENT_RESPONSIBILITY_WARNING } from '@/lib/trip-network-rules';
+import { continueOwnedReferral, validateReferralReview, type ReferralReview } from '@/lib/provider-referral-flow';
+import { createNetworkDistribution, sendNetworkWave, getDistributionReadiness } from '@/lib/trip-network.functions';
+import { getReferralFundingPreparation } from '@/lib/trip-invoices.functions';
+import { submitProviderOwnedTrip } from '@/lib/provider-owned-submit.functions';
+import { MOBILITY_OPTIONS, readMobility, writeMobility, matchingTripPatients } from '@/lib/trip-mobility';
+import { DsButton, DsCheckbox } from '@/components/ds/controls';
 import { PatientProviderPicker } from '@/components/network/PatientProviderPicker';
 import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
 import { LinkedPatientSelector } from '@/components/portal/LinkedPatientSelector';
@@ -47,11 +59,12 @@ import {PatientDriverSuggestion} from '@/components/portal/PatientDriverSuggesti
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 
 
-const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
+const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"]; disabled?: boolean }[] = [
   { id: "ambulatory", label: "Ambulatory", kind: "ride", type: "ambulatory" },
   { id: "wheelchair", label: "Wheelchair", kind: "ride", type: "wheelchair" },
   { id: "stretcher", label: "Stretcher", kind: "ride", type: "gurney" },
   { id: "medical-delivery", label: "Medical Delivery", kind: "delivery" },
+  { id: "child-care", label: "Child Care Transportation — Coming Soon", kind: "ride", disabled: true },
 ];
 
 const SERVICE_PARAM: Record<string, RideRequestInput["transportType"]> = { ambulatory: "ambulatory", wheelchair: "wheelchair", stretcher: "gurney" };
@@ -217,6 +230,11 @@ function haversineMiles(lat1: number | null, lng1: number | null, lat2: number |
 
 function RequestRidePage({ context, service, initialDraft, allowProviderSelection }: { context: RequestFormContext; service?: string; initialDraft?: { id: string; payload: Record<string, unknown> }; allowProviderSelection: boolean }) {
   const commerce = useContext(TripCommerceContext);
+  const auditReferralFailure=useServerFn(recordOwnedReferralFailure);
+  const ownedSubmit=useServerFn(submitProviderOwnedTrip),createReferral=useServerFn(createNetworkDistribution),sendWave=useServerFn(sendNetworkWave),readiness=useServerFn(getDistributionReadiness),fundingReview=useServerFn(getReferralFundingPreparation);
+  const [operationId]=useState(()=>crypto.randomUUID());
+  const [referralOpen,setReferralOpen]=useState(false),[compensation,setCompensation]=useState(''),[expiration,setExpiration]=useState(''),[paymentAck,setPaymentAck]=useState(false),[policyAck,setPolicyAck]=useState(false),[pendingReferral,setPendingReferral]=useState<ReferralReview|null>(null),[referralResult,setReferralResult]=useState<{message:string;reason:string|null;tripId:string}|null>(null);
+  const [fundingReviewResult,setFundingReviewResult]=useState('');
   const preview = usePortalPreview();
   const router = useRouter();
   const portal = context === "portal";
@@ -292,7 +310,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     setForm((f) => ({ ...f, [k]: v }));
 
   // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
-  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; mobility?:string|null; patient_workspace_id?:string|null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
+  const [patientSearch, setPatientSearch] = useState('');
+  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; phone: string | null; email: string | null; mobility?:string|null; oxygen_required?:boolean; assistance_needs?:string|null; default_pickup_address?:string|null; default_pickup_city?:string|null; default_dropoff_address?:string|null; default_dropoff_city?:string|null; state?:string|null; zip?:string|null; county_equivalent?:string|null; timezone?:string|null; patient_workspace_id?:string|null; default_payer_id: string | null; active: boolean; kind: string | null }[]>([]);
   const [payers, setPayers] = useState<{ id: string; name: string; email: string | null; phone: string | null; active: boolean | null }[]>([]);
   const [patientChoice, setPatientChoice] = useState(String(initialDraft?.payload.savedPatientId ?? initialDraft?.payload.saved_patient_id ?? ''));
   const [payerNote, setPayerNote] = useState<string | null>(null);
@@ -318,7 +337,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     let cancelled = false;
     (async () => {
       try {
-        const [pts, pys, prefs,defaults,cts] = await Promise.all([listTripPatients(), listMyPayers(), getPortalPreferences(),loadDefaults(),loadContacts()]);
+        const [pts, pys, prefs,defaults,cts] = await Promise.all([listTripPatients({data:{workspaceId:commerce?.workspaceId}}), listMyPayers(), getPortalPreferences(),loadDefaults(),loadContacts()]);
         if (cancelled) return;
         setPatients((pts as any[]).filter((x) => x.active !== false && (x.kind ?? "patient") === "patient"));
         setPayers(pys as any[]);
@@ -335,16 +354,16 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [portal]);
   const choosePatient = (id: string) => {
-    setPatientChoice(id);
+    setPatientChoice(id); setPatientSearch('');
     const p = patients.find((x) => x.id === id);
     if (!p) return;
-    setForm((f) => ({ ...f,...approvedPatientDefaults(p),savedPatientId:p.id,patientWorkspaceId:(p as {patient_workspace_id?:string|null}).patient_workspace_id??null }));
+    setForm((f) => ({ ...f,...approvedPatientDefaults(p),pickupAddress:p.default_pickup_address??f.pickupAddress,pickupCity:p.default_pickup_city??f.pickupCity,dropoffAddress:p.default_dropoff_address??f.dropoffAddress,dropoffCity:p.default_dropoff_city??f.dropoffCity,pickupState:p.state||f.pickupState,pickupZip:p.zip??f.pickupZip,pickupCounty:p.county_equivalent??f.pickupCounty,pickupTimezone:p.timezone||f.pickupTimezone,mobilityNotes:writeMobility(p.assistance_needs??f.mobilityNotes,[...(p.mobility==='wheelchair'?['Wheelchair Required' as const]:[]),...(p.oxygen_required?['Oxygen Required' as const]:[])]),savedPatientId:p.id,patientWorkspaceId:(p as {patient_workspace_id?:string|null}).patient_workspace_id??null } as RideRequestInput));
     if (p.default_payer_id) applyPayer(p.default_payer_id);
   };
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: {preventDefault:()=>void}, referralIntent=false) {
     e.preventDefault();
-    if (preview.active) { previewBlocked(); return; }
+    if (preview.active && !referralIntent) { previewBlocked(); return; }
     if (commerce?.submissionBlocked) { toast.error('Confirm the changed quote first, or finish the separate controlled Network preparation. Nothing was submitted.'); return; }
     setErrors({});
     const withBilling: RideRequestInput = {
@@ -392,15 +411,23 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
       return;
     }
 
+    if(referralIntent){setReferralOpen(true);return;}
     setSubmitting(true);
     try {
-      const res = await submit({ data: parsed.data });
+      const res = commerce?.provider && commerce.workspaceId ? await ownedSubmit({data:{request:parsed.data,operationId,workspaceId:commerce.workspaceId}}) : await submit({ data: parsed.data });
       if (res.ok) {
         if (draftId && !commerce?.quote) { try { await removeDraft({ data: { draft_id: draftId } }); } catch { toast.error('Request received, but the saved draft could not be removed.'); } }
+        if(pendingReferral){
+          const tripId='tripId' in res ? res.tripId : null;
+          if(tripId){const result=await continueOwnedReferral(tripId,pendingReferral,{prepare:async(id,review)=>{const ready=await readiness({data:{trip_id:id}});if(ready.missing.length)throw new Error('Source readiness required');return (await createReferral({data:{trip_id:id,amount_cents:review.amountCents,expires_at:review.expiresAt,payment_responsibility_confirmed:true,policyConsent:review.consent}})).id;},send:id=>sendWave({data:{distribution_id:id}})});setReferralResult(result);toast(result.message);if(!result.sent && commerce?.workspaceId){try{await auditReferralFailure({data:{workspaceId:commerce.workspaceId,tripId}});}catch{toast.error('Trip retained; referral failure audit could not be recorded.');}}}
+          else setReferralResult({tripId:res.id,message:'Trip saved — referral not sent',reason:'Owned operational trip linkage requires review.'});
+          setPendingReferral(null);
+        }
         // Geocode + compute miles, drive time, traffic-aware ETA & polyline in the background;
         // if it fails we still confirm the booking.
         let enrichedInfo: Partial<NonNullable<typeof done>> = {};
         try {
+          if (!('enrichmentToken' in res)) throw new Error('Provider route review remains separate');
           const enriched = await enrich({ data: { id: res.id, token: res.enrichmentToken } });
           if (enriched.ok) {
             enrichedInfo = {
@@ -431,6 +458,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     }
   }
 
+  useEffect(()=>{if(pendingReferral)void onSubmit({preventDefault:()=>{}});},[pendingReferral]);
+
   if (done) {
     const hasRoute =
       done.miles != null ||
@@ -443,7 +472,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
           <p className=" text-xs font-bold text-ds-accent-active uppercase tracking-[0.2em] mb-4">
             Confirmation {(done as any).mfnId ?? `#${done.id.slice(0, 8).toUpperCase()}`}
           </p>
-          <h1 className="ds-display mb-6 uppercase text-ds-primary">Trip request submitted</h1>
+          <h1 className="ds-display mb-6 uppercase text-ds-primary">{referralResult?.message??'Trip request submitted'}</h1>
+          {referralResult && <div role="status"><p>{referralResult.reason}</p><Link to="/portal/network" className="ds-label text-ds-link underline">Review / retry in Network</Link></div>}
 
           {hasRoute && (
             <div className="bg-ds-surface border border-ds-border rounded-ds-sm p-5 mb-6 text-left">
@@ -515,26 +545,26 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     <section className={portal ? "" : "bg-ds-bg px-5 py-16 sm:px-6 lg:py-20"}>
       <div className={portal ? 'min-w-0 w-full' : 'mx-auto max-w-3xl'}>
         {!commerce && (portal ? <h1 className="ds-section-title uppercase text-ds-primary">New trip</h1> : <h1 className="ds-display text-center uppercase text-ds-primary">Book a trip</h1>)}
-        <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
+        {!commerce?.provider && <p className="ds-body-lg mx-auto mt-4 max-w-[46rem] text-center text-ds-text-2">
           {patientAccount ? 'Choose your provider and enter your trip details. Acceptance is not guaranteed.' : commerce ? allowProviderSelection ? 'Prepare a request for your selected provider. Your facility’s billing responsibility and approved agreement are reviewed separately. Acceptance is not guaranteed.' : 'Prepare your own workspace trip. Saving or submitting does not share it to the Referral Network, send an invoice or collect payment.' : 'Share the trip details below. Requests stay under MY FLORIDA NEMT review unless you intentionally select a provider. Submitting does not guarantee a ride.'}
-        </p>
-        <div role="note" className="ds-body-lg mx-auto mt-6 mb-6 max-w-[46rem] rounded-ds bg-ds-membership p-5 text-center text-ds-primary">
+        </p>}
+        {!commerce?.provider && <div role="note" className="ds-body-lg mx-auto mt-6 mb-6 max-w-[46rem] rounded-ds bg-ds-membership p-5 text-center text-ds-primary">
           <strong>We recommend submitting requests 48–72 hours in advance.</strong> Short-notice requests may be submitted for review, but availability and acceptance are not guaranteed.
-        </div>
-        <NonEmergencyNotice className="mb-10" />
-        {portal && !onBehalf && kind === 'ride' && <div className="mb-5 flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={onSaveDraft}>{savingDraft ? 'Saving…' : 'Save draft'}</DsButton></div>}
+        </div>}
+        {!commerce?.provider && <NonEmergencyNotice className="mb-10" />}
+        {portal && !onBehalf && !commerce?.provider && kind === 'ride' && <div className="mb-5 flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={onSaveDraft}>{savingDraft ? 'Saving…' : 'Save draft'}</DsButton></div>}
 
         <fieldset className="mb-8">
-          <legend className="ds-label mb-3 block text-ds-on-surface">What do you need? <span className="text-ds-accent-active">*</span></legend>
-          <div role="radiogroup" aria-label="Service" className="grid gap-3 sm:grid-cols-2">
-            {SERVICE_CHOICES.map((c) => {
+          <legend className={commerce?.provider ? "sr-only" : "ds-label mb-3 block text-ds-on-surface"}>{commerce?.provider ? "Service" : "What do you need?"}</legend>
+          <div role="radiogroup" aria-label="Service" className={commerce?.provider ? "grid gap-2 sm:grid-cols-2 xl:grid-cols-5" : "grid gap-3 sm:grid-cols-2"}>
+            {SERVICE_CHOICES.filter(c=>commerce?.provider || !c.disabled).map((c) => {
               const on = c.kind === "delivery" ? kind === "delivery" : kind === "ride" && form.transportType === c.type;
               return (
-                <button key={c.id} type="button" role="radio" aria-checked={on}
+                <DsButton key={c.id} type="button" role="radio" aria-checked={on && !c.disabled} disabled={c.disabled} variant={on ? "primary" : "secondary"}
                   onClick={() => { setKind(c.kind); if (c.type) upd("transportType", c.type); }}
                   className={`ds-button-text min-h-12 min-w-0 rounded-ds-sm px-3 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus ${on ? "bg-ds-action text-ds-on-action" : "bg-ds-sky text-ds-primary hover:bg-ds-hover"}`}>
                   {c.label}
-                </button>
+                </DsButton>
               );
             })}
           </div>
@@ -572,18 +602,19 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             {payerNote && <p className="ds-support rounded-ds-sm border border-ds-border bg-ds-bg px-3 py-2">{payerNote}</p>}
             <div className="grid md:grid-cols-2 gap-6">
               <Field label="First name" required error={errors.patientFirstName}>
-                <input className={inputCls} value={form.patientFirstName} onChange={(e) => upd("patientFirstName", e.target.value)} />
+                <input className={inputCls} value={form.patientFirstName} onChange={(e) => { upd("patientFirstName", e.target.value); setPatientSearch(e.target.value); }} />
               </Field>
               <Field label="Last name" required error={errors.patientLastName}>
-                <input className={inputCls} value={form.patientLastName} onChange={(e) => upd("patientLastName", e.target.value)} />
+                <input className={inputCls} value={form.patientLastName} onChange={(e) => { upd("patientLastName", e.target.value); setPatientSearch(e.target.value); }} />
               </Field>
               <Field label="Phone" required error={errors.patientPhone}>
-                <input type="tel" className={inputCls} value={form.patientPhone} onChange={(e) => upd("patientPhone", e.target.value)} placeholder="(555) 555-0123" />
+                <input type="tel" className={inputCls} value={form.patientPhone} onChange={(e) => { upd("patientPhone", e.target.value); setPatientSearch(e.target.value); }} placeholder="(555) 555-0123" />
               </Field>
               <Field label="Email" error={errors.patientEmail}>
-                <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => upd("patientEmail", e.target.value)} />
+                <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => { upd("patientEmail", e.target.value); setPatientSearch(e.target.value); }} />
               </Field>
             </div>
+            {commerce?.provider && matchingTripPatients(patients,patientSearch).length>0 && <div role="listbox" aria-label="Matching saved patients" className="grid gap-2">{matchingTripPatients(patients,patientSearch).map(p=><DsButton key={p.id} type="button" role="option" aria-selected={patientChoice===p.id} variant="secondary" onClick={()=>choosePatient(p.id)}>{p.first_name} {p.last_name} · {p.phone??p.email}</DsButton>)}</div>}
           </fieldset>
 
           {commerce?.provider && (<fieldset className="space-y-4">
@@ -668,7 +699,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 onSelect={(sel: AddressSelection) => {
                   upd("pickupAddress", sel.address);
                   if (sel.city) upd("pickupCity", sel.city);
-                  setForm(f=>({...f,pickupState:sel.state||undefined,pickupZip:sel.zip,pickupCounty:sel.county,pickupTimezone:''}));
+                  setForm(f=>({...f,pickupState:sel.state||undefined,pickupZip:sel.zip,pickupCounty:sel.county,pickupTimezone:coordinateTimezone(sel.lat,sel.lng) as RideRequestInput['pickupTimezone']}));
                   setPickupMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
                 }}
                 placeholder="Street, suite/unit"
@@ -735,6 +766,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Drop-off
             </legend>
+            {commerce?.provider && <div className="grid gap-4 sm:grid-cols-2"><Field label="Drop-Off Date"><DatePickerField value={form.dropoffDate||form.pickupDate} onChange={v=>upd("dropoffDate",v)}/></Field><Field label="Expected Drop-Off Time"><TimePickerField value={form.dropoffTime||""} pickupDate={form.dropoffDate||form.pickupDate} onChange={v=>upd("dropoffTime",v)} /></Field></div>}
             <Field label="Drop-off address" required error={errors.dropoffAddress}>
               <AddressAutocomplete
                 value={form.dropoffAddress}
@@ -742,7 +774,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 onSelect={(sel: AddressSelection) => {
                   upd("dropoffAddress", sel.address);
                   if (sel.city) upd("dropoffCity", sel.city);
-                  setForm(f=>({...f,dropoffState:sel.state||undefined,dropoffZip:sel.zip,dropoffCounty:sel.county,dropoffTimezone:''}));
+                  setForm(f=>({...f,dropoffState:sel.state||undefined,dropoffZip:sel.zip,dropoffCounty:sel.county,dropoffTimezone:coordinateTimezone(sel.lat,sel.lng) as RideRequestInput['dropoffTimezone']}));
                   setDropoffMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
                 }}
                 className={inputCls}
@@ -751,7 +783,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <Field label="City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>
-            <RegionalAddressFields value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
+            <RegionalAddressFields hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
             {!commerce && form.pickupState==='FL' && form.dropoffState==='FL' && (
               <PriceEstimate
                 pickupZip={pickupMeta.zip}
@@ -958,17 +990,9 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 ))}
               </div>
             )}
-            <div className="grid gap-4 sm:grid-cols-2"><Field label="Destination local date"><input type="date" className={inputCls} value={form.dropoffDate||form.pickupDate} onChange={e=>upd("dropoffDate",e.target.value)}/></Field><Field label="Expected destination local time"><input type="time" className={inputCls} value={form.dropoffTime||""} onChange={e=>upd("dropoffTime",e.target.value)}/></Field></div>
-            <TripLegsPreview className="mt-2" legs={buildLegs(form)} />
-            <Field label="Mobility notes" error={errors.mobilityNotes}>
-              <textarea
-                className={`${inputCls} min-h-[80px]`}
-                value={form.mobilityNotes}
-                onChange={(e) => upd("mobilityNotes", e.target.value)}
-                placeholder="Oxygen, walker, transfer assistance, weight considerations..."
-              />
-            </Field>
-            <Field label="Special instructions" error={errors.specialInstructions}>
+            {!commerce?.provider && <><TripLegsPreview className="mt-2" legs={buildLegs(form)} /><Field label="Mobility notes" error={errors.mobilityNotes}><textarea className={inputCls} value={form.mobilityNotes} onChange={e=>upd('mobilityNotes',e.target.value)}/></Field></>}
+            {commerce?.provider && <div className="space-y-3"><h3 className="ds-label">Mobility requirements</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{MOBILITY_OPTIONS.map(option=><DsCheckbox key={option} label={option} checked={readMobility(form.mobilityNotes).selected.includes(option)} onChange={e=>upd('mobilityNotes',writeMobility(form.mobilityNotes,e.target.checked?[...readMobility(form.mobilityNotes).selected,option]:readMobility(form.mobilityNotes).selected.filter(v=>v!==option)))}/>)}</div>{readMobility(form.mobilityNotes).legacy && <p className="ds-support whitespace-pre-wrap">Retained mobility notes: {readMobility(form.mobilityNotes).legacy}</p>}{readMobility(form.mobilityNotes).selected.length>0 && <p className="ds-caption">Add any required equipment, escort count or assistance details below.</p>}</div>}
+            <Field label={commerce?.provider ? "Mobility / Special Instructions" : "Special instructions"} error={errors.specialInstructions}>
               <textarea
                 className={`${inputCls} min-h-[80px]`}
                 value={form.specialInstructions}
@@ -1055,29 +1079,28 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             ))}
           </datalist>
 
-          <p className="ds-body rounded-ds-sm bg-ds-sky p-4 text-ds-on-surface">
-            Want to track requests and save details for next time? <a href={LINKS.createAccount} className="font-semibold text-ds-link underline underline-offset-4">Create an account</a> — it's optional.
-          </p>
+          {!commerce?.provider && <p className="ds-body rounded-ds-sm bg-ds-sky p-4 text-ds-on-surface">
+            Want to track requests and save details for next time? <a href={LINKS.createAccount} className="font-semibold text-ds-link underline underline-offset-4">Create your own Patient/Personal or Facility account</a> — it's optional.
+          </p>}
 
-          <div className="flex flex-wrap items-stretch gap-3">
+          {commerce?.provider && commerce.workspaceId && <ProviderInvitation workspaceId={commerce.workspaceId}/>}
+          {commerce?.invoiceBottomSlot}
+          <div className="provider-trip-actions flex flex-wrap items-stretch gap-3">
             {portal && !onBehalf && (
               <DsButton type="button" variant="secondary" disabled={savingDraft || submitting} onClick={onSaveDraft} className="whitespace-nowrap">
                 {savingDraft ? "Saving…" : "Save draft"}
               </DsButton>
             )}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="min-w-0 flex-1 px-4 py-5 bg-ds-action text-ds-on-action font-bold rounded-ds-sm text-sm uppercase hover:bg-ds-action-hover transition-all disabled:opacity-60"
-            >
-              {submitting ? "SUBMITTING…" : "SUBMIT TRIP REQUEST"}
-            </button>
+            <DsButton type="submit" disabled={submitting || commerce?.submissionBlocked}>{submitting ? "Submitting…" : "Submit Trip Request"}</DsButton>
+            {commerce?.provider && <DsButton type="button" variant="secondary" disabled={submitting || commerce.submissionBlocked} onClick={()=>{setPendingReferral(null);void onSubmit({preventDefault:()=>{}},true);}}>Submit to Referral Network</DsButton>}
+
           </div>
           <p className="text-xs text-ds-text-2 text-center">
             By submitting you agree to be contacted about this trip. Submitting is a request, not a confirmed booking.
           </p>
         </form>
         )}
+        <Dialog open={referralOpen} onOpenChange={setReferralOpen}><DialogContent className="provider-trip-dialog theme-portal max-h-[85dvh] overflow-y-auto"><DialogTitle>Submit to Referral Network</DialogTitle><DialogDescription>The owned trip saves first. A controlled offer requires eligible membership, verified funding, approved launch settings and eligible receivers. No open statewide pool.</DialogDescription><Field label="Provider compensation ($)"><input type="number" min="0.01" step="0.01" className={inputCls} value={compensation} onChange={e=>{setCompensation(e.target.value);setFundingReviewResult('');setPaymentAck(false);setPolicyAck(false);}}/></Field><Field label="Offer expiration"><input type="datetime-local" className={inputCls} value={expiration} onChange={e=>setExpiration(e.target.value)}/></Field><p className="ds-support">{PAYMENT_RESPONSIBILITY_WARNING}</p><DsCheckbox label="I am responsible for paying the receiving provider" checked={paymentAck} onChange={e=>setPaymentAck(e.target.checked)}/><CheckoutAcknowledgment accepted={policyAck} onChange={setPolicyAck}/><DsButton type="button" variant="secondary" disabled={!compensation} onClick={async()=>{if(preview.active){setFundingReviewResult('Preview only — not funded. No offer or payment created.');return;}if(!commerce?.workspaceId)return;try{const r=await fundingReview({data:{workspaceId:commerce.workspaceId,receiverCents:Math.round(Number(compensation)*100),environment:'sandbox'}});setFundingReviewResult(`${r.totalCents===null?'Funding configuration required':`Reviewed sender total $${(r.totalCents/100).toFixed(2)}`} · ${r.blocker}`);}catch{setFundingReviewResult('Funding review unavailable.');}}}>Review funding preparation</DsButton>{fundingReviewResult&&<p role="status" className="ds-support">{fundingReviewResult}</p>}<DsButton type="button" disabled={submitting||!paymentAck||!policyAck||!compensation||!expiration||!fundingReviewResult} onClick={()=>{try{const review={amountCents:Math.round(Number(compensation)*100),expiresAt:new Date(expiration).toISOString(),paymentAcknowledged:paymentAck,consent:currentCheckoutConsent(policyAck)};validateReferralReview(review);if(preview.active){previewBlocked();return;}setPendingReferral(review);setReferralOpen(false);}catch{toast.error('Review compensation, expiration and current terms.');}}}>Confirm referral intent</DsButton>{pendingReferral&&<p className="ds-caption">Submit the reviewed trip to continue.</p>}<DsButton type="button" variant="secondary" onClick={()=>setReferralOpen(false)}>Cancel</DsButton></DialogContent></Dialog>
         {addingPayer && <PayerDialog payer={{active:true}} contacts={contacts.map(c=>({id:c.id,name:c.company_name||`${c.first_name??''} ${c.last_name??''}`}))} onClose={()=>setAddingPayer(false)} onSaved={()=>{setAddingPayer(false);if(!preview.active)void loadPayers().then(setPayers);}}/>}
         {addingContact && <ContactDialog contact={{contact_type:'personal',coordination_allowed:true}} payers={payers.map(p=>({id:p.id,name:p.name}))} onClose={()=>setAddingContact(false)} onSaved={()=>{setAddingContact(false);if(!preview.active)void loadContacts().then(setContacts);}}/>}
       </div>
@@ -1125,7 +1148,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   const upd = <K extends keyof DeliveryRequestInput>(k: K, v: DeliveryRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: {preventDefault:()=>void}, referralIntent=false) {
     e.preventDefault();
     setErrors({});
     if (preview.active) { previewBlocked(); return; }

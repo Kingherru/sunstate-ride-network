@@ -89,12 +89,13 @@ function OfferResponse({ offer, source = false, onClose, actionsDisabled = false
     </div>
   </DetailOverlayFrame>;
 }
-export function ProviderNetworkOffers({actionsDisabled = false}: {actionsDisabled?: boolean} = {}) {
+export function ProviderNetworkOffers({actionsDisabled = false,pendingOnly=false}: {actionsDisabled?: boolean;pendingOnly?:boolean} = {}) {
   const list = useServerFn(listNetworkOffers);
   const q = usePortalQuery({ queryKey: ['network-offers'], queryFn: () => list() });
   const [review, setReview] = useState<NetworkOffer | null>(null);
   const read=useServerFn(readOfferWatermarks),mark=useServerFn(markOffersRead),preview=usePortalPreview();
-  const ids=(q.data??[]).map(o=>o.id);
+  const visible=(q.data??[]).filter(o=>!pendingOnly || ['pending','countered','revised'].includes(o.status) && Date.parse(o.expires_at)>Date.now());
+  const ids=visible.map(o=>o.id);
   const watermarks=usePortalQuery({queryKey:['offer-watermarks',ids],queryFn:()=>read({data:{ids}}),enabled:ids.length>0});
   const markAll=usePortalMutation({mutationFn:()=>mark({data:{items:(watermarks.data??[]).map(s=>({id:s.id,revision:s.revision}))}}),onSuccess:()=>watermarks.refetch(),onError:(e:Error)=>toast.error(e.message)});
   return <div className="space-y-4">
@@ -102,7 +103,7 @@ export function ProviderNetworkOffers({actionsDisabled = false}: {actionsDisable
     {q.isLoading && <p className="ds-body">Loading offers…</p>}
     {!!q.error && <p role="alert" className="text-ds-error">Could not load offers.</p>}
     {!q.isLoading && !q.error && !q.data?.length && <p className="ds-body text-ds-muted py-6">No offers addressed to your business yet.</p>}
-    <div className="divide-y divide-ds-border">{(q.data ?? []).map(o => <article key={o.id} role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }} className="cursor-pointer min-w-0 bg-ds-surface py-5 space-y-3 focus-visible:outline-2 focus-visible:outline-ds-focus">
+    <div className="divide-y divide-ds-border">{visible.map(o => <article key={o.id} role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }} className="cursor-pointer min-w-0 bg-ds-surface py-5 space-y-3 focus-visible:outline-2 focus-visible:outline-ds-focus">
       <div className="flex flex-wrap justify-between gap-2"><span className="font-mono ds-support">{o.mfn_id}</span>{(preview.active||watermarks.data?.find(s=>s.id===o.id)?.unread)&&<span className="inline-flex items-center gap-1.5"><NotificationIndicator label="Unread or changed offer" /><span data-overflow-text className="ds-support">Unread / changed</span></span>}<span className="ds-label uppercase text-ds-primary">{label(o.status)}</span></div>
       <h3 className="ds-subheading text-ds-primary">{o.pickup_area} → {o.destination_area}</h3>
       <p className="ds-support font-mono">{o.source_mfn_id}</p><p className="ds-body">{o.pickup_date} · {o.pickup_time.slice(0,5)} · {label(o.trip_type)}</p>
@@ -116,7 +117,7 @@ export function ProviderNetworkOffers({actionsDisabled = false}: {actionsDisable
     {review && <OfferResponse offer={review} actionsDisabled={actionsDisabled} onClose={() => setReview(null)} />}
   </div>;
 }
-export function DistributionActivity({ admin = false }: { admin?: boolean }) {
+export function DistributionActivity({ admin = false,pendingOnly=false }: { admin?: boolean;pendingOnly?:boolean }) {
   const openDetails = useRequestDetails();
   const list = useServerFn(listNetworkActivity), send = useServerFn(sendNetworkWave);
   const q = usePortalQuery({ queryKey: ['network-activity'], queryFn: () => list() });
@@ -130,7 +131,7 @@ export function DistributionActivity({ admin = false }: { admin?: boolean }) {
     <DsField label="Distribution status">{p => <DsSelect {...p} className="max-w-sm" value={filter} onChange={e => setFilter(e.target.value)}>{['all','ready','offers_sent','negotiating','provider_selected','needs_attention','closed','unavailable'].map(s => <option value={s} key={s}>{label(s)}</option>)}</DsSelect>}</DsField>
     {!!q.error && <p role="alert" className="text-ds-error">Could not load network activity.</p>}
     {!q.isLoading && !q.data?.length && <p className="ds-body text-ds-muted">No controlled distributions yet.</p>}
-    {(q.data ?? []).filter(d => filter==='all' || d.status===filter).map(d => <details key={d.id} className="min-w-0 border-b border-ds-border bg-ds-surface py-5" onClick={e => { if ((e.target as HTMLElement).closest('button, input, select, textarea, summary')) return; if (d.request_id || d.trip_id) openDetails({ kind: d.request_id ? 'request' : 'trip', id: d.request_id || d.trip_id || '' }); }}>
+    {(q.data ?? []).filter(d => (!pendingOnly || !d.offers.some(o=>o.status==='accepted') && ['ready','offers_sent','negotiating','needs_attention'].includes(d.status)) && (filter==='all' || d.status===filter)).map(d => <details key={d.id} className="min-w-0 border-b border-ds-border bg-ds-surface py-5" onClick={e => { if ((e.target as HTMLElement).closest('button, input, select, textarea, summary')) return; if (d.request_id || d.trip_id) openDetails({ kind: d.request_id ? 'request' : 'trip', id: d.request_id || d.trip_id || '' }); }}>
       <summary className="cursor-pointer ds-body font-semibold text-ds-primary">{d.status==='needs_attention' && <AlertTriangle className="inline size-4 mr-2 text-ds-error" />}{d.mfn_id} · {d.pickup_area} → {d.destination_area} · {label(d.status)}</summary>
       <DsButton variant="ghost" size="sm" className="mt-2" onClick={e => { const details = e.currentTarget.closest('details'); if (details) details.open = !details.open; }}>Distribution actions and history</DsButton>
       <div className="space-y-4 mt-4"><p className="ds-body">{d.source_business || 'Public request'} · {d.source_mfn_id} · <span className="portal-money">{money(d.amount_cents)}</span> · {d.pickup_date} {d.pickup_time}</p>

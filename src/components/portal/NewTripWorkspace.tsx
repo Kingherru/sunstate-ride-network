@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { FileText, RefreshCw, ChevronDown, CreditCard, Download } from 'lucide-react';
+import { FileText, RefreshCw, ChevronDown, CreditCard, Download, X } from 'lucide-react';
 import {previewDraftInvoice} from '@/lib/draft-invoice.functions';
 import {FacilityQuoteInbox} from './FacilityQuoteInbox';
 import {requestFacilityQuote} from '@/lib/facility-billing.functions';
@@ -24,11 +24,13 @@ import { TripInvoiceDetails } from './TripInvoiceDetails';
 import { regionalInvoiceProjection } from '@/lib/regional-projections';
 import { tripTimeEvidence } from '@/lib/regional-trip-times';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { TripLegsPreview } from '@/components/trips/TripLegsPreview';
 const money = (c: number) => (c / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const warning = 'Warning: You are responsible for paying for trips you send to other providers. Failure to pay may result in the loss of your verification status, account suspension, or removal from the platform.';
 type Quote = { id: string; lines: InvoiceLine[]; totalCents: number; version: number; rateVersion?: number; terms?: string; trip?: {miles?:number;waitMinutes?:number}; pricingSnapshot?: {version:number} };
 export function NewTripWorkspace({ workspaceId, provider, patient = false, initialDraft }: { workspaceId: string; provider: boolean; patient?: boolean; initialDraft?: { id: string; payload: Record<string, unknown>; quoteHistory?: unknown } }) {
   const draftPreview=useServerFn(previewDraftInvoice);
+  const [minimized, setMinimized] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [showInvoice, setShowInvoice] = useState(initialDraft?.payload.showInvoiceToLinkedAccount !== false);
   const [invoicePreview,setInvoicePreview]=useState<TripInvoice|null>(null);
@@ -102,7 +104,7 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
   }
   const invoice = (
       <aside className={`trip-financial-panel min-w-0 border border-ds-border bg-ds-surface ${provider ? "provider-live-invoice" : ""}`} aria-label={network ? 'Referral funding preparation' : 'Live invoice estimate'}>
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border bg-ds-sky px-4 py-3"><h2 className="ds-subheading uppercase">{network ? 'Fund Referral' : 'Live Invoice'}</h2><FileText className="size-5 shrink-0 text-ds-primary"/></header>
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border bg-ds-sky px-4 py-3"><h2 className="ds-subheading uppercase">{network ? 'Fund Referral' : 'Live Invoice'}</h2>{provider ? <DsButton type="button" variant="ghost" size="sm" aria-label="Minimize live invoice" onClick={()=>setMinimized(true)}><X className="size-4"/></DsButton> : <FileText className="size-5 shrink-0 text-ds-primary"/>}</header>
         {!provider && <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border p-4"><div className="min-w-0"><p className="ds-caption">{preview.active && examples ? 'Preview invoice — not issued' : unchanged && confirmed ? 'Confirmed Quote' : 'Estimate'}</p><span className="portal-money">{preview.active && examples ? money(REGIONAL_DEMO_INVOICE.totalCents) : 'Provider quote required'}</span></div><DsButton type="button" variant="ghost" className="lg:hidden" onClick={() => setDetails(!details)} aria-expanded={details}>{details ? 'Hide details' : 'View details'}</DsButton></div>}
         {provider && <div className="invoice-summary grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto]">
           <div className="min-w-0"><p className="ds-caption">{network ? 'Not funded' : unchanged && confirmed ? 'Confirmed quote' : 'Estimate — not issued'}</p><span className="portal-money">{network ? funding?.totalCents != null ? money(funding.totalCents) : 'Funding required' : estimating ? 'Updating…' : shown ? money(shown.totalCents) : provider ? 'Confirmed mileage and configured pricing required' : 'Provider quote required'}</span><p className="ds-caption mt-1">{provider ? manualConfirmed ? `${miles} confirmed route miles` : 'Enter and confirm actual route mileage' : 'Provider mileage required'} · {form && 'tripType' in form ? form.tripType === 'round_trip' ? 'Round trip' : form.tripType === 'multi_trip' ? 'Multi-leg' : 'One way' : 'Medical delivery'}</p>{confirmed && !unchanged && <p role="status" className="ds-caption mt-1">Trip or pricing changed — refresh and reconfirm the quote.</p>}</div>
@@ -113,6 +115,7 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
           {provider && <div className="sm:col-span-2"><DsCheckbox label="Show invoice to linked patient/facility" checked={showInvoice} onChange={e=>setShowInvoice(e.target.checked)}/><p className="ds-caption">Invoice only; authorized trip access is unchanged. Retained when the draft quote is saved.</p></div>}
         </div>}
         <div id="live-invoice-details" className={`${details ? 'block' : 'hidden'} ${provider ? '' : 'md:block'} space-y-5 p-4 border-t border-ds-border`}>
+          {provider && form && 'tripType' in form && <TripLegsPreview title="Trip Review" legs={[{label:'Pickup',from:form.pickupAddress,to:form.dropoffAddress,date:form.pickupDate,time:form.pickupTime,note:`${form.transportType} · Drop-off ${form.dropoffDate||form.pickupDate} ${form.dropoffTime||'Time not supplied'}`},...(form.tripType==='round_trip'?[{label:'Return',from:form.dropoffAddress,to:form.pickupAddress,date:form.returnDate||form.pickupDate,time:form.returnPickupTime||''}]:[])]}/>}
           {preview.active && <div className="flex flex-wrap gap-2"><p className="ds-caption">Preview example — financial actions unavailable.</p><DsButton type="button" variant="ghost" onClick={() => setExamples(!examples)}>{examples ? 'Remove example' : 'Show example'}</DsButton></div>}
           {preview.active && preview.examples !== false && examples && !provider && <TripInvoiceDetails invoice={{...REGIONAL_DEMO_INVOICE, billTo: patient ? 'Pat Patient (Demo)' : 'Demo Facility', regionalContext: form ? regionalInvoiceProjection({...form,events:tripTimeEvidence(form)}) : REGIONAL_DEMO_INVOICE.regionalContext}}/>}
           {provider && <DsCheckbox label="Referral funding — available after an owned trip exists" disabled checked={network} onChange={e => { setNetwork(e.target.checked); setFunding(null); setAck(false); setPolicyAccepted(false); }}/>}
@@ -144,11 +147,11 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
         </div>
       </aside>
   );
-  return <TripCommerceContext.Provider value={{ onChange: change, draftId, onDraftSaved: setDraftId, quote: attachment, business: true, provider, submissionBlocked: network || !!confirmed && !unchanged, ...(provider ? {invoiceSlot: invoice, draftExtras: {showInvoiceToLinkedAccount: showInvoice}} : {}) }}>
+  return <TripCommerceContext.Provider value={{ onChange: change, draftId, onDraftSaved: setDraftId, quote: attachment, business: true, provider, submissionBlocked: network || !!confirmed && !unchanged, ...(provider ? {workspaceId, invoiceSlot: minimized ? null : invoice, invoiceBottomSlot: minimized ? <div className="provider-invoice-minimized border border-ds-border bg-ds-sky p-3 flex flex-wrap justify-between items-center gap-3"><span className="ds-label">Live Invoice · {shown ? money(shown.totalCents) : 'Estimate unavailable'}</span><DsButton type="button" variant="secondary" aria-label="Expand live invoice" onClick={()=>{setMinimized(false);setDetails(true);}}>Invoice details<ChevronDown className="size-4"/></DsButton></div> : null, draftExtras: {showInvoiceToLinkedAccount: showInvoice}} : {}) }}>
     <div className={`trip-workspace min-w-0 ${provider ? 'provider-trip-document bg-ds-surface p-4 sm:p-5 lg:p-6' : `grid gap-6 ${patient ? '' : 'md:grid-cols-2'}`}`}>
       <div className="min-w-0"><h1 className="sr-only">New trip</h1><RequestForm context="portal" initialDraft={initialDraft} allowProviderSelection={!provider}/></div>
       {!provider && invoice}
     </div>
-    <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}><DialogContent><DialogTitle>Secure invoice payment</DialogTitle><DialogDescription>Secure invoice collection is not enabled. An issued invoice, approved Stripe/payment configuration, account binding and payment-policy approval are required. This draft is not a payable invoice. No payment was created and no card information is collected.</DialogDescription><DsButton type="button" variant="secondary" onClick={()=>setPaymentOpen(false)}>Close</DsButton></DialogContent></Dialog>
+    <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}><DialogContent className="provider-trip-dialog theme-portal"><DialogTitle>Secure invoice payment</DialogTitle><DialogDescription>Secure invoice collection is not enabled. An issued invoice, approved Stripe/payment configuration, account binding and payment-policy approval are required. This draft is not a payable invoice. No payment was created and no card information is collected.</DialogDescription><DsButton type="button" variant="secondary" onClick={()=>setPaymentOpen(false)}>Close</DsButton></DialogContent></Dialog>
   </TripCommerceContext.Provider>;
 }

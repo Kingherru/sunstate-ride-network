@@ -1065,6 +1065,13 @@
       "when": 1795140944618,
       "tag": "0151_provider_invoice_linked_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 152,
+      "version": "7",
+      "when": 1795144945007,
+      "tag": "0152_secure_provider_invitation_delivery_claim",
+      "breakpoints": true
     }
   ]
 }

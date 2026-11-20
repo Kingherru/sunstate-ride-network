@@ -7,6 +7,7 @@ import { PortalTabbedLayout } from "@/components/portal/PortalTabbedLayout";
 import {ProviderExports} from './ProviderExports';
 import {SelectedTripExport} from './SelectedTripExport';
 import { usePortalPreview } from './preview-data';
+import { ProviderNetworkOffers,DistributionActivity } from './TripNetwork';
 import { NewTripWorkspace } from './NewTripWorkspace';
 import { RequestForm } from '@/components/requests/RequestForm';
 import { SegTabs } from './SegTabs';
@@ -43,7 +44,8 @@ export function ProviderTrips({ userId, business, initial = "new" }: { userId: s
       {view === "reservations" && <div className="space-y-5"><SegTabs label="Reservation sections" value={reservation} onChange={setReservation} options={[...PROVIDER_RESERVATION_TABS]}/>
       {reservation === "drafts" ? (
         <SavedTripsPanel variant="drafts" onResume={(draft) => preview.active ? navigate({ to: '/admin/preview/$kind', params: {kind: preview.kind}, search: {page: 'requests/new', accountType: preview.accountType, draft: draft.id} }) : navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
-      ) : reservation === "history" ? <><TripHistoryPanel userId={userId} /><details className="mt-5"><summary className="ds-label cursor-pointer">Selected-trip reports</summary><div className="pt-4"><SelectedTripExport /></div></details><details className="mt-5"><summary className="ds-label cursor-pointer">Additional trip exports</summary><div className="pt-4"><ProviderExports /></div></details></> : <><ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs selectedState={reservation}/>{reservation === 'unconfirmed' && <ReferralReservationsSection userId={userId}/>}</>}
+      ) : <>{(['owned','sent','received'] as const).map(category=><section key={category} className="min-w-0 space-y-3 border border-ds-border bg-ds-surface p-4"><h2 className="ds-subheading bg-ds-sky p-3">{category==='owned'?'Owned Trips':category==='sent'?'Sent Referrals':'Received Referrals'}</h2>{reservation==='history'?<TripHistoryPanel userId={userId} workspaceId={canPrepare?workspaceId:undefined} category={category}/>:<ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs selectedState={reservation} category={category} workspaceId={workspaceId}/>} {reservation==='unconfirmed'&&category==='received'&&<ProviderNetworkOffers pendingOnly/>}{reservation==='unconfirmed'&&category==='sent'&&<DistributionActivity pendingOnly/>}</section>)}{reservation==='history'&&<><details className="mt-5"><summary className="ds-label cursor-pointer">Selected-trip reports</summary><div className="pt-4"><SelectedTripExport/></div></details><details className="mt-5"><summary className="ds-label cursor-pointer">Additional trip exports</summary><div className="pt-4"><ProviderExports/></div></details></>}</>}
+
       </div>}
     </PortalTabbedLayout>
     </div>

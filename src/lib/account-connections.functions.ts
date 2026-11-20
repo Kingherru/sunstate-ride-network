@@ -43,7 +43,26 @@ export const saveRelationshipPreference = createServerFn({ method: 'POST' }).mid
 
 export const manageConnectionInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator((i: unknown) => invitationActionInput.parse(i))
   .handler(async ({ data, context }) => {
-    if(data.action==='send'||data.action==='resend')return {ok:false,delivery:'not_configured',error:'Private invitation preparation is unavailable until person, account and destination rate limits are approved. No account lookup or delivery occurred.'};
+    if(data.action==='send'||data.action==='resend') {
+      const {data:allowed}=await context.supabase.rpc('can_manage_account_connections',{_ws:data.workspaceId});
+      const {data:workspace}=await context.supabase.from('workspaces').select('account_type,status,display_name').eq('id',data.workspaceId).maybeSingle();
+      if(!allowed||workspace?.account_type!=='provider'||workspace.status!=='active')throw new Error('Active provider owner or administrator required.');
+      const {data:flag}=await context.supabase.from('platform_launch_flags').select('enabled').eq('key','account_invitation_delivery').maybeSingle();
+      if(!flag?.enabled || !process.env['LOVABLE_API_KEY'])return {ok:false,delivery:'not_configured',error:'Invitation delivery is not enabled. No invitation or account was created.'};
+      const {generateInvitationToken,hashInvitationToken}=await import('./account-connections-token.server');
+      const token=generateInvitationToken();const hash=await hashInvitationToken(token);
+      const {data:claim,error}=await context.supabase.rpc('claim_provider_invitation',{_ws:data.workspaceId,_action:data.action,_id:data.invitationId??null,_email:data.email??null,_type:data.intendedType??null,_hash:hash} as never);
+      if(error||!claim)throw new Error('Invitation unavailable or rate limited. No delivery occurred.');
+      const c=claim as unknown as {id:string;reference:string;generation:number;duplicate:boolean;recipientEmail:string;intendedType:string};
+      if(c.duplicate)return {ok:false,delivery:'already_requested',error:'An active invitation already exists. Review its status before deliberately resending.'};
+      const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
+      const {sendTemplateEmail}=await import('./email-templates/send-email');
+      let delivery='failed';
+      try{const sent=await sendTemplateEmail('business-connection-invitation',c.recipientEmail,{idempotencyKey:`account-invitation:${c.id}:${c.generation}`,templateData:{reference:c.reference,inviterName:workspace.display_name,intendedType:c.intendedType,reviewUrl:`https://myfloridanemt.com/connection-invitation#${token}`}});delivery=sent.sent?'sent':'suppressed';}
+      catch{delivery='failed';}
+      await supabaseAdmin.from('account_connection_invitations').update({delivery_status:delivery}).eq('id',c.id).eq('generation',c.generation);
+      return {ok:delivery==='sent',delivery,error:delivery==='sent'?undefined:'Invitation retained but not delivered. Review delivery status before resending.'};
+    }
     const { hashInvitationToken } = await import('./account-connections-token.server');
     const token = data.token;
     const hash = token ? await hashInvitationToken(token) : null;

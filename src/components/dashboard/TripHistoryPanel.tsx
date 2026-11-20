@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { useRequestDetails } from '@/components/portal/request-detail-context';
 import {HistoryTable} from '@/components/portal/HistoryTable';
+import {reservationCategory,type ReservationCategory} from '@/lib/provider-reservation-groups';
+import {CopyProviderTrip} from '@/components/portal/CopyProviderTrip';
 import {DsButton} from '@/components/ds/controls';
 
 /**
@@ -32,6 +34,7 @@ import {DsButton} from '@/components/ds/controls';
 
 type HistoryTrip = {
   id: string;
+  network_distribution_id?:string|null; network_provider_workspace_id?:string|null; source_workspace_id?:string|null; referral_target_id?:string|null;
   trip_number: string | null;
   status: string | null;
   reservation_state: string | null;
@@ -160,13 +163,13 @@ function groupKeyDaily(dateIso: string): string {
   return format(d, "EEEE, MMM d, yyyy");
 }
 
-export function TripHistoryPanel({ userId }: { userId: string }) {
+export function TripHistoryPanel({ userId,category,workspaceId }: { userId: string; category?:ReservationCategory; workspaceId?:string }) {
   const preview = usePortalPreview();
   const openDetails=useRequestDetails();
   const qc = useQueryClient();
   const [preset, setPreset] = useState<Preset>("30d");
-  const initialRange = presetRange("30d")!;
-  const [range, setRange] = useState<DateRange | undefined>({ from: initialRange.from, to: initialRange.to });
+  const initialRange = presetRange("30d");
+  const [range, setRange] = useState<DateRange | undefined>({ from: initialRange?.from, to: initialRange?.to });
   const [search, setSearch] = useState("");
   const [view, setView] = useState<ViewMode>("list");
   const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "unpaid">("all");
@@ -194,7 +197,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       let query = supabase
         .from("trips")
         .select(
-          "id, trip_number, status, reservation_state, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
+          "id, ride_request_id,network_distribution_id,network_provider_workspace_id,referral_target_id,trip_number, status, reservation_state, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
         )
         .or(
           `status.in.(${COMPLETED_STATUSES.join(",")}),reservation_state.in.(past,history),pickup_date.lt.${todayIso}`,
@@ -205,6 +208,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
       if (toIsoStr) query = query.lte("pickup_date", toIsoStr);
       const { data, error } = await query;
       if (error) throw error;
+      if(category){const ids=(data??[]).map(t=>t.ride_request_id).filter((id):id is string=>!!id);const {data:sources}=ids.length?await supabase.from('ride_requests').select('id,workspace_id').in('id',ids):{data:[]};return (data??[]).map(t=>({...t,source_workspace_id:sources?.find(s=>s.id===t.ride_request_id)?.workspace_id??null})) as HistoryTrip[];}
       return (data ?? []) as HistoryTrip[];
     },
   });
@@ -251,7 +255,8 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
     const s = search.trim().toLowerCase();
     return allTrips.filter((t) => {
       // Canceled/expired trips live in the Past tab, not the history record.
-      if (isCanceled(t) && !isCompleted(t)) return false;
+      if (category && reservationCategory(t,workspaceId??'',userId)!==category)return false;
+      if (!category && isCanceled(t) && !isCompleted(t)) return false;
       if (completion === "completed" && !isCompleted(t)) return false;
       if (completion === "needs_completion" && isCompleted(t)) return false;
       if (paymentFilter === "paid" && (t.payment_status ?? "").toLowerCase() !== "paid") return false;
@@ -271,7 +276,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
         .toLowerCase();
       return hay.includes(s);
     });
-  }, [allTrips, search, paymentFilter, completion]);
+  }, [allTrips, search, paymentFilter, completion,category,workspaceId,userId]);
 
   const needsCompletionCount = useMemo(
     () => filtered.filter((t) => !isCompleted(t)).length,
@@ -488,7 +493,7 @@ export function TripHistoryPanel({ userId }: { userId: string }) {
               {id:'driver',label:'Driver',render:t=>t.driver_id?driverMap.get(t.driver_id)??'Not available':'Unassigned'},
               {id:'payment',label:'Payment',render:t=>t.payment_status??'Not recorded'},
               {id:'payout',label:'Payout',render:t=>fmtUsd(t.provider_payout_cents)},
-              {id:'actions',label:'Trip',render:t=><DsButton variant="ghost" size="sm" onClick={()=>openDetails({kind:'trip',id:t.id})}>{t.trip_number??'Open trip'}</DsButton>},
+              {id:'actions',label:'Trip',render:t=><div className="flex flex-wrap gap-2"><DsButton variant="ghost" size="sm" onClick={()=>openDetails({kind:'trip',id:t.id})}>{t.trip_number??'Open trip'}</DsButton>{workspaceId&&<CopyProviderTrip workspaceId={workspaceId} tripId={t.id}/>}</div>},
             ]}/>
           </section>
         ))}

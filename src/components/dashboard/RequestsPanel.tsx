@@ -15,6 +15,8 @@ import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { ShareTripControl } from '@/components/portal/TripNetwork';
 import { useRequestDetails } from '@/components/portal/request-detail-context';
+import {reservationCategory,type ReservationCategory} from '@/lib/provider-reservation-groups';
+import {CopyProviderTrip} from '@/components/portal/CopyProviderTrip';
 import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
 
 
@@ -272,6 +274,7 @@ export function ReservationsPanel({
   hideReferrals = false,
   selectedState,
   hideLifecycleTabs = false,
+  category, workspaceId,
 }: {
   userId: string;
   scope?: Scope;
@@ -279,6 +282,7 @@ export function ReservationsPanel({
   hideReferrals?: boolean;
   selectedState?: ResvState;
   hideLifecycleTabs?: boolean;
+  category?: ReservationCategory; workspaceId?:string;
 }) {
   const preview = usePortalPreview();
   const openDetails = useRequestDetails();
@@ -331,8 +335,8 @@ export function ReservationsPanel({
   });
 
   const q = usePortalQuery({
-    queryKey: ["reservations-by-state", state === "canceled" ? "past" : state, scope, userId],
-    queryFn: () => fn({ data: { state: state === "canceled" ? "past" : state, scope } }),
+    queryKey: ["reservations-by-state", state === "canceled" ? "past" : state, scope, userId,category?"organized":"legacy"],
+    queryFn: () => fn({ data: { state: state === "canceled" ? "past" : state, scope,organized:!!category,canceled:state==="canceled" } }),
   });
   const provider = usePortalQuery({
     queryKey: ["provider-profile-cms", userId],
@@ -349,16 +353,18 @@ export function ReservationsPanel({
   // "Canceled" is carved out of the Past bucket so canceled trips live in
   // their own section and stay accessible later.
   const allRows = ((q.data ?? []) as any[]).filter((r) => {
+    if(category && state==="unconfirmed" && r.network_distribution_id && r.network_provider_workspace_id)return false;
     const canceled = CANCELED_STATUSES.has(String(r.status ?? "").toLowerCase());
     return state === "canceled" ? canceled : !canceled;
   });
   const rows = useMemo(() => allRows.filter((r) => {
     // Approved referrals live in their own Referral Reservations section below.
-    if (isPendingReferralReservation(r, userId)) return false;
+    if (!category && isPendingReferralReservation(r, userId)) return false;
+    if(category && reservationCategory(r,workspaceId??'',userId)!==category)return false;
     // Trips routed to this provider that aren't paid yet stay in the Referrals
     // tab as "Waiting on Payment" — they appear here only after payment.
     if (
-      scope === "provider" &&
+      !category && scope === "provider" &&
       r.assigned_provider_id === userId &&
       r.requester_user_id !== userId &&
       !isTripPaid(r) &&
@@ -373,7 +379,7 @@ export function ReservationsPanel({
       if (!hay.includes(s)) return false;
     }
     return true;
-  }), [allRows, assignFilter, payerFilter, search, userId, scope]);
+  }), [allRows, assignFilter, payerFilter, search, userId, scope,category,workspaceId]);
 
 
   const grouped = rows.reduce<Record<string, any[]>>((acc, r) => {
@@ -581,6 +587,8 @@ export function ReservationsPanel({
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
+                    {workspaceId && state!=="unconfirmed" && <CopyProviderTrip workspaceId={workspaceId} tripId={r.id}/>}
+                    {category && !isTripPaid(r) && <span className="ds-caption">Waiting on Payment / Needs Confirmation</span>}
                     <button type="button" onClick={() => openDetails({ kind: 'trip', id: r.id })} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">View details</button>
                     {(scope === 'provider' || scope === 'ops') && <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Manage reservation</button>}
                     {scope==='provider'&&<ContractorAssignment tripId={r.id} service={r.transport_type}/>}

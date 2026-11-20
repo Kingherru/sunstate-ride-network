@@ -1,0 +1,2 @@
+import {defineConfig} from 'vitest/config';
+export default defineConfig({resolve:{alias:{'@':new URL('../src',import.meta.url).pathname}},test:{include:['tests/connected-provider-handlers.test.ts','tests/connected-provider-trip.test.ts','tests/account-connections.test.ts','tests/trip-series.test.ts','tests/provider-trip-cleanup.test.ts','tests/provider-overview-activity.test.ts'],environment:'node'}});

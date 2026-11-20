@@ -1,3 +1,11 @@
+# Connected Provider New Trip pass
+- [ ] Provider-only compact services/actions, mobility preservation, local drop-off fields, sticky/minimized invoice and Trip Review.
+- [ ] Existing series modal with per-occurrence destination timing and trip type; workspace patient matching and authorized copy-to-new.
+- [ ] Explicit referral review using existing consent/funding/distribution gates; truthful partial failure and retry.
+- [ ] Explicit invitation confirmation using existing secure invitation records; durable rate-limit/delivery readiness must fail closed.
+- [ ] Separate authorized Owned/Sent/Received reservation presentation; focused tests and synthetic responsive checks.
+- [ ] No real records, sends, charges, account activation or publication; report remaining blockers and available credit evidence.
+
 # Provider Overview and inline New Trip — current pass
 - [x] Align desktop Overview columns; six soft action treatments retain counts and destinations. Exact desktop height alignment verified; tablet/phone natural stacking.
 - [x] Inline authorized New Trip; ordered reservation tabs, Booked default, draft resume and reports retained. Synthetic resumed passenger reads back Pat at all three widths.

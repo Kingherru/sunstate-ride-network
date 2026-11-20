@@ -51,7 +51,7 @@ const PREVIEW_FIXTURES: Record<string, unknown> = {
   'patient-driver-suggestion': {driverId:'preview-driver-2',preferredDriverId:'preview-driver-2',lastDriverId:'preview-driver-2',source:'preferred',warning:null,options:[{id:'preview-driver-2',name:'Sam Sample (Demo)'}]},
   'patient-scope': {ids:['preview-ws'],privateOnly:false},
   'patient-owner-profile': {person:{first_name:'Demo',last_name:'Account'},workspace:{id:'preview-ws',account_type:'private_pay'},legacy:{patient_type:'another',patient_relationship:'Parent'},patient:{id:'preview-patient',first_name:'Pat',last_name:'Patient',mobility:'ambulatory'}},
-  'saved-patients': [{id:'preview-patient',workspace_id:'preview-ws',first_name:'Pat',last_name:'Patient (Demo)',active:true,kind:'patient',mobility:'ambulatory',preferred_driver_id:'preview-driver-2'}],
+  'saved-patients': [{id:'preview-patient',workspace_id:'preview-ws',first_name:'Pat',last_name:'Patient (Demo)',active:true,kind:'patient',mobility:'ambulatory',preferred_driver_id:'preview-driver-2',phone:'5555555555',email:'synthetic@example.test',default_pickup_address:'Synthetic saved pickup',default_pickup_city:'Orlando',default_dropoff_address:'Synthetic saved destination',default_dropoff_city:'Winter Park',oxygen_required:true,assistance_needs:'Synthetic legacy mobility instruction'}],
   'portal-preferences': {interface_density:'standard',high_contrast:false,detail_columns:null},
   'connect-preparation': {state:'Not started',customerReady:false,networkReady:false,signingConfigured:false,activation:false,environment:'sandbox'},
   'account-profile-verification':[],
