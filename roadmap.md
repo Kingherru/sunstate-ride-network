@@ -1,3 +1,10 @@
+# Provider Overview only
+- [x] Notes left and New Trips/actions right; compact unchanged destinations, Schedule renamed, no descriptions, Overview-only red/white count circles.
+- [x] Existing messaging/activity keys and paginated recipient unread notifications reused; no render-time acknowledgment or mutations.
+- [x] Five focused source tests pass; signed-in Master preview checked at 1280/768/390/320, including temporary cache-only badges and read-state clearing. No page errors, overlapping badges or document overflow; harness build OK.
+- [x] Scoped delivery prepared; no records, communications or publication. Root architecture note skipped because its protected size budget prevented adding a rule.
+- [ ] Separate manual type-check/production build prohibited by workspace instructions; only harness build OK verified. Populated live provider counts/read acknowledgment not exercised because real-record changes are forbidden; synthetic projection verified.
+
 # Current combined cleanup — Settings first
 - [x] Explicit save/reset/dirty/validation/error states added to services/hours, regional areas, customer pricing, program numbers, transported patient, sign-in, accessibility, private/home location and trip-contact preferences. Business contact cards reused in previews; manager/read-only controls retained. Secure password adds valid Save/Cancel; existing Profile/Notifications and assignment-email work preserved.
 - [x] Contacts/Payers/Drivers/Vehicles Edit visibility uses the existing authenticated record-manage RPC; missing/inactive Contacts/Payers/Patients updates fail closed, no replacement inserts. Patient editor dirty/valid Save and compact Edit retained; customer pricing gains Edit and reset with estimate/review/version confirmation intact.

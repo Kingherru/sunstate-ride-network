@@ -833,6 +833,12 @@ body[data-portal-contrast="true"] .theme-portal .ds-canvas-texture { background-
 .portal-notification-dot { width: var(--portal-indicator-dot-size); height: var(--portal-indicator-dot-size); }
 .portal-notification-count { width: var(--portal-indicator-count-size); height: var(--portal-indicator-count-size); font-size: .6875rem !important; font-weight: 700; }
 
+/* Overview opt-in only: keep shared soft status indicators elsewhere unchanged. */
+.theme-portal .provider-overview .portal-notification-count[data-notification-indicator="attention"] {
+  --portal-indicator-count-size: 1.25rem;
+  background: var(--ds-status-red); color: var(--ds-status-red-text); border-color: transparent;
+}
+
 /* Legibility: opt-in compact values, normal document flow everywhere else. */
 .theme-portal [data-text-wrap], .theme-portal [data-text-wrap] .portal-overflow-text {
   white-space: normal !important; overflow: visible !important; text-overflow: clip;
