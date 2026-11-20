@@ -2,6 +2,7 @@
 - [x] Notes left and New Trips/actions right; compact unchanged destinations, Schedule renamed, no descriptions, Overview-only red/white count circles.
 - [x] Existing messaging/activity keys and paginated recipient unread notifications reused; no render-time acknowledgment or mutations.
 - [x] Five focused source tests pass; signed-in Master preview checked at 1280/768/390/320, including temporary cache-only badges and read-state clearing. No page errors, overlapping badges or document overflow; harness build OK.
+- [x] Final request-level review: all six Overview links plus All trips opened one page further at desktop/phone in standard and high contrast (28 destination checks); screenshots reviewed, no page errors or document overflow. Other pages unchanged.
 - [x] Scoped delivery prepared; no records, communications or publication. Root architecture note skipped because its protected size budget prevented adding a rule.
 - [ ] Separate manual type-check/production build prohibited by workspace instructions; only harness build OK verified. Populated live provider counts/read acknowledgment not exercised because real-record changes are forbidden; synthetic projection verified.
 
