@@ -1,10 +1,13 @@
 # Connected Provider New Trip pass
-- [ ] Provider-only compact services/actions, mobility preservation, local drop-off fields, sticky/minimized invoice and Trip Review.
-- [ ] Existing series modal with per-occurrence destination timing and trip type; workspace patient matching and authorized copy-to-new.
-- [ ] Explicit referral review using existing consent/funding/distribution gates; truthful partial failure and retry.
-- [ ] Explicit invitation confirmation using existing secure invitation records; durable rate-limit/delivery readiness must fail closed.
-- [ ] Separate authorized Owned/Sent/Received reservation presentation; focused tests and synthetic responsive checks.
-- [ ] No real records, sends, charges, account activation or publication; report remaining blockers and available credit evidence.
+- [x] Provider-only compact services/actions, disabled Child Care, preserved canonical mobility selections and legacy notes, local drop-off fields, coordinate timezone derivation, sticky/minimized invoice and Trip Review.
+- [x] Existing series modal with per-occurrence destination timing/type and retained 100-row/deduplication guards; workspace patient matching/address population; authorized copy-to-new clears dates/quotes/assignments and retains draft source evidence.
+- [x] Explicit referral review calls existing versioned consent/funding/distribution/wave checks; owned submission reuses immutable occurrence retry keys; failed referral retains owned trip, reports not sent, records scoped audit and links to Network.
+- [x] Explicit unchecked invitation and final confirmation; existing invitation template/acceptance reused, additive claim function locks workspace/recipient, limits 5/hour workspace and 3/day recipient with 5-minute cooling, dedupes pending recipient/type and rotates seven-day hash/generation on resend. Delivery flag missing=OFF; existing account holders sign in, no automatic account creation.
+- [x] Owned/Sent/Received cards in five lifecycle views, source metadata classification, Booked accepted-referral presentation without payment gate bypass, pending addressed offer/distribution modules and retained History reports.
+- [x] 66 focused tests passed (27 connected pure rules, 4 mocked handlers, 35 retained checks). Signed-in synthetic 1280/768/390 checks: patient addresses/mobility, invoice disclosure/minimize, card gate, invitation no-send, series per-occurrence fields, five lifecycle groups and referral acknowledgment/no-send. No page errors or overflow. Solid dialogs/high-contrast screenshots inspected; harness type/build OK. Separate manual type/production commands prohibited by workspace instructions.
+- [x] No real records, sends, charges, account activation or publication; only schema function applied. Credit tool reports 899 billing-period credits, not exact pass attribution.
+- [ ] Configuration gates: invitation delivery and referral funding preparation flags are absent/OFF; verified funding/matching/launch readiness required before waves. Payment collection remains disabled. No isolated populated transactional/concurrency or live copy/save/readback verification permitted under real-record restriction.
+- [ ] Remaining acceptance limitations: existing-account signup/exact-email acceptance and resend delivery lifecycle not exercised end-to-end (mocked no-send and retained acceptance tests only); provider-owned copy preview blocks writes rather than displaying a synthetic copied draft; legacy no-source history classification uses creator/receiver fallback, not new ownership authority. Destination manual text without coordinates retains unknown timezone for review. Mobility extras have no new invented pricing; unsupported rates remain unset.
 
 # Provider Overview and inline New Trip — current pass
 - [x] Align desktop Overview columns; six soft action treatments retain counts and destinations. Exact desktop height alignment verified; tablet/phone natural stacking.
