@@ -15,7 +15,8 @@ import {
   type BillingContact,
   RECURRENCE_OPTIONS,
 } from "@/lib/forms.functions";
-import { enrichRideRequest } from "@/lib/maps.functions";
+import { enrichRideRequest, estimateTripRoute } from "@/lib/maps.functions";
+import { ADDITIONAL_PASSENGER_CHOICES, CHILD_COUNT_CHOICES, CHILD_REQUIREMENTS, CHILD_REQUIREMENT_LABELS, type ChildRow, resizeChildren, totalPassengers, additionalFromTotal, childCareTransport, estimateDropoffTime, formatUsTime, locationResolved } from "@/lib/trip-form-rules";
 import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
@@ -59,12 +60,12 @@ import {PatientDriverSuggestion} from '@/components/portal/PatientDriverSuggesti
 import {RegionalAddressFields} from '@/components/forms/RegionalAddressFields';
 
 
-const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"]; disabled?: boolean }[] = [
+const SERVICE_CHOICES: { id: string; label: string; kind: "ride" | "delivery"; type?: RideRequestInput["transportType"] }[] = [
   { id: "ambulatory", label: "Ambulatory", kind: "ride", type: "ambulatory" },
   { id: "wheelchair", label: "Wheelchair", kind: "ride", type: "wheelchair" },
   { id: "stretcher", label: "Stretcher", kind: "ride", type: "gurney" },
   { id: "medical-delivery", label: "Medical Delivery", kind: "delivery" },
-  { id: "child-care", label: "Child Care Transportation — Coming Soon", kind: "ride", disabled: true },
+  { id: "child-care", label: "Child Care Transportation", kind: "ride", type: "ambulatory" },
 ];
 
 const SERVICE_PARAM: Record<string, RideRequestInput["transportType"]> = { ambulatory: "ambulatory", wheelchair: "wheelchair", stretcher: "gurney" };
@@ -93,7 +94,7 @@ const empty: RideRequestInput = {
   patientPhone: "",
   patientEmail: "",
   patientWorkspaceId: null,
-  passengerCount:1,wheelchairPositions:0,
+  passengerCount:1,wheelchairPositions:0,serviceLine:'medical',children:[],
   payerId:null,savedPatientId:null,coordinationContactId:null,confirmedProviderDriverId:null,confirmedDriverEndTime:"",
   pickupAddress: "",
   pickupAddressDetails: "",
@@ -308,6 +309,23 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
 
   const upd = <K extends keyof RideRequestInput>(k: K, v: RideRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+  const childCare = form.serviceLine === "child_care";
+  const children = (form.children ?? []) as ChildRow[];
+  const setChildren = (rows: ChildRow[]) => setForm(f => ({ ...f, children: rows, transportType: childCareTransport(rows), passengerCount: totalPassengers(additionalFromTotal(f.passengerCount, (f.children ?? []).length), rows.length) }));
+  const additionalPassengers = additionalFromTotal(form.passengerCount, childCare ? children.length : 0);
+  const routeFn = useServerFn(estimateTripRoute);
+  const [routeSeconds, setRouteSeconds] = useState<number | null>(null);
+  const [dropoffManual, setDropoffManual] = useState(Boolean(initialDraft?.payload.dropoffTime));
+  useEffect(() => {
+    setRouteSeconds(null);
+    if (!portal || preview.active || pickupMeta.lat == null || pickupMeta.lng == null || dropoffMeta.lat == null || dropoffMeta.lng == null) return;
+    let cancelled = false;
+    routeFn({ data: { origin: { lat: pickupMeta.lat, lng: pickupMeta.lng }, destination: { lat: dropoffMeta.lat, lng: dropoffMeta.lng } } })
+      .then(r => { if (!cancelled && r.ok) setRouteSeconds(r.durationSeconds); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [portal, preview.active, pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng, routeFn]);
+  const routeEstimate = estimateDropoffTime(form.pickupTime, routeSeconds);
+  useEffect(() => { if (routeEstimate && !dropoffManual) setForm(f => f.dropoffTime === routeEstimate ? f : { ...f, dropoffTime: routeEstimate }); }, [routeEstimate, dropoffManual]);
 
   // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
   const [patientSearch, setPatientSearch] = useState('');
@@ -554,14 +572,54 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
         {!commerce?.provider && <NonEmergencyNotice className="mb-10" />}
         {portal && !onBehalf && !commerce?.provider && kind === 'ride' && <div className="mb-5 flex justify-end"><DsButton type="button" variant="secondary" disabled={savingDraft} onClick={onSaveDraft}>{savingDraft ? 'Saving…' : 'Save draft'}</DsButton></div>}
 
-        <fieldset className="mb-8">
-          <legend className={commerce?.provider ? "sr-only" : "ds-label mb-3 block text-ds-on-surface"}>{commerce?.provider ? "Service" : "What do you need?"}</legend>
-          <div role="radiogroup" aria-label="Service" className={commerce?.provider ? "grid gap-2 sm:grid-cols-2 xl:grid-cols-5" : "grid gap-3 sm:grid-cols-2"}>
-            {SERVICE_CHOICES.filter(c=>commerce?.provider || !c.disabled).map((c) => {
-              const on = c.kind === "delivery" ? kind === "delivery" : kind === "ride" && form.transportType === c.type;
+        {kind === "ride" && <fieldset data-form-section="Trip Type" className="mb-6">
+          <legend className="ds-label mb-3 block text-ds-on-surface">Trip type</legend>
+              <div role="radiogroup" aria-label="Trip type" className="grid grid-cols-2 gap-3 sm:max-w-md">
+                {(["one_way", "round_trip"] as const).map((t) => (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={t === "one_way" ? form.tripType !== "round_trip" : form.tripType === "round_trip"}
+                    key={t}
+                    onClick={() => {
+                      setForm((f) => ({
+                        ...f,
+                        tripType: t === "one_way" && f.additionalStops.length ? "multi_trip" : t,
+                        roundTrip: t === "round_trip",
+                        // Default the return leg time to the pickup time when switching to round trip
+                        returnPickupTime:
+                          f.returnPickupTime,
+                        // Default the return date to the pickup date when switching to round trip
+                        returnDate:
+                          t === "round_trip"
+                            ? (returnDateManual && f.returnDate ? f.returnDate : f.pickupDate)
+                            : "",
+                        // Clear stops when leaving multi-trip; otherwise keep them
+                        additionalStops: t === "round_trip" ? [] : f.additionalStops,
+                      }));
+                      if (t !== "round_trip") setReturnDateManual(false);
+                    }}
+                    className={`p-4 border rounded-ds-sm text-sm font-bold uppercase tracking-wide transition-all ${
+                      (t === "one_way" ? form.tripType !== "round_trip" : form.tripType === t)
+                        ? "border-primary bg-ds-action text-ds-on-action"
+                        : "border-ds-border hover:border-ds-sky-border"
+                    }`}
+                  >
+                    {TRIP_TYPE_LABELS[t]}
+                  </button>
+                ))}
+              </div>
+          {form.tripType === "multi_trip" && <p className="mt-2 text-xs text-ds-text-2">One way with additional stops.</p>}
+        </fieldset>}
+
+        <fieldset data-form-section="Transportation Type" className="mb-8">
+          <legend className="ds-label mb-3 block text-ds-on-surface">Transportation type</legend>
+          <div role="radiogroup" aria-label="Transportation type" className={commerce?.provider ? "grid gap-2 sm:grid-cols-2 xl:grid-cols-5" : "grid gap-3 sm:grid-cols-2 lg:grid-cols-3"}>
+            {SERVICE_CHOICES.map((c) => {
+              const on = c.kind === "delivery" ? kind === "delivery" : c.id === "child-care" ? kind === "ride" && childCare : kind === "ride" && !childCare && form.transportType === c.type;
               return (
-                <DsButton key={c.id} type="button" role="radio" aria-checked={on && !c.disabled} disabled={c.disabled} variant={on ? "primary" : "secondary"}
-                  onClick={() => { setKind(c.kind); if (c.type) upd("transportType", c.type); }}
+                <DsButton key={c.id} type="button" role="radio" aria-checked={on} variant={on ? "primary" : "secondary"}
+                  onClick={() => { setKind(c.kind); if (c.id === "child-care") { const rows = resizeChildren(children, children.length || 1); setForm(f => ({ ...f, serviceLine: "child_care", children: rows, transportType: childCareTransport(rows), passengerCount: totalPassengers(additionalFromTotal(f.passengerCount, childCare ? children.length : 0), rows.length) })); } else if (c.type) { const t = c.type; setForm(f => ({ ...f, serviceLine: "medical", children: [], transportType: t, passengerCount: totalPassengers(additionalFromTotal(f.passengerCount, childCare ? children.length : 0)) })); } }}
                   className={`ds-button-text min-h-12 min-w-0 rounded-ds-sm px-3 uppercase ds-transition focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus ${on ? "bg-ds-action text-ds-on-action" : "bg-ds-sky text-ds-primary hover:bg-ds-hover"}`}>
                   {c.label}
                 </DsButton>
@@ -587,9 +645,9 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
           {facilityPatients.length>0 && <Field label="Facility-authorized linked patient"><select className={inputCls} value={form.savedPatientId??''} onChange={e=>{const p=facilityPatients.find(p=>p.savedPatientId===e.target.value);if(p && confirm('Attach this confirmed patient and fill only basic trip details?'))setForm(f=>({...f,patientFirstName:p.patientFirstName??'',patientLastName:p.patientLastName??'',patientPhone:p.patientPhone??'',patientEmail:p.patientEmail??'',transportType:p.transportType??'ambulatory',patientWorkspaceId:p.patientWorkspaceId,savedPatientId:p.savedPatientId}));}}><option value="">Choose authorized patient</option>{facilityPatients.map(p=><option key={p.savedPatientId} value={p.savedPatientId}>{p.patientFirstName} {p.patientLastName} · {p.facilityMfnId}</option>)}</select></Field>}
 
           {/* Patient */}
-          <fieldset className="space-y-6">
+          <fieldset data-form-section="Passenger Information" className="space-y-6">
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
-              Patient
+              {childCare ? "Parent / Guardian information" : "Passenger information"}
             </legend>
             {portal && patients.length > 0 && (!patientAccount || bookingFor === 'other') && (
               <Field label="Saved patient">
@@ -614,9 +672,295 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 <input type="email" className={inputCls} value={form.patientEmail} onChange={(e) => { upd("patientEmail", e.target.value); setPatientSearch(e.target.value); }} />
               </Field>
             </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <Field label="Additional passengers" error={errors.passengerCount}>
+                <select className={inputCls} value={additionalPassengers} onChange={e=>upd('passengerCount',totalPassengers(Number(e.target.value),childCare?children.length:0))}>{ADDITIONAL_PASSENGER_CHOICES.map(n=><option key={n} value={n}>{n===0?'None':n}</option>)}</select>
+              </Field>
+              {form.transportType==='wheelchair' && !childCare && <Field label="Wheelchair positions" error={errors.wheelchairPositions}><select className={inputCls} value={form.wheelchairPositions||1} onChange={e=>upd('wheelchairPositions',Number(e.target.value))}>{Array.from({length:form.passengerCount},(_,i)=>i+1).map(n=><option key={n} value={n}>{n}</option>)}</select></Field>}
+            </div>
             {commerce?.provider && matchingTripPatients(patients,patientSearch).length>0 && <div role="listbox" aria-label="Matching saved patients" className="grid gap-2">{matchingTripPatients(patients,patientSearch).map(p=><DsButton key={p.id} type="button" role="option" aria-selected={patientChoice===p.id} variant="secondary" onClick={()=>choosePatient(p.id)}>{p.first_name} {p.last_name} · {p.phone??p.email}</DsButton>)}</div>}
           </fieldset>
 
+
+          {childCare && (
+            <fieldset data-form-section="Child Information" className="space-y-4">
+              <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">Child information</legend>
+              <Field label="Number of children" required error={errors.children}>
+                <select className={inputCls} value={children.length} onChange={e=>setChildren(resizeChildren(children,Number(e.target.value)))}>{CHILD_COUNT_CHOICES.map(n=><option key={n} value={n}>{n}</option>)}</select>
+              </Field>
+              {children.map((c,i)=>(
+                <div key={i} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)]" data-child-row={i+1}>
+                  <Field label={`Child ${i+1} first name`} required error={errors[`children.${i}.firstName`]}><input className={inputCls} value={c.firstName} onChange={e=>setChildren(children.map((r,k)=>k===i?{...r,firstName:e.target.value}:r))}/></Field>
+                  <Field label="Age" required error={errors[`children.${i}.age`]}><input className={inputCls} type="number" inputMode="numeric" min={0} max={17} value={c.age??''} onChange={e=>setChildren(children.map((r,k)=>k===i?{...r,age:e.target.value===''?null:Number(e.target.value)}:r))}/></Field>
+                  <Field label="Transportation requirement" error={errors[`children.${i}.requirement`]}><select className={inputCls} value={c.requirement} onChange={e=>setChildren(children.map((r,k)=>k===i?{...r,requirement:e.target.value as ChildRow['requirement']}:r))}>{CHILD_REQUIREMENTS.map(v=><option key={v} value={v}>{CHILD_REQUIREMENT_LABELS[v]}</option>)}</select></Field>
+                </div>
+              ))}
+              <p className="ds-caption">Child details stay with this request for authorized reviewers only. Acceptance and pricing require provider review.</p>
+            </fieldset>
+          )}
+
+          {/* Pickup */}
+          <fieldset data-form-section="Pickup" className="space-y-6">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">Pickup</legend>
+            <Field label={childCare ? "Home Pickup Address" : "Pickup Address"} required error={errors.pickupAddress}>
+              <AddressAutocomplete
+                value={form.pickupAddress}
+                onChange={(v) => upd("pickupAddress", v)}
+                onSelect={(sel: AddressSelection) => {
+                  upd("pickupAddress", sel.address);
+                  if (sel.city) upd("pickupCity", sel.city);
+                  setForm(f=>({...f,pickupState:sel.state||undefined,pickupZip:sel.zip,pickupCounty:sel.county,pickupTimezone:coordinateTimezone(sel.lat,sel.lng) as RideRequestInput['pickupTimezone']}));
+                  setPickupMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
+                }}
+                placeholder="Street, suite/unit"
+                className={inputCls}
+              />
+            </Field>
+            {!commerce?.provider && <Field label="Building / Doctor's office / Suite (optional)" error={errors.pickupAddressDetails}>
+              <input className={inputCls} value={form.pickupAddressDetails ?? ""} onChange={(e) => upd("pickupAddressDetails", e.target.value)} placeholder="e.g. Baptist MOB Suite 304, side entrance" />
+            </Field>}
+            <Field label="City" required error={errors.pickupCity}>
+              <input className={inputCls} value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} list="fl-cities" />
+            </Field>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Field label="Pickup Date" required error={errors.pickupDate}>
+                <DatePickerField
+                  value={form.pickupDate}
+                  onChange={(v) => {
+                    setForm((f) => ({
+                      ...f,
+                      pickupDate: v,
+                      returnDate: !returnDateManual && f.tripType === "round_trip" ? v : f.returnDate,
+                    }));
+                  }}
+                  booking usFormat
+                  required
+                />
+              </Field>
+              <Field label="Pickup Time" required error={errors.pickupTime}>
+                <TimePickerField
+                  value={form.pickupTime}
+                  pickupDate={form.pickupDate}
+                enforceLeadTime={form.pickupState==='FL' && (!form.pickupTimezone||form.pickupTimezone==='America/New_York')}
+                  onChange={(v) => {
+                    setForm((f) => ({
+                      ...f,
+                      pickupTime: v,
+                      returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
+                      additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
+                    }));
+                  }}
+                />
+              </Field>
+              <Field label="Appointment Time" error={errors.appointmentTime}>
+                <TimeSelect value={form.appointmentTime ?? ""} onChange={(v) => upd("appointmentTime", v)} />
+              </Field>
+            </div>
+            {!locationResolved(form.pickupState, form.pickupZip) && <div data-manual-location="pickup" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
+          </fieldset>
+
+          {/* Dropoff */}
+          <fieldset data-form-section="Drop-Off" className="space-y-6">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">Drop-off</legend>
+            <Field label={childCare ? "School Drop-Off Address" : "Drop-Off Address"} required error={errors.dropoffAddress}>
+              <AddressAutocomplete
+                value={form.dropoffAddress}
+                onChange={(v) => upd("dropoffAddress", v)}
+                onSelect={(sel: AddressSelection) => {
+                  upd("dropoffAddress", sel.address);
+                  if (sel.city) upd("dropoffCity", sel.city);
+                  setForm(f=>({...f,dropoffState:sel.state||undefined,dropoffZip:sel.zip,dropoffCounty:sel.county,dropoffTimezone:coordinateTimezone(sel.lat,sel.lng) as RideRequestInput['dropoffTimezone']}));
+                  setDropoffMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
+                }}
+                className={inputCls}
+              />
+            </Field>
+            {(!form.dropoffCity || !locationResolved(form.dropoffState, form.dropoffZip) || errors.dropoffCity) && <Field label="Drop-Off City" required error={errors.dropoffCity}>
+              <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
+            </Field>}
+            <Field label="Estimated Drop-Off Time" error={errors.dropoffTime}>
+              {routeEstimate && !dropoffManual ? <div className="flex flex-wrap items-center gap-3"><span className="ds-body font-semibold" data-route-estimate>{formatUsTime(routeEstimate)} (estimate)</span><button type="button" className="trip-compact-action" onClick={()=>setDropoffManual(true)}>Enter manually</button></div>
+                : <TimeSelect value={form.dropoffTime ?? ""} onChange={(v) => { setDropoffManual(true); upd("dropoffTime", v); }} />}
+              <p className="mt-1 text-xs text-ds-text-2">{routeEstimate && !dropoffManual ? 'Estimated from route duration and pickup time. Final timing is confirmed by the provider.' : 'Route estimate unavailable — enter an estimated time or leave blank for provider review.'}</p>
+            </Field>
+            {!locationResolved(form.dropoffState, form.dropoffZip) && <div data-manual-location="dropoff" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
+            {!commerce && !childCare && form.pickupState==='FL' && form.dropoffState==='FL' && (
+              <PriceEstimate
+                pickupZip={pickupMeta.zip}
+                miles={estimatedMiles}
+                transportType={form.transportType}
+                legs={form.tripType === "round_trip" ? 2 : form.tripType === "multi_trip" ? 1 + form.additionalStops.length : 1}
+                stops={form.tripType === "multi_trip" ? form.additionalStops.length : 0}
+                tripTypeLabel={TRIP_TYPE_LABELS[form.tripType]}
+              />
+            )}
+          </fieldset>
+
+            {form.tripType === "round_trip" && (
+              <div className="border border-dashed border-ds-border rounded-ds-sm p-4 grid md:grid-cols-2 gap-6">
+                <Field label="Return date" required error={(errors as any).returnDate}>
+                  <DatePickerField
+                    value={form.returnDate ?? ""}
+                    onChange={(v) => {
+                      setReturnDateManual(true);
+                      upd("returnDate", v);
+                    }}
+                    booking
+                  />
+                  <p className="mt-1 text-xs text-ds-text-2">
+                    Defaults to your pickup date. Change it if the patient returns on a different day (e.g. surgery).
+                  </p>
+                </Field>
+                <Field label="Return pickup time" required error={errors.returnPickupTime}>
+                  <TimePickerField
+                    value={form.returnPickupTime ?? ""}
+                    pickupDate={form.returnDate || form.pickupDate}
+                    enforceLeadTime
+                    onChange={(v) => upd("returnPickupTime", v)}
+                    helperText="When the patient is ready to be picked up after the appointment."
+                  />
+                </Field>
+                <Field label="Return drop-off time" error={errors.returnDropoffTime}>
+                  <TimeSelect
+                    value={form.returnDropoffTime ?? ""}
+                    onChange={(v) => upd("returnDropoffTime", v)}
+                  />
+                  <p className="mt-1 text-xs text-ds-text-2">Optional — expected arrival back home.</p>
+                </Field>
+                <Field label="Return pickup building" error={(errors as any).returnPickupBuilding}>
+                  <input
+                    className={inputCls}
+                    value={form.returnPickupBuilding ?? ""}
+                    onChange={(e) => upd("returnPickupBuilding", e.target.value)}
+                    placeholder="e.g. Medical Arts Building B"
+                  />
+                </Field>
+                <Field label="Return pickup doctor / office" error={(errors as any).returnPickupDoctor}>
+                  <input
+                    className={inputCls}
+                    value={form.returnPickupDoctor ?? ""}
+                    onChange={(e) => upd("returnPickupDoctor", e.target.value)}
+                    placeholder="e.g. Dr. Smith"
+                  />
+                </Field>
+                <Field label="Return pickup suite" error={(errors as any).returnPickupSuite}>
+                  <input
+                    className={inputCls}
+                    value={form.returnPickupSuite ?? ""}
+                    onChange={(e) => upd("returnPickupSuite", e.target.value)}
+                    placeholder="e.g. Suite 210"
+                  />
+                </Field>
+              </div>
+            )}
+
+
+
+            {form.tripType !== "round_trip" && (
+              <div data-form-section="Additional Stops" className="space-y-4">
+                <div className="flex flex-col items-start gap-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-ds-text-2">
+                    Additional stops
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm(f=>({...f,tripType:"multi_trip",roundTrip:false,additionalStops:[...f.additionalStops,{ address: "", city: "", pickupTime: f.pickupTime ?? "", note: "" }]}))
+                    }
+                    disabled={form.additionalStops.length >= 10}
+                    className="trip-compact-action"
+                  >
+                    + Add Stop
+                  </button>
+                </div>
+                {form.additionalStops.length === 0 && (
+                  <p className="text-xs text-ds-text-2">Optional — add a stop between pickup and drop-off.</p>
+                )}
+                {form.additionalStops.map((stop, i) => (
+                  <div key={i} className="grid md:grid-cols-[1fr_160px_140px_auto] gap-3 items-start">
+                    <div className="md:col-span-4 space-y-3">
+                      <RegionalAddressFields value={{pickupState:stop.state,pickupZip:stop.zip,pickupCounty:stop.county,pickupTimezone:stop.timezone}} side="pickup" onChange={fields=>{const next=[...form.additionalStops];next[i]={...stop,...(fields.pickupState!==undefined?{state:fields.pickupState}:{}),...(fields.pickupZip!==undefined?{zip:fields.pickupZip}:{}),...(fields.pickupCounty!==undefined?{county:fields.pickupCounty}:{}),...(fields.pickupTimezone!==undefined?{timezone:fields.pickupTimezone as RideRequestInput['pickupTimezone']}: {})};upd('additionalStops',next);}}/>
+                      <Field label={`Stop ${i+1} local date`}><input type="date" className={inputCls} value={stop.date||form.pickupDate} onChange={e=>{const next=[...form.additionalStops];next[i]={...stop,date:e.target.value};upd('additionalStops',next);}}/></Field>
+                    </div>
+                    <input
+                      className={inputCls}
+                      placeholder={`Stop ${i + 1} address`}
+                      value={stop.address}
+                      onChange={(e) => {
+                        const next = [...form.additionalStops];
+                        next[i] = { ...next[i], address: e.target.value };
+                        upd("additionalStops", next);
+                      }}
+                    />
+                    <input
+                      className={inputCls}
+                      placeholder="City"
+                      list="fl-cities"
+                      value={stop.city}
+                      onChange={(e) => {
+                        const next = [...form.additionalStops];
+                        next[i] = { ...next[i], city: e.target.value };
+                        upd("additionalStops", next);
+                      }}
+                    />
+                    <TimePickerField
+                      value={stop.pickupTime ?? ""}
+                      pickupDate={form.pickupDate}
+                      enforceLeadTime
+                      onChange={(v) => {
+                        const next = [...form.additionalStops];
+                        next[i] = { ...next[i], pickupTime: v };
+                        upd("additionalStops", next);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm(f=>{const next=f.additionalStops.filter((_, idx) => idx !== i);return {...f,additionalStops:next,tripType:next.length?"multi_trip":"one_way"};})
+                      }
+                      className="px-3 py-3 border border-ds-border rounded-ds-sm text-xs font-bold uppercase tracking-wide hover:bg-ds-error-soft hover:border-ds-error hover:text-ds-error"
+                    >
+                      Remove
+                    </button>
+                    {(errors[`additionalStops.${i}.address`] ||
+                      errors[`additionalStops.${i}.city`] ||
+                      errors[`additionalStops.${i}.pickupTime`]) && (
+                      <span className="md:col-span-4 text-xs text-ds-error">
+                        {errors[`additionalStops.${i}.address`] ||
+                          errors[`additionalStops.${i}.city`] ||
+                          errors[`additionalStops.${i}.pickupTime`]}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+          <fieldset data-form-section="Mobility Requirements" className="space-y-3">
+            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">Mobility requirements</legend>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{MOBILITY_OPTIONS.map(option=><DsCheckbox key={option} label={option} checked={readMobility(form.mobilityNotes).selected.includes(option)} onChange={e=>upd('mobilityNotes',writeMobility(form.mobilityNotes,e.target.checked?[...readMobility(form.mobilityNotes).selected,option]:readMobility(form.mobilityNotes).selected.filter(v=>v!==option)))}/>)}</div>
+            {readMobility(form.mobilityNotes).legacy && <p className="ds-support whitespace-pre-wrap">Retained mobility notes: {readMobility(form.mobilityNotes).legacy}</p>}
+          </fieldset>
+
+          <div data-form-section="Mobility / Special Instructions">
+            <Field label="Mobility / Special Instructions" error={errors.specialInstructions}>
+              <textarea
+                className={`${inputCls} min-h-[80px]`}
+                value={form.specialInstructions}
+                onChange={(e) => upd("specialInstructions", e.target.value)}
+                placeholder="Gate codes, building entry, appointment time..."
+              />
+            </Field>
+          </div>
+          {!commerce?.provider && <TripLegsPreview className="mt-2" legs={buildLegs(form)} />}
+
+          {portal && !onBehalf && <div className="trip-secondary-actions flex flex-wrap items-start gap-3">
+          {portal && !onBehalf && <TripSeriesBuilder source={{...form,selectedProviderWorkspaceId:allowProviderSelection?selectedProvider?.workspace_id??form.selectedProviderWorkspaceId??null:null,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}} blocked={commerce?.submissionBlocked}/>}
+
+          {commerce?.provider && commerce.workspaceId && <ProviderInvitation workspaceId={commerce.workspaceId}/>}
+          </div>}
+
+          <div data-form-section="Billing">
           {commerce?.provider && (<fieldset className="space-y-4">
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
               Billing information
@@ -685,324 +1029,6 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             )}
           </fieldset>)}
 
-          {commerce?.invoiceSlot}
-
-          {/* Pickup */}
-          <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
-              Pickup
-            </legend>
-            <Field label="Pickup address" required error={errors.pickupAddress}>
-              <AddressAutocomplete
-                value={form.pickupAddress}
-                onChange={(v) => upd("pickupAddress", v)}
-                onSelect={(sel: AddressSelection) => {
-                  upd("pickupAddress", sel.address);
-                  if (sel.city) upd("pickupCity", sel.city);
-                  setForm(f=>({...f,pickupState:sel.state||undefined,pickupZip:sel.zip,pickupCounty:sel.county,pickupTimezone:coordinateTimezone(sel.lat,sel.lng) as RideRequestInput['pickupTimezone']}));
-                  setPickupMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
-                }}
-                placeholder="Street, suite/unit"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Building / Doctor's office / Suite (optional)" error={errors.pickupAddressDetails}>
-              <input
-                className={inputCls}
-                value={form.pickupAddressDetails ?? ""}
-                onChange={(e) => upd("pickupAddressDetails", e.target.value)}
-                placeholder="e.g. Dr. Patel's office, Baptist MOB Suite 304, side entrance"
-              />
-              <p className="mt-1 text-xs text-ds-text-2">Building name, doctor or facility name, suite, gate code, or pickup notes.</p>
-            </Field>
-            <div className="grid md:grid-cols-3 gap-6">
-              <Field label="City" required error={errors.pickupCity}>
-                <input className={inputCls} value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} list="fl-cities" />
-              </Field>
-              <Field label="Date" required error={errors.pickupDate}>
-                <DatePickerField
-                  value={form.pickupDate}
-                  onChange={(v) => {
-                    setForm((f) => ({
-                      ...f,
-                      pickupDate: v,
-                      returnDate: !returnDateManual && f.tripType === "round_trip" ? v : f.returnDate,
-                    }));
-                  }}
-                  booking
-                  required
-                />
-              </Field>
-              <Field label="Pickup time" required error={errors.pickupTime}>
-                <TimePickerField
-                  value={form.pickupTime}
-                  pickupDate={form.pickupDate}
-                enforceLeadTime={form.pickupState==='FL' && (!form.pickupTimezone||form.pickupTimezone==='America/New_York')}
-                  onChange={(v) => {
-                    setForm((f) => ({
-                      ...f,
-                      pickupTime: v,
-                      returnPickupTime: f.tripType === "round_trip" && !f.returnPickupTime ? v : f.returnPickupTime,
-                      additionalStops: f.additionalStops.map((s) => (s.pickupTime ? s : { ...s, pickupTime: v })),
-                    }));
-                  }}
-                />
-              </Field>
-            </div>
-            <RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
-            <Field label="Appointment time (drop-off arrival)" error={errors.appointmentTime}>
-              <TimeSelect
-                value={form.appointmentTime ?? ""}
-                onChange={(v) => upd("appointmentTime", v)}
-              />
-              <p className="mt-1 text-xs text-ds-text-2">When the patient needs to be at the destination.</p>
-            </Field>
-          </fieldset>
-
-
-
-          {/* Dropoff */}
-          <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
-              Drop-off
-            </legend>
-            {commerce?.provider && <div className="grid gap-4 sm:grid-cols-2"><Field label="Drop-Off Date"><DatePickerField value={form.dropoffDate||form.pickupDate} onChange={v=>upd("dropoffDate",v)}/></Field><Field label="Expected Drop-Off Time"><TimePickerField value={form.dropoffTime||""} pickupDate={form.dropoffDate||form.pickupDate} onChange={v=>upd("dropoffTime",v)} /></Field></div>}
-            <Field label="Drop-off address" required error={errors.dropoffAddress}>
-              <AddressAutocomplete
-                value={form.dropoffAddress}
-                onChange={(v) => upd("dropoffAddress", v)}
-                onSelect={(sel: AddressSelection) => {
-                  upd("dropoffAddress", sel.address);
-                  if (sel.city) upd("dropoffCity", sel.city);
-                  setForm(f=>({...f,dropoffState:sel.state||undefined,dropoffZip:sel.zip,dropoffCounty:sel.county,dropoffTimezone:coordinateTimezone(sel.lat,sel.lng) as RideRequestInput['dropoffTimezone']}));
-                  setDropoffMeta({ zip: sel.zip, state: sel.state, lat: sel.lat, lng: sel.lng });
-                }}
-                className={inputCls}
-              />
-            </Field>
-            <Field label="City" required error={errors.dropoffCity}>
-              <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
-            </Field>
-            <RegionalAddressFields hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/>
-            {!commerce && form.pickupState==='FL' && form.dropoffState==='FL' && (
-              <PriceEstimate
-                pickupZip={pickupMeta.zip}
-                miles={estimatedMiles}
-                transportType={form.transportType}
-                legs={form.tripType === "round_trip" ? 2 : form.tripType === "multi_trip" ? 1 + form.additionalStops.length : 1}
-                stops={form.tripType === "multi_trip" ? form.additionalStops.length : 0}
-                tripTypeLabel={TRIP_TYPE_LABELS[form.tripType]}
-              />
-            )}
-          </fieldset>
-
-          {/* Transport details */}
-          <fieldset className="space-y-6">
-            <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
-              Transport details
-            </legend>
-            <div>
-              <div className="grid gap-3 sm:grid-cols-2 mb-4"><Field label="Passenger count"><input className={inputCls} type="number" min="1" max="50" value={form.passengerCount} onChange={e=>upd('passengerCount',Number(e.target.value))}/></Field>{form.transportType==='wheelchair'&&<Field label="Wheelchair positions"><input className={inputCls} type="number" min="1" max={form.passengerCount} value={form.wheelchairPositions||1} onChange={e=>upd('wheelchairPositions',Number(e.target.value))}/></Field>}</div>
-              <span className="block text-xs font-bold uppercase tracking-widest text-ds-text-2 mb-2">
-                Trip type <span className="text-ds-accent-active">*</span>
-              </span>
-              <div className="grid md:grid-cols-3 gap-3">
-                {(["one_way", "round_trip", "multi_trip"] as const).map((t) => (
-                  <button
-                    type="button"
-                    key={t}
-                    onClick={() => {
-                      setForm((f) => ({
-                        ...f,
-                        tripType: t,
-                        roundTrip: t === "round_trip",
-                        // Default the return leg time to the pickup time when switching to round trip
-                        returnPickupTime:
-                          f.returnPickupTime,
-                        // Default the return date to the pickup date when switching to round trip
-                        returnDate:
-                          t === "round_trip"
-                            ? (returnDateManual && f.returnDate ? f.returnDate : f.pickupDate)
-                            : "",
-                        // Clear stops when leaving multi-trip; otherwise keep them
-                        additionalStops: t === "multi_trip" ? f.additionalStops : [],
-                      }));
-                      if (t !== "round_trip") setReturnDateManual(false);
-                    }}
-                    className={`p-4 border rounded-ds-sm text-sm font-bold uppercase tracking-wide transition-all ${
-                      form.tripType === t
-                        ? "border-primary bg-ds-action text-ds-on-action"
-                        : "border-ds-border hover:border-ds-sky-border"
-                    }`}
-                  >
-                    {TRIP_TYPE_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-ds-text-2">
-                {form.tripType === "one_way" && "Single pickup to a single drop-off."}
-                {form.tripType === "round_trip" && "Add the return pickup time so providers can plan the ride home."}
-                {form.tripType === "multi_trip" && "Add one or more stops between the pickup and final drop-off."}
-              </p>
-            </div>
-
-            {form.tripType === "round_trip" && (
-              <div className="border border-dashed border-ds-border rounded-ds-sm p-4 grid md:grid-cols-2 gap-6">
-                <Field label="Return date" required error={(errors as any).returnDate}>
-                  <DatePickerField
-                    value={form.returnDate ?? ""}
-                    onChange={(v) => {
-                      setReturnDateManual(true);
-                      upd("returnDate", v);
-                    }}
-                    booking
-                  />
-                  <p className="mt-1 text-xs text-ds-text-2">
-                    Defaults to your pickup date. Change it if the patient returns on a different day (e.g. surgery).
-                  </p>
-                </Field>
-                <Field label="Return pickup time" required error={errors.returnPickupTime}>
-                  <TimePickerField
-                    value={form.returnPickupTime ?? ""}
-                    pickupDate={form.returnDate || form.pickupDate}
-                    enforceLeadTime
-                    onChange={(v) => upd("returnPickupTime", v)}
-                    helperText="When the patient is ready to be picked up after the appointment."
-                  />
-                </Field>
-                <Field label="Return drop-off time" error={errors.returnDropoffTime}>
-                  <TimeSelect
-                    value={form.returnDropoffTime ?? ""}
-                    onChange={(v) => upd("returnDropoffTime", v)}
-                  />
-                  <p className="mt-1 text-xs text-ds-text-2">Optional — expected arrival back home.</p>
-                </Field>
-                <Field label="Return pickup building" error={(errors as any).returnPickupBuilding}>
-                  <input
-                    className={inputCls}
-                    value={form.returnPickupBuilding ?? ""}
-                    onChange={(e) => upd("returnPickupBuilding", e.target.value)}
-                    placeholder="e.g. Medical Arts Building B"
-                  />
-                </Field>
-                <Field label="Return pickup doctor / office" error={(errors as any).returnPickupDoctor}>
-                  <input
-                    className={inputCls}
-                    value={form.returnPickupDoctor ?? ""}
-                    onChange={(e) => upd("returnPickupDoctor", e.target.value)}
-                    placeholder="e.g. Dr. Smith"
-                  />
-                </Field>
-                <Field label="Return pickup suite" error={(errors as any).returnPickupSuite}>
-                  <input
-                    className={inputCls}
-                    value={form.returnPickupSuite ?? ""}
-                    onChange={(e) => upd("returnPickupSuite", e.target.value)}
-                    placeholder="e.g. Suite 210"
-                  />
-                </Field>
-              </div>
-            )}
-
-
-            {form.tripType === "multi_trip" && (
-              <div className="space-y-4 border border-dashed border-ds-border rounded-ds-sm p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-widest text-ds-text-2">
-                    Additional stops
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      upd("additionalStops", [
-                        ...form.additionalStops,
-                        { address: "", city: "", pickupTime: form.pickupTime ?? "", note: "" },
-                      ])
-                    }
-                    disabled={form.additionalStops.length >= 10}
-                    className="text-xs font-bold uppercase tracking-wide text-ds-primary hover:underline disabled:opacity-50"
-                  >
-                    + Add stop
-                  </button>
-                </div>
-                {form.additionalStops.length === 0 && (
-                  <p className="text-xs text-ds-text-2">No stops yet. Add at least one stop between pickup and drop-off.</p>
-                )}
-                {form.additionalStops.map((stop, i) => (
-                  <div key={i} className="grid md:grid-cols-[1fr_160px_140px_auto] gap-3 items-start">
-                    <div className="md:col-span-4 space-y-3">
-                      <RegionalAddressFields value={{pickupState:stop.state,pickupZip:stop.zip,pickupCounty:stop.county,pickupTimezone:stop.timezone}} side="pickup" onChange={fields=>{const next=[...form.additionalStops];next[i]={...stop,...(fields.pickupState!==undefined?{state:fields.pickupState}:{}),...(fields.pickupZip!==undefined?{zip:fields.pickupZip}:{}),...(fields.pickupCounty!==undefined?{county:fields.pickupCounty}:{}),...(fields.pickupTimezone!==undefined?{timezone:fields.pickupTimezone as RideRequestInput['pickupTimezone']}: {})};upd('additionalStops',next);}}/>
-                      <Field label={`Stop ${i+1} local date`}><input type="date" className={inputCls} value={stop.date||form.pickupDate} onChange={e=>{const next=[...form.additionalStops];next[i]={...stop,date:e.target.value};upd('additionalStops',next);}}/></Field>
-                    </div>
-                    <input
-                      className={inputCls}
-                      placeholder={`Stop ${i + 1} address`}
-                      value={stop.address}
-                      onChange={(e) => {
-                        const next = [...form.additionalStops];
-                        next[i] = { ...next[i], address: e.target.value };
-                        upd("additionalStops", next);
-                      }}
-                    />
-                    <input
-                      className={inputCls}
-                      placeholder="City"
-                      list="fl-cities"
-                      value={stop.city}
-                      onChange={(e) => {
-                        const next = [...form.additionalStops];
-                        next[i] = { ...next[i], city: e.target.value };
-                        upd("additionalStops", next);
-                      }}
-                    />
-                    <TimePickerField
-                      value={stop.pickupTime ?? ""}
-                      pickupDate={form.pickupDate}
-                      enforceLeadTime
-                      onChange={(v) => {
-                        const next = [...form.additionalStops];
-                        next[i] = { ...next[i], pickupTime: v };
-                        upd("additionalStops", next);
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        upd(
-                          "additionalStops",
-                          form.additionalStops.filter((_, idx) => idx !== i),
-                        )
-                      }
-                      className="px-3 py-3 border border-ds-border rounded-ds-sm text-xs font-bold uppercase tracking-wide hover:bg-ds-error-soft hover:border-ds-error hover:text-ds-error"
-                    >
-                      Remove
-                    </button>
-                    {(errors[`additionalStops.${i}.address`] ||
-                      errors[`additionalStops.${i}.city`] ||
-                      errors[`additionalStops.${i}.pickupTime`]) && (
-                      <span className="md:col-span-4 text-xs text-ds-error">
-                        {errors[`additionalStops.${i}.address`] ||
-                          errors[`additionalStops.${i}.city`] ||
-                          errors[`additionalStops.${i}.pickupTime`]}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {!commerce?.provider && <><TripLegsPreview className="mt-2" legs={buildLegs(form)} /><Field label="Mobility notes" error={errors.mobilityNotes}><textarea className={inputCls} value={form.mobilityNotes} onChange={e=>upd('mobilityNotes',e.target.value)}/></Field></>}
-            {commerce?.provider && <div className="space-y-3"><h3 className="ds-label">Mobility requirements</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{MOBILITY_OPTIONS.map(option=><DsCheckbox key={option} label={option} checked={readMobility(form.mobilityNotes).selected.includes(option)} onChange={e=>upd('mobilityNotes',writeMobility(form.mobilityNotes,e.target.checked?[...readMobility(form.mobilityNotes).selected,option]:readMobility(form.mobilityNotes).selected.filter(v=>v!==option)))}/>)}</div>{readMobility(form.mobilityNotes).legacy && <p className="ds-support whitespace-pre-wrap">Retained mobility notes: {readMobility(form.mobilityNotes).legacy}</p>}{readMobility(form.mobilityNotes).selected.length>0 && <p className="ds-caption">Add any required equipment, escort count or assistance details below.</p>}</div>}
-            <Field label={commerce?.provider ? "Mobility / Special Instructions" : "Special instructions"} error={errors.specialInstructions}>
-              <textarea
-                className={`${inputCls} min-h-[80px]`}
-                value={form.specialInstructions}
-                onChange={(e) => upd("specialInstructions", e.target.value)}
-                placeholder="Gate codes, building entry, appointment time..."
-              />
-            </Field>
-          </fieldset>
-
-          {portal && !onBehalf && <TripSeriesBuilder source={{...form,selectedProviderWorkspaceId:allowProviderSelection?selectedProvider?.workspace_id??form.selectedProviderWorkspaceId??null:null,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}} blocked={commerce?.submissionBlocked}/>}
 
           {!commerce?.provider && (<fieldset className="space-y-4">
             <legend className="text-sm font-bold uppercase tracking-widest text-ds-primary mb-2">
@@ -1072,6 +1098,9 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             )}
           </fieldset>)}
 
+          </div>
+          {commerce?.invoiceSlot && <div data-form-section="Live Invoice">{commerce.invoiceSlot}</div>}
+
           <datalist id="fl-cities">
 
             {CITY_LIST.map((c) => (
@@ -1083,7 +1112,6 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             Want to track requests and save details for next time? <a href={LINKS.createAccount} className="font-semibold text-ds-link underline underline-offset-4">Create your own Patient/Personal or Facility account</a> — it's optional.
           </p>}
 
-          {commerce?.provider && commerce.workspaceId && <ProviderInvitation workspaceId={commerce.workspaceId}/>}
           {commerce?.invoiceBottomSlot}
           <div className="provider-trip-actions flex flex-wrap items-stretch gap-3">
             {portal && !onBehalf && (

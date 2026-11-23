@@ -1038,3 +1038,10 @@ body[data-portal-contrast="true"] .theme-portal .provider-overview-action { bord
 .theme-portal form.portal-business-form > .portal-business-actions { position: relative; z-index: 1; }
 .theme-portal .portal-legacy-card:has(> button) { grid-template-columns: minmax(0,1fr); }
 .theme-portal .portal-business-body > button + button { margin-inline-start: .75rem; }
+
+/* Shared compact trip-form actions (Add Stop, manual estimate, invitation toggle). */
+.trip-compact-action { display:inline-flex; align-items:center; min-height:44px; padding:.6rem 1rem; border:1px solid var(--ds-border, currentColor); border-radius:4px; background:var(--ds-surface, transparent); color:var(--ds-primary, inherit); font-weight:700; font-size:.8125rem; text-transform:uppercase; letter-spacing:.04em; }
+.trip-compact-action:hover:not(:disabled) { background:var(--ds-sky, transparent); }
+.trip-compact-action:focus-visible { outline:3px solid var(--ds-focus, currentColor); outline-offset:2px; }
+.trip-compact-action:disabled { opacity:.55; cursor:not-allowed; }
+.trip-compact-toggle { display:inline-flex; align-items:center; min-height:44px; padding:.35rem .9rem; border:1px solid var(--ds-border, currentColor); border-radius:4px; }

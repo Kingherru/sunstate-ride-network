@@ -551,3 +551,9 @@ Historical evidence and blockers remain below; unfinished shared commerce is ret
 # Editable settings / email preferences continuation (from 25660e61)
 - [x] Driver assignment email: business switch (default off, owner/admin RPC, Save/Cancel, preview blocked) + per-driver opt-in (default off); both required plus valid email and server launch flag (still off). 13 notice tests pass.
 - [ ] Not started this pass: remaining editable Settings tabs, shared Edit actions, draft restore verification, Fleet/Administrators padding, financial/Dispatch/Medicaid cleanup, duplicate/wording sweep, Scheduler drop tests, responsive checks.
+
+## Trips/Reservations/Child Care pass
+- [x] Form order, passengers, hidden location metadata, route estimate, Add Stop, invite position
+- [x] Child Care rows, storage, review-only pricing
+- [x] Reservations two-column active, unified Past/Canceled/History
+- [x] Public form simplified, no invoice

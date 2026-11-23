@@ -26,3 +26,4 @@
 - Patient in-app updates use recipient-scoped immutable event keys; dismissals retain relationships and history. Why: lifecycle retries must not duplicate notices or delete authoritative records.
 - Network activity counts use user read watermarks and existing RLS reads; cart can retain unmapped catalog items but server reconstruction never activates checkout. Why: visible activity and pricing cannot imply paid entitlement.
 - Contact imports reuse private originals/import jobs and a locked confirmed workspace RPC; duplicate merge retains existing records. Trip imports create only editable owner drafts. Why: files cannot create identities, connections, submissions or duplicate jobs.
+- Child Care rides reuse ride_requests with service_line + versioned child_care_details (existing RLS); Network/public projections never select it and pricing stays review-required. Why: no parallel portal or invented rate.

@@ -5519,6 +5519,7 @@ export type Database = {
           black_tie_vehicle: string | null
           cancel_reason: string | null
           canceled_at: string | null
+          child_care_details: Json | null
           confirmed_driver_end_time: string | null
           confirmed_provider_driver_id: string | null
           coordination_contact_id: string | null
@@ -5634,6 +5635,7 @@ export type Database = {
           series_id: string | null
           series_index: number | null
           service_level: Database["public"]["Enums"]["service_level"] | null
+          service_line: string
           special_instructions: string | null
           status: string
           submitted_via: string
@@ -5663,6 +5665,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          child_care_details?: Json | null
           confirmed_driver_end_time?: string | null
           confirmed_provider_driver_id?: string | null
           coordination_contact_id?: string | null
@@ -5778,6 +5781,7 @@ export type Database = {
           series_id?: string | null
           series_index?: number | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
+          service_line?: string
           special_instructions?: string | null
           status?: string
           submitted_via?: string
@@ -5807,6 +5811,7 @@ export type Database = {
           black_tie_vehicle?: string | null
           cancel_reason?: string | null
           canceled_at?: string | null
+          child_care_details?: Json | null
           confirmed_driver_end_time?: string | null
           confirmed_provider_driver_id?: string | null
           coordination_contact_id?: string | null
@@ -5922,6 +5927,7 @@ export type Database = {
           series_id?: string | null
           series_index?: number | null
           service_level?: Database["public"]["Enums"]["service_level"] | null
+          service_line?: string
           special_instructions?: string | null
           status?: string
           submitted_via?: string

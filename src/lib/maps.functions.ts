@@ -226,3 +226,17 @@ export const geocodeAddress = createServerFn({ method: "POST" })
     return { ok: true as const, ...g };
   });
 
+
+/** Signed-in route estimate for the trip form: duration/miles only, never written to records. */
+export const estimateTripRoute = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({
+    origin: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }),
+    destination: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }),
+  }).strict().parse(i))
+  .handler(async ({ data }) => {
+    try {
+      const info = await routeInfo(data.origin, data.destination);
+      return { ok: info.duration_seconds != null, durationSeconds: info.duration_traffic_seconds ?? info.duration_seconds, miles: info.miles };
+    } catch { return { ok: false, durationSeconds: null, miles: null }; }
+  });

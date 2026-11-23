@@ -1072,6 +1072,13 @@
       "when": 1795144945007,
       "tag": "0152_secure_provider_invitation_delivery_claim",
       "breakpoints": true
+    },
+    {
+      "idx": 153,
+      "version": "7",
+      "when": 1795463571330,
+      "tag": "0153_child_care_trip_details",
+      "breakpoints": true
     }
   ]
 }

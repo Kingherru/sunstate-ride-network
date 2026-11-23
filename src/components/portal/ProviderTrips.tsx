@@ -42,9 +42,28 @@ export function ProviderTrips({ userId, business, initial = "new" }: { userId: s
         </div>
       )}
       {view === "reservations" && <div className="space-y-5"><SegTabs label="Reservation sections" value={reservation} onChange={setReservation} options={[...PROVIDER_RESERVATION_TABS]}/>
-      {reservation === "drafts" ? (
-        <SavedTripsPanel variant="drafts" onResume={(draft) => preview.active ? navigate({ to: '/admin/preview/$kind', params: {kind: preview.kind}, search: {page: 'requests/new', accountType: preview.accountType, draft: draft.id} }) : navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
-      ) : <>{(['owned','sent','received'] as const).map(category=><section key={category} className="min-w-0 space-y-3 border border-ds-border bg-ds-surface p-4"><h2 className="ds-subheading bg-ds-sky p-3">{category==='owned'?'Owned Trips':category==='sent'?'Sent Referrals':'Received Referrals'}</h2>{reservation==='history'?<TripHistoryPanel userId={userId} workspaceId={canPrepare?workspaceId:undefined} category={category}/>:<ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs selectedState={reservation} category={category} workspaceId={workspaceId}/>} {reservation==='unconfirmed'&&category==='received'&&<ProviderNetworkOffers pendingOnly/>}{reservation==='unconfirmed'&&category==='sent'&&<DistributionActivity pendingOnly/>}</section>)}{reservation==='history'&&<><details className="mt-5"><summary className="ds-label cursor-pointer">Selected-trip reports</summary><div className="pt-4"><SelectedTripExport/></div></details><details className="mt-5"><summary className="ds-label cursor-pointer">Additional trip exports</summary><div className="pt-4"><ProviderExports/></div></details></>}</>}
+      {['unconfirmed','drafts','booked'].includes(reservation) ? (
+        <div className="provider-active-reservations grid min-w-0 gap-5 lg:grid-cols-2">
+          <section aria-labelledby="resv-trips" data-reservation-column="trips" className="min-w-0 space-y-3 border border-ds-border bg-ds-surface p-4">
+            <h2 id="resv-trips" className="ds-subheading bg-ds-sky p-3">Trips · {reservation==='drafts'?'Drafts':reservation==='booked'?'Booked':'Unconfirmed'}</h2>
+            {reservation === "drafts"
+              ? <SavedTripsPanel variant="drafts" onResume={(draft) => preview.active ? navigate({ to: '/admin/preview/$kind', params: {kind: preview.kind}, search: {page: 'requests/new', accountType: preview.accountType, draft: draft.id} }) : navigate({ to: "/portal/requests/new", search: { draft: draft.id } })} />
+              : <ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs hideScheduling selectedState={reservation as 'unconfirmed'|'booked'} category="owned" workspaceId={workspaceId}/>}
+          </section>
+          <section aria-labelledby="resv-referrals" data-reservation-column="referrals" className="min-w-0 space-y-4 border border-ds-border bg-ds-surface p-4">
+            <h2 id="resv-referrals" className="ds-subheading bg-ds-sky p-3">Referrals · {reservation==='booked'?'Booked':'Unconfirmed'}</h2>
+            <div className="space-y-3"><h3 className="ds-label uppercase">Received Referrals</h3>
+              <ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs hideScheduling selectedState={reservation==='booked'?'booked':'unconfirmed'} category="received" workspaceId={workspaceId}/>
+              {reservation!=='booked'&&<ProviderNetworkOffers pendingOnly/>}
+            </div>
+            <div className="space-y-3 border-t border-ds-border pt-4"><h3 className="ds-label uppercase">Sent Referrals</h3>
+              <ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs hideScheduling selectedState={reservation==='booked'?'booked':'unconfirmed'} category="sent" workspaceId={workspaceId}/>
+              {reservation!=='booked'&&<DistributionActivity pendingOnly/>}
+            </div>
+          </section>
+        </div>
+      ) : reservation === 'history' ? <section className="min-w-0 space-y-3 border border-ds-border bg-ds-surface p-4"><TripHistoryPanel userId={userId} workspaceId={canPrepare?workspaceId:undefined}/><details className="mt-5"><summary className="ds-label cursor-pointer">Selected-trip reports</summary><div className="pt-4"><SelectedTripExport/></div></details><details className="mt-5"><summary className="ds-label cursor-pointer">Additional trip exports</summary><div className="pt-4"><ProviderExports/></div></details></section>
+        : <section className="min-w-0 space-y-3 border border-ds-border bg-ds-surface p-4"><ReservationsPanel userId={userId} scope="provider" hideReferrals hideLifecycleTabs hideScheduling selectedState={reservation as 'past'|'canceled'} workspaceId={workspaceId}/></section>}
 
       </div>}
     </PortalTabbedLayout>

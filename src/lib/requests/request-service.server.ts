@@ -151,6 +151,8 @@ export async function insertPassengerRequest(data: RideRequestInput, own: Insert
     trip_kind: "passenger",
     copy_fingerprint:own.series?.fingerprint??null,
     series_id:own.series?.id??null,series_index:own.series?.index??null,series_evidence:own.series?.evidence??null,
+    service_line:data.serviceLine==='child_care'?'child_care':'medical',
+    child_care_details:data.serviceLine==='child_care'&&data.children?.length?{version:1,children:data.children}:null,
     passenger_count:data.passengerCount,wheelchair_positions:data.wheelchairPositions,
     selected_provider_workspace_id: data.selectedProviderWorkspaceId ?? null,
     patient_workspace_id: data.patientWorkspaceId ?? null,

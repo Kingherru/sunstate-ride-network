@@ -2,6 +2,9 @@
 import { z } from "zod";
 import {tripGeographyFields, stateCodeSchema, timezoneSchema} from './us-geography';
 import {tripTimeEvidence} from './regional-trip-times';
+import {CHILD_REQUIREMENTS} from './trip-form-rules';
+
+export const childRowSchema = z.object({firstName:z.string().trim().min(1).max(60),age:z.number().int().min(0).max(17).nullable(),requirement:z.enum(CHILD_REQUIREMENTS)}).strict();
 
 export const RECURRENCE_OPTIONS = ["none", "daily", "weekdays", "weekly", "biweekly", "monthly"] as const;
 export type RecurrenceOption = (typeof RECURRENCE_OPTIONS)[number];
@@ -78,6 +81,8 @@ export const rideRequestSchema = z.object({
   dropoffTime:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional().or(z.literal('')),
   ...tripGeographyFields,
   requestCategory: z.literal("passenger_transport").optional(),
+  serviceLine: z.enum(['medical','child_care']).optional(),
+  children: z.array(childRowSchema).max(5).optional(),
   selectedProviderWorkspaceId: z.string().uuid().optional().nullable(),
   patientWorkspaceId: z.string().uuid().optional().nullable(),
   savedPatientId:z.string().uuid().optional().nullable(),
@@ -123,6 +128,8 @@ export const rideRequestSchema = z.object({
   blackTie: z.literal(false).default(false),
 }).strict().superRefine((data, ctx) => {
   if(tripTimeEvidence(data).some(e=>e.status==='impossible_order'))ctx.addIssue({code:'custom',path:['pickupTime'],message:'Requested times are out of order in their selected timezones.'});
+  if(data.serviceLine==='child_care'){const n=data.children?.length??0;if(n<1||n>5)ctx.addIssue({code:'custom',path:['children'],message:'Add 1 to 5 children.'});data.children?.forEach((c,i)=>{if(c.age==null)ctx.addIssue({code:'custom',path:['children',i,'age'],message:'Enter the child’s age.'});});}
+  else if(data.children?.length)ctx.addIssue({code:'custom',path:['children'],message:'Child details apply only to Child Care Transportation.'});
   if(data.wheelchairPositions>data.passengerCount)ctx.addIssue({code:z.ZodIssueCode.custom,path:["wheelchairPositions"],message:"Wheelchair positions cannot exceed passenger count."});
   if ((data.billingSource === "custom" || data.billingSource === "saved") && !data.billingContact) {
     ctx.addIssue({

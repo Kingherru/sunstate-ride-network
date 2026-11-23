@@ -274,8 +274,9 @@ export function ReservationsPanel({
   hideReferrals = false,
   selectedState,
   hideLifecycleTabs = false,
-  category, workspaceId,
+  category, workspaceId, hideScheduling = false,
 }: {
+  hideScheduling?: boolean;
   userId: string;
   scope?: Scope;
   onResumeDraft?: (draft: TripDraft) => void;
@@ -442,7 +443,7 @@ export function ReservationsPanel({
       <p className="text-xs text-muted-foreground">{meta.blurb}</p>
 
       <div className="portal-filter-grid">
-        <select
+        {!hideScheduling && <select
           value={assignFilter}
           onChange={(e) => setAssignFilter(e.target.value as AssignFilter)}
           className="text-xs font-bold uppercase tracking-wider bg-card border border-border rounded-sm px-3 py-2"
@@ -451,7 +452,7 @@ export function ReservationsPanel({
           <option value="all">All driver assignments</option>
           <option value="assigned">Driver assigned</option>
           <option value="unassigned">Unassigned</option>
-        </select>
+        </select>}
 
         <select
           value={payerFilter}
@@ -540,12 +541,12 @@ export function ReservationsPanel({
                   tabIndex={0} role="button" aria-label="Open trip details"
                   onClick={e => { if (!(e.target as HTMLElement).closest('button,a,input,select')) openDetails({ kind: 'trip', id: r.id }); }}
                   onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}
-                  draggable={state === "booked"}
+                  draggable={state === "booked" && !hideScheduling}
                   onDragStart={(e) => { if (state === "booked") { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; } }}
                   className={`rounded-sm p-4 flex items-start justify-between gap-3 flex-wrap border ${
-                    state === "booked" ? "cursor-grab active:cursor-grabbing" : ""
+                    state === "booked" && !hideScheduling ? "cursor-grab active:cursor-grabbing" : ""
                   } ${medicaid ? "bg-amber-50 border-amber-300 border-l-4" : "bg-card border-border"}`}
-                  title={state === "booked" ? "Drag onto the Schedule tab to (re)assign a driver and time" : undefined}
+                  title={state === "booked" && !hideScheduling ? "Drag onto the Schedule tab to (re)assign a driver and time" : undefined}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -560,7 +561,7 @@ export function ReservationsPanel({
                           Sched {String(r.scheduled_start_time).slice(0,5)}
                         </span>
                       )}
-                      {r.assigned_driver_id ? (
+                      {hideScheduling ? null : r.assigned_driver_id ? (
                         <span className="bg-muted text-foreground text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Driver assigned</span>
                       ) : (
                         <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">Unassigned</span>
@@ -591,7 +592,7 @@ export function ReservationsPanel({
                     {category && !isTripPaid(r) && <span className="ds-caption">Waiting on Payment / Needs Confirmation</span>}
                     <button type="button" onClick={() => openDetails({ kind: 'trip', id: r.id })} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">View details</button>
                     {(scope === 'provider' || scope === 'ops') && <button type="button" onClick={() => setReviewing(r)} className="text-xs font-bold border border-border px-3 py-2 rounded-sm hover:bg-muted text-center">Manage reservation</button>}
-                    {scope==='provider'&&<ContractorAssignment tripId={r.id} service={r.transport_type}/>}
+                    {scope==='provider'&&!hideScheduling&&<ContractorAssignment tripId={r.id} service={r.transport_type}/>}
                     {scope==='provider' && r.can_share_network && <ShareTripControl tripId={r.id} />}
                     {(state === "unconfirmed" || state === "booked") && (
                       <button

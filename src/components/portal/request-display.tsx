@@ -1,3 +1,4 @@
+import {CHILD_REQUIREMENT_LABELS} from '@/lib/trip-form-rules';
 import { StatusPill } from "@/components/ds/status";
 import { Link } from "@tanstack/react-router";
 import { DsBadge, type Status } from "@/components/ds/feedback";
@@ -122,7 +123,7 @@ export function RequestDetail({ r, showSource = false }: { r: RequestDetailRow; 
     {repeating && <dl className={fields}><Row label="Recurrence" value={value('recurrence_rule')} /><Row label="Repeats until" value={readable('recurrence_end_date')} /></dl>}
     </DetailSection>
     <DetailSection tone="service" title={delivery ? 'Delivery handling' : 'Transportation requirements'}><dl className={fields}>
-      {delivery ? <><Row label="Delivery category" value={DELIVERY_CAT[String(r.delivery_item_type || '')] || value('delivery_item_type')} /><Row label="Signature required" value={value('delivery_signature_required')} /></> : <><Row label="Service level" value={value('service_level')} /><Row label="Wheelchair required" value={value('needs_wheelchair')} /><Row label="Assistance to vehicle" value={value('needs_assistance_to_vehicle')} /><Row label="Mobility notes" value={value('mobility_notes')} /></>}
+      {delivery ? <><Row label="Delivery category" value={DELIVERY_CAT[String(r.delivery_item_type || '')] || value('delivery_item_type')} /><Row label="Signature required" value={value('delivery_signature_required')} /></> : <><Row label="Service level" value={value('service_level')} /><Row label="Wheelchair required" value={value('needs_wheelchair')} /><Row label="Assistance to vehicle" value={value('needs_assistance_to_vehicle')} /><Row label="Mobility notes" value={value('mobility_notes')} />{r.service_line==='child_care' && <><Row label="Service" value="Child Care Transportation" />{(Array.isArray((r.child_care_details as {children?:unknown[]}|null)?.children)?(r.child_care_details as {children:{firstName:string;age:number|null;requirement:keyof typeof CHILD_REQUIREMENT_LABELS}[]}).children:[]).map((c,i)=><Row key={i} label={`Child ${i+1}`} value={`${c.firstName}${c.age!=null?`, age ${c.age}`:''} · ${CHILD_REQUIREMENT_LABELS[c.requirement]??c.requirement}`} />)}</>}</>}
     </dl></DetailSection>
     <DetailSection tone="notes" title="Notes and special instructions"><dl className={fields}><Row label={delivery ? 'Handling instructions' : 'Additional information'} value={value(delivery ? 'delivery_instructions' : 'special_instructions')} /></dl></DetailSection>
   </div>;

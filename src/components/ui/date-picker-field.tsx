@@ -31,7 +31,9 @@ export function DatePickerField({
   id,
   booking = false,
   helperText,
+  usFormat = false,
 }: {
+  usFormat?: boolean;
   label?: string;
   value: string; // YYYY-MM-DD or ""
   onChange: (v: string) => void;
@@ -70,7 +72,7 @@ export function DatePickerField({
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-            {parsed ? format(parsed, "EEE, MMM d, yyyy") : <span>{placeholder}</span>}
+            {parsed ? format(parsed, usFormat ? "MM/dd/yyyy" : "EEE, MMM d, yyyy") : <span>{placeholder}</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 z-50" align="start">
