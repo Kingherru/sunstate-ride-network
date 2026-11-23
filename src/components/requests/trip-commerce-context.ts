@@ -13,4 +13,6 @@ export const TripCommerceContext = createContext<{
   invoiceBottomSlot?: ReactNode;
   workspaceId?: string;
   draftExtras?: { showInvoiceToLinkedAccount: boolean };
+  /** Route-derived total miles; null = routing unavailable (Review Required). */
+  onRouteMiles?: (route: { status: 'idle' | 'loading' | 'ok' | 'unavailable'; miles: number | null }) => void;
 } | null>(null);

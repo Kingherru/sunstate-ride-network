@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { formatUsDate, formatUsTime, partialAddress, pendingBadge } from '@/lib/trip-form-rules';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -274,9 +275,11 @@ export function ReservationsPanel({
   hideReferrals = false,
   selectedState,
   hideLifecycleTabs = false,
-  category, workspaceId, hideScheduling = false,
+  category, workspaceId, hideScheduling = false, compact = false,
 }: {
   hideScheduling?: boolean;
+  /** Compact summary rows; full authorized details load only in the popup. */
+  compact?: boolean;
   userId: string;
   scope?: Scope;
   onResumeDraft?: (draft: TripDraft) => void;
@@ -440,7 +443,7 @@ export function ReservationsPanel({
         <SavedTripsPanel variant="drafts" onResume={onResumeDraft} />
       ) : (<>
 
-      <p className="text-xs text-muted-foreground">{meta.blurb}</p>
+      {!compact && <p className="text-xs text-muted-foreground">{meta.blurb}</p>}
 
       <div className="portal-filter-grid">
         {!hideScheduling && <select
@@ -479,7 +482,7 @@ export function ReservationsPanel({
 
       {q.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
       {!q.isLoading && rows.length === 0 && (
-        <div className="bg-card border border-border rounded-sm p-5 text-sm text-muted-foreground">
+        <div className={compact ? "ds-support py-2 text-ds-muted" : "bg-card border border-border rounded-sm p-5 text-sm text-muted-foreground"}>
           {state === "unconfirmed"
             ? "No unconfirmed reservations. New trips will show up here first."
             : state === "booked"
@@ -490,14 +493,14 @@ export function ReservationsPanel({
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className={compact ? "space-y-3" : "space-y-6"}>
         {dates.map((date) => (
           <div key={date}>
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+            {!compact && <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
               {new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
               <span className="ml-2 text-foreground">· {grouped[date].length} trip{grouped[date].length === 1 ? "" : "s"}</span>
-            </div>
-            <div className="space-y-3">
+            </div>}
+            <div className={compact ? "" : "space-y-3"}>
               {grouped[date].map((r: any) => {
                 const medicaid = isMedicaidTrip(r);
                 const onDownloadCms = () => {
@@ -535,6 +538,22 @@ export function ReservationsPanel({
                   });
                   if (!p) toast.info("CMS form downloaded — add your NPI & business info in Account to auto-fill provider block 33.");
                 };
+                if (compact) {
+                  const badge = state === "unconfirmed" ? pendingBadge({ kind: 'trip', requester_user_id: r.requester_user_id, created_by: r.created_by }, userId) : category === 'sent' ? 'Sent' : category === 'received' ? 'Received' : STATE_META[state].label;
+                  return (
+                  <div key={r.id} data-compact-trip className="trip-compact-row" tabIndex={0} role="button" aria-label={`Open trip details for ${r.patient_first_name ?? ''} ${r.patient_last_name ?? ''}`}
+                    onClick={e => { if (!(e.target as HTMLElement).closest('button,a')) openDetails({ kind: 'trip', id: r.id }); }}
+                    onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{r.patient_first_name} {r.patient_last_name}</span><span className={`trip-mini-badge ${state === 'unconfirmed' ? 'ds-status-yellow' : 'bg-ds-sky text-ds-primary'}`}>{badge}</span>{category && category !== 'owned' && state === 'unconfirmed' && <span className="trip-mini-badge bg-ds-sky text-ds-primary">{category === 'sent' ? 'Sent' : 'Received'}</span>}{medicaid && <MedicaidBadge />}{category && category !== 'owned' && !isTripPaid(r) && <span className="trip-mini-badge ds-status-yellow">Waiting on Payment</span>}</div>
+                      <p className="ds-support">{formatUsDate(r.pickup_date)}{r.pickup_time ? ` · ${formatUsTime(String(r.pickup_time))}` : ''} · {partialAddress(r.pickup_city, r.pickup_address)} → {partialAddress(r.dropoff_city, r.dropoff_address)}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {(scope === 'provider' || scope === 'ops') && (state === 'unconfirmed' || state === 'booked') && <button type="button" onClick={() => setReviewing(r)} className="trip-compact-action">{state === 'unconfirmed' ? 'Review' : 'Manage'}</button>}
+                      {workspaceId && state !== 'unconfirmed' && <CopyProviderTrip workspaceId={workspaceId} tripId={r.id}/>}
+                    </div>
+                  </div>);
+                }
                 return (
                 <div
                   key={r.id}

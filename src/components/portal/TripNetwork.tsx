@@ -1,4 +1,5 @@
 import { NotificationIndicator } from './NotificationIndicator';
+import { formatUsDate, referralBadges } from '@/lib/trip-form-rules';
 import {CheckoutAcknowledgment} from '@/components/payments/CheckoutAcknowledgment';
 import {currentCheckoutConsent} from '@/lib/payment-policy';
 import {getReferralFundingPreparation} from '@/lib/trip-invoices.functions';
@@ -89,7 +90,7 @@ function OfferResponse({ offer, source = false, onClose, actionsDisabled = false
     </div>
   </DetailOverlayFrame>;
 }
-export function ProviderNetworkOffers({actionsDisabled = false,pendingOnly=false}: {actionsDisabled?: boolean;pendingOnly?:boolean} = {}) {
+export function ProviderNetworkOffers({actionsDisabled = false,pendingOnly=false,compact=false}: {actionsDisabled?: boolean;pendingOnly?:boolean;compact?:boolean} = {}) {
   const list = useServerFn(listNetworkOffers);
   const q = usePortalQuery({ queryKey: ['network-offers'], queryFn: () => list() });
   const [review, setReview] = useState<NetworkOffer | null>(null);
@@ -98,6 +99,15 @@ export function ProviderNetworkOffers({actionsDisabled = false,pendingOnly=false
   const ids=visible.map(o=>o.id);
   const watermarks=usePortalQuery({queryKey:['offer-watermarks',ids],queryFn:()=>read({data:{ids}}),enabled:ids.length>0});
   const markAll=usePortalMutation({mutationFn:()=>mark({data:{items:(watermarks.data??[]).map(s=>({id:s.id,revision:s.revision}))}}),onSuccess:()=>watermarks.refetch(),onError:(e:Error)=>toast.error(e.message)});
+  if (compact) return <div className="space-y-1" data-compact-offers>
+    {!!q.error && <p role="alert" className="text-ds-error ds-support">Could not load offers.</p>}
+    {visible.map(o => { const w = watermarks.data?.find(s=>s.id===o.id); return <div key={o.id} data-compact-trip className="trip-compact-row" role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }}>
+      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">Passenger protected until accepted</span>{referralBadges({direction:'received',unread:w ? w.unread : null,status:o.status}).map(b=><span key={b} className={`trip-mini-badge ${b==='Unread'||b==='Unconfirmed'?'ds-status-yellow':'bg-ds-sky text-ds-primary'}`}>{b}</span>)}</div>
+        <p className="ds-support">{formatUsDate(o.pickup_date)} · {o.pickup_area} → {o.destination_area}</p></div>
+      <button type="button" className="trip-compact-action" onClick={() => setReview(o)}>Review Offer</button>
+    </div>; })}
+    {review && <OfferResponse offer={review} actionsDisabled={actionsDisabled} onClose={() => setReview(null)} />}
+  </div>;
   return <div className="space-y-4">
     <DsButton variant="secondary" disabled={preview.active||!watermarks.data?.some(s=>s.unread)||markAll.isPending} onClick={()=>markAll.mutate()}>Mark visible offers as read</DsButton>
     {q.isLoading && <p className="ds-body">Loading offers…</p>}
@@ -117,7 +127,8 @@ export function ProviderNetworkOffers({actionsDisabled = false,pendingOnly=false
     {review && <OfferResponse offer={review} actionsDisabled={actionsDisabled} onClose={() => setReview(null)} />}
   </div>;
 }
-export function DistributionActivity({ admin = false,pendingOnly=false }: { admin?: boolean;pendingOnly?:boolean }) {
+export function DistributionActivity({ admin = false,pendingOnly=false,compact=false }: { admin?: boolean;pendingOnly?:boolean;compact?:boolean }) {
+  const [openDist, setOpenDist] = useState<string | null>(null);
   const openDetails = useRequestDetails();
   const list = useServerFn(listNetworkActivity), send = useServerFn(sendNetworkWave);
   const q = usePortalQuery({ queryKey: ['network-activity'], queryFn: () => list() });
@@ -127,6 +138,27 @@ export function DistributionActivity({ admin = false,pendingOnly=false }: { admi
   const attentionFn=useServerFn(markNetworkAttention);
   const attention=usePortalMutation({mutationFn:()=>attentionFn(),onSuccess:()=>{refresh();toast.success('Attention status recorded.');},onError:(e:Error)=>toast.error(e.message)});
   const m = usePortalMutation({ mutationFn: (id: string) => send({ data: { distribution_id: id } }), onSuccess: r => { toast.success(`${r.radius}-mile wave sent to ${r.recipients} eligible businesses.`); refresh(); }, onError: (e: Error) => toast.error(e.message) });
+  const shownDists = (q.data ?? []).filter(d => (!pendingOnly || !d.offers.some(o=>o.status==='accepted') && ['ready','offers_sent','negotiating','needs_attention'].includes(d.status)) && (filter==='all' || d.status===filter));
+  const distBody = (d: (typeof shownDists)[number]) => <div className="space-y-4 mt-4"><p className="ds-body">{d.source_business || 'Public request'} · {d.source_mfn_id} · <span className="portal-money">{money(d.amount_cents)}</span> · {d.pickup_date} {d.pickup_time}</p>
+        {(d.request_id || d.trip_id) && <DsButton variant="ghost" onClick={() => openDetails({ kind: d.request_id ? 'request' : 'trip', id: d.request_id || d.trip_id || '' })}>View request details</DsButton>}
+        {d.can_manage&&<WaveReview distributionId={d.id}/>}
+        {admin && d.can_manage && d.status==='needs_attention' && <DsButton variant="secondary" disabled={attention.isPending} onClick={()=>attention.mutate()}><AlertTriangle className="size-4"/>Record attention alert</DsButton>}
+        <div className="ds-support space-y-2">{d.waves.map(w => <p key={w.id}>{w.radius_miles}-mile wave · {new Date(w.sent_at).toLocaleString()} · {d.offers.filter(o => o.wave_id===w.id).length} recipients</p>)}</div>
+        <h3 className="ds-label text-ds-primary">Offers</h3>
+        {d.offers.map(o => <div key={o.id} className="flex flex-wrap justify-between gap-2 border-t border-ds-border py-2 ds-body"><span>{o.mfn_id} · <span className="portal-money">{money(o.amount_cents)}</span> · {label(o.status)}</span>{o.status==='countered' && d.can_manage && <DsButton size="sm" variant="secondary" onClick={() => setReview({ ...o, source_mfn_id: d.source_mfn_id, pickup_area: d.pickup_area, destination_area: d.destination_area, pickup_date: d.pickup_date, pickup_time: d.pickup_time, capability: d.capability })}>Review counteroffer</DsButton>}</div>)}
+        <h3 className="ds-label text-ds-primary">Negotiation history</h3>{d.negotiations.map(n => <p className="ds-support" key={n.id}>{n.side} · {label(n.action)}{n.amount_cents ? <> · <span className="portal-money">{money(n.amount_cents)}</span></> : ''} · {n.business_note || '—'} · {new Date(n.created_at).toLocaleString()}</p>)}
+        <h3 className="ds-label text-ds-primary">Audit history</h3>{d.events.map(e => <p className="ds-support" key={e.id}>{label(e.event_type)} · {e.actor_mfn_id || 'System'} · {new Date(e.created_at).toLocaleString()}</p>)}
+      </div>;
+  if (compact) { const opened = shownDists.find(d => d.id === openDist); return <div className="space-y-1" data-compact-distributions>
+    {!!q.error && <p role="alert" className="text-ds-error ds-support">Could not load network activity.</p>}
+    {shownDists.map(d => <div key={d.id} data-compact-trip className="trip-compact-row" role="button" tabIndex={0} aria-label={`Open sent referral ${d.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setOpenDist(d.id); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenDist(d.id); } }}>
+      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{d.mfn_id}</span>{referralBadges({direction:'sent',status:d.status}).map(b=><span key={b} className={`trip-mini-badge ${b==='Unconfirmed'?'ds-status-yellow':'bg-ds-sky text-ds-primary'}`}>{b}</span>)}{d.status==='needs_attention'&&<span className="trip-mini-badge ds-status-red">Needs attention</span>}</div>
+        <p className="ds-support">{formatUsDate(d.pickup_date)} · {d.pickup_area} → {d.destination_area}</p></div>
+      <button type="button" className="trip-compact-action" onClick={() => setOpenDist(d.id)}>Open</button>
+    </div>)}
+    {opened && <DetailOverlayFrame title={`Sent referral ${opened.mfn_id}`} onClose={() => setOpenDist(null)}>{distBody(opened)}</DetailOverlayFrame>}
+    {review && <OfferResponse source offer={review} onClose={() => setReview(null)} />}
+  </div>; }
   return <div className="space-y-4">
     <DsField label="Distribution status">{p => <DsSelect {...p} className="max-w-sm" value={filter} onChange={e => setFilter(e.target.value)}>{['all','ready','offers_sent','negotiating','provider_selected','needs_attention','closed','unavailable'].map(s => <option value={s} key={s}>{label(s)}</option>)}</DsSelect>}</DsField>
     {!!q.error && <p role="alert" className="text-ds-error">Could not load network activity.</p>}

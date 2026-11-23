@@ -1,5 +1,38 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { timeParts, canonicalTime, type TimeParts } from "@/lib/trip-form-rules";
+
+/** When true, every TimeSelect inside renders the compact Hour / Min / Min / AM-PM control. */
+export const CompactTimeContext = React.createContext(false);
+
+/** Compact 12-hour control. Emits canonical HH:MM only once an hour is chosen; minutes default to :00. */
+export function CompactTimeControl({ value, onChange, id, invalid, disabled, label = "Time" }: { value: string; onChange: (v: string) => void; id?: string; invalid?: boolean; disabled?: boolean; label?: string }) {
+  const parts = timeParts(value);
+  const set = (patch: Partial<TimeParts>) => {
+    const base: TimeParts = parts ?? { hour: 0, tens: 0, ones: 0, period: "AM" };
+    const next = { ...base, ...patch };
+    if (!next.hour) return;
+    onChange(canonicalTime(next));
+  };
+  const cls = cn("portal-select compact-time-select", invalid && "border-destructive");
+  return (
+    <div role="group" aria-label={label} className="compact-time-control" data-compact-time>
+      <select id={id} aria-label={`${label} hour`} disabled={disabled} aria-invalid={invalid || undefined} className={cls} value={parts?.hour ?? ""} onChange={e => e.target.value ? set({ hour: Number(e.target.value) }) : onChange("")}>
+        <option value="">Hr</option>{Array.from({ length: 12 }, (_, i) => i + 1).map(h => <option key={h} value={h}>{h}</option>)}
+      </select>
+      <span aria-hidden className="compact-time-colon">:</span>
+      <select aria-label={`${label} minute tens`} disabled={disabled || !parts} className={cls} value={parts?.tens ?? 0} onChange={e => set({ tens: Number(e.target.value) })}>
+        {[0, 1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+      </select>
+      <select aria-label={`${label} minute ones`} disabled={disabled || !parts} className={cls} value={parts?.ones ?? 0} onChange={e => set({ ones: Number(e.target.value) })}>
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>{n}</option>)}
+      </select>
+      <select aria-label={`${label} AM or PM`} disabled={disabled || !parts} className={cls} value={parts?.period ?? "AM"} onChange={e => set({ period: e.target.value as "AM" | "PM" })}>
+        <option value="AM">AM</option><option value="PM">PM</option>
+      </select>
+    </div>
+  );
+}
 import {
   MIN_LEAD_MINUTES,
   minPickupTimeForDate,
@@ -74,6 +107,7 @@ export function TimeSelect({
   placeholder?: string;
   invalid?: boolean;
 }) {
+  const compact = React.useContext(CompactTimeContext);
   const current = snapToStep(String(value ?? "").slice(0, 5));
   const options = React.useMemo(() => {
     const base = min && min !== "23:59" ? TIME_OPTIONS.filter((o) => o.value >= min) : TIME_OPTIONS;
@@ -84,6 +118,7 @@ export function TimeSelect({
     return base;
   }, [min, current]);
 
+  if (compact) return <CompactTimeControl id={id} value={String(value ?? "").slice(0, 5)} onChange={onChange} invalid={invalid} disabled={disabled} label={placeholder === "Select a time" ? "Time" : placeholder} />;
   return (
     <select
       id={id}

@@ -1,3 +1,4 @@
+import { tripChronologyErrors } from "@/lib/trip-form-rules";
 /** Client-safe request validation shared by the public form and server functions. */
 import { z } from "zod";
 import {tripGeographyFields, stateCodeSchema, timezoneSchema} from './us-geography';
@@ -139,6 +140,9 @@ export const rideRequestSchema = z.object({
     });
   }
 
+  for (const [key, message] of Object.entries(tripChronologyErrors(data))) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: key.split(".").map(k => /^\d+$/.test(k) ? Number(k) : k), message });
+  }
   if (data.tripType === "round_trip" && !data.returnPickupTime) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

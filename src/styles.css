@@ -1045,3 +1045,15 @@ body[data-portal-contrast="true"] .theme-portal .provider-overview-action { bord
 .trip-compact-action:focus-visible { outline:3px solid var(--ds-focus, currentColor); outline-offset:2px; }
 .trip-compact-action:disabled { opacity:.55; cursor:not-allowed; }
 .trip-compact-toggle { display:inline-flex; align-items:center; min-height:44px; padding:.35rem .9rem; border:1px solid var(--ds-border, currentColor); border-radius:4px; }
+
+/* Provider New Trip: compact time control, option grids, legs */
+.compact-time-control{display:flex;align-items:center;gap:.25rem;flex-wrap:wrap;min-width:0}
+.compact-time-control .compact-time-select{width:auto;min-width:3.75rem;flex:0 1 auto;padding-right:1.5rem}
+.compact-time-colon{font-weight:700;color:var(--ds-primary,currentColor)}
+.trip-checkbox-grid{display:grid;gap:.5rem 1rem;grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr));align-items:start}
+.trip-option-group{min-width:0}
+.trip-leg-card{border:1px solid var(--color-ds-border);border-radius:4px;padding:.875rem;min-width:0}
+.trip-compact-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem .75rem;align-items:center;padding:.625rem .75rem;border-bottom:1px solid var(--color-ds-border);cursor:pointer;min-width:0}
+.trip-compact-row:hover,.trip-compact-row:focus-visible{background:var(--color-ds-sky)}
+.trip-compact-row:focus-visible{outline:2px solid var(--color-ds-focus);outline-offset:-2px}
+.trip-mini-badge{display:inline-flex;align-items:center;border-radius:3px;padding:.0625rem .375rem;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.4;white-space:nowrap}

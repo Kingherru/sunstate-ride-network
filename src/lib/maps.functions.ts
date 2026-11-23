@@ -240,3 +240,30 @@ export const estimateTripRoute = createServerFn({ method: "POST" })
       return { ok: info.duration_seconds != null, durationSeconds: info.duration_traffic_seconds ?? info.duration_seconds, miles: info.miles };
     } catch { return { ok: false, durationSeconds: null, miles: null }; }
   });
+
+/**
+ * Ordered multi-segment mileage (one way, round trip, multi trip). Geocodes each
+ * point server-side and routes every consecutive pair. Any missing segment makes
+ * the total null (Review Required) — mileage is never invented.
+ */
+export const estimateTripRouteSegments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ points: z.array(z.string().trim().min(3).max(400)).min(2).max(12) }).strict().parse(i))
+  .handler(async ({ data }) => {
+    try {
+      const coords = await Promise.all(data.points.map(p => geocode(p).catch(() => null)));
+      const segments: (number | null)[] = [];
+      let firstDuration: number | null = null;
+      for (let i = 0; i < coords.length - 1; i++) {
+        const a = coords[i], b = coords[i + 1];
+        if (!a || !b) { segments.push(null); continue; }
+        const info = await routeInfo(a, b).catch(() => null);
+        segments.push(info?.miles ?? null);
+        if (i === 0) firstDuration = info?.duration_traffic_seconds ?? info?.duration_seconds ?? null;
+      }
+      const ok = segments.every(s => s != null);
+      return { ok, segments, totalMiles: ok ? Math.round(segments.reduce<number>((t, s) => t + (s as number), 0) * 10) / 10 : null, firstDurationSeconds: firstDuration };
+    } catch {
+      return { ok: false, segments: [] as (number | null)[], totalMiles: null, firstDurationSeconds: null };
+    }
+  });

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { FileText, RefreshCw, ChevronDown, CreditCard, Download, X } from 'lucide-react';
+import { FileText, ChevronDown, CreditCard, Download, X } from 'lucide-react';
 import {previewDraftInvoice} from '@/lib/draft-invoice.functions';
 import {FacilityQuoteInbox} from './FacilityQuoteInbox';
 import {requestFacilityQuote} from '@/lib/facility-billing.functions';
@@ -25,7 +25,7 @@ import { regionalInvoiceProjection } from '@/lib/regional-projections';
 import { tripTimeEvidence } from '@/lib/regional-trip-times';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { TripLegsPreview } from '@/components/trips/TripLegsPreview';
-import { childCarePricing, formatUsDate, formatUsTime } from '@/lib/trip-form-rules';
+import { childCarePricing, formatUsDate, formatUsTime, TRIP_TYPE_DISPLAY } from '@/lib/trip-form-rules';
 const money = (c: number) => (c / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const warning = 'Warning: You are responsible for paying for trips you send to other providers. Failure to pay may result in the loss of your verification status, account suspension, or removal from the platform.';
 type Quote = { id: string; lines: InvoiceLine[]; totalCents: number; version: number; rateVersion?: number; terms?: string; trip?: {miles?:number;waitMinutes?:number}; pricingSnapshot?: {version:number} };
@@ -52,6 +52,12 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
   const [details, setDetails] = useState(false); const [examples, setExamples] = useState(preview.examples !== false);
   const [estimateMessage, setEstimateMessage] = useState('');
   const [estimating, setEstimating] = useState(false);
+  const [route, setRoute] = useState<{ status: 'idle' | 'loading' | 'ok' | 'unavailable'; miles: number | null }>({ status: 'idle', miles: null });
+  // Route-derived mileage fills the billable miles automatically; manual entry stays the approved fallback.
+  const onRouteMiles = useCallback((r: { status: 'idle' | 'loading' | 'ok' | 'unavailable'; miles: number | null }) => {
+    setRoute(prev => prev.status === r.status && prev.miles === r.miles ? prev : r);
+    if (r.status === 'ok' && r.miles != null) { setMiles(String(r.miles)); setManualConfirmed(true); }
+  }, []);
   const requestFacility=useServerFn(requestFacilityQuote);
   const calculate = useServerFn(calculateProviderCustomerQuote); const confirm = useServerFn(confirmTripCustomerQuote); const save = useServerFn(saveTripDraft); const prepareFunding = useServerFn(getReferralFundingPreparation);
   const pricingInputs = provider ? { miles, wait, discount, adjustment, reason, terms, manualConfirmed } : undefined;
@@ -79,14 +85,11 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
   const demoLines: InvoiceLine[] = [{ label: 'Pickup / loading', cents: 4000 }, { label: 'Mileage after included miles', cents: 3000 }];
   let adjustedEstimate=calculated;
   try {if(calculated)adjustedEstimate={...calculated,...appendInvoiceAdjustments(calculated.lines,[...(Number(discount)?[{kind:'discount' as const,cents:Number(discount),reason}]:[]),...(Number(adjustment)?[{kind:'adjustment' as const,cents:Number(adjustment),reason}]:[])])};}catch{adjustedEstimate=null;}
+  const priceReview = pricingReview || (!!estimateMessage && !estimating);
   const shown = pricingReview ? null : preview.active && examples && provider ? { lines: demoLines, totalCents: 7000 } : unchanged && confirmed ? confirmed : adjustedEstimate;
   function tripInput() {
     if (!quoteInput) throw new Error('Enter pickup date/time and confirmed route mileage first.');
     return quoteInput;
-  }
-  async function recalculate() {
-    if (preview.active) return previewBlocked(); if (!provider) return;
-    setBusy(true); try { const quote = await calculate({ data: { workspaceId, trip: tripInput(),payerId:selectedPayer } }); setCalculated(quote); } catch (e) { toast.error(e instanceof Error ? e.message : 'Quote unavailable.'); } finally { setBusy(false); }
   }
   async function confirmQuote() {
     if (preview.active) return previewBlocked(); if (!form || !manualConfirmed || !provider) return;
@@ -109,7 +112,17 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border bg-ds-sky px-4 py-3"><h2 className="ds-subheading uppercase">{network ? 'Fund Referral' : 'Live Invoice'}</h2>{provider ? <DsButton type="button" variant="ghost" size="sm" aria-label="Minimize live invoice" onClick={()=>setMinimized(true)}><X className="size-4"/></DsButton> : <FileText className="size-5 shrink-0 text-ds-primary"/>}</header>
         {!provider && <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-ds-border p-4"><div className="min-w-0"><p className="ds-caption">{preview.active && examples ? 'Preview invoice — not issued' : unchanged && confirmed ? 'Confirmed Quote' : 'Estimate'}</p><span className="portal-money">{preview.active && examples ? money(REGIONAL_DEMO_INVOICE.totalCents) : 'Provider quote required'}</span></div><DsButton type="button" variant="ghost" className="lg:hidden" onClick={() => setDetails(!details)} aria-expanded={details}>{details ? 'Hide details' : 'View details'}</DsButton></div>}
         {provider && <div className="invoice-summary grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="min-w-0"><p className="ds-caption">{network ? 'Not funded' : unchanged && confirmed ? 'Confirmed quote' : 'Estimate — not issued'}</p><span className="portal-money">{network ? funding?.totalCents != null ? money(funding.totalCents) : 'Funding required' : pricingReview ? 'Pricing review required' : estimating ? 'Updating…' : shown ? money(shown.totalCents) : provider ? 'Confirmed mileage and configured pricing required' : 'Provider quote required'}</span><p className="ds-caption mt-1">{provider ? manualConfirmed ? `${miles} confirmed route miles` : 'Enter and confirm actual route mileage' : 'Provider mileage required'} · {form && 'tripType' in form ? form.tripType === 'round_trip' ? 'Round trip' : form.tripType === 'multi_trip' ? 'Multi-leg' : 'One way' : 'Medical delivery'}</p>{pricingReview && <p role="status" className="ds-caption mt-1">Child Care Transportation has no configured rate. Provider confirmation and a manual quote are required; no charge is created.</p>}{confirmed && !unchanged && <p role="status" className="ds-caption mt-1">Trip or pricing changed — refresh and reconfirm the quote.</p>}</div>
+          <div className="min-w-0 space-y-2"><p className="ds-caption">{network ? 'Not funded' : unchanged && confirmed ? 'Confirmed quote' : 'Estimate — not issued · updates automatically'}</p>
+            <dl className="invoice-compact grid grid-cols-2 gap-x-4 gap-y-1 ds-body sm:grid-cols-3">
+              <div><dt className="ds-caption">Trip Type</dt><dd data-invoice-trip-type className="font-semibold">{form && 'tripType' in form ? TRIP_TYPE_DISPLAY[form.tripType] : 'Medical Delivery'}</dd></div>
+              <div><dt className="ds-caption">Total Mileage</dt><dd data-invoice-miles className="font-semibold">{route.status === 'loading' ? 'Calculating…' : manualConfirmed && miles ? `${miles} mi${route.status === 'ok' ? ' (route)' : ''}` : 'Review Required'}</dd></div>
+              <div><dt className="ds-caption">Calculated Price</dt><dd data-invoice-price className="portal-money">{network ? funding?.totalCents != null ? money(funding.totalCents) : 'Funding required' : priceReview ? 'Pricing Review Required' : estimating ? 'Updating…' : shown ? money(shown.totalCents) : 'Pricing Review Required'}</dd></div>
+            </dl>
+            {!network && shown && !priceReview && <details className="invoice-fees"><summary className="ds-label cursor-pointer">Additional Fees · {money(shown.lines.slice(1).reduce((t, l) => t + l.cents, 0))}</summary><ul className="divide-y divide-ds-border">{shown.lines.map((l, i) => <li key={i} className="flex justify-between gap-3 py-1.5 ds-support"><span>{l.label}</span><span className="portal-money shrink-0">{money(l.cents)}</span></li>)}</ul></details>}
+            {route.status === 'unavailable' && !manualConfirmed && <p role="status" className="ds-caption">Route unavailable — Review Required. Enter confirmed route miles in Invoice details; nothing is estimated.</p>}
+            {pricingReview && <p role="status" className="ds-caption">Child Care Transportation has no configured rate. Provider confirmation and a manual quote are required; no charge is created.</p>}
+            {!pricingReview && estimateMessage && <p role="status" className="ds-caption">A required saved rate is unavailable — no quote or charge is created.</p>}
+            {confirmed && !unchanged && <p role="status" className="ds-caption">Trip or pricing changed — refresh and reconfirm the quote.</p>}</div>
           <div className="flex flex-wrap items-center gap-2 sm:max-w-sm sm:justify-end">
             {provider && <><DsButton type="button" variant="secondary" disabled={preview.active||!unchanged||!confirmed||!draftId} onClick={()=>invoiceAction(true)}><Download className="size-4"/>Download PDF</DsButton><DsButton type="button" variant="secondary" onClick={()=>setPaymentOpen(true)}><CreditCard className="size-4"/>Pay by Credit Card</DsButton></>}
             <DsButton type="button" variant="ghost" onClick={() => setDetails(!details)} aria-expanded={details} aria-controls="live-invoice-details"><ChevronDown className={`size-4 ${details ? 'rotate-180' : ''}`} aria-hidden/>Invoice details</DsButton>
@@ -127,10 +140,9 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
             <dl className="space-y-2 ds-body"><div className="flex justify-between gap-3"><dt>Network fee (2%)</dt><dd className="portal-money">{funding ? money(funding.networkFeeCents) : 'Not prepared'}</dd></div><div className="flex justify-between gap-3"><dt>Processing recovery</dt><dd className="portal-money">{funding?.processingCents != null ? money(funding.processingCents) : 'Configuration required'}</dd></div><div className="flex justify-between gap-3"><dt>Customer invoice / retained amount</dt><dd>No invoice issued</dd></div><div className="flex justify-between gap-3"><dt>Sender margin</dt><dd>Not available</dd></div></dl>
             <p role="note" className="ds-body border-y border-ds-border py-4 font-semibold">{warning}</p><DsCheckbox label="I confirm the compensation and payment responsibility" checked={ack} onChange={e => setAck(e.target.checked)}/><CheckoutAcknowledgment accepted={policyAccepted} onChange={setPolicyAccepted}/><DsButton type="button" disabled={!ack || !policyAccepted || busy} onClick={fundingReview}>Review funding preparation</DsButton>{funding && <p className="ds-support">{funding.blocker}</p>}<p className="ds-caption">Not funded · No offer sent · Hold: standard 10 days, Super/Gold Verified 4 days. Existing 24-hour dispute window and payment deadlines are unchanged.</p><Link to="/portal/network" className="ds-label text-ds-link underline">Open controlled Network offers</Link>
           </> : <>
-            <DsField label="MANUAL MILEAGE — total billable route miles">{p => <DsInput {...p} type="number" min="0" step="0.1" value={miles} onChange={e => { setMiles(e.target.value); setManualConfirmed(false); setCalculated(null); setQuoteForm(null); }}/>}</DsField>
+            <DsField label={route.status === 'ok' ? 'Route mileage — total billable miles (all legs)' : 'MANUAL MILEAGE — total billable route miles (routing unavailable)'}>{p => <DsInput {...p} type="number" min="0" step="0.1" value={miles} onChange={e => { setMiles(e.target.value); setManualConfirmed(false); setCalculated(null); setQuoteForm(null); }}/>}</DsField>
             <DsCheckbox label="I confirm these are actual route miles, including applicable return travel" checked={manualConfirmed} onChange={e => setManualConfirmed(e.target.checked)}/>
             <DsField label="Wait time (minutes)">{p => <DsInput {...p} type="number" min="0" value={wait} onChange={e => { setWait(e.target.value); setQuoteForm(null); }}/>}</DsField>
-            <DsButton type="button" variant="secondary" disabled={busy || pricingReview} onClick={recalculate}><RefreshCw className="size-4"/>Calculate quote</DsButton>
             {estimateMessage && <p role="status" className="ds-support">Pricing setup required · {estimateMessage}</p>}
             {shown && <ul className="divide-y divide-ds-border">{shown.lines.map((l, i) => <li key={i} className="flex justify-between gap-3 py-3 ds-body"><span>{l.label}{l.reason && <small className="block ds-caption">{l.reason}</small>}</span><span className="portal-money shrink-0">{money(l.cents)}</span></li>)}</ul>}
             <div className="grid gap-3 sm:grid-cols-2"><DsField label="Discount (integer cents)">{p => <DsInput {...p} type="number" min="0" step="1" value={discount} onChange={e => { setDiscount(e.target.value); setQuoteForm(null); }}/>}</DsField><DsField label="Adjustment (integer cents)">{p => <DsInput {...p} type="number" min="0" step="1" value={adjustment} onChange={e => { setAdjustment(e.target.value); setQuoteForm(null); }}/>}</DsField></div>
@@ -149,7 +161,7 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
         </div>
       </aside>
   );
-  return <TripCommerceContext.Provider value={{ onChange: change, draftId, onDraftSaved: setDraftId, quote: attachment, business: true, provider, submissionBlocked: network || !!confirmed && !unchanged, ...(provider ? {workspaceId, invoiceSlot: minimized ? null : invoice, invoiceBottomSlot: minimized ? <div className="provider-invoice-minimized border border-ds-border bg-ds-sky p-3 flex flex-wrap justify-between items-center gap-3"><span className="ds-label">Live Invoice · {pricingReview ? 'Pricing review required' : shown ? money(shown.totalCents) : 'Estimate unavailable'}</span><DsButton type="button" variant="secondary" aria-label="Expand live invoice" onClick={()=>{setMinimized(false);setDetails(true);}}>Invoice details<ChevronDown className="size-4"/></DsButton></div> : null, draftExtras: {showInvoiceToLinkedAccount: showInvoice}} : {}) }}>
+  return <TripCommerceContext.Provider value={{ onChange: change, draftId, onDraftSaved: setDraftId, quote: attachment, business: true, provider, submissionBlocked: network || !!confirmed && !unchanged, ...(provider ? {workspaceId, onRouteMiles, invoiceSlot: minimized ? null : invoice, invoiceBottomSlot: minimized ? <div className="provider-invoice-minimized border border-ds-border bg-ds-sky p-3 flex flex-wrap justify-between items-center gap-3"><span className="ds-label">Live Invoice · {priceReview ? 'Pricing Review Required' : shown ? money(shown.totalCents) : 'Estimate unavailable'}</span><DsButton type="button" variant="secondary" aria-label="Expand live invoice" onClick={()=>{setMinimized(false);setDetails(true);}}>Invoice details<ChevronDown className="size-4"/></DsButton></div> : null, draftExtras: {showInvoiceToLinkedAccount: showInvoice}} : {}) }}>
     <div className={`trip-workspace min-w-0 ${provider ? 'provider-trip-document bg-ds-surface p-4 sm:p-5 lg:p-6' : `grid gap-6 ${patient ? '' : 'md:grid-cols-2'}`}`}>
       <div className="min-w-0"><h1 className="sr-only">New trip</h1><RequestForm context="portal" initialDraft={initialDraft} allowProviderSelection={!provider}/></div>
       {!provider && invoice}

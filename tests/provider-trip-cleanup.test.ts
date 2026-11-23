@@ -15,7 +15,7 @@ vi.mock('../src/lib/account-connections-token.server',()=>({hashInvitationToken:
 
 it('defaults Reservations to Booked and preserves the requested lifecycle order',()=>{
   expect(DEFAULT_PROVIDER_RESERVATION).toBe('booked');
-  expect(PROVIDER_RESERVATION_TABS.map(t=>t.value)).toEqual(['unconfirmed','drafts','booked','past','canceled','history']);
+  expect(PROVIDER_RESERVATION_TABS.map(t=>t.value)).toEqual(['pending','booked','past','history']);
 });
 it('legacy invoices remain visible and explicit provider false hides linked customer copies',()=>{
   expect(linkedInvoiceVisible(undefined)).toBe(true);

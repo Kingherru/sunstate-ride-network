@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { CalendarIcon, SearchIcon } from "lucide-react";
 import { format } from "date-fns";
+import { formatUsDate, formatUsTime } from "@/lib/trip-form-rules";
 import type { DateRange } from "react-day-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
@@ -163,7 +164,8 @@ function groupKeyDaily(dateIso: string): string {
   return format(d, "EEEE, MMM d, yyyy");
 }
 
-export function TripHistoryPanel({ userId,category,workspaceId }: { userId: string; category?:ReservationCategory; workspaceId?:string }) {
+export function TripHistoryPanel({ userId,category,workspaceId,includeCanceled=false }: { userId: string; category?:ReservationCategory; workspaceId?:string; includeCanceled?: boolean }) {
+  const [statusFilter, setStatusFilter] = useState<'all'|'canceled'|'active'>('all');
   const preview = usePortalPreview();
   const openDetails=useRequestDetails();
   const qc = useQueryClient();
@@ -186,7 +188,7 @@ export function TripHistoryPanel({ userId,category,workspaceId }: { userId: stri
   const toIsoStr = range?.to ? toIso(range.to) : null;
 
   const q = usePortalQuery({
-    queryKey: ["trip-history", userId, fromIso, toIsoStr],
+    queryKey: ["trip-history", userId, fromIso, toIsoStr, includeCanceled],
     enabled: !!userId,
     queryFn: async (): Promise<HistoryTrip[]> => {
       // History = completed trips PLUS any trip whose scheduled date has already
@@ -200,7 +202,7 @@ export function TripHistoryPanel({ userId,category,workspaceId }: { userId: stri
           "id, ride_request_id,network_distribution_id,network_provider_workspace_id,referral_target_id,trip_number, status, reservation_state, pickup_date, pickup_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, payment_status, payout_status, cost_total, provider_payout_cents, driver_id, assigned_to, created_by, completed_at, updated_at, created_at",
         )
         .or(
-          `status.in.(${COMPLETED_STATUSES.join(",")}),reservation_state.in.(past,history),pickup_date.lt.${todayIso}`,
+          `status.in.(${[...COMPLETED_STATUSES, ...(includeCanceled ? CANCELED_STATUSES : [])].join(",")}),reservation_state.in.(past,history),pickup_date.lt.${todayIso}`,
         )
         .order("pickup_date", { ascending: false })
         .limit(1000);
@@ -256,7 +258,10 @@ export function TripHistoryPanel({ userId,category,workspaceId }: { userId: stri
     return allTrips.filter((t) => {
       // Canceled/expired trips live in the Past tab, not the history record.
       if (category && reservationCategory(t,workspaceId??'',userId)!==category)return false;
-      if (!category && isCanceled(t) && !isCompleted(t)) return false;
+      // Canceled trips are merged into History (presentation only) when includeCanceled is set.
+      if (!category && !includeCanceled && isCanceled(t) && !isCompleted(t)) return false;
+      if (statusFilter === "canceled" && !isCanceled(t)) return false;
+      if (statusFilter === "active" && isCanceled(t)) return false;
       if (completion === "completed" && !isCompleted(t)) return false;
       if (completion === "needs_completion" && isCompleted(t)) return false;
       if (paymentFilter === "paid" && (t.payment_status ?? "").toLowerCase() !== "paid") return false;
@@ -276,7 +281,7 @@ export function TripHistoryPanel({ userId,category,workspaceId }: { userId: stri
         .toLowerCase();
       return hay.includes(s);
     });
-  }, [allTrips, search, paymentFilter, completion,category,workspaceId,userId]);
+  }, [allTrips, search, paymentFilter, completion,category,workspaceId,userId,includeCanceled,statusFilter]);
 
   const needsCompletionCount = useMemo(
     () => filtered.filter((t) => !isCompleted(t)).length,
@@ -396,17 +401,28 @@ export function TripHistoryPanel({ userId,category,workspaceId }: { userId: stri
             </PopoverContent>
           </Popover>
 
-          <div className="relative flex-1 min-w-0">
+          <div className="relative min-w-0 w-full sm:w-auto sm:max-w-[16rem]">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search trip #, passenger, pickup, drop-off…"
-              className="w-full text-sm bg-background border border-border rounded-sm pl-8 pr-3 py-2"
+              placeholder="Search trips…"
+              aria-label="Search trip number, passenger, pickup or drop-off"
+              className="w-full max-w-[16rem] text-sm bg-background border border-border rounded-sm pl-8 pr-3 py-2"
             />
           </div>
 
+          {includeCanceled && <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as 'all'|'canceled'|'active')}
+            className="text-xs font-bold uppercase tracking-wider bg-background border border-border rounded-sm px-3 py-2"
+            aria-label="Filter by trip status"
+          >
+            <option value="all">All statuses</option>
+            <option value="active">Hide canceled</option>
+            <option value="canceled">Canceled only</option>
+          </select>}
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value as "all" | "paid" | "unpaid")}
@@ -487,8 +503,8 @@ export function TripHistoryPanel({ userId,category,workspaceId }: { userId: stri
               </span>
             </div>
             <HistoryTable rows={trips} columns={[
-              {id:'date',label:'Date & time',render:t=>`${t.pickup_date} ${t.pickup_time??''}`},
-              {id:'patient',label:'Patient',render:t=>`${t.patient_first_name??''} ${t.patient_last_name??''}`},
+              {id:'date',label:'Date & time',wrap:true,minWidth:150,render:t=><span className="whitespace-nowrap" data-history-date>{formatUsDate(t.pickup_date)}{t.pickup_time?` ${formatUsTime(t.pickup_time)}`:''}</span>},
+              {id:'patient',label:'Patient',render:t=><span className="inline-flex flex-wrap items-center gap-1.5">{`${t.patient_first_name??''} ${t.patient_last_name??''}`}{isCanceled(t)&&<span className="trip-mini-badge ds-status-red" data-canceled-badge>Canceled</span>}</span>},
               {id:'route',label:'Route',render:t=><>{t.pickup_city} → {t.dropoff_city}</>},
               {id:'driver',label:'Driver',render:t=>t.driver_id?driverMap.get(t.driver_id)??'Not available':'Unassigned'},
               {id:'payment',label:'Payment',render:t=>t.payment_status??'Not recorded'},

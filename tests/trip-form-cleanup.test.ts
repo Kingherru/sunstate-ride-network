@@ -89,7 +89,7 @@ describe('child care', () => {
   it('never invents a rate', () => {
     expect(childCarePricing('child_care')).toBe('review_required');
     expect(childCarePricing('medical')).toBe('standard');
-    expect(readFileSync('src/components/portal/NewTripWorkspace.tsx', 'utf8')).toContain("'Pricing review required'");
+    expect(readFileSync('src/components/portal/NewTripWorkspace.tsx', 'utf8')).toContain("'Pricing Review Required'");
   });
   it('network projections carry only a count, never names or ages', () => {
     expect(networkSafeChildCare({ version: 1, children: kids })).toEqual({ serviceLine: 'child_care', childCount: 1 });
