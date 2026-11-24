@@ -372,21 +372,21 @@ export function TripHistoryPanel({ userId,category,workspaceId,includeCanceled=f
         </div>
 
         {/* Date range + search + view */}
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
+        <div className="trip-history-controls flex flex-wrap items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
-                  "justify-start text-left font-normal w-full md:w-[280px]",
+                  "trip-history-date justify-start text-left font-normal h-auto min-h-10 w-full sm:w-[22rem] max-w-full shrink-0 whitespace-normal",
                   !range?.from && "text-muted-foreground",
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {rangeLabel}
+                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                <span>{rangeLabel}</span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+            <PopoverContent className="trip-history-calendar w-auto max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-auto p-0 pointer-events-auto" align="start">
               <Calendar
                 mode="range"
                 selected={range}
@@ -401,7 +401,7 @@ export function TripHistoryPanel({ userId,category,workspaceId,includeCanceled=f
             </PopoverContent>
           </Popover>
 
-          <div className="relative min-w-0 w-full sm:w-auto sm:max-w-[16rem]">
+          <div className="trip-history-search relative min-w-0 w-full sm:w-[18rem] sm:flex-1 sm:min-w-[16rem] sm:max-w-[22rem]">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="search"
@@ -409,7 +409,7 @@ export function TripHistoryPanel({ userId,category,workspaceId,includeCanceled=f
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search trips…"
               aria-label="Search trip number, passenger, pickup or drop-off"
-              className="w-full max-w-[16rem] text-sm bg-background border border-border rounded-sm pl-8 pr-3 py-2"
+              className="w-full text-sm bg-background border border-border rounded-sm pl-8 pr-3 py-2"
             />
           </div>
 

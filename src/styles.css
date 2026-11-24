@@ -1057,3 +1057,21 @@ body[data-portal-contrast="true"] .theme-portal .provider-overview-action { bord
 .trip-compact-row:hover,.trip-compact-row:focus-visible{background:var(--color-ds-sky)}
 .trip-compact-row:focus-visible{outline:2px solid var(--color-ds-focus);outline-offset:-2px}
 .trip-mini-badge{display:inline-flex;align-items:center;border-radius:3px;padding:.0625rem .375rem;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.4;white-space:nowrap}
+
+/* Pass 1: Provider Trips presentation only; other portal lists retain their styles. */
+.provider-trips .trip-compact-row { padding: .875rem .75rem; gap: .75rem 1rem; align-items: start; }
+.provider-trips .trip-compact-row > .min-w-0 { display: grid; gap: .5rem; }
+.provider-trips .trip-card-heading { display: grid; gap: .5rem; }
+.provider-trips .trip-card-badges { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem .5rem; }
+.provider-trips .trip-card-route { overflow-wrap: anywhere; }
+.provider-trips [data-trip-badge="Received"] { background: var(--mfn-sky); color: var(--ds-primary); }
+.provider-trips [data-trip-badge="Sent"] { background: var(--portal-indicator-positive-bg); color: var(--portal-indicator-positive-fg); }
+.provider-trips [data-trip-badge="Unread"] { background: var(--mfn-peach); color: var(--ds-primary); }
+.provider-trips [data-trip-badge="Unconfirmed"] { background: var(--portal-indicator-warning-bg); color: var(--portal-indicator-warning-fg); }
+.provider-trips [data-trip-badge="Draft"] { background: var(--portal-indicator-attention-bg); color: var(--portal-indicator-attention-fg); }
+.provider-trips .trip-mini-badge { letter-spacing: 0; }
+.provider-trips .trip-history-controls > select { max-width: 100%; min-height: 2.5rem; }
+@media (max-width: 639px) {
+  .provider-trips .trip-compact-row { grid-template-columns: minmax(0, 1fr); }
+  .provider-trips .trip-compact-row > .flex { justify-content: flex-start; }
+}

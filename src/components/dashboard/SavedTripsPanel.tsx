@@ -72,8 +72,8 @@ export function SavedTripsPanel({
         return <div key={d.id} data-compact-trip className="trip-compact-row" role="button" tabIndex={0} aria-label={`Open draft ${name || 'trip'}`}
           onClick={e => { if (!(e.target as HTMLElement).closest('button')) setDetail(d); }}
           onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setDetail(d); } }}>
-          <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{p.requestCategory === 'medical_delivery' ? 'Medical Delivery' : name || 'Untitled trip draft'}</span><span className="trip-mini-badge bg-ds-sky text-ds-primary">{pendingBadge({ kind: 'draft' }, '')}</span></div>
-            <p className="ds-support">{date ? formatUsDate(date) : 'No pickup date'} · {partialAddress(p.pickupCity || p.pickup_city, p.pickupAddress || p.pickup_address)} → {partialAddress(p.dropoffCity || p.dropoff_city, p.dropoffAddress || p.dropoff_address)}</p></div>
+          <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{p.requestCategory === 'medical_delivery' ? 'Medical Delivery' : name || 'Untitled trip draft'}</span><span data-trip-badge="Draft" className="trip-mini-badge bg-ds-sky text-ds-primary">{pendingBadge({ kind: 'draft' }, '')}</span></div>
+            <p className="ds-support trip-card-date">{date ? formatUsDate(date) : 'No pickup date'}</p><p className="ds-support trip-card-route">{partialAddress(p.pickupCity || p.pickup_city, p.pickupAddress || p.pickup_address)} → {partialAddress(p.dropoffCity || p.dropoff_city, p.dropoffAddress || p.dropoff_address)}</p></div>
           <button type="button" className="trip-compact-action" onClick={() => onResume(d)}>Resume</button>
         </div>;
       })}

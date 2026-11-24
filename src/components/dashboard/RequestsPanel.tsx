@@ -16,7 +16,7 @@ import { isTripPaid, WAITING_ON_PAYMENT_LABEL, WAITING_ON_PAYMENT_NOTE } from "@
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
 import { ShareTripControl } from '@/components/portal/TripNetwork';
 import { useRequestDetails } from '@/components/portal/request-detail-context';
-import {reservationCategory,type ReservationCategory} from '@/lib/provider-reservation-groups';
+import {matchesReservationCategory,reservationCategory,type ReservationCategory} from '@/lib/provider-reservation-groups';
 import {CopyProviderTrip} from '@/components/portal/CopyProviderTrip';
 import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
 
@@ -286,7 +286,7 @@ export function ReservationsPanel({
   hideReferrals?: boolean;
   selectedState?: ResvState;
   hideLifecycleTabs?: boolean;
-  category?: ReservationCategory; workspaceId?:string;
+  category?: ReservationCategory | "referrals"; workspaceId?:string;
 }) {
   const preview = usePortalPreview();
   const openDetails = useRequestDetails();
@@ -364,7 +364,7 @@ export function ReservationsPanel({
   const rows = useMemo(() => allRows.filter((r) => {
     // Approved referrals live in their own Referral Reservations section below.
     if (!category && isPendingReferralReservation(r, userId)) return false;
-    if(category && reservationCategory(r,workspaceId??'',userId)!==category)return false;
+    if(category && !matchesReservationCategory(r,category,workspaceId??'',userId))return false;
     // Trips routed to this provider that aren't paid yet stay in the Referrals
     // tab as "Waiting on Payment" — they appear here only after payment.
     if (
@@ -539,14 +539,16 @@ export function ReservationsPanel({
                   if (!p) toast.info("CMS form downloaded — add your NPI & business info in Account to auto-fill provider block 33.");
                 };
                 if (compact) {
-                  const badge = state === "unconfirmed" ? pendingBadge({ kind: 'trip', requester_user_id: r.requester_user_id, created_by: r.created_by }, userId) : category === 'sent' ? 'Sent' : category === 'received' ? 'Received' : STATE_META[state].label;
+                  const direction = reservationCategory(r, workspaceId ?? '', userId);
+                  const badge = state === "unconfirmed" ? pendingBadge({ kind: 'trip', requester_user_id: r.requester_user_id, created_by: r.created_by }, userId) : STATE_META[state].label;
                   return (
                   <div key={r.id} data-compact-trip className="trip-compact-row" tabIndex={0} role="button" aria-label={`Open trip details for ${r.patient_first_name ?? ''} ${r.patient_last_name ?? ''}`}
                     onClick={e => { if (!(e.target as HTMLElement).closest('button,a')) openDetails({ kind: 'trip', id: r.id }); }}
                     onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetails({ kind: 'trip', id: r.id }); } }}>
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{r.patient_first_name} {r.patient_last_name}</span><span className={`trip-mini-badge ${state === 'unconfirmed' ? 'ds-status-yellow' : 'bg-ds-sky text-ds-primary'}`}>{badge}</span>{category && category !== 'owned' && state === 'unconfirmed' && <span className="trip-mini-badge bg-ds-sky text-ds-primary">{category === 'sent' ? 'Sent' : 'Received'}</span>}{medicaid && <MedicaidBadge />}{category && category !== 'owned' && !isTripPaid(r) && <span className="trip-mini-badge ds-status-yellow">Waiting on Payment</span>}</div>
-                      <p className="ds-support">{formatUsDate(r.pickup_date)}{r.pickup_time ? ` · ${formatUsTime(String(r.pickup_time))}` : ''} · {partialAddress(r.pickup_city, r.pickup_address)} → {partialAddress(r.dropoff_city, r.dropoff_address)}</p>
+                      <div className="trip-card-heading"><span className="ds-label text-ds-primary">{r.patient_first_name} {r.patient_last_name}</span><div className="trip-card-badges"><span data-trip-badge={state === 'unconfirmed' ? 'Unconfirmed' : badge} className={`trip-mini-badge ${state === 'unconfirmed' ? 'ds-status-yellow' : 'bg-ds-sky text-ds-primary'}`}>{badge}</span>{category && direction !== 'owned' && <span data-trip-badge={direction === 'sent' ? 'Sent' : 'Received'} className="trip-mini-badge bg-ds-sky text-ds-primary">{direction === 'sent' ? 'Sent' : 'Received'}</span>}{medicaid && <MedicaidBadge />}{category && direction !== 'owned' && !isTripPaid(r) && <span className="trip-mini-badge ds-status-yellow">Waiting on Payment</span>}</div></div>
+                      <p className="ds-support trip-card-date">{formatUsDate(r.pickup_date)}{r.pickup_time ? ` · ${formatUsTime(String(r.pickup_time))}` : ''}</p>
+                      <p className="ds-support trip-card-route">{partialAddress(r.pickup_city, r.pickup_address)} → {partialAddress(r.dropoff_city, r.dropoff_address)}</p>
                     </div>
                     <div className="flex flex-wrap justify-end gap-1.5">
                       {(scope === 'provider' || scope === 'ops') && (state === 'unconfirmed' || state === 'booked') && <button type="button" onClick={() => setReviewing(r)} className="trip-compact-action">{state === 'unconfirmed' ? 'Review' : 'Manage'}</button>}

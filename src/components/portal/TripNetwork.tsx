@@ -102,8 +102,8 @@ export function ProviderNetworkOffers({actionsDisabled = false,pendingOnly=false
   if (compact) return <div className="space-y-1" data-compact-offers>
     {!!q.error && <p role="alert" className="text-ds-error ds-support">Could not load offers.</p>}
     {visible.map(o => { const w = watermarks.data?.find(s=>s.id===o.id); return <div key={o.id} data-compact-trip className="trip-compact-row" role="button" tabIndex={0} aria-label={`Review offer ${o.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setReview(o); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setReview(o); } }}>
-      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">Passenger protected until accepted</span>{referralBadges({direction:'received',unread:w ? w.unread : null,status:o.status}).map(b=><span key={b} className={`trip-mini-badge ${b==='Unread'||b==='Unconfirmed'?'ds-status-yellow':'bg-ds-sky text-ds-primary'}`}>{b}</span>)}</div>
-        <p className="ds-support">{formatUsDate(o.pickup_date)} · {o.pickup_area} → {o.destination_area}</p></div>
+      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">Passenger protected until accepted</span>{referralBadges({direction:'received',unread:w ? w.unread : null,status:o.status}).map(b=><span key={b} data-trip-badge={b} className={`trip-mini-badge ${b==='Unread'||b==='Unconfirmed'?'ds-status-yellow':'bg-ds-sky text-ds-primary'}`}>{b}</span>)}</div>
+        <p className="ds-support trip-card-date">{formatUsDate(o.pickup_date)}</p><p className="ds-support trip-card-route">{o.pickup_area} → {o.destination_area}</p></div>
       <button type="button" className="trip-compact-action" onClick={() => setReview(o)}>Review Offer</button>
     </div>; })}
     {review && <OfferResponse offer={review} actionsDisabled={actionsDisabled} onClose={() => setReview(null)} />}
@@ -152,8 +152,8 @@ export function DistributionActivity({ admin = false,pendingOnly=false,compact=f
   if (compact) { const opened = shownDists.find(d => d.id === openDist); return <div className="space-y-1" data-compact-distributions>
     {!!q.error && <p role="alert" className="text-ds-error ds-support">Could not load network activity.</p>}
     {shownDists.map(d => <div key={d.id} data-compact-trip className="trip-compact-row" role="button" tabIndex={0} aria-label={`Open sent referral ${d.mfn_id}`} onClick={e => { if (!(e.target as HTMLElement).closest('button')) setOpenDist(d.id); }} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenDist(d.id); } }}>
-      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{d.mfn_id}</span>{referralBadges({direction:'sent',status:d.status}).map(b=><span key={b} className={`trip-mini-badge ${b==='Unconfirmed'?'ds-status-yellow':'bg-ds-sky text-ds-primary'}`}>{b}</span>)}{d.status==='needs_attention'&&<span className="trip-mini-badge ds-status-red">Needs attention</span>}</div>
-        <p className="ds-support">{formatUsDate(d.pickup_date)} · {d.pickup_area} → {d.destination_area}</p></div>
+      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><span className="ds-label text-ds-primary">{d.mfn_id}</span>{referralBadges({direction:'sent',status:d.status}).map(b=><span key={b} data-trip-badge={b} className={`trip-mini-badge ${b==='Unconfirmed'?'ds-status-yellow':'bg-ds-sky text-ds-primary'}`}>{b}</span>)}{d.status==='needs_attention'&&<span className="trip-mini-badge ds-status-red">Needs attention</span>}</div>
+        <p className="ds-support trip-card-date">{formatUsDate(d.pickup_date)}</p><p className="ds-support trip-card-route">{d.pickup_area} → {d.destination_area}</p></div>
       <button type="button" className="trip-compact-action" onClick={() => setOpenDist(d.id)}>Open</button>
     </div>)}
     {opened && <DetailOverlayFrame title={`Sent referral ${opened.mfn_id}`} onClose={() => setOpenDist(null)}>{distBody(opened)}</DetailOverlayFrame>}

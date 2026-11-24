@@ -12,3 +12,8 @@ export function groupReservations<T extends ReservationSource>(rows:readonly T[]
   for(const row of rows){if(seen.has(row.id))continue;seen.add(row.id);groups[reservationCategory(row,workspaceId,userId)].push(row);}
   return groups;
 }
+/** Presentation filter only; rows must already come from the authorized reader. */
+export function matchesReservationCategory(row: ReservationSource, category: ReservationCategory | 'referrals', workspaceId: string, userId: string) {
+  const direction = reservationCategory(row, workspaceId, userId);
+  return category === 'referrals' ? direction !== 'owned' : direction === category;
+}

@@ -557,3 +557,10 @@ Historical evidence and blockers remain below; unfinished shared commerce is ret
 - [x] Child Care rows, storage, review-only pricing
 - [x] Reservations two-column active, unified Past/Canceled/History
 - [x] Public form simplified, no invoice
+
+## Final Provider Trips Cleanup — Pass 1
+- [x] Widen History date/search controls and wrap adjacent filters.
+- [x] One Referrals list using existing authorized readers and authoritative direction; preserve masking/actions.
+- [x] Five Overview-palette badges and scoped compact card spacing.
+- [x] 47 distinct focused tests passed (4 new); synthetic 1280/768/390 checks confirmed full dates, calendar, masked received offers, sent activity, drafts, details and no overflow/page errors. Booked/Unconfirmed trip rows remained empty in supplied preview fixtures; populated browser injection did not load, so populated trip card appearance/actions remain unverified. Automatic preview compilation passed; no manual builds permitted.
+- Pass 2 deferred: Past/History merging, grouping, retention and exports.

@@ -31,7 +31,7 @@ export function ProviderTrips({ userId, business, initial = "new" }: { userId: s
   const active = reservation === 'pending' || reservation === 'booked';
   const lifecycle = reservation === 'booked' ? 'booked' : 'unconfirmed';
   return (
-    <div className="space-y-5">
+    <div className="provider-trips space-y-5">
       <PortalTabbedLayout label="Trip views" queryKey="view" aliases={{drafts:'reservations', history:'reservations'}} value={view} onChange={v=>{setView(v); if(v === 'reservations')setReservation(reservationSectionFor(null));}}
         options={[
           { value: "new", label: "New Trip" },
@@ -54,13 +54,9 @@ export function ProviderTrips({ userId, business, initial = "new" }: { userId: s
           </section>
           <section aria-labelledby="resv-referrals" data-reservation-column="referrals" className="min-w-0 space-y-3 border border-ds-border bg-ds-surface p-3 sm:p-4">
             <h2 id="resv-referrals" className="ds-subheading bg-ds-sky px-3 py-2">Referrals · {reservation==='booked'?'Booked':'Unconfirmed'}</h2>
-            <div className="space-y-2"><h3 className="ds-label uppercase">Received Referrals</h3>
-              <ReservationsPanel userId={userId} scope="provider" compact hideReferrals hideLifecycleTabs hideScheduling selectedState={lifecycle} category="received" workspaceId={workspaceId}/>
-              {reservation!=='booked'&&<ProviderNetworkOffers pendingOnly compact/>}
-            </div>
-            <div className="space-y-2 border-t border-ds-border pt-3"><h3 className="ds-label uppercase">Sent Referrals</h3>
-              <ReservationsPanel userId={userId} scope="provider" compact hideReferrals hideLifecycleTabs hideScheduling selectedState={lifecycle} category="sent" workspaceId={workspaceId}/>
-              {reservation!=='booked'&&<DistributionActivity pendingOnly compact/>}
+            <div className="space-y-2" aria-label="Referrals list">
+              <ReservationsPanel userId={userId} scope="provider" compact hideReferrals hideLifecycleTabs hideScheduling selectedState={lifecycle} category="referrals" workspaceId={workspaceId}/>
+              {reservation!=='booked'&&<><ProviderNetworkOffers pendingOnly compact/><DistributionActivity pendingOnly compact/></>}
             </div>
           </section>
         </div>
