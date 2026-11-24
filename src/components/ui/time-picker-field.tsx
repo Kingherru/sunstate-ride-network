@@ -1,33 +1,35 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { timeParts, canonicalTime, type TimeParts } from "@/lib/trip-form-rules";
+import { timeParts, editedTimeValue, type TimeParts } from "@/lib/trip-form-rules";
 
 /** When true, every TimeSelect inside renders the compact Hour / Min / Min / AM-PM control. */
 export const CompactTimeContext = React.createContext(false);
 
-/** Compact 12-hour control. Emits canonical HH:MM only once an hour is chosen; minutes default to :00. */
+/** Editable parts survive incomplete input; only valid complete values emit HH:MM. */
 export function CompactTimeControl({ value, onChange, id, invalid, disabled, label = "Time" }: { value: string; onChange: (v: string) => void; id?: string; invalid?: boolean; disabled?: boolean; label?: string }) {
-  const parts = timeParts(value);
-  const set = (patch: Partial<TimeParts>) => {
-    const base: TimeParts = parts ?? { hour: 0, tens: 0, ones: 0, period: "AM" };
-    const next = { ...base, ...patch };
-    if (!next.hour) return;
-    onChange(canonicalTime(next));
+  const makeParts = (v: string) => { const p = timeParts(v); return {hour: p ? String(p.hour) : '', tens: String(p?.tens ?? 0), ones: String(p?.ones ?? 0), period: p?.period ?? 'AM'}; };
+  const [parts, setParts] = React.useState(() => makeParts(value));
+  const emitted = React.useRef(value);
+  const listId = React.useId();
+  React.useEffect(() => { if (value !== emitted.current) { setParts(makeParts(value)); emitted.current = value; } }, [value]);
+  const set = (patch: Partial<typeof parts>) => {
+    const next = { ...parts, ...patch };
+    setParts(next);
+    const canonical = editedTimeValue(next);
+    emitted.current = canonical;
+    onChange(canonical);
   };
   const cls = cn("portal-select compact-time-select", invalid && "border-destructive");
   return (
     <div role="group" aria-label={label} className="compact-time-control" data-compact-time>
-      <select id={id} aria-label={`${label} hour`} disabled={disabled} aria-invalid={invalid || undefined} className={cls} value={parts?.hour ?? ""} onChange={e => e.target.value ? set({ hour: Number(e.target.value) }) : onChange("")}>
-        <option value="">Hr</option>{Array.from({ length: 12 }, (_, i) => i + 1).map(h => <option key={h} value={h}>{h}</option>)}
-      </select>
+      <input id={id} type="text" inputMode="numeric" autoComplete="off" list={`${listId}-hours`} maxLength={2} placeholder="Hr" aria-label={`${label} hour`} disabled={disabled} aria-invalid={invalid || undefined} className={cls} value={parts.hour} onChange={e => set({ hour: e.target.value.replace(/\D/g, '') })}/>
+      <datalist id={`${listId}-hours`}>{Array.from({length:12}, (_, i) => <option key={i} value={i + 1}/>)}</datalist>
       <span aria-hidden className="compact-time-colon">:</span>
-      <select aria-label={`${label} minute tens`} disabled={disabled || !parts} className={cls} value={parts?.tens ?? 0} onChange={e => set({ tens: Number(e.target.value) })}>
-        {[0, 1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
-      </select>
-      <select aria-label={`${label} minute ones`} disabled={disabled || !parts} className={cls} value={parts?.ones ?? 0} onChange={e => set({ ones: Number(e.target.value) })}>
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>{n}</option>)}
-      </select>
-      <select aria-label={`${label} AM or PM`} disabled={disabled || !parts} className={cls} value={parts?.period ?? "AM"} onChange={e => set({ period: e.target.value as "AM" | "PM" })}>
+      <input type="text" inputMode="numeric" autoComplete="off" list={`${listId}-tens`} maxLength={1} aria-label={`${label} minute tens`} disabled={disabled} className={cls} value={parts.tens} onChange={e => set({ tens: e.target.value.replace(/\D/g, '') })}/>
+      <datalist id={`${listId}-tens`}>{[0,1,2,3,4,5].map(n => <option key={n} value={n}/>)}</datalist>
+      <input type="text" inputMode="numeric" autoComplete="off" list={`${listId}-ones`} maxLength={1} aria-label={`${label} minute ones`} disabled={disabled} className={cls} value={parts.ones} onChange={e => set({ ones: e.target.value.replace(/\D/g, '') })}/>
+      <datalist id={`${listId}-ones`}>{[0,1,2,3,4,5,6,7,8,9].map(n => <option key={n} value={n}/>)}</datalist>
+      <select aria-label={`${label} AM or PM`} disabled={disabled} className={cls} value={parts.period} onChange={e => set({ period: e.target.value as TimeParts['period'] })}>
         <option value="AM">AM</option><option value="PM">PM</option>
       </select>
     </div>
@@ -95,6 +97,7 @@ export function TimeSelect({
   disabled,
   placeholder = "Select a time",
   invalid,
+  label,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -106,6 +109,7 @@ export function TimeSelect({
   disabled?: boolean;
   placeholder?: string;
   invalid?: boolean;
+  label?: string;
 }) {
   const compact = React.useContext(CompactTimeContext);
   const current = snapToStep(String(value ?? "").slice(0, 5));
@@ -118,7 +122,7 @@ export function TimeSelect({
     return base;
   }, [min, current]);
 
-  if (compact) return <CompactTimeControl id={id} value={String(value ?? "").slice(0, 5)} onChange={onChange} invalid={invalid} disabled={disabled} label={placeholder === "Select a time" ? "Time" : placeholder} />;
+  if (compact) return <CompactTimeControl id={id} value={String(value ?? "").slice(0, 5)} onChange={onChange} invalid={invalid} disabled={disabled} label={label ?? (placeholder === "Select a time" ? "Time" : placeholder)} />;
   return (
     <select
       id={id}
@@ -157,6 +161,7 @@ export function TimePickerField({
   pickupDate,
   enforceLeadTime = false,
   helperText,
+  controlLabel,
 }: {
   label?: string;
   value: string; // HH:MM
@@ -167,6 +172,7 @@ export function TimePickerField({
   pickupDate?: string; // YYYY-MM-DD; when set, lead-time min is derived from this date
   enforceLeadTime?: boolean;
   helperText?: string;
+  controlLabel?: string;
 }) {
   const rawMin = enforceLeadTime && pickupDate ? minPickupTimeForDate(pickupDate) : "";
   const minTime = rawMin && rawMin !== "23:59" ? snapToStep(rawMin) : rawMin;
@@ -188,6 +194,7 @@ export function TimePickerField({
       {label && <span className="portal-label">{label}{required && " *"}</span>}
       <TimeSelect
         id={id}
+        label={controlLabel ?? label}
         value={value}
         onChange={onChange}
         required={required}

@@ -65,9 +65,9 @@ export function ProviderTrips({ userId, business, initial = "new" }: { userId: s
       </div>}
       {view === "transfer" && <section aria-labelledby="trip-transfer" className="min-w-0 space-y-5 border border-ds-border bg-ds-surface p-3 sm:p-4">
         <h2 id="trip-transfer" className="ds-subheading bg-ds-sky px-3 py-2">Import & Export</h2>
-        <div className="space-y-2"><h3 className="ds-label uppercase">Import trips</h3><p className="ds-support">Uploads create editable drafts only — nothing is submitted.</p><Link to="/portal/upload-csv" className="trip-compact-action inline-flex">Open trip import</Link></div>
-        <div className="space-y-2 border-t border-ds-border pt-4"><h3 className="ds-label uppercase">Selected-trip reports</h3><SelectedTripExport/></div>
-        <div className="space-y-2 border-t border-ds-border pt-4"><h3 className="ds-label uppercase">Trip exports</h3><ProviderExports/></div>
+        <div className="space-y-2"><h3 className="ds-label uppercase">Import trip drafts</h3><p className="ds-support">CSV, Excel or PDF trip uploads create editable drafts only — no trips are submitted.</p><Link to="/portal/upload-csv" className="trip-compact-action inline-flex">Import trip drafts</Link></div>
+        <SelectedTripExport/>
+        <ProviderExports includeSelected={false}/>
       </section>}
     </PortalTabbedLayout>
     </div>

@@ -52,7 +52,7 @@ describe('location and U.S. formatting', () => {
     expect(estimateDropoffTime('09:00', 1500)).toBe('09:25');
     expect(estimateDropoffTime('09:00', null)).toBeNull();
     expect(estimateDropoffTime('', 600)).toBeNull();
-    expect(estimateDropoffTime('23:50', 1200)).toBeNull();
+    expect(estimateDropoffTime('23:50', 1200)).toBe('00:10');
   });
 });
 

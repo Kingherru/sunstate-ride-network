@@ -9,7 +9,7 @@ import { exportTable, readableDate, type ExportFormat } from '@/lib/table-export
 import { usePortalPreview, previewBlocked } from './preview-data';
 import {SelectedTripExport} from './SelectedTripExport';
 
-export function ProviderExports() {
+export function ProviderExports({includeSelected = true}: {includeSelected?: boolean}) {
   const preview = usePortalPreview(); const read = useServerFn(listProviderExportRows);
   const [start, setStart] = useState(new Date().toISOString().slice(0, 10)); const [end, setEnd] = useState(start);
   const [format, setFormat] = useState('csv'); const [kind, setKind] = useState('Trips'); const [busy, setBusy] = useState(false);
@@ -24,12 +24,12 @@ export function ProviderExports() {
       await exportTable(rows as any[], cols, kind, format as ExportFormat, filename);
     } catch { toast.error('Could not export authorized trips.'); } finally { setBusy(false); }
   }
-  return <><SelectedTripExport/><section className="space-y-4 border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">Trip & schedule exports</h2>
+  return <>{includeSelected && <SelectedTripExport/>}<section className="space-y-4 border-t border-ds-border pt-5"><h2 className="ds-subheading uppercase text-ds-primary">Export trips by date range</h2>
     <div className="grid gap-3 sm:grid-cols-2">
-      <DsField label="Export">{p => <DsSelect {...p} value={kind} onChange={e => setKind(e.target.value)}><option>Trips</option><option>Schedule</option></DsSelect>}</DsField>
+      <DsField label="Report title">{p => <DsSelect {...p} value={kind} onChange={e => setKind(e.target.value)}><option value="Trips">Trips</option><option value="Schedule">Schedule</option></DsSelect>}</DsField>
       <DsField label="Format">{p => <DsSelect {...p} value={format} onChange={e => setFormat(e.target.value)}><option value="csv">CSV</option><option value="xlsx">Excel (.xlsx)</option><option value="pdf">PDF</option></DsSelect>}</DsField>
       <DsField label="From">{p => <DsInput {...p} type="date" value={start} onChange={e => setStart(e.target.value)} />}</DsField>
       <DsField label="Through">{p => <DsInput {...p} type="date" value={end} onChange={e => setEnd(e.target.value)} />}</DsField>
-    </div><DsButton size="sm" disabled={busy || end < start} onClick={download}><Download className="size-4" aria-hidden />{busy ? 'Preparing…' : 'Download'}</DsButton>
+    </div><p className="ds-caption">Both report titles export the same authorized trip fields for this date range.</p><DsButton size="sm" disabled={busy || end < start} onClick={download}><Download className="size-4" aria-hidden />{busy ? 'Preparing…' : `Export date-range ${format === 'xlsx' ? 'Excel' : format.toUpperCase()}`}</DsButton>
   </section></>;
 }

@@ -40,13 +40,27 @@ export function formatUsTime(hhmm?: string | null): string {
   const h = Number(m[1]);
   return `${h % 12 || 12}:${m[2]} ${h < 12 ? 'AM' : 'PM'}`;
 }
-/** Pickup time + route duration; null when inputs are missing or the arrival crosses midnight (review required). */
+/** Pickup time + actual drive duration, wrapping midnight; date rollover is separate. */
 export function estimateDropoffTime(pickupTime: string | null | undefined, durationSeconds: number | null | undefined): string | null {
   const m = /^(\d{2}):(\d{2})$/.exec(pickupTime ?? '');
-  if (!m || durationSeconds == null || !Number.isFinite(durationSeconds) || durationSeconds <= 0) return null;
+  if (!m || Number(m[1]) > 23 || Number(m[2]) > 59 || durationSeconds == null || !Number.isFinite(durationSeconds) || durationSeconds < 0) return null;
   const total = Number(m[1]) * 60 + Number(m[2]) + Math.ceil(durationSeconds / 60);
-  if (total >= 24 * 60) return null;
-  return `${String(Math.floor(total / 60)).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
+  return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
+}
+export function estimateDropoffDate(date: string, time: string, seconds: number | null): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || estimateDropoffTime(time, seconds) == null || seconds == null) return null;
+  const parts = timeParts(time);
+  if (!parts) return null;
+  const minutes = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+  const arrival = new Date(`${date}T00:00:00Z`);
+  if (!Number.isFinite(arrival.getTime())) return null;
+  arrival.setUTCDate(arrival.getUTCDate() + Math.floor((minutes + Math.ceil(seconds / 60)) / 1440));
+  return arrival.toISOString().slice(0, 10);
+}
+/** Complete drive-time evidence only; zero duration is valid, missing/invalid is not. */
+export function sumRouteSeconds(segments: readonly (number | null | undefined)[]): number | null {
+  if (!segments.length || segments.some(s => s == null || !Number.isFinite(s) || s < 0)) return null;
+  return segments.reduce<number>((total, seconds) => total + (seconds ?? 0), 0);
 }
 /** Network/general projections must never carry child identity. */
 export function networkSafeChildCare(details: unknown): {serviceLine:'child_care';childCount:number} | null {
@@ -67,6 +81,10 @@ export function canonicalTime(p: TimeParts): string {
   if (p.hour < 1 || p.hour > 12 || p.tens < 0 || p.tens > 5 || p.ones < 0 || p.ones > 9) throw new Error('Invalid time');
   const h = (p.hour % 12) + (p.period === 'PM' ? 12 : 0);
   return `${String(h).padStart(2, '0')}:${p.tens}${p.ones}`;
+}
+export function editedTimeValue(p: {hour: string; tens: string; ones: string; period: TimeParts['period']}): string {
+  if (!/^([1-9]|1[0-2])$/.test(p.hour) || !/^[0-5]$/.test(p.tens) || !/^[0-9]$/.test(p.ones)) return '';
+  return canonicalTime({hour: Number(p.hour), tens: Number(p.tens), ones: Number(p.ones), period: p.period});
 }
 
 /* ---------- Chronology ---------- */

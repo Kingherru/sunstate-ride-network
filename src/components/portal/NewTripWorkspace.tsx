@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
@@ -54,9 +54,11 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
   const [estimating, setEstimating] = useState(false);
   const [route, setRoute] = useState<{ status: 'idle' | 'loading' | 'ok' | 'unavailable'; miles: number | null }>({ status: 'idle', miles: null });
   // Route-derived mileage fills the billable miles automatically; manual entry stays the approved fallback.
+  const routeDerived = useRef(false);
   const onRouteMiles = useCallback((r: { status: 'idle' | 'loading' | 'ok' | 'unavailable'; miles: number | null }) => {
     setRoute(prev => prev.status === r.status && prev.miles === r.miles ? prev : r);
-    if (r.status === 'ok' && r.miles != null) { setMiles(String(r.miles)); setManualConfirmed(true); }
+    if (r.status === 'ok' && r.miles != null) { routeDerived.current = true; setMiles(String(r.miles)); setManualConfirmed(true); }
+    else if (routeDerived.current) { routeDerived.current = false; setMiles(''); setManualConfirmed(false); setCalculated(null); setQuoteForm(null); }
   }, []);
   const requestFacility=useServerFn(requestFacilityQuote);
   const calculate = useServerFn(calculateProviderCustomerQuote); const confirm = useServerFn(confirmTripCustomerQuote); const save = useServerFn(saveTripDraft); const prepareFunding = useServerFn(getReferralFundingPreparation);
@@ -70,7 +72,7 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
   const selectedPayer=form&&'payerId'in form?form.payerId??null:null;
   const estimateKey = quoteInput ? JSON.stringify({...quoteInput,payerId:selectedPayer}) : null;
   useEffect(() => {
-    if (!provider || network || preview.active || !estimateKey || pricingReview) { setCalculated(null); setEstimating(false); return; }
+    if (!provider || network || preview.active || !estimateKey || pricingReview || !manualConfirmed || route.status === 'loading') { setCalculated(null); setEstimating(false); return; }
     let canceled = false;
     setCalculated(null); setEstimating(true); setEstimateMessage('');
     const timer = window.setTimeout(async () => {
@@ -81,12 +83,12 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
       finally { if (!canceled) setEstimating(false); }
     }, 600);
     return () => { canceled = true; window.clearTimeout(timer); };
-  }, [estimateKey, provider, network, preview.active, workspaceId, calculate, pricingReview]);
+  }, [estimateKey, provider, network, preview.active, workspaceId, calculate, pricingReview, manualConfirmed, route.status]);
   const demoLines: InvoiceLine[] = [{ label: 'Pickup / loading', cents: 4000 }, { label: 'Mileage after included miles', cents: 3000 }];
   let adjustedEstimate=calculated;
   try {if(calculated)adjustedEstimate={...calculated,...appendInvoiceAdjustments(calculated.lines,[...(Number(discount)?[{kind:'discount' as const,cents:Number(discount),reason}]:[]),...(Number(adjustment)?[{kind:'adjustment' as const,cents:Number(adjustment),reason}]:[])])};}catch{adjustedEstimate=null;}
   const priceReview = pricingReview || (!!estimateMessage && !estimating);
-  const shown = pricingReview ? null : preview.active && examples && provider ? { lines: demoLines, totalCents: 7000 } : unchanged && confirmed ? confirmed : adjustedEstimate;
+  const shown = pricingReview ? null : preview.active && examples && provider ? { lines: demoLines, totalCents: 7000 } : !manualConfirmed || route.status === 'loading' ? null : unchanged && confirmed ? confirmed : adjustedEstimate;
   function tripInput() {
     if (!quoteInput) throw new Error('Enter pickup date/time and confirmed route mileage first.');
     return quoteInput;
@@ -140,7 +142,7 @@ export function NewTripWorkspace({ workspaceId, provider, patient = false, initi
             <dl className="space-y-2 ds-body"><div className="flex justify-between gap-3"><dt>Network fee (2%)</dt><dd className="portal-money">{funding ? money(funding.networkFeeCents) : 'Not prepared'}</dd></div><div className="flex justify-between gap-3"><dt>Processing recovery</dt><dd className="portal-money">{funding?.processingCents != null ? money(funding.processingCents) : 'Configuration required'}</dd></div><div className="flex justify-between gap-3"><dt>Customer invoice / retained amount</dt><dd>No invoice issued</dd></div><div className="flex justify-between gap-3"><dt>Sender margin</dt><dd>Not available</dd></div></dl>
             <p role="note" className="ds-body border-y border-ds-border py-4 font-semibold">{warning}</p><DsCheckbox label="I confirm the compensation and payment responsibility" checked={ack} onChange={e => setAck(e.target.checked)}/><CheckoutAcknowledgment accepted={policyAccepted} onChange={setPolicyAccepted}/><DsButton type="button" disabled={!ack || !policyAccepted || busy} onClick={fundingReview}>Review funding preparation</DsButton>{funding && <p className="ds-support">{funding.blocker}</p>}<p className="ds-caption">Not funded · No offer sent · Hold: standard 10 days, Super/Gold Verified 4 days. Existing 24-hour dispute window and payment deadlines are unchanged.</p><Link to="/portal/network" className="ds-label text-ds-link underline">Open controlled Network offers</Link>
           </> : <>
-            <DsField label={route.status === 'ok' ? 'Route mileage — total billable miles (all legs)' : 'MANUAL MILEAGE — total billable route miles (routing unavailable)'}>{p => <DsInput {...p} type="number" min="0" step="0.1" value={miles} onChange={e => { setMiles(e.target.value); setManualConfirmed(false); setCalculated(null); setQuoteForm(null); }}/>}</DsField>
+            <DsField label={route.status === 'ok' ? 'Route mileage — total billable miles (all legs)' : 'MANUAL MILEAGE — total billable route miles (routing unavailable)'}>{p => <DsInput {...p} type="number" min="0" step="0.1" value={miles} onChange={e => { routeDerived.current = false; setMiles(e.target.value); setManualConfirmed(false); setCalculated(null); setQuoteForm(null); }}/>}</DsField>
             <DsCheckbox label="I confirm these are actual route miles, including applicable return travel" checked={manualConfirmed} onChange={e => setManualConfirmed(e.target.checked)}/>
             <DsField label="Wait time (minutes)">{p => <DsInput {...p} type="number" min="0" value={wait} onChange={e => { setWait(e.target.value); setQuoteForm(null); }}/>}</DsField>
             {estimateMessage && <p role="status" className="ds-support">Pricing setup required · {estimateMessage}</p>}

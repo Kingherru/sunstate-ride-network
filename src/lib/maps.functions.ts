@@ -253,17 +253,21 @@ export const estimateTripRouteSegments = createServerFn({ method: "POST" })
     try {
       const coords = await Promise.all(data.points.map(p => geocode(p).catch(() => null)));
       const segments: (number | null)[] = [];
+      const durationSegments: (number | null)[] = [];
       let firstDuration: number | null = null;
       for (let i = 0; i < coords.length - 1; i++) {
         const a = coords[i], b = coords[i + 1];
-        if (!a || !b) { segments.push(null); continue; }
+        if (!a || !b) { segments.push(null); durationSegments.push(null); continue; }
         const info = await routeInfo(a, b).catch(() => null);
         segments.push(info?.miles ?? null);
-        if (i === 0) firstDuration = info?.duration_traffic_seconds ?? info?.duration_seconds ?? null;
+        const duration = info?.duration_traffic_seconds ?? info?.duration_seconds ?? null;
+        durationSegments.push(duration != null && Number.isFinite(duration) && duration >= 0 ? duration : null);
+        if (i === 0) firstDuration = durationSegments[i] ?? null;
       }
       const ok = segments.every(s => s != null);
-      return { ok, segments, totalMiles: ok ? Math.round(segments.reduce<number>((t, s) => t + (s as number), 0) * 10) / 10 : null, firstDurationSeconds: firstDuration };
+      const durationComplete = durationSegments.length === data.points.length - 1 && durationSegments.every(s => s != null);
+      return { ok, segments, totalMiles: ok ? Math.round(segments.reduce<number>((t, s) => t + (s as number), 0) * 10) / 10 : null, firstDurationSeconds: firstDuration, totalDurationSeconds: durationComplete ? durationSegments.reduce<number>((t, s) => t + (s ?? 0), 0) : null };
     } catch {
-      return { ok: false, segments: [] as (number | null)[], totalMiles: null, firstDurationSeconds: null };
+      return { ok: false, segments: [] as (number | null)[], totalMiles: null, firstDurationSeconds: null, totalDurationSeconds: null };
     }
   });

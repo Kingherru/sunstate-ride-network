@@ -1,6 +1,6 @@
 import { Link, useRouter, useRouteContext } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { adminSubmitRideRequest, adminSubmitDeliveryRequest } from "@/lib/admin-on-behalf.functions";
 import { toast } from "sonner";
 import {
@@ -15,8 +15,9 @@ import {
   type BillingContact,
   RECURRENCE_OPTIONS,
 } from "@/lib/forms.functions";
-import { enrichRideRequest, estimateTripRoute, estimateTripRouteSegments } from "@/lib/maps.functions";
-import { ADDITIONAL_PASSENGER_CHOICES, CHILD_COUNT_CHOICES, CHILD_REQUIREMENTS, CHILD_REQUIREMENT_LABELS, type ChildRow, resizeChildren, totalPassengers, additionalFromTotal, childCareTransport, estimateDropoffTime, formatUsTime, locationResolved } from "@/lib/trip-form-rules";
+import { enrichRideRequest } from "@/lib/maps.functions";
+import { useTripRoute } from './use-trip-route';
+import { ADDITIONAL_PASSENGER_CHOICES, CHILD_COUNT_CHOICES, CHILD_REQUIREMENTS, CHILD_REQUIREMENT_LABELS, type ChildRow, resizeChildren, totalPassengers, additionalFromTotal, childCareTransport, estimateDropoffTime, estimateDropoffDate, formatUsDate, formatUsTime, locationResolved } from "@/lib/trip-form-rules";
 import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
@@ -314,36 +315,32 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const children = (form.children ?? []) as ChildRow[];
   const setChildren = (rows: ChildRow[]) => setForm(f => ({ ...f, children: rows, transportType: childCareTransport(rows), passengerCount: totalPassengers(additionalFromTotal(f.passengerCount, (f.children ?? []).length), rows.length) }));
   const additionalPassengers = additionalFromTotal(form.passengerCount, childCare ? children.length : 0);
-  const routeFn = useServerFn(estimateTripRoute);
-  const [routeSeconds, setRouteSeconds] = useState<number | null>(null);
   const [dropoffManual, setDropoffManual] = useState(Boolean(initialDraft?.payload.dropoffTime));
+  const routed = useTripRoute(routePoints(form), portal && kind === 'ride');
+  const routeEstimate = form.tripType === 'multi_trip' ? null : estimateDropoffTime(form.pickupTime, routed.firstSeconds);
+  const arrivalDate = routeEstimate ? estimateDropoffDate(form.pickupDate, form.pickupTime, routed.firstSeconds) : null;
+  const timingKey = JSON.stringify([routed.key, form.pickupDate, form.pickupTime, form.tripType]);
+  const previousTiming = useRef(timingKey);
+  const autoArrival = useRef(false);
   useEffect(() => {
-    setRouteSeconds(null);
-    if (!portal || preview.active || pickupMeta.lat == null || pickupMeta.lng == null || dropoffMeta.lat == null || dropoffMeta.lng == null) return;
-    let cancelled = false;
-    routeFn({ data: { origin: { lat: pickupMeta.lat, lng: pickupMeta.lng }, destination: { lat: dropoffMeta.lat, lng: dropoffMeta.lng } } })
-      .then(r => { if (!cancelled && r.ok) setRouteSeconds(r.durationSeconds); }).catch(() => {});
-    return () => { cancelled = true; };
-  }, [portal, preview.active, pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng, routeFn]);
-  const routeEstimate = estimateDropoffTime(form.pickupTime, routeSeconds);
-  useEffect(() => { if (routeEstimate && !dropoffManual) setForm(f => f.dropoffTime === routeEstimate ? f : { ...f, dropoffTime: routeEstimate }); }, [routeEstimate, dropoffManual]);
+    const changed = previousTiming.current !== timingKey;
+    previousTiming.current = timingKey;
+    if (changed) setDropoffManual(false);
+    if (routeEstimate && (!dropoffManual || changed)) {
+      autoArrival.current = true;
+      setForm(f => f.dropoffTime === routeEstimate && f.dropoffDate === (arrivalDate ?? '') ? f : {...f, dropoffTime: routeEstimate, dropoffDate: arrivalDate ?? ''});
+    } else if (autoArrival.current && (!routeEstimate || changed)) {
+      autoArrival.current = false;
+      setForm(f => ({...f, dropoffTime: '', dropoffDate: ''}));
+    }
+  }, [timingKey, routeEstimate, arrivalDate, dropoffManual]);
   const chronology = tripChronologyErrors(form);
   const [stashedLegs, setStashedLegs] = useState<RideRequestInput['additionalStops']>([]);
-  const segmentsFn = useServerFn(estimateTripRouteSegments);
-  const pointsKey = JSON.stringify(routePoints(form));
   const reportRoute = commerce?.onRouteMiles;
   useEffect(() => {
     if (!reportRoute) return;
-    const points = JSON.parse(pointsKey) as string[] | null;
-    if (!points || preview.active) { reportRoute({ status: points ? 'unavailable' : 'idle', miles: null }); return; }
-    let cancelled = false;
-    reportRoute({ status: 'loading', miles: null });
-    const timer = window.setTimeout(() => {
-      segmentsFn({ data: { points } }).then(r => { if (!cancelled) reportRoute(r.ok && r.totalMiles != null ? { status: 'ok', miles: r.totalMiles } : { status: 'unavailable', miles: null }); })
-        .catch(() => { if (!cancelled) reportRoute({ status: 'unavailable', miles: null }); });
-    }, 700);
-    return () => { cancelled = true; window.clearTimeout(timer); };
-  }, [pointsKey, reportRoute, preview.active, segmentsFn]);
+    if (kind === 'ride') reportRoute({status: routed.status, miles: routed.miles});
+  }, [kind, routed.status, routed.miles, reportRoute]);
 
   // Signed-in portal users: saved patients + default payer prefill for review (never card data, never auto-submit).
   const [patientSearch, setPatientSearch] = useState('');
@@ -760,6 +757,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
               </Field>
               <Field label="Pickup Time" required error={errors.pickupTime}>
                 <TimePickerField
+                  controlLabel="Pickup Time"
                   value={form.pickupTime}
                   pickupDate={form.pickupDate}
                 enforceLeadTime={form.pickupState==='FL' && (!form.pickupTimezone||form.pickupTimezone==='America/New_York')}
@@ -774,7 +772,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 />
               </Field>
               <Field label="Appointment Time" error={errors.appointmentTime ?? chronology.appointmentTime}>
-                <TimeSelect value={form.appointmentTime ?? ""} onChange={(v) => upd("appointmentTime", v)} />
+                <TimeSelect label="Appointment Time" value={form.appointmentTime ?? ""} invalid={!!(errors.appointmentTime ?? chronology.appointmentTime)} onChange={(v) => upd("appointmentTime", v)} />
               </Field>
             </div>
             <fieldset data-form-section="Pickup Options" className="trip-option-group">
@@ -803,11 +801,11 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             {(!form.dropoffCity || !locationResolved(form.dropoffState, form.dropoffZip) || errors.dropoffCity) && <Field label="Drop-Off City" required error={errors.dropoffCity}>
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>}
-            <Field label="Estimated Drop-Off Time" error={errors.dropoffTime}>
-              {routeEstimate && !dropoffManual ? <div className="flex flex-wrap items-center gap-3"><span className="ds-body font-semibold" data-route-estimate>{formatUsTime(routeEstimate)} (estimate)</span><button type="button" className="trip-compact-action" onClick={()=>setDropoffManual(true)}>Enter manually</button></div>
-                : <TimeSelect value={form.dropoffTime ?? ""} onChange={(v) => { setDropoffManual(true); upd("dropoffTime", v); }} />}
-              <p className="mt-1 text-xs text-ds-text-2">{routeEstimate && !dropoffManual ? 'Estimated from route duration and pickup time. Final timing is confirmed by the provider.' : 'Route estimate unavailable — enter an estimated time or leave blank for provider review.'}</p>
-            </Field>
+            {form.tripType === 'multi_trip' ? <div role="status" data-total-trip-time className="space-y-1"><span className="ds-label">Estimated Total Trip Time</span><p className="ds-body font-semibold">{routed.totalSeconds != null ? `${formatMinutes(routed.totalSeconds)} (estimated driving time)` : routed.status === 'loading' ? 'Calculating…' : 'Review Required — complete route duration unavailable.'}</p><p className="ds-caption">Driving time for every current leg; excludes appointments, waiting and stops.</p></div> : <Field label="Estimated Drop-Off Time" error={errors.dropoffTime}>
+              {routeEstimate && !dropoffManual ? <div className="flex flex-wrap items-center gap-3"><span className="ds-body font-semibold" data-route-estimate>{formatUsTime(routeEstimate)}{arrivalDate && arrivalDate !== form.pickupDate ? ` · ${formatUsDate(arrivalDate)} (next day)` : ''} (estimate)</span><DsButton type="button" variant="secondary" onClick={()=>setDropoffManual(true)}>Enter manually</DsButton></div>
+                : <TimeSelect label="Estimated Drop-Off Time" value={form.dropoffTime ?? ""} onChange={(v) => { autoArrival.current = false; setDropoffManual(true); upd("dropoffTime", v); }} />}
+              <p role="status" className="mt-1 text-xs text-ds-text-2">{routeEstimate && !dropoffManual ? 'Estimated from outbound Google Maps driving time and pickup time. Final timing is confirmed by the provider.' : routed.status === 'loading' ? 'Calculating route duration…' : 'Review Required — route estimate unavailable. Enter a manual estimate or leave blank for provider review.'}</p>
+            </Field>}
             {!locationResolved(form.dropoffState, form.dropoffZip) && <div data-manual-location="dropoff" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
             {!commerce && !childCare && form.pickupState==='FL' && form.dropoffState==='FL' && (
               <PriceEstimate
@@ -838,6 +836,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 </Field>
                 <Field label="Return pickup time" required error={errors.returnPickupTime ?? chronology.returnPickupTime}>
                   <TimePickerField
+                    controlLabel="Return Pickup Time"
                     value={form.returnPickupTime ?? ""}
                     pickupDate={form.returnDate || form.pickupDate}
                     enforceLeadTime
@@ -847,6 +846,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                 </Field>
                 <Field label="Return drop-off time" error={errors.returnDropoffTime}>
                   <TimeSelect
+                      label="Return Drop-Off Time"
                     value={form.returnDropoffTime ?? ""}
                     onChange={(v) => upd("returnDropoffTime", v)}
                   />
@@ -1170,6 +1170,8 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   const [doneId, setDoneId] = useState<string | null>(null);
   const upd = <K extends keyof DeliveryRequestInput>(k: K, v: DeliveryRequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+  const deliveryRoute = useTripRoute(routePoints(form), !!commerce?.provider);
+  useEffect(() => { commerce?.onRouteMiles?.({status: deliveryRoute.status, miles: deliveryRoute.miles}); }, [deliveryRoute.status, deliveryRoute.miles, commerce?.onRouteMiles]);
 
   async function onSubmit(e: {preventDefault:()=>void}, referralIntent=false) {
     e.preventDefault();
@@ -1223,7 +1225,6 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
   return (
     <form noValidate onSubmit={onSubmit} aria-label="Medical delivery request" className="space-y-10 rounded-ds-sm border border-ds-border bg-ds-surface p-4 sm:p-6">
       {portal && <LinkedPatientSelector value={form.patientWorkspaceId} onChange={id => upd('patientWorkspaceId', id)}/>}
-      {commerce?.invoiceSlot}
       {initialDraft && <div className="flex flex-wrap items-center justify-between gap-3"><p className="ds-caption break-all">Draft ID: {commerce?.draftId ?? draftId}</p><DsButton type="button" variant="ghost" onClick={()=>window.history.back()}>Cancel</DsButton></div>}
       <div className="rounded-ds-sm bg-ds-membership p-4 text-ds-primary">
         <p className="ds-body"><strong>Medical Delivery</strong> moves items, not passengers. Please don't include diagnoses, medication names or patient medical details.</p>
@@ -1257,7 +1258,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
       </fieldset>
 
       <fieldset className="space-y-6">
-        <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Timing and item</legend>
+        <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Timing and Items</legend>
         <div className="grid gap-6 md:grid-cols-2">
           <Field label="Requested date" required error={errors.requestedDate}><input type="date" className={inputCls} value={form.requestedDate} onChange={(e) => upd("requestedDate", e.target.value)} /></Field>
           <Field label="Requested pickup time" required error={errors.requestedTime}><input type="time" className={inputCls} value={form.requestedTime} onChange={(e) => upd("requestedTime", e.target.value)} /></Field>
@@ -1276,6 +1277,9 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
           Signature required at delivery
         </label>
       </fieldset>
+
+      {commerce?.invoiceSlot && <div data-delivery-invoice>{commerce.invoiceSlot}</div>}
+      {commerce?.invoiceBottomSlot}
 
       <datalist id="fl-cities-delivery">{CITY_LIST.map((c) => <option key={c.slug} value={c.name} />)}</datalist>
 
