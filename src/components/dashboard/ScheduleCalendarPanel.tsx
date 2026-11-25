@@ -17,6 +17,7 @@ import { useRouteContext } from '@tanstack/react-router';
 import { getDayRoster,setDayRoster,getScheduleRecommendations,confirmScheduleBatch } from '@/lib/schedule-roster.functions';
 import { getPortalPreferences } from '@/lib/portal-preferences.functions';
 import { clockTime, movedScheduleEnd, dailyRosterIds, driverDayReason, recommendSchedule, uniqueScheduleTrips, type Recommendation } from '@/lib/schedule-planning';
+import { ScheduleNoticeHistory } from '@/components/portal/ScheduleNoticeHistory';
 import { ScheduleSplit } from '@/components/portal/ScheduleSplit';
 import { scheduleInterval } from '@/lib/regional-projections';
 const DRIVER_ROSTER_MIME='application/x-mfn-day-driver';
@@ -166,7 +167,7 @@ export function ScheduleCalendarPanel() {
   async function rosterDriver(driverId:string,scheduled=true){
    const driver=allDrivers.find(d=>d.id===driverId);if(scheduled&&driver&&driverDayReason(driver,date)){toast.error(driverDayReason(driver,date));return;}
    if(!scheduled&&allReservations.some(r=>r.assigned_driver_id===driverId)){toast.error('Unschedule this driver’s trips first.');return;}
-   try{if(preview.active)setDemoRoster(prev=>({...prev,[date]:scheduled?[...new Set([...rosterIds,driverId])]:rosterIds.filter(id=>id!==driverId)}));else if(workspaceId){await rosterSave({data:{workspaceId,date,driverId,scheduled}});await qc.invalidateQueries({queryKey:['schedule-day-roster']});}}catch(e){toast.error(e instanceof Error?e.message:'Roster could not be saved.');}
+   try{if(preview.active)setDemoRoster(prev=>({...prev,[date]:scheduled?[...new Set([...rosterIds,driverId])]:rosterIds.filter(id=>id!==driverId)}));else if(workspaceId){await rosterSave({data:{workspaceId,date,driverId,scheduled}});await qc.invalidateQueries({queryKey:['schedule-day-roster']});await qc.invalidateQueries({queryKey:['schedule-notice-history']});}}catch(e){toast.error(e instanceof Error?e.message:'Roster could not be saved.');}
   }
   async function reviewBatch(){setBatchBusy(true);try{const result=preview.active?recommendSchedule({date,trips:allReservations,drivers:allDrivers,rosterIds}):workspaceId?await recommend({data:{workspaceId,date}}):null;setReview(result);setReviewKey(crypto.randomUUID());}catch(e){toast.error(e instanceof Error?e.message:'Recommendations unavailable.');}finally{setBatchBusy(false);}}
   async function applyBatch(){if(!review||!review.proposed.length)return;setBatchBusy(true);try{if(preview.active){setDemoAssignments(prev=>{const next={...prev};for(const i of review.proposed)next[`${date}:${i.tripId}`]={tripId:i.tripId,driverId:i.driverId,vehicleId:i.vehicleId,start:i.start,end:i.end};return next;});}else if(workspaceId){await confirmBatch({data:{workspaceId,date,key:reviewKey,items:review.proposed.map(({reasons,...i})=>i)}});await Promise.all(['day-reservations','schedule-day-roster','provider-trips','month-reservations'].map(k=>qc.invalidateQueries({queryKey:[k]})));}setReview(null);toast.success(preview.active?'Synthetic batch applied — no records or notices.':'Reviewed batch saved');}catch(e){toast.error(e instanceof Error?e.message:'Batch was not saved.');}finally{setBatchBusy(false);}}
@@ -227,7 +228,7 @@ export function ScheduleCalendarPanel() {
   const resFn = useServerFn(assignTripResources);
   const mResource = usePortalMutation({
     mutationFn: (input: AssignmentInput) => resFn({ data: input }),
-    onSuccess: () => { toast.success("Assignment saved"); ['day-reservations','schedule-day-roster','range-reservations','my-reservations','provider-trips','month-reservations'].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { toast.success("Assignment saved"); ['day-reservations','schedule-day-roster','range-reservations','my-reservations','provider-trips','month-reservations','schedule-notice-history'].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
 
   });
   async function resourceDrop(r: any, raw: string) {
@@ -252,7 +253,7 @@ export function ScheduleCalendarPanel() {
   function placeTrip(id: string, driverId: string | null, hour: string) {
     if (driverId && allDrivers.find((d: any) => d.id === driverId)?.status !== "active") { toast.error("This driver is inactive and cannot receive new assignments."); setDraggingId(null); return; }
     const trip = allReservations.find(r => r.id === id);if(!trip)return;
-    const end=driverId?movedScheduleEnd(trip,hour):trip.assignment_end_time?.slice(0,5)??null;
+    const end=movedScheduleEnd(trip,hour)??trip.assignment_end_time?.slice(0,5)??null;
     if(driverId&&!end){toast.error('Review the trip end time before scheduling.');return;}
     if (preview.active) {
       if(trip&&driverId){const moved={...trip,scheduled_start_time:hour,assignment_end_time:end};if(!eligibleDrivers(moved,allDrivers,allReservations,date,Number(dow)).some(d=>d.id===driverId)){toast.error('Driver unavailable or schedule overlap. Previous placement retained.');return;}setDemoRoster(prev=>({...prev,[date]:[...new Set([...rosterIds,driverId])]}));}
@@ -365,6 +366,7 @@ export function ScheduleCalendarPanel() {
       <div className="flex flex-wrap items-center gap-3"><DsButton className="schedule-blue-action" disabled={batchBusy||!unassigned.length} onClick={reviewBatch}>Assign Scheduled Drivers and Trips</DsButton></div>
       {review&&<section aria-label="Review batch recommendations" className="bg-ds-sky rounded-ds-sm p-3 space-y-3"><h3 className="ds-label text-ds-primary">Review recommendations</h3><ul className="space-y-3">{review.proposed.map(i=>{const t=allReservations.find(r=>r.id===i.tripId),d=allDrivers.find(d=>d.id===i.driverId);return <li key={i.tripId}><p className="ds-support font-semibold">{t?.patient_first_name} {t?.patient_last_name} · {d?.first_name} {d?.last_name} · {time(i.start)}–{time(i.end)}</p><p className="ds-caption">{i.reasons.join(' · ')}</p></li>;})}</ul>{review.unmatched.map(i=><p key={i.tripId} className="ds-support">{allReservations.find(r=>r.id===i.tripId)?.patient_first_name}: {i.reason}</p>)}<div className="flex gap-2"><DsButton className="schedule-blue-action" disabled={batchBusy||!review.proposed.length} onClick={applyBatch}>Confirm {review.proposed.length} assignments</DsButton><DsButton variant="ghost" disabled={batchBusy} onClick={()=>setReview(null)}>Cancel</DsButton></div></section>}
       <ScheduleSplit left={renderDailyBoard(false)} right={renderDailyBoard(true)}/>
+      {workspaceId&&<ScheduleNoticeHistory workspaceId={workspaceId} date={date} drivers={allDrivers}/>}
 
       {openDriverId && (
         <DriverDetailModal driverId={openDriverId} onClose={() => setOpenDriverId(null)} />

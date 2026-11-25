@@ -10,11 +10,12 @@ export async function deliverScheduleNotice(o:{event:ScheduleNoticeEvent;contact
   const key=scheduleNoticeKey(o.event,channel);
   const contact=channel==='email'?o.contact.email:o.contact.phone;
   const consent=channel==='email'?o.contact.emailConsent&&o.contact.providerEmail:o.contact.smsConsent&&o.contact.providerSms;
-  if(!o.enabled||!consent||!contact){result[channel]='suppressed';continue;}
+  const validContact=channel==='email'?/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact??''):/^\+[1-9]\d{7,14}$/.test(contact??'');
+  if(!o.enabled||!consent||!contact||!validContact){result[channel]='suppressed';continue;}
   if(channel==='sms'&&!o.smsConfigured){result[channel]='unavailable';continue;}
   if(!await o.claim(key))continue;
   try{if(channel==='email')await o.email(contact,key);else await o.sms(contact,scheduleSms(o.event),key);result[channel]='sent';}
-  catch(e){result[channel]=e instanceof Error&&e.name==='UncertainSmsError'?'uncertain':'failed';}
+  catch(e){result[channel]=e instanceof Error&&e.name==='UncertainSmsError'?'uncertain':e instanceof Error&&e.name==='RecipientSuppressedError'?'suppressed':'failed';}
   await o.record(key,result[channel]??'failed');
  }
  return result;

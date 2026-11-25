@@ -3,10 +3,10 @@ import { Body, Container, Head, Heading, Html, Preview, Section, Text } from '@r
 import type { TemplateEntry } from './registry'
 
 type Trip = { date?: string; time?: string | null; reference?: string; pickup?: string; destination?: string }
-interface Props { driverName?: string; periodLabel?: string; trips?: Trip[] }
+interface Props { driverName?: string; periodLabel?: string; trips?: Trip[]; noticeOnly?: boolean }
 
 /** Operational schedule only: no diagnosis, billing, payment, notes, documents or other passengers. */
-const DriverSchedule = ({ driverName = 'Driver', periodLabel = 'Upcoming', trips = [] }: Props) => (
+const DriverSchedule = ({ driverName = 'Driver', periodLabel = 'Upcoming', trips = [], noticeOnly = false }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your MY FLORIDA NEMT trip schedule for {periodLabel}</Preview>
@@ -15,7 +15,7 @@ const DriverSchedule = ({ driverName = 'Driver', periodLabel = 'Upcoming', trips
         <Heading style={h1}>Your trip schedule</Heading>
         <Text style={sub}>{periodLabel} · Prepared for {driverName}</Text>
         <Section style={panel}>
-          {trips.length === 0 ? <Text style={row}>No assigned trips in this period.</Text> : trips.map((t, i) => (
+          {noticeOnly ? <Text style={row}>Your daily roster or assignments have changed. Sign in to review the current schedule.</Text> : trips.length === 0 ? <Text style={row}>No assigned trips in this period.</Text> : trips.map((t, i) => (
             <Text key={i} style={row}><strong>{t.date} {t.time ?? 'Time not provided'}</strong> · {t.reference}<br />{t.pickup || 'Pickup not provided'} → {t.destination || 'Destination not provided'}</Text>
           ))}
         </Section>

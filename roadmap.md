@@ -1,9 +1,14 @@
 # Approved Provider Schedule roster and batch pass
-- [ ] Compact native date/time controls; two upper lists with complete trip addresses and availability reasons.
-- [ ] Independent scoped day roster, preserved assignment paths and retained drivers; clock preference; split daily schedules/divider.
-- [ ] Reviewed conflict-aware batch recommendations and atomic confirmation; truthful routing evidence.
-- [ ] Saved-contact email/SMS event preparation, consent, dedupe/retry and test sink; live notices OFF.
-- [ ] Synthetic desktop/tablet/phone UI/data tests; report blockers, commit and credits; never publish or mutate real records.
+- [x] Acceptance continuation from c90fe65c: mobile/tap, clock/date, batch and saved-contact notice checks; scoped fixes and preview commit.
+- [x] Compact native dates/times; exactly two upper lists, full street/city values and ordered Multi Trip/Child Care examples.
+- [x] Independent provider/date roster; retained drivers; 12/24 preference; split daily schedules and pointer/keyboard divider.
+- [x] Reviewed recommendations and atomic batch confirmation; overlap/stale/duplicate/concurrent retry checks in isolated PGlite. The underlying assignment core is represented by a local conflict-checking fixture, not a full copy of production RPCs.
+- [x] Saved-contact email/SMS paths, consent, dedupe, terminal suppression, failed-channel retry/status and uncertain-SMS hold; actual server module tested with fake records/transport. Live launch flag independently confirmed OFF.
+- [x] Signed-in Master synthetic preview: real mouse driver roster/assign/reassign/return, mobile taps/unschedule, confirmed five-item batch, one approved referral, month drilldown, all five filter controls, divider, 24-hour Settings cache readback and native value correction/clearing. Widths 1280/768/390: no horizontal overflow or page errors. Normal /portal/schedule opened; no live record was mutated.
+- [x] 88 scoped tests passed. Broader trip-form-cleanup run: 19 passed, one existing Reservations presentation assertion failed (hideScheduling occurrence count); deferred unchanged outside this pass.
+- [ ] External SMS setup: available Twilio connection is missing; authorized SMS sender, required provider registration and saved SCHEDULE_SMS_FROM needed. Live notices must remain OFF until separately approved.
+- [ ] Live Maps and deployed email/SMS acceptance: unavailable here; server Maps connection currently not linked, real routes and delivery were not called. Private-base ranking falls back honestly. No publication.
+
 
 # Final Provider Trips time, estimates and transfer cleanup
 - [x] Repair empty/editable keyboard and touch time entry; preserve chronology and canonical values. Minutes/AM-PM can precede hour entry.

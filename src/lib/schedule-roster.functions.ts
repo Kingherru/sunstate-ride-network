@@ -34,3 +34,21 @@ export const getScheduleRecommendations=createServerFn({method:'GET'}).middlewar
  for(let start=0;start<pairs.length;start+=3)await Promise.all(pairs.slice(start,start+3).map(fn=>fn()));
  return recommendSchedule({date:data.date,trips:scopedTrips.map((t:any)=>({...t,assigned_driver_id:t.driver_id,saved_patient_id:t.ride_requests?.saved_patient_id})),drivers:drivers??[],rosterIds:(roster??[]).map((r:any)=>r.driver_id),routeEvidence,history:(history??[]).filter((h:any)=>h.ride_requests?.saved_patient_id).map((h:any)=>({patientId:h.ride_requests.saved_patient_id,driverId:h.driver_id}))});
 });
+
+/** Safe delivery statuses only. Management is verified as caller before the privileged audit reader is loaded. */
+export const getScheduleNoticeHistory=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>scope.parse(i)).handler(async({data,context})=>{
+ const {data:allowed}=await context.supabase.rpc('network_workspace_access',{_ws:data.workspaceId,_manage:true});if(!allowed)throw new Error('Schedule management required');
+ const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
+ const {data:events,error}=await supabaseAdmin.from('account_security_audit').select('id,details').eq('workspace_id',data.workspaceId).eq('event_type','schedule_driver_changed').eq('range_start',data.date).order('created_at',{ascending:false}).limit(20);if(error)throw new Error('Notice history unavailable');
+ const rows:{id:string;driverId:string;kind:string;email:string;sms:string;retryable:boolean}[]=[];
+ for(let start=0;start<(events??[]).length;start+=6)await Promise.all((events??[]).slice(start,start+6).map(async e=>{
+ const d=e.details as Record<string,unknown>;const {data:outcomes}=await supabaseAdmin.from('account_security_audit').select('result,details').eq('correlation_id',e.id).eq('event_type','schedule_notice_channel').order('created_at',{ascending:false});
+ const latest=(channel:string)=>outcomes?.find(o=>(o.details as Record<string,unknown>)['key']===`schedule-${e.id}-${String(d['driverId'])}-${channel}`)?.result??'off / not attempted';
+ const email=latest('email'),sms=latest('sms');rows.push({id:e.id,driverId:String(d['driverId']),kind:String(d['kind']),email,sms,retryable:email==='failed'||sms==='failed'});
+ }));return rows;
+});
+export const retryScheduleNotice=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>scope.extend({eventId:z.string().uuid()}).parse(i)).handler(async({data,context})=>{
+ const {data:allowed}=await context.supabase.rpc('network_workspace_access',{_ws:data.workspaceId,_manage:true});if(!allowed)throw new Error('Schedule management required');
+ const {supabaseAdmin}=await import('@/integrations/supabase/client.server');const {data:event}=await supabaseAdmin.from('account_security_audit').select('id').eq('id',data.eventId).eq('workspace_id',data.workspaceId).eq('range_start',data.date).eq('event_type','schedule_driver_changed').maybeSingle();if(!event)throw new Error('Schedule event unavailable');
+ const {notifyScheduleEvent}=await import('./schedule-notices.server');await notifyScheduleEvent(event.id);return {ok:true};
+});
