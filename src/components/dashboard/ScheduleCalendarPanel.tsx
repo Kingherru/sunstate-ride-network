@@ -22,6 +22,7 @@ import {
   listMyDrivers,
   listReservationsForDay,
   assignDriverSlot,
+  listReservationsForRange,
 } from "@/lib/schedule-board.functions";
 
 function todayISO() {
@@ -95,6 +96,11 @@ export function ScheduleCalendarPanel() {
     queryFn: () => resvFn({ data: { date } }),
   });
 
+  const monthStart = date.slice(0, 8) + '01';
+  const monthEnd = addMonths(monthStart, 1).slice(0, 8) + '01';
+  const rangeFn = useServerFn(listReservationsForRange);
+  const monthQ = usePortalQuery({ queryKey: ["month-reservations", monthStart], queryFn: () => rangeFn({ data: { start: monthStart, end: addDays(monthEnd, -1) } }), enabled: monthOpen });
+  const monthCounts = useMemo(() => { const m = new Map<string, { total: number; open: number }>(); ((monthQ.data ?? []) as any[]).forEach(r => { const k = String(r.pickup_date).slice(0, 10); const c = m.get(k) ?? { total: 0, open: 0 }; c.total++; if (!r.driver_id) c.open++; m.set(k, c); }); return m; }, [monthQ.data]);
   const mAssign = usePortalMutation({
     mutationFn: (v: { reservation_id: string; driver_id: string | null; scheduled_start_time: string | null }) =>
       assignFn({ data: v }),
@@ -243,6 +249,10 @@ export function ScheduleCalendarPanel() {
     if (e.dataTransfer.types.includes(RESOURCE_MIME)) return;
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
     if (!id) return;
+    placeTrip(id, driverId, hour);
+  }
+  /** Shared by pointer drops and tap/keyboard controls. */
+  function placeTrip(id: string, driverId: string | null, hour: string) {
     if (driverId && allDrivers.find((d: any) => d.id === driverId)?.status !== "active") { toast.error("This driver is inactive and cannot receive new assignments."); setDraggingId(null); return; }
     if (preview.active) {
       const trip = allReservations.find(r => r.id === id);
@@ -278,7 +288,7 @@ export function ScheduleCalendarPanel() {
         </div>
         {monthOpen && <div className="mx-auto mt-3 max-w-sm" role="grid" aria-label={`Month of ${new Date(date + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`}>
           <div className="grid grid-cols-7 text-center ds-caption font-bold">{['S','M','T','W','T','F','S'].map((d, i) => <span key={i} aria-hidden="true">{d}</span>)}</div>
-          <div className="mt-1 grid grid-cols-7 gap-1">{monthGrid(date).map((d, i) => d ? <button key={d} type="button" onClick={() => { setDate(d); setMonthOpen(false); }} aria-label={`View ${fmtDate(d)}`} aria-current={d === date ? 'date' : undefined} className={`schedule-month-day ${d === date ? 'is-selected' : ''} ${d === todayISO() ? 'is-today' : ''}`}>{Number(d.slice(8))}</button> : <span key={`b${i}`} />)}</div>
+          <p className="ds-caption text-center">{monthQ.isLoading ? 'Loading month…' : `${(monthQ.data ?? []).length} trips this month · ${[...monthCounts.values()].reduce((a, c) => a + c.open, 0)} unassigned`}</p><div className="mt-1 grid grid-cols-7 gap-1">{monthGrid(date).map((d, i) => d ? <button key={d} type="button" onClick={() => { setDate(d); setMonthOpen(false); }} aria-label={`View ${fmtDate(d)}${monthCounts.get(d) ? ` — ${monthCounts.get(d)!.total} trips, ${monthCounts.get(d)!.open} unassigned` : ''}`} aria-current={d === date ? 'date' : undefined} className={`schedule-month-day ${d === date ? 'is-selected' : ''} ${d === todayISO() ? 'is-today' : ''}`}><span>{Number(d.slice(8))}</span>{monthCounts.get(d) && <span className="schedule-month-count" aria-hidden="true">{monthCounts.get(d)!.total}{monthCounts.get(d)!.open ? ` · ${monthCounts.get(d)!.open} open` : ''}</span>}</button> : <span key={`b${i}`} />)}</div>
         </div>}
       </div>
 
@@ -289,7 +299,7 @@ export function ScheduleCalendarPanel() {
         <select
           value={vehicleFilter}
           onChange={(e) => setVehicleFilter(e.target.value)}
-          className="portal-control"
+          className="portal-control schedule-filter is-vehicle"
           aria-label="Filter by vehicle"
         >
           <option value="all">All vehicles</option>
@@ -299,7 +309,7 @@ export function ScheduleCalendarPanel() {
         <select
           value={driverFilter}
           onChange={(e) => setDriverFilter(e.target.value)}
-          className="portal-control"
+          className="portal-control schedule-filter is-driver"
           aria-label="Filter drivers on board"
         >
           <option value="all">All drivers</option>
@@ -311,7 +321,7 @@ export function ScheduleCalendarPanel() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="portal-control"
+          className="portal-control schedule-filter is-status"
           aria-label="Filter reservations on board by status"
         >
           <option value="all">All statuses</option>
@@ -319,7 +329,7 @@ export function ScheduleCalendarPanel() {
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <label className="portal-control cursor-pointer">
+        <label className="portal-control schedule-filter is-empty cursor-pointer">
           <input
             type="checkbox"
             checked={hideEmptyDrivers}
@@ -327,7 +337,7 @@ export function ScheduleCalendarPanel() {
           />
           Hide empty drivers
         </label>
-        <select value={includeInactive ? "include" : "active"} onChange={(e) => setIncludeInactive(e.target.value === "include")} className="portal-control" aria-label="Active or inactive resources">
+        <select value={includeInactive ? "include" : "active"} onChange={(e) => setIncludeInactive(e.target.value === "include")} className="portal-control schedule-filter is-active" aria-label="Active or inactive resources">
           <option value="active">Active only</option>
           <option value="include">Include inactive</option>
         </select>
@@ -443,13 +453,17 @@ export function ScheduleCalendarPanel() {
                           key={d.id}
                           className={`border-r border-border align-top p-1 min-h-[60px] ${unavail ? "bg-muted/40" : "hover:bg-primary/5"}`}
                           onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => onDrop(e, d.id, h)}
+                          data-slot={`${d.id}__${h}`} onDrop={(e) => onDrop(e, d.id, h)}
                           title={unavail ? "Driver is off / outside their working hours" : undefined}
                         >
                           <div className="space-y-1 min-h-[54px]">
                             {cell.map((r: any) => (
-                              <ReservationChip key={r.id} r={r} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId === r.id} small tone={conflicts.has(r.id) ? "conflict" : "assigned"} />
+                              <div key={r.id} className="space-y-0.5">
+                                <ReservationChip r={r} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId === r.id} small tone={conflicts.has(r.id) ? "conflict" : "assigned"} />
+                                <div className="flex gap-1"><button type="button" className="schedule-resource-action" onClick={() => setSelectedId(r.id)} aria-pressed={selectedId === r.id} aria-label={`Move ${r.patient_first_name} ${r.patient_last_name} trip`}>Move</button><button type="button" className="schedule-resource-action" onClick={() => placeTrip(r.id, null, h)} aria-label={`Unschedule ${r.patient_first_name} ${r.patient_last_name} trip`}>Unschedule</button></div>
+                              </div>
                             ))}
+                            {selectedTrip && !unavail && d.status === 'active' && !cell.some((r: any) => r.id === selectedTrip.id) && <button type="button" className="schedule-place" onClick={() => placeTrip(selectedTrip.id, d.id, h)} aria-label={`Place selected trip with ${d.first_name} ${d.last_name} at ${fmt12h(h)}`}>Place here</button>}
                           </div>
                         </td>
                       );
