@@ -772,7 +772,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
               <legend className="ds-label mb-2 text-ds-primary">Pickup options</legend>
               <div className="trip-checkbox-grid">{PICKUP_OPTIONS.map(option=><DsCheckbox key={option} label={option} checked={readPickupOptions(form.mobilityNotes).includes(option)} onChange={e=>{const cur=readPickupOptions(form.mobilityNotes);upd('mobilityNotes',writePickupOptions(form.mobilityNotes,e.target.checked?[...cur,option]:cur.filter(v=>v!==option)));}}/>)}</div>
             </fieldset>
-            {!locationResolved(form.pickupState, form.pickupZip) && <div data-manual-location="pickup" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
+            {!locationResolved(form.pickupState, form.pickupZip) && <div data-manual-location="pickup" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields hideAdvanced={!!commerce?.provider} value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
           </fieldset>
 
           {/* Dropoff */}
@@ -798,7 +798,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
               <TimeSelect label="Estimated Drop-Off Time" value={form.dropoffTime ?? ""} onChange={(v) => { manualArrival.current = true; autoArrival.current = false; setDropoffManual(true); setForm(f=>({...f,dropoffTime:v,dropoffDate:v ? (f.dropoffDate || f.pickupDate) : ''})); }} />
               <p role="status" className="mt-1 text-xs text-ds-text-2">{dropoffManual ? 'Manual estimate — retained when the route changes.' : routeEstimate ? `Estimated from outbound Google Maps driving time.${arrivalDate && arrivalDate !== form.pickupDate ? ` Arrival ${formatUsDate(arrivalDate)} (next day).` : ''} Final timing is confirmed by the provider.` : routed.status === 'loading' ? 'Calculating route duration… You can enter a manual estimate.' : 'Review Required — route estimate unavailable. Enter a manual estimate or leave blank for provider review.'}</p>
             </Field>}
-            {!locationResolved(form.dropoffState, form.dropoffZip) && <div data-manual-location="dropoff" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
+            {!locationResolved(form.dropoffState, form.dropoffZip) && <div data-manual-location="dropoff" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields hideAdvanced={!!commerce?.provider} hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
             {!commerce && !childCare && form.pickupState==='FL' && form.dropoffState==='FL' && (
               <PriceEstimate
                 pickupZip={pickupMeta.zip}
@@ -914,7 +914,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                       <Field label={`Leg ${i + 2} date`}><DatePickerField value={stop.date || form.pickupDate} onChange={v => setStop({ date: v })} booking usFormat /></Field>
                       <Field label={`Leg ${i + 2} pickup time`}><TimeSelect label={`Leg ${i + 2} pickup time`} value={stop.pickupTime ?? ""} onChange={(v) => setStop({ pickupTime: v })} /></Field>
                     </div>
-                    {!locationResolved(stop.state, stop.zip) && stop.address.length > 2 && <RegionalAddressFields hideTimezone={commerce?.provider} value={{pickupState:stop.state,pickupZip:stop.zip,pickupCounty:stop.county,pickupTimezone:stop.timezone}} side="pickup" onChange={fields=>setStop({...(fields.pickupState!==undefined?{state:fields.pickupState}:{}),...(fields.pickupZip!==undefined?{zip:fields.pickupZip}:{}),...(fields.pickupCounty!==undefined?{county:fields.pickupCounty}:{}),...(fields.pickupTimezone!==undefined?{timezone:fields.pickupTimezone as RideRequestInput['pickupTimezone']}:{})})}/>}
+                    {!locationResolved(stop.state, stop.zip) && stop.address.length > 2 && <RegionalAddressFields hideAdvanced={!!commerce?.provider} hideTimezone={commerce?.provider} value={{pickupState:stop.state,pickupZip:stop.zip,pickupCounty:stop.county,pickupTimezone:stop.timezone}} side="pickup" onChange={fields=>setStop({...(fields.pickupState!==undefined?{state:fields.pickupState}:{}),...(fields.pickupZip!==undefined?{zip:fields.pickupZip}:{}),...(fields.pickupCounty!==undefined?{county:fields.pickupCounty}:{}),...(fields.pickupTimezone!==undefined?{timezone:fields.pickupTimezone as RideRequestInput['pickupTimezone']}:{})})}/>}
                     {err && <p role="alert" className="text-xs text-ds-error">{err}</p>}
                   </li>);
                 })}
@@ -1234,7 +1234,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
 
       <fieldset className="space-y-6">
         <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Pickup location</legend>
-        <RegionalAddressFields value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as DeliveryRequestInput)}/>
+        <RegionalAddressFields hideAdvanced={!!commerce?.provider} value={form} side="pickup" onChange={fields=>setForm(f=>({...f,...fields}) as DeliveryRequestInput)}/>
         <Field label="Pickup address" required error={errors.pickupAddress}><input className={inputCls} value={form.pickupAddress} onChange={(e) => upd("pickupAddress", e.target.value)} maxLength={300} /></Field>
         <div className="grid gap-6 md:grid-cols-2">
           <Field label="City" required error={errors.pickupCity}><input className={inputCls} list="fl-cities-delivery" value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} maxLength={100} /></Field>
@@ -1244,7 +1244,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
 
       <fieldset className="space-y-6">
         <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Delivery destination</legend>
-        <RegionalAddressFields value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as DeliveryRequestInput)}/>
+        <RegionalAddressFields hideAdvanced={!!commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as DeliveryRequestInput)}/>
         <Field label="Delivery address" required error={errors.dropoffAddress}><input className={inputCls} value={form.dropoffAddress} onChange={(e) => upd("dropoffAddress", e.target.value)} maxLength={300} /></Field>
         <Field label="City" required error={errors.dropoffCity}><input className={inputCls} list="fl-cities-delivery" value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} maxLength={100} /></Field>
       </fieldset>
