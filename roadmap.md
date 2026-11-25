@@ -1,3 +1,9 @@
+# Current Provider Schedule independent-leg redesign
+- [ ] Stable per-leg persistence and legacy/referral projection; authoritative overlap-permitted manual/batch assignments with eligibility and vehicle constraints retained.
+- [ ] One compact sticky scrollable board, matching blue filters, neutral roster cards, leg rows and accessible detail actions.
+- [ ] Isolated persistence and notice tests; actual mouse/tap/reload and 10/100-column desktop/tablet/phone checks.
+- [ ] Report verified results, external blockers and commit; no live records, services, notices or publication.
+
 # Approved Provider Schedule roster and batch pass
 - [x] Acceptance continuation from c90fe65c: mobile/tap, clock/date, batch and saved-contact notice checks; scoped fixes and preview commit.
 - [x] Compact native dates/times; exactly two upper lists, full street/city values and ordered Multi Trip/Child Care examples.
