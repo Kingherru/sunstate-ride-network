@@ -13,7 +13,13 @@ import { ScheduleAssignment } from '@/components/portal/ScheduleAssignment';
 import { handleResourceDrop, RESOURCE_MIME, type AssignmentInput } from '@/lib/scheduler-drop';
 import { DsButton } from '@/components/ds/controls';
 import {scheduleTimeLabel,weeklyLocalAvailability} from "@/lib/regional-projections";
-import {ContractorAssignment} from '@/components/portal/ContractorAssignment';
+import { useRouteContext } from '@tanstack/react-router';
+import { getDayRoster,setDayRoster,getScheduleRecommendations,confirmScheduleBatch } from '@/lib/schedule-roster.functions';
+import { getPortalPreferences } from '@/lib/portal-preferences.functions';
+import { clockTime, movedScheduleEnd, dailyRosterIds, driverDayReason, recommendSchedule, uniqueScheduleTrips, type Recommendation } from '@/lib/schedule-planning';
+import { ScheduleSplit } from '@/components/portal/ScheduleSplit';
+import { scheduleInterval } from '@/lib/regional-projections';
+const DRIVER_ROSTER_MIME='application/x-mfn-day-driver';
 
 export const RESV_DND_MIME = "application/x-reservation-id";
 import { usePortalPreview, usePortalMutation, usePortalQuery, previewBlocked } from "@/components/portal/preview-data";
@@ -71,6 +77,15 @@ const UNASSIGNED = "__unassigned__";
 export function ScheduleCalendarPanel() {
   const qc = useQueryClient();
   const preview = usePortalPreview();
+  const {access}=useRouteContext({strict:false});
+  const workspaceId=preview.active?'preview-ws':access?.primary?.id;
+  const [demoRoster,setDemoRoster]=useState<Record<string,string[]>>({});
+  const [review,setReview]=useState<{proposed:Recommendation[];unmatched:{tripId:string;reason:string}[]}|null>(null);
+  const [reviewKey,setReviewKey]=useState('');
+  const [batchBusy,setBatchBusy]=useState(false);
+  const prefs=usePortalQuery({queryKey:['portal-preferences'],queryFn:()=>getPortalPreferences()});
+  const clock=prefs.data?.schedule_clock??'12';
+  const time=(v:string|null|undefined)=>clockTime(v,clock);
   const [demoAssignments, setDemoAssignments] = useState<Record<string, AssignmentInput>>({});
   const [date, setDate] = useState<string>(todayISO());
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -83,6 +98,8 @@ export function ScheduleCalendarPanel() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [monthOpen, setMonthOpen] = useState(false);
 
+  const rosterGet=useServerFn(getDayRoster),rosterSave=useServerFn(setDayRoster),recommend=useServerFn(getScheduleRecommendations),confirmBatch=useServerFn(confirmScheduleBatch);
+  const rosterQ=usePortalQuery({queryKey:['schedule-day-roster',date,workspaceId],queryFn:()=>{if(!workspaceId)throw new Error('Provider workspace required');return rosterGet({data:{workspaceId,date}});},enabled:!!workspaceId});
   const whFn = useServerFn(getMyWorkHours);
   const driversFn = useServerFn(listMyDrivers);
   const resvFn = useServerFn(listReservationsForDay);
@@ -120,10 +137,10 @@ export function ScheduleCalendarPanel() {
   const workStartH = Number(workStart.slice(0, 2));
   const workEndH = Number(workEnd.slice(0, 2));
   const allDrivers = driversQ.data ?? [];
-  const allReservations = useMemo(() => (resvQ.data ?? []).map(r => {
-    const simulated = preview.active ? demoAssignments[r.id] : undefined;
+  const allReservations = useMemo(() => uniqueScheduleTrips((resvQ.data ?? []).map(r => {
+    const simulated = preview.active ? demoAssignments[`${date}:${r.id}`] : undefined;
     return simulated ? { ...r, driver_id: simulated.driverId, assigned_driver_id: simulated.driverId, vehicle_id: simulated.vehicleId, scheduled_start_time: simulated.start, assignment_end_time: simulated.end } : r;
-  }), [resvQ.data, preview.active, demoAssignments]);
+  })), [resvQ.data, preview.active, demoAssignments,date]);
   const conflicts = useMemo(() => conflictingSlots(allReservations as any), [allReservations]);
 
   const statusOptions = useMemo(
@@ -143,31 +160,16 @@ export function ScheduleCalendarPanel() {
     [allReservations, statusFilter, driverFilter, vehicleFilter],
   );
 
-  const drivers = useMemo(() => {
-    // Only drivers actually on duty for the selected day: active, not on vacation,
-    // and not marked off for this day of the week.
-    // Inactive drivers never take new assignments; they stay visible (flagged) when they still
-    // hold assignments for this day, or when "Include inactive" is chosen.
-    const holding = new Set(allReservations.map((r: any) => r.assigned_driver_id).filter(Boolean));
-    let list = allDrivers.filter((d: any) => {
-      if (d.status !== "active") return includeInactive || holding.has(d.id);
-      if (isOnVacation(d, date)) return false;
-      const a = d?.availability;
-      if (a && typeof a === "object" && a.mode === "weekly") {
-        const day = a.days?.[dow];
-        if (!day || day.off) return false;
-      }
-      return true;
-    });
-    if (driverFilter !== "all" && driverFilter !== "unassigned") {
-      list = list.filter((d: any) => d.id === driverFilter);
-    }
-    if (hideEmptyDrivers) {
-      const active = new Set(reservations.map((r: any) => r.assigned_driver_id).filter(Boolean));
-      list = list.filter((d: any) => active.has(d.id));
-    }
-    return list;
-  }, [allDrivers, allReservations, includeInactive, driverFilter, hideEmptyDrivers, reservations, date, dow]);
+  const rosterIds=dailyRosterIds(preview.active?(demoRoster[date]??(rosterQ.data??[]).map(r=>r.driver_id)):(rosterQ.data??[]).map(r=>r.driver_id),allReservations);
+  const drivers=allDrivers.filter((d:any)=>rosterIds.includes(d.id)&&(includeInactive||d.status==='active'||allReservations.some(r=>r.assigned_driver_id===d.id))).filter((d:any)=>driverFilter==='all'||driverFilter==='unassigned'||driverFilter===d.id).filter((d:any)=>!hideEmptyDrivers||reservations.some(r=>r.assigned_driver_id===d.id));
+  const unscheduledDrivers=allDrivers.filter((d:any)=>!rosterIds.includes(d.id)&&(driverFilter==='all'||driverFilter==='unassigned'||driverFilter===d.id));
+  async function rosterDriver(driverId:string,scheduled=true){
+   const driver=allDrivers.find(d=>d.id===driverId);if(scheduled&&driver&&driverDayReason(driver,date)){toast.error(driverDayReason(driver,date));return;}
+   if(!scheduled&&allReservations.some(r=>r.assigned_driver_id===driverId)){toast.error('Unschedule this driver’s trips first.');return;}
+   try{if(preview.active)setDemoRoster(prev=>({...prev,[date]:scheduled?[...new Set([...rosterIds,driverId])]:rosterIds.filter(id=>id!==driverId)}));else if(workspaceId){await rosterSave({data:{workspaceId,date,driverId,scheduled}});await qc.invalidateQueries({queryKey:['schedule-day-roster']});}}catch(e){toast.error(e instanceof Error?e.message:'Roster could not be saved.');}
+  }
+  async function reviewBatch(){setBatchBusy(true);try{const result=preview.active?recommendSchedule({date,trips:allReservations,drivers:allDrivers,rosterIds}):workspaceId?await recommend({data:{workspaceId,date}}):null;setReview(result);setReviewKey(crypto.randomUUID());}catch(e){toast.error(e instanceof Error?e.message:'Recommendations unavailable.');}finally{setBatchBusy(false);}}
+  async function applyBatch(){if(!review||!review.proposed.length)return;setBatchBusy(true);try{if(preview.active){setDemoAssignments(prev=>{const next={...prev};for(const i of review.proposed)next[`${date}:${i.tripId}`]={tripId:i.tripId,driverId:i.driverId,vehicleId:i.vehicleId,start:i.start,end:i.end};return next;});}else if(workspaceId){await confirmBatch({data:{workspaceId,date,key:reviewKey,items:review.proposed.map(({reasons,...i})=>i)}});await Promise.all(['day-reservations','schedule-day-roster','provider-trips','month-reservations'].map(k=>qc.invalidateQueries({queryKey:[k]})));}setReview(null);toast.success(preview.active?'Synthetic batch applied — no records or notices.':'Reviewed batch saved');}catch(e){toast.error(e instanceof Error?e.message:'Batch was not saved.');}finally{setBatchBusy(false);}}
 
   // Hour columns: work-hour range, extended to include any reservation times that fall outside.
   const hours = useMemo(() => {
@@ -196,15 +198,9 @@ export function ScheduleCalendarPanel() {
     return m;
   }, [reservations]);
 
-  const unassigned = reservations.filter((r: any) => !r.assigned_driver_id);
+  const unassigned = reservations.filter((r: any) => !r.assigned_driver_id&&(r.reservation_state==='booked'||['scheduled','confirmed','assigned','accepted'].includes(r.status)));
   const selectedTrip: any = allReservations.find((r: any) => r.id === (selectedId ?? draggingId)) ?? null;
   // Right-column lists honor the same driver/vehicle/active filters as the board.
-  const eligible = useMemo(() => {
-    if (!selectedTrip) return { drivers: [], vehicles: [] };
-    const ds = eligibleDrivers(selectedTrip, drivers.filter((d: any) => d.status === 'active'), allReservations as any, date, Number(dow));
-    const vs = eligibleVehicles(selectedTrip, (vehiclesQ.data ?? []).filter((v: any) => vehicleFilter === 'all' || vehicleFilter === 'unassigned' || v.id === vehicleFilter), allReservations as any);
-    return { drivers: ds, vehicles: vs };
-  }, [selectedTrip, drivers, allReservations, date, dow, vehiclesQ.data, vehicleFilter]);
 
   function driverDayCfg(d: any) {
     const a = d?.availability;
@@ -216,7 +212,7 @@ export function ScheduleCalendarPanel() {
     const cfg = driverDayCfg(d);
     if (cfg.mode === "flexible") return "Flexible";
     if (!cfg.day || cfg.day.off) return "Off today";
-    return `${(cfg.day.start ?? "09:00").slice(0,5)}–${(cfg.day.end ?? "17:00").slice(0,5)}`;
+    return `${time(cfg.day.start??"09:00")}–${time(cfg.day.end??"17:00")}`;
   }
   function isDriverUnavailable(d: any, hhmm: string) {
     const cfg = driverDayCfg(d);
@@ -231,7 +227,7 @@ export function ScheduleCalendarPanel() {
   const resFn = useServerFn(assignTripResources);
   const mResource = usePortalMutation({
     mutationFn: (input: AssignmentInput) => resFn({ data: input }),
-    onSuccess: () => { toast.success("Assignment saved"); ['day-reservations','range-reservations','my-reservations','provider-trips'].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
+    onSuccess: () => { toast.success("Assignment saved"); ['day-reservations','schedule-day-roster','range-reservations','my-reservations','provider-trips','month-reservations'].forEach(k => qc.invalidateQueries({ queryKey: [k] })); },
 
   });
   async function resourceDrop(r: any, raw: string) {
@@ -239,13 +235,14 @@ export function ScheduleCalendarPanel() {
     try {
       await handleResourceDrop({ raw, trip: r, drivers: allDrivers, vehicles: vehiclesQ.data ?? [], preview: preview.active,
         assign: input => mResource.mutateAsync(input),
-        simulate: input => { setDemoAssignments(previous => ({ ...previous, [input.tripId]: input })); toast.info('Preview assignment updated — nothing saved or sent.'); },
+        simulate: input => { setDemoAssignments(previous => ({ ...previous, [`${date}:${input.tripId}`]: input })); toast.info('Preview assignment updated — nothing saved or sent.'); },
       });
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Assignment unavailable. Previous assignment unchanged.'); }
   }
 
   function onDrop(e: React.DragEvent, driverId: string | null, hour: string) {
-    e.preventDefault();
+    e.preventDefault();e.stopPropagation();
+    if (e.dataTransfer.types.includes(DRIVER_ROSTER_MIME)){const id=e.dataTransfer.getData(DRIVER_ROSTER_MIME);if(id)void rosterDriver(id);return;}
     if (e.dataTransfer.types.includes(RESOURCE_MIME)) return;
     const id = e.dataTransfer.getData(RESV_DND_MIME) || draggingId;
     if (!id) return;
@@ -254,33 +251,36 @@ export function ScheduleCalendarPanel() {
   /** Shared by pointer drops and tap/keyboard controls. */
   function placeTrip(id: string, driverId: string | null, hour: string) {
     if (driverId && allDrivers.find((d: any) => d.id === driverId)?.status !== "active") { toast.error("This driver is inactive and cannot receive new assignments."); setDraggingId(null); return; }
+    const trip = allReservations.find(r => r.id === id);if(!trip)return;
+    const end=driverId?movedScheduleEnd(trip,hour):trip.assignment_end_time?.slice(0,5)??null;
+    if(driverId&&!end){toast.error('Review the trip end time before scheduling.');return;}
     if (preview.active) {
-      const trip = allReservations.find(r => r.id === id);
-      if (trip) { setDemoAssignments(previous => ({ ...previous, [id]: { tripId: id, driverId, vehicleId: trip.vehicle_id ?? null, start: hour, end: trip.assignment_end_time?.slice(0, 5) ?? null } })); toast.info('Preview schedule updated — nothing saved or sent.'); }
-      setDraggingId(null); return;
+      if(trip&&driverId){const moved={...trip,scheduled_start_time:hour,assignment_end_time:end};if(!eligibleDrivers(moved,allDrivers,allReservations,date,Number(dow)).some(d=>d.id===driverId)){toast.error('Driver unavailable or schedule overlap. Previous placement retained.');return;}setDemoRoster(prev=>({...prev,[date]:[...new Set([...rosterIds,driverId])]}));}
+      if(trip&&!driverId)setDemoRoster(prev=>({...prev,[date]:[...rosterIds]}));
+      if (trip) { setDemoAssignments(previous => ({ ...previous, [`${date}:${id}`]: { tripId: id, driverId, vehicleId: trip.vehicle_id ?? null, start: hour, end } })); toast.info('Preview schedule updated — nothing saved or sent.'); }
+      setDraggingId(null);setSelectedId(null); return;
     }
-    mAssign.mutate({
-      reservation_id: id,
-      driver_id: driverId,
-      scheduled_start_time: hour,
-    });
+    mResource.mutate({tripId:id,driverId,vehicleId:trip.vehicle_id??null,start:hour,end});
     setDraggingId(null); setSelectedId(null);
+  }
+
+  function renderDailyBoard(referrals:boolean){
+   const rows=reservations.filter((r:any)=>Boolean(r.network_distribution_id)===referrals);
+   const boardDrivers=referrals?drivers.filter((d:any)=>rows.some(r=>r.assigned_driver_id===d.id)||rows.some(r=>!r.assigned_driver_id)):drivers;
+   return <section className="min-w-0" aria-label={referrals?'Referrals schedule':'Provider Drivers and Contractors schedule'} onDragOver={e=>{if(e.dataTransfer.types.includes(DRIVER_ROSTER_MIME))e.preventDefault();}} onDrop={e=>{const id=e.dataTransfer.getData(DRIVER_ROSTER_MIME);if(id){e.preventDefault();e.stopPropagation();void rosterDriver(id);}}}><h3 className="ds-label mb-2 text-ds-primary">{referrals?'Referrals':'Provider Drivers and Contractors'}</h3><div className="schedule-day-grid rounded-ds-sm border border-ds-border" role="region" aria-label={referrals?'Referrals day board':'Provider day board'} tabIndex={0}><table className="w-full border-collapse text-sm"><thead><tr><th className="text-left px-2 py-3 ds-caption">Time Slot / Daily Drivers</th>{boardDrivers.map((d:any)=><th key={d.id} className="min-w-44 px-2 py-2 text-left"><DsButton variant="ghost" size="sm" onClick={()=>setOpenDriverId(d.id)}>{d.first_name} {d.last_name}</DsButton><div className="ds-caption">{rows.filter(r=>r.assigned_driver_id===d.id).length} trips · {driverAvailLabel(d)}</div><DsButton variant="ghost" size="sm" disabled={allReservations.some(r=>r.assigned_driver_id===d.id)} onClick={()=>rosterDriver(d.id,false)} aria-label={`Remove ${d.first_name} from daily roster`}>Remove</DsButton></th>)}</tr></thead><tbody>{hours.map(h=><tr key={h} className="border-t border-ds-border"><td className="px-2 py-2 whitespace-nowrap text-ds-primary font-semibold">{time(h)}</td>{boardDrivers.map((d:any)=>{const cell=rows.filter((r:any)=>r.assigned_driver_id===d.id&&(r.scheduled_start_time??r.pickup_time??'').slice(0,2)===h.slice(0,2));const unavailable=isDriverUnavailable(d,h)||!!driverDayReason(d,date);return <td key={d.id} data-slot={`${d.id}__${h}`} data-schedule-side={referrals?'referral':'provider'} className="border-l border-ds-border p-1 align-top" title={unavailable?'Outside driver availability':undefined} onDragOver={e=>e.preventDefault()} onDrop={e=>onDrop(e,d.id,h)}><div className="min-h-14 space-y-2">{cell.map((r:any)=><div key={r.id}><ReservationChip r={r} clock={clock} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId===r.id} small tone={conflicts.has(r.id)?'conflict':'assigned'}/><div className="mt-1 flex gap-1"><DsButton size="sm" variant="ghost" onClick={()=>setSelectedId(r.id)} aria-pressed={selectedId===r.id} aria-label={`Move ${r.patient_first_name} trip`}>Move</DsButton><DsButton size="sm" variant="ghost" onClick={()=>placeTrip(r.id,null,(r.pickup_time??h).slice(0,5))} aria-label={`Unschedule ${r.patient_first_name} trip`}>Unschedule</DsButton></div></div>)}{selectedTrip&&Boolean(selectedTrip.network_distribution_id)===referrals&&!unavailable&&!cell.some(r=>r.id===selectedTrip.id)&&<DsButton variant="ghost" size="sm" className="schedule-place" onClick={()=>placeTrip(selectedTrip.id,d.id,h)} aria-label={`Place selected trip with ${d.first_name} at ${time(h)}`}>Place here</DsButton>}</div></td>;})}</tr>)}</tbody></table>{!boardDrivers.length&&<p className="p-3 ds-support">{referrals?'No assigned referral drivers.':'Schedule a driver to start the daily roster.'}</p>}</div></section>;
   }
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="ds-subheading uppercase text-ds-primary">Day schedule</h2>
-      </div>
 
       {/* Date navigator — larger day/month controls beside the date, month drilldown below */}
       <div className="schedule-nav rounded-ds-sm bg-ds-sky px-3 py-3">
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button type="button" className="schedule-nav-btn" onClick={() => setDate(addMonths(date, -1))} aria-label="Previous month"><ChevronsLeft className="size-5" /></button>
-          <button type="button" className="schedule-nav-btn" onClick={() => setDate(addDays(date, -1))} aria-label="Previous day"><ChevronLeft className="size-5" /></button>
-          <div className="min-w-0 px-2 text-center"><div className="ds-subheading text-ds-primary" aria-live="polite">{fmtDate(date)}</div></div>
-          <button type="button" className="schedule-nav-btn" onClick={() => setDate(addDays(date, 1))} aria-label="Next day"><ChevronRight className="size-5" /></button>
-          <button type="button" className="schedule-nav-btn" onClick={() => setDate(addMonths(date, 1))} aria-label="Next month"><ChevronsRight className="size-5" /></button>
+        <div className="schedule-date-controls flex items-center justify-center gap-1">
+          <DsButton type="button" variant="ghost" className="schedule-nav-btn" onClick={() => setDate(addMonths(date, -1))} aria-label="Previous month"><ChevronsLeft className="size-5" /></DsButton>
+          <DsButton type="button" variant="ghost" className="schedule-nav-btn" onClick={() => setDate(addDays(date, -1))} aria-label="Previous day"><ChevronLeft className="size-5" /></DsButton>
+          <div className="schedule-date-label min-w-0 text-center"><div className="ds-subheading text-ds-primary" aria-live="polite">{fmtDate(date)}</div></div>
+          <DsButton type="button" variant="ghost" className="schedule-nav-btn" onClick={() => setDate(addDays(date, 1))} aria-label="Next day"><ChevronRight className="size-5" /></DsButton>
+          <DsButton type="button" variant="ghost" className="schedule-nav-btn" onClick={() => setDate(addMonths(date, 1))} aria-label="Next month"><ChevronsRight className="size-5" /></DsButton>
         </div>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
           <DsButton variant="ghost" size="sm" onClick={() => setDate(todayISO())} className="text-xs font-bold">Jump to today</DsButton>
@@ -288,7 +288,7 @@ export function ScheduleCalendarPanel() {
         </div>
         {monthOpen && <div className="mx-auto mt-3 max-w-sm" role="grid" aria-label={`Month of ${new Date(date + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`}>
           <div className="grid grid-cols-7 text-center ds-caption font-bold">{['S','M','T','W','T','F','S'].map((d, i) => <span key={i} aria-hidden="true">{d}</span>)}</div>
-          <p className="ds-caption text-center">{monthQ.isLoading ? 'Loading month…' : `${(monthQ.data ?? []).length} trips this month · ${[...monthCounts.values()].reduce((a, c) => a + c.open, 0)} unassigned`}</p><div className="mt-1 grid grid-cols-7 gap-1">{monthGrid(date).map((d, i) => d ? <button key={d} type="button" onClick={() => { setDate(d); setMonthOpen(false); }} aria-label={`View ${fmtDate(d)}${monthCounts.get(d) ? ` — ${monthCounts.get(d)!.total} trips, ${monthCounts.get(d)!.open} unassigned` : ''}`} aria-current={d === date ? 'date' : undefined} className={`schedule-month-day ${d === date ? 'is-selected' : ''} ${d === todayISO() ? 'is-today' : ''}`}><span>{Number(d.slice(8))}</span>{monthCounts.get(d) && <span className="schedule-month-count" aria-hidden="true">{monthCounts.get(d)!.total}{monthCounts.get(d)!.open ? ` · ${monthCounts.get(d)!.open} open` : ''}</span>}</button> : <span key={`b${i}`} />)}</div>
+          <p className="ds-caption text-center">{monthQ.isLoading ? 'Loading month…' : `${(monthQ.data ?? []).length} trips this month · ${[...monthCounts.values()].reduce((a, c) => a + c.open, 0)} unassigned`}</p><div className="mt-1 grid grid-cols-7 gap-1">{monthGrid(date).map((d, i) => d ? <button key={d} type="button" onClick={() => { setDate(d); setMonthOpen(false); }} aria-label={`View ${fmtDate(d)}${monthCounts.get(d) ? ` — ${monthCounts.get(d)?.total} trips, ${monthCounts.get(d)?.open} unassigned` : ''}`} aria-current={d === date ? 'date' : undefined} className={`schedule-month-day ${d === date ? 'is-selected' : ''} ${d === todayISO() ? 'is-today' : ''}`}><span>{Number(d.slice(8))}</span>{monthCounts.get(d) && <span className="schedule-month-count" aria-hidden="true">{monthCounts.get(d)?.total}{monthCounts.get(d)?.open ? ` · ${monthCounts.get(d)?.open} open` : ''}</span>}</button> : <span key={`b${i}`} />)}</div>
         </div>}
       </div>
 
@@ -354,127 +354,17 @@ export function ScheduleCalendarPanel() {
         </div>
       )}
 
-      {/* Unassigned: draggable trips left, eligible drivers/vehicles for the selected trip right */}
-      <section
-        className="schedule-unassigned rounded-ds-sm border border-dashed border-ds-border bg-ds-surface p-3"
-        aria-label="Unassigned trips"
-        onDragOver={(e) => { if (!e.dataTransfer.types.includes(RESOURCE_MIME)) e.preventDefault(); }}
-        onDrop={(e) => onDrop(e, null, hours[0] ?? "00:00")}
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="min-w-0">
-            <h3 className="ds-label text-ds-primary">Unassigned ({unassigned.length}) <span className="ds-caption font-normal">· drop a trip here to unschedule</span></h3>
-            {unassigned.length === 0 ? <p className="ds-caption mt-2">All reservations assigned.</p> : (
-              <ul className="mt-2 space-y-2">{unassigned.map((r: any) => (
-                <li key={r.id} className="flex min-w-0 items-start gap-2">
-                  <input type="radio" name="schedule-selected-trip" className="mt-2" aria-label={`Select ${scheduleTimeLabel(r)} trip to see eligible drivers`} checked={selectedId === r.id} onChange={() => setSelectedId(r.id)} />
-                  <div className="min-w-0 flex-1" onDragStart={() => setSelectedId(r.id)}><ReservationChip r={r} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId === r.id} tone="unassigned" /></div>
-                </li>))}</ul>)}
-            {selectedTrip && !selectedTrip.assigned_driver_id && <div className="mt-2"><ContractorAssignment tripId={selectedTrip.id} service={selectedTrip.transport_type} /></div>}
-          </div>
-          <div className="min-w-0" aria-live="polite">
-            <h3 className="ds-label text-ds-primary">{selectedTrip ? `Available for ${scheduleTimeLabel(selectedTrip)}` : 'Available drivers & vehicles'}</h3>
-            {!selectedTrip ? <p className="ds-caption mt-2">Select or drag a trip to see drivers on shift, not on time off and free at that time.</p> : <>
-              <p className="ds-caption mt-1">Drag onto a trip, or choose Assign to place the selected trip.</p>
-              <ul className="mt-2 flex flex-wrap gap-2" aria-label="Eligible drivers">{eligible.drivers.length === 0 ? <li className="ds-caption">No eligible drivers at this time.</li> : eligible.drivers.map((d: any) => (
-                <li key={d.id} draggable onDragStart={e => e.dataTransfer.setData(RESOURCE_MIME, JSON.stringify({ kind: 'driver', id: d.id }))} className="schedule-resource is-driver">
-                  <span className="truncate">{d.first_name} {d.last_name}</span><span className="ds-caption">{driverAvailLabel(d)}</span>
-                  <button type="button" className="schedule-resource-action" onClick={() => resourceDrop(selectedTrip, JSON.stringify({ kind: 'driver', id: d.id }))} aria-label={`Assign ${d.first_name} ${d.last_name} to selected trip`}>Assign</button>
-                </li>))}</ul>
-              <ul className="mt-2 flex flex-wrap gap-2" aria-label="Eligible vehicles">{eligible.vehicles.length === 0 ? <li className="ds-caption">No eligible vehicles at this time.</li> : eligible.vehicles.map((v: any) => (
-                <li key={v.id} draggable onDragStart={e => e.dataTransfer.setData(RESOURCE_MIME, JSON.stringify({ kind: 'vehicle', id: v.id }))} className="schedule-resource is-vehicle">
-                  <span className="truncate">{v.name}</span>
-                  <button type="button" className="schedule-resource-action" onClick={() => resourceDrop(selectedTrip, JSON.stringify({ kind: 'vehicle', id: v.id }))} aria-label={`Assign vehicle ${v.name} to selected trip`}>Assign</button>
-                </li>))}</ul>
-            </>}
-          </div>
-        </div>
-        <details className="mt-3 border-t border-ds-border pt-3"><summary className="ds-label cursor-pointer text-ds-link">Assign with forms ({reservations.length})</summary><div className="mt-3 space-y-3">{reservations.map(r=><div key={r.id} className="space-y-2 border-t border-ds-border pt-3"><p className="ds-support break-words">{scheduleTimeLabel(r)} · {r.pickup_city} → {r.dropoff_city}</p><ScheduleAssignment trip={r} drivers={allDrivers.map(d=>({id:d.id,name:`${d.first_name} ${d.last_name}`,status:d.status,regional_service_areas:d.regional_service_areas}))} vehicles={vehiclesQ.data??[]}/></div>)}</div></details>
-      </section>
-
-      {/* Calendar grid — time on Y, drivers on X */}
-      <div className="min-w-0 rounded-ds-sm border border-ds-border bg-ds-surface overflow-x-auto" role="region" aria-label="Day schedule board" tabIndex={0}>
-        {driversQ.isLoading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Loading drivers…</div>
-        ) : drivers.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            Add drivers in your Fleet panel first to schedule them.
-          </div>
-        ) : hours.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No work hours configured for this day and no trips scheduled.
-          </div>
-        ) : (
-          <table className="w-full text-sm border-collapse">
-            <thead className="bg-background/60">
-              <tr>
-                <th className="sticky left-0 z-10 bg-background/80 border-r border-border text-left text-xs uppercase tracking-wider text-muted-foreground font-bold px-3 py-2 w-44">
-                  Time slot
-                </th>
-                {drivers.map((d: any) => {
-                  const dTripCount = reservations.filter((r: any) => r.assigned_driver_id === d.id).length;
-                  return (
-                    <th
-                      key={d.id}
-                      className="border-r border-border text-left px-3 py-2 min-w-44"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setOpenDriverId(d.id)}
-                        className="text-left text-xs font-bold hover:text-accent hover:underline decoration-dotted underline-offset-2"
-                        title="View schedule & email driver"
-                      >
-                        {d.first_name} {d.last_name}
-                      </button>
-                      <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-                        {d.status} · {dTripCount} trip{dTripCount === 1 ? "" : "s"}
-                      </div>
-                      <div className="text-[10px] font-semibold text-primary" title="Driver availability today">
-                        {driverAvailLabel(d)}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {hours.map((h) => {
-                return (
-                  <tr key={h} className="border-t border-border">
-                    <td className="sticky left-0 z-10 bg-card border-r border-border px-3 py-2 font-bold whitespace-nowrap">
-                      <span className="font-mono text-sm text-primary">{fmt12h(h)}</span>
-                    </td>
-                    {drivers.map((d: any) => {
-                      const key = `${d.id}__${h}`;
-                      const cell = cellMap.get(key) ?? [];
-                      const unavail = isDriverUnavailable(d, h);
-                      return (
-                        <td
-                          key={d.id}
-                          className={`border-r border-border align-top p-1 min-h-[60px] ${unavail ? "bg-muted/40" : "hover:bg-primary/5"}`}
-                          onDragOver={(e) => e.preventDefault()}
-                          data-slot={`${d.id}__${h}`} onDrop={(e) => onDrop(e, d.id, h)}
-                          title={unavail ? "Driver is off / outside their working hours" : undefined}
-                        >
-                          <div className="space-y-1 min-h-[54px]">
-                            {cell.map((r: any) => (
-                              <div key={r.id} className="space-y-0.5">
-                                <ReservationChip r={r} onResourceDrop={resourceDrop} onDragStart={setDraggingId} dragging={draggingId === r.id} small tone={conflicts.has(r.id) ? "conflict" : "assigned"} />
-                                <div className="flex gap-1"><button type="button" className="schedule-resource-action" onClick={() => setSelectedId(r.id)} aria-pressed={selectedId === r.id} aria-label={`Move ${r.patient_first_name} ${r.patient_last_name} trip`}>Move</button><button type="button" className="schedule-resource-action" onClick={() => placeTrip(r.id, null, h)} aria-label={`Unschedule ${r.patient_first_name} ${r.patient_last_name} trip`}>Unschedule</button></div>
-                              </div>
-                            ))}
-                            {selectedTrip && !unavail && d.status === 'active' && !cell.some((r: any) => r.id === selectedTrip.id) && <button type="button" className="schedule-place" onClick={() => placeTrip(selectedTrip.id, d.id, h)} aria-label={`Place selected trip with ${d.first_name} ${d.last_name} at ${fmt12h(h)}`}>Place here</button>}
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+      <div className="schedule-upper">
+        <section className="min-w-0" aria-label="Unscheduled Trips" onDragOver={e=>{if(!e.dataTransfer.types.includes(DRIVER_ROSTER_MIME))e.preventDefault();}} onDrop={e=>onDrop(e,null,selectedTrip?.pickup_time?.slice(0,5)??'00:00')}>
+          <h3 className="ds-label text-ds-primary">Unscheduled Trips ({unassigned.length})</h3>
+          <ul className="schedule-upper-list mt-2 space-y-2">{unassigned.length===0?<li className="ds-caption">No booked trips waiting for assignment.</li>:unassigned.map((r:any)=><li key={r.id} className="flex min-w-0 items-start gap-2"><input type="radio" name="schedule-selected-trip" className="mt-3" aria-label={`Select ${r.patient_first_name} trip`} checked={selectedId===r.id} onChange={()=>setSelectedId(r.id)}/><div className="min-w-0 flex-1"><ReservationChip r={r} clock={clock} onResourceDrop={resourceDrop} onDragStart={id=>{setDraggingId(id);setSelectedId(id);}} dragging={draggingId===r.id} tone="unassigned"/></div></li>)}</ul>
+        </section>
+        <section className="min-w-0" aria-label="Unscheduled Drivers"><h3 className="ds-label text-ds-primary">Unscheduled Drivers ({unscheduledDrivers.length})</h3><ul className="schedule-upper-list mt-2 space-y-2">{unscheduledDrivers.map((d:any)=>{const dayReason=driverDayReason(d,date);const reason=dayReason??(selectedTrip&&!eligibleDrivers(selectedTrip,[d],allReservations,date,Number(dow)).length?'Outside shift or overlapping booking for selected trip':null);return <li key={d.id} draggable={!dayReason} onDragStart={e=>{e.dataTransfer.setData(DRIVER_ROSTER_MIME,d.id);e.dataTransfer.effectAllowed='move';}} className={`schedule-resource flex-wrap ${reason?'is-unavailable':'is-driver'}`}><span>{d.first_name} {d.last_name}</span><details><summary className="ds-caption cursor-pointer" title={reason??`Available · ${driverAvailLabel(d)}`}>{reason?'Unavailable':'Available'}</summary><p className="ds-caption">{reason??driverAvailLabel(d)}</p></details><DsButton size="sm" variant="ghost" disabled={!!dayReason} onClick={()=>rosterDriver(d.id)} aria-label={`Schedule ${d.first_name} ${d.last_name}`}>Schedule driver</DsButton></li>;})}{!unscheduledDrivers.length&&<li className="ds-caption">All drivers are on the daily roster.</li>}</ul></section>
       </div>
+      {rosterQ.isError&&<p role="alert" className="ds-support text-ds-error">Daily roster unavailable. Existing trip assignments are retained.</p>}
+      <div className="flex flex-wrap items-center gap-3"><DsButton className="schedule-blue-action" disabled={batchBusy||!unassigned.length} onClick={reviewBatch}>Assign Scheduled Drivers and Trips</DsButton></div>
+      {review&&<section aria-label="Review batch recommendations" className="bg-ds-sky rounded-ds-sm p-3 space-y-3"><h3 className="ds-label text-ds-primary">Review recommendations</h3><ul className="space-y-3">{review.proposed.map(i=>{const t=allReservations.find(r=>r.id===i.tripId),d=allDrivers.find(d=>d.id===i.driverId);return <li key={i.tripId}><p className="ds-support font-semibold">{t?.patient_first_name} {t?.patient_last_name} · {d?.first_name} {d?.last_name} · {time(i.start)}–{time(i.end)}</p><p className="ds-caption">{i.reasons.join(' · ')}</p></li>;})}</ul>{review.unmatched.map(i=><p key={i.tripId} className="ds-support">{allReservations.find(r=>r.id===i.tripId)?.patient_first_name}: {i.reason}</p>)}<div className="flex gap-2"><DsButton className="schedule-blue-action" disabled={batchBusy||!review.proposed.length} onClick={applyBatch}>Confirm {review.proposed.length} assignments</DsButton><DsButton variant="ghost" disabled={batchBusy} onClick={()=>setReview(null)}>Cancel</DsButton></div></section>}
+      <ScheduleSplit left={renderDailyBoard(false)} right={renderDailyBoard(true)}/>
 
       {openDriverId && (
         <DriverDetailModal driverId={openDriverId} onClose={() => setOpenDriverId(null)} />
@@ -484,9 +374,10 @@ export function ScheduleCalendarPanel() {
 }
 
 function ReservationChip({
-  r, onDragStart, onResourceDrop, dragging, small = false, tone = "assigned",
+  r, clock = "12", onDragStart, onResourceDrop, dragging, small = false, tone = "assigned",
 }: {
   r: any;
+  clock?: "12" | "24";
   onDragStart: (id: string) => void;
   onResourceDrop: (r: any, raw: string) => void;
   dragging: boolean;
@@ -504,17 +395,14 @@ function ReservationChip({
       onDragStart={(e) => { e.dataTransfer.setData(RESV_DND_MIME, r.id); e.dataTransfer.effectAllowed = "move"; onDragStart(r.id); }}
       onDragOver={(e) => { if (e.dataTransfer.types.includes(RESOURCE_MIME)) e.preventDefault(); }}
       onDrop={(e) => { const raw = e.dataTransfer.getData(RESOURCE_MIME); if (!raw) return; e.preventDefault(); e.stopPropagation(); onResourceDrop(r, raw); }}
-      data-schedule-tone={tone} className={`schedule-chip cursor-grab active:cursor-grabbing rounded-sm px-2 py-1 text-xs ${dragging ? "opacity-50" : ""}`}
+      data-schedule-trip={r.id} data-schedule-tone={tone} className={`schedule-chip cursor-grab active:cursor-grabbing rounded-sm px-2 py-1 text-xs ${dragging ? "opacity-50" : ""}`}
       title={`${r.patient_first_name} ${r.patient_last_name}\n${r.pickup_address} → ${r.dropoff_address}`}
     >
-      <div className="font-bold">
-        {scheduleTimeLabel(r)} · {r.patient_first_name} {r.patient_last_name}
-      </div>
-      {!small && (
-        <div className="text-[10px] text-muted-foreground">
-          {r.pickup_city} → {r.dropoff_city}
-        </div>
-      )}
+      <div className="font-bold">{r.appointment_time?`Appointment ${clockTime(r.appointment_time,clock)}`:`Pickup ${clockTime(t,clock)}`} · {r.patient_first_name} {r.patient_last_name}</div>
+      <div className="ds-caption">Pickup {clockTime(t,clock)}{r.network_distribution_id?' · Referral':''}</div>
+      {!small&&<><p className="ds-support break-words">{r.pickup_address}, {r.pickup_city}</p><p className="ds-support break-words">{r.dropoff_address}, {r.dropoff_city}</p>{Array.isArray(r.additional_stops)&&r.additional_stops.length>0&&<ol className="ds-support list-decimal pl-4 space-y-1">{r.additional_stops.map((leg:any,i:number)=><li key={i}>{clockTime(leg.pickupTime??leg.pickup_time,clock)} · {leg.address}, {leg.city}</li>)}</ol>}{r.service_line==='child_care'&&<p className="ds-caption">Child Care · {r.pickup_date} · {clockTime(r.pickup_time,clock)} · {r.pickup_address}, {r.pickup_city} → {r.dropoff_address}, {r.dropoff_city}</p>}</>}
+      {!scheduleInterval(r)&&<p className="ds-caption text-ds-error">Local timing review required</p>}
+
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CompactTimeContext } from "./time-picker-field";
 import { maxPickupDate, minPickupDate } from "@/lib/booking-constraints";
 
 /**
@@ -56,6 +57,8 @@ export function DatePickerField({
   const minDate = effMin ? parse(effMin, "yyyy-MM-dd", new Date()) : undefined;
   const maxDate = effMax ? parse(effMax, "yyyy-MM-dd", new Date()) : undefined;
 
+  const compact = React.useContext(CompactTimeContext);
+  if (compact) return <label className={cn("compact-native-date relative block", className)}>{label && <span className="portal-label">{label}</span>}<CalendarIcon aria-hidden="true" className="pointer-events-none absolute left-2.5 top-3 size-4 text-ds-primary"/><input type="date" id={id} aria-label={label ?? placeholder} className="portal-input w-full pl-8 tabular-nums" value={value} min={effMin} max={effMax} required={required} onChange={e=>onChange(e.target.value)}/>{helperText&&<p className="ds-caption">{helperText}</p>}</label>;
   return (
     <label className={cn("relative block min-w-0", className)}>
       {label && <span className="portal-label">{label}{required && " *"}</span>}

@@ -1,0 +1,10 @@
+import {useEffect,useState} from 'react';
+import {useServerFn} from '@tanstack/react-start';
+import {DsButton,DsInput} from '@/components/ds/controls';
+import {getDriverScheduleBase,saveDriverScheduleBase} from '@/lib/driver-schedule-base.functions';
+import {usePortalPreview,usePortalQuery} from './preview-data';
+export function DriverScheduleBase({driverId}:{driverId:string}){
+ const preview=usePortalPreview(),get=useServerFn(getDriverScheduleBase),save=useServerFn(saveDriverScheduleBase);const q=usePortalQuery({queryKey:['driver-schedule-base',driverId],queryFn:()=>get({data:{driverId}})});
+ const empty={address:'',city:'',state:''};const [baseline,setBaseline]=useState(empty),[f,setF]=useState(empty),[busy,setBusy]=useState(false),[error,setError]=useState('');useEffect(()=>{const v=q.data&&'address' in q.data?q.data:empty;setBaseline(v);setF(v);},[q.data]);const dirty=JSON.stringify(f)!==JSON.stringify(baseline),valid=!f.address.trim()||f.address.trim().length>=3&&f.city.trim().length>=2&&/^[A-Z]{2}$/.test(f.state);
+ return <section className="sm:col-span-2 space-y-2"><h3 className="ds-label text-ds-primary">Private Schedule starting base</h3><div className="grid sm:grid-cols-3 gap-2"><DsInput aria-label="Private base street address" value={f.address} onChange={e=>setF({...f,address:e.target.value})} placeholder="Street address"/><DsInput aria-label="Private base city" value={f.city} onChange={e=>setF({...f,city:e.target.value})} placeholder="City"/><DsInput aria-label="Private base state" value={f.state} maxLength={2} onChange={e=>setF({...f,state:e.target.value.toUpperCase()})} placeholder="State"/></div>{error&&<p role="alert">{error}</p>}<div className="flex gap-2"><DsButton type="button" size="sm" disabled={preview.active||busy||!dirty||!valid||q.isError} onClick={async()=>{setBusy(true);setError('');try{await save({data:{driverId,...f}});setBaseline(f);}catch(e){setError(e instanceof Error?e.message:'Could not save base.');}finally{setBusy(false);}}}>Save base</DsButton><DsButton type="button" variant="ghost" size="sm" disabled={busy||!dirty} onClick={()=>setF(baseline)}>Cancel</DsButton></div></section>;
+}

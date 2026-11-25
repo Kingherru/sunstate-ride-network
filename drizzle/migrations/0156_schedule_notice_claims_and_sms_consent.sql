@@ -1,0 +1,17 @@
+CREATE FUNCTION public.claim_schedule_notice_channel(_event uuid,_key text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE e public.account_security_audit;last_result text;BEGIN
+SELECT * INTO e FROM public.account_security_audit WHERE id=_event AND event_type='schedule_driver_changed';IF e.id IS NULL OR _key NOT IN ('schedule-'||e.id||'-'||(e.details->>'driverId')||'-email','schedule-'||e.id||'-'||(e.details->>'driverId')||'-sms') THEN RETURN false;END IF;
+PERFORM pg_advisory_xact_lock(hashtextextended(_key,0));
+SELECT result INTO last_result FROM public.account_security_audit WHERE correlation_id=_event AND event_type='schedule_notice_channel' AND details->>'key'=_key ORDER BY created_at DESC LIMIT 1;
+IF last_result IN ('sent','sending','uncertain','suppressed') THEN RETURN false;END IF;
+INSERT INTO public.account_security_audit(user_id,workspace_id,event_type,result,correlation_id,details) VALUES(e.user_id,e.workspace_id,'schedule_notice_channel','sending',_event,jsonb_build_object('key',_key));RETURN true;END $$;
+REVOKE ALL ON FUNCTION public.claim_schedule_notice_channel(uuid,text) FROM PUBLIC,anon,authenticated;GRANT EXECUTE ON FUNCTION public.claim_schedule_notice_channel(uuid,text) TO service_role;
+CREATE FUNCTION public.record_schedule_notice_channel(_event uuid,_key text,_state text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE e public.account_security_audit;BEGIN
+SELECT * INTO e FROM public.account_security_audit WHERE id=_event AND event_type='schedule_driver_changed';IF e.id IS NULL OR _state NOT IN ('sent','failed','suppressed','unavailable','uncertain') OR _key NOT IN ('schedule-'||e.id||'-'||(e.details->>'driverId')||'-email','schedule-'||e.id||'-'||(e.details->>'driverId')||'-sms') THEN RAISE EXCEPTION 'Invalid notice outcome';END IF;
+PERFORM pg_advisory_xact_lock(hashtextextended(_key,0));
+INSERT INTO public.account_security_audit(user_id,workspace_id,event_type,result,correlation_id,details) VALUES(e.user_id,e.workspace_id,'schedule_notice_channel',_state,_event,jsonb_build_object('key',_key));END $$;
+REVOKE ALL ON FUNCTION public.record_schedule_notice_channel(uuid,text,text) FROM PUBLIC,anon,authenticated;GRANT EXECUTE ON FUNCTION public.record_schedule_notice_channel(uuid,text,text) TO service_role;
+CREATE FUNCTION public.set_driver_assignment_sms(_workspace uuid,_enabled boolean) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN
+IF NOT EXISTS(SELECT 1 FROM public.workspace_members m JOIN public.workspaces w ON w.id=m.workspace_id WHERE m.workspace_id=_workspace AND m.user_id=auth.uid() AND m.removed_at IS NULL AND m.role IN ('owner','admin') AND NOT coalesce(m.is_contractor,false) AND w.status='active') OR _enabled IS NULL THEN RAISE EXCEPTION 'Only an active business owner or administrator may change SMS consent';END IF;
+UPDATE public.workspaces SET driver_assignment_sms_enabled=_enabled WHERE id=_workspace;
+INSERT INTO public.account_security_audit(user_id,workspace_id,event_type,result,details) VALUES(auth.uid(),_workspace,'driver_assignment_sms_setting','saved',jsonb_build_object('enabled',_enabled));END $$;
+REVOKE ALL ON FUNCTION public.set_driver_assignment_sms(uuid,boolean) FROM PUBLIC,anon;GRANT EXECUTE ON FUNCTION public.set_driver_assignment_sms(uuid,boolean) TO authenticated;

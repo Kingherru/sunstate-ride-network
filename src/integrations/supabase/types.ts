@@ -1312,6 +1312,48 @@ export type Database = {
           },
         ]
       }
+      driver_schedule_bases: {
+        Row: {
+          address: string
+          city: string
+          driver_id: string
+          state: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          address: string
+          city: string
+          driver_id: string
+          state: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          driver_id?: string
+          state?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_schedule_bases_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_schedule_bases_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_schedule_email_batches: {
         Row: {
           actor_mfn_id: string | null
@@ -1413,6 +1455,7 @@ export type Database = {
       drivers: {
         Row: {
           assignment_email_enabled: boolean
+          assignment_sms_enabled: boolean
           availability: Json
           contractor_pricing: Json
           created_at: string
@@ -1441,6 +1484,7 @@ export type Database = {
         }
         Insert: {
           assignment_email_enabled?: boolean
+          assignment_sms_enabled?: boolean
           availability?: Json
           contractor_pricing?: Json
           created_at?: string
@@ -1469,6 +1513,7 @@ export type Database = {
         }
         Update: {
           assignment_email_enabled?: boolean
+          assignment_sms_enabled?: boolean
           availability?: Json
           contractor_pricing?: Json
           created_at?: string
@@ -6402,6 +6447,45 @@ export type Database = {
           },
         ]
       }
+      schedule_day_drivers: {
+        Row: {
+          created_at: string
+          created_by: string
+          driver_id: string
+          service_date: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          driver_id: string
+          service_date: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          driver_id?: string
+          service_date?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_day_drivers_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_day_drivers_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_audit_log: {
         Row: {
           action: string
@@ -8453,6 +8537,7 @@ export type Database = {
           interface_density: string
           page_after_sign_in: string | null
           pay_by_invoice: boolean
+          schedule_clock: string
           updated_at: string
           user_id: string
         }
@@ -8466,6 +8551,7 @@ export type Database = {
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
+          schedule_clock?: string
           updated_at?: string
           user_id: string
         }
@@ -8479,6 +8565,7 @@ export type Database = {
           interface_density?: string
           page_after_sign_in?: string | null
           pay_by_invoice?: boolean
+          schedule_clock?: string
           updated_at?: string
           user_id?: string
         }
@@ -9114,6 +9201,7 @@ export type Database = {
           dispatch_phone: string | null
           display_name: string
           driver_assignment_email_enabled: boolean
+          driver_assignment_sms_enabled: boolean
           id: string
           is_test_account: boolean
           legacy_backfilled: boolean
@@ -9145,6 +9233,7 @@ export type Database = {
           dispatch_phone?: string | null
           display_name: string
           driver_assignment_email_enabled?: boolean
+          driver_assignment_sms_enabled?: boolean
           id?: string
           is_test_account?: boolean
           legacy_backfilled?: boolean
@@ -9176,6 +9265,7 @@ export type Database = {
           dispatch_phone?: string | null
           display_name?: string
           driver_assignment_email_enabled?: boolean
+          driver_assignment_sms_enabled?: boolean
           id?: string
           is_test_account?: boolean
           legacy_backfilled?: boolean
@@ -9675,6 +9765,10 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_schedule_notice_channel: {
+        Args: { _event: string; _key: string }
+        Returns: boolean
+      }
       complete_account_setup: { Args: never; Returns: Json }
       compute_ride_reservation_state: {
         Args: {
@@ -9705,6 +9799,10 @@ export type Database = {
       }
       confirm_pilot_geography: {
         Args: { _county: string; _distribution: string; _reason: string }
+        Returns: undefined
+      }
+      confirm_schedule_batch: {
+        Args: { _date: string; _items: Json; _key: string; _workspace: string }
         Returns: undefined
       }
       confirm_schedule_email_preview: {
@@ -10774,6 +10872,10 @@ export type Database = {
         Args: { _request: string }
         Returns: boolean
       }
+      record_schedule_notice_channel: {
+        Args: { _event: string; _key: string; _state: string }
+        Returns: undefined
+      }
       record_selected_export: {
         Args: { _columns: string[]; _format: string; _ids: string[] }
         Returns: undefined
@@ -10874,6 +10976,15 @@ export type Database = {
         Args: { _settings: Json; _ws: string }
         Returns: undefined
       }
+      save_driver_schedule_base: {
+        Args: {
+          _address: string
+          _city: string
+          _driver: string
+          _state: string
+        }
+        Returns: undefined
+      }
       save_home_state: { Args: { _state: string }; Returns: undefined }
       save_matching_pilot: {
         Args: { _config: Json; _reason: string }
@@ -10967,6 +11078,12 @@ export type Database = {
         Args: { _details: Json; _ws: string }
         Returns: undefined
       }
+      schedule_day_roster: {
+        Args: { _date: string; _workspace: string }
+        Returns: {
+          driver_id: string
+        }[]
+      }
       scoped_matching_pilot: { Args: never; Returns: Json }
       search_business_identities: {
         Args: { _audience: string; _search?: string }
@@ -11049,6 +11166,10 @@ export type Database = {
         Args: { _enabled: boolean; _workspace: string }
         Returns: boolean
       }
+      set_driver_assignment_sms: {
+        Args: { _enabled: boolean; _workspace: string }
+        Returns: undefined
+      }
       set_fleet_resource_status: {
         Args: { _id: string; _kind: string; _reason: string; _status: string }
         Returns: Json
@@ -11062,6 +11183,15 @@ export type Database = {
           _trip: string
         }
         Returns: undefined
+      }
+      set_schedule_day_driver: {
+        Args: {
+          _date: string
+          _driver: string
+          _scheduled: boolean
+          _workspace: string
+        }
+        Returns: string
       }
       set_trip_communication_override: {
         Args: { _timezone: string; _trip: string; _withhold: boolean }

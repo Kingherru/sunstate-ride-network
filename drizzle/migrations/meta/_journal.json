@@ -1086,6 +1086,27 @@
       "when": 1795464135511,
       "tag": "0154_secure_display_id_and_contractor_requirements",
       "breakpoints": true
+    },
+    {
+      "idx": 155,
+      "version": "7",
+      "when": 1795572751954,
+      "tag": "0155_schedule_day_rosters_and_reviewed_batches",
+      "breakpoints": true
+    },
+    {
+      "idx": 156,
+      "version": "7",
+      "when": 1795572941325,
+      "tag": "0156_schedule_notice_claims_and_sms_consent",
+      "breakpoints": true
+    },
+    {
+      "idx": 157,
+      "version": "7",
+      "when": 1795573126098,
+      "tag": "0157_private_driver_schedule_bases",
+      "breakpoints": true
     }
   ]
 }

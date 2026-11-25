@@ -1,3 +1,4 @@
+import { DriverScheduleBase } from '@/components/portal/DriverScheduleBase';
 import {useRecordEditAccess} from '@/components/portal/use-record-edit-access';
 import { validEmail } from '@/lib/driver-assignment-notice';
 import { DetailSection } from '@/components/portal/DetailSection';
@@ -202,7 +203,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   const [f, set] = useState({
     regional_state:d.regional_service_areas?.areas?.[0]?.state??'',regional_zip:d.regional_service_areas?.areas?.[0]?.postalCode??'',regional_county:d.regional_service_areas?.areas?.[0]?.countyEquivalent??'',regional_timezone:d.regional_service_areas?.areas?.[0]?.timezone??'',
     first_name: d.first_name ?? "", last_name: d.last_name ?? "",
-    phone: d.phone ?? "", email: d.email ?? "", assignment_email_enabled: Boolean(d.assignment_email_enabled),
+    phone: d.phone ?? "", email: d.email ?? "", assignment_email_enabled: Boolean(d.assignment_email_enabled), assignment_sms_enabled: Boolean(d.assignment_sms_enabled),
     license_number: d.license_number ?? "", license_expiry: d.license_expiry ?? "",
     status: d.status ?? "active", notes: d.notes ?? "",
     employment_type: d.employment_type ?? "",
@@ -240,7 +241,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
       last_name: f.last_name,
       phone: f.phone,
       email: f.email,
-      assignment_email_enabled: f.assignment_email_enabled,
+      assignment_email_enabled: f.assignment_email_enabled, assignment_sms_enabled: f.assignment_sms_enabled,
       license_number: f.license_number,
       license_expiry: f.license_expiry || null,
       status: f.status,
@@ -270,7 +271,7 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
   return (
     <DetailOverlayFrame title={d.id ? preview.active ? 'Driver details — preview only' : 'Edit driver' : 'New driver'} idLabel={d.mfn_id} onClose={onClose}>
       {d.id && <DetailSection title="Driver summary"><dl className="grid gap-3 sm:grid-cols-2">{[
-        ['Name / MFN ID', `${d.first_name} ${d.last_name} · ${d.mfn_id ?? 'Not Available'}`], ['Classification', employmentLabel(d.employment_type)], ['Contact', [d.phone,d.email].filter(Boolean).join(' · ') || 'Not Provided'], ['Assignment emails', d.assignment_email_enabled ? (validEmail(d.email) ? 'Driver opted in' : 'No email') : 'Off'], ['Availability', availabilitySummary(d.availability)], ['Assigned vehicle', vehicles.find(v=>v.id===d.primary_vehicle_id)?.name ?? 'Not assigned'], ['Supported services', (d.service_capabilities??[]).map(capLabel).join(', ') || 'Not Provided'], ['Credentials', d.credential_status ?? 'Not Available — review required'], ['Status', d.status ?? 'Not Provided'], ['Earnings', 'Available in authorized Earnings & Payments only'],
+        ['Name / MFN ID', `${d.first_name} ${d.last_name} · ${d.mfn_id ?? 'Not Available'}`], ['Classification', employmentLabel(d.employment_type)], ['Contact', [d.phone,d.email].filter(Boolean).join(' · ') || 'Not Provided'], ['Assignment emails', d.assignment_email_enabled ? (validEmail(d.email) ? 'Driver opted in' : 'No email') : 'Off'], ['SMS notices',d.assignment_sms_enabled?'Driver opted in':'Off'], ['Availability', availabilitySummary(d.availability)], ['Assigned vehicle', vehicles.find(v=>v.id===d.primary_vehicle_id)?.name ?? 'Not assigned'], ['Supported services', (d.service_capabilities??[]).map(capLabel).join(', ') || 'Not Provided'], ['Credentials', d.credential_status ?? 'Not Available — review required'], ['Status', d.status ?? 'Not Provided'], ['Earnings', 'Available in authorized Earnings & Payments only'],
       ].map(([label,value])=><div key={label} className="min-w-0 rounded-ds-sm bg-ds-bg p-3"><dt className="ds-label font-bold text-ds-primary">{label}</dt><dd className="ds-body break-words">{value}</dd></div>)}</dl></DetailSection>}
       <form onSubmit={(e) => { e.preventDefault(); if (!preview.active) m.mutate(); }} className="portal-business-form grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         <section className="portal-dialog-section sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -278,6 +279,8 @@ function DriverDialog({ d, vehicles, onClose, onSaved }: { d: any; vehicles: any
         <I l="Last name" v={f.last_name} on={(v) => set({ ...f, last_name: v })} req />
         <I l="Phone" v={f.phone} on={(v) => set({ ...f, phone: v })} />
         <I l="Email" v={f.email} on={(v) => set({ ...f, email: v })} type="email" />
+        {d.id&&<DriverScheduleBase driverId={d.id}/>}
+        <label className="flex items-start gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={f.assignment_sms_enabled} onChange={e=>set({...f,assignment_sms_enabled:e.target.checked})}/><span><span className="font-bold text-ds-primary">SMS schedule notices — driver consent</span><span className="block ds-caption">Requires the driver's explicit consent and a saved international-format phone number. Business consent and configured service are also required; live delivery remains off.</span></span></label>
         <label className="flex items-start gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={f.assignment_email_enabled} onChange={(e) => set({ ...f, assignment_email_enabled: e.target.checked })} /><span><span className="font-bold text-ds-primary">Email assignment notices</span><span className="block ds-caption">Sends only when the business switch in Settings is also on and this driver has a valid email. {f.email && !validEmail(f.email) ? 'Email looks invalid.' : ''}</span></span></label>
         <I l="License #" v={f.license_number} on={(v) => set({ ...f, license_number: v })} />
         <I l="License expiry" v={f.license_expiry} on={(v) => set({ ...f, license_expiry: v })} type="date" />

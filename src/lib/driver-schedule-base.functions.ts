@@ -1,0 +1,5 @@
+import {createServerFn} from '@tanstack/react-start';
+import {z} from 'zod';
+import {requireSupabaseAuth} from '@/integrations/supabase/auth-middleware';
+export const getDriverScheduleBase=createServerFn({method:'GET'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({driverId:z.string().uuid()}).parse(i)).handler(async({data,context})=>{const {data:base,error}=await context.supabase.from('driver_schedule_bases').select('address,city,state').eq('driver_id',data.driverId).maybeSingle();if(error)throw new Error('Private base unavailable');return base;});
+export const saveDriverScheduleBase=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({driverId:z.string().uuid(),address:z.string().max(300),city:z.string().max(100),state:z.string().max(2)}).parse(i)).handler(async({data,context})=>{const {error}=await context.supabase.rpc('save_driver_schedule_base',{_driver:data.driverId,_address:data.address,_city:data.city,_state:data.state});if(error)throw new Error(error.message);return {ok:true};});

@@ -1,3 +1,10 @@
+# Approved Provider Schedule roster and batch pass
+- [ ] Compact native date/time controls; two upper lists with complete trip addresses and availability reasons.
+- [ ] Independent scoped day roster, preserved assignment paths and retained drivers; clock preference; split daily schedules/divider.
+- [ ] Reviewed conflict-aware batch recommendations and atomic confirmation; truthful routing evidence.
+- [ ] Saved-contact email/SMS event preparation, consent, dedupe/retry and test sink; live notices OFF.
+- [ ] Synthetic desktop/tablet/phone UI/data tests; report blockers, commit and credits; never publish or mutate real records.
+
 # Final Provider Trips time, estimates and transfer cleanup
 - [x] Repair empty/editable keyboard and touch time entry; preserve chronology and canonical values. Minutes/AM-PM can precede hour entry.
 - [x] Outbound arrival with midnight date rollover; complete-only Multi Trip drive-time totals and keyed stale-result clearing. Existing authenticated bounded segment reader extended with complete duration evidence; no new Maps endpoint.

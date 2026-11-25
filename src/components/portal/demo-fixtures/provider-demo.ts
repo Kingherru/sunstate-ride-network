@@ -7,6 +7,7 @@
  * SINGLE REMOVAL POINT: set PROVIDER_DEMO_ENABLED to false (or delete this
  * file and its one import in preview-data.tsx) to remove every provider demo.
  */
+import { scheduleDemoTrips } from "./schedule-demo";
 import type { SettlementRow } from "@/lib/network-settlements.functions";
 import type { NetworkOffer, NetworkActivity, OfferSafeDetail } from "@/lib/trip-network.functions";
 import type { LedgerRow } from "@/lib/provider-ops.functions";
@@ -147,7 +148,8 @@ export const PROVIDER_DEMO_FIXTURES: Record<string, unknown> = PROVIDER_DEMO_ENA
 /** Keyed fixtures whose value depends on the second queryKey element. */
 export function providerDemoKeyed(queryKey: readonly unknown[]): unknown | undefined {
   if (!PROVIDER_DEMO_ENABLED) return undefined;
-  if (queryKey[0] === "day-reservations") return [{id:'preview-owned-trip',pickup_state:'FL',dropoff_state:'FL',pickup_timezone:'America/New_York',dropoff_timezone:'America/New_York',pickup_date:String(queryKey[1]),pickup_time:'14:00',scheduled_start_time:'14:00',assignment_end_time:'15:00',estimated_duration_seconds:3600,patient_first_name:'Pat',patient_last_name:'Patient (Demo)',pickup_address:'Demo pickup',pickup_city:'Orlando',dropoff_address:'Demo destination',dropoff_city:'Winter Park',transport_type:'ambulatory',trip_kind:'passenger',driver_id:null,assigned_driver_id:null,vehicle_id:null,status:'open',reservation_state:'unconfirmed'},{id:'preview-booked-trip',pickup_state:'FL',dropoff_state:'FL',pickup_date:String(queryKey[1]),pickup_time:'14:30',scheduled_start_time:'14:30',assignment_end_time:'15:30',patient_first_name:'Bo',patient_last_name:'Booked (Demo)',pickup_address:'Demo pickup 2',pickup_city:'Kissimmee',dropoff_address:'Demo clinic',dropoff_city:'Orlando',transport_type:'ambulatory',trip_kind:'passenger',driver_id:'preview-driver-2',assigned_driver_id:'preview-driver-2',vehicle_id:'preview-vehicle-2',status:'scheduled',reservation_state:'booked'},{id:'preview-morning-trip',pickup_state:'FL',dropoff_state:'FL',pickup_date:String(queryKey[1]),pickup_time:'09:00',scheduled_start_time:'09:00',assignment_end_time:'10:00',patient_first_name:'Mo',patient_last_name:'Morning (Demo)',pickup_address:'Demo pickup 3',pickup_city:'Sanford',dropoff_address:'Demo hospital',dropoff_city:'Orlando',transport_type:'ambulatory',trip_kind:'passenger',driver_id:null,assigned_driver_id:null,vehicle_id:null,status:'open',reservation_state:'unconfirmed'}];
+  if (queryKey[0] === "day-reservations") return scheduleDemoTrips(String(queryKey[1]));
+  if(queryKey[0] === "schedule-day-roster") return [];
   if (queryKey[0] === 'month-reservations') { const m = String(queryKey[1]).slice(0, 8); return [['05','d'],['05',null],['12',null],['25','d'],['25',null],['25',null]].map(([d,dr],i)=>({id:`demo-month-${i}`,pickup_date:`${m}${d}`,driver_id:dr})); }
   if (queryKey[0] === 'offer-history') return demoOfferDetail(String(queryKey[1])).versions.map((v,i)=>({...v,id:`demo-history-${i}`,business_note:'Synthetic negotiation history'}));
   if (queryKey[0] === "offer-safe-detail") return demoOfferDetail(String(queryKey[1] ?? ""));

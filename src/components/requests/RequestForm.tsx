@@ -733,7 +733,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
             <Field label="City" required error={errors.pickupCity}>
               <input className={inputCls} value={form.pickupCity} onChange={(e) => upd("pickupCity", e.target.value)} list="fl-cities" />
             </Field>
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className={commerce?.provider ? "trip-native-timing flex flex-wrap gap-3" : "grid gap-6 md:grid-cols-3"}>
               <Field label="Pickup Date" required error={errors.pickupDate}>
                 <DatePickerField
                   value={form.pickupDate}

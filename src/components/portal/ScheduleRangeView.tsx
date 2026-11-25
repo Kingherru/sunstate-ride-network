@@ -1,3 +1,5 @@
+import { getPortalPreferences } from "@/lib/portal-preferences.functions";
+import { clockTime } from "@/lib/schedule-planning";
 import { StatusPill } from "@/components/ds/status";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
@@ -34,6 +36,7 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
   const trips = usePortalQuery({ queryKey: ["range-reservations", r.start, r.end], queryFn: () => listReservationsForRange({ data: { start: r.start, end: r.end } }) });
   const drivers = usePortalQuery({ queryKey: ["my-drivers"], queryFn: () => listMyDrivers() });
   const vehicles = usePortalQuery({ queryKey: ["vehicles"], queryFn: () => listVehicles() });
+  const preferences=usePortalQuery({queryKey:['portal-preferences'],queryFn:()=>getPortalPreferences()});
   const rows = ((trips.data ?? []) as Row[]);
   const conflicts = useMemo(() => conflictingSlots(rows as never), [rows]);
   const driverMap = new Map(((drivers.data ?? []) as { id: string; first_name: string; last_name: string; status?: string | null }[]).map((d) => [d.id, d]));
@@ -91,7 +94,7 @@ export function ScheduleRangeView({ view }: { view: "week" | "month" }) {
             return <li key={t.id}><button type="button" onClick={() => open({ kind: "trip", id: t.id })}
               className={cn("w-full rounded-ds-sm border bg-ds-surface px-2 py-1 text-left text-xs", iss.length ? "border-ds-error/60" : "border-ds-border")}
               title={iss.map((i) => ATTN[i]).join(", ") || undefined}>
-              <span className="font-semibold">{scheduleTimeLabel(t)}</span>{" "}
+              <span className="font-semibold">{clockTime(t.scheduled_start_time??t.pickup_time,preferences.data?.schedule_clock??'12')}</span>{" "}
               <span className="break-words">{t.pickup_city ?? "Not provided"} → {t.dropoff_city ?? "Not provided"}</span>
               {iss.length > 0 && <StatusPill className="mt-1 whitespace-normal" tone="red" status={iss.map((i) => ATTN[i]).join(" · ")} />}
             </button></li>;

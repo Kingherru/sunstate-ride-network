@@ -1,0 +1,11 @@
+CREATE TABLE public.driver_schedule_bases(driver_id uuid PRIMARY KEY REFERENCES public.drivers(id),workspace_id uuid NOT NULL REFERENCES public.workspaces(id),address text NOT NULL,city text NOT NULL,state text NOT NULL,updated_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT ON public.driver_schedule_bases TO authenticated;GRANT ALL ON public.driver_schedule_bases TO service_role;
+ALTER TABLE public.driver_schedule_bases ENABLE ROW LEVEL SECURITY;
+CREATE POLICY private_schedule_base_read ON public.driver_schedule_bases FOR SELECT TO authenticated USING(public.business_record_access(workspace_id,'drivers',driver_id,'manage'));
+CREATE FUNCTION public.save_driver_schedule_base(_driver uuid,_address text,_city text,_state text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE ws uuid;BEGIN
+SELECT workspace_id INTO ws FROM public.drivers WHERE id=_driver;IF ws IS NULL OR NOT public.business_record_access(ws,'drivers',_driver,'manage') THEN RAISE EXCEPTION 'Driver management permission required';END IF;
+IF trim(coalesce(_address,''))='' THEN DELETE FROM public.driver_schedule_bases WHERE driver_id=_driver;ELSE
+IF length(_address) NOT BETWEEN 3 AND 300 OR length(_city) NOT BETWEEN 2 AND 100 OR _state !~ '^[A-Z]{2}$' THEN RAISE EXCEPTION 'Valid base address, city and state required';END IF;
+INSERT INTO public.driver_schedule_bases(driver_id,workspace_id,address,city,state) VALUES(_driver,ws,trim(_address),trim(_city),_state) ON CONFLICT(driver_id) DO UPDATE SET address=EXCLUDED.address,city=EXCLUDED.city,state=EXCLUDED.state,updated_at=now();END IF;
+INSERT INTO public.account_security_audit(user_id,workspace_id,event_type,driver_ids,result,details) VALUES(auth.uid(),ws,'driver_schedule_base_changed',ARRAY[_driver],'saved',jsonb_build_object('hasBase',trim(coalesce(_address,''))<>''));END $$;
+REVOKE ALL ON FUNCTION public.save_driver_schedule_base(uuid,text,text,text) FROM PUBLIC,anon;GRANT EXECUTE ON FUNCTION public.save_driver_schedule_base(uuid,text,text,text) TO authenticated;

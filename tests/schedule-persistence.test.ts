@@ -1,0 +1,34 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFileSync} from 'node:fs';
+import {beforeAll,afterAll,describe,it,expect} from 'vitest';
+// A completely isolated PostgreSQL-compatible database; no credentials/network or application records.
+const db=new PGlite();const ws='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002',user='00000000-0000-4000-8000-000000000010',driver='00000000-0000-4000-8000-000000000020',t1='00000000-0000-4000-8000-000000000030',t2='00000000-0000-4000-8000-000000000031',day='2027-01-04';
+beforeAll(async()=>{
+ await db.exec(`CREATE ROLE authenticated;CREATE ROLE anon;CREATE ROLE service_role;CREATE SCHEMA auth;CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$SELECT '${user}'::uuid$$;
+ CREATE TABLE workspaces(id uuid PRIMARY KEY);CREATE TABLE drivers(id uuid PRIMARY KEY,workspace_id uuid REFERENCES workspaces(id),status text,vacation_start date,vacation_end date,availability jsonb);
+ CREATE TABLE user_portal_preferences(user_id uuid PRIMARY KEY);
+ CREATE TABLE trips(id uuid PRIMARY KEY,driver_id uuid,pickup_date date,status text,created_by uuid,scheduled_start_time time,assignment_end_time time,updated_at timestamptz NOT NULL DEFAULT now());
+ CREATE TABLE account_security_audit(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid,workspace_id uuid,event_type text,driver_ids uuid[],range_start date,range_end date,result text,details jsonb,correlation_id uuid,created_at timestamptz DEFAULT now());
+ CREATE FUNCTION network_workspace_access(w uuid,manage boolean) RETURNS boolean LANGUAGE sql AS $$SELECT w='${ws}'::uuid$$;
+ CREATE FUNCTION business_record_access(w uuid,kind text,r uuid,level text) RETURNS boolean LANGUAGE sql AS $$SELECT w='${ws}'::uuid$$;
+ CREATE FUNCTION assign_trip_resources(_trip uuid,_driver uuid,_vehicle uuid,_time time,_end time DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$BEGIN
+ IF EXISTS(SELECT 1 FROM trips WHERE id<>_trip AND driver_id=_driver AND scheduled_start_time<_end AND assignment_end_time>_time) THEN RAISE EXCEPTION 'Driver or vehicle time conflict';END IF;
+ UPDATE trips SET driver_id=_driver,scheduled_start_time=_time,assignment_end_time=_end WHERE id=_trip;END$$;
+ INSERT INTO workspaces VALUES('${ws}'),('${other}');INSERT INTO drivers VALUES('${driver}','${ws}','active',NULL,NULL,'{"mode":"flexible"}');
+ INSERT INTO trips(id,pickup_date,status,created_by) VALUES('${t1}','${day}','scheduled','${user}'),('${t2}','${day}','scheduled','${user}');`);
+ await db.exec(readFileSync(new URL('../drizzle/migrations/0155_schedule_day_rosters_and_reviewed_batches.sql',import.meta.url),'utf8'));
+ await db.exec(readFileSync(new URL('../drizzle/migrations/0156_schedule_notice_claims_and_sms_consent.sql',import.meta.url),'utf8').split('CREATE FUNCTION public.set_driver_assignment_sms')[0]??'');
+},30000);
+afterAll(async()=>db.close());
+async function count(table:string){return Number((await db.query<{n:number}>(`SELECT count(*) n FROM ${table}`)).rows[0]?.n);}
+async function items(overlap=false){const rows=(await db.query<{id:string;updated_at:Date}>('SELECT id,updated_at FROM trips ORDER BY id')).rows;return rows.map((r,i)=>({tripId:r.id,driverId:driver,vehicleId:null,start:i===0?'09:00':overlap?'09:30':'10:00',end:i===0?'10:00':overlap?'10:30':'11:00',version:r.updated_at.toISOString()}));}
+describe('actual additive Schedule functions in isolated PostgreSQL',()=>{
+ it('stores independent driver/date roster and suppresses repeated roster notices',async()=>{await db.query('SELECT set_schedule_day_driver($1,$2,$3,true)',[ws,day,driver]);await db.query('SELECT set_schedule_day_driver($1,$2,$3,true)',[ws,day,driver]);expect(await count('schedule_day_drivers')).toBe(1);expect(await count('account_security_audit')).toBe(1);});
+ it('rejects another workspace',async()=>await expect(db.query('SELECT set_schedule_day_driver($1,$2,$3,true)',[other,day,driver])).rejects.toThrow('Schedule management required'));
+ it('conflicting proposed assignments roll the whole batch back',async()=>{await expect(db.query('SELECT confirm_schedule_batch($1,$2,$3,$4::jsonb)',[ws,day,'00000000-0000-4000-8000-000000000040',JSON.stringify(await items(true))])).rejects.toThrow('conflict');expect(Number((await db.query<{n:number}>('SELECT count(*) n FROM trips WHERE driver_id IS NOT NULL')).rows[0]?.n)).toBe(0);});
+ it('stale reviewed trip is rejected',async()=>{const i=await items();const first=i[0];if(!first)throw new Error('Missing fixture');first.version='2000-01-01T00:00:00Z';await expect(db.query('SELECT confirm_schedule_batch($1,$2,$3,$4::jsonb)',[ws,day,'00000000-0000-4000-8000-000000000041',JSON.stringify(i)])).rejects.toThrow('changed since review');});
+ it('saves valid reviewed batch exactly once across retries',async()=>{const key='00000000-0000-4000-8000-000000000042';const i=await items();await db.query('SELECT confirm_schedule_batch($1,$2,$3,$4::jsonb)',[ws,day,key,JSON.stringify(i)]);await db.query('SELECT confirm_schedule_batch($1,$2,$3,$4::jsonb)',[ws,day,key,JSON.stringify(i)]);expect(Number((await db.query<{n:number}>('SELECT count(*) n FROM trips WHERE driver_id IS NOT NULL')).rows[0]?.n)).toBe(2);expect(Number((await db.query<{n:number}>("SELECT count(*) n FROM account_security_audit WHERE event_type='schedule_batch_confirmed'")).rows[0]?.n)).toBe(1);});
+ it('roster retains driver after actual last trip is unscheduled',async()=>{await db.query('UPDATE trips SET driver_id=NULL WHERE driver_id=$1',[driver]);expect(await count('schedule_day_drivers')).toBe(1);expect((await db.query('SELECT * FROM schedule_day_roster($1,$2)',[ws,day])).rows).toHaveLength(1);});
+ it('separate next day roster does not change selected day',async()=>{await db.query('SELECT set_schedule_day_driver($1,$2,$3,true)',[ws,'2027-01-05',driver]);expect(await count('schedule_day_drivers')).toBe(2);});
+ it('notice claims allow one send, retry failed, never retry success',async()=>{const e=(await db.query<{id:string;details:{driverId:string}}>("SELECT id,details FROM account_security_audit WHERE event_type='schedule_driver_changed' LIMIT 1")).rows[0];if(!e)throw new Error('No synthetic event');const key=`schedule-${e.id}-${e.details.driverId}-sms`;expect((await db.query<{claimed:boolean}>('SELECT claim_schedule_notice_channel($1,$2) claimed',[e.id,key])).rows[0]?.claimed).toBe(true);expect((await db.query<{claimed:boolean}>('SELECT claim_schedule_notice_channel($1,$2) claimed',[e.id,key])).rows[0]?.claimed).toBe(false);await db.query('SELECT record_schedule_notice_channel($1,$2,$3)',[e.id,key,'failed']);expect((await db.query<{claimed:boolean}>('SELECT claim_schedule_notice_channel($1,$2) claimed',[e.id,key])).rows[0]?.claimed).toBe(true);await db.query('SELECT record_schedule_notice_channel($1,$2,$3)',[e.id,key,'sent']);expect((await db.query<{claimed:boolean}>('SELECT claim_schedule_notice_channel($1,$2) claimed',[e.id,key])).rows[0]?.claimed).toBe(false);});
+});

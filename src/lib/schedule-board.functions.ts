@@ -65,7 +65,7 @@ export const listMyDrivers = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("drivers")
-      .select("id, first_name, last_name, status, employment_type, availability, vacation_start, vacation_end, regional_service_areas")
+      .select("id, first_name, last_name, status, employment_type, availability, vacation_start, vacation_end, service_capabilities, primary_vehicle_id, regional_service_areas")
       .order("first_name");
     if (error) throw error;
     return data ?? [];
@@ -79,13 +79,13 @@ export const listReservationsForDay = createServerFn({ method: "GET" })
     const uid = context.userId;
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state, assigned_to, created_by")
+      .select("id, network_distribution_id, updated_at, additional_stops, transport_type, ride_requests(service_line,child_care_details), pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state, assigned_to, created_by")
       .eq("pickup_date", data.date)
       .not("status", "in", "(completed,canceled,cancelled,no_show)")
       .order("pickup_time");
     if (error) throw error;
     return (rows ?? []).map((r: any) => ({
-      ...r,
+      ...r,service_line:r.ride_requests?.service_line,child_care_details:r.ride_requests?.child_care_details,
       assigned_driver_id: r.driver_id,
       scheduled_start_time: r.scheduled_start_time ?? r.pickup_time,
     }));
@@ -103,7 +103,7 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
     const endIso = end.toISOString().slice(0, 10);
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state, assigned_to, created_by")
+      .select("id, network_distribution_id, updated_at, additional_stops, transport_type, ride_requests(service_line,child_care_details), pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_address, pickup_city, dropoff_address, dropoff_city, round_trip, needs_wheelchair, service_level, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state, assigned_to, created_by")
       .not("status", "in", "(completed,canceled,cancelled,no_show)")
       .gte("pickup_date", data.week_start)
       .lte("pickup_date", endIso)
@@ -111,7 +111,7 @@ export const listReservationsForWeek = createServerFn({ method: "GET" })
       .order("pickup_time");
     if (error) throw error;
     return (rows ?? []).map((r: any) => ({
-      ...r,
+      ...r,service_line:r.ride_requests?.service_line,child_care_details:r.ride_requests?.child_care_details,
       assigned_driver_id: r.driver_id,
       scheduled_start_time: r.scheduled_start_time ?? r.pickup_time,
     }));
@@ -197,7 +197,7 @@ export const listReservationsForRange = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("trips")
-      .select("id, pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_city, dropoff_city, needs_wheelchair, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state")
+      .select("id, network_distribution_id, updated_at, additional_stops, transport_type, ride_requests(service_line,child_care_details), pickup_state, dropoff_state, pickup_timezone, dropoff_timezone, regional_time_events, pickup_date, pickup_time, appointment_time, patient_first_name, patient_last_name, pickup_city, dropoff_city, needs_wheelchair, driver_id, vehicle_id, estimated_pickup_at, estimated_dropoff_at, estimated_duration_seconds, scheduled_start_time, assignment_end_time, status, reservation_state")
       .not("status", "in", "(completed,canceled,cancelled,no_show)")
       .gte("pickup_date", data.start).lte("pickup_date", data.end)
       .order("pickup_date").order("pickup_time");

@@ -20,6 +20,7 @@ export const upsertDriver = createServerFn({ method: "POST" })
     regional_service_areas?:import("zod").infer<typeof serviceAreaSchema>;
     first_name: string;
     assignment_email_enabled?: boolean;
+    assignment_sms_enabled?: boolean;
     last_name: string;
     phone?: string;
     email?: string;
@@ -67,6 +68,8 @@ export const upsertDriver = createServerFn({ method: "POST" })
     if (data.primary_vehicle_id === undefined) delete row.primary_vehicle_id;
     if (data.vacation_start === undefined) delete row.vacation_start;
     if (data.vacation_end === undefined) delete row.vacation_end;
+    if(data.assignment_sms_enabled!==undefined&&typeof data.assignment_sms_enabled!=='boolean')throw new Error('SMS consent must be on or off');
+    if(data.assignment_sms_enabled===undefined)delete row.assignment_sms_enabled;
     if (data.assignment_email_enabled === undefined) delete row.assignment_email_enabled;
     if (data.employment_type && data.employment_type !== "independent_contractor") {
       row.contractor_pricing = {};
