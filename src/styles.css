@@ -1076,3 +1076,19 @@ body[data-portal-contrast="true"] .theme-portal .provider-overview-action { bord
   .provider-trips .trip-compact-row { grid-template-columns: minmax(0, 1fr); }
   .provider-trips .trip-compact-row > .flex { justify-content: flex-start; }
 }
+
+/* Provider Schedule: complementary Overview palette tones, large rounded-square date controls. */
+.schedule-nav-btn{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:6px;background:var(--color-ds-surface);color:var(--ds-primary);border:1px solid var(--color-ds-border)}
+.schedule-nav-btn:hover{background:var(--mfn-peach)}
+.schedule-nav-btn:focus-visible,.schedule-month-day:focus-visible,.schedule-resource-action:focus-visible{outline:2px solid var(--color-ds-focus);outline-offset:2px}
+.schedule-month-day{min-height:2.25rem;border-radius:4px;background:var(--color-ds-surface);color:var(--ds-primary);font-weight:600;font-variant-numeric:tabular-nums}
+.schedule-month-day.is-today{box-shadow:inset 0 0 0 2px var(--ds-primary)}
+.schedule-month-day.is-selected{background:var(--ds-primary);color:var(--color-ds-surface)}
+.schedule-chip[data-schedule-tone="assigned"]{background:var(--mfn-sky);color:var(--ds-primary);border:1px solid var(--color-ds-border)}
+.schedule-chip[data-schedule-tone="unassigned"]{background:var(--portal-indicator-warning-bg);color:var(--portal-indicator-warning-fg)}
+.schedule-chip[data-schedule-tone="conflict"]{background:var(--portal-indicator-attention-bg);color:var(--portal-indicator-attention-fg)}
+.schedule-resource{display:inline-flex;align-items:center;gap:.5rem;max-width:100%;border-radius:4px;padding:.25rem .25rem .25rem .625rem;cursor:grab;font-size:.8125rem;font-weight:600}
+.schedule-resource.is-driver{background:var(--portal-indicator-positive-bg);color:var(--portal-indicator-positive-fg)}
+.schedule-resource.is-vehicle{background:var(--mfn-peach);color:var(--ds-primary)}
+.schedule-resource-action{border-radius:3px;background:var(--color-ds-surface);color:var(--ds-primary);padding:.125rem .5rem;font-size:.75rem;font-weight:700}
+@media (max-width:639px){.schedule-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-filters>*{min-width:0}}

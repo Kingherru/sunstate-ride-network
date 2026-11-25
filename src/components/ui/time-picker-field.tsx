@@ -1,3 +1,4 @@
+import { Clock } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { timeParts, editedTimeValue, type TimeParts } from "@/lib/trip-form-rules";
@@ -122,7 +123,7 @@ export function TimeSelect({
     return base;
   }, [min, current]);
 
-  if (compact) return <input type="time" step={60} id={id} name={name} required={required} disabled={disabled} aria-label={label ?? (placeholder === "Select a time" ? "Time" : placeholder)} aria-invalid={invalid || undefined} className={cn("portal-select w-full", invalid && "border-destructive", className)} value={String(value ?? "").slice(0, 5)} onChange={e => onChange(e.target.value)} />;
+  if (compact) return <span className="relative flex min-w-[9.5rem] items-center"><Clock aria-hidden="true" className="pointer-events-none absolute left-3 size-4 text-ds-primary"/><input type="time" step={60} id={id} name={name} required={required} disabled={disabled} aria-label={label ?? (placeholder === "Select a time" ? "Time" : placeholder)} aria-invalid={invalid || undefined} className={cn("portal-select w-full pl-9 tabular-nums whitespace-nowrap", invalid && "border-destructive", className)} value={String(value ?? "").slice(0, 5)} onChange={e => onChange(e.target.value)} /></span>;
   return (
     <select
       id={id}

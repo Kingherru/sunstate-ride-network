@@ -100,7 +100,7 @@ export function previewFixtureFor(queryKey: readonly unknown[]): unknown {
   if(CONTRACTOR_DEMO_ENABLED&&key in contractorFixtures)return contractorFixtures[key];
   const keyed = providerDemoKeyed(queryKey);
   if (keyed !== undefined) return keyed;
-  if (key === "my-drivers") return PROVIDER_DEMO_FIXTURES.drivers ?? [];
+  if (key === "my-drivers") return PROVIDER_DEMO_FIXTURES["my-drivers"] ?? PROVIDER_DEMO_FIXTURES.drivers ?? [];
   if (key in PROVIDER_DEMO_FIXTURES) return PROVIDER_DEMO_FIXTURES[key];
   if (key in PREVIEW_FIXTURES) return PREVIEW_FIXTURES[key];
   return [];

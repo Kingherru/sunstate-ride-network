@@ -67,7 +67,7 @@ export function DatePickerField({
             variant="outline"
             aria-label={label ?? placeholder}
             className={cn(
-              "portal-input w-full justify-start text-left font-normal h-auto",
+              "portal-input w-full min-w-[9.5rem] justify-start whitespace-nowrap text-left font-normal tabular-nums h-auto",
               !parsed && "text-ds-text-2",
             )}
           >
