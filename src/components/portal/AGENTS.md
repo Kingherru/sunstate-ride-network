@@ -6,3 +6,4 @@
 - Network shows referral operations; Earnings & Payments owns deadlines, disputes and settlement evidence using existing readers and actions. Why: one financial workspace without moving records.
 - CRM/Fleet Edit visibility reads the existing business_record_access manage RPC as the signed-in user; update functions/RLS still enforce every write. Why: read access and role labels never imply editing permission.
 - Trip arrival/mileage and delivery mileage share the keyed useTripRoute reader; Multi Trip totals require every segment duration, and previews never call Maps. Why: address edits cannot reuse stale route pricing or partial drive-time totals.
+- Provider Trips uses native minute-precision time inputs; manual arrival edits and clearing outrank route responses for the form lifetime. Why: late route results must not overwrite intentional times.

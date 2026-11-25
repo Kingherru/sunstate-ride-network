@@ -17,7 +17,7 @@ import {
 } from "@/lib/forms.functions";
 import { enrichRideRequest } from "@/lib/maps.functions";
 import { useTripRoute } from './use-trip-route';
-import { ADDITIONAL_PASSENGER_CHOICES, CHILD_COUNT_CHOICES, CHILD_REQUIREMENTS, CHILD_REQUIREMENT_LABELS, type ChildRow, resizeChildren, totalPassengers, additionalFromTotal, childCareTransport, estimateDropoffTime, estimateDropoffDate, formatUsDate, formatUsTime, locationResolved } from "@/lib/trip-form-rules";
+import { ADDITIONAL_PASSENGER_CHOICES, CHILD_COUNT_CHOICES, CHILD_REQUIREMENTS, CHILD_REQUIREMENT_LABELS, type ChildRow, resizeChildren, totalPassengers, additionalFromTotal, childCareTransport, estimateDropoffTime, estimateDropoffDate, formatUsDate, locationResolved } from "@/lib/trip-form-rules";
 import { CITY_LIST } from "@/lib/cities";
 import { AddressAutocomplete, type AddressSelection } from "@/components/forms/AddressAutocomplete";
 import { PriceEstimate } from "@/components/pricing/PriceEstimate";
@@ -46,7 +46,7 @@ import { createNetworkDistribution, sendNetworkWave, getDistributionReadiness } 
 import { getReferralFundingPreparation } from '@/lib/trip-invoices.functions';
 import { submitProviderOwnedTrip } from '@/lib/provider-owned-submit.functions';
 import { VISIBLE_MOBILITY_OPTIONS, PICKUP_OPTIONS, readPickupOptions, writePickupOptions, readMobility, writeMobility, matchingTripPatients } from '@/lib/trip-mobility';
-import { tripChronologyErrors, routePoints, TRIP_TYPE_DISPLAY } from '@/lib/trip-form-rules';
+import { tripChronologyErrors, routePoints, routeArrivalPatch, manualArrivalFromDraft, TRIP_TYPE_DISPLAY } from '@/lib/trip-form-rules';
 import { DsButton, DsCheckbox } from '@/components/ds/controls';
 import { PatientProviderPicker } from '@/components/network/PatientProviderPicker';
 import type { NetworkProviderRow } from '@/lib/facility-providers.functions';
@@ -253,6 +253,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
     onBehalf ? submitAdmin({ data: { ...onBehalf, request: a.data } }) : submitSelf(a);
   const enrich = useServerFn(enrichRideRequest);
   const [form, setForm] = useState<RideRequestInput>(() => initialDraft && initialDraft.payload.requestCategory !== "medical_delivery" ? { ...empty, pickupState:undefined,dropoffState:undefined, ...restoreDraftFields(initialDraft.payload, Object.keys(rideRequestSchema.shape)) } as RideRequestInput : (service && SERVICE_PARAM[service] ? { ...empty, transportType: SERVICE_PARAM[service] } : empty));
+  const [dropoffManual, setDropoffManual] = useState(() => manualArrivalFromDraft(initialDraft?.payload, form.dropoffTime));
+  const manualArrival = useRef(dropoffManual);
   const [draftId, setDraftId] = useState(initialDraft?.id);
   const [selectedProvider, setSelectedProvider] = useState<NetworkProviderRow | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -262,7 +264,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   async function onSaveDraft() {
     if (preview.active) { previewBlocked(); return; }
     setSavingDraft(true);
-    try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, ...commerce?.draftExtras, billingContact: form.billingSource === 'custom' ? customBilling : form.billingSource === 'saved' ? savedBilling ?? form.billingContact : undefined }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success('Draft saved securely.'); }
+    try { const saved = await saveDraft({ data: { draft_id: commerce?.draftId ?? draftId, payload: { ...initialDraft?.payload, ...form, ...commerce?.draftExtras, dropoffTimeEdited:dropoffManual, billingContact: form.billingSource === 'custom' ? customBilling : form.billingSource === 'saved' ? savedBilling ?? form.billingContact : undefined }, autosaved: false } }); setDraftId(saved.id); commerce?.onDraftSaved?.(saved.id); toast.success('Draft saved securely.'); }
     catch { toast.error('Could not save draft.'); }
     finally { setSavingDraft(false); }
   }
@@ -289,7 +291,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const [pickupMeta, setPickupMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const [dropoffMeta, setDropoffMeta] = useState<{ zip: string; state: string; lat: number | null; lng: number | null }>({ zip: "", state: "", lat: null, lng: null });
   const estimatedMiles = haversineMiles(pickupMeta.lat, pickupMeta.lng, dropoffMeta.lat, dropoffMeta.lng);
-  useEffect(() => { if (kind === 'ride') commerce?.onChange({...form,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}); }, [form, customBilling, savedBilling, kind, commerce?.onChange]);
+  useEffect(() => { if (kind === 'ride') commerce?.onChange({...form,dropoffTimeEdited:dropoffManual,billingContact:form.billingSource==='custom'?customBilling:form.billingSource==='saved'?savedBilling??undefined:undefined}); }, [form, dropoffManual, customBilling, savedBilling, kind, commerce?.onChange]);
 
   useEffect(() => {
     if (preview.active) return;
@@ -315,25 +317,16 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
   const children = (form.children ?? []) as ChildRow[];
   const setChildren = (rows: ChildRow[]) => setForm(f => ({ ...f, children: rows, transportType: childCareTransport(rows), passengerCount: totalPassengers(additionalFromTotal(f.passengerCount, (f.children ?? []).length), rows.length) }));
   const additionalPassengers = additionalFromTotal(form.passengerCount, childCare ? children.length : 0);
-  const [dropoffManual, setDropoffManual] = useState(Boolean(initialDraft?.payload.dropoffTime));
   const routed = useTripRoute(routePoints(form), portal && kind === 'ride');
   const routeEstimate = form.tripType === 'multi_trip' ? null : estimateDropoffTime(form.pickupTime, routed.firstSeconds);
   const arrivalDate = routeEstimate ? estimateDropoffDate(form.pickupDate, form.pickupTime, routed.firstSeconds) : null;
-  const timingKey = JSON.stringify([routed.key, form.pickupDate, form.pickupTime, form.tripType]);
-  const previousTiming = useRef(timingKey);
   const autoArrival = useRef(false);
   useEffect(() => {
-    const changed = previousTiming.current !== timingKey;
-    previousTiming.current = timingKey;
-    if (changed) setDropoffManual(false);
-    if (routeEstimate && (!dropoffManual || changed)) {
-      autoArrival.current = true;
-      setForm(f => f.dropoffTime === routeEstimate && f.dropoffDate === (arrivalDate ?? '') ? f : {...f, dropoffTime: routeEstimate, dropoffDate: arrivalDate ?? ''});
-    } else if (autoArrival.current && (!routeEstimate || changed)) {
-      autoArrival.current = false;
-      setForm(f => ({...f, dropoffTime: '', dropoffDate: ''}));
-    }
-  }, [timingKey, routeEstimate, arrivalDate, dropoffManual]);
+    const patch = routeArrivalPatch(manualArrival.current, autoArrival.current, routeEstimate, arrivalDate);
+    if (!patch) return;
+    autoArrival.current = !!routeEstimate;
+    setForm(f => manualArrival.current || (f.dropoffTime === patch.dropoffTime && f.dropoffDate === patch.dropoffDate) ? f : {...f, ...patch});
+  }, [routeEstimate, arrivalDate, dropoffManual]);
   const chronology = tripChronologyErrors(form);
   const [stashedLegs, setStashedLegs] = useState<RideRequestInput['additionalStops']>([]);
   const reportRoute = commerce?.onRouteMiles;
@@ -802,9 +795,8 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
               <input className={inputCls} value={form.dropoffCity} onChange={(e) => upd("dropoffCity", e.target.value)} list="fl-cities" />
             </Field>}
             {form.tripType === 'multi_trip' ? <div role="status" data-total-trip-time className="space-y-1"><span className="ds-label">Estimated Total Trip Time</span><p className="ds-body font-semibold">{routed.totalSeconds != null ? `${formatMinutes(routed.totalSeconds)} (estimated driving time)` : routed.status === 'loading' ? 'Calculating…' : 'Review Required — complete route duration unavailable.'}</p><p className="ds-caption">Driving time for every current leg; excludes appointments, waiting and stops.</p></div> : <Field label="Estimated Drop-Off Time" error={errors.dropoffTime}>
-              {routeEstimate && !dropoffManual ? <div className="flex flex-wrap items-center gap-3"><span className="ds-body font-semibold" data-route-estimate>{formatUsTime(routeEstimate)}{arrivalDate && arrivalDate !== form.pickupDate ? ` · ${formatUsDate(arrivalDate)} (next day)` : ''} (estimate)</span><DsButton type="button" variant="secondary" onClick={()=>setDropoffManual(true)}>Enter manually</DsButton></div>
-                : <TimeSelect label="Estimated Drop-Off Time" value={form.dropoffTime ?? ""} onChange={(v) => { autoArrival.current = false; setDropoffManual(true); upd("dropoffTime", v); }} />}
-              <p role="status" className="mt-1 text-xs text-ds-text-2">{routeEstimate && !dropoffManual ? 'Estimated from outbound Google Maps driving time and pickup time. Final timing is confirmed by the provider.' : routed.status === 'loading' ? 'Calculating route duration…' : 'Review Required — route estimate unavailable. Enter a manual estimate or leave blank for provider review.'}</p>
+              <TimeSelect label="Estimated Drop-Off Time" value={form.dropoffTime ?? ""} onChange={(v) => { manualArrival.current = true; autoArrival.current = false; setDropoffManual(true); setForm(f=>({...f,dropoffTime:v,dropoffDate:v ? (f.dropoffDate || f.pickupDate) : ''})); }} />
+              <p role="status" className="mt-1 text-xs text-ds-text-2">{dropoffManual ? 'Manual estimate — retained when the route changes.' : routeEstimate ? `Estimated from outbound Google Maps driving time.${arrivalDate && arrivalDate !== form.pickupDate ? ` Arrival ${formatUsDate(arrivalDate)} (next day).` : ''} Final timing is confirmed by the provider.` : routed.status === 'loading' ? 'Calculating route duration… You can enter a manual estimate.' : 'Review Required — route estimate unavailable. Enter a manual estimate or leave blank for provider review.'}</p>
             </Field>}
             {!locationResolved(form.dropoffState, form.dropoffZip) && <div data-manual-location="dropoff" className="space-y-2"><p className="ds-caption">Address not matched by map lookup — enter the state and ZIP manually.</p><RegionalAddressFields hideTimezone={commerce?.provider} value={form} side="dropoff" onChange={fields=>setForm(f=>({...f,...fields}) as RideRequestInput)}/></div>}
             {!commerce && !childCare && form.pickupState==='FL' && form.dropoffState==='FL' && (
@@ -920,7 +912,7 @@ function RequestRidePage({ context, service, initialDraft, allowProviderSelectio
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field label={`Leg ${i + 2} date`}><DatePickerField value={stop.date || form.pickupDate} onChange={v => setStop({ date: v })} booking usFormat /></Field>
-                      <Field label={`Leg ${i + 2} pickup time`}><TimeSelect value={stop.pickupTime ?? ""} onChange={(v) => setStop({ pickupTime: v })} /></Field>
+                      <Field label={`Leg ${i + 2} pickup time`}><TimeSelect label={`Leg ${i + 2} pickup time`} value={stop.pickupTime ?? ""} onChange={(v) => setStop({ pickupTime: v })} /></Field>
                     </div>
                     {!locationResolved(stop.state, stop.zip) && stop.address.length > 2 && <RegionalAddressFields hideTimezone={commerce?.provider} value={{pickupState:stop.state,pickupZip:stop.zip,pickupCounty:stop.county,pickupTimezone:stop.timezone}} side="pickup" onChange={fields=>setStop({...(fields.pickupState!==undefined?{state:fields.pickupState}:{}),...(fields.pickupZip!==undefined?{zip:fields.pickupZip}:{}),...(fields.pickupCounty!==undefined?{county:fields.pickupCounty}:{}),...(fields.pickupTimezone!==undefined?{timezone:fields.pickupTimezone as RideRequestInput['pickupTimezone']}:{})})}/>}
                     {err && <p role="alert" className="text-xs text-ds-error">{err}</p>}
@@ -1261,7 +1253,7 @@ function DeliveryRequestForm({ portal, initialDraft }: { portal: boolean; initia
         <legend className="mb-2 text-sm font-bold uppercase tracking-widest text-ds-primary">Timing and Items</legend>
         <div className="grid gap-6 md:grid-cols-2">
           <Field label="Requested date" required error={errors.requestedDate}><input type="date" className={inputCls} value={form.requestedDate} onChange={(e) => upd("requestedDate", e.target.value)} /></Field>
-          <Field label="Requested pickup time" required error={errors.requestedTime}><input type="time" className={inputCls} value={form.requestedTime} onChange={(e) => upd("requestedTime", e.target.value)} /></Field>
+          <Field label="Requested pickup time" required error={errors.requestedTime}><input type="time" step={60} aria-label="Requested pickup time" className={inputCls} value={form.requestedTime} onChange={(e) => upd("requestedTime", e.target.value)} /></Field>
         </div>
         <Field label="Delivery category" required error={errors.deliveryCategory}>
           <select className={inputCls} value={form.deliveryCategory} onChange={(e) => upd("deliveryCategory", e.target.value as DeliveryRequestInput["deliveryCategory"])}>

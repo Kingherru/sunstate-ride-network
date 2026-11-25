@@ -57,6 +57,15 @@ export function estimateDropoffDate(date: string, time: string, seconds: number 
   arrival.setUTCDate(arrival.getUTCDate() + Math.floor((minutes + Math.ceil(seconds / 60)) / 1440));
   return arrival.toISOString().slice(0, 10);
 }
+/** Manual values (including deliberate clearing) always outrank asynchronous route evidence. */
+export function manualArrivalFromDraft(payload: Record<string, unknown> | undefined, restoredTime: string | null | undefined): boolean {
+  return typeof payload?.['dropoffTimeEdited'] === 'boolean' ? payload['dropoffTimeEdited'] : !!restoredTime;
+}
+export function routeArrivalPatch(manual: boolean, previouslyAutomatic: boolean, time: string | null, date: string | null): {dropoffTime:string;dropoffDate:string} | null {
+  if (manual) return null;
+  if (time) return {dropoffTime:time,dropoffDate:date ?? ''};
+  return previouslyAutomatic ? {dropoffTime:'',dropoffDate:''} : null;
+}
 /** Complete drive-time evidence only; zero duration is valid, missing/invalid is not. */
 export function sumRouteSeconds(segments: readonly (number | null | undefined)[]): number | null {
   if (!segments.length || segments.some(s => s == null || !Number.isFinite(s) || s < 0)) return null;

@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { timeParts, editedTimeValue, type TimeParts } from "@/lib/trip-form-rules";
 
-/** When true, every TimeSelect inside renders the compact Hour / Min / Min / AM-PM control. */
+/** Provider Trips opt into one native time input; other pages keep their existing controls. */
 export const CompactTimeContext = React.createContext(false);
 
 /** Editable parts survive incomplete input; only valid complete values emit HH:MM. */
@@ -122,7 +122,7 @@ export function TimeSelect({
     return base;
   }, [min, current]);
 
-  if (compact) return <CompactTimeControl id={id} value={String(value ?? "").slice(0, 5)} onChange={onChange} invalid={invalid} disabled={disabled} label={label ?? (placeholder === "Select a time" ? "Time" : placeholder)} />;
+  if (compact) return <input type="time" step={60} id={id} name={name} required={required} disabled={disabled} aria-label={label ?? (placeholder === "Select a time" ? "Time" : placeholder)} aria-invalid={invalid || undefined} className={cn("portal-select w-full", invalid && "border-destructive", className)} value={String(value ?? "").slice(0, 5)} onChange={e => onChange(e.target.value)} />;
   return (
     <select
       id={id}

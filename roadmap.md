@@ -573,3 +573,7 @@ Historical evidence and blockers remain below; unfinished shared commerce is ret
 - [x] Five Overview-palette badges and scoped compact card spacing.
 - [x] 47 distinct focused tests passed (4 new); synthetic 1280/768/390 checks confirmed full dates, calendar, masked received offers, sent activity, drafts, details and no overflow/page errors. Booked/Unconfirmed trip rows remained empty in supplied preview fixtures; populated browser injection did not load, so populated trip card appearance/actions remain unverified. Automatic preview compilation passed; no manual builds permitted.
 - Pass 2 deferred: Past/History merging, grouping, retention and exports.
+
+## Focused native Trips time repair
+- [x] Native Provider time fields; always-editable applicable dropoff; manual edits protected from delayed routes.
+- [ ] Focused state/payload, synthetic draft restoration and desktop/mobile checks; commit and usage report.
