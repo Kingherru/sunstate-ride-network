@@ -1,3 +1,8 @@
+# Mobile menu and sign-in button presentation
+- [x] All seven mobile menu navigation links rendered as full-width outlined buttons matching Book a Trip / Call Us / Sign In.
+- [x] "Back to website" on the sign-in page and shared auth layout rendered as an outlined button.
+- [x] Verified at 320/390/768/1280: visible frames, no clipping or horizontal overflow; typecheck clean.
+
 # Current Provider Schedule independent-leg redesign
 - [ ] Stable per-leg persistence and legacy/referral projection; authoritative overlap-permitted manual/batch assignments with eligibility and vehicle constraints retained.
 - [ ] One compact sticky scrollable board, matching blue filters, neutral roster cards, leg rows and accessible detail actions.

@@ -12,3 +12,5 @@ export const btnBlue = cn(base, "bg-ds-primary text-ds-on-primary hover:bg-ds-pr
 export const btnOnBlue = cn(base, "bg-ds-surface text-ds-primary hover:bg-ds-sky", focusRing, "focus-visible:ring-offset-ds-primary");
 /** Quiet gray on light backgrounds. */
 export const btnLight = cn(base, "bg-ds-subtle text-ds-primary hover:bg-ds-hover", focusRing);
+/** Quiet outlined button on light backgrounds: secondary actions such as "Back to website". */
+export const btnOutline = cn("ds-button-text ds-transition inline-flex min-h-11 max-w-full items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm border border-ds-primary px-4 text-sm uppercase text-ds-primary hover:bg-ds-primary hover:text-ds-on-primary active:bg-ds-primary-active", focusRing);

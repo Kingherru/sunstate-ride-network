@@ -3,6 +3,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { BrandName } from "@/components/brand/BrandName";
 import { cn } from "@/lib/utils";
 import { DsButton } from '@/components/ds/controls';
+import { btnOutline } from '@/components/home/buttons';
 
 /** Shared layout for sign-in, account creation and password recovery. */
 export function AuthShell({ title, intro, children, wide = false }: { title: string; intro?: React.ReactNode; children: React.ReactNode; wide?: boolean }) {
@@ -18,7 +19,7 @@ export function AuthShell({ title, intro, children, wide = false }: { title: str
           <div className="mt-8">{children}</div>
         </div>
       </main>
-      <p className="pb-8 text-center"><a href="/" className="ds-support uppercase tracking-[0.06em] text-ds-link underline underline-offset-4">Back to website</a></p>
+      <p className="pb-8 text-center"><a href="/" className={btnOutline}>Back to website</a></p>
     </div>
   );
 }

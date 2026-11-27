@@ -22,6 +22,9 @@ const focus = "focus-visible:outline-none focus-visible:ring-[3px] focus-visible
 /** Uppercase nav links: no background blocks, no underline, subtle hover. */
 const navLink = cn("ds-button-text ds-transition inline-flex min-h-11 items-center whitespace-nowrap rounded-ds-sm px-1 py-2.5 text-xs uppercase 2xl:px-2 2xl:text-[0.8125rem] hover:text-ds-accent focus-visible:text-ds-accent data-[status=active]:text-ds-accent", focus);
 
+/** Mobile menu nav links: same button frame as the primary actions above them. */
+const mobileNavLink = cn("ds-button-text ds-transition flex min-h-12 w-full items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm border border-ds-on-primary px-3 py-3 text-xs uppercase text-ds-on-primary hover:text-ds-accent focus-visible:text-ds-accent data-[status=active]:text-ds-accent", focus);
+
 /** Header actions: icon + text only on the blue header. No background, no border, no underline. */
 function ActionBlocks({ className, full, onNavigate }: { className?: string; full?: boolean; onNavigate?:()=>void }) {
   const item = cn(
@@ -102,8 +105,8 @@ export function PublicHeader() {
             <a href={PUBLIC_PHONE_TEL} onClick={()=>setOpen(false)} aria-label={`Call MY FLORIDA NEMT at ${PUBLIC_PHONE}`} className={cn("ds-button-text flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm bg-ds-surface px-3 py-3 uppercase text-ds-primary", focus)}><Phone className="size-5 shrink-0" aria-hidden />Call Us</a>
             <Link to="/login" onClick={()=>setOpen(false)} className={cn("ds-button-text flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-ds-sm border border-ds-on-primary px-3 py-3 uppercase text-ds-on-primary hover:text-ds-accent", focus)}><UserRound className="size-5 shrink-0" aria-hidden />Sign In</Link>
           </div>
-          <ul className="mfn-container flex flex-col gap-1 pt-2">
-            {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={cn(navLink, "w-full py-3")}>{n.label}</Link></li>)}
+          <ul className="mfn-container flex flex-col gap-2 pt-2">
+            {NAV.map((n) => <li key={n.to}><Link to={n.to} onClick={() => setOpen(false)} className={mobileNavLink}>{n.label}</Link></li>)}
           </ul>
         </nav>
         </>

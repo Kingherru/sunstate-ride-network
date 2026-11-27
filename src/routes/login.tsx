@@ -5,7 +5,8 @@ import { safeReturnPath } from "@/lib/access.functions";
 import { routeAfterSignIn } from "@/lib/sign-in-routing";
 import { setRememberPreference } from "@/lib/session-persistence";
 import { AuthMessage, PasswordInput, authField, authLabel } from "@/components/auth/AuthShell";
-import { btnAction } from "@/components/home/buttons";
+import { btnAction, btnOutline } from "@/components/home/buttons";
+import { cn } from "@/lib/utils";
 import { BrandName } from "@/components/brand/BrandName";
 import { HOME_IMAGES } from "@/lib/site-config";
 
@@ -82,7 +83,7 @@ function Login() {
       <main id="main" className="flex flex-col px-5 py-8 sm:px-10">
         <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <a href="/" aria-label="MY FLORIDA NEMT home" className="rounded-ds-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ds-focus"><BrandName className="text-xl" /></a>
-          <a href="/" className="ds-support uppercase tracking-[0.06em] text-ds-link underline-offset-4 hover:underline">Back to website</a>
+          <a href="/" className={cn(btnOutline, "justify-self-start sm:justify-self-end")}>Back to website</a>
         </div>
         <div className="auth-enter mx-auto my-auto w-full max-w-md py-10">
           <h1 className="ds-page-title uppercase text-ds-primary">Sign in to MY FLORIDA <span className="text-ds-accent">NEMT</span></h1>
